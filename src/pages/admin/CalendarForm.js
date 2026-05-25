@@ -2,14 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction";
-import {
-  Search,
-  Bell,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  X,
-} from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 export default function CalendarForm() {
   const calendarRef = useRef(null);

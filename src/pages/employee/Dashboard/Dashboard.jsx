@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
-import { CheckCircle, Calendar, Download, FileText, AlertCircle, Users, MessageSquare } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { CheckCircle, FileText, AlertCircle, Users } from 'lucide-react';
 import { getCurrentPayslipMonthLabel } from '../../../lib/dateUtils';
+
+const QUICK_LINKS = [
+  { label: 'CTC Payslip', to: '/employee/payroll/payslips' },
+  { label: 'Reimbursement Payslip', to: '/employee/payroll/reimbursements' },
+  { label: 'IT Statement', to: '/employee/payroll/it-statement' },
+  { label: 'YTD Reports', to: '/employee/payroll/ytd-reports' },
+  { label: 'Loan Statement', to: '/employee/payroll/loans' },
+];
 
 const Dashboard = () => {
   const payslipMonthLabel = getCurrentPayslipMonthLabel();
@@ -128,21 +137,15 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Access</h3>
           <div className="space-y-3">
-            <a href="#" className="block text-brand hover:text-brand-700 text-sm font-medium">
-              CTC Payslip
-            </a>
-            <a href="#" className="block text-brand hover:text-brand-700 text-sm font-medium">
-              Reimbursement Payslip
-            </a>
-            <a href="#" className="block text-brand hover:text-brand-700 text-sm font-medium">
-              IT Statement
-            </a>
-            <a href="#" className="block text-brand hover:text-brand-700 text-sm font-medium">
-              YTD Reports
-            </a>
-            <a href="#" className="block text-brand hover:text-brand-700 text-sm font-medium">
-              Loan Statement
-            </a>
+            {QUICK_LINKS.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="block text-brand hover:text-brand-700 text-sm font-medium"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
 
@@ -188,9 +191,9 @@ const Dashboard = () => {
 
       {/* Footer */}
       <div className="mt-12 flex justify-center gap-6 text-sm text-gray-600">
-        <a href="#" className="hover:text-gray-800">Privacy Policy</a>
+        <span>Privacy Policy</span>
         <span>|</span>
-        <a href="#" className="hover:text-gray-800">Terms of Service</a>
+        <span>Terms of Service</span>
       </div>
     </div>
   );

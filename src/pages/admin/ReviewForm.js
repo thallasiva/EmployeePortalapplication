@@ -33,7 +33,7 @@ const ReviewForm = () =>
                         {reviews.map((item, index) => (
                             <tr key={index} className="border-t">
                                 <td className="p-3">Employee Review</td>
-                                <td className="p-3 flex "><img class="w-10 h-10 rounded-full border me-2" alt="imgs" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' rx='20' fill='%23f18200'/%3E%3Ctext x='20' y='24' text-anchor='middle' fill='white' font-size='14'%3EU%3C/text%3E%3C/svg%3E" />{item.employee}</td>
+                                <td className="p-3 flex "><img className="w-10 h-10 rounded-full border me-2" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' rx='20' fill='%23f18200'/%3E%3Ctext x='20' y='24' text-anchor='middle' fill='white' font-size='14'%3EU%3C/text%3E%3C/svg%3E" />{item.employee}</td>
                                 <td className="p-3">{item.from}</td>
                                 <td className="p-3">{item.to}</td>
                                 <td className="p-3">

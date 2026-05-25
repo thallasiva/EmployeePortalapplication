@@ -33,16 +33,6 @@ export default function Employee()
     { name: 'Richard Wilson', team: 'Business' },
   ];
 
-  const people = [
-    { name: 'Sean Black', manager: 'Richard Wilson', team: 'Design', office: 'Focus Technologies', role: 'Team Lead', status: 'Active' },
-    { name: 'Linda Craver', manager: 'Richard Wilson', team: 'iOS', office: 'Focus Technologies', role: 'Team Lead', status: 'Active' },
-    { name: 'Jenni Sims', manager: 'Richard Wilson', team: 'Android', office: 'Focus Technologies', role: 'Team Lead', status: 'Active' },
-    { name: 'Stacey Linville', manager: 'Richard Wilson', team: 'Testing', office: 'Focus Technologies', role: 'Team Lead', status: 'Active' },
-    { name: 'Maria Cotton', manager: 'Richard Wilson', team: 'PHP', office: 'Focus Technologies', role: 'Team Lead', status: 'Active' },
-    { name: 'John Gibbs', manager: 'Richard Wilson', team: 'PHP', office: 'Focus Technologies', role: 'Team Lead', status: 'Active' },
-    { name: 'Richard Wilson', manager: 'No', team: 'Business', office: 'Focus Technologies', role: 'Super Admin', status: 'Active' },
-  ];
-
   const tabsMenu = [
     { id: 1, tabName: "All" },
     { id: 2, tabName: "Teams" },

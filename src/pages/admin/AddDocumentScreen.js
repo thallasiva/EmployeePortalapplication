@@ -1,32 +1,11 @@
 import React, { useState } from "react";
-import { Plus, Pencil, X, Upload } from "lucide-react";
+import { Plus, Pencil, X } from "lucide-react";
 import AddDocuments from "../../component/AddDocuments";
 
 export default function AddDocumentScreen()
 {
   const [showModal, setShowModal] = useState(false);
-  const [documents, setDocuments] = useState([
-    { id: 1, name: "Passport.pdf" },
-  ]);
-  const [docName, setDocName] = useState("");
-  const [file, setFile] = useState(null);
-
-  const handleAddDocument = () =>
-  {
-    if (!docName || !file) return;
-
-    const newDoc = {
-      id: Date.now(),
-      name: file.name,
-      description: docName,
-    };
-
-    setDocuments([...documents, newDoc]);
-    setDocName("");
-    setFile(null);
-    setShowModal(false);
-  };
-
+  const documents = [{ id: 1, name: "Passport.pdf" }];
   const enableModel = () => {
     setShowModal(true);
     console.log(showModal);
