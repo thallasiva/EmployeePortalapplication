@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import React from 'react'
 
 const ReviewForm = () =>
 {
@@ -8,7 +7,6 @@ const ReviewForm = () =>
         { employee: 'Jenni Sims', from: '05 Dec 2019', to: '07 Dec 2019', status: 'Completed' },
     ];
 
-    const navigate = useNavigate();
 
 
 
