@@ -4,7 +4,6 @@ import { getCurrentPayslipMonthLabel } from '../../../lib/dateUtils';
 
 const EmployeeDashboard = () =>
 {
-    const [showSalary, setShowSalary] = useState(false);
     const payslipMonthLabel = getCurrentPayslipMonthLabel();
 
     const getGreeting = () =>

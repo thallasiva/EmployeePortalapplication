@@ -3,7 +3,6 @@ import { CheckCircle, Calendar, Download, FileText, AlertCircle, Users, MessageS
 import { getCurrentPayslipMonthLabel } from '../../../lib/dateUtils';
 
 const Dashboard = () => {
-  const [showSalary, setShowSalary] = useState(false);
   const payslipMonthLabel = getCurrentPayslipMonthLabel();
 
   const getGreeting = () => {

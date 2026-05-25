@@ -9,8 +9,7 @@ import
     Underline,
     List,
     ListOrdered,
-    Sparkles,
-} from "lucide-react";
+    } from "lucide-react";
 
 const RequestFeedbackModal = ({
     open,
@@ -19,8 +18,7 @@ const RequestFeedbackModal = ({
 {
     const [message, setMessage] =
         useState("");
-    const [openModal, setOpenModal] =
-        useState(false);
+
 
     if (!open) return null;
 
