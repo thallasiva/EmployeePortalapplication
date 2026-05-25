@@ -22,13 +22,13 @@ const EmployeeDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">{getGreeting()}</h1>
+    <div>
+      <div className="mb-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{getGreeting()}</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center">
           <div className="mb-4">
             <CheckCircle className="w-12 h-12 text-gray-400" />
           </div>
@@ -36,8 +36,8 @@ const EmployeeDashboard = () => {
           <p className="text-gray-600 text-center text-sm">Hurrah! You&apos;ve nothing to review.</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-gray-800">Upcoming Holidays</h3>
             <Link to="/employee/leave/holiday-calendar" className="text-brand">
               →
@@ -63,9 +63,9 @@ const EmployeeDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Payslip</h3>
-          <div className="flex justify-center mb-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payslip</h3>
+          <div className="flex justify-center mb-4">
             <div className="relative w-32 h-32">
               <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120" aria-hidden>
                 <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" strokeWidth="8" />
@@ -110,8 +110,8 @@ const EmployeeDashboard = () => {
           <p className="text-xs text-gray-500 mt-2 text-center">{payslipMonthLabel}</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Access</h3>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Quick Access</h3>
           <div className="space-y-3">
             {QUICK_LINKS.map((item) => (
               <Link
@@ -125,7 +125,7 @@ const EmployeeDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-400">
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-400">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">IT Declaration</h3>
           <div className="flex items-start gap-3 mb-4">
             <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-1" />
@@ -141,9 +141,9 @@ const EmployeeDashboard = () => {
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">POI</h3>
-          <div className="flex flex-col items-center justify-center py-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">POI</h3>
+          <div className="flex flex-col items-center justify-center py-4">
             <FileText className="w-12 h-12 text-gray-400 mb-4" />
             <p className="text-sm text-gray-700 text-center mb-4">
               Hold on! You can submit your Proof of Investments (POI) once released.
@@ -157,9 +157,9 @@ const EmployeeDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Hiring</h3>
-          <div className="flex flex-col items-center justify-center py-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Hiring</h3>
+          <div className="flex flex-col items-center justify-center py-4">
             <Users className="w-12 h-12 text-gray-400 mb-4" />
             <p className="text-sm text-gray-700 text-center">
               All good! You have no pending tasks.
@@ -168,7 +168,7 @@ const EmployeeDashboard = () => {
         </div>
       </div>
 
-      <div className="mt-12 flex justify-center gap-6 text-sm text-gray-600">
+      <div className="mt-6 flex justify-center gap-4 text-sm text-gray-500">
         <span>Privacy Policy</span>
         <span>|</span>
         <span>Terms of Service</span>

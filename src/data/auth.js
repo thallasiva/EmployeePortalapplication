@@ -6,6 +6,59 @@ import {
   STATIC_DESIGNATIONS,
 } from "./staticData";
 
+export const ROLE_ADMIN = 1;
+export const ROLE_EMPLOYEE = 2;
+
+/** Coerce role from API/form/localStorage to 1 (admin) or 2 (employee). */
+export function normalizeRole(role) {
+  const n = Number(role);
+  if (n === ROLE_ADMIN || n === ROLE_EMPLOYEE) return n;
+  return null;
+}
+
+/** Prefer static account role by email so stale localStorage cannot swap portals */
+export function resolveRoleForUser(user) {
+  if (!user) return null;
+  const key = user.email?.trim().toLowerCase();
+  const account = key ? STATIC_USERS[key] : null;
+  if (account) return normalizeRole(account.role);
+  return normalizeRole(user.role);
+}
+
+export function getHomePath(user) {
+  const role = resolveRoleForUser(user);
+  if (role === ROLE_ADMIN) return "/dashboard";
+  if (role === ROLE_EMPLOYEE) return "/employee/home";
+  return "/login";
+}
+
+export function isAdmin(user) {
+  return resolveRoleForUser(user) === ROLE_ADMIN;
+}
+
+export function isEmployee(user) {
+  return resolveRoleForUser(user) === ROLE_EMPLOYEE;
+}
+
+export function getStoredUser() {
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const user = JSON.parse(raw);
+    const role = resolveRoleForUser(user);
+    if (!role) return null;
+    return { ...user, role };
+  } catch {
+    return null;
+  }
+}
+
+export function persistUser(user) {
+  const role = normalizeRole(user?.role);
+  if (!role) return;
+  localStorage.setItem("user", JSON.stringify({ ...user, role }));
+}
+
 export function authenticateUser(email, password) {
   const key = email?.trim().toLowerCase();
   const account = STATIC_USERS[key];
@@ -15,7 +68,7 @@ export function authenticateUser(email, password) {
   return {
     user: {
       email: account.email,
-      role: account.role,
+      role: normalizeRole(account.role),
       name: account.name,
     },
     token: "static-local-token",

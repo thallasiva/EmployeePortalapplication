@@ -69,6 +69,19 @@ export const DASHBOARD_UPCOMING_EVENTS = [
 export const STATIC_EMPLOYEES = [
   {
     employee_id: 101,
+    first_name: "A V",
+    lasst_name: "Sowmya",
+    email: "sowmyaavee6@gmail.com",
+    mobile: "9876543200",
+    reporting_to: "Richard Wilson",
+    emp_job_title: "Software Engineer",
+    role: 2,
+    employee_status: "Active",
+    department_id: 1,
+    designation_id: 1,
+  },
+  {
+    employee_id: 102,
     first_name: "Alex",
     lasst_name: "Kumar",
     email: "alex.kumar@natit.com",
@@ -81,7 +94,7 @@ export const STATIC_EMPLOYEES = [
     designation_id: 1,
   },
   {
-    employee_id: 102,
+    employee_id: 103,
     first_name: "Priya",
     lasst_name: "Sharma",
     email: "priya.sharma@natit.com",
@@ -94,7 +107,7 @@ export const STATIC_EMPLOYEES = [
     designation_id: 3,
   },
   {
-    employee_id: 103,
+    employee_id: 104,
     first_name: "Rahul",
     lasst_name: "Mehta",
     email: "rahul.mehta@natit.com",
@@ -107,7 +120,7 @@ export const STATIC_EMPLOYEES = [
     designation_id: 2,
   },
   {
-    employee_id: 104,
+    employee_id: 105,
     first_name: "Neha",
     lasst_name: "Reddy",
     email: "neha.reddy@natit.com",
@@ -120,7 +133,7 @@ export const STATIC_EMPLOYEES = [
     designation_id: 4,
   },
   {
-    employee_id: 105,
+    employee_id: 106,
     first_name: "Richard",
     lasst_name: "Wilson",
     email: "richard.wilson@natit.com",

@@ -208,7 +208,7 @@ export default function Company()
         <div className="bg-white rounded-xl shadow p-5">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Overview</h3>
-            <button className="bg-orange-500 text-white px-4 py-2 rounded-lg" onClick={() => navigate('/manage')}>Manage Teams sdddd</button>
+            <button className="bg-orange-500 text-white px-4 py-2 rounded-lg" onClick={() => navigate('/dashboard/manage')}>Manage Teams sdddd</button>
           </div>
 
           <div className="flex justify-between text-sm mb-3">
@@ -216,7 +216,7 @@ export default function Company()
             <p>People: <strong>7</strong></p>
           </div>
 
-          <button className="bg-brand text-white px-4 py-2 rounded-lg" onClick={() => navigate('/employee')}>People Directory</button>
+          <button className="bg-brand text-white px-4 py-2 rounded-lg" onClick={() => navigate('/dashboard/employee')}>People Directory</button>
         </div>
       </div>
     </div>

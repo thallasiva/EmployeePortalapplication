@@ -11,8 +11,8 @@
   --text-muted: #64748b;
   --surface: #ffffff;
   --surface-muted: #f1f5f9;
-  --content-padding-x: 2rem;
-  --content-padding-y: 1.75rem;
+  --content-padding-x: 1rem;
+  --content-padding-y: 0.875rem;
 }
 
 @layer base {
@@ -114,9 +114,17 @@
     padding: var(--content-padding-y) var(--content-padding-x);
   }
 
+  .app-content-inner-tight {
+    padding: 0.75rem 1rem;
+  }
+
   @media (min-width: 1024px) {
     .app-content-inner {
-      padding: 2rem 2.5rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .app-content-inner-tight {
+      padding: 0.875rem 1.125rem;
     }
   }
 

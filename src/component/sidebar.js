@@ -12,14 +12,21 @@ import {
   UserPen,
   Proportions,
   ChartNoAxesGantt,
-  Briefcase,
-  Wallet,
-  ClipboardCheck,
-  FileText,
-  HelpCircle,
+  Radio,
+  LayoutGrid,
+  ClipboardList,
+  HandCoins,
+  SquareCheck,
+  UserRoundPlus,
+  BookOpen,
+  UserRound,
+  Info,
+  Layers,
+  GitBranch,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { getStoredUser, isAdmin, ROLE_ADMIN } from "../data/auth";
 
 const BRAND_NAME = "NAT IT";
 
@@ -28,9 +35,14 @@ const isPathActive = (pathname, link) => {
   const normalized = pathname.replace(/\/$/, "") || "/";
   const target = link.replace(/\/$/, "") || "/";
 
-  if (target === "/dashboard" || target === "/employee/home") {
+  if (
+    target === "/dashboard" ||
+    target === "/employee/home" ||
+    target === "/employee/engage"
+  ) {
     return normalized === target;
   }
+
 
   return normalized === target || normalized.startsWith(`${target}/`);
 };
@@ -40,8 +52,8 @@ export const Sidebar = ({ open }) => {
   const { pathname } = useLocation();
   const [expanded, setExpanded] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role;
+  const user = getStoredUser();
+  const role = user?.role ?? ROLE_ADMIN;
 
   const adminItems = [
     {
@@ -99,122 +111,103 @@ export const Sidebar = ({ open }) => {
   const employeeItems = [
     {
       label: "Home",
-      icon: <Home size={20} />,
+      icon: <Home size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/home",
     },
     {
-      label: "Engine",
-      icon: <Home size={20} />,
-      navigationLink: "/employee/engine",
+      label: "Engage",
+      icon: <Radio size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/engage",
     },
     {
       label: "My Worklife",
-      icon: <Briefcase size={20} />,
+      icon: <LayoutGrid size={20} strokeWidth={1.75} />,
       children: [
-        {
-          label: "Kudos",
-          navigationLink: "/employee/worklife/kudos",
-        },
-        {
-          label: "Feedback",
-          navigationLink: "/employee/worklife/feedback",
-        },
+        { label: "Kudos", navigationLink: "/employee/worklife/kudos" },
+        { label: "Feedback", navigationLink: "/employee/worklife/feedback" },
       ],
     },
     {
-      label: "To Do",
-      icon: <ClipboardCheck size={20} />,
-      navigationLink: "/employee/todo",
+      label: "To do",
+      icon: <ClipboardList size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Tasks", navigationLink: "/employee/todo/tasks" },
+        { label: "Review", navigationLink: "/employee/todo/review" },
+      ],
     },
     {
-      label: "Payroll",
-      icon: <Wallet size={20} />,
+      label: "Salary",
+      icon: <HandCoins size={20} strokeWidth={1.75} />,
       children: [
-        {
-          label: "Payslips",
-          navigationLink: "/employee/payroll/payslips",
-        },
-        {
-          label: "IT Declaration",
-          navigationLink: "/employee/payroll/it-declaration",
-        },
-        {
-          label: "IT Statement",
-          navigationLink: "/employee/payroll/it-statement",
-        },
-        {
-          label: "Reimbursements",
-          navigationLink: "/employee/payroll/reimbursements",
-        },
+        { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
+        { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
+        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
+        { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
+        { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
+        { label: "Loans", navigationLink: "/employee/payroll/loans" },
+        { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" },
+        { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
       ],
     },
     {
       label: "Leave",
-      icon: <Calendar size={20} />,
+      icon: <Calendar size={20} strokeWidth={1.75} />,
       children: [
-        {
-          label: "Leave Balance",
-          navigationLink: "/employee/leave/balance",
-        },
-        {
-          label: "Apply Leave",
-          navigationLink: "/employee/leave/apply",
-        },
-        {
-          label: "Leave Calendar",
-          navigationLink: "/employee/leave/calendar",
-        },
-        {
-          label: "Holiday Calendar",
-          navigationLink: "/employee/leave/holiday-calendar",
-        },
+        { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
+        { label: "Apply Leave", navigationLink: "/employee/leave/apply" },
+        { label: "Leave Calendar", navigationLink: "/employee/leave/calendar" },
+        { label: "Holiday Calendar", navigationLink: "/employee/leave/holiday-calendar" },
       ],
     },
     {
       label: "Attendance",
-      icon: <ClipboardCheck size={20} />,
+      icon: <SquareCheck size={20} strokeWidth={1.75} />,
       children: [
+        { label: "Attendance Info", navigationLink: "/employee/attendance/daily" },
         {
-          label: "Daily Attendance",
-          navigationLink: "/employee/attendance/daily",
+          label: "My Regularizations",
+          navigationLink: "/employee/attendance/regularizations",
         },
-        {
-          label: "Monthly Attendance",
-          navigationLink: "/employee/attendance/monthly",
-        },
-        {
-          label: "Shifts",
-          navigationLink: "/employee/attendance/shifts",
-        },
+        { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
+        { label: "Shift Roster", navigationLink: "/employee/attendance/shifts" },
+      ],
+    },
+    {
+      label: "Hiring",
+      icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
+      badge: "New",
+      children: [
+        { label: "Overview", navigationLink: "/employee/hiring" },
       ],
     },
     {
       label: "Document Center",
-      icon: <FileText size={20} />,
+      icon: <BookOpen size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/documents",
     },
     {
+      label: "People",
+      icon: <UserRound size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/people",
+    },
+    {
       label: "Helpdesk",
-      icon: <HelpCircle size={20} />,
+      icon: <Info size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/helpdesk",
     },
     {
-      label: "Profile",
-      icon: <UserPen size={20} />,
-      children: [
-        {
-          label: "My Profile",
-          navigationLink: "/employee/profile",
-        },
-        {
-          label: "Settings",
-          navigationLink: "/employee/settings",
-        },
-      ],
+      label: "Request Hub",
+      icon: <Layers size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/request-hub",
+    },
+    {
+      label: "Workflow Delegates",
+      icon: <GitBranch size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/workflow-delegates",
     },
   ];
 
-  const items = role === 1 ? adminItems : employeeItems;
+  const items = isAdmin(user) ? adminItems : employeeItems;
 
   const toggleAccordion = (index) => {
     setExpanded(expanded === index ? null : index);
@@ -296,7 +289,16 @@ export const Sidebar = ({ open }) => {
                 <span className={active ? "text-white" : "text-gray-500"}>
                   {item.icon}
                 </span>
-                {open && <span className="truncate">{item.label}</span>}
+                {open && (
+                  <>
+                    <span className="truncate flex-1">{item.label}</span>
+                    {item.badge && (
+                      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-red-500 text-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             );
           }
@@ -318,10 +320,15 @@ export const Sidebar = ({ open }) => {
                 {open && (
                   <>
                     <span className="flex-1 truncate">{item.label}</span>
+                    {item.badge && (
+                      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-red-500 text-white">
+                        {item.badge}
+                      </span>
+                    )}
                     {expanded === index ? (
-                      <ChevronDown size={16} />
+                      <ChevronDown size={16} className="shrink-0 text-gray-400" />
                     ) : (
-                      <ChevronRight size={16} />
+                      <ChevronRight size={16} className="shrink-0 text-gray-400" />
                     )}
                   </>
                 )}

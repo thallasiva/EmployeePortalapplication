@@ -5,6 +5,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useLocation,
 } from "react-router-dom";
 
 import Layout from "./component/layout";
@@ -15,11 +16,13 @@ import EmployeeRoutes from "./routes/EmployeeRoutes";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
+import { getStoredUser, isAdmin, isEmployee } from "./data/auth";
+import { PATH_ADMIN_HOME, PATH_EMPLOYEE_HOME, PATH_LOGIN } from "./routes/paths";
 
 const AppRoutes = () => {
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
+  const location = useLocation();
+  const user = getStoredUser();
+  void location.key;
 
   return (
     <Routes>
@@ -29,18 +32,15 @@ const AppRoutes = () => {
         path="/"
         element={
           user ? (
-            user?.role === 1 ? (
-              <Navigate to="/dashboard" replace />
-            ) : user?.role === 2 ? (
-              <Navigate
-                to="/employee/home"
-                replace
-              />
+            isAdmin(user) ? (
+              <Navigate to={PATH_ADMIN_HOME} replace />
+            ) : isEmployee(user) ? (
+              <Navigate to={PATH_EMPLOYEE_HOME} replace />
             ) : (
-              <Navigate to="/login" replace />
+              <Navigate to={PATH_LOGIN} replace />
             )
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to={PATH_LOGIN} replace />
           )
         }
       />
@@ -65,33 +65,24 @@ const AppRoutes = () => {
       <Route
         path="/dashboard/*"
         element={
-          user?.role === 1 ? (
+          isAdmin(user) ? (
             <Layout />
           ) : (
-            <Navigate
-              to="/employee/home"
-              replace
-            />
+            <Navigate to={PATH_EMPLOYEE_HOME} replace />
           )
         }
       >
-        <Route
-          path="*"
-          element={<AdminRoutes />}
-        />
+        <Route path="*" element={<AdminRoutes />} />
       </Route>
 
       {/* EMPLOYEE */}
       <Route
         path="/employee/*"
         element={
-          user?.role === 2 ? (
+          isEmployee(user) ? (
             <Layout />
           ) : (
-            <Navigate
-              to="/dashboard"
-              replace
-            />
+            <Navigate to={PATH_ADMIN_HOME} replace />
           )
         }
       >

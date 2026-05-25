@@ -15,18 +15,20 @@ import ManagePermissions from "../pages/admin/ManagePermissions";
 import Settings from "../pages/admin/Settings";
 import Profile from "../pages/admin/Profile";
 import CreateEmployee from "../pages/admin/CreateEmployee";
+import { getStoredUser, isAdmin } from "../data/auth";
+import { PATH_EMPLOYEE_HOME } from "./paths";
 
 const AdminRoutes = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = getStoredUser();
 
-  if (user?.role !== 1) {
-    return <Navigate to="/employee/home" />;
+  if (!isAdmin(user)) {
+    return <Navigate to={PATH_EMPLOYEE_HOME} replace />;
   }
 
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/employee" element={<Employee />} />
+      <Route index element={<Dashboard />} />
+      <Route path="employee" element={<Employee />} />
       <Route path="create-employee" element={<CreateEmployee />} />
       <Route path="company" element={<Company />} />
       <Route path="create-company" element={<CreateCompany />} />

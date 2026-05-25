@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -128,6 +129,7 @@ function buildDayRecord(date) {
 }
 
 export default function AttendanceInfo() {
+  const navigate = useNavigate();
   const user = getLoggedInUser();
   const today = new Date();
   const [viewDate, setViewDate] = useState(
@@ -204,6 +206,7 @@ export default function AttendanceInfo() {
           </button>
           <button
             type="button"
+            onClick={() => navigate("/employee/attendance/regularizations")}
             className="h-10 px-5 rounded bg-brand hover:bg-brand-600 text-white text-sm font-semibold shadow-sm"
           >
             My Regularizations

@@ -1,11 +1,12 @@
 import { Menu } from "lucide-react";
+import { isAdmin } from "../data/auth";
 
 export const Navbar = ({ toggleSidebar, user }) => {
   const displayName = user?.name || user?.email || "User";
-  const roleLabel = user?.role === 1 ? "Administrator" : "Employee";
+  const roleLabel = isAdmin(user) ? "Administrator" : "Employee";
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between px-6 md:px-8 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2.5 bg-white border-b border-gray-200 shadow-sm">
       <button
         type="button"
         onClick={toggleSidebar}

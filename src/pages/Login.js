@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { authenticateUser } from "../data/auth";
+import { authenticateUser, getHomePath, getStoredUser, persistUser } from "../data/auth";
+import { Navigate } from "react-router-dom";
 import { errorToast } from "../utils/ToastControllers";
 
 const Login = () => {
   const router = useNavigate();
+  const existingUser = getStoredUser();
 
   const loginValidation = useFormik({
     initialValues: { email: "", password: "" },
@@ -19,12 +21,20 @@ const Login = () => {
         errorToast("Invalid email or password");
         return;
       }
-      localStorage.setItem("user", JSON.stringify(result.user));
+      persistUser(result.user);
       localStorage.setItem("token", result.token);
-      if (result.user.role === 1) router("/dashboard");
-      else if (result.user.role === 2) router("/employee/home");
+      const home = getHomePath(result.user);
+      if (home === "/login") {
+        errorToast("Unknown role for this account");
+        return;
+      }
+      router(home);
     },
   });
+
+  if (existingUser) {
+    return <Navigate to={getHomePath(existingUser)} replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-brand-50/30 to-slate-100 flex flex-col items-center justify-center font-sans px-4">
