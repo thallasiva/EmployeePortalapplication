@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Download } from "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
+import LeaveBalanceDetail from "./LeaveBalanceDetail";
 
 export default function LeaveBalances() {
   const [year, setYear] = useState(String(new Date().getFullYear()));
+  const [selectedLeave, setSelectedLeave] = useState(null);
 
   const leaveData = [
     {
@@ -54,6 +56,19 @@ export default function LeaveBalances() {
       total: 2,
     },
   ];
+
+  if (selectedLeave) {
+    return (
+      <div className="min-h-screen bg-[#ececec] p-6">
+        <LeaveBalanceDetail
+          leaveType={selectedLeave}
+          year={year}
+          onYearChange={setYear}
+          onBack={() => setSelectedLeave(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f7fb] p-6">
@@ -117,9 +132,7 @@ export default function LeaveBalances() {
       <div className="grid grid-cols-4 gap-4">
         {leaveData.map((item, index) => {
           const progress =
-            item.total > 0
-              ? (item.consumed / item.total) * 100
-              : 0;
+            item.total > 0 ? (item.consumed / item.total) * 100 : 0;
 
           return (
             <div
@@ -161,6 +174,8 @@ export default function LeaveBalances() {
                   </p>
 
                   <button
+                    type="button"
+                    onClick={() => setSelectedLeave(item.title)}
                     className="
                       mt-4
                       text-[14px]
@@ -174,26 +189,13 @@ export default function LeaveBalances() {
                 </div>
               </div>
 
-              {/* PROGRESS */}
-
               <div className="px-3 pb-3">
-                <div
-                  className="
-                    w-full
-                    h-[5px]
-                    rounded-full
-                    bg-[#edf2f7]
-                    overflow-hidden
-                  "
-                >
+                <div className="w-full h-[5px] rounded-full bg-[#edf2f7] overflow-hidden">
                   <div
-                    className="h-full bg-[#2ea7ff]"
-                    style={{
-                      width: `${progress}%`,
-                    }}
+                    className="h-full bg-[#337ab7]"
+                    style={{ width: `${progress}%` }}
                   />
                 </div>
-
                 <p className="text-[11px] text-[#94a3b8] mt-2">
                   {item.consumed} of {item.total} Consumed
                 </p>

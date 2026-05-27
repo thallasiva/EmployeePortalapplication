@@ -177,7 +177,7 @@ export const Sidebar = ({ open }) => {
       icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
       badge: "New",
       children: [
-        { label: "Overview", navigationLink: "/employee/hiring" },
+        { label: "Internal Jobs", navigationLink: "/employee/hiring" },
       ],
     },
     {
@@ -293,7 +293,7 @@ export const Sidebar = ({ open }) => {
                   <>
                     <span className="truncate flex-1">{item.label}</span>
                     {item.badge && (
-                      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-red-500 text-white">
+                      <span className="shrink-0 text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded bg-red-500 text-white">
                         {item.badge}
                       </span>
                     )}
@@ -321,7 +321,7 @@ export const Sidebar = ({ open }) => {
                   <>
                     <span className="flex-1 truncate">{item.label}</span>
                     {item.badge && (
-                      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-red-500 text-white">
+                      <span className="shrink-0 text-[10px] font-normal  tracking-wide px-1  rounded bg-red-500 text-white">
                         {item.badge}
                       </span>
                     )}

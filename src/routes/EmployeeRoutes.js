@@ -14,7 +14,6 @@ import ITDeclaration from "../pages/employee/salary/ITDeclaration";
 import ITStatement from "../pages/employee/salary/ITStatement";
 import Reimbursement from "../pages/employee/salary/Reimbursement";
 import ProofInvestment from "../pages/employee/salary/ProofInvestment";
-import AddDocumentScreen from "../pages/admin/AddDocumentScreen";
 import DocumentCenter from "../pages/employee/documents/DocumentCenter";
 import Helpdesk from "../pages/employee/helpdesk/Helpdesk";
 import Engage from "../pages/employee/engage/Engage";
@@ -66,7 +65,7 @@ const EmployeeRoutes = () => {
       <Route path="payroll/ytd-reports" element={<YTDReports />} />
       <Route path="payroll/salary-revision" element={<SalaryRevision />} />
       <Route path="hiring" element={<Hiring />} />
-      <Route path="documents" element={<AddDocumentScreen />} />
+      <Route path="documents" element={<DocumentCenter />} />
       <Route path="documents/upload" element={<DocumentCenter />} />
       <Route path="people" element={<People />} />
       <Route path="helpdesk" element={<Helpdesk />} />
