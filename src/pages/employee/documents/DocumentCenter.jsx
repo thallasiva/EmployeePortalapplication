@@ -181,18 +181,6 @@ function PanelTitle({ children }) {
   );
 }
 
-function EmptyStatePanel({ title }) {
-  return (
-    <div className="border border-[#dfe5ed] bg-white min-h-[360px] flex items-center justify-center">
-      <div className="text-center">
-        <EmptyDocIllustration />
-        <p className="text-[22px] text-[#7a8699] mt-3">Sigh! It&apos;s lonely here</p>
-        <p className="text-[14px] text-[#a2adbd] mt-1">No items are available yet!</p>
-      </div>
-    </div>
-  );
-}
-
 function DocumentCenter() {
   const [view, setView] = useState(VIEW.HOME);
   const [docSectionOpen, setDocSectionOpen] = useState({

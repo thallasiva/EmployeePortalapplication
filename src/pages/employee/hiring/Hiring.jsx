@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search, Settings, HelpCircle } from "lucide-react";
+import { Search } from "lucide-react";
 import HiringFilters from "./HiringFilters";
 import HiringEmptyState from "./HiringEmptyState";
 import MyReferrals from "./MyReferrals";
@@ -20,7 +19,6 @@ const SUB_TABS = [
 ];
 
 export default function Hiring() {
-  const navigate = useNavigate();
   const [headerTab, setHeaderTab] = useState("jobs");
   const [subTab, setSubTab] = useState("internal");
   const [search, setSearch] = useState("");
