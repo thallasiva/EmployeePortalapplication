@@ -2,7 +2,7 @@ import React from "react";
 
 export default function SettingsForm() {
   return (
-    <div className="bg-[#f5f6f8] min-h-screen p-2">
+    <div className="space-y-4">
       {/* Top Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Change Password */}

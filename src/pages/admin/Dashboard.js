@@ -1,168 +1,274 @@
-import React from "react";
-import { Users, Building2, CalendarDays, Wallet } from "lucide-react";
+import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  STATIC_DASHBOARD_STATS,
-  DASHBOARD_TEAM_MEMBERS,
-  DASHBOARD_RECENT_ACTIVITY,
-  DASHBOARD_UPCOMING_EVENTS,
-} from "../../data/staticData";
+  Users,
+  CalendarDays,
+  Clock,
+  UserX,
+  AlertTriangle,
+  Building2,
+  FileText,
+  ClipboardCheck,
+  ChevronRight,
+  TrendingUp,
+} from "lucide-react";
+import {
+  getAdminDashboardMetrics,
+  ADMIN_QUICK_ACTIONS,
+} from "../../data/adminDashboardData";
+import LeaveEmployeeDetailTable from "../../component/admin/LeaveEmployeeDetailTable";
+import AdminChatbot from "../../component/admin/AdminChatbot";
+import { getStoredUser } from "../../data/auth";
+import "../../component/admin/adminChatbot.css";
+import "./adminDashboard.css";
 
-const stats = STATIC_DASHBOARD_STATS;
-
-const statCards = [
-  {
-    label: "Employees",
-    value: stats.employees_count,
-    icon: Users,
-    className: "bg-brand text-white",
-  },
-  {
-    label: "Companies",
-    value: stats.companies_count,
-    icon: Building2,
-    className: "bg-orange-500 text-white",
-  },
-  {
-    label: "Leaves",
-    value: stats.leaves_count,
-    icon: CalendarDays,
-    className: "bg-rose-500 text-white",
-  },
-  {
-    label: "Payroll",
-    value: stats.salaries_count,
-    icon: Wallet,
-    className: "bg-violet-600 text-white",
-  },
-];
-
-const Dashboard = () => {
+function KpiCard({ label, value, sub, icon: Icon, className, onClick }) {
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Admin Dashboard
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            NAT IT — overview (static data)
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <span className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold shadow-sm">
-            Admin
-          </span>
-          <span className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-sm font-medium">
-            Employee view
-          </span>
-        </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`admin-dash-kpi ${className} p-4 rounded-xl shadow-sm flex justify-between items-start text-left w-full`}
+    >
+      <div>
+        <p className="text-sm opacity-90">{label}</p>
+        <p className="text-2xl font-bold mt-1">{value}</p>
+        {sub && <p className="text-xs opacity-80 mt-0.5">{sub}</p>}
+        <p className="admin-dash-kpi__link">View details →</p>
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.label}
-              className={`${card.className} p-5 rounded-xl shadow-sm flex justify-between items-center`}
-            >
-              <div>
-                <p className="text-sm opacity-90">{card.label}</p>
-                <p className="text-3xl font-bold mt-1">{card.value}</p>
-              </div>
-              <div className="bg-white/20 p-3 rounded-lg">
-                <Icon size={28} />
-              </div>
-            </div>
-          );
-        })}
+      <div className="bg-white/20 p-2.5 rounded-lg shrink-0">
+        <Icon size={22} />
       </div>
+    </button>
+  );
+}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold text-slate-800 mb-4">Employee status</h2>
-          <div className="flex items-center justify-center gap-8 h-44">
-            <div className="text-center">
-              <div className="w-24 h-24 rounded-full border-8 border-brand border-r-brand-100 border-b-brand-100" />
-              <p className="text-sm text-slate-500 mt-3">Active 22</p>
-            </div>
-            <ul className="text-sm space-y-2 text-slate-600">
-              <li className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-brand" /> Active
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-amber-400" /> On leave
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-slate-300" /> Inactive
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold text-slate-800 mb-4">Monthly overview</h2>
-          <div className="flex items-end justify-between gap-2 h-44 px-2">
-            {[65, 80, 45, 90, 70, 85].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className="w-full bg-brand/80 rounded-t-md min-h-[4px]"
-                  style={{ height: `${h}%` }}
-                />
-                <span className="text-[10px] text-slate-400">
-                  {["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+function MiniList({ title, items, emptyText, onViewAll, renderItem }) {
+  return (
+    <div className="admin-dash-card h-full">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
+        {onViewAll && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="text-xs font-medium text-emerald-600 hover:underline inline-flex items-center gap-0.5"
+          >
+            View all <ChevronRight size={12} />
+          </button>
+        )}
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold text-slate-800 mb-4">Team members</h2>
-          <ul className="space-y-3">
-            {DASHBOARD_TEAM_MEMBERS.map((m) => (
-              <li
-                key={m.name}
-                className="flex justify-between text-sm border-b border-gray-50 pb-2 last:border-0"
-              >
-                <span className="font-medium text-slate-800">{m.name}</span>
-                <span className="text-slate-400">{m.team}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold text-slate-800 mb-4">Recent activity</h2>
-          <ul className="space-y-3">
-            {DASHBOARD_RECENT_ACTIVITY.map((a) => (
-              <li key={a.text} className="text-sm">
-                <p className="text-slate-800">{a.text}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{a.time}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold text-slate-800 mb-4">Upcoming events</h2>
-          <ul className="space-y-3">
-            {DASHBOARD_UPCOMING_EVENTS.map((e) => (
-              <li
-                key={e.text}
-                className="flex justify-between text-sm border-b border-gray-50 pb-2 last:border-0"
-              >
-                <span className="text-slate-800">{e.text}</span>
-                <span className="text-brand font-medium">{e.date}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      {!items.length ? (
+        <p className="text-sm text-gray-400 py-6 text-center">{emptyText}</p>
+      ) : (
+        <ul className="space-y-2">{items.map(renderItem)}</ul>
+      )}
     </div>
   );
-};
+}
 
-export default Dashboard;
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const user = getStoredUser();
+  const metrics = useMemo(() => getAdminDashboardMetrics(), []);
+
+  const go = (path) => () => navigate(path);
+  const goLeave = (state = {}) => () => navigate("/dashboard/leave", { state });
+
+  return (
+    <div className="admin-dash space-y-6 pb-20">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Welcome back, {user?.name?.split(" ")[0] ?? "Admin"}!
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            One place to manage leave, attendance, employees, and reviews — click any card for details
+          </p>
+        </div>
+      </div>
+
+      {/* KPI row — click opens detail screen */}
+      <section>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+          Today at a glance
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
+          <KpiCard
+            label="Employees"
+            value={metrics.totalEmployees}
+            icon={Users}
+            className="bg-brand text-white"
+            onClick={go("/dashboard/employee")}
+          />
+          <KpiCard
+            label="On Leave"
+            value={metrics.onLeaveToday}
+            sub="approved today"
+            icon={CalendarDays}
+            className="bg-blue-600 text-white"
+            onClick={go("/dashboard/leave")}
+          />
+          <KpiCard
+            label="Pending Leave"
+            value={metrics.pendingLeave}
+            sub="needs action"
+            icon={Clock}
+            className="bg-orange-500 text-white"
+            onClick={goLeave({ tab: "pending" })}
+          />
+          <KpiCard
+            label="Present"
+            value={metrics.presentToday}
+            sub={`of ${metrics.totalEmployees}`}
+            icon={TrendingUp}
+            className="bg-emerald-600 text-white"
+            onClick={go("/dashboard/attendance")}
+          />
+          <KpiCard
+            label="Late"
+            value={metrics.lateToday}
+            icon={AlertTriangle}
+            className="bg-amber-500 text-white"
+            onClick={go("/dashboard/attendance")}
+          />
+          <KpiCard
+            label="Absent"
+            value={metrics.absentToday}
+            icon={UserX}
+            className="bg-rose-500 text-white"
+            onClick={go("/dashboard/attendance")}
+          />
+          <KpiCard
+            label="Attendance"
+            value={`${metrics.attendanceRate}%`}
+            icon={ClipboardCheck}
+            className="bg-teal-600 text-white"
+            onClick={go("/dashboard/attendance")}
+          />
+          <KpiCard
+            label="Companies"
+            value={metrics.companies}
+            icon={Building2}
+            className="bg-violet-600 text-white"
+            onClick={go("/dashboard/company")}
+          />
+        </div>
+      </section>
+
+      {/* Main: On leave list + Pending */}
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="xl:col-span-2 admin-dash-card">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                Employees on Leave Today ({metrics.onLeaveToday})
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Approved leave for today — same data as Leave calendar when you click today&apos;s date
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={go("/dashboard/leave")}
+              className="text-sm font-medium text-emerald-600 hover:underline"
+            >
+              Open Leave Management
+            </button>
+          </div>
+          <LeaveEmployeeDetailTable
+            rows={metrics.onLeaveList.map((r) => ({ ...r, status: "Approved" }))}
+            emptyMessage="No employees on approved leave today."
+          />
+        </div>
+
+        <MiniList
+          title={`Pending Leave Requests (${metrics.pendingLeave})`}
+          items={metrics.pendingList}
+          emptyText="No pending requests."
+          onViewAll={goLeave({ tab: "pending" })}
+          renderItem={(row) => (
+            <li key={row.id}>
+              <button
+                type="button"
+                onClick={goLeave({ tab: "pending", requestId: row.id })}
+                className="w-full text-left text-sm p-2 rounded-lg border border-orange-100 bg-orange-50/50 hover:bg-orange-100/80 hover:border-orange-200 transition-colors cursor-pointer"
+              >
+                <p className="font-medium text-gray-900">{row.employee}</p>
+                <p className="text-xs text-gray-500">
+                  {row.type} · {row.from} → {row.to}
+                </p>
+                <p className="text-[10px] text-emerald-600 mt-1">Open in Leave Management →</p>
+              </button>
+            </li>
+          )}
+        />
+      </section>
+
+      {/* Attendance snapshot */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <MiniList
+          title={`Late Today (${metrics.lateToday})`}
+          items={metrics.lateEmployees}
+          emptyText="No late arrivals."
+          onViewAll={go("/dashboard/attendance")}
+          renderItem={(emp) => (
+            <li key={emp.id} className="flex justify-between text-sm py-1.5 border-b border-gray-50">
+              <span className="font-medium text-gray-800">{emp.name}</span>
+              <span className="text-orange-600 text-xs">{emp.checkIn} ({emp.lateBy})</span>
+            </li>
+          )}
+        />
+        <MiniList
+          title={`Absent Today (${metrics.absentToday})`}
+          items={metrics.absentEmployees}
+          emptyText="Everyone checked in or on leave."
+          onViewAll={go("/dashboard/attendance")}
+          renderItem={(emp) => (
+            <li key={emp.id} className="flex justify-between text-sm py-1.5 border-b border-gray-50">
+              <span className="font-medium text-gray-800">{emp.name}</span>
+              <span className="text-rose-500 text-xs">{emp.department}</span>
+            </li>
+          )}
+        />
+        <MiniList
+          title="Recent activity"
+          items={[
+            { id: 1, text: `${metrics.pendingLeave} leave requests awaiting approval` },
+            { id: 2, text: `${metrics.onLeaveToday} employees on leave today` },
+            { id: 3, text: `${metrics.checkedIn} checked in of ${metrics.totalEmployees}` },
+            { id: 4, text: `${metrics.approvedCount} approved leave records` },
+          ]}
+          emptyText=""
+          onViewAll={go("/dashboard/report")}
+          renderItem={(item) => (
+            <li key={item.id} className="text-sm text-gray-600 py-1.5 border-b border-gray-50">
+              {item.text}
+            </li>
+          )}
+        />
+      </section>
+
+      {/* Quick actions */}
+      <section className="admin-dash-card">
+        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <FileText size={16} />
+          Quick actions
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {ADMIN_QUICK_ACTIONS.map((action) => (
+            <button
+              key={action.path}
+              type="button"
+              onClick={() => navigate(action.path)}
+              className={`${action.color} text-white text-xs font-semibold py-3 px-2 rounded-lg hover:opacity-90 transition-opacity`}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <AdminChatbot />
+    </div>
+  );
+}

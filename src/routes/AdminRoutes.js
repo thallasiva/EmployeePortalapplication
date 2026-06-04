@@ -5,10 +5,12 @@ import Employee from "../pages/admin/Employee";
 import Company from "../pages/admin/Company";
 import CreateCompany from "../pages/admin/CreateCompany";
 import CalendarForm from "../pages/admin/CalendarForm";
-import Leave from "../pages/admin/Leave";
+import Leave from "../pages/admin/AdminLeaveDashboard";
+import AdminAttendanceDashboard from "../pages/admin/AdminAttendanceDashboard";
 import Review from "../pages/admin/Review";
 import CreateReviewer from "../pages/admin/CreateReviewer";
 import AddDocumentScreen from "../pages/admin/AddDocumentScreen";
+import AdminDocuments from "../pages/admin/AdminDocuments";
 import Reports from "../pages/admin/Report";
 import Manage from "../pages/admin/Manage";
 import ManagePermissions from "../pages/admin/ManagePermissions";
@@ -34,10 +36,12 @@ const AdminRoutes = () => {
       <Route path="create-company" element={<CreateCompany />} />
       <Route path="calendar" element={<CalendarForm />} />
       <Route path="leave" element={<Leave />} />
+      <Route path="attendance" element={<AdminAttendanceDashboard />} />
       <Route path="review" element={<Review />} />
       <Route path="create-review" element={<CreateReviewer />} />
+      <Route path="documents" element={<AdminDocuments />} />
       <Route path="add-document" element={<AddDocumentScreen />} />
-      <Route path="report" element={<Reports />} />
+      <Route path="report/*" element={<Reports />} />
       <Route path="manage" element={<Manage />} />
       <Route path="manage/permissions/:roleSlug" element={<ManagePermissions />} />
       <Route path="settings" element={<Settings />} />

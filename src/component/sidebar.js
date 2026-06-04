@@ -23,6 +23,7 @@ import {
   Info,
   Layers,
   GitBranch,
+  Clock,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -82,12 +83,22 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/leave",
     },
     {
+      label: "Attendance",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/attendance",
+    },
+    {
       label: "Review",
       icon: <UserStar size={20} />,
       navigationLink: "/dashboard/review",
     },
     {
-      label: "Report",
+      label: "Documents",
+      icon: <BookOpen size={20} />,
+      navigationLink: "/dashboard/documents",
+    },
+    {
+      label: "Reports",
       icon: <Proportions size={20} />,
       navigationLink: "/dashboard/report",
     },
