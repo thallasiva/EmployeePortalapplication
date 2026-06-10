@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import {
   ADMIN_ALL_EMPLOYEES,
-  ADMIN_ATTENDANCE_CALENDAR,
   ADMIN_ATTENDANCE_STATUS_CHART,
   ADMIN_ATTENDANCE_SUMMARY,
   ADMIN_ATTENDANCE_WEEKLY_CHART,
@@ -29,8 +28,6 @@ import {
 } from "../../utils/attendanceRegularization";
 import "./adminDashboard.css";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 const EMPLOYEE_TABS = [
   { id: "all", label: "All Employees" },
   { id: "present", label: "Present" },
@@ -46,19 +43,6 @@ function getInitials(name) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function buildCalendarCells({ year, month, days }) {
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells = [];
-  for (let i = 0; i < firstDay; i += 1) {
-    cells.push({ type: "empty" });
-  }
-  for (let d = 1; d <= daysInMonth; d += 1) {
-    cells.push({ type: "day", day: d, status: days[d] || "present" });
-  }
-  return cells;
 }
 
 function SummaryCard({ icon: Icon, value, label, suffix, iconBg, iconColor }) {
@@ -184,8 +168,6 @@ export default function AdminAttendanceDashboard() {
   );
   const lateSectionRef = useRef(null);
   const summary = ADMIN_ATTENDANCE_SUMMARY;
-  const cal = ADMIN_ATTENDANCE_CALENDAR;
-  const calendarCells = useMemo(() => buildCalendarCells(cal), [cal]);
 
   const handleRegularize = (id) => {
     setEmployees((prev) =>
@@ -439,48 +421,6 @@ export default function AdminAttendanceDashboard() {
         <EmployeeTable employees={filteredEmployees} onRegularize={handleRegularize} />
       </section>
 
-      {/* Monthly calendar */}
-      <section className="admin-dash-card">
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar size={18} className="text-gray-600" />
-          <h3 className="font-semibold text-gray-900">
-            Monthly Attendance – {cal.monthLabel}
-          </h3>
-        </div>
-        <div className="admin-cal-grid">
-          {WEEKDAYS.map((d) => (
-            <div key={d} className="admin-cal-head">
-              {d}
-            </div>
-          ))}
-          {calendarCells.map((cell, idx) =>
-            cell.type === "empty" ? (
-              <div key={`e-${idx}`} className="admin-cal-cell muted" />
-            ) : (
-              <div
-                key={cell.day}
-                className={`admin-cal-cell admin-att-cal-cell ${cell.status}`}
-              >
-                {cell.day}
-              </div>
-            )
-          )}
-        </div>
-        <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-gray-100">
-          {ATTENDANCE_LEGEND.map((item) => (
-            <span
-              key={item.key}
-              className="inline-flex items-center gap-1.5 text-xs text-gray-500"
-            >
-              <span
-                className="w-3 h-3 rounded-sm"
-                style={{ background: item.color }}
-              />
-              {item.label}
-            </span>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

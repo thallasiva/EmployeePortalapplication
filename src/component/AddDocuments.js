@@ -81,7 +81,7 @@ const AddDocuments = ({ setShowModal,showModal }) =>
                                     onClick={handleAddDocument}
                                     className="flex-1 border border-orange-400 text-orange-500 py-2 rounded-lg hover:bg-orange-50"
                                 >
-                                    Add
+                                    Changes
                                 </button>
 
                                 <button

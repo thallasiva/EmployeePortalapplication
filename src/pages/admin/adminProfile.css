@@ -5,10 +5,12 @@
 }
 
 .admin-profile__hero {
+  position: relative;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
+  padding-bottom: 1rem;
 }
 
 .admin-profile__cover {
@@ -36,6 +38,8 @@
 }
 
 .admin-profile__body {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -119,6 +123,32 @@
 @media (min-width: 640px) {
   .admin-profile__stats {
     grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-profile__body {
+    align-items: flex-start;
+    margin-top: -2rem;
+    padding: 0 1rem 1.25rem;
+  }
+
+  .admin-profile__identity {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .admin-profile__badges {
+    justify-content: center;
+  }
+
+  .admin-profile__stats {
+    padding: 0 1rem 1.25rem;
+  }
+
+  .admin-profile__tabs {
+    justify-content: center;
   }
 }
 

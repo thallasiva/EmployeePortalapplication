@@ -198,13 +198,13 @@
 }
 
 .emp-btn--primary {
-  background: #16a34a;
+  background: var(--brand-primary);
   color: #fff;
 }
 
 .emp-btn--primary:hover {
-  background: #15803d;
-}
+  background: var(--brand-primary-dark);
+} 
 
 .emp-btn--outline {
   background: #fff;

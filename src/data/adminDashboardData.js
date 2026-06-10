@@ -41,7 +41,7 @@ export const ADMIN_QUICK_ACTIONS = [
   { label: "Manage Leave", path: "/dashboard/leave", color: "bg-emerald-500" },
   { label: "View Attendance", path: "/dashboard/attendance", color: "bg-blue-500" },
   { label: "Add Employee", path: "/dashboard/create-employee", color: "bg-violet-500" },
+  { label: "Open Onboarding", path: "/dashboard/onboarding", color: "bg-sky-500" },
   { label: "Company Calendar", path: "/dashboard/calendar", color: "bg-orange-500" },
   { label: "Run Reports", path: "/dashboard/report", color: "bg-rose-500" },
-  { label: "Review Hub", path: "/dashboard/review", color: "bg-cyan-600" },
 ];

@@ -22,10 +22,6 @@ export default function LeaveApply()
                 </h1>
 
                 <div className="flex items-center gap-3">
-                    <button className="text-[14px] text-[#64748b]">
-                        Quick Links
-                    </button>
-
                     <button className="text-[#94a3b8]">🔔</button>
                     <button className="text-[#94a3b8]">⏻</button>
                 </div>

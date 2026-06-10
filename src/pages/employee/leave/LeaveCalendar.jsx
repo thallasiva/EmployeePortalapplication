@@ -42,10 +42,6 @@ export default function LeaveCalendar() {
         </h1>
 
         <div className="flex items-center gap-4">
-          <button className="text-[14px] text-[#64748b]">
-            Quick Links
-          </button>
-
           <button className="text-[#64748b]">🔔</button>
 
           <button className="text-[#64748b]">⏻</button>

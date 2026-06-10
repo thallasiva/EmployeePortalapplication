@@ -195,9 +195,6 @@ export default function AttendanceInfo() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] font-semibold text-[#1f2937]">Attendance Info</h1>
         <div className="flex items-center gap-4">
-          <button type="button" className="text-sm text-[#64748b] hover:text-brand">
-            Quick Links
-          </button>
           <button type="button" className="text-[#94a3b8] hover:text-slate-600" aria-label="Notifications">
             <Bell size={18} />
           </button>

@@ -88,11 +88,6 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/attendance",
     },
     {
-      label: "Review",
-      icon: <UserStar size={20} />,
-      navigationLink: "/dashboard/review",
-    },
-    {
       label: "Documents",
       icon: <BookOpen size={20} />,
       navigationLink: "/dashboard/documents",
@@ -103,9 +98,9 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/report",
     },
     {
-      label: "Manage",
-      icon: <ChartNoAxesGantt size={20} />,
-      navigationLink: "/dashboard/manage",
+      label: "Onboarding",
+      icon: <UserRoundPlus size={20} />,
+      navigationLink: "/dashboard/onboarding",
     },
     {
       label: "Settings",
