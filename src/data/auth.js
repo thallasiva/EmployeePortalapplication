@@ -8,11 +8,12 @@ import {
 
 export const ROLE_ADMIN = 1;
 export const ROLE_EMPLOYEE = 2;
+export const ROLE_REPORTING_MANAGER = 3;
 
-/** Coerce role from API/form/localStorage to 1 (admin) or 2 (employee). */
+/** Coerce role from API/form/localStorage to 1 (admin), 2 (employee), or 3 (reporting manager). */
 export function normalizeRole(role) {
   const n = Number(role);
-  if (n === ROLE_ADMIN || n === ROLE_EMPLOYEE) return n;
+  if (n === ROLE_ADMIN || n === ROLE_EMPLOYEE || n === ROLE_REPORTING_MANAGER) return n;
   return null;
 }
 
@@ -28,6 +29,7 @@ export function resolveRoleForUser(user) {
 export function getHomePath(user) {
   const role = resolveRoleForUser(user);
   if (role === ROLE_ADMIN) return "/dashboard";
+  if (role === ROLE_REPORTING_MANAGER) return "/manager";
   if (role === ROLE_EMPLOYEE) return "/employee/home";
   return "/login";
 }
@@ -38,6 +40,17 @@ export function isAdmin(user) {
 
 export function isEmployee(user) {
   return resolveRoleForUser(user) === ROLE_EMPLOYEE;
+}
+
+export function isReportingManager(user) {
+  return resolveRoleForUser(user) === ROLE_REPORTING_MANAGER;
+}
+
+/** Shift assigned to the logged-in employee/RM (defaults to "general"). */
+export function getShiftForUser(user) {
+  const shift = user?.shift;
+  if (shift === "mid" || shift === "night") return shift;
+  return "general";
 }
 
 export function getStoredUser() {
@@ -70,6 +83,7 @@ export function authenticateUser(email, password) {
       email: account.email,
       role: normalizeRole(account.role),
       name: account.name,
+      shift: account.shift,
     },
     token: "static-local-token",
   };

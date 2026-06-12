@@ -88,7 +88,11 @@ const Login = () => {
         </form>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          Admin: admin@yopmail.com / Test@123 · Employee: employee@yopmail.com / Test@1234
+          Admin: admin@yopmail.com / Test@123 · Manager: manager@yopmail.com / Test@123
+          <br />
+          Employee: employee@yopmail.com / Test@1234
+          <br />
+          Your dashboard automatically shows your assigned shift (General, Mid or Night).
         </p>
 
         <p className="text-center text-sm text-gray-500 mt-6">

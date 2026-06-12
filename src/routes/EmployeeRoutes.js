@@ -28,13 +28,13 @@ import WorkflowDelegates from "../pages/employee/workflow/WorkflowDelegates";
 import Loans from "../pages/employee/salary/Loans";
 import YTDReports from "../pages/employee/salary/YTDReports";
 import SalaryRevision from "../pages/employee/salary/SalaryRevision";
-import { getStoredUser, isEmployee } from "../data/auth";
+import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
 import { PATH_ADMIN_HOME } from "./paths";
 
 const EmployeeRoutes = () => {
   const user = getStoredUser();
 
-  if (!isEmployee(user)) {
+  if (!isEmployee(user) && !isReportingManager(user)) {
     return <Navigate to={PATH_ADMIN_HOME} replace />;
   }
 

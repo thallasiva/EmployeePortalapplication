@@ -26,8 +26,9 @@ import {
   Clock,
   ChevronDown,
   ChevronRight,
+  FileText,
 } from "lucide-react";
-import { getStoredUser, isAdmin, ROLE_ADMIN } from "../data/auth";
+import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN } from "../data/auth";
 
 const BRAND_NAME = "NAT IT";
 
@@ -39,7 +40,8 @@ const isPathActive = (pathname, link) => {
   if (
     target === "/dashboard" ||
     target === "/employee/home" ||
-    target === "/employee/engage"
+    target === "/employee/engage" ||
+    target === "/manager"
   ) {
     return normalized === target;
   }
@@ -98,6 +100,11 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/report",
     },
     {
+      label: "Payroll",
+      icon: <FileText size={20} />,
+      navigationLink: "/dashboard/payroll",
+    },
+    {
       label: "Onboarding",
       icon: <UserRoundPlus size={20} />,
       navigationLink: "/dashboard/onboarding",
@@ -113,6 +120,12 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/profile",
     },
   ];
+
+  const teamOverviewItem = {
+    label: "Team Overview",
+    icon: <Users size={20} strokeWidth={1.75} />,
+    navigationLink: "/manager",
+  };
 
   const employeeItems = [
     {
@@ -213,7 +226,11 @@ export const Sidebar = ({ open }) => {
     },
   ];
 
-  const items = isAdmin(user) ? adminItems : employeeItems;
+  const items = isAdmin(user)
+    ? adminItems
+    : isReportingManager(user)
+    ? [teamOverviewItem, ...employeeItems]
+    : employeeItems;
 
   const toggleAccordion = (index) => {
     setExpanded(expanded === index ? null : index);

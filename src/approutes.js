@@ -12,12 +12,12 @@ import Layout from "./component/layout";
 
 import AdminRoutes from "./routes/AdminRoutes";
 import EmployeeRoutes from "./routes/EmployeeRoutes";
+import ManagerRoutes from "./routes/ManagerRoutes";
 
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
-import { getStoredUser, isAdmin, isEmployee } from "./data/auth";
-import { PATH_ADMIN_HOME, PATH_EMPLOYEE_HOME, PATH_LOGIN } from "./routes/paths";
+import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager } from "./data/auth";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -30,19 +30,7 @@ const AppRoutes = () => {
       {/* DEFAULT */}
       <Route
         path="/"
-        element={
-          user ? (
-            isAdmin(user) ? (
-              <Navigate to={PATH_ADMIN_HOME} replace />
-            ) : isEmployee(user) ? (
-              <Navigate to={PATH_EMPLOYEE_HOME} replace />
-            ) : (
-              <Navigate to={PATH_LOGIN} replace />
-            )
-          ) : (
-            <Navigate to={PATH_LOGIN} replace />
-          )
-        }
+        element={<Navigate to={getHomePath(user)} replace />}
       />
 
       {/* AUTH */}
@@ -68,21 +56,35 @@ const AppRoutes = () => {
           isAdmin(user) ? (
             <Layout />
           ) : (
-            <Navigate to={PATH_EMPLOYEE_HOME} replace />
+            <Navigate to={getHomePath(user)} replace />
           )
         }
       >
         <Route path="*" element={<AdminRoutes />} />
       </Route>
 
+      {/* REPORTING MANAGER */}
+      <Route
+        path="/manager/*"
+        element={
+          isReportingManager(user) ? (
+            <Layout />
+          ) : (
+            <Navigate to={getHomePath(user)} replace />
+          )
+        }
+      >
+        <Route path="*" element={<ManagerRoutes />} />
+      </Route>
+
       {/* EMPLOYEE */}
       <Route
         path="/employee/*"
         element={
-          isEmployee(user) ? (
+          isEmployee(user) || isReportingManager(user) ? (
             <Layout />
           ) : (
-            <Navigate to={PATH_ADMIN_HOME} replace />
+            <Navigate to={getHomePath(user)} replace />
           )
         }
       >

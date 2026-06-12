@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, FileText, AlertCircle, Users } from 'lucide-react';
-import { getCurrentPayslipMonthLabel } from '../../../lib/dateUtils';
+import { getCurrentPayslipMonthLabel, getLoggedInUser } from '../../../lib/dateUtils';
+import { getShiftForUser } from '../../../data/auth';
+import { calculatePayslip } from '../../../utils/payslipCalculations';
+import ShiftDashboard from './ShiftDashboard';
 
 const QUICK_LINKS = [
   { label: 'CTC Payslip', to: '/employee/payroll/payslips' },
@@ -11,8 +14,13 @@ const QUICK_LINKS = [
   { label: 'Proof of Investment', to: '/employee/payroll/claims' },
 ];
 
+/** Demo monthly CTC used to derive the payslip pie chart on the dashboard. */
+const MONTHLY_SALARY = 45000;
+
 const EmployeeDashboard = () => {
   const payslipMonthLabel = getCurrentPayslipMonthLabel();
+  const user = getLoggedInUser();
+  const shift = getShiftForUser(user);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -20,12 +28,21 @@ const EmployeeDashboard = () => {
     if (hour < 18) return 'Good Afternoon';
     return 'Good Evening';
   };
+   const greeting = getGreeting();
+
+  const breakdown = calculatePayslip(MONTHLY_SALARY);
+  const pieRadius = 54;
+  const pieCircumference = 2 * Math.PI * pieRadius;
+  const netFraction = breakdown.totalEarnings ? breakdown.netSalary / breakdown.totalEarnings : 0;
+  const netDash = netFraction * pieCircumference;
 
   return (
     <div>
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{getGreeting()}</h1>
-      </div>
+      </div> */}
+
+      <ShiftDashboard shiftId={shift} greeting={greeting}/>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center">
@@ -68,22 +85,32 @@ const EmployeeDashboard = () => {
           <div className="flex justify-center mb-4">
             <div className="relative w-32 h-32">
               <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120" aria-hidden>
-                <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" strokeWidth="8" />
+                <circle cx="60" cy="60" r={pieRadius} fill="none" stroke="#fee2e2" strokeWidth="16" />
                 <circle
                   cx="60"
                   cy="60"
-                  r="54"
+                  r={pieRadius}
                   fill="none"
-                  stroke="#f18200"
-                  strokeWidth="8"
-                  strokeDasharray="169.65 169.65"
+                  stroke="#16a34a"
+                  strokeWidth="16"
+                  strokeDasharray={`${netDash} ${pieCircumference - netDash}`}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-sm text-gray-600">Paid Days</p>
-                <p className="text-2xl font-bold text-gray-800">30</p>
+                <p className="text-sm text-gray-600">Net Pay</p>
+                <p className="text-xl font-bold text-gray-800">{Math.round(netFraction * 100)}%</p>
               </div>
             </div>
+          </div>
+          <div className="flex justify-center gap-4 mb-4 text-xs text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-600" />
+              Net Pay
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-200" />
+              Deductions
+            </span>
           </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between items-center pb-2 border-b">

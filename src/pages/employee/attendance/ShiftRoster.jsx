@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, Users } from "lucide-react";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
+import { getShiftForUser } from "../../../data/auth";
 
 const SHIFTS = [
   {
@@ -10,16 +11,16 @@ const SHIFTS = [
     break: "1h lunch",
   },
   {
-    id: "flex",
-    name: "Flexible Shift",
-    time: "10:00 AM – 07:00 PM",
-    break: "1h lunch",
+    id: "mid",
+    name: "Mid Shift",
+    time: "01:00 PM – 10:00 PM",
+    break: "1h dinner break",
   },
   {
     id: "night",
     name: "Night Shift",
-    time: "06:00 PM – 03:00 AM",
-    break: "45m break",
+    time: "10:00 PM – 07:00 AM",
+    break: "1h break",
   },
 ];
 
@@ -32,12 +33,11 @@ function getWeekStart(date) {
   return d;
 }
 
-function buildWeekRoster(weekStart) {
+function buildWeekRoster(weekStart, userShift) {
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(weekStart);
     date.setDate(weekStart.getDate() + i);
     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-    const shift = isWeekend ? null : SHIFTS[i % 2 === 0 ? 0 : 0];
 
     return {
       iso: toISODateString(date),
@@ -49,7 +49,7 @@ function buildWeekRoster(weekStart) {
       isToday: toISODateString(new Date()) === toISODateString(date),
       shift: isWeekend
         ? { name: "Week Off", time: "—", break: "—" }
-        : shift || SHIFTS[0],
+        : userShift,
     };
   });
 }
@@ -65,7 +65,16 @@ export default function ShiftRoster() {
   const user = getLoggedInUser();
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
 
-  const week = useMemo(() => buildWeekRoster(weekStart), [weekStart]);
+  const userShift = useMemo(() => {
+    const shiftId = getShiftForUser(user);
+    return SHIFTS.find((s) => s.id === shiftId) || SHIFTS[0];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const week = useMemo(
+    () => buildWeekRoster(weekStart, userShift),
+    [weekStart, userShift]
+  );
 
   const weekLabel = `${week[0].dateNum} ${week[0].month} – ${week[6].dateNum} ${week[6].month} ${weekStart.getFullYear()}`;
 
@@ -77,7 +86,7 @@ export default function ShiftRoster() {
 
   const todayEntry = week.find((d) => d.isToday);
   const currentShift =
-    todayEntry && !todayEntry.isWeekend ? todayEntry.shift : SHIFTS[0];
+    todayEntry && !todayEntry.isWeekend ? todayEntry.shift : userShift;
 
   return (
     <div className="space-y-6">
