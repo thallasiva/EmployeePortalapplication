@@ -12,9 +12,9 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
 
   const breakdown = useMemo(() => calculatePayslip(basic), [basic]);
 
-  const selectedEmployee = employees.find(
-    (emp) => String(emp.employee_id) === String(employeeId)
-  );
+  // const selectedEmployee = employees.find(
+  //   (emp) => String(emp.employee_id) === String(employeeId)
+  // );
 
   // ── Custom component evaluation ──────────────────────────────────────────
   const evaluateFormula = (formula, context) => {

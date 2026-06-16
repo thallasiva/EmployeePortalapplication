@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, Download, Pencil, Plus, Search } from "lucide-react";
-import PayslipModal from "./PayslipModal";
 import AddSalaryModal from "./AddSalaryModal";
 import { listEmployees } from "../../api/employee.api";
 import {

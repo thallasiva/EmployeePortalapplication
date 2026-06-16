@@ -4,19 +4,269 @@ import { Download } from "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
 import LeaveBalanceDetail from "./LeaveBalanceDetail";
 import { getMyLeaveBalances } from "../../../api/leaveRequest.api";
+import
+{
+  CalendarHeart,
+  Briefcase,
+  Clock3,
+  Moon,
+  Gift,
+  Flag,
+} from "lucide-react";
+/* ── Per-type colour + icon config ─────────────────────────────────────────
+   Falls back to the last entry ("default") for unknown leave types.        */
+const TYPE_CONFIG = [
+  {
+    match: ["earned", "el", "annual"],
+    icon: CalendarHeart,
+    bg: "#E6F1FB",
+    iconColor: "#185FA5",
+    barColor: "#378ADD",
+    badgeBg: "#E6F1FB",
+    badgeColor: "#185FA5",
+    detailColor: "#185FA5",
+  },
+  {
+    match: ["sick", "sl", "medical"],
+    icon: Moon,
+    bg: "#FAEEDA",
+    iconColor: "#854F0B",
+    barColor: "#EF9F27",
+    badgeBg: "#FAEEDA",
+    badgeColor: "#854F0B",
+    detailColor: "#854F0B",
+  },
+  {
+    match: ["compensatory", "comp", "co"],
+    icon: Clock3,
+    bg: "#EEEDFE",
+    iconColor: "#534AB7",
+    barColor: "#7F77DD",
+    badgeBg: "#EEEDFE",
+    badgeColor: "#534AB7",
+    detailColor: "#534AB7",
+  },
+  {
+    match: ["work from home", "wfh", "remote"],
+    icon: Briefcase,
+    bg: "#E1F5EE",
+    iconColor: "#0F6E56",
+    barColor: "#1D9E75",
+    badgeBg: "#E1F5EE",
+    badgeColor: "#0F6E56",
+    detailColor: "#0F6E56",
+  },
+  {
+    match: ["without pay", "lwp", "unpaid"],
+    icon: Gift,
+    bg: "#FCEBEB",
+    iconColor: "#A32D2D",
+    barColor: "#E24B4A",
+    badgeBg: "#FCEBEB",
+    badgeColor: "#A32D2D",
+    detailColor: "#A32D2D",
+  },
+  {
+    match: ["restricted", "rh", "optional"],
+    icon: Flag,
+    bg: "#FBEAF0",
+    iconColor: "#993556",
+    barColor: "#D4537E",
+    badgeBg: "#FBEAF0",
+    badgeColor: "#993556",
+    detailColor: "#993556",
+  },
+  
+  {
+    match: [],
+    icon: CalendarHeart,
+    bg: "#F0F4FF",
+    iconColor: "#3B5FC0",
+    barColor: "#5579DB",
+    badgeBg: "#F0F4FF",
+    badgeColor: "#3B5FC0",
+    detailColor: "#3B5FC0",
+  },
+];
 
-export default function LeaveBalances() {
+
+function getConfig(title = "")
+{
+  const t = title.toLowerCase();
+  return (
+    TYPE_CONFIG.find((c) => c.match.some((k) => t.includes(k))) ||
+    TYPE_CONFIG[TYPE_CONFIG.length - 1]
+  );
+}
+
+/* ── Card ───────────────────────────────────────────────────────────────── */
+function LeaveCard({ item, onViewDetails })
+{
+  const cfg = getConfig(item.title);
+  const Icon = cfg.icon;
+
+  const progress = item.total > 0 ? Math.min((item.consumed / item.total) * 100, 100) : 0;
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5eaf0",
+        borderRadius: 14,
+        padding: "18px 18px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        boxShadow: "0 1px 4px 0 rgba(0,0,0,0.05)",
+      }}
+    >
+      {/* Icon + Granted badge */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            background: cfg.bg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon
+            size={20}
+            color={cfg.iconColor}
+            strokeWidth={2}
+          />        </div>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            background: cfg.badgeBg,
+            color: cfg.badgeColor,
+            padding: "3px 9px",
+            borderRadius: 20,
+          }}
+        >
+          Granted : {item.granted}
+        </span>
+      </div>
+
+      {/* Title + Balance */}
+      <div>
+        <p style={{ fontSize: 12, color: "#6b7a8d", margin: "0 0 3px", fontWeight: 500 }}>
+          {item.title}
+        </p>
+        <p style={{ fontSize: 34, fontWeight: 600, color: "#1a2233", margin: 0, lineHeight: 1 }}>
+          {String(item.balance).padStart(2, "0")}
+        </p>
+        <p style={{ fontSize: 11, color: "#9ca8b5", margin: "4px 0 0" }}>days balance</p>
+      </div>
+
+      {/* Progress + footer */}
+      <div>
+        <div
+          style={{
+            height: 5,
+            borderRadius: 5,
+            background: "#f0f3f8",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${progress}%`,
+              background: cfg.barColor,
+              borderRadius: 5,
+              transition: "width 0.4s ease",
+            }}
+          />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 6,
+          }}
+        >
+          <span style={{ fontSize: 11, color: "#9ca8b5" }}>
+            {item.consumed} of {item.total || item.granted} consumed
+          </span>
+          {item.granted > 0 && (
+            <button
+              type="button"
+              onClick={() => onViewDetails(item.title)}
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: cfg.detailColor,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              View details
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Skeleton loader ─────────────────────────────────────────────────────── */
+function SkeletonCard()
+{
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5eaf0",
+        borderRadius: 14,
+        padding: 18,
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: "#f0f3f8" }} />
+        <div style={{ width: 80, height: 22, borderRadius: 20, background: "#f0f3f8" }} />
+      </div>
+      <div>
+        <div style={{ width: "55%", height: 12, borderRadius: 6, background: "#f0f3f8", marginBottom: 6 }} />
+        <div style={{ width: "40%", height: 32, borderRadius: 6, background: "#e8ecf2" }} />
+        <div style={{ width: "35%", height: 10, borderRadius: 6, background: "#f0f3f8", marginTop: 6 }} />
+      </div>
+      <div>
+        <div style={{ width: "100%", height: 5, borderRadius: 5, background: "#f0f3f8" }} />
+        <div style={{ width: "60%", height: 10, borderRadius: 6, background: "#f0f3f8", marginTop: 6 }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Main component ──────────────────────────────────────────────────────── */
+export default function LeaveBalances()
+{
   const navigate = useNavigate();
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [leaveData, setLeaveData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     setLoading(true);
     getMyLeaveBalances({ year })
-      .then((rows) => {
-        const mapped = (rows || []).map((r) => {
+      .then((rows) =>
+      {
+        const mapped = (rows || []).map((r) =>
+        {
           const granted = Number(r.granted ?? r.annual_quota ?? 0);
           const balance = Number(r.balance ?? r.annual_quota ?? 0);
           const opening = Number(r.opening_balance ?? 0);
@@ -37,7 +287,8 @@ export default function LeaveBalances() {
       .finally(() => setLoading(false));
   }, [year]);
 
-  if (selectedLeave) {
+  if (selectedLeave)
+  {
     return (
       <div className="min-h-screen bg-[#ececec] p-6">
         <LeaveBalanceDetail
@@ -51,149 +302,102 @@ export default function LeaveBalances() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] p-6">
-      {/* HEADER */}
+    <div style={{ minHeight: "100vh", background: "#f5f7fb", padding: 24 }}>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-semibold text-[#1f2937]">
-          Leave Balances
-        </h1>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+        <div>
+          <p style={{ fontSize: 12, color: "#9ca8b5", margin: "0 0 2px" }}>Financial Year {year}</p>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: "#1a2233", margin: 0 }}>Leave Balances</h1>
+        </div>
 
-        <div className="flex items-center gap-3">
-          {/* APPLY BUTTON */}
-
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button
             onClick={() => navigate("/employee/leave/apply")}
-            className="
-              h-[40px]
-              px-5
-              rounded
-              border
-              border-[#2ea7ff]
-              text-[#2ea7ff]
-              bg-white
-              text-[14px]
-              font-medium
-              hover:bg-[#f0f9ff]
-            "
+            style={{
+              height: 38,
+              padding: "0 18px",
+              borderRadius: 8,
+              border: "1.5px solid #2ea7ff",
+              color: "#2ea7ff",
+              background: "#fff",
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
           >
-            Apply
+            + Apply Leave
           </button>
-
-          {/* DOWNLOAD */}
 
           <button
-            className="
-              h-[40px]
-              w-[42px]
-              rounded
-              bg-[#2ea7ff]
-              flex
-              items-center
-              justify-center
-              text-white
-              hover:bg-[#1995ef]
-            "
+            style={{
+              height: 38,
+              width: 38,
+              borderRadius: 8,
+              border: "1.5px solid #e5eaf0",
+              background: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "#6b7a8d",
+            }}
           >
-            <Download size={16} />
+            <Download size={15} />
           </button>
-
-          {/* YEAR */}
 
           <YearPicker
             value={year}
             onChange={setYear}
-            selectClassName="h-[40px] w-[100px] border border-[#dbe2ea] rounded bg-white px-3 text-[14px] outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+            selectClassName="h-[38px] w-[100px] border border-[#dbe2ea] rounded-lg bg-white px-3 text-[13px] outline-none focus:ring-2 focus:ring-[#2ea7ff]/30"
           />
         </div>
       </div>
 
-      {/* LEAVE CARDS */}
-
+      {/* Cards grid */}
       {loading ? (
-        <div className="bg-white border border-[#dce3eb] rounded h-[170px] flex items-center justify-center">
-          <p className="text-[#94a3b8] text-[14px]">Loading...</p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))",
+            gap: 14,
+          }}
+        >
+          {[1, 2, 3, 4, 5, 6].map((n) => <SkeletonCard key={n} />)}
         </div>
       ) : leaveData.length === 0 ? (
-        <div className="bg-white border border-[#dce3eb] rounded h-[170px] flex items-center justify-center">
-          <p className="text-[#94a3b8] text-[14px]">No leave balances found.</p>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #e5eaf0",
+            borderRadius: 14,
+            height: 180,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <i className="ti ti-calendar-off" style={{ fontSize: 32, color: "#d1d8e0" }} />
+          <p style={{ fontSize: 14, color: "#9ca8b5", margin: 0 }}>No leave balances found for {year}.</p>
         </div>
       ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {leaveData.map((item, index) => {
-          const progress =
-            item.total > 0 ? (item.consumed / item.total) * 100 : 0;
-
-          return (
-            <div
-              key={index}
-              className="
-                bg-white
-                border
-                border-[#dce3eb]
-                rounded
-                min-h-[170px]
-                shadow-sm
-                flex
-                flex-col
-                justify-between
-              "
-            >
-              {/* TOP */}
-
-              <div className="p-4">
-                <div className="flex items-start justify-between">
-                  <h2 className="text-[14px] text-[#64748b] font-medium">
-                    {item.title}
-                  </h2>
-
-                  <p className="text-[13px] text-[#64748b]">
-                    Granted: {item.granted}
-                  </p>
-                </div>
-
-                {/* BALANCE */}
-
-                <div className="flex flex-col items-center mt-7">
-                  <h3 className="text-[38px] leading-none font-medium text-[#1e293b]">
-                    {String(item.balance).padStart(2, "0")}
-                  </h3>
-
-                  <p className="text-[13px] text-[#94a3b8] mt-2">
-                    Balance
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedLeave(item.title)}
-                    className="
-                      mt-4
-                      text-[14px]
-                      text-[#2ea7ff]
-                      font-medium
-                      hover:underline
-                    "
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-
-              <div className="px-3 pb-3">
-                <div className="w-full h-[5px] rounded-full bg-[#edf2f7] overflow-hidden">
-                  <div
-                    className="h-full bg-[#337ab7]"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="text-[11px] text-[#94a3b8] mt-2">
-                  {item.consumed} of {item.total} Consumed
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))",
+            gap: 14,
+          }}
+        >
+          {leaveData.map((item) => (
+            <LeaveCard
+              key={item.leaveTypeId}
+              item={item}
+              onViewDetails={setSelectedLeave}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

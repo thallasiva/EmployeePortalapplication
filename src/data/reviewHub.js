@@ -8,9 +8,7 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "attendance-regularization",
         label: "Attendance Regularization",
-        emptyMessage:
-          "Hey, you have no regularization records to view",
-        emptyType: "regularization",
+        dataType: "regularization",
       },
     ],
   },
@@ -21,8 +19,7 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "request-hub",
         label: "Request Hub",
-        emptyMessage: "Hey, you have no request hub records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
     ],
   },
@@ -33,20 +30,17 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "confirmation",
         label: "Confirmation",
-        emptyMessage: "Hey, you have no confirmation records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
       {
         id: "resignations",
         label: "Resignations",
-        emptyMessage: "Hey, you have no resignation records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
       {
         id: "helpdesk",
         label: "Helpdesk",
-        emptyMessage: "Hey, you have no helpdesk records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
     ],
   },
@@ -57,27 +51,22 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "leave",
         label: "Leave",
-        emptyMessage: "Hey, you have no leave records to view",
-        emptyType: "generic",
         dataType: "leave-decisions",
       },
       {
         id: "leave-cancel",
         label: "Leave Cancel",
-        emptyMessage: "Hey, you have no leave cancel records to view",
-        emptyType: "generic",
+        dataType: "leave-cancel",
       },
       {
         id: "leave-comp-off",
         label: "Leave Comp Off",
-        emptyMessage: "Hey, you have no comp off records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
       {
         id: "restricted-holiday",
         label: "Restricted Holiday",
-        emptyMessage: "Hey, you have no restricted holiday records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
     ],
   },
@@ -88,8 +77,7 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "letter-signature",
         label: "Letter Signature Approval",
-        emptyMessage: "Hey, you have no letter approval records to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
     ],
   },
@@ -100,14 +88,13 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "reimbursement-claim",
         label: "Reimbursement Claim",
-        emptyMessage: "Hey, you have no reimbursement claims to view",
-        emptyType: "generic",
+        dataType: "coming-soon",
       },
     ],
   },
 ];
 
-export const DEFAULT_REVIEW_ITEM_ID = "attendance-regularization";
+export const DEFAULT_REVIEW_ITEM_ID = "leave";
 
 export function findReviewNavItem(itemId) {
   for (const section of REVIEW_NAV_SECTIONS) {
