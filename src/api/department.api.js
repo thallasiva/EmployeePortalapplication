@@ -1,4 +1,4 @@
-import apiClient, { unwrap } from "./client";
+import apiClient from "./client";
 
 /** GET /api/departments — list departments (paginated, default limit is generous here). */
 export async function listDepartments(params = {}) {

@@ -1,11 +1,10 @@
 import React from 'react';
-import { Bell, CheckCircle2, Clock, Coffee, TrendingUp } from 'lucide-react';
 import { getShiftDashboardData } from '../../../data/shiftData';
 
 const ShiftDashboard = ({ shiftId,greeting }) =>
 {
   const shift = getShiftDashboardData(shiftId);
-  const isCheckedIn = shift.attendance.status === "Checked In";
+  // const isCheckedIn = shift.attendance.status === "Checked In";
 
   return (
     <div className={`rounded-lg shadow border p-2 md:p-5 mb-4 ${shift.theme.bg} ${shift.theme.border}`}>
