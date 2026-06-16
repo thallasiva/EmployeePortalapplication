@@ -211,6 +211,22 @@
   white-space: nowrap;
 }
 
+/* Custom nav item button hover (used in Review.jsx inline button) */
+.review-hub__nav-item-custom:hover {
+  background: #f0f7ff !important;
+  color: #1890ff !important;
+}
+
+/* Tailwind-style utility classes used by LeaveDecisionsPanel */
+.bg-emerald-50  { background-color: #ecfdf5; }
+.text-emerald-700 { color: #047857; }
+.bg-rose-50     { background-color: #fff1f2; }
+.text-rose-700  { color: #be123c; }
+.bg-amber-50    { background-color: #fffbeb; }
+.text-amber-700 { color: #b45309; }
+.bg-gray-100    { background-color: #f3f4f6; }
+.text-gray-500  { color: #6b7280; }
+
 @media (max-width: 768px) {
   .review-hub__layout {
     flex-direction: column;
