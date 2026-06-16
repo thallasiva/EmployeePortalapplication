@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   BarChart3,
@@ -8,9 +8,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  ADMIN_ALL_EMPLOYEES,
-  ADMIN_ATTENDANCE_STATUS_CHART,
-  ADMIN_ATTENDANCE_SUMMARY,
   ADMIN_ATTENDANCE_WEEKLY_CHART,
   ADMIN_ATTENDANCE_WEEKLY_SERIES,
   ADMIN_EARLY_LOGOUT_DEPT_CHART,
@@ -26,7 +23,38 @@ import {
   applyAttendanceRegularization,
   enrichAdminEmployee,
 } from "../../utils/attendanceRegularization";
+import { getAttendanceDashboard, listAttendance } from "../../api/attendance.api";
+import { toISODateString } from "../../lib/dateUtils";
 import "./adminDashboard.css";
+
+const DEFAULT_SUMMARY = {
+  checkedInToday: 0,
+  totalEmployees: 0,
+  presentToday: 0,
+  absentToday: 0,
+  onLeaveToday: 0,
+  lateToday: 0,
+  metNineHourRule: 0,
+  avgHoursPerDay: 0,
+  lateThisMonth: 0,
+  attendanceRate: 0,
+};
+
+/** Maps a backend attendance row to the employee-table shape used by EmployeeTable */
+function mapAttendanceRow(row) {
+  const workHours = row.work_hours != null ? Number(row.work_hours) : 0;
+  return {
+    id: row.attendance_id ?? row.employee_id,
+    name: (row.employee_name || "").trim() || "—",
+    department: row.department_name || "—",
+    status: row.status || "absent",
+    checkIn: row.check_in ? String(row.check_in).slice(0, 5) : "--:--",
+    checkOut: row.check_out ? String(row.check_out).slice(0, 5) : "--:--",
+    hours: `${workHours.toFixed(1)}h`,
+    nineHrMet: workHours >= 9,
+    lateBy: row.late_by_minutes ? `${row.late_by_minutes} min` : null,
+  };
+}
 
 const EMPLOYEE_TABS = [
   { id: "all", label: "All Employees" },
@@ -163,11 +191,50 @@ function EmployeeTable({ employees, onRegularize }) {
 
 export default function AdminAttendanceDashboard() {
   const [employeeTab, setEmployeeTab] = useState("all");
-  const [employees, setEmployees] = useState(() =>
-    ADMIN_ALL_EMPLOYEES.map(enrichAdminEmployee)
-  );
+  const [employees, setEmployees] = useState([]);
+  const [summary, setSummary] = useState(DEFAULT_SUMMARY);
+  const [loading, setLoading] = useState(true);
   const lateSectionRef = useRef(null);
-  const summary = ADMIN_ATTENDANCE_SUMMARY;
+
+  useEffect(() => {
+    const todayStr = toISODateString(new Date());
+    const monthStart = toISODateString(
+      new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    );
+
+    setLoading(true);
+    Promise.all([
+      getAttendanceDashboard(todayStr).catch(() => null),
+      listAttendance({ from_date: todayStr, to_date: todayStr, limit: 100 }).catch(() => ({ data: [] })),
+      listAttendance({ status: "late", from_date: monthStart, to_date: todayStr, limit: 1 }).catch(() => ({ meta: { total: 0 } })),
+    ]).then(([dash, todayList, lateMonthList]) => {
+      const presentToday = Number(dash?.present_today || 0);
+      const totalEmployees = Number(dash?.total_employees || 0);
+      setSummary({
+        checkedInToday: Number(dash?.checked_in_today || 0),
+        totalEmployees,
+        presentToday,
+        absentToday: Number(dash?.absent_today || 0),
+        onLeaveToday: Number(dash?.on_leave_today || 0),
+        lateToday: Number(dash?.late_today || 0),
+        metNineHourRule: Number(dash?.met_nine_hour_rule || 0),
+        avgHoursPerDay: dash?.avg_hours_per_day != null ? Number(dash.avg_hours_per_day) : 0,
+        lateThisMonth: Number(lateMonthList?.meta?.total || 0),
+        attendanceRate: totalEmployees ? Math.round((presentToday / totalEmployees) * 100) : 0,
+      });
+      setEmployees((todayList?.data || []).map(mapAttendanceRow).map(enrichAdminEmployee));
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const statusChart = useMemo(
+    () => [
+      { label: "Present", value: summary.presentToday, color: "#22c55e" },
+      { label: "Absent", value: summary.absentToday, color: "#f472b6" },
+      { label: "Late", value: summary.lateToday, color: "#f97316" },
+      { label: "On Leave", value: summary.onLeaveToday, color: "#3b82f6" },
+    ],
+    [summary]
+  );
 
   const handleRegularize = (id) => {
     setEmployees((prev) =>
@@ -254,7 +321,7 @@ export default function AdminAttendanceDashboard() {
         />
         <SummaryCard
           icon={Clock}
-          value={summary.avgHoursPerDay}
+          value={summary.avgHoursPerDay.toFixed(1)}
           suffix="h"
           label="Avg Hours / Day"
           iconBg="bg-blue-50"
@@ -367,7 +434,7 @@ export default function AdminAttendanceDashboard() {
             <AdminDonutChart
               title="Today's Status"
               subtitle="All employees breakdown"
-              segments={ADMIN_ATTENDANCE_STATUS_CHART}
+              segments={statusChart}
               centerValue={summary.totalEmployees}
               centerLabel="Employees"
             />
@@ -418,7 +485,13 @@ export default function AdminAttendanceDashboard() {
           ))}
         </div>
 
-        <EmployeeTable employees={filteredEmployees} onRegularize={handleRegularize} />
+        {loading ? (
+          <p className="text-sm text-gray-400 text-center py-8">
+            Loading attendance...
+          </p>
+        ) : (
+          <EmployeeTable employees={filteredEmployees} onRegularize={handleRegularize} />
+        )}
       </section>
 
     </div>

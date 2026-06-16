@@ -27,8 +27,9 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
+  Network,
 } from "lucide-react";
-import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN } from "../data/auth";
+import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN, logoutUser } from "../data/auth";
 
 const BRAND_NAME = "NAT IT";
 
@@ -102,7 +103,10 @@ export const Sidebar = ({ open }) => {
     {
       label: "Payroll",
       icon: <FileText size={20} />,
-      navigationLink: "/dashboard/payroll",
+      children: [
+        { label: "Salary", navigationLink: "/dashboard/payroll" },
+        { label: "Payslips", navigationLink: "/dashboard/payroll/payslips" },
+      ],
     },
     {
       label: "Onboarding",
@@ -210,6 +214,11 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/employee/people",
     },
     {
+      label: "Organization Chart",
+      icon: <Network size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/org-chart",
+    },
+    {
       label: "Helpdesk",
       icon: <Info size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/helpdesk",
@@ -237,8 +246,7 @@ export const Sidebar = ({ open }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    logoutUser();
     navigate("/login");
   };
 

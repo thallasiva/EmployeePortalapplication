@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     CalendarHeart,
     PartyPopper,
@@ -11,11 +11,42 @@ import {
     Clock3,
 } from "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
+import { listHolidays } from "../../../api/holiday.api";
 
 const MONTH_INDEX = {
     JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
     JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
 };
+
+const MONTH_KEYS = Object.keys(MONTH_INDEX);
+
+function emptyMonthMap() {
+    return MONTH_KEYS.reduce((acc, month) => {
+        acc[month] = [];
+        return acc;
+    }, {});
+}
+
+/** Groups backend holiday rows (holiday_date as YYYY-MM-DD) into the per-month shape this page renders. */
+function groupHolidaysByMonth(rows) {
+    const grouped = emptyMonthMap();
+    (rows || []).forEach((row) => {
+        const d = new Date(row.holiday_date);
+        if (Number.isNaN(d.getTime())) return;
+        const month = MONTH_KEYS[d.getMonth()];
+        grouped[month].push({
+            date: String(d.getDate()).padStart(2, "0"),
+            day: d.toLocaleDateString("en-US", { weekday: "short" }),
+            name: row.holiday_name,
+            dateObj: d,
+            isRestricted: !!row.is_restricted,
+        });
+    });
+    MONTH_KEYS.forEach((month) => {
+        grouped[month].sort((a, b) => a.dateObj - b.dateObj);
+    });
+    return grouped;
+}
 
 const ICON_THEMES = [
     {
@@ -59,76 +90,33 @@ function getHolidayTheme(name) {
 export default function HolidayCalendar()
 {
     const [year, setYear] = useState(String(new Date().getFullYear()));
+    const [holidays, setHolidays] = useState(emptyMonthMap());
+    const [loading, setLoading] = useState(true);
 
-    const holidays = {
-        JAN: [
-            { date: "01", day: "Thu", name: "New Year" },
-            { date: "15", day: "Thu", name: "Pongal" },
-            { date: "26", day: "Mon", name: "Republic Day" },
-        ],
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        listHolidays({ year, limit: 200 })
+            .then(({ data }) => {
+                if (cancelled) return;
+                setHolidays(groupHolidaysByMonth(data));
+            })
+            .catch(() => {
+                if (!cancelled) setHolidays(emptyMonthMap());
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [year]);
 
-        FEB: [],
-
-        MAR: [{ date: "19", day: "Thu", name: "Ugadi" }],
-
-        APR: [],
-
-        MAY: [
-            { date: "01", day: "Fri", name: "Mayday / Labour Day" },
-            { date: "27", day: "Wed", name: "Bakrid" },
-        ],
-
-        JUN: [
-            {
-                date: "02",
-                day: "Tue",
-                name: "Telangana Formation Day",
-            },
-        ],
-
-        JUL: [],
-
-        AUG: [],
-
-        SEP: [
-            {
-                date: "14",
-                day: "Mon",
-                name: "Vinayaka Chavithi",
-            },
-        ],
-
-        OCT: [
-            {
-                date: "02",
-                day: "Fri",
-                name: "Gandhi Jayanthi",
-            },
-
-            {
-                date: "20",
-                day: "Tue",
-                name: "Dussehra",
-            },
-        ],
-
-        NOV: [],
-
-        DEC: [
-            {
-                date: "25",
-                day: "Fri",
-                name: "Christmas",
-            },
-        ],
-    };
-
-    const monthNames = Object.keys(holidays);
+    const monthNames = MONTH_KEYS;
 
     const totalHolidays = useMemo(
-        () => monthNames.reduce((sum, month) => sum + holidays[month].length, 0),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [year]
+        () => monthNames.reduce((sum, month) => sum + (holidays[month]?.length || 0), 0),
+        [holidays, monthNames]
     );
 
     const upcomingHoliday = useMemo(() => {
@@ -136,10 +124,9 @@ export default function HolidayCalendar()
         today.setHours(0, 0, 0, 0);
 
         const allHolidays = monthNames.flatMap((month) =>
-            holidays[month].map((holiday) => ({
+            (holidays[month] || []).map((holiday) => ({
                 ...holiday,
                 month,
-                dateObj: new Date(Number(year), MONTH_INDEX[month], Number(holiday.date)),
             }))
         );
 
@@ -151,8 +138,7 @@ export default function HolidayCalendar()
 
         const diffDays = Math.round((upcoming.dateObj - today) / (1000 * 60 * 60 * 24));
         return { ...upcoming, diffDays };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [year]);
+    }, [holidays, monthNames]);
 
     return (
         <div className="min-h-screen bg-[#f5f7fb] p-6">
@@ -168,7 +154,9 @@ export default function HolidayCalendar()
                             <h1 className="text-[22px] font-semibold">Holiday Calendar</h1>
                             <p className="mt-0.5 flex items-center gap-1.5 text-sm text-white/80">
                                 <CalendarDays size={14} />
-                                {totalHolidays} holidays scheduled in {year}
+                                {loading
+                                    ? "Loading holidays..."
+                                    : `${totalHolidays} holidays scheduled in ${year}`}
                             </p>
                         </div>
                     </div>

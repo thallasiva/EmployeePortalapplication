@@ -1,61 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Download } from "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
 import LeaveBalanceDetail from "./LeaveBalanceDetail";
+import { getMyLeaveBalances } from "../../../api/leaveRequest.api";
 
 export default function LeaveBalances() {
+  const navigate = useNavigate();
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [selectedLeave, setSelectedLeave] = useState(null);
+  const [leaveData, setLeaveData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const leaveData = [
-    {
-      title: "Earned Leave",
-      granted: 33.04,
-      balance: 33.04,
-      consumed: 0,
-      total: 33.04,
-    },
-
-    {
-      title: "Sick Leave",
-      granted: 6,
-      balance: 4,
-      consumed: 2,
-      total: 6,
-    },
-
-    {
-      title: "Compensatory Off",
-      granted: 5,
-      balance: 1,
-      consumed: 4,
-      total: 5,
-    },
-
-    {
-      title: "Work From Home",
-      granted: 0,
-      balance: 0,
-      consumed: 0,
-      total: 0,
-    },
-
-    {
-      title: "Leave Without Pay",
-      granted: 0,
-      balance: 0,
-      consumed: 0,
-      total: 0,
-    },
-
-    {
-      title: "Restricted Holiday",
-      granted: 2,
-      balance: 2,
-      consumed: 0,
-      total: 2,
-    },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    getMyLeaveBalances({ year })
+      .then((rows) => {
+        const mapped = (rows || []).map((r) => {
+          const granted = Number(r.granted ?? r.annual_quota ?? 0);
+          const balance = Number(r.balance ?? r.annual_quota ?? 0);
+          const opening = Number(r.opening_balance ?? 0);
+          const consumed = Number(r.availed ?? 0);
+          const total = granted + opening || Number(r.annual_quota ?? 0) || balance;
+          return {
+            leaveTypeId: r.leave_type_id,
+            title: r.leave_type_name,
+            granted,
+            balance,
+            consumed,
+            total,
+          };
+        });
+        setLeaveData(mapped);
+      })
+      .catch(() => setLeaveData([]))
+      .finally(() => setLoading(false));
+  }, [year]);
 
   if (selectedLeave) {
     return (
@@ -83,6 +63,7 @@ export default function LeaveBalances() {
           {/* APPLY BUTTON */}
 
           <button
+            onClick={() => navigate("/employee/leave/apply")}
             className="
               h-[40px]
               px-5
@@ -129,7 +110,16 @@ export default function LeaveBalances() {
 
       {/* LEAVE CARDS */}
 
-      <div className="grid grid-cols-4 gap-4">
+      {loading ? (
+        <div className="bg-white border border-[#dce3eb] rounded h-[170px] flex items-center justify-center">
+          <p className="text-[#94a3b8] text-[14px]">Loading...</p>
+        </div>
+      ) : leaveData.length === 0 ? (
+        <div className="bg-white border border-[#dce3eb] rounded h-[170px] flex items-center justify-center">
+          <p className="text-[#94a3b8] text-[14px]">No leave balances found.</p>
+        </div>
+      ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {leaveData.map((item, index) => {
           const progress =
             item.total > 0 ? (item.consumed / item.total) * 100 : 0;
@@ -204,6 +194,7 @@ export default function LeaveBalances() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

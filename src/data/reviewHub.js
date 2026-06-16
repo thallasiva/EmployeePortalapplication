@@ -59,6 +59,7 @@ export const REVIEW_NAV_SECTIONS = [
         label: "Leave",
         emptyMessage: "Hey, you have no leave records to view",
         emptyType: "generic",
+        dataType: "leave-decisions",
       },
       {
         id: "leave-cancel",

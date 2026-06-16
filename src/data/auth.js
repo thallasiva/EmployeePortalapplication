@@ -5,6 +5,7 @@ import {
   STATIC_DEPARTMENTS,
   STATIC_DESIGNATIONS,
 } from "./staticData";
+import { setAuthTokens, clearAuthSession as clearTokens } from "../api/client";
 
 export const ROLE_ADMIN = 1;
 export const ROLE_EMPLOYEE = 2;
@@ -72,25 +73,18 @@ export function persistUser(user) {
   localStorage.setItem("user", JSON.stringify({ ...user, role }));
 }
 
-export function authenticateUser(email, password) {
-  const key = email?.trim().toLowerCase();
-  const account = STATIC_USERS[key];
-  if (!account || account.password !== password) {
-    return null;
-  }
-  return {
-    user: {
-      email: account.email,
-      role: normalizeRole(account.role),
-      name: account.name,
-      shift: account.shift,
-    },
-    token: "static-local-token",
-  };
+/**
+ * Persists the result of a successful `POST /api/auth/login` (or refresh)
+ * call: stores the JWT access/refresh tokens and the normalized user object.
+ */
+export function persistAuthSession({ accessToken, refreshToken, user } = {}) {
+  setAuthTokens({ accessToken, refreshToken });
+  if (user) persistUser(user);
 }
 
-export function registerUser() {
-  return { message: "Registration saved (static mode)" };
+/** Clears tokens + cached user, logging the user out locally. */
+export function logoutUser() {
+  clearTokens();
 }
 
 export function getRolesForSelect() {

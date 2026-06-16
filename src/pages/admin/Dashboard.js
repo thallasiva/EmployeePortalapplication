@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -12,10 +12,8 @@ import {
   ChevronRight,
   TrendingUp,
 } from "lucide-react";
-import {
-  getAdminDashboardMetrics,
-  ADMIN_QUICK_ACTIONS,
-} from "../../data/adminDashboardData";
+import { ADMIN_QUICK_ACTIONS } from "../../data/adminDashboardData";
+import { useAdminDashboard } from "../../hooks/useAdminDashboard";
 import LeaveEmployeeDetailTable from "../../component/admin/LeaveEmployeeDetailTable";
 import AdminChatbot from "../../component/admin/AdminChatbot";
 import { getStoredUser } from "../../data/auth";
@@ -69,7 +67,7 @@ function MiniList({ title, items, emptyText, onViewAll, renderItem }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const user = getStoredUser();
-  const metrics = useMemo(() => getAdminDashboardMetrics(), []);
+  const { metrics, activities, loading, error } = useAdminDashboard();
 
   const go = (path) => () => navigate(path);
   const goLeave = (state = {}) => () => navigate("/dashboard/leave", { state });
@@ -85,7 +83,15 @@ export default function Dashboard() {
             One place to manage leave, attendance, employees, and reviews — click any card for details
           </p>
         </div>
+        {loading && <span className="text-xs text-gray-400">Refreshing dashboard…</span>}
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-700">
+          Some dashboard data couldn&apos;t be loaded from the server, so a few numbers below may be
+          incomplete or fall back to sample data. (Check the browser console for details.)
+        </div>
+      )}
 
       {/* KPI row — click opens detail screen */}
       <section>
@@ -232,13 +238,16 @@ export default function Dashboard() {
         />
         <MiniList
           title="Recent activity"
-          items={[
-            { id: 1, text: `${metrics.pendingLeave} leave requests awaiting approval` },
-            { id: 2, text: `${metrics.onLeaveToday} employees on leave today` },
-            { id: 3, text: `${metrics.checkedIn} checked in of ${metrics.totalEmployees}` },
-            { id: 4, text: `${metrics.approvedCount} approved leave records` },
-          ]}
-          emptyText=""
+          items={
+            activities.length
+              ? activities
+              : [
+                  { id: "pending", text: `${metrics.pendingLeave} leave requests awaiting approval` },
+                  { id: "onleave", text: `${metrics.onLeaveToday} employees on leave today` },
+                  { id: "checkedin", text: `${metrics.checkedIn} checked in of ${metrics.totalEmployees}` },
+                ]
+          }
+          emptyText="No recent activity."
           onViewAll={go("/dashboard/report")}
           renderItem={(item) => (
             <li key={item.id} className="text-sm text-gray-600 py-1.5 border-b border-gray-50">

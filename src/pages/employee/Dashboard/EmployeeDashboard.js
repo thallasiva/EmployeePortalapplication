@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle, FileText, AlertCircle, Users } from 'lucide-react';
+import { CheckCircle, FileText, AlertCircle, Users, Download } from 'lucide-react';
 import { getCurrentPayslipMonthLabel, getLoggedInUser } from '../../../lib/dateUtils';
 import { getShiftForUser } from '../../../data/auth';
 import { calculatePayslip } from '../../../utils/payslipCalculations';
+import { listHolidays } from '../../../api/holiday.api';
+import { downloadPayslip } from '../../../utils/payslipDownload';
+import PieChart, { formatINR } from '../../../component/charts/InteractivePieChart';
 import ShiftDashboard from './ShiftDashboard';
 
 const QUICK_LINKS = [
@@ -31,10 +34,47 @@ const EmployeeDashboard = () => {
    const greeting = getGreeting();
 
   const breakdown = calculatePayslip(MONTHLY_SALARY);
-  const pieRadius = 54;
-  const pieCircumference = 2 * Math.PI * pieRadius;
-  const netFraction = breakdown.totalEarnings ? breakdown.netSalary / breakdown.totalEarnings : 0;
-  const netDash = netFraction * pieCircumference;
+  const payslipOverview = [
+    { label: "Net Pay", value: breakdown.netSalary, color: "#16a34a" },
+    { label: "Deductions", value: breakdown.totalDeductions, color: "#dc2626" },
+  ];
+
+  const [showSalary, setShowSalary] = useState(false);
+
+  const handleDownloadPayslip = () => {
+    downloadPayslip({
+      month: payslipMonthLabel,
+      text: `Payslip for ${payslipMonthLabel} - Gross Pay ${formatINR(breakdown.totalEarnings)}, Net Pay ${formatINR(
+        breakdown.netSalary
+      )}`,
+      file: `Payslip-${payslipMonthLabel.replace(/\s+/g, "-")}.pdf`,
+    });
+  };
+
+  const [upcomingHolidays, setUpcomingHolidays] = useState([]);
+  const [holidaysLoading, setHolidaysLoading] = useState(true);
+
+  useEffect(() => {
+    const now = new Date();
+    const years = Array.from(new Set([now.getFullYear(), now.getFullYear() + 1]));
+
+    Promise.all(years.map((year) => listHolidays({ year, limit: 200 })))
+      .then((results) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcoming = results
+          .flatMap(({ data }) => data || [])
+          .map((row) => ({ ...row, dateObj: new Date(row.holiday_date) }))
+          .filter((row) => !Number.isNaN(row.dateObj.getTime()) && row.dateObj >= today)
+          .sort((a, b) => a.dateObj - b.dateObj)
+          .slice(0, 4);
+
+        setUpcomingHolidays(upcoming);
+      })
+      .catch(() => setUpcomingHolidays([]))
+      .finally(() => setHolidaysLoading(false));
+  }, []);
 
   return (
     <div>
@@ -61,77 +101,64 @@ const EmployeeDashboard = () => {
             </Link>
           </div>
           <div className="space-y-3">
-            <div>
-              <p className="font-medium text-gray-800">27 May</p>
-              <p className="text-sm text-gray-600">Wednesday</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">02 Jun</p>
-              <p className="text-sm text-gray-600">Tuesday - Telangana Formation Day</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">14 Sep</p>
-              <p className="text-sm text-gray-600">Monday - Vinayaka Chavithi</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">02 Oct</p>
-              <p className="text-sm text-gray-600">Friday - Gandhi Jayanthi</p>
-            </div>
+            {holidaysLoading ? (
+              <p className="text-sm text-gray-400">Loading holidays...</p>
+            ) : upcomingHolidays.length === 0 ? (
+              <p className="text-sm text-gray-500">No upcoming holidays scheduled.</p>
+            ) : (
+              upcomingHolidays.map((holiday) => (
+                <div key={holiday.holiday_id}>
+                  <p className="font-medium text-gray-800">
+                    {holiday.dateObj.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {holiday.dateObj.toLocaleDateString("en-US", { weekday: "long" })} - {holiday.holiday_name}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payslip</h3>
-          <div className="flex justify-center mb-4">
-            <div className="relative w-32 h-32">
-              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120" aria-hidden>
-                <circle cx="60" cy="60" r={pieRadius} fill="none" stroke="#fee2e2" strokeWidth="16" />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={pieRadius}
-                  fill="none"
-                  stroke="#16a34a"
-                  strokeWidth="16"
-                  strokeDasharray={`${netDash} ${pieCircumference - netDash}`}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-sm text-gray-600">Net Pay</p>
-                <p className="text-xl font-bold text-gray-800">{Math.round(netFraction * 100)}%</p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Payslip</h3>
+            <Link to="/employee/payroll/payslips" className="text-brand text-sm font-medium">
+              View →
+            </Link>
           </div>
-          <div className="flex justify-center gap-4 mb-4 text-xs text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-600" />
-              Net Pay
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-200" />
-              Deductions
-            </span>
-          </div>
-          <div className="space-y-2 text-sm">
+
+          <PieChart data={payslipOverview} size={140} />
+
+          <div className="space-y-2 text-sm mt-4">
             <div className="flex justify-between items-center pb-2 border-b">
               <span className="text-gray-600">Gross Pay</span>
-              <span>•••••</span>
+              <span className="font-medium text-gray-800">{showSalary ? formatINR(breakdown.totalEarnings) : "•••••"}</span>
             </div>
             <div className="flex justify-between items-center pb-2 border-b">
               <span className="text-gray-600">Deduction</span>
-              <span>•••••</span>
+              <span className="font-medium text-gray-800">{showSalary ? formatINR(breakdown.totalDeductions) : "•••••"}</span>
             </div>
-            <div className="flex justify-between items-center pb-4 border-b">
+            <div className="flex justify-between items-center pb-2 border-b">
               <span className="text-gray-600">Net Pay</span>
-              <span>•••••</span>
+              <span className="font-medium text-gray-800">{showSalary ? formatINR(breakdown.netSalary) : "•••••"}</span>
             </div>
           </div>
           <div className="flex gap-3 mt-6">
-            <button type="button" className="flex-1 text-brand font-medium text-sm border border-brand rounded py-2 hover:bg-brand-50">
+            <button
+              type="button"
+              onClick={handleDownloadPayslip}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 text-brand font-medium text-sm border border-brand rounded py-2 hover:bg-brand-50"
+            >
+              <Download size={14} />
               Download
             </button>
-            <button type="button" className="flex-1 text-brand font-medium text-sm border border-brand rounded py-2 hover:bg-brand-50">
-              Show Salary
+            <button
+              type="button"
+              onClick={() => setShowSalary((prev) => !prev)}
+              className="flex-1 text-brand font-medium text-sm border border-brand rounded py-2 hover:bg-brand-50"
+            >
+              {showSalary ? "Hide Salary" : "Show Salary"}
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-2 text-center">{payslipMonthLabel}</p>
