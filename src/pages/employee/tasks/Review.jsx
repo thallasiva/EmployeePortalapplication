@@ -274,7 +274,6 @@ function LeaveDecisionsPanel({ search, statusFilter }) {
   }
 
   const pendingCount = rows.filter(isPending).length;
-  const decidedCount = rows.length - pendingCount;
 
   return (
     <>
