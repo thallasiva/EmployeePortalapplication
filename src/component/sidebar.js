@@ -8,10 +8,9 @@ import {
   LogOut,
   Settings,
   FileOutput,
-  UserStar,
+
   UserPen,
   Proportions,
-  ChartNoAxesGantt,
   Radio,
   LayoutGrid,
   ClipboardList,

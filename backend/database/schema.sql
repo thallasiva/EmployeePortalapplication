@@ -133,20 +133,27 @@ CREATE TABLE IF NOT EXISTS employee_contact_info (
   CONSTRAINT fk_contact_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS employee_bank_details (
-  employee_id    INT PRIMARY KEY,
-  bank_name      VARCHAR(100) DEFAULT NULL,
-  account_number VARCHAR(40) DEFAULT NULL,
-  ifsc_code      VARCHAR(20) DEFAULT NULL,
-  pan_number     VARCHAR(20) DEFAULT NULL,
-  uan_number     VARCHAR(20) DEFAULT NULL,
-  account_type   VARCHAR(30) DEFAULT NULL,
-  bank_branch    VARCHAR(100) DEFAULT NULL,
-  dd_payable_at  VARCHAR(100) DEFAULT NULL,
-  account_holder_name VARCHAR(100) DEFAULT NULL,
-  payment_type   VARCHAR(30) DEFAULT NULL,
-  CONSTRAINT fk_bank_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+CREATE TABLE employee_bank_details (
+    employee_id INT PRIMARY KEY,
+
+    bank_name VARCHAR(100) DEFAULT NULL,
+    account_number VARCHAR(40) DEFAULT NULL,
+    account_type VARCHAR(30) DEFAULT NULL,
+    bank_branch VARCHAR(100) DEFAULT NULL,
+    dd_payable_at VARCHAR(100) DEFAULT NULL,
+    ifsc_code VARCHAR(20) DEFAULT NULL,
+
+    account_holder_name VARCHAR(100) DEFAULT NULL,
+    payment_type VARCHAR(30) DEFAULT NULL,
+
+    pan_number VARCHAR(20) DEFAULT NULL,
+    pf_number VARCHAR(30) DEFAULT NULL,
+    uan_number VARCHAR(30) DEFAULT NULL,
+    esi_number VARCHAR(30) DEFAULT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS users (
   user_id       INT AUTO_INCREMENT PRIMARY KEY,
@@ -324,20 +331,29 @@ CREATE TABLE IF NOT EXISTS payslips (
   employee_id    INT NOT NULL,
   month          TINYINT NOT NULL,
   year           INT NOT NULL,
+
+  -- Salary components (sourced from salary_structures on generation)
   basic          DECIMAL(12,2) DEFAULT 0,
   hra            DECIMAL(12,2) DEFAULT 0,
-  allowances     DECIMAL(12,2) DEFAULT 0,
-  gross_earnings DECIMAL(12,2) DEFAULT 0,
-  deductions     DECIMAL(12,2) DEFAULT 0,
-  net_pay        DECIMAL(12,2) DEFAULT 0,
+  allowances     DECIMAL(12,2) DEFAULT 0,  -- conveyance + medical_allowance + special_allowance
+
+  -- Totals
+  gross_earnings DECIMAL(12,2) DEFAULT 0,  -- basic + hra + allowances (pro-rated for LOP)
+  ctc            DECIMAL(12,2) DEFAULT 0,  -- gross + employer PF (or salary_structures.ctc)
+  deductions     DECIMAL(12,2) DEFAULT 0,  -- pf_employee + professional_tax + income_tax
+  net_pay        DECIMAL(12,2) DEFAULT 0,  -- gross_earnings - deductions
+
+  -- Attendance
   working_days   DECIMAL(4,1) DEFAULT 0,
   paid_days      DECIMAL(4,1) DEFAULT 0,
-  lop_days       DECIMAL(4,1) DEFAULT 0,
+  lop_days       DECIMAL(4,1) DEFAULT 0,   -- Loss of Pay days (absent)
+
   status         ENUM('Generated','Paid','On Hold') DEFAULT 'Generated',
   generated_on   DATETIME DEFAULT CURRENT_TIMESTAMP,
+
   UNIQUE KEY uq_payslip_period (employee_id, month, year),
   CONSTRAINT fk_payslip_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
-  CONSTRAINT fk_payslip_run FOREIGN KEY (payroll_run_id) REFERENCES payroll_runs(payroll_run_id) ON DELETE SET NULL
+  CONSTRAINT fk_payslip_run     FOREIGN KEY (payroll_run_id) REFERENCES payroll_runs(payroll_run_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- =====================================================================
