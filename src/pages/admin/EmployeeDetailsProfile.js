@@ -11,10 +11,7 @@ export default function DetailsScreen()
     const closeBasicInfo = () => contactInfoOpen(true);
 
     return (
-        <div className="p-4 bg-gray-100 min-h-screen">
-
-            {/* GRID */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
                 {/* BASIC INFO */}
                 <div className="bg-white rounded-xl border shadow-sm">
@@ -147,15 +144,13 @@ export default function DetailsScreen()
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* MODAL */}
             {basicInfoOpen && (
                 <EmployeeBasicInformation basicInfo={basicInfo} />
             )}
-            {
-                contactInfoOpen && <ContactInformation  closeBasicInfo={closeBasicInfo}/>
-            }
+            {contactInfoOpen && (
+                <ContactInformation closeBasicInfo={closeBasicInfo} />
+            )}
         </div>
     );
 }

@@ -1,8 +1,9 @@
 import React from "react";
+import PasswordInput from "../../component/PasswordInput";
 
 export default function SettingsForm() {
   return (
-    <div className="bg-[#f5f6f8] min-h-screen p-2">
+    <div className="space-y-4">
       {/* Top Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Change Password */}
@@ -17,22 +18,19 @@ export default function SettingsForm() {
           </div>
 
           <div className="p-4 space-y-3">
-            <input
-              type="password"
+            <PasswordInput
               placeholder="Current Password"
-              className="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none"
+              inputClassName="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none"
             />
 
-            <input
-              type="password"
+            <PasswordInput
               placeholder="New Password"
-              className="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none"
+              inputClassName="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none"
             />
 
-            <input
-              type="password"
+            <PasswordInput
               placeholder="Repeat Password"
-              className="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none"
+              inputClassName="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none"
             />
 
             <button className="mt-2 bg-brand hover:bg-brand text-white font-semibold text-[15px] px-5 h-[44px] rounded shadow">

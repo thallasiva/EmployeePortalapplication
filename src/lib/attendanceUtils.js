@@ -49,4 +49,5 @@ export const CELL_STYLES = {
   H: "bg-[#d7e3fc] text-[#1d3557]",
   O: "bg-white text-[#64748b]",
   A: "bg-[#fee2e2] text-[#991b1b]",
+  L: "bg-[#e0e7ff] text-[#3730a3]",
 };

@@ -16,7 +16,7 @@ export default function EmployeeProfile() {
   const handleSubmit = () => closeModal();
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border bg-white shadow">
           <div className="border-b p-4 font-semibold">

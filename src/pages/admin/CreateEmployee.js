@@ -1,496 +1,628 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import SuccessModal from "../../component/SuccessModal";
+import { createEmployee, listEmployees } from "../../api/employee.api";
+import { listDepartments } from "../../api/department.api";
+import { getErrorMessage } from "../../api/client";
+import { errorToast } from "../../utils/ToastControllers";
+import "../../component/employee/employee.css";
 
-import SuccessModal from '../../component/SuccessModal';
-import { addEmployee, getDepartments, getDesignations } from '../../data/employees';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { successToast } from '../../utils/ToastControllers';
-import { useNavigate } from 'react-router-dom';
-export default function CreateEmployee()
-{
+const STEPS = [
+  { id: 0, label: "Personal Info" },
+  { id: 1, label: "Employment" },
+  { id: 2, label: "Compensation" },
+  { id: 3, label: "Statutory & Bank" },
+  { id: 4, label: "Review & Confirm" },
+];
 
-    const departments = getDepartments();
-    const designations = getDesignations();
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("Employee created successfully.");
+const INITIAL_VALUES = {
+  employee_id: "",
+  first_name: "",
+  last_name: "",
+  email: "",
+  mobile: "",
+  department_id: "",
+  emp_job_title: "",
+  reporting_to: "none",
+  emp_joining_date: "",
+  employee_type: "Full-Time",
+  assigned_member: "",
+  ctc: "",
+  benefits_plan: "standard",
+  role: "2",
+  // Personal / statutory
+  gender: "",
+  dob: "",
+  marital_status: "",
+  father_name: "",
+  spouse_name: "",
+  aadhaar_number: "",
+  aadhaar_name: "",
+  aadhaar_enrolment_number: "",
+  access_card_number: "",
+  access_card_from_date: "",
+  access_card_to_date: "",
+  pf_number: "",
+  pf_join_date: "",
+  esi_number: "",
+  // Bank details
+  bank_name: "",
+  account_number: "",
+  account_type: "",
+  bank_branch: "",
+  dd_payable_at: "",
+  ifsc_code: "",
+  account_holder_name: "",
+  payment_type: "",
+  pan_number: "",
+  uan_number: "",
+  // Contact / address
+  contact_name: "",
+  contact_city: "",
+  contact_country: "",
+  personal_email: "",
+  alternate_mobile: "",
+  emergency_contact_name: "",
+  emergency_contact_phone: "",
+  permanent_address_line1: "",
+  permanent_address_line2: "",
+  permanent_address_line3: "",
+};
 
-    const [getWorkMode] = useState([
-        { id: 'wfo', work_name: "Work From Office" },
-        { id: 'remote', work_name: "Remote" },
-        { id: 'hybrid', work_name: "Hybrid" }
-    ]);
-    const navigate = useNavigate();
+function validateStep(step, values) {
+  const errors = {};
+  if (step === 0) {
+    if (!values.first_name.trim()) errors.first_name = "First name is required";
+    if (!values.last_name.trim()) errors.last_name = "Last name is required";
+    if (!values.email.trim()) errors.email = "Email is required";
+    if (!values.mobile.trim()) errors.mobile = "Phone is required";
+    if (!values.employee_id.trim()) errors.employee_id = "Employee ID is required";
+  }
+  if (step === 1) {
+    if (!values.department_id) errors.department_id = "Department is required";
+    if (!values.emp_job_title.trim()) errors.emp_job_title = "Role is required";
+    if (!values.emp_joining_date) errors.emp_joining_date = "Start date is required";
+  }
+  if (step === 2) {
+    if (!values.ctc) errors.ctc = "Annual salary is required";
+  }
+  return errors;
+}
 
-    const createFormValidation = Yup.object({
-        employee_type: Yup.string().required("Employee type is required"),
-        first_name: Yup.string().required("First name is required"),
-        last_name: Yup.string().required("Last name is required"),
+function Field({ label, required, error, children }) {
+  return (
+    <div className="emp-field">
+      <label>
+        {label}
+        {required && <span className="required"> *</span>}
+      </label>
+      {children}
+      {error && <p className="emp-field__error">{error}</p>}
+    </div>
+  );
+}
 
-        employee_id: Yup.number()
-            .typeError("Employee ID must be number")
-            .required("Employee ID is required"),
+export default function CreateEmployee() {
+  const navigate = useNavigate();
+  const [departments, setDepartments] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [step, setStep] = useState(0);
+  const [values, setValues] = useState(INITIAL_VALUES);
+  const [errors, setErrors] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-        email: Yup.string()
-            .email("Invalid email format")
-            .required("Email is required"),
+  useEffect(() => {
+    listDepartments()
+      .then(setDepartments)
+      .catch((err) => errorToast(getErrorMessage(err, "Failed to load departments")));
+    listEmployees({ limit: 200 })
+      .then(({ data }) => setMembers(data))
+      .catch((err) => errorToast(getErrorMessage(err, "Failed to load employees")));
+  }, []);
 
-        mobile: Yup.string()
-            .matches(/^[0-9]+$/, "Only numbers allowed")
-            .min(10, "Must be 10 digits")
-            .max(10, "Must be 10 digits")
-            .required("Mobile number is required"),
+  const setField = (name, value) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
 
-        address: Yup.string().required("Address is required"),
+  const goNext = () => {
+    const stepErrors = validateStep(step, values);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      return;
+    }
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  };
 
-        department_id: Yup.string().required("Department is required"),
+  const goPrev = () => setStep((s) => Math.max(s - 1, 0));
 
-        designation_id: Yup.string().required("Designation is required"),
+  const handleSubmit = async () => {
+    const allErrors = { ...validateStep(0, values), ...validateStep(1, values), ...validateStep(2, values) };
+    if (Object.keys(allErrors).length > 0) {
+      setErrors(allErrors);
+      setStep(0);
+      return;
+    }
 
-        emp_joining_date: Yup.string().required("Joining date is required"),
-
-        emp_job_title: Yup.string().required("Job title is required"),
-
-        reporting_to: Yup.string().required("Reporting manager is required"),
-
-        employee_status: Yup.string().required("Employee status is required"),
-
-        work_mode: Yup.string().required("Work mode is required"),
-
-        currency_type: Yup.string().required("Currency type is required"),
-
-        frequency: Yup.string().required("Frequency is required"),
-
-        ctc: Yup.number()
-            .typeError("Salary must be number")
-            .required("Employee salary is required"),
-
-        username: Yup.string().required("Username is required"),
-
-        gender: Yup.string().required("Gender is required"),
-    });
-    const createEmployeeValidation = useFormik({
-        initialValues: {
-            employee_id: "",
-            company_id: "1",
-            employee_type: "",
-            first_name: "",
-            last_name: "",
-            username: "",
-            email: "",
-            mobile: "",
-            role: "",
-            gender: "",
-            department_id: "",
-            designation_id: "",
-            emp_country: "Ind",
-            emp_job_title: "",
-            emp_joining_date: "",
-            address: "",
-            ctc: "",
-            reporting_to: "",
-            employee_status: "",
-            work_mode: "",
-            currency_type: "",
-            frequency: ""
-
+    setSubmitting(true);
+    try {
+      await createEmployee({
+        emp_code: values.employee_id,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        mobile: values.mobile,
+        department_id: Number(values.department_id),
+        emp_job_title: values.emp_job_title,
+        reporting_to: values.reporting_to === "none" ? null : Number(values.reporting_to),
+        emp_joining_date: values.emp_joining_date,
+        employee_type: values.employee_type,
+        assigned_member: values.assigned_member || undefined,
+        ctc: values.ctc,
+        benefits_plan: values.benefits_plan,
+        role_id: Number(values.role) || 2,
+        gender: values.gender || undefined,
+        dob: values.dob || undefined,
+        marital_status: values.marital_status || undefined,
+        father_name: values.father_name || undefined,
+        spouse_name: values.spouse_name || undefined,
+        aadhaar_number: values.aadhaar_number || undefined,
+        aadhaar_name: values.aadhaar_name || undefined,
+        aadhaar_enrolment_number: values.aadhaar_enrolment_number || undefined,
+        access_card_number: values.access_card_number || undefined,
+        access_card_from_date: values.access_card_from_date || undefined,
+        access_card_to_date: values.access_card_to_date || undefined,
+        pf_number: values.pf_number || undefined,
+        pf_join_date: values.pf_join_date || undefined,
+        esi_number: values.esi_number || undefined,
+        contactInfo: {
+          contact_name: values.contact_name || undefined,
+          contact_city: values.contact_city || undefined,
+          contact_country: values.contact_country || undefined,
+          personal_email: values.personal_email || undefined,
+          alternate_mobile: values.alternate_mobile || undefined,
+          emergency_contact_name: values.emergency_contact_name || undefined,
+          emergency_contact_phone: values.emergency_contact_phone || undefined,
+          permanent_address_line1: values.permanent_address_line1 || undefined,
+          permanent_address_line2: values.permanent_address_line2 || undefined,
+          permanent_address_line3: values.permanent_address_line3 || undefined,
         },
-        validationSchema: createFormValidation,
-        onSubmit: (values) =>
-        {
-            const response = addEmployee(values);
-            successToast("Employee Created");
-            setSuccessMessage(response.message);
-            setShowSuccessModal(true);
-        }
-    })
+        bankDetails: {
+          bank_name: values.bank_name || undefined,
+          account_number: values.account_number || undefined,
+          account_type: values.account_type || undefined,
+          bank_branch: values.bank_branch || undefined,
+          dd_payable_at: values.dd_payable_at || undefined,
+          ifsc_code: values.ifsc_code || undefined,
+          account_holder_name: values.account_holder_name || undefined,
+          payment_type: values.payment_type || undefined,
+          pan_number: values.pan_number || undefined,
+          uan_number: values.uan_number || undefined,
+        },
+      });
+      setShowSuccessModal(true);
+    } catch (err) {
+      errorToast(getErrorMessage(err, "Failed to create employee"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    return (
-        <div className="space-y-6">
+  const formatSalary = (val) =>
+    Number(val).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-            <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Create Employees</h2>
+  const formatDate = (val) => {
+    if (!val) return "—";
+    return new Date(val).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  return (
+    <div>
+      <div className="emp-wizard__header">
+        <h1>Add New Employee</h1>
+        <p>Complete all steps to add a new employee to the organization.</p>
+      </div>
+
+      <div className="emp-stepper">
+        {STEPS.map((s, idx) => (
+          <React.Fragment key={s.id}>
+            <div className="emp-stepper__item">
+              <span
+                className={`emp-stepper__circle ${
+                  step > s.id ? "is-done" : step === s.id ? "is-active" : ""
+                }`}
+              >
+                {step > s.id ? <Check size={14} /> : s.id + 1}
+              </span>
+              <span className={`emp-stepper__label ${step === s.id ? "is-active" : ""}`}>
+                {s.label}
+              </span>
             </div>
-            <form onSubmit={createEmployeeValidation.handleSubmit} >
-                <div className="bg-white rounded-xl shadow p-6">
-                    <h3 className="font-semibold mb-1">Basic Details</h3>
-                    <p className="text-gray-500 text-sm mb-4">Organized and secure.</p>
+            {idx < STEPS.length - 1 && (
+              <div className={`emp-stepper__line ${step > s.id ? "is-done" : ""}`} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Employee Type</label>
-                            <select
-                                name="employee_type"
-                                value={createEmployeeValidation.values.employee_type}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.employee_type && createEmployeeValidation.errors.employee_type ? 'border-red-500' : ''}`}
-                            >
-                                <option value="" disabled>Select employee type</option>
-                                <option value="Full-Time">Full-Time</option>
-                                <option value="Part-time">Part-time</option>
-                                <option value="Contract">Contract</option>
-                            </select>
-                            {createEmployeeValidation.touched.employee_type && createEmployeeValidation.errors.employee_type && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.employee_type}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Role</label>
+      <div className="emp-wizard__card">
+        {step === 0 && (
+          <>
+            <h2>Personal Information</h2>
+            <div className="emp-wizard__grid">
+              <Field label="Employee ID" required error={errors.employee_id}>
+                <input
+                  value={values.employee_id}
+                  onChange={(e) => setField("employee_id", e.target.value)}
+                  placeholder="e.g. EMP-007"
+                />
+              </Field>
+              <Field label="First Name" required error={errors.first_name}>
+                <input
+                  value={values.first_name}
+                  onChange={(e) => setField("first_name", e.target.value)}
+                  placeholder="First name"
+                />
+              </Field>
+              <Field label="Last Name" required error={errors.last_name}>
+                <input
+                  value={values.last_name}
+                  onChange={(e) => setField("last_name", e.target.value)}
+                  placeholder="Last name"
+                />
+              </Field>
+              <Field label="Email" required error={errors.email}>
+                <input
+                  type="email"
+                  value={values.email}
+                  onChange={(e) => setField("email", e.target.value)}
+                  placeholder="email@company.com"
+                />
+              </Field>
+              <Field label="Phone" required error={errors.mobile}>
+                <input
+                  value={values.mobile}
+                  onChange={(e) => setField("mobile", e.target.value)}
+                  placeholder="Phone number"
+                />
+              </Field>
+            </div>
+          </>
+        )}
 
-                            <select
-                                name="role"
-                                value={createEmployeeValidation.values.role}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="" disabled>Select Role</option>
-                                <option value="1">Admin</option>
-                                <option value="2">HR</option>
-                                <option value="3">Employee</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">First name</label>
-                            <input
-                                type="text"
-                                name="first_name"
-                                value={createEmployeeValidation.values.first_name}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.first_name && createEmployeeValidation.errors.first_name ? 'border-red-500' : ''}`}
-                                placeholder="First name"
-                            />
-                            {createEmployeeValidation.touched.first_name && createEmployeeValidation.errors.first_name && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.first_name}</p>
-                            )}
-                        </div>
+        {step === 1 && (
+          <>
+            <h2>Employment Details</h2>
+            <div className="emp-wizard__grid">
+              <Field label="Department" required error={errors.department_id}>
+                <select
+                  value={values.department_id}
+                  onChange={(e) => setField("department_id", e.target.value)}
+                >
+                  <option value="">Select department</option>
+                  {departments.map((d) => (
+                    <option key={d.department_id} value={d.department_id}>
+                      {d.department_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Role" required error={errors.emp_job_title}>
+                <input
+                  value={values.emp_job_title}
+                  onChange={(e) => setField("emp_job_title", e.target.value)}
+                  placeholder="Job title / role"
+                />
+              </Field>
+              <Field label="Manager">
+                <select
+                  value={values.reporting_to}
+                  onChange={(e) => setField("reporting_to", e.target.value)}
+                >
+                  <option value="none">None</option>
+                  {members.map((m) => (
+                    <option key={m.employee_id} value={m.employee_id}>
+                      {m.first_name} {m.last_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Assign to Specific Member">
+                <select
+                  value={values.assigned_member}
+                  onChange={(e) => setField("assigned_member", e.target.value)}
+                >
+                  <option value="">None</option>
+                  {members.map((m) => (
+                    <option key={`assign-${m.employee_id}`} value={`${m.first_name} ${m.last_name}`}>
+                      {m.first_name} {m.last_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Start Date" required error={errors.emp_joining_date}>
+                <input
+                  type="date"
+                  value={values.emp_joining_date}
+                  onChange={(e) => setField("emp_joining_date", e.target.value)}
+                />
+              </Field>
+              <Field label="Employment Type">
+                <select
+                  value={values.employee_type}
+                  onChange={(e) => setField("employee_type", e.target.value)}
+                >
+                  <option value="Full-Time">Full-Time</option>
+                  <option value="Part-Time">Part-Time</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </Field>
+            </div>
+          </>
+        )}
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Last name</label>
-                            <input
-                                type="text"
-                                name="last_name"
-                                value={createEmployeeValidation.values.last_name}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.last_name && createEmployeeValidation.errors.last_name ? 'border-red-500' : ''}`}
-                                placeholder="Last name"
-                            />
-                            {createEmployeeValidation.touched.last_name && createEmployeeValidation.errors.last_name && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.last_name}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Username</label>
-                            <input
-                                type="text"
-                                name="username"
-                                value={createEmployeeValidation.values.username || ''}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className="w-full border rounded-lg px-3 py-2"
-                                placeholder="Username"
-                            />
-                        </div>
+        {step === 2 && (
+          <>
+            <h2>Compensation</h2>
+            <div className="emp-wizard__grid">
+              <Field label="Annual Salary (USD)" required error={errors.ctc}>
+                <input
+                  type="number"
+                  value={values.ctc}
+                  onChange={(e) => setField("ctc", e.target.value)}
+                  placeholder="e.g. 75000"
+                />
+              </Field>
+              <Field label="Benefits Plan">
+                <select
+                  value={values.benefits_plan}
+                  onChange={(e) => setField("benefits_plan", e.target.value)}
+                >
+                  <option value="standard">Standard</option>
+                  <option value="premium">Premium</option>
+                  <option value="basic">Basic</option>
+                </select>
+              </Field>
+            </div>
+          </>
+        )}
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={createEmployeeValidation.values.email}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.email && createEmployeeValidation.errors.email ? 'border-red-500' : ''}`}
-                                placeholder="Enter email"
-                            />
-                            {createEmployeeValidation.touched.email && createEmployeeValidation.errors.email && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.email}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Gender</label>
+        {step === 3 && (
+          <>
+            <h2>Personal & Statutory Details</h2>
+            <div className="emp-wizard__grid">
+              <Field label="Gender">
+                <select value={values.gender} onChange={(e) => setField("gender", e.target.value)}>
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </Field>
+              <Field label="Date of Birth">
+                <input type="date" value={values.dob} onChange={(e) => setField("dob", e.target.value)} />
+              </Field>
+              <Field label="Marital Status">
+                <select value={values.marital_status} onChange={(e) => setField("marital_status", e.target.value)}>
+                  <option value="">Select status</option>
+                  <option value="Single">Single</option>
+                  <option value="Married">Married</option>
+                  <option value="Other">Other</option>
+                </select>
+              </Field>
+              <Field label="Father's Name">
+                <input value={values.father_name} onChange={(e) => setField("father_name", e.target.value)} />
+              </Field>
+              <Field label="Spouse Name">
+                <input value={values.spouse_name} onChange={(e) => setField("spouse_name", e.target.value)} />
+              </Field>
+              <Field label="Aadhaar Number">
+                <input value={values.aadhaar_number} onChange={(e) => setField("aadhaar_number", e.target.value)} />
+              </Field>
+              <Field label="Name As Per Aadhaar">
+                <input value={values.aadhaar_name} onChange={(e) => setField("aadhaar_name", e.target.value)} />
+              </Field>
+              <Field label="Aadhaar Enrolment Number">
+                <input value={values.aadhaar_enrolment_number} onChange={(e) => setField("aadhaar_enrolment_number", e.target.value)} />
+              </Field>
+              <Field label="PAN Number">
+                <input value={values.pan_number} onChange={(e) => setField("pan_number", e.target.value)} />
+              </Field>
+              <Field label="UAN Number">
+                <input value={values.uan_number} onChange={(e) => setField("uan_number", e.target.value)} />
+              </Field>
+              <Field label="PF Number">
+                <input value={values.pf_number} onChange={(e) => setField("pf_number", e.target.value)} />
+              </Field>
+              <Field label="PF Join Date">
+                <input type="date" value={values.pf_join_date} onChange={(e) => setField("pf_join_date", e.target.value)} />
+              </Field>
+              <Field label="ESI Number">
+                <input value={values.esi_number} onChange={(e) => setField("esi_number", e.target.value)} />
+              </Field>
+              <Field label="Access Card Number">
+                <input value={values.access_card_number} onChange={(e) => setField("access_card_number", e.target.value)} />
+              </Field>
+              <Field label="Access Card From Date">
+                <input type="date" value={values.access_card_from_date} onChange={(e) => setField("access_card_from_date", e.target.value)} />
+              </Field>
+              <Field label="Access Card To Date">
+                <input type="date" value={values.access_card_to_date} onChange={(e) => setField("access_card_to_date", e.target.value)} />
+              </Field>
+            </div>
 
-                            <select
-                                name="gender"
-                                value={createEmployeeValidation.values.gender}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.gender &&
-                                    createEmployeeValidation.errors.gender
-                                    ? 'border-red-500'
-                                    : ''
-                                    }`}
-                            >
-                                <option value="" disabled>Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
+            <h2>Bank Details</h2>
+            <div className="emp-wizard__grid">
+              <Field label="Bank Name">
+                <input value={values.bank_name} onChange={(e) => setField("bank_name", e.target.value)} />
+              </Field>
+              <Field label="Bank Account Number">
+                <input value={values.account_number} onChange={(e) => setField("account_number", e.target.value)} />
+              </Field>
+              <Field label="Bank Account Type">
+                <select value={values.account_type} onChange={(e) => setField("account_type", e.target.value)}>
+                  <option value="">Select type</option>
+                  <option value="Savings">Savings</option>
+                  <option value="Current">Current</option>
+                </select>
+              </Field>
+              <Field label="Bank Branch">
+                <input value={values.bank_branch} onChange={(e) => setField("bank_branch", e.target.value)} />
+              </Field>
+              <Field label="IFSC Code">
+                <input value={values.ifsc_code} onChange={(e) => setField("ifsc_code", e.target.value)} />
+              </Field>
+              <Field label="DD Payable At">
+                <input value={values.dd_payable_at} onChange={(e) => setField("dd_payable_at", e.target.value)} />
+              </Field>
+              <Field label="Name As Per Bank">
+                <input value={values.account_holder_name} onChange={(e) => setField("account_holder_name", e.target.value)} />
+              </Field>
+              <Field label="Payment Type">
+                <select value={values.payment_type} onChange={(e) => setField("payment_type", e.target.value)}>
+                  <option value="">Select type</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Cash">Cash</option>
+                </select>
+              </Field>
+            </div>
 
-                            {createEmployeeValidation.touched.gender &&
-                                createEmployeeValidation.errors.gender && (
-                                    <p className="text-red-600 text-sm mt-1">
-                                        {createEmployeeValidation.errors.gender}
-                                    </p>
-                                )}
-                        </div>
+            <h2>Contact & Address</h2>
+            <div className="emp-wizard__grid">
+              <Field label="Contact Name">
+                <input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} />
+              </Field>
+              <Field label="Contact Email">
+                <input type="email" value={values.personal_email} onChange={(e) => setField("personal_email", e.target.value)} />
+              </Field>
+              <Field label="Contact Mobile">
+                <input value={values.alternate_mobile} onChange={(e) => setField("alternate_mobile", e.target.value)} />
+              </Field>
+              <Field label="Contact City">
+                <input value={values.contact_city} onChange={(e) => setField("contact_city", e.target.value)} />
+              </Field>
+              <Field label="Contact Country">
+                <input value={values.contact_country} onChange={(e) => setField("contact_country", e.target.value)} />
+              </Field>
+              <Field label="Emergency Contact Name">
+                <input value={values.emergency_contact_name} onChange={(e) => setField("emergency_contact_name", e.target.value)} />
+              </Field>
+              <Field label="Emergency Contact Mobile">
+                <input value={values.emergency_contact_phone} onChange={(e) => setField("emergency_contact_phone", e.target.value)} />
+              </Field>
+              <Field label="Permanent Address Line 1">
+                <input value={values.permanent_address_line1} onChange={(e) => setField("permanent_address_line1", e.target.value)} />
+              </Field>
+              <Field label="Permanent Address Line 2">
+                <input value={values.permanent_address_line2} onChange={(e) => setField("permanent_address_line2", e.target.value)} />
+              </Field>
+              <Field label="Permanent Address Line 3">
+                <input value={values.permanent_address_line3} onChange={(e) => setField("permanent_address_line3", e.target.value)} />
+              </Field>
+            </div>
+          </>
+        )}
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Employee Id</label>
-                            <input
-                                type="number"
-                                name="employee_id"
-                                value={createEmployeeValidation.values.employee_id}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.employee_id && createEmployeeValidation.errors.employee_id ? 'border-red-500' : ''}`}
-                                placeholder="Employee Id"
-                            />
-                            {createEmployeeValidation.touched.employee_id && createEmployeeValidation.errors.employee_id && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.employee_id}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Mobile Number</label>
-                            <input
-                                type="text"
-                                name="mobile"
-                                value={createEmployeeValidation.values.mobile}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.mobile && createEmployeeValidation.errors.mobile ? 'border-red-500' : ''}`}
-                                placeholder="Mobile Number"
-                            />
-                            {createEmployeeValidation.touched.mobile && createEmployeeValidation.errors.mobile && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.mobile}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Address</label>
-                            <textarea
-                                rows={3}
-                                name="address"
-                                value={createEmployeeValidation.values.address}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.address && createEmployeeValidation.errors.address ? 'border-red-500' : ''}`}
-                                placeholder="Address"
-                            />
-                            {createEmployeeValidation.touched.address && createEmployeeValidation.errors.address && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.address}</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
+        {step === 4 && (
+          <>
+            <h2>Review & Confirm</h2>
+            <div className="emp-review-section">
+              <h3>Personal Information</h3>
+              <dl className="emp-review-grid">
+                <div><dt>Employee ID</dt><dd>{values.employee_id}</dd></div>
+                <div><dt>Name</dt><dd>{values.first_name} {values.last_name}</dd></div>
+                <div><dt>Email</dt><dd>{values.email}</dd></div>
+                <div><dt>Phone</dt><dd>{values.mobile}</dd></div>
+              </dl>
+            </div>
+            <div className="emp-review-section">
+              <h3>Employment Details</h3>
+              <dl className="emp-review-grid">
+                <div><dt>Department</dt><dd>{departments.find((d) => String(d.department_id) === String(values.department_id))?.department_name || "—"}</dd></div>
+                <div><dt>Role</dt><dd>{values.emp_job_title}</dd></div>
+                <div><dt>Manager</dt><dd>{
+                  values.reporting_to === "none"
+                    ? "None"
+                    : (() => {
+                        const m = members.find((x) => String(x.employee_id) === String(values.reporting_to));
+                        return m ? `${m.first_name} ${m.last_name}` : "—";
+                      })()
+                }</dd></div>
+                <div><dt>Assigned Member</dt><dd>{values.assigned_member || "None"}</dd></div>
+                <div><dt>Start Date</dt><dd>{formatDate(values.emp_joining_date)}</dd></div>
+                <div><dt>Type</dt><dd><span className="emp-type-badge">{values.employee_type}</span></dd></div>
+              </dl>
+            </div>
+            <div className="emp-review-section">
+              <h3>Compensation</h3>
+              <dl className="emp-review-grid">
+                <div><dt>Salary</dt><dd>{values.ctc ? `${formatSalary(values.ctc)}/yr` : "—"}</dd></div>
+                <div><dt>Benefits</dt><dd style={{ textTransform: "capitalize" }}>{values.benefits_plan}</dd></div>
+              </dl>
+            </div>
+            <div className="emp-review-section">
+              <h3>Statutory & Bank</h3>
+              <dl className="emp-review-grid">
+                <div><dt>Aadhaar Number</dt><dd>{values.aadhaar_number || "—"}</dd></div>
+                <div><dt>PAN Number</dt><dd>{values.pan_number || "—"}</dd></div>
+                <div><dt>UAN Number</dt><dd>{values.uan_number || "—"}</dd></div>
+                <div><dt>PF Number</dt><dd>{values.pf_number || "—"}</dd></div>
+                <div><dt>Bank Name</dt><dd>{values.bank_name || "—"}</dd></div>
+                <div><dt>Account Number</dt><dd>{values.account_number || "—"}</dd></div>
+                <div><dt>IFSC Code</dt><dd>{values.ifsc_code || "—"}</dd></div>
+              </dl>
+            </div>
+          </>
+        )}
+      </div>
 
-                <div className="bg-white rounded-xl shadow p-6 mt-4">
-                    <h3 className="font-semibold mb-1">Employee Details</h3>
-                    <p className="text-gray-500 text-sm mb-4">Let everyone know the essentials so they're fully prepared.</p>
+      <div className="emp-wizard__footer">
+        {step > 0 ? (
+          <button type="button" className="emp-wizard__btn emp-wizard__btn--prev" onClick={goPrev}>
+            <ChevronLeft size={16} />
+            Previous
+          </button>
+        ) : (
+          <span />
+        )}
+        <div className="emp-wizard__footer-right">
+          <button type="button" className="emp-wizard__btn emp-wizard__btn--cancel" onClick={() => navigate("/dashboard/employee")}>
+            Cancel
+          </button>
+          {step < STEPS.length - 1 ? (
+            <button type="button" className="emp-wizard__btn emp-wizard__btn--next" onClick={goNext}>
+              Next
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="emp-wizard__btn emp-wizard__btn--create disabled:opacity-60"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              <Check size={16} />
+              {submitting ? "Creating..." : "Create Employee"}
+            </button>
+          )}
+        </div>
+      </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Employee Role</label>
-                            <select
-                                name="department_id"
-                                value={createEmployeeValidation.values.department_id}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.department_id && createEmployeeValidation.errors.department_id ? 'border-red-500' : ''}`}
-                            >
-                                <option value="" disabled>Select department</option>
-                                {departments?.map((item) => (
-                                    <option key={item.department_id} value={item.department_id}>
-                                        {item.department_name}
-                                    </option>
-                                ))}
-                            </select>
-                            {createEmployeeValidation.touched.department_id && createEmployeeValidation.errors.department_id && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.department_id}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Employee Designation</label>
-                            <select
-                                name="designation_id"
-                                value={createEmployeeValidation.values.designation_id}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.designation_id && createEmployeeValidation.errors.designation_id ? 'border-red-500' : ''}`}
-                            >
-                                <option value="" disabled>Select designation</option>
-                                {designations?.map((item) => (
-                                    <option key={item.designation_id} value={item.designation_id}>
-                                        {item.designation_name}
-                                    </option>
-                                ))}
-                            </select>
-                            {createEmployeeValidation.touched.designation_id && createEmployeeValidation.errors.designation_id && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.designation_id}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Joining Date</label>
-                            <input
-                                type="date"
-                                name="emp_joining_date"
-                                value={createEmployeeValidation.values.emp_joining_date}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.emp_joining_date && createEmployeeValidation.errors.emp_joining_date ? 'border-red-500' : ''}`}
-                                placeholder="Start Date"
-                            />
-                            {createEmployeeValidation.touched.emp_joining_date && createEmployeeValidation.errors.emp_joining_date && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.emp_joining_date}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Job Title</label>
-                            <input
-                                type="text"
-                                name="emp_job_title"
-                                value={createEmployeeValidation.values.emp_job_title}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.emp_job_title && createEmployeeValidation.errors.emp_job_title ? 'border-red-500' : ''}`}
-                                placeholder="Job Title"
-                            />
-                            {createEmployeeValidation.touched.emp_job_title && createEmployeeValidation.errors.emp_job_title && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.emp_job_title}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Reporting To</label>
-                            <input
-                                type="text"
-                                name="reporting_to"
-                                value={createEmployeeValidation.values.reporting_to}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.reporting_to && createEmployeeValidation.errors.reporting_to ? 'border-red-500' : ''}`}
-                                placeholder="Reporting To"
-                            />
-                            {/* <select
-                                name="reporting_to"
-                                value={createEmployeeValidation.values.reporting_to}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.reporting_to && createEmployeeValidation.errors.reporting_to ? 'border-red-500' : ''}`}
-                            >
-                                <option value="" disabled>Select manager</option>
-                                <option value="One">One</option>
-                                <option value="Two">Two</option>
-                                <option value="Three">Three</option>
-                            </select> */}
-                            {createEmployeeValidation.touched.reporting_to && createEmployeeValidation.errors.reporting_to && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.reporting_to}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Work Mode</label>
-                            <select
-                                name="work_mode"
-                                value={createEmployeeValidation.values.work_mode || ''}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="" disabled>Select work mode</option>
-                                {getWorkMode.map(item => (
-                                    <option key={item.id} value={item.work_name}>{item.work_name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Employee Status</label>
-                            <select
-                                name="employee_status"
-                                value={createEmployeeValidation.values.employee_status}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.employee_status && createEmployeeValidation.errors.employee_status ? 'border-red-500' : ''}`}
-                            >
-                                <option value="" disabled>Select status</option>
-                                <option value="Active">Active</option>
-                                <option value="Deactive">Deactive</option>
-                            </select>
-                            {createEmployeeValidation.touched.employee_status && createEmployeeValidation.errors.employee_status && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.employee_status}</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow p-6 mt-4">
-                    <h3 className="font-semibold mb-1">Salary Details</h3>
-                    <p className="text-gray-500 text-sm mb-4">Stored securely, only visible to Super Admins, Payroll Admins, and themselves.</p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <div>
-                                <select
-                                    name="currency_type"
-                                    value={createEmployeeValidation.values.currency_type}
-                                    onChange={createEmployeeValidation.handleChange}
-                                    onBlur={createEmployeeValidation.handleBlur}
-                                    className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.currency_type && createEmployeeValidation.errors.currency_type ? 'border-red-500' : ''}`}
-                                >
-                                    <option value="" disabled>Select Currency Type</option>
-                                    <option value="USD">USD</option>
-                                    <option value="INR">INR</option>
-                                </select>
-                                {createEmployeeValidation.touched.currency_type && createEmployeeValidation.errors.currency_type && (
-                                    <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.currency_type}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div>
-                            <select className="w-full border rounded-lg px-3 py-2"
-                                name="frequency"
-                                value={createEmployeeValidation.values.frequency}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}>
-                                <option value="" disabled>Select Frequency</option>
-                                <option value="Monthly">Monthly</option>
-                                <option value="Yearly">Yearly</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Employee Salary</label>
-                            <input
-                                type="number"
-                                name="ctc"
-                                value={createEmployeeValidation.values.ctc}
-                                onChange={createEmployeeValidation.handleChange}
-                                onBlur={createEmployeeValidation.handleBlur}
-                                className={`w-full border rounded-lg px-3 py-2 ${createEmployeeValidation.touched.ctc && createEmployeeValidation.errors.ctc ? 'border-red-500' : ''}`}
-                                placeholder="Salary"
-                            />
-                            {createEmployeeValidation.touched.ctc && createEmployeeValidation.errors.ctc && (
-                                <p className="text-red-600 text-sm mt-1">{createEmployeeValidation.errors.ctc}</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex justify-end gap-3 mt-6">
-                    <button type="submit" className="px-6 py-2 bg-brand text-white rounded-lg">Add Team Member</button>
-                    <button type="button" className="px-6 py-2 bg-red-600 rounded-lg text-white" onClick={() => navigate(-1)}>Cancel</button>
-                </div>
-            </form>
-
-            <SuccessModal
-                isOpen={showSuccessModal}
-                title="Success!"
-                message={successMessage}
-                okLabel="Ok"
-                onConfirm={() => setShowSuccessModal(false)}
-                onClose={() => setShowSuccessModal(false)}
-            />
-        </div >
-    );
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Success!"
+        message="Employee created successfully."
+        okLabel="Ok"
+        onConfirm={() => navigate("/dashboard/employee")}
+        onClose={() => navigate("/dashboard/employee")}
+      />
+    </div>
+  );
 }

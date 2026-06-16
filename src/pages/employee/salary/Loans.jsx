@@ -1,110 +1,189 @@
-export default function Loans() {
+import React, { useState } from "react";
+import { DollarSign, PiggyBank, Calendar, TrendingDown, Plus, X } from "lucide-react";
+
+const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
+
+const LOAN_TYPES = ["Personal Loan", "Home Loan", "Vehicle Loan", "Emergency Advance", "Medical Advance"];
+
+const HISTORY = [
+  { id: "LN001", type: "Personal Loan", amount: 120000, outstanding: 70000, emi: 10000, tenure: 12, remaining: 7, status: "Active", date: "01-Apr-2025" },
+  { id: "LN002", type: "Emergency Advance", amount: 50000, outstanding: 0, emi: 5000, tenure: 10, remaining: 0, status: "Closed", date: "01-Jan-2024" },
+];
+
+function StatCard({ icon, label, value, color = "#1e293b", bg = "#fff" }) {
   return (
-    <div className="min-h-screen bg-[#f5f7fb]">
-      {/* HEADER */}
-
-      <div className="px-6 pt-5">
-        <h1 className="text-[26px] font-semibold text-[#24324a]">
-          Loans and Advances
-        </h1>
+    <div style={{ background: bg, border: "1px solid #e2e8f0", borderRadius: 12, padding: "18px 20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 10, background: color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {React.cloneElement(icon, { size: 20, style: { color } })}
       </div>
-
-      {/* TAB */}
-
-      <div className="mt-5 border-b border-[#d9e0ea]">
-        <button
-          className="
-            h-[42px]
-            px-6
-            text-[#2563eb]
-            text-[14px]
-            font-medium
-            border-b-2
-            border-[#2563eb]
-          "
-        >
-          My Loan
-        </button>
+      <div>
+        <p style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>{label}</p>
+        <p style={{ fontSize: 20, fontWeight: 800, color, margin: "6px 0 0" }}>{value}</p>
       </div>
+    </div>
+  );
+}
 
-      {/* MAIN CONTENT */}
+function ApplyModal({ onClose }) {
+  const [form, setForm] = useState({ type: LOAN_TYPES[0], amount: "", tenure: "", reason: "" });
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+  const emi = form.amount && form.tenure ? Math.round(Number(form.amount) / Number(form.tenure)) : 0;
 
-      <div
-        className="
-          h-[calc(100vh-150px)]
-          flex
-          items-center
-          justify-center
-        "
-      >
-        <div className="text-center">
-          {/* IMAGE */}
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+      <div style={{ background: "#fff", borderRadius: 14, width: 440, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid #f1f5f9" }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: "#1e293b" }}>Apply for Loan</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}><X size={20} /></button>
+        </div>
+        <div style={{ padding: 22 }}>
+          {[
+            { label: "Loan Type", key: "type", type: "select" },
+            { label: "Loan Amount (₹)", key: "amount", type: "number", placeholder: "e.g. 100000" },
+            { label: "Repayment Tenure (months)", key: "tenure", type: "number", placeholder: "e.g. 12" },
+            { label: "Reason / Purpose", key: "reason", type: "text", placeholder: "Brief reason for loan" },
+          ].map(({ label, key, type, placeholder }) => (
+            <div key={key} style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: "#64748b", display: "block", marginBottom: 5 }}>{label}</label>
+              {type === "select" ? (
+                <select value={form[key]} onChange={(e) => set(key, e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }}>
+                  {LOAN_TYPES.map((t) => <option key={t}>{t}</option>)}
+                </select>
+              ) : (
+                <input type={type} value={form[key]} onChange={(e) => set(key, e.target.value)} placeholder={placeholder}
+                  style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+              )}
+            </div>
+          ))}
 
-          <div className="flex justify-center">
-            <img
-              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='8' fill='%23f1f5f9'/%3E%3Ctext x='24' y='30' text-anchor='middle' fill='%2364748b' font-size='20'%3E%E2%80%94%3C/text%3E%3C/svg%3E"
-              alt="loan"
-              className="w-[120px] opacity-90"
-            />
+          {emi > 0 && (
+            <div style={{ padding: "12px 16px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, marginBottom: 18 }}>
+              <p style={{ fontSize: 12, color: "#0369a1", margin: 0 }}>
+                Estimated monthly EMI: <strong style={{ fontSize: 14 }}>{fmt(emi)}</strong>
+              </p>
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onClose}
+              style={{ flex: 1, padding: "10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, fontWeight: 600, background: "#fff", color: "#64748b", cursor: "pointer" }}>
+              Cancel
+            </button>
+            <button onClick={onClose}
+              style={{ flex: 1, padding: "10px", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "#3b82f6", color: "#fff", cursor: "pointer" }}>
+              Submit Application
+            </button>
           </div>
-
-          {/* TITLE */}
-
-          <h2
-            className="
-              mt-5
-              text-[24px]
-              font-medium
-              text-[#374151]
-            "
-          >
-            Nothing to show!
-          </h2>
-
-          {/* SUBTITLE */}
-
-          <p
-            className="
-              mt-2
-              text-[15px]
-              text-[#94a3b8]
-            "
-          >
-            Your loan details will show up here after
-            approval.
-          </p>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* FOOTER */}
+export default function Loans() {
+  const [tab, setTab]           = useState("active");
+  const [showModal, setShowModal] = useState(false);
 
-      <div
-        className="
-          fixed
-          bottom-4
-          left-0
-          right-0
-          flex
-          justify-center
-          text-[13px]
-          text-[#94a3b8]
-          gap-3
-        "
-      >
-        <span>main-2242</span>
+  const active = HISTORY.filter((l) => l.status === "Active");
+  const closed = HISTORY.filter((l) => l.status === "Closed");
 
-        <span>|</span>
+  const totalOutstanding = active.reduce((a, l) => a + l.outstanding, 0);
+  const totalEMI         = active.reduce((a, l) => a + l.emi, 0);
 
-        <button className="hover:text-[#2563eb]">
-          Privacy Policy
-        </button>
+  return (
+    <div style={{ minHeight: "100vh", background: "#f5f7fb", padding: 24 }}>
+      {showModal && <ApplyModal onClose={() => setShowModal(false)} />}
 
-        <span>|</span>
-
-        <button className="hover:text-[#2563eb]">
-          Terms Of Service
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 }}>Loans & Advances</h1>
+        <button
+          onClick={() => setShowModal(true)}
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "#3b82f6", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+        >
+          <Plus size={15} />Apply for Loan
         </button>
       </div>
+
+      {/* KPI cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
+        <StatCard icon={<DollarSign />} label="Total Borrowed" value={fmt(HISTORY.reduce((a, l) => a + l.amount, 0))} color="#3b82f6" />
+        <StatCard icon={<TrendingDown />} label="Outstanding" value={fmt(totalOutstanding)} color="#ef4444" bg="#fff5f5" />
+        <StatCard icon={<PiggyBank />} label="Monthly EMI" value={fmt(totalEMI)} color="#f59e0b" bg="#fffbeb" />
+        <StatCard icon={<Calendar />} label="Active Loans" value={active.length} color="#15803d" bg="#f0fdf4" />
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        {["active", "closed"].map((t) => (
+          <button key={t} type="button" onClick={() => setTab(t)}
+            style={{
+              padding: "8px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+              background: tab === t ? "#3b82f6" : "#fff", color: tab === t ? "#fff" : "#64748b",
+              border: tab === t ? "none" : "1px solid #e2e8f0", textTransform: "capitalize",
+            }}>{t === "active" ? "Active Loans" : "Closed Loans"}</button>
+        ))}
+      </div>
+
+      {/* List */}
+      {(tab === "active" ? active : closed).length === 0 ? (
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "60px 24px", textAlign: "center" }}>
+          <PiggyBank size={52} strokeWidth={1} style={{ color: "#cbd5e1", marginBottom: 12 }} />
+          <p style={{ color: "#94a3b8", fontSize: 14 }}>No {tab} loans found.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {(tab === "active" ? active : closed).map((loan) => {
+            const progress = Math.round(((loan.amount - loan.outstanding) / loan.amount) * 100);
+            return (
+              <div key={loan.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "#1e293b" }}>{loan.type}</span>
+                      <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 999, fontWeight: 700,
+                        background: loan.status === "Active" ? "#dcfce7" : "#f1f5f9",
+                        color: loan.status === "Active" ? "#15803d" : "#64748b",
+                      }}>{loan.status}</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#94a3b8", margin: "3px 0 0" }}>ID: {loan.id} · Issued: {loan.date}</p>
+                  </div>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: "#1e293b" }}>{fmt(loan.amount)}</span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
+                  {[
+                    { label: "Outstanding", value: fmt(loan.outstanding), color: "#ef4444" },
+                    { label: "Monthly EMI", value: fmt(loan.emi), color: "#f59e0b" },
+                    { label: "Total Tenure", value: `${loan.tenure} months`, color: "#64748b" },
+                    { label: "Remaining", value: `${loan.remaining} months`, color: "#3b82f6" },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ padding: "10px 12px", background: "#f8fafc", borderRadius: 8 }}>
+                      <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{label}</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color, margin: "4px 0 0" }}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Repayment progress */}
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                    <span style={{ fontSize: 11, color: "#64748b" }}>Repayment Progress</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6" }}>{progress}%</span>
+                  </div>
+                  <div style={{ height: 6, background: "#f1f5f9", borderRadius: 999 }}>
+                    <div style={{ width: `${progress}%`, height: "100%", background: "linear-gradient(90deg,#3b82f6,#06b6d4)", borderRadius: 999 }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                    <span style={{ fontSize: 11, color: "#22c55e" }}>Paid: {fmt(loan.amount - loan.outstanding)}</span>
+                    <span style={{ fontSize: 11, color: "#ef4444" }}>Outstanding: {fmt(loan.outstanding)}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

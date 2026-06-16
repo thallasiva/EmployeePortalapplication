@@ -8,10 +8,9 @@ import {
   LogOut,
   Settings,
   FileOutput,
-  UserStar,
+
   UserPen,
   Proportions,
-  ChartNoAxesGantt,
   Radio,
   LayoutGrid,
   ClipboardList,
@@ -23,10 +22,13 @@ import {
   Info,
   Layers,
   GitBranch,
+  Clock,
   ChevronDown,
   ChevronRight,
+  FileText,
+  Network,
 } from "lucide-react";
-import { getStoredUser, isAdmin, ROLE_ADMIN } from "../data/auth";
+import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN, logoutUser } from "../data/auth";
 
 const BRAND_NAME = "NAT IT";
 
@@ -38,7 +40,8 @@ const isPathActive = (pathname, link) => {
   if (
     target === "/dashboard" ||
     target === "/employee/home" ||
-    target === "/employee/engage"
+    target === "/employee/engage" ||
+    target === "/manager"
   ) {
     return normalized === target;
   }
@@ -82,19 +85,32 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/leave",
     },
     {
-      label: "Review",
-      icon: <UserStar size={20} />,
-      navigationLink: "/dashboard/review",
+      label: "Attendance",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/attendance",
     },
     {
-      label: "Report",
+      label: "Documents",
+      icon: <BookOpen size={20} />,
+      navigationLink: "/dashboard/documents",
+    },
+    {
+      label: "Reports",
       icon: <Proportions size={20} />,
       navigationLink: "/dashboard/report",
     },
     {
-      label: "Manage",
-      icon: <ChartNoAxesGantt size={20} />,
-      navigationLink: "/dashboard/manage",
+      label: "Payroll",
+      icon: <FileText size={20} />,
+      children: [
+        { label: "Salary", navigationLink: "/dashboard/payroll" },
+        { label: "Payslips", navigationLink: "/dashboard/payroll/payslips" },
+      ],
+    },
+    {
+      label: "Onboarding",
+      icon: <UserRoundPlus size={20} />,
+      navigationLink: "/dashboard/onboarding",
     },
     {
       label: "Settings",
@@ -107,6 +123,12 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/profile",
     },
   ];
+
+  const teamOverviewItem = {
+    label: "Team Overview",
+    icon: <Users size={20} strokeWidth={1.75} />,
+    navigationLink: "/manager",
+  };
 
   const employeeItems = [
     {
@@ -191,6 +213,11 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/employee/people",
     },
     {
+      label: "Organization Chart",
+      icon: <Network size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/org-chart",
+    },
+    {
       label: "Helpdesk",
       icon: <Info size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/helpdesk",
@@ -207,15 +234,18 @@ export const Sidebar = ({ open }) => {
     },
   ];
 
-  const items = isAdmin(user) ? adminItems : employeeItems;
+  const items = isAdmin(user)
+    ? adminItems
+    : isReportingManager(user)
+    ? [teamOverviewItem, ...employeeItems]
+    : employeeItems;
 
   const toggleAccordion = (index) => {
     setExpanded(expanded === index ? null : index);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    logoutUser();
     navigate("/login");
   };
 

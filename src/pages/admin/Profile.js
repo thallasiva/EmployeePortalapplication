@@ -1,4 +1,15 @@
 import { useState } from "react";
+import {
+  Briefcase,
+  Calendar,
+  FileText,
+  Settings,
+  Star,
+  User,
+  Wallet,
+} from "lucide-react";
+import { getStoredUser } from "../../data/auth";
+import { avatarDataUri } from "../../lib/placeholders";
 import EmployeeProfile from "./EmployeeProfile";
 import DetailsScreen from "./EmployeeDetailsProfile";
 import { EmployeeDocument } from "./EmployeeDocument";
@@ -6,142 +17,131 @@ import PayrollReports from "./PayrollReports";
 import ReviewForm from "./ReviewForm";
 import SettingsForm from "./SettingsForm";
 import TimeOff from "./TimeOff";
+import "./adminProfile.css";
 
-const tabs = [
-  'Employement',
-  'Details',
-  'Documents',
-  'Payroll',
-  'Timeoff',
-  'Reviews',
-  'Settings',
+const TABS = [
+  { id: "employment", label: "Employment", icon: Briefcase },
+  { id: "details", label: "Details", icon: User },
+  { id: "documents", label: "Documents", icon: FileText },
+  { id: "payroll", label: "Payroll", icon: Wallet },
+  { id: "timeoff", label: "Time Off", icon: Calendar },
+  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "settings", label: "Settings", icon: Settings },
 ];
 
-export default function Profile()
-{
-  const [active, setActive] = useState('Employement');
+const ADMIN_PROFILE = {
+  department: "Human Resources",
+  team: "Administration",
+  office: "Head Office",
+  memberSince: "Jan 2024",
+  jobTitle: "Super Admin",
+};
 
+export default function Profile() {
+  const user = getStoredUser();
+  const [active, setActive] = useState("employment");
 
-  const renderTab = () =>
-  {
-    switch (active)
-    {
-      case "Employement":
+  const displayName = user?.name || "Admin User";
+  const email = user?.email || "admin@yopmail.com";
+
+  const renderTab = () => {
+    switch (active) {
+      case "employment":
         return <EmployeeProfile />;
-
-      case "Details":
+      case "details":
         return <DetailsScreen />;
-
-      case "Documents":
+      case "documents":
         return <EmployeeDocument />;
-
-      case "Payroll":
+      case "payroll":
         return <PayrollReports />;
-
-      case "Reviews":
-        return <ReviewForm />;
-
-      case "Timeoff":
+      case "timeoff":
         return <TimeOff />;
-
-        
-
-      case "Settings":
+      case "reviews":
+        return <ReviewForm />;
+      case "settings":
         return <SettingsForm />;
-
       default:
-        return <div>No Data</div>;
+        return null;
     }
   };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
-        <span className="text-gray-500">Home / Reports</span>
-        <h2 className="font-semibold">Reports</h2>
+    <div className="admin-profile">
+      <div>
+        <p className="admin-profile__breadcrumb">Home / Profile</p>
+        <h1 className="admin-profile__page-title">My Profile</h1>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white p-4 rounded-xl shadow">
-        <div className="flex bg-white rounded-xl shadow overflow-hidden">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActive(tab)}
-              className={`px-4 py-2  ${active === tab
-                ? 'bg-brand text-white border-brand'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-            >
-              {tab}
-            </button>
-          ))}
+      <section className="admin-profile__hero">
+        <div className="admin-profile__cover">
+          <button type="button" className="admin-profile__cover-btn">
+            Edit Cover
+          </button>
         </div>
-      </div>
-      {renderTab()}
 
+        <div className="admin-profile__body">
+          <div className="admin-profile__identity">
+            <img
+              className="admin-profile__avatar"
+              src={avatarDataUri(displayName.length, 80)}
+              alt={displayName}
+            />
+            <div>
+              <h2 className="admin-profile__name">{displayName}</h2>
+              <p className="admin-profile__role">{ADMIN_PROFILE.jobTitle}</p>
+              <p className="admin-profile__email">{email}</p>
+            </div>
+          </div>
+          <div className="admin-profile__badges">
+            <span className="admin-profile__badge admin-profile__badge--active">
+              Active
+            </span>
+            <span className="admin-profile__badge admin-profile__badge--dept">
+              {ADMIN_PROFILE.department}
+            </span>
+          </div>
+        </div>
+
+        <div className="admin-profile__stats">
+          <div className="admin-profile__stat">
+            <p className="admin-profile__stat-value">{ADMIN_PROFILE.office}</p>
+            <p className="admin-profile__stat-label">Office</p>
+          </div>
+          <div className="admin-profile__stat">
+            <p className="admin-profile__stat-value">{ADMIN_PROFILE.team}</p>
+            <p className="admin-profile__stat-label">Team</p>
+          </div>
+          <div className="admin-profile__stat">
+            <p className="admin-profile__stat-value">{ADMIN_PROFILE.department}</p>
+            <p className="admin-profile__stat-label">Department</p>
+          </div>
+          <div className="admin-profile__stat">
+            <p className="admin-profile__stat-value">{ADMIN_PROFILE.memberSince}</p>
+            <p className="admin-profile__stat-label">Member Since</p>
+          </div>
+        </div>
+      </section>
+
+      <nav className="admin-profile__tabs-wrap" aria-label="Profile sections">
+        <div className="admin-profile__tabs">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={`admin-profile__tab ${active === tab.id ? "active" : ""}`}
+                onClick={() => setActive(tab.id)}
+              >
+                <Icon size={15} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      <div className="admin-profile__content">{renderTab()}</div>
     </div>
   );
-  // return (
-  //   <div className="space-y-6">
-  //     <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
-  //       <span className="text-gray-500">Home / Profile</span>
-  //       <h2 className="font-semibold">Profile</h2>
-  //     </div>
-
-  //     <div className="relative bg-white rounded-xl shadow overflow-hidden">
-  //       <img
-  //         src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d"
-  //         alt="cover"
-  //         className="w-full h-56 object-cover"
-  //       />
-
-  //       <button className="absolute top-4 right-4 bg-brand text-white px-4 py-2 rounded-lg">
-  //         Change Office
-  //       </button>
-
-  //       <div className="absolute -bottom-10 left-6 flex items-center gap-4">
-  //         <img
-  //           src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' rx='20' fill='%23f18200'/%3E%3Ctext x='20' y='24' text-anchor='middle' fill='white' font-size='14'%3EU%3C/text%3E%3C/svg%3E"
-  //           alt="profile"
-  //           className="w-20 h-20 rounded-full border-4 border-white"
-  //         />
-  //         <div>
-  //           <h3 className="text-lg font-semibold text-white">John Gibbs</h3>
-  //           <p className="text-white/80 text-sm">Super Admin</p>
-  //         </div>
-  //       </div>
-  //     </div>
-
-  //     <div className="bg-white p-5 rounded-xl shadow mt-12">
-  //       <h3 className="font-semibold mb-3">Members</h3>
-  //       <div className="flex -space-x-2">
-  //         {[1, 2, 3, 4, 5].map(i => (
-  //           <img
-  //             key={i}
-  //             src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' rx='20' fill='%23f18200'/%3E%3Ctext x='20' y='24' text-anchor='middle' fill='white' font-size='14'%3EU%3C/text%3E%3C/svg%3E`}
-  //             className="w-10 h-10 rounded-full border"
-  //             alt="member"
-  //           />
-  //         ))}
-  //       </div>
-  //     </div>
-
-  //     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  //       <div className="bg-white p-5 rounded-xl shadow">
-  //         <h3 className="font-semibold mb-3">Basic Information</h3>
-  //         <p className="text-sm"><strong>Email:</strong> john@example.com</p>
-  //         <p className="text-sm"><strong>Phone:</strong> +91 9876543210</p>
-  //         <p className="text-sm"><strong>Address:</strong> New York, USA</p>
-  //       </div>
-
-  //       <div className="bg-white p-5 rounded-xl shadow">
-  //         <h3 className="font-semibold mb-3">Company Info</h3>
-  //         <p className="text-sm"><strong>Company:</strong> Focus Technologies</p>
-  //         <p className="text-sm"><strong>Department:</strong> Development</p>
-  //         <p className="text-sm"><strong>Designation:</strong> Team Lead</p>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
 }
