@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Heart, MessageCircle, Search, ChevronDown, ChevronRight,
-  Calendar, Clock, HandCoins, SquareCheck, Radio, Info,
-  LayoutGrid, ClipboardList, UserRoundPlus, BookOpen,
-  CheckCircle2, XCircle, AlertCircle, FileText, Cake, Award,
+  Calendar, HandCoins, SquareCheck, Radio, Info,
+  LayoutGrid, UserRoundPlus, BookOpen,
+  CheckCircle2, XCircle, AlertCircle, FileText, Cake,
 } from "lucide-react";
 import { getUserGreetingName, getLoggedInUser } from "../../../lib/dateUtils";
 import { listEmployees } from "../../../api/employee.api";
@@ -212,7 +212,7 @@ function ActivityCard({ item, navigate }) {
               )}
             </div>
             <span style={{ fontSize: 11, color: "#9ca8b5" }}>
-              {sec.label}  ·  {item.label || item.timestamp && timeAgo(item.timestamp)}
+              {sec.label}  ·  {item.label || (item.timestamp && timeAgo(item.timestamp))}
             </span>
           </div>
         </div>
