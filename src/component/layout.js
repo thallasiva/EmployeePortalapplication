@@ -3,7 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import { Sidebar } from "./sidebar";
 import { Navbar } from "./navbar";
-import { getStoredUser, isEmployee } from "../data/auth";
+import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
 
 export default function Layout() {
   const [open, setOpen] = useState(true);
@@ -14,7 +14,7 @@ export default function Layout() {
     return <Navigate to="/login" />;
   }
 
-  const employeeLayout = isEmployee(user);
+  const employeeLayout = isEmployee(user) || isReportingManager(user);
 
   return (
     <div className="flex min-h-screen bg-slate-100 font-sans">

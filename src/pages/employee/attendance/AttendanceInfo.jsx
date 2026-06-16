@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -11,11 +11,10 @@ import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
 import {
   getAttendanceCode,
   formatMinutesAsHrs,
-  formatMinutesDisplay,
-  REQUIRED_WORK_MINUTES,
-  PARTIAL_EXAMPLE_MINUTES,
   CELL_STYLES,
 } from "../../../lib/attendanceUtils";
+import { getMyMonthlyAttendance, getMyTodayAttendance, checkIn, checkOut } from "../../../api/attendance.api";
+import { errorToast, successToast } from "../../../utils/ToastControllers";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const SHIFT_CODE = "GS";
@@ -42,89 +41,84 @@ function getMonthGrid(year, monthIndex) {
   return cells;
 }
 
-/** Sample work minutes per day for demo calendar */
-function getDemoWorkMinutes(date) {
+/** Build a calendar-day record from a real attendance row (or null if none exists). */
+function buildDayRecord(date, record) {
   const m = date.getMonth() + 1;
   const d = date.getDate();
   const key = `${m}-${d}`;
-  const dow = date.getDay();
+  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
   const iso = toISODateString(date);
   const todayIso = toISODateString(new Date());
+  const isHoliday = record?.status === "holiday" || Boolean(HOLIDAYS[key]);
+  const isLeave = record?.status === "leave";
+  const pending = !record && !isWeekend && !isHoliday && iso >= todayIso;
 
-  if (HOLIDAYS[key]) return { holiday: true, minutes: 0 };
-  if (dow === 0 || dow === 6) return { holiday: false, minutes: 0 };
-  if (iso > todayIso) return { holiday: false, minutes: 0, pending: true };
-  if (iso === todayIso) return { holiday: false, minutes: 0, pending: true };
+  const workMinutes = record?.work_hours ? Math.round(Number(record.work_hours) * 60) : 0;
 
-  if (d === 15) return { holiday: false, minutes: PARTIAL_EXAMPLE_MINUTES };
-  if (d === 4) return { holiday: false, minutes: REQUIRED_WORK_MINUTES, hasWarning: true };
+  let status;
+  if (isHoliday) {
+    status = { code: "H", label: "Holiday", workMinutes: 0 };
+  } else if (isLeave) {
+    status = { code: "L", label: "On Leave", workMinutes: 0 };
+  } else if (isWeekend && !record) {
+    status = { code: "O", label: "Off", workMinutes: 0 };
+  } else if (pending) {
+    status = { code: "—", label: "In progress", workMinutes: 0 };
+  } else {
+    status = getAttendanceCode(workMinutes, { isWeekend: false, isHoliday: false });
+  }
 
-  return { holiday: false, minutes: REQUIRED_WORK_MINUTES + (d % 3) * 5 };
-}
-
-function buildDayRecord(date) {
-  const { holiday: isHoliday, minutes, hasWarning, pending } = getDemoWorkMinutes(date);
-  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-  const status = pending
-    ? { code: "—", label: "In progress", workMinutes: 0 }
-    : getAttendanceCode(minutes, { isWeekend, isHoliday });
-
-  const hasData = minutes > 0 && !isWeekend && !isHoliday;
-  const firstIn = hasData ? "10:02" : "—";
-  const lastOut = hasData && minutes >= REQUIRED_WORK_MINUTES ? "19:05" : hasData ? "14:32" : "—";
-  const totalWork = hasData ? formatMinutesAsHrs(minutes) : "—";
-  const actualWork = hasData ? formatMinutesAsHrs(minutes) : "—";
+  const hasData = Boolean(record) && !isHoliday && !isLeave;
+  const firstIn = record?.check_in ? record.check_in.slice(0, 5) : "—";
+  const lastOut = record?.check_out ? record.check_out.slice(0, 5) : "—";
+  const totalWork = hasData ? formatMinutesAsHrs(workMinutes) : "—";
+  const lateBy = record?.late_by_minutes || 0;
 
   return {
-    iso: toISODateString(date),
+    iso,
     day: date.getDate(),
     weekday: date.toLocaleDateString("en-GB", { weekday: "short" }),
     status,
     shiftCode: SHIFT_CODE,
     isHoliday,
-    isWeekend,
-    hasWarning,
+    isWeekend: isWeekend && !record,
+    hasWarning: lateBy > 0,
     pending: Boolean(pending),
-    hasRemote: date.getDate() % 7 === 0 && !isWeekend && !pending,
+    hasRemote: false,
     processed: {
       firstIn,
       lastOut,
-      lateIn: hasData && minutes < REQUIRED_WORK_MINUTES ? "00:12" : "—",
-      earlyOut: hasData && minutes < REQUIRED_WORK_MINUTES ? "04:28" : "—",
+      lateIn: lateBy > 0 ? `00:${String(lateBy).padStart(2, "0")}` : "—",
+      earlyOut: "—",
       totalWorkHrs: totalWork,
-      breakHrs: hasData ? "1:00" : "—",
-      actualWorkHrs: actualWork,
+      breakHrs: hasData ? "—" : "—",
+      actualWorkHrs: totalWork,
     },
     statusRemarks:
       status.code === "P:A"
-        ? `Partial presence — ${formatMinutesDisplay(minutes)} worked (required 9h)`
+        ? `Partial presence — ${totalWork} worked (required 9h)`
         : status.code === "P"
-        ? "Full day present — 9 hours completed"
+        ? "Full day present"
         : status.code === "H"
-        ? HOLIDAYS[`${date.getMonth() + 1}-${date.getDate()}`] || "Holiday"
+        ? HOLIDAYS[key] || "Holiday"
+        : status.code === "L"
+        ? "On approved leave"
         : status.code === "O"
         ? "Weekly off"
+        : status.code === "A"
+        ? "Absent"
         : "—",
-    sessions: hasData
-      ? [
-          {
-            session: "Session 1",
-            timing: minutes < REQUIRED_WORK_MINUTES ? "10:00 - 14:30" : "10:00 - 14:30",
-            firstIn: "10:02",
-            lastOut: minutes < REQUIRED_WORK_MINUTES ? "14:30" : "14:28",
-          },
-          ...(minutes >= REQUIRED_WORK_MINUTES
-            ? [
-                {
-                  session: "Session 2",
-                  timing: "14:30 - 19:00",
-                  firstIn: "14:35",
-                  lastOut: "19:05",
-                },
-              ]
-            : []),
-        ]
-      : [],
+    sessions:
+      hasData && (record?.check_in || record?.check_out)
+        ? [
+            {
+              session: "Session 1",
+              timing: `${firstIn} - ${lastOut}`,
+              firstIn,
+              lastOut,
+            },
+          ]
+        : [],
   };
 }
 
@@ -144,22 +138,82 @@ export default function AttendanceInfo() {
     year: "numeric",
   });
 
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [todayRecord, setTodayRecord] = useState(null);
+  const [punching, setPunching] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    getMyMonthlyAttendance({ month: monthIndex + 1, year })
+      .then((data) => setRecords(Array.isArray(data) ? data : []))
+      .catch(() => setRecords([]))
+      .finally(() => setLoading(false));
+  }, [year, monthIndex]);
+
+  const loadToday = () => {
+    getMyTodayAttendance()
+      .then((data) => setTodayRecord(data))
+      .catch(() => setTodayRecord(null));
+  };
+
+  useEffect(() => {
+    loadToday();
+  }, []);
+
+  const recordsByDate = useMemo(() => {
+    const map = new Map();
+    records.forEach((r) => {
+      map.set(toISODateString(new Date(r.attendance_date)), r);
+    });
+    return map;
+  }, [records]);
+
   const dayMap = useMemo(() => {
     const map = new Map();
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
     for (let d = 1; d <= daysInMonth; d += 1) {
       const date = new Date(year, monthIndex, d);
-      const record = buildDayRecord(date);
+      const iso = toISODateString(date);
+      const record = buildDayRecord(date, recordsByDate.get(iso));
       map.set(record.iso, record);
     }
     return map;
-  }, [year, monthIndex]);
+  }, [year, monthIndex, recordsByDate]);
 
   const grid = useMemo(() => getMonthGrid(year, monthIndex), [year, monthIndex]);
 
   const selected =
     dayMap.get(selectedIso) ||
-    buildDayRecord(new Date(selectedIso + "T12:00:00"));
+    buildDayRecord(new Date(selectedIso + "T12:00:00"), recordsByDate.get(selectedIso));
+
+  const handleCheckIn = () => {
+    setPunching(true);
+    checkIn({})
+      .then((data) => {
+        setTodayRecord(data);
+        successToast("Checked in successfully.");
+        getMyMonthlyAttendance({ month: monthIndex + 1, year })
+          .then((d) => setRecords(Array.isArray(d) ? d : []))
+          .catch(() => {});
+      })
+      .catch((err) => errorToast(err?.response?.data?.message || "Unable to check in."))
+      .finally(() => setPunching(false));
+  };
+
+  const handleCheckOut = () => {
+    setPunching(true);
+    checkOut({})
+      .then((data) => {
+        setTodayRecord(data);
+        successToast("Checked out successfully.");
+        getMyMonthlyAttendance({ month: monthIndex + 1, year })
+          .then((d) => setRecords(Array.isArray(d) ? d : []))
+          .catch(() => {});
+      })
+      .catch((err) => errorToast(err?.response?.data?.message || "Unable to check out."))
+      .finally(() => setPunching(false));
+  };
 
   const summary = useMemo(() => {
     let totalMinutes = 0;
@@ -195,15 +249,35 @@ export default function AttendanceInfo() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] font-semibold text-[#1f2937]">Attendance Info</h1>
         <div className="flex items-center gap-4">
-          <button type="button" className="text-sm text-[#64748b] hover:text-brand">
-            Quick Links
-          </button>
           <button type="button" className="text-[#94a3b8] hover:text-slate-600" aria-label="Notifications">
             <Bell size={18} />
           </button>
           <button type="button" className="text-[#94a3b8] hover:text-slate-600" aria-label="Logout">
             <Power size={18} />
           </button>
+          {!todayRecord?.check_in ? (
+            <button
+              type="button"
+              onClick={handleCheckIn}
+              disabled={punching}
+              className="h-10 px-5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm disabled:opacity-60"
+            >
+              {punching ? "Please wait..." : "Check In"}
+            </button>
+          ) : !todayRecord?.check_out ? (
+            <button
+              type="button"
+              onClick={handleCheckOut}
+              disabled={punching}
+              className="h-10 px-5 rounded bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold shadow-sm disabled:opacity-60"
+            >
+              {punching ? "Please wait..." : "Check Out"}
+            </button>
+          ) : (
+            <span className="h-10 px-4 inline-flex items-center rounded bg-[#f1f5f9] text-[#64748b] text-sm font-medium">
+              Checked out at {todayRecord.check_out.slice(0, 5)}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => navigate("/employee/attendance/regularizations")}
@@ -219,19 +293,15 @@ export default function AttendanceInfo() {
         <div className="flex flex-wrap gap-4 flex-1">
           <SummaryCard
             title="AVG. WORK HRS"
-            value={summary.avgWork}
-            trend="+2% From April"
+            value={loading ? "—" : summary.avgWork}
+            trend={loading ? "" : `${recordsByDate.size} day(s) recorded`}
           />
           <SummaryCard
             title="AVG. ACTUAL WORK HRS"
-            value={summary.avgActual}
-            trend="+2% From April"
+            value={loading ? "—" : summary.avgActual}
           />
-          <SummaryCard title="PENALTY DAYS" value={String(summary.penaltyDays)} />
+          <SummaryCard title="PENALTY DAYS" value={loading ? "—" : String(summary.penaltyDays)} />
         </div>
-        <button type="button" className="text-sm font-semibold text-brand self-center">
-          +3 INSIGHTS
-        </button>
       </div>
 
       {/* Calendar + details */}

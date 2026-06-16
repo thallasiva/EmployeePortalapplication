@@ -5,14 +5,16 @@ import {
   STATIC_DEPARTMENTS,
   STATIC_DESIGNATIONS,
 } from "./staticData";
+import { setAuthTokens, clearAuthSession as clearTokens } from "../api/client";
 
 export const ROLE_ADMIN = 1;
 export const ROLE_EMPLOYEE = 2;
+export const ROLE_REPORTING_MANAGER = 3;
 
-/** Coerce role from API/form/localStorage to 1 (admin) or 2 (employee). */
+/** Coerce role from API/form/localStorage to 1 (admin), 2 (employee), or 3 (reporting manager). */
 export function normalizeRole(role) {
   const n = Number(role);
-  if (n === ROLE_ADMIN || n === ROLE_EMPLOYEE) return n;
+  if (n === ROLE_ADMIN || n === ROLE_EMPLOYEE || n === ROLE_REPORTING_MANAGER) return n;
   return null;
 }
 
@@ -28,6 +30,7 @@ export function resolveRoleForUser(user) {
 export function getHomePath(user) {
   const role = resolveRoleForUser(user);
   if (role === ROLE_ADMIN) return "/dashboard";
+  if (role === ROLE_REPORTING_MANAGER) return "/manager";
   if (role === ROLE_EMPLOYEE) return "/employee/home";
   return "/login";
 }
@@ -38,6 +41,17 @@ export function isAdmin(user) {
 
 export function isEmployee(user) {
   return resolveRoleForUser(user) === ROLE_EMPLOYEE;
+}
+
+export function isReportingManager(user) {
+  return resolveRoleForUser(user) === ROLE_REPORTING_MANAGER;
+}
+
+/** Shift assigned to the logged-in employee/RM (defaults to "general"). */
+export function getShiftForUser(user) {
+  const shift = user?.shift;
+  if (shift === "mid" || shift === "night") return shift;
+  return "general";
 }
 
 export function getStoredUser() {
@@ -59,24 +73,18 @@ export function persistUser(user) {
   localStorage.setItem("user", JSON.stringify({ ...user, role }));
 }
 
-export function authenticateUser(email, password) {
-  const key = email?.trim().toLowerCase();
-  const account = STATIC_USERS[key];
-  if (!account || account.password !== password) {
-    return null;
-  }
-  return {
-    user: {
-      email: account.email,
-      role: normalizeRole(account.role),
-      name: account.name,
-    },
-    token: "static-local-token",
-  };
+/**
+ * Persists the result of a successful `POST /api/auth/login` (or refresh)
+ * call: stores the JWT access/refresh tokens and the normalized user object.
+ */
+export function persistAuthSession({ accessToken, refreshToken, user } = {}) {
+  setAuthTokens({ accessToken, refreshToken });
+  if (user) persistUser(user);
 }
 
-export function registerUser() {
-  return { message: "Registration saved (static mode)" };
+/** Clears tokens + cached user, logging the user out locally. */
+export function logoutUser() {
+  clearTokens();
 }
 
 export function getRolesForSelect() {

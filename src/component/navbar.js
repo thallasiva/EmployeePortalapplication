@@ -1,9 +1,13 @@
 import { Menu } from "lucide-react";
-import { isAdmin } from "../data/auth";
+import { isAdmin, isReportingManager } from "../data/auth";
 
 export const Navbar = ({ toggleSidebar, user }) => {
   const displayName = user?.name || user?.email || "User";
-  const roleLabel = isAdmin(user) ? "Administrator" : "Employee";
+  const roleLabel = isAdmin(user)
+    ? "Administrator"
+    : isReportingManager(user)
+    ? "Reporting Manager"
+    : "Employee";
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2.5 bg-white border-b border-gray-200 shadow-sm">
