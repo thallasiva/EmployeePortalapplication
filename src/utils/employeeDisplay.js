@@ -7,8 +7,16 @@ const DEPT_BADGE = {
   Design: "emp-card__dept--design",
 };
 
-export function getDepartmentName(departmentId) {
-  const dept = getDepartments().find((d) => d.department_id === Number(departmentId));
+export function getDepartmentName(employeeOrId) {
+  // Prefer the live department_name returned by the API (joined from the
+  // departments table). Fall back to the static lookup / "General" only
+  // when the API hasn't provided one (e.g. legacy/mock data).
+  if (employeeOrId && typeof employeeOrId === "object") {
+    if (employeeOrId.department_name) return employeeOrId.department_name;
+    const dept = getDepartments().find((d) => d.department_id === Number(employeeOrId.department_id));
+    return dept?.department_name || "General";
+  }
+  const dept = getDepartments().find((d) => d.department_id === Number(employeeOrId));
   return dept?.department_name || "General";
 }
 

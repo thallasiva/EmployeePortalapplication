@@ -108,6 +108,9 @@ export const STATUS_LABEL = {
   absent: "Absent",
   late: "Late",
   leave: "On Leave",
+  weekend: "Weekend",
+  holiday: "Holiday",
+  half_day: "Half Day",
 };
 
 export const STATUS_BADGE_CLASS = {
@@ -115,6 +118,9 @@ export const STATUS_BADGE_CLASS = {
   absent: "rejected",
   late: "pending",
   leave: "leave",
+  weekend: "",
+  holiday: "leave",
+  half_day: "pending",
 };
 
 export const ADMIN_ATTENDANCE_WEEKLY_CHART = [

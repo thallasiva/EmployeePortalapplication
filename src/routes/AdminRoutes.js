@@ -16,9 +16,11 @@ import ManagePermissions from "../pages/admin/ManagePermissions";
 import Settings from "../pages/admin/Settings";
 import Profile from "../pages/admin/Profile";
 import CreateEmployee from "../pages/admin/CreateEmployee";
+import EmployeeDetail from "../pages/admin/EmployeeDetail";
 import { getStoredUser, isAdmin } from "../data/auth";
 import { PATH_EMPLOYEE_HOME } from "./paths";
 import PayRollForm from "../pages/admin/PayRollForm";
+import AdminPayslips from "../pages/admin/AdminPayslips";
 
 const AdminRoutes = () => {
   const user = getStoredUser();
@@ -31,6 +33,7 @@ const AdminRoutes = () => {
     <Routes>
       <Route index element={<Dashboard />} />
       <Route path="employee" element={<Employee />} />
+      <Route path="employee/:id" element={<EmployeeDetail />} />
       <Route path="create-employee" element={<CreateEmployee />} />
       <Route path="company" element={<Company />} />
       <Route path="create-company" element={<CreateCompany />} />
@@ -40,6 +43,7 @@ const AdminRoutes = () => {
       <Route path="documents" element={<AdminDocuments />} />
       <Route path="add-document" element={<AddDocumentScreen />} />
       <Route path="payroll" element={<PayRollForm />} />
+      <Route path="payroll/payslips" element={<AdminPayslips />} />
       <Route path="report/*" element={<Reports />} />
       <Route path="onboarding" element={<Onboarding />} />
       <Route path="manage" element={<Manage />} />

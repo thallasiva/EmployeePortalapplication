@@ -1,27 +1,50 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  AlertTriangle,
-  CalendarClock,
-  CheckCircle2,
-  Clock,
-  FileClock,
-  UserX,
-  Users,
-} from "lucide-react";
+import
+  {
+    AlertTriangle,
+    CalendarClock,
+    CheckCircle2,
+    Clock,
+    FileClock,
+    UserX,
+    Users,
+  } from "lucide-react";
 import { getLoggedInUser } from "../../lib/dateUtils";
-import {
-  RM_LEAVE_REQUESTS,
-  RM_REGULARIZATION_REQUESTS,
-  RM_TEAM_MEMBERS,
-  SHIFT_LABEL,
-  getRmTeamSummary,
-} from "../../data/managerData";
+import
+  {
+    RM_REGULARIZATION_REQUESTS,
+    RM_TEAM_MEMBERS,
+    SHIFT_LABEL,
+    getRmTeamSummary,
+  } from "../../data/managerData";
+import { listLeaveRequests } from "../../api/leaveRequest.api";
 import ManagerTabs from "./ManagerTabs";
 import PieChart from "../../component/charts/PieChart";
 import "../admin/adminDashboard.css";
 
-function SummaryCard({ icon: Icon, value, label, iconBg, iconColor, suffix }) {
+function formatDate(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+/** Maps a backend leave_requests row to the shape this page's "Pending Approvals" panel expects */
+function mapLeaveRequest(row) {
+  return {
+    id: row.leave_request_id,
+    employee: (row.employee_name || "").trim() || "—",
+    type: row.leave_type_name || "—",
+    from: formatDate(row.from_date),
+    to: formatDate(row.to_date),
+    days: Number(row.days) || 0,
+    status: row.status,
+  };
+}
+
+function SummaryCard({ icon: Icon, value, label, iconBg, iconColor, suffix })
+{
   return (
     <div className="admin-dash-card flex items-center gap-4">
       <div className={`p-3 rounded-xl ${iconBg}`}>
@@ -40,7 +63,8 @@ function SummaryCard({ icon: Icon, value, label, iconBg, iconColor, suffix }) {
   );
 }
 
-function getInitials(name) {
+function getInitials(name)
+{
   return name
     .split(" ")
     .map((n) => n[0])
@@ -61,13 +85,25 @@ const STATUS_LABEL = {
   late: "Late",
 };
 
-const ManagerDashboard = () => {
+const ManagerDashboard = () =>
+{
   const user = getLoggedInUser();
   const summary = getRmTeamSummary();
-  const pendingLeave = RM_LEAVE_REQUESTS.filter((r) => r.status === "Pending");
   const pendingRegularizations = RM_REGULARIZATION_REQUESTS.filter(
     (r) => r.status === "Pending"
   );
+
+  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [leaveLoading, setLeaveLoading] = useState(true);
+
+  useEffect(() => {
+    listLeaveRequests({ limit: 100 })
+      .then(({ data }) => setLeaveRequests((data || []).map(mapLeaveRequest)))
+      .catch(() => setLeaveRequests([]))
+      .finally(() => setLeaveLoading(false));
+  }, []);
+
+  const pendingLeave = leaveRequests.filter((r) => r.status === "Pending");
 
   return (
     <div className="admin-dash space-y-6">
@@ -114,7 +150,7 @@ const ManagerDashboard = () => {
         />
         <SummaryCard
           icon={CalendarClock}
-          value={summary.pendingLeave}
+          value={leaveLoading ? "—" : pendingLeave.length}
           label="Pending Leave Requests"
           iconBg="bg-violet-50"
           iconColor="text-violet-600"
@@ -126,6 +162,7 @@ const ManagerDashboard = () => {
           iconBg="bg-amber-50"
           iconColor="text-amber-600"
         />
+        
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -142,7 +179,7 @@ const ManagerDashboard = () => {
           title="Pending Approvals Breakdown"
           centerLabel="Pending items"
           data={[
-            { label: "Leave Requests", value: summary.pendingLeave, color: "#8b5cf6" },
+            { label: "Leave Requests", value: pendingLeave.length, color: "#8b5cf6" },
             {
               label: "Regularizations",
               value: summary.pendingRegularizations,
@@ -211,7 +248,9 @@ const ManagerDashboard = () => {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             Leave Requests
           </p>
-          {pendingLeave.length === 0 ? (
+          {leaveLoading ? (
+            <p className="text-sm text-gray-400 mb-4">Loading leave requests...</p>
+          ) : pendingLeave.length === 0 ? (
             <p className="text-sm text-gray-400 mb-4">No pending leave requests.</p>
           ) : (
             <div className="space-y-2 mb-4">

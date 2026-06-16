@@ -159,6 +159,58 @@
   max-width: 320px;
 }
 
+.review-hub__content--list {
+  align-items: stretch;
+  justify-content: flex-start;
+  display: block;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.review-hub__leave-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-hub__leave-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+}
+
+.review-hub__leave-type {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c2746;
+  margin: 0;
+}
+
+.review-hub__leave-meta {
+  font-size: 12px;
+  color: #888;
+  margin: 4px 0 0;
+}
+
+.review-hub__leave-remarks {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0 0;
+}
+
+.review-hub__leave-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .review-hub__layout {
     flex-direction: column;

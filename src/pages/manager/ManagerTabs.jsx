@@ -6,6 +6,8 @@ const TABS = [
   { label: "Team Attendance", to: "/manager/team/attendance" },
   { label: "Leave Requests", to: "/manager/team/leave" },
   { label: "Regularization", to: "/manager/team/regularizations" },
+  { label: "Performance Appraisal", to: "/manager/team/performance" },
+
 ];
 
 const isTabActive = (pathname, to) => {

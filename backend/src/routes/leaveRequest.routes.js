@@ -1,0 +1,24 @@
+const express = require('express');
+const controller = require('../controllers/leaveRequest.controller');
+const validate = require('../middleware/validate');
+const { applyLeaveSchema, reviewLeaveSchema } = require('../validators/leaveRequest.validator');
+const { authenticate } = require('../middleware/auth');
+const { requirePermission } = require('../middleware/rbac');
+
+const router = express.Router();
+
+router.use(authenticate);
+
+// Self-service
+router.get('/me', controller.myRequests);
+router.get('/me/balances', controller.balances);
+router.post('/', validate(applyLeaveSchema), controller.apply);
+router.put('/:id/cancel', controller.cancel);
+
+// Admin / manager views
+router.get('/', requirePermission('leave', 'view'), controller.list);
+router.get('/:id', requirePermission('leave', 'view'), controller.getOne);
+router.get('/employees/:employeeId/balances', requirePermission('leave', 'view'), controller.balances);
+router.put('/:id/review', requirePermission('leave', 'edit'), validate(reviewLeaveSchema), controller.review);
+
+module.exports = router;

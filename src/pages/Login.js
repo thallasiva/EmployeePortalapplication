@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { authenticateUser, getHomePath, getStoredUser, persistUser } from "../data/auth";
+import { getHomePath, getStoredUser, persistAuthSession } from "../data/auth";
+import { login as loginApi } from "../api/auth.api";
+import { getErrorMessage } from "../api/client";
 import { Navigate } from "react-router-dom";
 import { errorToast } from "../utils/ToastControllers";
+import PasswordInput from "../component/PasswordInput";
 
 const Login = () => {
   const router = useNavigate();
@@ -15,20 +18,21 @@ const Login = () => {
       email: Yup.string().email("Invalid email format").required("Email is required"),
       password: Yup.string().required("Password is required"),
     }),
-    onSubmit: (values) => {
-      const result = authenticateUser(values.email, values.password);
-      if (!result) {
-        errorToast("Invalid email or password");
-        return;
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const result = await loginApi(values.email, values.password);
+        persistAuthSession(result);
+        const home = getHomePath(result.user);
+        if (home === "/login") {
+          errorToast("Unknown role for this account");
+          return;
+        }
+        router(home);
+      } catch (err) {
+        errorToast(getErrorMessage(err, "Invalid email or password"));
+      } finally {
+        setSubmitting(false);
       }
-      persistUser(result.user);
-      localStorage.setItem("token", result.token);
-      const home = getHomePath(result.user);
-      if (home === "/login") {
-        errorToast("Unknown role for this account");
-        return;
-      }
-      router(home);
     },
   });
 
@@ -49,7 +53,7 @@ const Login = () => {
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-md p-8 md:p-10">
         <form onSubmit={loginValidation.handleSubmit}>
           <h2 className="text-xl font-semibold text-center text-slate-800">Sign in</h2>
-          <p className="text-center text-sm text-slate-500 mb-8 mt-1">Static login — no API</p>
+          <p className="text-center text-sm text-slate-500 mb-8 mt-1">Sign in to your account</p>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -69,9 +73,8 @@ const Login = () => {
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
+            <PasswordInput
+              inputClassName="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
               name="password"
               value={loginValidation.values.password}
               onChange={loginValidation.handleChange}
@@ -82,15 +85,17 @@ const Login = () => {
             )}
           </div>
 
-          <button type="submit" className="w-full btn-primary py-2.5 text-base">
-            Login
+          <button
+            type="submit"
+            className="w-full btn-primary py-2.5 text-base disabled:opacity-60"
+            disabled={loginValidation.isSubmitting}
+          >
+            {loginValidation.isSubmitting ? "Signing in..." : "Login"}
           </button>
         </form>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          Admin: admin@yopmail.com / Test@123 · Manager: manager@yopmail.com / Test@123
-          <br />
-          Employee: employee@yopmail.com / Test@1234
+          Default admin: admin@yopmail.com / Admin@123
           <br />
           Your dashboard automatically shows your assigned shift (General, Mid or Night).
         </p>

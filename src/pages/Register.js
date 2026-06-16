@@ -1,26 +1,40 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     getRolesForSelect,
     getCompaniesForSelect,
     getDepartmentsForSelect,
     getDesignationsForSelect,
-    registerUser,
 } from "../data/auth";
+import { register as registerApi } from "../api/auth.api";
+import { getErrorMessage } from "../api/client";
+import { successToast, errorToast } from "../utils/ToastControllers";
+import PasswordInput from "../component/PasswordInput";
 
 /* ================= INPUT ================= */
 const Input = ({ label, name, type = "text", formik }) => (
     <div className="w-1/2 px-2 mb-4">
         <label className="block text-sm text-gray-700 mb-1">{label}</label>
-        <input
-            type={type}
-            name={name}
-            value={formik.values[name]}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            className="w-full border rounded-lg px-4 py-2"
-        />
+        {type === "password" ? (
+            <PasswordInput
+                inputClassName="w-full border rounded-lg px-4 py-2"
+                name={name}
+                value={formik.values[name]}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+            />
+        ) : (
+            <input
+                type={type}
+                name={name}
+                value={formik.values[name]}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                className="w-full border rounded-lg px-4 py-2"
+            />
+        )}
         {formik.touched[name] && formik.errors[name] && (
             <p className="text-red-500 text-sm">{formik.errors[name]}</p>
         )}
@@ -86,6 +100,7 @@ const Select = ({ label, name, options, formik, onChange }) => (
 /* ================= MAIN COMPONENT ================= */
 const Register = () =>
 {
+    const navigate = useNavigate();
     const [getCompiness, setCompiness] = useState([]);
     const [rolesList, setRolesList] = useState([]);
     const [getdesignationList, setdesignationList] = useState([]);
@@ -156,11 +171,32 @@ const Register = () =>
                 .required(),
         }),
 
-        onSubmit: (values) =>
+        onSubmit: async (values, { setSubmitting }) =>
         {
-            const { confirmPassword, ...payload } = values;
-            registerUser(payload);
-            alert("Registration saved successfully (static mode).");
+            try
+            {
+                await registerApi({
+                    email: values.email,
+                    password: values.password,
+                    firstName: values.first_name,
+                    lastName: values.last_name,
+                    mobile: values.mobile,
+                    roleId: Number(values.role) || 2,
+                    departmentId: values.department ? Number(values.department) : null,
+                    designationId: values.designation ? Number(values.designation) : null,
+                    empJobTitle: values.username || undefined,
+                });
+                successToast("Registration successful. You can now sign in.");
+                navigate("/login");
+            }
+            catch (err)
+            {
+                errorToast(getErrorMessage(err, "Registration failed"));
+            }
+            finally
+            {
+                setSubmitting(false);
+            }
         },
     });
 

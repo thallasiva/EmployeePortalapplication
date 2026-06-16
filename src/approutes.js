@@ -17,6 +17,7 @@ import ManagerRoutes from "./routes/ManagerRoutes";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
+import PayslipPrintView from "./pages/payslip/PayslipPrintView";
 import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager } from "./data/auth";
 
 const AppRoutes = () => {
@@ -47,6 +48,13 @@ const AppRoutes = () => {
       <Route
         path="/register"
         element={<Register />}
+      />
+
+      {/* PRINTABLE PAYSLIP — full-page view, accessible to any authenticated user
+          (the backend enforces self-access or payroll:view permission) */}
+      <Route
+        path="/payslip/:id/print"
+        element={user ? <PayslipPrintView /> : <Navigate to="/login" replace />}
       />
 
       {/* ADMIN */}

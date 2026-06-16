@@ -22,6 +22,7 @@ import Feedback from "../pages/employee/worklife/Feedback";
 import Tasks from "../pages/employee/tasks/Tasks";
 import TaskReview from "../pages/employee/tasks/Review";
 import People from "../pages/employee/people/People";
+import OrganizationChart from "../pages/employee/people/OrganizationChart";
 import Hiring from "../pages/employee/hiring/Hiring";
 import RequestHub from "../pages/employee/request/RequestHub";
 import WorkflowDelegates from "../pages/employee/workflow/WorkflowDelegates";
@@ -68,6 +69,7 @@ const EmployeeRoutes = () => {
       <Route path="documents" element={<DocumentCenter />} />
       <Route path="documents/upload" element={<DocumentCenter />} />
       <Route path="people" element={<People />} />
+      <Route path="org-chart" element={<OrganizationChart />} />
       <Route path="helpdesk" element={<Helpdesk />} />
       <Route path="request-hub" element={<RequestHub />} />
       <Route path="workflow-delegates" element={<WorkflowDelegates />} />

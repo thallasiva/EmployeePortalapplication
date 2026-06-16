@@ -5,17 +5,17 @@ import {
   Clock,
   FileText,
   Thermometer,
+  Upload,
   User,
   Users,
+  X,
 } from "lucide-react";
 import {
   ADMIN_LEAVE_MONTHLY_CHART,
   ADMIN_LEAVE_MONTHLY_SERIES,
   ADMIN_LEAVE_POLICIES,
   ADMIN_TOTAL_EMPLOYEES,
-  ADMIN_ACTION_BY,
   CALENDAR_PURPOSE,
-  INITIAL_LEAVE_REQUESTS,
   ADMIN_LEAVE_SUMMARY,
 } from "../../data/adminLeaveData";
 import AdminGroupedBarChart from "../../component/admin/AdminGroupedBarChart";
@@ -26,7 +26,10 @@ import {
   countApprovedThisMonth,
   getApprovedLeavesToday,
 } from "../../utils/adminLeaveUtils";
-import { successToast } from "../../utils/ToastControllers";
+import { successToast, errorToast } from "../../utils/ToastControllers";
+import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
+import { importHolidays } from "../../api/holiday.api";
+import { parseHolidayCsv } from "../../utils/holidayImport";
 import "./adminDashboard.css";
 
 const LEAVE_ICON = {
@@ -49,6 +52,38 @@ function formatActionDate() {
     month: "short",
     year: "numeric",
   });
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** Maps a backend leave_requests row to the shape RequestRow expects */
+function mapRequest(row) {
+  return {
+    id: row.leave_request_id,
+    employee: (row.employee_name || "").trim() || "—",
+    department: row.department_name || "—",
+    type: row.leave_type_name || "—",
+    from: formatDate(row.from_date),
+    to: formatDate(row.to_date),
+    days: Number(row.days) || 0,
+    reason: row.reason || "—",
+    appliedOn: formatDate(row.applied_on),
+    status: row.status,
+    actionBy: (row.reviewer_name || "").trim() || null,
+    actionOn:
+      row.status !== "Pending"
+        ? formatDate(row.reviewed_on || row.updated_at || row.applied_on)
+        : null,
+  };
 }
 
 function LeaveTypeCard({ item }) {
@@ -178,17 +213,130 @@ function RequestRow({ row, showActions, onApprove, onReject, highlight }) {
   );
 }
 
+function ImportHolidayCalendarModal({ onClose, onImported }) {
+  const fileInputRef = useRef(null);
+  const [fileName, setFileName] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileName(file.name);
+    setError("");
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const { holidays, errors } = parseHolidayCsv(String(reader.result || ""));
+        setImporting(true);
+        await importHolidays(holidays);
+        if (errors.length) {
+          successToast(
+            `Imported ${holidays.length} holiday(s). ${errors.length} row(s) were skipped.`
+          );
+        } else {
+          successToast(`Imported ${holidays.length} holiday(s) successfully.`);
+        }
+        onImported();
+        onClose();
+      } catch (err) {
+        const message =
+          err?.response?.data?.message || err?.message || "Failed to import holiday calendar.";
+        setError(message);
+        errorToast(message);
+      } finally {
+        setImporting(false);
+      }
+    };
+    reader.onerror = () => {
+      setError("Could not read the selected file.");
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <h3 className="font-semibold text-gray-900">Import Holiday Calendar</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-sm text-gray-600">
+            Upload a CSV file with columns <strong>Holiday Name</strong> and{" "}
+            <strong>Date</strong> (YYYY-MM-DD). Optional columns:{" "}
+            <strong>Calendar</strong>, <strong>Restricted</strong>.
+          </p>
+
+          <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center cursor-pointer hover:border-brand hover:bg-brand-50/40">
+            <Upload size={24} className="text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">
+              {fileName || "Click to choose a CSV file"}
+            </span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={importing}
+            />
+          </label>
+
+          {importing && <p className="text-sm text-brand">Importing holidays...</p>}
+          {error && <p className="text-sm text-rose-600">{error}</p>}
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminLeaveDashboard() {
   const location = useLocation();
-  const [requests, setRequests] = useState(INITIAL_LEAVE_REQUESTS);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [requestTab, setRequestTab] = useState(location.state?.tab ?? "pending");
   const [highlightRequestId, setHighlightRequestId] = useState(
     location.state?.requestId ?? null
   );
   const [statFilter, setStatFilter] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const requestsPanelRef = useRef(null);
   const statDetailRef = useRef(null);
+
+  const loadRequests = () => {
+    setLoading(true);
+    return listLeaveRequests({ limit: 100 })
+      .then(({ data }) => {
+        setRequests((data || []).map(mapRequest));
+      })
+      .catch(() => setRequests([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
 
   useEffect(() => {
     if (location.state?.tab) {
@@ -268,32 +416,38 @@ export default function AdminLeaveDashboard() {
     setRequests((curr) =>
       curr.map((r) =>
         r.id === id
-          ? {
-              ...r,
-              status: "Approved",
-              actionBy: ADMIN_ACTION_BY,
-              actionOn: formatActionDate(),
-            }
+          ? { ...r, status: "Approved", actionOn: formatActionDate() }
           : r
       )
     );
-    successToast("Leave request approved.");
+    reviewLeaveRequest(id, { decision: "Approved" })
+      .then(() => {
+        successToast("Leave request approved.");
+        loadRequests();
+      })
+      .catch((err) => {
+        errorToast(err?.response?.data?.message || "Failed to approve leave request.");
+        loadRequests();
+      });
   };
 
   const handleReject = (id) => {
     setRequests((curr) =>
       curr.map((r) =>
         r.id === id
-          ? {
-              ...r,
-              status: "Rejected",
-              actionBy: ADMIN_ACTION_BY,
-              actionOn: formatActionDate(),
-            }
+          ? { ...r, status: "Rejected", actionOn: formatActionDate() }
           : r
       )
     );
-    successToast("Leave request rejected.");
+    reviewLeaveRequest(id, { decision: "Rejected", remarks: "Rejected by admin" })
+      .then(() => {
+        successToast("Leave request rejected.");
+        loadRequests();
+      })
+      .catch((err) => {
+        errorToast(err?.response?.data?.message || "Failed to reject leave request.");
+        loadRequests();
+      });
   };
 
   const scrollTo = (ref) => {
@@ -316,7 +470,22 @@ export default function AdminLeaveDashboard() {
             Monitor team leave, requests, and availability across all employees
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowImportModal(true)}
+          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+        >
+          <Upload size={16} />
+          Import Holiday Calendar
+        </button>
       </div>
+
+      {showImportModal && (
+        <ImportHolidayCalendarModal
+          onClose={() => setShowImportModal(false)}
+          onImported={() => {}}
+        />
+      )}
 
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -449,7 +618,11 @@ export default function AdminLeaveDashboard() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto max-h-[360px] pr-1">
-            {tabRows.length === 0 ? (
+            {loading ? (
+              <p className="text-sm text-gray-400 text-center py-8">
+                Loading requests...
+              </p>
+            ) : tabRows.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-8">
                 No {requestTab} requests.
               </p>
