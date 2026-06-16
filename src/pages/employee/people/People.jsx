@@ -172,7 +172,7 @@ export default function People() {
     if (!filteredList.some((p) => p.id === selectedId)) {
       setSelectedId(filteredList[0].id);
     }
-  }, [filteredList]);
+  }, [filteredList, selectedId]);
 
   const selected = filteredList.find((p) => p.id === selectedId) ?? null;
 

@@ -142,10 +142,6 @@ export default function LeaveCalendar() {
     );
   }, [leaves, search]);
 
-  // Navigate months
-  const prevMonth = () => setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
-  const nextMonth = () => setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
-
   return (
     <div className="min-h-screen bg-[#f5f7fb] p-6">
       {/* Header */}
