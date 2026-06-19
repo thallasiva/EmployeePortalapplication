@@ -8,6 +8,10 @@ export const listEmployees = (params) =>
 export const getEmployeeDirectory = (params) =>
   apiClient.get("/employees/directory", { params }).then(unwrap);
 
+/** GET /employees/my-team — returns { manager, teammates[], currentEmployeeId } */
+export const getMyTeam = () =>
+  apiClient.get("/employees/my-team").then(unwrap);
+
 /** GET /employees/:id */
 export const getEmployee = (id) => apiClient.get(`/employees/${id}`).then(unwrap);
 

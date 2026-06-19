@@ -39,8 +39,11 @@ const TeamLeaveRequests = () => {
 
   const loadRequests = () => {
     setLoading(true);
-    return listLeaveRequests({ limit: 100 })
-      .then(({ data }) => setRequests((data || []).map(mapRequest)))
+    return listLeaveRequests({ limit: 200 })
+      .then((res) => {
+        const data = Array.isArray(res) ? res : (res?.data ?? []);
+        setRequests(data.map(mapRequest));
+      })
       .catch(() => setRequests([]))
       .finally(() => setLoading(false));
   };

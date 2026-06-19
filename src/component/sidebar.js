@@ -108,6 +108,11 @@ export const Sidebar = ({ open }) => {
       ],
     },
     {
+      label: "Timesheets",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/timesheets",
+    },
+    {
       label: "Onboarding",
       icon: <UserRoundPlus size={20} />,
       navigationLink: "/dashboard/onboarding",
@@ -128,6 +133,12 @@ export const Sidebar = ({ open }) => {
     label: "Team Overview",
     icon: <Users size={20} strokeWidth={1.75} />,
     navigationLink: "/manager",
+  };
+
+  const managerTimesheetItem = {
+    label: "Timesheets",
+    icon: <Clock size={20} strokeWidth={1.75} />,
+    navigationLink: "/manager/timesheets",
   };
 
   const employeeItems = [
@@ -237,7 +248,7 @@ export const Sidebar = ({ open }) => {
   const items = isAdmin(user)
     ? adminItems
     : isReportingManager(user)
-    ? [teamOverviewItem, ...employeeItems]
+    ? [teamOverviewItem, managerTimesheetItem, ...employeeItems]
     : employeeItems;
 
   const toggleAccordion = (index) => {

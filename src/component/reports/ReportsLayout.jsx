@@ -8,6 +8,7 @@ import AttendanceReport from "../../pages/admin/reports/AttendanceReport";
 import LeaveReport from "../../pages/admin/reports/LeaveReport";
 import DailyReport from "../../pages/admin/reports/DailyReport";
 import GenericReport from "../../pages/admin/reports/GenericReport";
+import DownloadReports from "../../pages/admin/reports/DownloadReports";
 import "./reports.css";
 
 export default function ReportsLayout() {
@@ -43,6 +44,7 @@ export default function ReportsLayout() {
           <Route path="payment" element={<GenericReport type="payment" />} />
           <Route path="user" element={<GenericReport type="user" />} />
           <Route path="payslip" element={<GenericReport type="payslip" />} />
+          <Route path="downloads" element={<DownloadReports />} />
           <Route path="*" element={<Navigate to="daily" replace />} />
         </Routes>
       </div>

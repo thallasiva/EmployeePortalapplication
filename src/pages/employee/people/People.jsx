@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Star, Mail, Phone, Briefcase, Users, MapPin, User } from "lucide-react";
-import { getEmployeeDirectory } from "../../../api/employee.api";
+import { Search, Filter, Star, Mail, Phone, Briefcase, Users, MapPin, User, Crown } from "lucide-react";
+import { getMyTeam } from "../../../api/employee.api";
+import { getLoggedInUser } from "../../../lib/dateUtils";
 
 /* ─── helpers ─────────────────────────────────────────────────────────────── */
 
@@ -58,8 +59,8 @@ function normalize(emp, idx) {
     name:         fullName(emp),
     email:        emp.email || "—",
     mobile:       emp.mobile || emp.phone || "—",
-    jobTitle:     emp.emp_job_title || emp.designation || emp.job_title || "—",
-    reportingTo:  emp.reporting_manager_name || emp.reporting_to || "—",
+    jobTitle:     emp.emp_job_title || emp.designation_name || emp.job_title || "—",
+    reportingTo:  emp.reporting_to_name || emp.reporting_manager_name || "—",
     departmentId: emp.department_id,
     departmentName: emp.department_name || "—",
     status:       emp.employee_status || emp.status || "Active",
@@ -106,10 +107,42 @@ function SkeletonCard() {
   );
 }
 
+/* ─── Manager banner ──────────────────────────────────────────────────────── */
+function ManagerBanner({ manager }) {
+  if (!manager) return null;
+  return (
+    <div style={{
+      padding: "10px 14px",
+      borderBottom: "1px solid #f1f5f9",
+      background: "#fefce8",
+    }}>
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", color: "#92400e", textTransform: "uppercase", margin: "0 0 6px" }}>
+        Your Manager
+      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Avatar name={manager.name} idx={7} size={30} />
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {manager.name}
+          </p>
+          <p style={{ fontSize: 11, color: "#92400e", margin: 0 }}>
+            {manager.jobTitle}
+          </p>
+        </div>
+        <Crown size={13} style={{ color: "#d97706", marginLeft: "auto", flexShrink: 0 }} />
+      </div>
+    </div>
+  );
+}
+
 /* ─── main component ──────────────────────────────────────────────────────── */
 
 export default function People() {
-  const [employees, setEmployees] = useState([]);
+  const currentUser = getLoggedInUser();
+  const currentEmployeeId = currentUser?.employeeId ?? currentUser?.employee_id;
+
+  const [teammates, setTeammates] = useState([]);
+  const [manager, setManager]     = useState(null);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
 
@@ -123,33 +156,37 @@ export default function People() {
   /* fetch ------------------------------------------------------------------- */
   useEffect(() => {
     setLoading(true);
-    Promise.resolve(getEmployeeDirectory())
-      .then((res) => {
-        // getEmployeeDirectory uses unwrap → returns the array directly
-        const arr = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
-        setEmployees(arr.map(normalize));
+    getMyTeam()
+      .then(({ manager: mgr, teammates: team, currentEmployeeId: selfId }) => {
+        // Normalize and label self
+        const normalized = (team || []).map((emp, idx) => ({
+          ...normalize(emp, idx),
+          isSelf: emp.employee_id === (selfId ?? currentEmployeeId),
+        }));
+        setTeammates(normalized);
+        setManager(mgr ? { ...normalize(mgr, 7), isSelf: false } : null);
       })
-      .catch((err) => setError(err?.message || "Failed to load employees"))
+      .catch((err) => setError(err?.message || "Failed to load team"))
       .finally(() => setLoading(false));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* departments for filter -------------------------------------------------- */
   const departments = useMemo(() => {
     const seen = new Map();
-    employees.forEach((e) => {
+    teammates.forEach((e) => {
       if (e.departmentId && !seen.has(e.departmentId)) {
         seen.set(e.departmentId, e.departmentName);
       }
     });
     return [{ value: "all", label: "All Departments" },
       ...[...seen.entries()].map(([id, name]) => ({ value: String(id), label: name }))];
-  }, [employees]);
+  }, [teammates]);
 
   /* filtered list ----------------------------------------------------------- */
   const filteredList = useMemo(() => {
     let list = tab === "starred"
-      ? employees.filter((p) => starredIds.includes(p.id))
-      : employees;
+      ? teammates.filter((p) => starredIds.includes(p.id))
+      : teammates;
 
     if (deptFilter !== "all") {
       list = list.filter((p) => String(p.departmentId) === deptFilter);
@@ -164,13 +201,15 @@ export default function People() {
       );
     }
     return list;
-  }, [employees, tab, starredIds, deptFilter, query]);
+  }, [teammates, tab, starredIds, deptFilter, query]);
 
   /* auto-select first -------------------------------------------------------- */
   useEffect(() => {
     if (!filteredList.length) { setSelectedId(null); return; }
     if (!filteredList.some((p) => p.id === selectedId)) {
-      setSelectedId(filteredList[0].id);
+      // Prefer selecting self first
+      const self = filteredList.find((p) => p.isSelf);
+      setSelectedId(self ? self.id : filteredList[0].id);
     }
   }, [filteredList, selectedId]);
 
@@ -198,7 +237,7 @@ export default function People() {
 
       {/* ── Tabs ── */}
       <div style={{ display: "flex", borderBottom: "1px solid #e2e8f0", padding: "0 16px" }}>
-        {[{ key: "starred", label: "⭐ Starred" }, { key: "everyone", label: "Everyone" }].map(({ key, label }) => (
+        {[{ key: "starred", label: "⭐ Starred" }, { key: "everyone", label: "My Team" }].map(({ key, label }) => (
           <button
             key={key}
             type="button"
@@ -264,7 +303,7 @@ export default function People() {
             </button>
           </div>
 
-          {/* Dept filter dropdown (inline) */}
+          {/* Dept filter dropdown */}
           {filterOpen && (
             <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc" }}>
               <label style={{ fontSize: 11, color: "#94a3b8", display: "block", marginBottom: 4 }}>
@@ -295,10 +334,13 @@ export default function People() {
             </div>
           )}
 
+          {/* Manager banner */}
+          {!loading && tab === "everyone" && <ManagerBanner manager={manager} />}
+
           {/* Count */}
           {!loading && (
             <div style={{ padding: "6px 14px", fontSize: 11, color: "#94a3b8", borderBottom: "1px solid #f8fafc" }}>
-              {filteredList.length} of {employees.length} employee{employees.length !== 1 ? "s" : ""}
+              {filteredList.length} teammate{filteredList.length !== 1 ? "s" : ""}
             </div>
           )}
 
@@ -312,7 +354,7 @@ export default function People() {
               <div style={{ padding: 40, textAlign: "center" }}>
                 <Users size={40} strokeWidth={1.2} style={{ color: "#cbd5e1", marginBottom: 8 }} />
                 <p style={{ fontSize: 13, color: "#94a3b8" }}>
-                  {tab === "starred" ? "No starred employees yet." : "No employees found."}
+                  {tab === "starred" ? "No starred teammates yet." : "No teammates found."}
                 </p>
               </div>
             ) : (
@@ -337,9 +379,16 @@ export default function People() {
                       >
                         <Avatar name={person.name} idx={person.avatarIdx} size={36} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: "#1e293b", margin: 0, truncate: true, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {person.name}
-                          </p>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <p style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: "#1e293b", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {person.name}
+                            </p>
+                            {person.isSelf && (
+                              <span style={{ fontSize: 9, fontWeight: 700, background: "#dbeafe", color: "#1d4ed8", borderRadius: 4, padding: "1px 5px", flexShrink: 0 }}>
+                                YOU
+                              </span>
+                            )}
+                          </div>
                           <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>
                             {person.empCode} · {person.departmentName}
                           </p>
@@ -361,12 +410,12 @@ export default function People() {
           {tab === "starred" && starredIds.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: 40 }}>
               <Star size={64} strokeWidth={1} style={{ color: "#fcd34d", marginBottom: 12 }} />
-              <p style={{ fontSize: 14, color: "#94a3b8" }}>Star your colleagues to find them quickly.</p>
+              <p style={{ fontSize: 14, color: "#94a3b8" }}>Star your teammates to find them quickly.</p>
             </div>
           ) : !selected ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: 40 }}>
               <User size={48} strokeWidth={1} style={{ color: "#cbd5e1", marginBottom: 12 }} />
-              <p style={{ fontSize: 14, color: "#94a3b8" }}>Select an employee to view details.</p>
+              <p style={{ fontSize: 14, color: "#94a3b8" }}>Select a teammate to view details.</p>
             </div>
           ) : (
             <div style={{ padding: "24px 28px", maxWidth: 600 }}>
@@ -379,6 +428,11 @@ export default function People() {
                     <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1e293b", margin: 0 }}>
                       {selected.name}
                     </h2>
+                    {selected.isSelf && (
+                      <span style={{ fontSize: 11, fontWeight: 700, background: "#dbeafe", color: "#1d4ed8", borderRadius: 6, padding: "2px 8px" }}>
+                        You
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => toggleStar(selected.id)}
@@ -454,9 +508,9 @@ export default function People() {
               {/* Personal */}
               <SectionHead title="Personal Information" />
               <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", rowGap: 12, columnGap: 12 }}>
-                {selected.gender    !== "—" && <InfoRow label="Gender"      value={selected.gender} />}
+                {selected.gender    !== "—" && <InfoRow label="Gender"        value={selected.gender} />}
                 {selected.dob       !== "—" && <InfoRow label="Date of Birth" value={selected.dob} />}
-                {selected.bloodGroup !== "—" && <InfoRow label="Blood Group" value={selected.bloodGroup} />}
+                {selected.bloodGroup !== "—" && <InfoRow label="Blood Group"  value={selected.bloodGroup} />}
               </div>
 
             </div>

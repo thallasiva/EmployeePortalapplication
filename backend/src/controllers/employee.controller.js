@@ -11,7 +11,8 @@ const base = createCrudController(employeeService, { entityName: 'Employee' });
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { department, status, search } = req.query;
-  const { rows, total } = await employeeService.list({ department, status, search, limit, offset });
+  const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
+  const { rows, total } = await employeeService.list({ department, status, search, reporting_to, limit, offset });
   new ApiResponse(200, rows, 'Employee list fetched', buildMeta({ page, limit, total })).send(res);
 });
 
@@ -77,6 +78,11 @@ const directory = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'People directory fetched').send(res);
 });
 
+const myTeam = asyncHandler(async (req, res) => {
+  const data = await employeeService.myTeam(req.user.employeeId);
+  new ApiResponse(200, data, 'My team fetched').send(res);
+});
+
 module.exports = {
   ...base,
   list,
@@ -87,4 +93,5 @@ module.exports = {
   getBankDetails,
   updateBankDetails,
   directory,
+  myTeam,
 };
