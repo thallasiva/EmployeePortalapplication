@@ -1,15 +1,16 @@
 export const REPORT_NAV = [
+  { path: "daily", label: "Daily" },
+  { path: "employee", label: "Employee" },
+  { path: "attendance", label: "Attendance" },
+  { path: "leave", label: "Leave" },
+  { path: "payslip", label: "Payslip" },
+  { path: "project", label: "Project" },
+  { path: "task", label: "Task" },
   { path: "expense", label: "Expense" },
   { path: "invoice", label: "Invoice" },
   { path: "payment", label: "Payment" },
-  { path: "project", label: "Project" },
-  { path: "task", label: "Task" },
   { path: "user", label: "User" },
-  { path: "employee", label: "Employee" },
-  { path: "payslip", label: "Payslip" },
-  { path: "attendance", label: "Attendance" },
-  { path: "leave", label: "Leave" },
-  { path: "daily", label: "Daily" },
+  { path: "downloads", label: "⬇ Downloads" },
 ];
 
 export const PROJECT_STATS = [

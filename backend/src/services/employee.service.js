@@ -11,6 +11,10 @@ const FILLABLE = [
   'father_name', 'spouse_name', 'aadhaar_number', 'aadhaar_name', 'aadhaar_enrolment_number',
   'access_card_number', 'access_card_from_date', 'access_card_to_date',
   'pf_number', 'pf_join_date', 'esi_number', 'has_left_organization',
+  // Extended fields (migration_009)
+  'biometric_id', 'actual_dob', 'pan_number', 'project_cost_centre',
+  'contract_end_date', 'date_of_confirmation', 'educational_qualification',
+  'total_exp_before_joining', 'previous_employer', 'bgv_status', 'previous_designation',
 ];
 
 const LIST_SELECT = `
@@ -36,10 +40,14 @@ class EmployeeService extends BaseService {
     super('employees', 'employee_id', FILLABLE);
   }
 
-  async list({ department, status, search, limit, offset } = {}) {
+  async list({ department, status, search, reporting_to, limit, offset } = {}) {
     const conditions = [];
     const params = [];
 
+    if (reporting_to) {
+      conditions.push('e.reporting_to = ?');
+      params.push(reporting_to);
+    }
     if (department) {
       conditions.push('e.department_id = ?');
       params.push(department);
@@ -172,6 +180,41 @@ class EmployeeService extends BaseService {
 
     const rows = await query('SELECT * FROM employee_bank_details WHERE employee_id = ?', [employeeId]);
     return rows[0];
+  }
+
+  /**
+   * Returns the team context for the logged-in employee:
+   *  - their manager's record
+   *  - all active teammates (employees under the same manager)
+   */
+  async myTeam(employeeId) {
+    // Get self to find reporting_to
+    const selfRows = await query(
+      `${LIST_SELECT} WHERE e.employee_id = ?`,
+      [employeeId]
+    );
+    const self = selfRows[0] || null;
+    const managerId = self ? self.reporting_to : null;
+
+    if (!managerId) {
+      // Employee has no manager — show just themselves
+      return { manager: null, teammates: self ? [self] : [], currentEmployeeId: employeeId };
+    }
+
+    // Get manager record
+    const managerRows = await query(
+      `${LIST_SELECT} WHERE e.employee_id = ?`,
+      [managerId]
+    );
+    const manager = managerRows[0] || null;
+
+    // Get all active teammates (report to same manager)
+    const teammates = await query(
+      `${LIST_SELECT} WHERE e.reporting_to = ? AND e.employee_status = 'Active' ORDER BY e.first_name`,
+      [managerId]
+    );
+
+    return { manager, teammates, currentEmployeeId: employeeId };
   }
 
   async directory({ location, department, holidayCalendar } = {}) {

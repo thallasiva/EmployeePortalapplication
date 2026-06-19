@@ -15,6 +15,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get('/directory', controller.directory);
+router.get('/my-team', controller.myTeam);
 
 router.get('/', requirePermission('employees', 'view'), controller.list);
 router.post('/', requirePermission('employees', 'add'), validate(createEmployeeSchema), controller.create);

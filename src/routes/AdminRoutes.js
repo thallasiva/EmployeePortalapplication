@@ -21,6 +21,8 @@ import { getStoredUser, isAdmin } from "../data/auth";
 import { PATH_EMPLOYEE_HOME } from "./paths";
 import PayRollForm from "../pages/admin/PayRollForm";
 import AdminPayslips from "../pages/admin/AdminPayslips";
+import AdminPerformanceRollout from "../pages/admin/AdminPerformanceRollout";
+import AdminTimesheets from "../pages/admin/AdminTimesheets";
 
 const AdminRoutes = () => {
   const user = getStoredUser();
@@ -44,6 +46,8 @@ const AdminRoutes = () => {
       <Route path="add-document" element={<AddDocumentScreen />} />
       <Route path="payroll" element={<PayRollForm />} />
       <Route path="payroll/payslips" element={<AdminPayslips />} />
+      <Route path="performance" element={<AdminPerformanceRollout />} />
+      <Route path="timesheets" element={<AdminTimesheets />} />
       <Route path="report/*" element={<Reports />} />
       <Route path="onboarding" element={<Onboarding />} />
       <Route path="manage" element={<Manage />} />

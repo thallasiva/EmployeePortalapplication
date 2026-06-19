@@ -2,10 +2,150 @@
   margin: -0.875rem -1.125rem;
   min-height: calc(100vh - 4.5rem);
   background: #f5f6f8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 1.25rem 1.5rem;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Utility classes used by new Timesheet components ── */
+.ts-input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #1f2937;
+  outline: none;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+.ts-input:focus { border-color: #3b82f6; }
+.ts-input:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+
+.ts-hour-input {
+  width: 52px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 5px 2px;
+  font-size: 12px;
+  text-align: center;
+  color: #1f2937;
+  outline: none;
+}
+.ts-hour-input:focus { border-color: #3b82f6; }
+.ts-hour-input:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+
+.ts-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ts-btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.ts-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ts-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ts-btn-ghost:hover { background: #f9fafb; }
+
+.ts-btn-warning {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ts-btn-warning:hover { background: #d97706; }
+
+.ts-task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: box-shadow 0.15s;
+}
+.ts-task-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.ts-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ts-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #9ca3af;
+  font-size: 14px;
+  background: #fff;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+}
+
+.ts-loading {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ── Chips for task date/time/duration display ── */
+.ts-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+.ts-chip--blue {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.ts-chip--indigo {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+.ts-chip--green {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
 }
 
 .tasks-empty {

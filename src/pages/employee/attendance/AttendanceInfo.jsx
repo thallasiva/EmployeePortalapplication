@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
-  Bell,
-  Power,
+
   Monitor,
 } from "lucide-react";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
@@ -22,7 +21,6 @@ const SHIFT_NAME = "General Shift";
 const SHIFT_TIME = "10:00 to 19:00";
 const SCHEME = "Attendance Scheme";
 
-/** Demo holidays: month-day keys */
 const HOLIDAYS = {
   "5-1": "May Day",
 };
@@ -249,12 +247,12 @@ export default function AttendanceInfo() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] font-semibold text-[#1f2937]">Attendance Info</h1>
         <div className="flex items-center gap-4">
-          <button type="button" className="text-[#94a3b8] hover:text-slate-600" aria-label="Notifications">
+          {/* <button type="button" className="text-[#94a3b8] hover:text-slate-600" aria-label="Notifications">
             <Bell size={18} />
           </button>
           <button type="button" className="text-[#94a3b8] hover:text-slate-600" aria-label="Logout">
             <Power size={18} />
-          </button>
+          </button> */}
           {!todayRecord?.check_in ? (
             <button
               type="button"

@@ -16,4 +16,12 @@ router.get('/helpdesk', controller.helpdeskReport);
 router.get('/hiring', controller.hiringReport);
 router.get('/reviews', controller.reviewReport);
 
+// ─── Download endpoints ───────────────────────────────────────────────────────
+router.get('/download/emp-data',        controller.downloadEmpData);
+router.get('/download/leave-balance',   controller.downloadLeaveBalance);
+router.get('/download/leave-summary',   controller.downloadLeaveSummary);
+router.get('/download/pf-statement',    controller.downloadPfStatement);
+router.get('/download/profession-tax',  controller.downloadProfessionTax);
+router.get('/download/ecr-file',        controller.downloadEcrFile);
+
 module.exports = router;

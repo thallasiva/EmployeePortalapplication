@@ -6,6 +6,8 @@ import TeamLeaveRequests from "../pages/manager/TeamLeaveRequests";
 import TeamRegularizations from "../pages/manager/TeamRegularizations";
 import { getHomePath, getStoredUser, isReportingManager } from "../data/auth";
 import PerformanceApprisial from "../pages/manager/PerformanceApprisial";
+import TeamAttendanceAppraisal from "../pages/manager/TeamAttendanceAppraisal";
+import ManagerTimesheets from "../pages/manager/ManagerTimesheets";
 
 const ManagerRoutes = () => {
   const user = getStoredUser();
@@ -21,7 +23,8 @@ const ManagerRoutes = () => {
       <Route path="team/leave" element={<TeamLeaveRequests />} />
       <Route path="team/regularizations" element={<TeamRegularizations />} />
       <Route path="team/performance" element={<PerformanceApprisial />} />
-
+      <Route path="team/appraisal-attendance" element={<TeamAttendanceAppraisal />} />
+      <Route path="timesheets" element={<ManagerTimesheets />} />
     </Routes>
   );
 };

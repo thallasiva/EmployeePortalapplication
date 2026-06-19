@@ -18,6 +18,7 @@ const STEPS = [
 
 const INITIAL_VALUES = {
   employee_id: "",
+  biometric_id: "",
   first_name: "",
   last_name: "",
   email: "",
@@ -26,7 +27,14 @@ const INITIAL_VALUES = {
   emp_job_title: "",
   reporting_to: "none",
   emp_joining_date: "",
+  date_of_confirmation: "",
+  contract_end_date: "",
   employee_type: "Full-Time",
+  project_cost_centre: "",
+  previous_designation: "",
+  previous_employer: "",
+  total_exp_before_joining: "",
+  bgv_status: "",
   assigned_member: "",
   ctc: "",
   benefits_plan: "standard",
@@ -34,12 +42,16 @@ const INITIAL_VALUES = {
   // Personal / statutory
   gender: "",
   dob: "",
+  actual_dob: "",
   marital_status: "",
   father_name: "",
   spouse_name: "",
   aadhaar_number: "",
   aadhaar_name: "",
   aadhaar_enrolment_number: "",
+  pan_number: "",
+  uan_number: "",
+  educational_qualification: "",
   access_card_number: "",
   access_card_from_date: "",
   access_card_to_date: "",
@@ -55,8 +67,6 @@ const INITIAL_VALUES = {
   ifsc_code: "",
   account_holder_name: "",
   payment_type: "",
-  pan_number: "",
-  uan_number: "",
   // Contact / address
   contact_name: "",
   contact_city: "",
@@ -150,6 +160,7 @@ export default function CreateEmployee() {
     try {
       await createEmployee({
         emp_code: values.employee_id,
+        biometric_id: values.biometric_id || undefined,
         first_name: values.first_name,
         last_name: values.last_name,
         email: values.email,
@@ -158,19 +169,30 @@ export default function CreateEmployee() {
         emp_job_title: values.emp_job_title,
         reporting_to: values.reporting_to === "none" ? null : Number(values.reporting_to),
         emp_joining_date: values.emp_joining_date,
+        date_of_confirmation: values.date_of_confirmation || undefined,
+        contract_end_date: values.contract_end_date || undefined,
         employee_type: values.employee_type,
+        project_cost_centre: values.project_cost_centre || undefined,
+        previous_designation: values.previous_designation || undefined,
+        previous_employer: values.previous_employer || undefined,
+        total_exp_before_joining: values.total_exp_before_joining ? Number(values.total_exp_before_joining) : undefined,
+        bgv_status: values.bgv_status || undefined,
         assigned_member: values.assigned_member || undefined,
         ctc: values.ctc,
         benefits_plan: values.benefits_plan,
         role_id: Number(values.role) || 2,
         gender: values.gender || undefined,
         dob: values.dob || undefined,
+        actual_dob: values.actual_dob || undefined,
         marital_status: values.marital_status || undefined,
         father_name: values.father_name || undefined,
         spouse_name: values.spouse_name || undefined,
         aadhaar_number: values.aadhaar_number || undefined,
         aadhaar_name: values.aadhaar_name || undefined,
         aadhaar_enrolment_number: values.aadhaar_enrolment_number || undefined,
+        pan_number: values.pan_number || undefined,
+        uan_number: values.uan_number || undefined,
+        educational_qualification: values.educational_qualification || undefined,
         access_card_number: values.access_card_number || undefined,
         access_card_from_date: values.access_card_from_date || undefined,
         access_card_to_date: values.access_card_to_date || undefined,
@@ -263,6 +285,13 @@ export default function CreateEmployee() {
                   placeholder="e.g. EMP-007"
                 />
               </Field>
+              <Field label="Biometric ID">
+                <input
+                  value={values.biometric_id}
+                  onChange={(e) => setField("biometric_id", e.target.value)}
+                  placeholder="Biometric / swipe card ID"
+                />
+              </Field>
               <Field label="First Name" required error={errors.first_name}>
                 <input
                   value={values.first_name}
@@ -313,11 +342,18 @@ export default function CreateEmployee() {
                   ))}
                 </select>
               </Field>
-              <Field label="Role" required error={errors.emp_job_title}>
+              <Field label="Role / Job Title" required error={errors.emp_job_title}>
                 <input
                   value={values.emp_job_title}
                   onChange={(e) => setField("emp_job_title", e.target.value)}
                   placeholder="Job title / role"
+                />
+              </Field>
+              <Field label="Previous Designation">
+                <input
+                  value={values.previous_designation}
+                  onChange={(e) => setField("previous_designation", e.target.value)}
+                  placeholder="Designation at previous employer"
                 />
               </Field>
               <Field label="Manager">
@@ -353,6 +389,20 @@ export default function CreateEmployee() {
                   onChange={(e) => setField("emp_joining_date", e.target.value)}
                 />
               </Field>
+              <Field label="Date of Confirmation">
+                <input
+                  type="date"
+                  value={values.date_of_confirmation}
+                  onChange={(e) => setField("date_of_confirmation", e.target.value)}
+                />
+              </Field>
+              <Field label="Contract End Date">
+                <input
+                  type="date"
+                  value={values.contract_end_date}
+                  onChange={(e) => setField("contract_end_date", e.target.value)}
+                />
+              </Field>
               <Field label="Employment Type">
                 <select
                   value={values.employee_type}
@@ -361,6 +411,43 @@ export default function CreateEmployee() {
                   <option value="Full-Time">Full-Time</option>
                   <option value="Part-Time">Part-Time</option>
                   <option value="Contract">Contract</option>
+                </select>
+              </Field>
+              <Field label="Project / Cost Centre">
+                <input
+                  value={values.project_cost_centre}
+                  onChange={(e) => setField("project_cost_centre", e.target.value)}
+                  placeholder="e.g. CC-HR-001"
+                />
+              </Field>
+              <Field label="Previous Employer">
+                <input
+                  value={values.previous_employer}
+                  onChange={(e) => setField("previous_employer", e.target.value)}
+                  placeholder="Last company name"
+                />
+              </Field>
+              <Field label="Total Exp Before Joining (yrs)">
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  value={values.total_exp_before_joining}
+                  onChange={(e) => setField("total_exp_before_joining", e.target.value)}
+                  placeholder="e.g. 3.5"
+                />
+              </Field>
+              <Field label="BGV Status">
+                <select
+                  value={values.bgv_status}
+                  onChange={(e) => setField("bgv_status", e.target.value)}
+                >
+                  <option value="">Select status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Failed">Failed</option>
+                  <option value="Waived">Waived</option>
                 </select>
               </Field>
             </div>
@@ -395,7 +482,7 @@ export default function CreateEmployee() {
 
         {step === 3 && (
           <>
-            <h2>Personal & Statutory Details</h2>
+            <h2>Personal &amp; Statutory Details</h2>
             <div className="emp-wizard__grid">
               <Field label="Gender">
                 <select value={values.gender} onChange={(e) => setField("gender", e.target.value)}>
@@ -405,8 +492,11 @@ export default function CreateEmployee() {
                   <option value="Other">Other</option>
                 </select>
               </Field>
-              <Field label="Date of Birth">
+              <Field label="Date of Birth (As Per Records)">
                 <input type="date" value={values.dob} onChange={(e) => setField("dob", e.target.value)} />
+              </Field>
+              <Field label="Actual Date of Birth">
+                <input type="date" value={values.actual_dob} onChange={(e) => setField("actual_dob", e.target.value)} />
               </Field>
               <Field label="Marital Status">
                 <select value={values.marital_status} onChange={(e) => setField("marital_status", e.target.value)}>
@@ -416,11 +506,18 @@ export default function CreateEmployee() {
                   <option value="Other">Other</option>
                 </select>
               </Field>
-              <Field label="Father's Name">
+              <Field label="Father\'s Name">
                 <input value={values.father_name} onChange={(e) => setField("father_name", e.target.value)} />
               </Field>
               <Field label="Spouse Name">
                 <input value={values.spouse_name} onChange={(e) => setField("spouse_name", e.target.value)} />
+              </Field>
+              <Field label="Educational Qualification">
+                <input
+                  value={values.educational_qualification}
+                  onChange={(e) => setField("educational_qualification", e.target.value)}
+                  placeholder="e.g. B.Tech, MBA"
+                />
               </Field>
               <Field label="Aadhaar Number">
                 <input value={values.aadhaar_number} onChange={(e) => setField("aadhaar_number", e.target.value)} />
@@ -494,7 +591,7 @@ export default function CreateEmployee() {
               </Field>
             </div>
 
-            <h2>Contact & Address</h2>
+            <h2>Contact &amp; Address</h2>
             <div className="emp-wizard__grid">
               <Field label="Contact Name">
                 <input value={values.contact_name} onChange={(e) => setField("contact_name", e.target.value)} />
@@ -532,11 +629,12 @@ export default function CreateEmployee() {
 
         {step === 4 && (
           <>
-            <h2>Review & Confirm</h2>
+            <h2>Review &amp; Confirm</h2>
             <div className="emp-review-section">
               <h3>Personal Information</h3>
               <dl className="emp-review-grid">
                 <div><dt>Employee ID</dt><dd>{values.employee_id}</dd></div>
+                <div><dt>Biometric ID</dt><dd>{values.biometric_id || "—"}</dd></div>
                 <div><dt>Name</dt><dd>{values.first_name} {values.last_name}</dd></div>
                 <div><dt>Email</dt><dd>{values.email}</dd></div>
                 <div><dt>Phone</dt><dd>{values.mobile}</dd></div>
@@ -547,6 +645,7 @@ export default function CreateEmployee() {
               <dl className="emp-review-grid">
                 <div><dt>Department</dt><dd>{departments.find((d) => String(d.department_id) === String(values.department_id))?.department_name || "—"}</dd></div>
                 <div><dt>Role</dt><dd>{values.emp_job_title}</dd></div>
+                <div><dt>Previous Designation</dt><dd>{values.previous_designation || "—"}</dd></div>
                 <div><dt>Manager</dt><dd>{
                   values.reporting_to === "none"
                     ? "None"
@@ -555,9 +654,14 @@ export default function CreateEmployee() {
                         return m ? `${m.first_name} ${m.last_name}` : "—";
                       })()
                 }</dd></div>
-                <div><dt>Assigned Member</dt><dd>{values.assigned_member || "None"}</dd></div>
                 <div><dt>Start Date</dt><dd>{formatDate(values.emp_joining_date)}</dd></div>
+                <div><dt>Date of Confirmation</dt><dd>{formatDate(values.date_of_confirmation)}</dd></div>
+                <div><dt>Contract End Date</dt><dd>{formatDate(values.contract_end_date)}</dd></div>
                 <div><dt>Type</dt><dd><span className="emp-type-badge">{values.employee_type}</span></dd></div>
+                <div><dt>Project / Cost Centre</dt><dd>{values.project_cost_centre || "—"}</dd></div>
+                <div><dt>Previous Employer</dt><dd>{values.previous_employer || "—"}</dd></div>
+                <div><dt>Exp Before Joining</dt><dd>{values.total_exp_before_joining ? `${values.total_exp_before_joining} yrs` : "—"}</dd></div>
+                <div><dt>BGV Status</dt><dd>{values.bgv_status || "—"}</dd></div>
               </dl>
             </div>
             <div className="emp-review-section">
@@ -568,12 +672,13 @@ export default function CreateEmployee() {
               </dl>
             </div>
             <div className="emp-review-section">
-              <h3>Statutory & Bank</h3>
+              <h3>Statutory &amp; Bank</h3>
               <dl className="emp-review-grid">
                 <div><dt>Aadhaar Number</dt><dd>{values.aadhaar_number || "—"}</dd></div>
                 <div><dt>PAN Number</dt><dd>{values.pan_number || "—"}</dd></div>
                 <div><dt>UAN Number</dt><dd>{values.uan_number || "—"}</dd></div>
                 <div><dt>PF Number</dt><dd>{values.pf_number || "—"}</dd></div>
+                <div><dt>Educational Qualification</dt><dd>{values.educational_qualification || "—"}</dd></div>
                 <div><dt>Bank Name</dt><dd>{values.bank_name || "—"}</dd></div>
                 <div><dt>Account Number</dt><dd>{values.account_number || "—"}</dd></div>
                 <div><dt>IFSC Code</dt><dd>{values.ifsc_code || "—"}</dd></div>

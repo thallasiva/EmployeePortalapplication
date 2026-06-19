@@ -7,9 +7,10 @@ const { getPagination, buildMeta } = require('../utils/pagination');
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, department_id, from_date, to_date, status } = req.query;
+  const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
 
   const { rows, total } = await attendanceService.list({
-    employee_id, department_id, from_date, to_date, status, limit, offset,
+    employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset,
   });
 
   new ApiResponse(200, rows, 'Attendance records fetched', buildMeta({ page, limit, total })).send(res);
@@ -60,7 +61,8 @@ const teamLeaveCalendar = asyncHandler(async (req, res) => {
 const listRegularizations = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status } = req.query;
-  const { rows, total } = await regularizationService.list({ employee_id, status, limit, offset });
+  const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
+  const { rows, total } = await regularizationService.list({ employee_id, status, reporting_to, limit, offset });
   new ApiResponse(200, rows, 'Regularization requests fetched', buildMeta({ page, limit, total })).send(res);
 });
 

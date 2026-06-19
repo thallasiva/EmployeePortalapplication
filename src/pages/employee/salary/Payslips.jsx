@@ -190,7 +190,7 @@ const Payslips = () => {
       </div>
 
       {/* SALARY OVERVIEW */}
-      <div className="mb-4 rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
+      {/* <div className="mb-4 rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-[15px] font-semibold text-[#334155]">Salary Overview</h2>
         <p className="mb-4 text-sm text-gray-500">
           Of your gross pay of <span className="font-semibold text-gray-700">{formatINR(breakdown.totalEarnings)}</span>, you take
@@ -199,7 +199,7 @@ const Payslips = () => {
           chart or legend for details.
         </p>
         <PieChart data={overviewData} size={180} />
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* EARNINGS BREAKDOWN */}
