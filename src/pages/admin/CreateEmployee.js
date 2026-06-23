@@ -12,8 +12,8 @@ const STEPS = [
   { id: 0, label: "Personal Info" },
   { id: 1, label: "Employment" },
   { id: 2, label: "Compensation" },
-  { id: 3, label: "Statutory & Bank" },
-  { id: 4, label: "Review & Confirm" },
+  { id: 3, label: "Bank" },
+  { id: 4, label: "Review" },
 ];
 
 const INITIAL_VALUES = {

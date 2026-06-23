@@ -9,6 +9,26 @@
       name="description"
       content="Web site created using create-react-app"
     />
+
+    <!-- ── Security meta tags ─────────────────────────────────────────────── -->
+    <!--
+      CSP is intentionally omitted from this meta tag.
+      Reason: meta-tag CSP cannot use runtime env vars (like REACT_APP_API_URL),
+      so 'connect-src self' would block cross-origin API calls in development.
+      In production, set the Content-Security-Policy as an HTTP response header
+      from your web server (nginx/Apache/CDN) so the API origin can be injected
+      at deploy time. The Express backend already sends CSP via Helmet for its
+      own responses.
+    -->
+    <!-- Prevent MIME-type sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <!-- Block framing (clickjacking prevention) -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <!-- Referrer: only send origin to same-site requests -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- Disable browser features not needed by this app -->
+    <meta http-equiv="Permissions-Policy"
+          content="camera=(), microphone=(), geolocation=(), payment=()" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
 
     <!--

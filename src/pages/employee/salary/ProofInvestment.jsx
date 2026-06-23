@@ -133,7 +133,7 @@ export default function ProofInvestment() {
               disabled={!file}
               style={{
                 width: "100%", padding: "11px", borderRadius: 8, fontSize: 13, fontWeight: 700,
-                background: file ? "#3b82f6" : "#e2e8f0",
+                background: file ? "#f18200" : "#e2e8f0",
                 color: file ? "#fff" : "#94a3b8",
                 border: "none", cursor: file ? "pointer" : "not-allowed",
               }}

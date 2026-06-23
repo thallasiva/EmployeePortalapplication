@@ -395,6 +395,17 @@ export const formatCurrency = (value) => {
  *
  * @param {number|string} basicSalary - monthly basic salary
  */
+// Old-regime slab tax — mirrors backend taxCalculator.js
+const _slabTax = (income) => {
+  income = Math.max(0, Number(income) || 0);
+  if (income <= 500000) return 0;
+  let tax = 0;
+  if (income > 1000000) { tax += (income - 1000000) * 0.3; income = 1000000; }
+  if (income > 500000)  { tax += (income - 500000)  * 0.2; income = 500000;  }
+  if (income > 250000)  { tax += (income - 250000)  * 0.05; }
+  return Math.round(tax);
+};
+
 export const calculatePayslip = (basicSalary) => {
   const basic = Math.round(Number(basicSalary) || 0);
 
@@ -414,22 +425,45 @@ export const calculatePayslip = (basicSalary) => {
     basic + hra + specialAllowance + lta + telephoneAndInternet +
     medicalAllowance + conveyance + bonus + incentives + arrears + otherEarnings;
 
-  // Deductions
-  const pf              = Math.round(Math.min(basic, 15000) * 0.12); // employee PF, capped at ₹15k ceiling
-  const employerPf      = Math.round(Math.min(basic, 15000) * 0.12); // employer PF (for CTC)
-  const professionalTax = 200;
-  const tds             = 0; // income tax computed server-side; 0 for UI preview
-  const esi             = 0;
+  // ── PF / EPS / EPF / EDLI ─────────────────────────────────────────────────
+  const pfWage     = Math.min(basic, 15000);                       // statutory ceiling
+  const pf         = Math.round(pfWage * 0.12);                   // employee PF (12%)
+  const eps        = Math.round(pfWage * 0.0833);                 // employer EPS (8.33%)
+  const epf        = Math.round(pfWage * 0.0367);                 // employer EPF (3.67%)
+  const employerPf = eps + epf;                                    // = 12% of pfWage
+  const edli       = Math.min(Math.round(pfWage * 0.005), 75);   // max ₹75
 
-  const totalDeductions = pf + professionalTax + tds;
+  // ── ESI ───────────────────────────────────────────────────────────────────
+  const esiApplicable  = totalEarnings <= 21000;
+  const esiEmployee    = esiApplicable ? Math.round(totalEarnings * 0.0075) : 0;
+  const esiEmployer    = esiApplicable ? Math.round(totalEarnings * 0.0325) : 0;
+
+  // ── Professional Tax (slab-based) ─────────────────────────────────────────
+  const professionalTax = totalEarnings <= 15000 ? 0
+                        : totalEarnings <= 20000 ? 150
+                        : 200;
+
+  // ── TDS (income tax) ─────────────────────────────────────────────────────
+  const grossAnnual   = totalEarnings * 12;
+  const taxableIncome = Math.max(0, grossAnnual - 50000 - pf * 12);
+  const annualTax     = _slabTax(taxableIncome);
+  const tds           = Math.round((annualTax + Math.round(annualTax * 0.04)) / 12);
+
+  const totalDeductions = pf + esiEmployee + professionalTax + tds;
   const netSalary = Math.max(0, totalEarnings - totalDeductions);
   const gross = totalEarnings;
-  const ctc = totalEarnings + employerPf;
+  const ctc = totalEarnings + employerPf + edli + esiEmployer;
 
   return {
     basic, hra, specialAllowance, lta, telephoneAndInternet,
     medicalAllowance, conveyance, bonus, incentives, arrears, otherEarnings,
-    pf, employerPf, professionalTax, tds, esi,
+    // Employee deductions
+    pf, esiEmployee, professionalTax, tds,
+    // Employer contributions
+    eps, epf, employerPf, edli, esiEmployer,
+    // Totals
     gross, totalEarnings, totalDeductions, netSalary, ctc,
+    // Legacy aliases
+    esi: esiEmployee,
   };
 };

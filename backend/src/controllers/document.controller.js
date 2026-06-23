@@ -7,8 +7,8 @@ const { getPagination, buildMeta } = require('../utils/pagination');
 
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
-  const { category_id, visibility, search } = req.query;
-  const { rows, total } = await documentService.list({ category_id, visibility, search, limit, offset });
+  const { category_id, visibility, search, employee_id } = req.query;
+  const { rows, total } = await documentService.list({ category_id, visibility, search, employee_id, limit, offset });
   new ApiResponse(200, rows, 'Documents fetched', buildMeta({ page, limit, total })).send(res);
 });
 

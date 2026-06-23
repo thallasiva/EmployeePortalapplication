@@ -3,22 +3,32 @@ const asyncHandler = require('../utils/asyncHandler');
 const { verifyAccessToken } = require('../utils/jwt');
 
 /**
- * Verifies the Bearer JWT and attaches the decoded payload to `req.user`.
- * Expected payload shape: { userId, employeeId, email, roleId, roleName }
+ * Verifies the JWT and attaches the decoded payload to `req.user`.
+ *
+ * Token resolution order (most-secure first):
+ *   1. httpOnly cookie `accessToken`  ← preferred (not readable by JS)
+ *   2. Authorization: Bearer <token>  ← fallback for mobile / API clients
  */
 const authenticate = asyncHandler(async (req, _res, next) => {
-  const header = req.headers.authorization || '';
-  const [scheme, token] = header.split(' ');
+  // 1. Cookie (set by login/refresh with httpOnly flag)
+  let token = req.cookies?.accessToken;
 
-  if (scheme !== 'Bearer' || !token) {
-    throw ApiError.unauthorized('Missing or invalid Authorization header');
+  // 2. Bearer header fallback
+  if (!token) {
+    const header = req.headers.authorization || '';
+    const [scheme, headerToken] = header.split(' ');
+    if (scheme === 'Bearer' && headerToken) token = headerToken;
+  }
+
+  if (!token) {
+    throw ApiError.unauthorized('Authentication required');
   }
 
   try {
     const decoded = verifyAccessToken(token);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     throw ApiError.unauthorized('Invalid or expired token');
   }
 });

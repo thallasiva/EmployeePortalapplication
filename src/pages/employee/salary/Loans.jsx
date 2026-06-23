@@ -71,7 +71,7 @@ function ApplyModal({ onClose }) {
               Cancel
             </button>
             <button onClick={onClose}
-              style={{ flex: 1, padding: "10px", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "#3b82f6", color: "#fff", cursor: "pointer" }}>
+              style={{ flex: 1, padding: "10px", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "#f18200", color: "#fff", cursor: "pointer" }}>
               Submit Application
             </button>
           </div>
@@ -99,7 +99,7 @@ export default function Loans() {
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 }}>Loans & Advances</h1>
         <button
           onClick={() => setShowModal(true)}
-          style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "#3b82f6", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "#f18200", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}
         >
           <Plus size={15} />Apply for Loan
         </button>
@@ -107,7 +107,7 @@ export default function Loans() {
 
       {/* KPI cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
-        <StatCard icon={<DollarSign />} label="Total Borrowed" value={fmt(HISTORY.reduce((a, l) => a + l.amount, 0))} color="#3b82f6" />
+        <StatCard icon={<DollarSign />} label="Total Borrowed" value={fmt(HISTORY.reduce((a, l) => a + l.amount, 0))} color="#f18200" />
         <StatCard icon={<TrendingDown />} label="Outstanding" value={fmt(totalOutstanding)} color="#ef4444" bg="#fff5f5" />
         <StatCard icon={<PiggyBank />} label="Monthly EMI" value={fmt(totalEMI)} color="#f59e0b" bg="#fffbeb" />
         <StatCard icon={<Calendar />} label="Active Loans" value={active.length} color="#15803d" bg="#f0fdf4" />
@@ -119,7 +119,7 @@ export default function Loans() {
           <button key={t} type="button" onClick={() => setTab(t)}
             style={{
               padding: "8px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-              background: tab === t ? "#3b82f6" : "#fff", color: tab === t ? "#fff" : "#64748b",
+              background: tab === t ? "#f18200" : "#fff", color: tab === t ? "#fff" : "#64748b",
               border: tab === t ? "none" : "1px solid #e2e8f0", textTransform: "capitalize",
             }}>{t === "active" ? "Active Loans" : "Closed Loans"}</button>
         ))}
@@ -156,7 +156,7 @@ export default function Loans() {
                     { label: "Outstanding", value: fmt(loan.outstanding), color: "#ef4444" },
                     { label: "Monthly EMI", value: fmt(loan.emi), color: "#f59e0b" },
                     { label: "Total Tenure", value: `${loan.tenure} months`, color: "#64748b" },
-                    { label: "Remaining", value: `${loan.remaining} months`, color: "#3b82f6" },
+                    { label: "Remaining", value: `${loan.remaining} months`, color: "#f18200" },
                   ].map(({ label, value, color }) => (
                     <div key={label} style={{ padding: "10px 12px", background: "#f8fafc", borderRadius: 8 }}>
                       <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{label}</p>
@@ -169,10 +169,10 @@ export default function Loans() {
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                     <span style={{ fontSize: 11, color: "#64748b" }}>Repayment Progress</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6" }}>{progress}%</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#f18200" }}>{progress}%</span>
                   </div>
                   <div style={{ height: 6, background: "#f1f5f9", borderRadius: 999 }}>
-                    <div style={{ width: `${progress}%`, height: "100%", background: "linear-gradient(90deg,#3b82f6,#06b6d4)", borderRadius: 999 }} />
+                    <div style={{ width: `${progress}%`, height: "100%", background: "#f18200", borderRadius: 999 }} />
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
                     <span style={{ fontSize: 11, color: "#22c55e" }}>Paid: {fmt(loan.amount - loan.outstanding)}</span>

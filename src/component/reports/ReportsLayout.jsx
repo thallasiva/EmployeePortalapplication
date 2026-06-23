@@ -7,8 +7,10 @@ import EmployeeReport from "../../pages/admin/reports/EmployeeReport";
 import AttendanceReport from "../../pages/admin/reports/AttendanceReport";
 import LeaveReport from "../../pages/admin/reports/LeaveReport";
 import DailyReport from "../../pages/admin/reports/DailyReport";
-import GenericReport from "../../pages/admin/reports/GenericReport";
 import DownloadReports from "../../pages/admin/reports/DownloadReports";
+import PayslipReport from "../../pages/admin/reports/PayslipReport";
+import UserReport from "../../pages/admin/reports/UserReport";
+import EmptyStateReport from "../../pages/admin/reports/EmptyStateReport";
 import "./reports.css";
 
 export default function ReportsLayout() {
@@ -39,11 +41,11 @@ export default function ReportsLayout() {
           <Route path="attendance" element={<AttendanceReport />} />
           <Route path="leave" element={<LeaveReport />} />
           <Route path="daily" element={<DailyReport />} />
-          <Route path="expense" element={<GenericReport type="expense" />} />
-          <Route path="invoice" element={<GenericReport type="invoice" />} />
-          <Route path="payment" element={<GenericReport type="payment" />} />
-          <Route path="user" element={<GenericReport type="user" />} />
-          <Route path="payslip" element={<GenericReport type="payslip" />} />
+          <Route path="expense" element={<EmptyStateReport type="expense" />} />
+          <Route path="invoice" element={<EmptyStateReport type="invoice" />} />
+          <Route path="payment" element={<EmptyStateReport type="payment" />} />
+          <Route path="user" element={<UserReport />} />
+          <Route path="payslip" element={<PayslipReport />} />
           <Route path="downloads" element={<DownloadReports />} />
           <Route path="*" element={<Navigate to="daily" replace />} />
         </Routes>

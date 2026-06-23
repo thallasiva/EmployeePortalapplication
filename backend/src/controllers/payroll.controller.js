@@ -12,13 +12,13 @@ const { hasPermission } = require('../middleware/rbac');
 const listSalaryStructures = asyncHandler(async (req, res) =>
 {
   const { page, limit, offset } = getPagination(req.query);
-  const { rows, total } = await salaryStructureService.list({ employee_id: req.query.employee_id, limit, offset });
+  const { rows, total } = await salaryStructureService.list({ employee_id: req.query.employee_id, limit, offset, reqUser: req.user });
   new ApiResponse(200, rows, 'Salary structures fetched', buildMeta({ page, limit, total })).send(res);
 });
 
 const getSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const record = await salaryStructureService.getDetails(req.params.id);
+  const record = await salaryStructureService.getDetails(req.params.id, req.user);
   if (!record) throw ApiError.notFound('Salary structure not found');
   new ApiResponse(200, record, 'Salary structure fetched').send(res);
 });
@@ -26,7 +26,7 @@ const getSalaryStructure = asyncHandler(async (req, res) =>
 const getLatestSalaryStructure = asyncHandler(async (req, res) =>
 {
   const employeeId = req.params.employeeId || req.user.employeeId;
-  const record = await salaryStructureService.latestForEmployee(employeeId);
+  const record = await salaryStructureService.latestForEmployee(employeeId, req.user);
   if (!record) throw ApiError.notFound('No salary structure found for this employee');
   new ApiResponse(200, record, 'Latest salary structure fetched').send(res);
 });
@@ -66,7 +66,7 @@ const listPayslips = asyncHandler(async (req, res) =>
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, month, year, status, department_id, payroll_run_id } = req.query;
   const { rows, total } = await payslipService.list({
-    employee_id, month, year, status, department_id, payroll_run_id, limit, offset,
+    employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser: req.user,
   });
   new ApiResponse(200, rows, 'Payslips fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -75,8 +75,9 @@ const myPayslips = asyncHandler(async (req, res) =>
 {
   const { page, limit, offset } = getPagination(req.query);
   const { month, year, status } = req.query;
+  // Self-service: employee sees their own payslips unmasked
   const { rows, total } = await payslipService.list({
-    employee_id: req.user.employeeId, month, year, status, limit, offset,
+    employee_id: req.user.employeeId, month, year, status, limit, offset, reqUser: req.user,
   });
   new ApiResponse(200, rows, 'Payslips fetched', buildMeta({ page, limit, total })).send(res);
 });

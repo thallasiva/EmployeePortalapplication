@@ -32,10 +32,12 @@ import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN, logoutUser } fr
 
 const BRAND_NAME = "NAT IT";
 
-const isPathActive = (pathname, link) => {
+const isPathActive = (pathname, link, search = "") => {
   if (!link) return false;
+  // Split query string from link
+  const [linkPath, linkQuery] = link.split("?");
   const normalized = pathname.replace(/\/$/, "") || "/";
-  const target = link.replace(/\/$/, "") || "/";
+  const target = linkPath.replace(/\/$/, "") || "/";
 
   if (
     target === "/dashboard" ||
@@ -43,16 +45,18 @@ const isPathActive = (pathname, link) => {
     target === "/employee/engage" ||
     target === "/manager"
   ) {
-    return normalized === target;
+    return normalized === target && (!linkQuery || search.includes(linkQuery));
   }
 
-
-  return normalized === target || normalized.startsWith(`${target}/`);
+  const pathMatch = normalized === target || normalized.startsWith(`${target}/`);
+  // If the link has a query param (e.g. ?tab=balances), also match that
+  if (linkQuery) return pathMatch && search.includes(linkQuery);
+  return pathMatch;
 };
 
 export const Sidebar = ({ open }) => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const [expanded, setExpanded] = useState(null);
 
   const user = getStoredUser();
@@ -82,7 +86,11 @@ export const Sidebar = ({ open }) => {
     {
       label: "Leave",
       icon: <FileOutput size={20} />,
-      navigationLink: "/dashboard/leave",
+      children: [
+        { label: "Leave Requests",  navigationLink: "/dashboard/leave?tab=requests"  },
+        { label: "Leave Balances",  navigationLink: "/dashboard/leave?tab=balances"  },
+        { label: "Leave Types",     navigationLink: "/dashboard/leave?tab=types"     },
+      ],
     },
     {
       label: "Attendance",
@@ -265,14 +273,14 @@ export const Sidebar = ({ open }) => {
       (item) =>
         item.children &&
         item.children.some((child) =>
-          isPathActive(pathname, child.navigationLink)
+          isPathActive(pathname, child.navigationLink, search)
         )
     );
     if (activeIndex >= 0) {
       setExpanded(activeIndex);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- items derived from role
-  }, [pathname, role]);
+  }, [pathname, search, role]);
 
   const menuItemClass = (active, childActive = false) =>
     [
@@ -315,11 +323,11 @@ export const Sidebar = ({ open }) => {
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
         {items.map((item, index) => {
           const childActive = item.children?.some((child) =>
-            isPathActive(pathname, child.navigationLink)
+            isPathActive(pathname, child.navigationLink, search)
           );
 
           if (!item.children) {
-            const active = isPathActive(pathname, item.navigationLink);
+            const active = isPathActive(pathname, item.navigationLink, search);
             return (
               <div
                 key={index}
@@ -380,13 +388,17 @@ export const Sidebar = ({ open }) => {
                   {item.children.map((child, childIndex) => {
                     const childActive = isPathActive(
                       pathname,
-                      child.navigationLink
+                      child.navigationLink,
+                      search
                     );
                     return (
                       <div
                         key={childIndex}
                         className={childItemClass(childActive)}
-                        onClick={() => navigate(child.navigationLink)}
+                        onClick={() => {
+                          const [p, q] = child.navigationLink.split("?");
+                          navigate(q ? `${p}?${q}` : p);
+                        }}
                       >
                         {child.label}
                       </div>

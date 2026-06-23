@@ -1,266 +1,129 @@
-import React, { useState } from "react";
-import ChangeAssignmentModal from "../../component/profile/ChangeAssignmentModal";
-import { avatarDataUri, PLACEHOLDER_AVATAR_LG } from "../../lib/placeholders";
+import React, { useEffect, useState, useMemo } from "react";
+import { Users, ChevronDown, ChevronRight, Mail, Phone, Briefcase } from "lucide-react";
+import { listEmployees } from "../../api/employee.api";
+import { getDepartmentName } from "../../utils/employeeDisplay";
+import { avatarDataUri } from "../../lib/placeholders";
+
+const AVATAR_COLORS = ["#6366f1","#8b5cf6","#ec4899","#f97316","#14b8a6","#3b82f6","#22c55e"];
+function initials(name = "") { return name.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase()||"?"; }
+function avatarColor(name=""){let h=0;for(let i=0;i<name.length;i++)h=name.charCodeAt(i)+((h<<5)-h);return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];}
+
+function TeamCard({ team, members }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
+            <Users size={18} />
+          </div>
+          <div className="text-left">
+            <p className="font-semibold text-gray-800">{team}</p>
+            <p className="text-xs text-gray-400">{members.length} member{members.length !== 1 ? "s" : ""}</p>
+          </div>
+        </div>
+        {open ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+            {members.map(emp => {
+              const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.email;
+              const isActive = emp.employee_status === "Active";
+              return (
+                <div key={emp.employee_id} className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors">
+                  <span className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                    style={{ background: avatarColor(name) }}>
+                    {initials(name)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                        {emp.employee_status || "Active"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 truncate flex items-center gap-1 mt-0.5">
+                      <Briefcase size={10} className="shrink-0" /> {emp.emp_job_title || "—"}
+                    </p>
+                    <p className="text-xs text-brand truncate flex items-center gap-1 mt-0.5">
+                      <Mail size={10} className="shrink-0" /> {emp.email}
+                    </p>
+                    {emp.mobile && (
+                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                        <Phone size={10} className="shrink-0" /> {emp.mobile}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function EmployeeProfile() {
-  const [activeModal, setActiveModal] = useState(null);
-  const [managerName, setManagerName] = useState("Richard Wilson");
-  const [officeName, setOfficeName] = useState("Head Office");
-  const [teamName, setTeamName] = useState("PHP");
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [search, setSearch]       = useState("");
 
-  const managerOptions = ["Richard Wilson", "Maria Cotton", "John Gibbs"];
-  const teamOptions = ["PHP", "React", "Design", "QA Team"];
+  useEffect(() => {
+    listEmployees({ limit: 500 })
+      .then(({ data }) => setEmployees(data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  const openModal = (type) => setActiveModal(type);
-  const closeModal = () => setActiveModal(null);
-  const handleSubmit = () => closeModal();
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return employees;
+    return employees.filter(e =>
+      [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title]
+        .some(v => (v||"").toLowerCase().includes(q))
+    );
+  }, [employees, search]);
+
+  const groups = useMemo(() => {
+    const map = {};
+    filtered.forEach(emp => {
+      const dept = getDepartmentName(emp) || "General";
+      if (!map[dept]) map[dept] = [];
+      map[dept].push(emp);
+    });
+    return Object.entries(map).sort(([a],[b]) => a.localeCompare(b));
+  }, [filtered]);
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border bg-white shadow">
-          <div className="border-b p-4 font-semibold">
-            Add Maria Cotton to Another Team
-          </div>
-
-          <div className="space-y-4 p-4">
-            <select className="w-full rounded-md border px-3 py-3 text-sm text-gray-500">
-              <option>Select Team</option>
-            </select>
-
-            <button className="rounded-md bg-brand px-6 py-2 font-semibold text-white">
-              New Team
-            </button>
-          </div>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="font-semibold text-gray-800">Team Directory</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {loading ? "Loading…" : `${employees.length} employees across ${groups.length} team${groups.length !== 1 ? "s" : ""}`}
+          </p>
         </div>
-
-        <div className="rounded-xl border bg-white shadow">
-          <div className="flex justify-between border-b p-4">
-            <span className="font-semibold">{teamName} Team</span>
-
-            <div className="space-x-2">
-              <button
-                type="button"
-                onClick={() => openModal("team")}
-                className="rounded border px-3 py-1"
-              >
-                Edit
-              </button>
-              <button className="rounded border px-3 py-1 text-red-500">
-                Delete
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 p-4">
-            <img
-              src={PLACEHOLDER_AVATAR_LG}
-              className="h-10 w-10 rounded-full"
-              alt=""
-            />
-            <span className="font-semibold">Maria Cotton</span>
-          </div>
-        </div>
+        <input
+          className="border border-gray-200 rounded-xl px-4 py-2 text-sm w-64 focus:outline-none focus:border-brand"
+          placeholder="Search employees…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
-      <div className="mt-4 rounded-xl border bg-white shadow">
-        <div className="flex justify-between border-b p-4">
-          <div>
-            <div className="font-semibold">Focus Technologies</div>
-            <div className="text-xs text-gray-500">{officeName}</div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => openModal("office")}
-            className="rounded-md bg-indigo-600 px-5 py-2 text-white"
-          >
-            Change Office
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-4">
-            <span className="font-semibold">Members</span>
-
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <img
-                  key={i}
-                  src={avatarDataUri(i + 10)}
-                  className="h-10 w-10 rounded-full border-2 border-white"
-                  alt=""
-                />
-              ))}
-            </div>
-          </div>
-
-          <button className="rounded-md bg-brand px-5 py-2 text-white">
-            Visit Office
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border bg-white shadow">
-          <div className="flex justify-between border-b p-4">
-            <span className="font-semibold">Maria Cotton&apos;s Manager</span>
-
-            <div className="space-x-2">
-              <button
-                type="button"
-                onClick={() => openModal("manager")}
-                className="rounded border px-3 py-1"
-              >
-                Edit
-              </button>
-              <button className="rounded border px-3 py-1 text-red-500">
-                Delete
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <img
-                src={PLACEHOLDER_AVATAR_LG}
-                className="h-10 w-10 rounded-full"
-                alt=""
-              />
-
-              <div>
-                <div className="font-semibold">{managerName}</div>
-                <div className="text-xs text-brand">[email protected]</div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => openModal("manager")}
-              className="rounded-md bg-brand px-5 py-2 text-white"
-            >
-              Change Manager
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-white shadow">
-          <div className="flex justify-between border-b p-4">
-            <span className="font-semibold">Who Reports to Maria Cotton</span>
-
-            <button className="rounded-md bg-brand px-5 py-2 text-white">
-              Add people
-            </button>
-          </div>
-
-          <div className="flex -space-x-3 p-4">
-            {[1, 2, 3].map((i) => (
-              <img
-                key={i}
-                src={avatarDataUri(i + 20)}
-                className="h-10 w-10 rounded-full border-2 border-white"
-                alt=""
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border bg-white shadow">
-          <div className="border-b p-4 font-semibold">Position</div>
-
-          <div className="space-y-3 p-4">
-            <input
-              className="w-full rounded-md border px-3 py-3 text-sm"
-              placeholder="Job Title"
-            />
-
-            <input
-              className="w-full rounded-md border px-3 py-3 text-sm"
-              placeholder="Permanent"
-            />
-
-            <div className="flex gap-3">
-              <button className="rounded-md bg-brand px-5 py-2 text-white">
-                {teamName} Team Lead
-              </button>
-
-              <button className="rounded-md bg-brand px-5 py-2 text-white">
-                Permanent
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-white shadow">
-          <div className="flex justify-between border-b p-4">
-            <div>
-              <div className="font-semibold">Working Week</div>
-              <div className="text-xs text-gray-500">
-                Set the dates that your company works.
-              </div>
-            </div>
-
-            <button className="rounded border px-3 py-1">Edit</button>
-          </div>
-
-          <div className="flex flex-wrap gap-2 p-4">
-            {["Mon", "Tue", "Wed", "Thur", "Fri"].map((d) => (
-              <span
-                key={d}
-                className="rounded bg-indigo-600 px-3 py-1 text-xs text-white"
-              >
-                {d}
-              </span>
-            ))}
-
-            {["Sat", "Sun"].map((d) => (
-              <span
-                key={d}
-                className="rounded bg-red-500 px-3 py-1 text-xs text-white"
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <ChangeAssignmentModal
-        isOpen={activeModal === "manager"}
-        title="Change Manager"
-        mode="select"
-        value={managerName}
-        options={managerOptions}
-        placeholder="Select Manager"
-        onChange={setManagerName}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-      />
-
-      <ChangeAssignmentModal
-        isOpen={activeModal === "office"}
-        title="Change Office"
-        mode="input"
-        value={officeName}
-        placeholder="Name"
-        onChange={setOfficeName}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-      />
-
-      <ChangeAssignmentModal
-        isOpen={activeModal === "team"}
-        title="Change Team"
-        mode="select"
-        value={teamName}
-        options={teamOptions}
-        placeholder="Select Team"
-        onChange={setTeamName}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-      />
+      {loading ? (
+        <div className="py-12 text-center text-sm text-gray-400">Loading employees…</div>
+      ) : groups.length === 0 ? (
+        <div className="py-12 text-center text-sm text-gray-400">No employees found.</div>
+      ) : (
+        groups.map(([team, members]) => (
+          <TeamCard key={team} team={team} members={members} />
+        ))
+      )}
     </div>
   );
 }

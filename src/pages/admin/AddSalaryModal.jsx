@@ -75,10 +75,23 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
   ];
 
   const deductionRows = [
-    { label: "PF — Employee (12% of Basic, max ₹15k)", value: breakdown.pf },
-    { label: "PF — Employer (12% of Basic, max ₹15k)", value: breakdown.employerPf },
-    { label: "Professional Tax",                        value: breakdown.professionalTax },
-    { label: "TDS / Income Tax",                        value: breakdown.tds, note: "Computed server-side" },
+    // ── Employee deductions (subtracted from gross) ──────────────────────────
+    { label: "PF — Employee (12% of Basic, max ₹15k)", value: breakdown.pf, section: "emp" },
+    ...(breakdown.esiEmployee > 0
+      ? [{ label: "ESI — Employee (0.75% of gross, if ≤ ₹21k)", value: breakdown.esiEmployee, section: "emp" }]
+      : []),
+    { label: "Professional Tax (slab-based)",           value: breakdown.professionalTax, section: "emp",
+      note: breakdown.totalEarnings <= 15000 ? "Exempt (gross ≤ ₹15k)"
+          : breakdown.totalEarnings <= 20000 ? "₹150 slab (gross ₹15k–₹20k)"
+          : "₹200 slab (gross > ₹20k)" },
+    { label: "TDS / Income Tax",                        value: breakdown.tds, section: "emp", note: "Old-regime slabs + 4% cess" },
+    // ── Employer contributions (CTC components, not deducted from employee) ──
+    { label: "EPS — Employer Pension (8.33%, max ₹15k)",    value: breakdown.eps,        section: "cmp" },
+    { label: "EPF — Employer PF (3.67%, max ₹15k)",         value: breakdown.epf,        section: "cmp" },
+    { label: "EDLI — Employer Insurance (0.5%, max ₹75)",   value: breakdown.edli,       section: "cmp" },
+    ...(breakdown.esiEmployer > 0
+      ? [{ label: "ESI — Employer (3.25% of gross, if ≤ ₹21k)", value: breakdown.esiEmployer, section: "cmp" }]
+      : []),
   ];
 
   return (
@@ -193,7 +206,7 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
 
           {/* Deductions breakdown */}
           <div>
-            <h3 className="text-base font-semibold text-gray-800 mb-3">Deductions Breakdown</h3>
+            <h3 className="text-base font-semibold text-gray-800 mb-3">Deductions &amp; Statutory Contributions</h3>
             <div className="overflow-hidden rounded-lg border border-gray-200">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 text-left text-gray-500">
@@ -203,11 +216,17 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {deductionRows.map(({ label, value, note }) => (
+                  {/* Section header — Employee Deductions */}
+                  <tr className="bg-red-50">
+                    <td colSpan={2} className="px-3 py-1.5 text-xs font-semibold text-red-700 uppercase tracking-wide">
+                      Employee Deductions (deducted from gross)
+                    </td>
+                  </tr>
+                  {deductionRows.filter((r) => r.section === "emp").map(({ label, value, note }) => (
                     <tr key={label}>
                       <td className="px-3 py-2 text-gray-600">
                         {label}
-                        {note && <span className="ml-1.5 text-xs text-gray-400">({note})</span>}
+                        {note && <span className="ml-1.5 text-xs text-amber-600">— {note}</span>}
                       </td>
                       <td className="px-3 py-2 text-right font-medium text-gray-800">{value.toLocaleString("en-IN")}</td>
                     </tr>
@@ -219,8 +238,27 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
                     </tr>
                   ))}
                   <tr className="bg-gray-50 font-semibold">
-                    <td className="px-3 py-2 text-gray-700">Total Deductions</td>
+                    <td className="px-3 py-2 text-gray-700">Total Employee Deductions</td>
                     <td className="px-3 py-2 text-right text-red-600">{totalDeductions.toLocaleString("en-IN")}</td>
+                  </tr>
+
+                  {/* Section header — Employer Contributions (CTC) */}
+                  <tr className="bg-blue-50">
+                    <td colSpan={2} className="px-3 py-1.5 text-xs font-semibold text-blue-700 uppercase tracking-wide">
+                      Employer Contributions (added to CTC, not deducted from employee)
+                    </td>
+                  </tr>
+                  {deductionRows.filter((r) => r.section === "cmp").map(({ label, value }) => (
+                    <tr key={label}>
+                      <td className="px-3 py-2 text-gray-600">{label}</td>
+                      <td className="px-3 py-2 text-right font-medium text-blue-700">{value.toLocaleString("en-IN")}</td>
+                    </tr>
+                  ))}
+                  <tr className="bg-blue-50/40 font-semibold">
+                    <td className="px-3 py-2 text-gray-700">Total Employer Contribution</td>
+                    <td className="px-3 py-2 text-right text-blue-600">
+                      {(breakdown.eps + breakdown.epf + breakdown.edli + (breakdown.esiEmployer || 0)).toLocaleString("en-IN")}
+                    </td>
                   </tr>
                 </tbody>
               </table>

@@ -3,6 +3,10 @@ const { query, withTransaction } = require('../config/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
+const { issueMfaTempToken } = require('../services/mfa.service');
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
 
 const USER_WITH_ROLE_SQL = `
   SELECT u.user_id, u.email, u.password_hash, u.role_id, u.employee_id, u.status,
@@ -41,8 +45,20 @@ async function issueTokens(userRow) {
   const payload = toAuthPayload(userRow);
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken({ userId: payload.userId });
-  await query('UPDATE users SET last_login = NOW() WHERE user_id = ?', [userRow.user_id]);
+  await query('UPDATE users SET last_login = NOW(), failed_login_attempts = 0, locked_until = NULL WHERE user_id = ?', [userRow.user_id]);
   return { accessToken, refreshToken, user: toProfile(userRow) };
+}
+
+/**
+ * Issues a full JWT pair given only a userId.
+ * Used by the MFA verify step after TOTP is confirmed.
+ */
+async function issueTokensForUser(userId) {
+  const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.user_id = ?`, [userId]);
+  if (!rows.length || rows[0].status !== 'Active') {
+    throw ApiError.unauthorized('Account is not active');
+  }
+  return issueTokens(rows[0]);
 }
 
 async function register({ email, password, firstName, lastName, mobile, roleId, departmentId, designationId, empJobTitle }) {
@@ -76,16 +92,46 @@ async function login({ email, password }) {
   const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.email = ?`, [email]);
   const userRow = rows[0];
 
+  // Always compare password to avoid user-enumeration timing attacks
+  const dummyHash = '$2a$12$invalidhashinvalidhashinvalidhas';
+  const passwordToCheck = userRow ? userRow.password_hash : dummyHash;
+
   if (!userRow) {
+    await comparePassword(password, dummyHash).catch(() => {});
     throw ApiError.unauthorized('Invalid email or password');
   }
+
+  if (userRow.status === 'Locked' || (userRow.locked_until && new Date(userRow.locked_until) > new Date())) {
+    const remaining = userRow.locked_until
+      ? Math.ceil((new Date(userRow.locked_until) - Date.now()) / 60000)
+      : LOCKOUT_MINUTES;
+    throw ApiError.forbidden(`Account locked due to too many failed attempts. Try again in ${remaining} minute(s).`);
+  }
+
   if (userRow.status !== 'Active') {
     throw ApiError.forbidden('This account is not active. Contact your administrator.');
   }
 
-  const valid = await comparePassword(password, userRow.password_hash);
+  const valid = await comparePassword(password, passwordToCheck);
   if (!valid) {
+    // Increment failure counter; lock if threshold reached
+    const attempts = (userRow.failed_login_attempts || 0) + 1;
+    if (attempts >= MAX_FAILED_ATTEMPTS) {
+      const lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
+      await query(
+        'UPDATE users SET failed_login_attempts = ?, locked_until = ? WHERE user_id = ?',
+        [attempts, lockedUntil, userRow.user_id]
+      );
+      throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
+    }
+    await query('UPDATE users SET failed_login_attempts = ? WHERE user_id = ?', [attempts, userRow.user_id]);
     throw ApiError.unauthorized('Invalid email or password');
+  }
+
+  // Password correct — check if MFA is required
+  if (userRow.mfa_enabled) {
+    const mfaTempToken = await issueMfaTempToken(userRow.user_id);
+    return { mfaRequired: true, mfaTempToken };
   }
 
   return issueTokens(userRow);
@@ -175,4 +221,5 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  issueTokensForUser,
 };

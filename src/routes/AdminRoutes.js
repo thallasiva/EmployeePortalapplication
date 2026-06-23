@@ -1,59 +1,90 @@
-import React from "react";
+/**
+ * AdminRoutes — lazy-loaded
+ * ─────────────────────────
+ * Each page is a separate Webpack chunk. The browser only downloads a
+ * page's JS when the user first navigates to that route, keeping the
+ * initial bundle small.
+ *
+ * React.lazy + Suspense pattern:
+ *  • React.lazy(() => import("…")) — deferred chunk download
+ *  • <Suspense fallback={<LoadingFallback />}> — shows spinner during load
+ *  • <ErrorBoundary> inside each route via PageWrapper — isolates crashes
+ */
+import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import Dashboard from "../pages/admin/Dashboard";
-import Employee from "../pages/admin/Employee";
-import Company from "../pages/admin/Company";
-import CreateCompany from "../pages/admin/CreateCompany";
-import CalendarForm from "../pages/admin/CalendarForm";
-import Leave from "../pages/admin/AdminLeaveDashboard";
-import AdminAttendanceDashboard from "../pages/admin/AdminAttendanceDashboard";
-import AddDocumentScreen from "../pages/admin/AddDocumentScreen";
-import AdminDocuments from "../pages/admin/AdminDocuments";
-import Reports from "../pages/admin/Report";
-import Onboarding from "../pages/admin/Onboarding";
-import Manage from "../pages/admin/Manage";
-import ManagePermissions from "../pages/admin/ManagePermissions";
-import Settings from "../pages/admin/Settings";
-import Profile from "../pages/admin/Profile";
-import CreateEmployee from "../pages/admin/CreateEmployee";
-import EmployeeDetail from "../pages/admin/EmployeeDetail";
 import { getStoredUser, isAdmin } from "../data/auth";
 import { PATH_EMPLOYEE_HOME } from "./paths";
-import PayRollForm from "../pages/admin/PayRollForm";
-import AdminPayslips from "../pages/admin/AdminPayslips";
-import AdminPerformanceRollout from "../pages/admin/AdminPerformanceRollout";
-import AdminTimesheets from "../pages/admin/AdminTimesheets";
+import LoadingFallback from "../component/LoadingFallback";
+import ErrorBoundary from "../component/ErrorBoundary";
+
+// ── Lazy page imports ────────────────────────────────────────────────────────
+const Dashboard              = lazy(() => import("../pages/admin/Dashboard"));
+const Employee               = lazy(() => import("../pages/admin/Employee"));
+const EmployeeDetail         = lazy(() => import("../pages/admin/EmployeeDetail"));
+const CreateEmployee         = lazy(() => import("../pages/admin/CreateEmployee"));
+const Company                = lazy(() => import("../pages/admin/Company"));
+const CreateCompany          = lazy(() => import("../pages/admin/CreateCompany"));
+const CalendarForm           = lazy(() => import("../pages/admin/CalendarForm"));
+const AdminCalendar          = lazy(() => import("../pages/admin/Calendar"));
+const Leave                  = lazy(() => import("../pages/admin/AdminLeaveManagement"));
+const AdminAttendanceDashboard = lazy(() => import("../pages/admin/AdminAttendanceDashboard"));
+const AdminDocuments         = lazy(() => import("../pages/admin/AdminDocuments"));
+const AddDocumentScreen      = lazy(() => import("../pages/admin/AddDocumentScreen"));
+const Reports                = lazy(() => import("../pages/admin/Report"));
+const PayRollForm            = lazy(() => import("../pages/admin/PayRollForm"));
+const AdminPayslips          = lazy(() => import("../pages/admin/AdminPayslips"));
+const AdminPerformanceRollout = lazy(() => import("../pages/admin/AdminPerformanceRollout"));
+const AdminTimesheets        = lazy(() => import("../pages/admin/AdminTimesheets"));
+const Onboarding             = lazy(() => import("../pages/admin/Onboarding"));
+const Manage                 = lazy(() => import("../pages/admin/Manage"));
+const ManagePermissions      = lazy(() => import("../pages/admin/ManagePermissions"));
+const Settings               = lazy(() => import("../pages/admin/Settings"));
+const Profile                = lazy(() => import("../pages/admin/Profile"));
+const MfaSetup               = lazy(() => import("../pages/admin/MfaSetup"));
+const LeaveSummaryReport     = lazy(() => import("../pages/admin/LeaveSummaryReport"));
+
+// ── Suspense wrapper ─────────────────────────────────────────────────────────
+// Each route gets its own ErrorBoundary so one crash doesn't unmount the rest.
+function Page({ children }) {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingFallback />}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
 
 const AdminRoutes = () => {
   const user = getStoredUser();
-
-  if (!isAdmin(user)) {
-    return <Navigate to={PATH_EMPLOYEE_HOME} replace />;
-  }
+  if (!isAdmin(user)) return <Navigate to={PATH_EMPLOYEE_HOME} replace />;
 
   return (
     <Routes>
-      <Route index element={<Dashboard />} />
-      <Route path="employee" element={<Employee />} />
-      <Route path="employee/:id" element={<EmployeeDetail />} />
-      <Route path="create-employee" element={<CreateEmployee />} />
-      <Route path="company" element={<Company />} />
-      <Route path="create-company" element={<CreateCompany />} />
-      <Route path="calendar" element={<CalendarForm />} />
-      <Route path="leave" element={<Leave />} />
-      <Route path="attendance" element={<AdminAttendanceDashboard />} />
-      <Route path="documents" element={<AdminDocuments />} />
-      <Route path="add-document" element={<AddDocumentScreen />} />
-      <Route path="payroll" element={<PayRollForm />} />
-      <Route path="payroll/payslips" element={<AdminPayslips />} />
-      <Route path="performance" element={<AdminPerformanceRollout />} />
-      <Route path="timesheets" element={<AdminTimesheets />} />
-      <Route path="report/*" element={<Reports />} />
-      <Route path="onboarding" element={<Onboarding />} />
-      <Route path="manage" element={<Manage />} />
-      <Route path="manage/permissions/:roleSlug" element={<ManagePermissions />} />
-      <Route path="settings" element={<Settings />} />
-      <Route path="profile" element={<Profile />} />
+      <Route index                               element={<Page><Dashboard /></Page>} />
+      <Route path="employee"                     element={<Page><Employee /></Page>} />
+      <Route path="employee/:id"                 element={<Page><EmployeeDetail /></Page>} />
+      <Route path="create-employee"              element={<Page><CreateEmployee /></Page>} />
+      <Route path="company"                      element={<Page><Company /></Page>} />
+      <Route path="create-company"               element={<Page><CreateCompany /></Page>} />
+      <Route path="calendar"                     element={<Page><AdminCalendar /></Page>} />
+      <Route path="calendar/form"               element={<Page><CalendarForm /></Page>} />
+      <Route path="leave"                        element={<Page><Leave /></Page>} />
+      <Route path="attendance"                   element={<Page><AdminAttendanceDashboard /></Page>} />
+      <Route path="documents"                    element={<Page><AdminDocuments /></Page>} />
+      <Route path="add-document"                 element={<Page><AddDocumentScreen /></Page>} />
+      <Route path="payroll"                      element={<Page><PayRollForm /></Page>} />
+      <Route path="payroll/payslips"             element={<Page><AdminPayslips /></Page>} />
+      <Route path="performance"                  element={<Page><AdminPerformanceRollout /></Page>} />
+      <Route path="timesheets"                   element={<Page><AdminTimesheets /></Page>} />
+      <Route path="report/*"                     element={<Page><Reports /></Page>} />
+      <Route path="onboarding"                   element={<Page><Onboarding /></Page>} />
+      <Route path="manage"                       element={<Page><Manage /></Page>} />
+      <Route path="manage/permissions/:roleSlug" element={<Page><ManagePermissions /></Page>} />
+      <Route path="settings"                     element={<Page><Settings /></Page>} />
+      <Route path="profile"                      element={<Page><Profile /></Page>} />
+      <Route path="security/mfa"                 element={<Page><MfaSetup /></Page>} />
+      <Route path="leave/summary"               element={<Page><LeaveSummaryReport /></Page>} />
     </Routes>
   );
 };

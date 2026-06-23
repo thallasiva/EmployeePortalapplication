@@ -1,6 +1,7 @@
 const authService = require('../services/auth.service');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
+const { setTokenCookies, clearTokenCookies } = require('../utils/cookieAuth');
 
 const register = asyncHandler(async (req, res) => {
   const result = await authService.register(req.body);
@@ -9,11 +10,22 @@ const register = asyncHandler(async (req, res) => {
 
 const login = asyncHandler(async (req, res) => {
   const result = await authService.login(req.body);
+
+  if (result.mfaRequired) {
+    // Password correct but MFA needed — return temp token, not full JWT
+    return new ApiResponse(200, { mfaRequired: true, mfaTempToken: result.mfaTempToken }, 'MFA verification required').send(res);
+  }
+
+  // Full login — set httpOnly cookies AND return tokens in body
+  setTokenCookies(res, result.accessToken, result.refreshToken);
   new ApiResponse(200, result, 'Login successful').send(res);
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  const result = await authService.refresh(req.body.refreshToken);
+  // Accept refresh token from cookie first, then body (backward compat)
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+  const result = await authService.refresh(refreshToken);
+  setTokenCookies(res, result.accessToken, result.refreshToken);
   new ApiResponse(200, result, 'Token refreshed').send(res);
 });
 
@@ -38,7 +50,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (_req, res) => {
-  // Stateless JWT: client discards tokens. Placeholder for token-blacklisting if needed.
+  clearTokenCookies(res);
   new ApiResponse(200, null, 'Logged out successfully').send(res);
 });
 

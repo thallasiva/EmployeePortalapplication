@@ -325,6 +325,52 @@ function TaskModal({ task, onClose, onSave }) {
   );
 }
 
+// ─── Task ↔ Timesheet helpers ────────────────────────────────────────────────
+
+/** Returns true if task's date range overlaps with the given week dates array */
+function taskOverlapsWeek(task, dates) {
+  if (!task.start_date || !task.end_date) return false;
+  const weekStart = toDateStr(dates[0]);
+  const weekEnd   = toDateStr(dates[6]);
+  return task.start_date <= weekEnd && task.end_date >= weekStart;
+}
+
+/** Build timesheet rows from tasks that overlap the current week */
+function buildTaskRows(tasks, dates, startId = 1) {
+  const rows = [];
+  let id = startId;
+  (tasks || []).filter(t => taskOverlapsWeek(t, dates)).forEach(t => {
+    const hours = {};
+    DAYS.forEach((day, idx) => {
+      const dateStr = toDateStr(dates[idx]);
+      const inRange = dateStr >= t.start_date && dateStr <= t.end_date;
+      hours[day] = {
+        value: inRange && t.duration_hours ? String(parseFloat(t.duration_hours)) : "",
+        date: dateStr,
+      };
+    });
+    rows.push({
+      id: id++,
+      project:     t.project_name || PROJECTS[0],
+      taskName:    t.task_name    || "",
+      activityDesc: t.description || "",
+      startTime:   t.start_time   || "",
+      endTime:     t.end_time     || "",
+      hours,
+      taskId: t.task_id, // tracks originating task
+    });
+  });
+  return rows;
+}
+
+/** Merge task rows into existing saved rows (skip tasks already present) */
+function mergeTaskRows(existingRows, tasks, dates) {
+  const keys = new Set(existingRows.map(r => `${r.project}||${r.taskName}`));
+  const newRows = buildTaskRows(tasks, dates, existingRows.length + 1)
+    .filter(r => !keys.has(`${r.project}||${r.taskName}`));
+  return [...existingRows, ...newRows];
+}
+
 // ─── My Tasks Tab ─────────────────────────────────────────────────────────────
 function MyTasksTab() {
   const [tasks, setTasks] = useState([]);
@@ -448,13 +494,16 @@ function TimesheetTab() {
   const [toast, setToast] = useState("");
   const [showExtraWork, setShowExtraWork] = useState(false);
   const [myExtraWork, setMyExtraWork] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
+  const [editTask, setEditTask] = useState(null);
 
   const { weekStart, dates } = getWeekBounds(weekOffset);
 
   const loadWeek = useCallback(async () => {
     setLoading(true); setErr("");
     try {
-      const all = await getMyTimesheets();
+      const [all, myTasks] = await Promise.all([getMyTimesheets(), getMyTasks()]);
+      setAllTasks(myTasks || []);
       const match = all.find(t => t.week_start === weekStart);
       setTimesheet(match || null);
       if (match?.timesheet_id) {
@@ -467,6 +516,10 @@ function TimesheetTab() {
             if (!rowMap[key]) {
               const hours = {};
               DAYS.forEach((day, i) => { hours[day] = { value: "", date: toDateStr(dates[i]) }; });
+              // Try to find matching task to restore taskId link
+              const linkedTask = (myTasks || []).find(
+                t => t.project_name === e.project_name && t.task_name === e.task_name
+              );
               rowMap[key] = {
                 id: Object.keys(rowMap).length + 1,
                 project: e.project_name,
@@ -475,21 +528,30 @@ function TimesheetTab() {
                 startTime: e.start_time || "",
                 endTime: e.end_time || "",
                 hours,
+                taskId: linkedTask?.task_id || null,
               };
             }
             const dayIdx = dates.findIndex(d => toDateStr(d) === e.work_date);
             if (dayIdx >= 0) rowMap[key].hours[DAYS[dayIdx]].value = String(e.duration_hours);
           });
           const rebuilt = Object.values(rowMap);
-          setEntries(rebuilt);
-          setNextId(rebuilt.length + 1);
+          // Append any tasks that aren't already saved
+          const merged = mergeTaskRows(rebuilt, myTasks, dates);
+          setEntries(merged);
+          setNextId(merged.length + 1);
         } else {
-          setEntries([emptyEntry(1, dates)]);
-          setNextId(2);
+          // Timesheet exists but no entries yet — seed with tasks
+          const taskRows = buildTaskRows(myTasks, dates, 1);
+          const initial = taskRows.length > 0 ? taskRows : [emptyEntry(1, dates)];
+          setEntries(initial);
+          setNextId(initial.length + 1);
         }
       } else {
-        setEntries([emptyEntry(1, dates)]);
-        setNextId(2);
+        // No timesheet for this week yet — seed with tasks
+        const taskRows = buildTaskRows(myTasks, dates, 1);
+        const initial = taskRows.length > 0 ? taskRows : [emptyEntry(1, dates)];
+        setEntries(initial);
+        setNextId(initial.length + 1);
       }
     } catch { setErr("Failed to load timesheet"); }
     finally { setLoading(false); }
@@ -573,6 +635,26 @@ function TimesheetTab() {
     setMyExtraWork(await getMyExtraWork());
   };
 
+  const handleUpdateTask = async (form) => {
+    if (!editTask) return;
+    await updateTask(editTask.task_id, form);
+    // Reflect changes in the timesheet row immediately
+    setEntries(prev => prev.map(r =>
+      r.taskId === editTask.task_id
+        ? {
+            ...r,
+            project:     form.project_name || r.project,
+            taskName:    form.task_name    || r.taskName,
+            activityDesc: form.description || r.activityDesc,
+            startTime:   form.start_time   || r.startTime,
+            endTime:     form.end_time     || r.endTime,
+          }
+        : r
+    ));
+    const refreshed = await getMyTasks();
+    setAllTasks(refreshed);
+  };
+
   return (
     <div className="space-y-4">
       {/* Week navigator */}
@@ -637,12 +719,25 @@ function TimesheetTab() {
                       </select>
                     </td>
                     <td className="px-2 py-2">
-                      <input disabled={isLocked} className="ts-input w-full text-xs"
-                        placeholder="Task name" value={row.taskName}
-                        onChange={e => updateEntry(row.id, "taskName", e.target.value)} />
-                      <input disabled={isLocked} className="ts-input w-full text-xs mt-1"
-                        placeholder="Activity" value={row.activityDesc}
-                        onChange={e => updateEntry(row.id, "activityDesc", e.target.value)} />
+                      <div className="flex items-center gap-1">
+                        <input disabled={isLocked} className="ts-input flex-1 text-xs"
+                          placeholder="Task name" value={row.taskName}
+                          onChange={e => updateEntry(row.id, "taskName", e.target.value)} />
+                        {row.taskId && (
+                          <button type="button"
+                            title="Edit task details"
+                            onClick={() => setEditTask(allTasks.find(t => t.task_id === row.taskId) || null)}
+                            className="shrink-0 text-blue-400 hover:text-blue-600 text-sm px-1">✏️</button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <input disabled={isLocked} className="ts-input flex-1 text-xs"
+                          placeholder="Activity" value={row.activityDesc}
+                          onChange={e => updateEntry(row.id, "activityDesc", e.target.value)} />
+                        {row.taskId && (
+                          <span className="shrink-0 text-[9px] font-semibold text-blue-500 bg-blue-50 border border-blue-200 rounded px-1">Task</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-2 py-2">
                       <input type="time" disabled={isLocked} className="ts-input w-full text-xs"
@@ -701,7 +796,7 @@ function TimesheetTab() {
               <button type="button" onClick={addRow} className="text-sm font-medium text-brand hover:underline">+ Add Row</button>
               <div className="flex gap-2">
                 <button type="button" onClick={handleSave} disabled={saving} className="ts-btn-ghost text-sm">
-                  {saving ? "Saving…" : "Save Draft"}
+   
                 </button>
                 {hasOvertime ? (
                   <button type="button" onClick={() => setShowExtraWork(true)} className="ts-btn-warning text-sm">
@@ -745,6 +840,14 @@ function TimesheetTab() {
           overDays={overDays}
           onClose={() => setShowExtraWork(false)}
           onSubmit={handleExtraWorkSubmit}
+        />
+      )}
+
+      {editTask && (
+        <TaskModal
+          task={editTask}
+          onClose={() => setEditTask(null)}
+          onSave={handleUpdateTask}
         />
       )}
     </div>

@@ -3,47 +3,41 @@ import axios from "axios";
 export const API_BASE_URL =
   process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
-export const ACCESS_TOKEN_KEY = "accessToken";
-export const REFRESH_TOKEN_KEY = "refreshToken";
+// ── Token storage ─────────────────────────────────────────────────────────────
+// Access and refresh tokens are now stored in httpOnly cookies set by the
+// server. They are NOT readable by JavaScript. The functions below are kept
+// for backward compatibility but no longer touch localStorage tokens.
 
-export function getAccessToken() {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
-}
+export function getAccessToken()  { return null; } // tokens live in httpOnly cookies
+export function getRefreshToken() { return null; }
 
-export function getRefreshToken() {
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
-}
-
-export function setAuthTokens({ accessToken, refreshToken } = {}) {
-  if (accessToken) localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+export function setAuthTokens() {
+  // No-op: server sets httpOnly cookies automatically on login/refresh
 }
 
 export function clearAuthSession() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  // Only clear user profile from localStorage — tokens are cleared by the
+  // server's Set-Cookie on POST /auth/logout (clearTokenCookies).
   localStorage.removeItem("user");
   localStorage.removeItem("token");
+  // Legacy cleanup
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
 }
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,  // ← sends httpOnly cookies on every request
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// No Authorization header interceptor needed — cookies are automatic.
 
 let isRefreshing = false;
 let pendingRequests = [];
 
-const onRefreshed = (newToken) => {
-  pendingRequests.forEach((cb) => cb(newToken));
+const onRefreshed = (ok) => {
+  pendingRequests.forEach((cb) => cb(ok));
   pendingRequests = [];
 };
 
@@ -52,34 +46,20 @@ apiClient.interceptors.response.use(
   async (error) => {
     const { config, response } = error;
 
-    if (!response) {
-      return Promise.reject(error);
-    }
+    if (!response) return Promise.reject(error);
 
     const isAuthEndpoint =
       config?.url?.includes("/auth/login") ||
       config?.url?.includes("/auth/refresh") ||
-      config?.url?.includes("/auth/register");
+      config?.url?.includes("/auth/register") ||
+      config?.url?.includes("/auth/mfa");
 
     if (response.status === 401 && !config._retry && !isAuthEndpoint) {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) {
-        clearAuthSession();
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
-        return Promise.reject(error);
-      }
-
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          pendingRequests.push((newToken) => {
-            if (!newToken) {
-              reject(error);
-              return;
-            }
+          pendingRequests.push((ok) => {
+            if (!ok) { reject(error); return; }
             config._retry = true;
-            config.headers.Authorization = `Bearer ${newToken}`;
             resolve(apiClient(config));
           });
         });
@@ -87,19 +67,13 @@ apiClient.interceptors.response.use(
 
       isRefreshing = true;
       try {
-        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken,
-        });
-        const newAccessToken = data?.data?.accessToken;
-        const newRefreshToken = data?.data?.refreshToken;
-        setAuthTokens({ accessToken: newAccessToken, refreshToken: newRefreshToken });
-        onRefreshed(newAccessToken);
-
+        // Token refresh — cookie is sent automatically via withCredentials
+        await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        onRefreshed(true);
         config._retry = true;
-        config.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(config);
       } catch (refreshError) {
-        onRefreshed(null);
+        onRefreshed(false);
         clearAuthSession();
         if (typeof window !== "undefined" && window.location.pathname !== "/login") {
           window.location.href = "/login";
