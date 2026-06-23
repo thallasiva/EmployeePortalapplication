@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { downloadPayslip, viewPayslip } from "../../../utils/payslipDownload";
 import { errorToast, successToast } from "../../../utils/ToastControllers";
+import { getMyDocuments } from "../../../api/document.api";
+import { API_BASE_URL } from "../../../api/client";
 
 const VIEW = {
   HOME: "home",
@@ -216,6 +218,37 @@ function DocumentCenter() {
     "pending-letters": true,
   });
 
+  // ── Dynamic documents from API ──────────────────────────────────────────────
+  const [myDocs, setMyDocs] = useState(null); // null = not loaded yet
+  const [docsLoading, setDocsLoading] = useState(false);
+
+  useEffect(() => {
+    if (view !== VIEW.DOCUMENTS || myDocs !== null) return;
+    setDocsLoading(true);
+    getMyDocuments({ limit: 200 })
+      .then(({ data }) => setMyDocs(data || []))
+      .catch(() => { errorToast("Failed to load documents"); setMyDocs([]); })
+      .finally(() => setDocsLoading(false));
+  }, [view, myDocs]);
+
+  // Group documents by category (or "General")
+  const docsByCategory = useMemo(() => {
+    if (!myDocs) return {};
+    const groups = {};
+    myDocs.forEach((doc) => {
+      const cat = doc.category_name || "General";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(doc);
+    });
+    return groups;
+  }, [myDocs]);
+
+  function docFileUrl(relPath) {
+    if (!relPath) return "#";
+    const base = API_BASE_URL.replace(/\/api\/?$/, "");
+    return `${base}${relPath}`;
+  }
+
   const payslipRows = useMemo(
     () => [
       { month: "Apr 2026", text: "Payroll for the month of Apr 2026", date: "01 May, 2026", file: null },
@@ -316,148 +349,107 @@ function DocumentCenter() {
   }
 
   if (view === VIEW.DOCUMENTS) {
+    const categoryNames = Object.keys(docsByCategory);
     return (
       <div className="-m-4 bg-[#f5f7fb] min-h-[calc(100vh-5rem)] p-4">
         <PanelTitle>Documents</PanelTitle>
-        <div className="border border-[#dfe5ed] bg-white min-h-[520px] flex">
-          <JumpList
-            items={["Address", "Accounts & Statutory"]}
-            onJump={(item) => {
-              if (item === "Address") {
-                jumpToSection("Address", () =>
-                  setDocSectionOpen((curr) => ({ ...curr, address: true }))
-                );
-              }
-              if (item === "Accounts & Statutory") {
-                jumpToSection("Accounts & Statutory", () =>
-                  setDocSectionOpen((curr) => ({ ...curr, accounts: true }))
-                );
-              }
-            }}
-          />
-          <div className="flex-1 p-3 space-y-3 max-h-[520px] overflow-y-auto" data-doc-scroll>
-            <div id={toJumpId("Address")} className="border border-[#dfe5ed]">
-              <button
-                type="button"
-                onClick={() =>
-                  setDocSectionOpen((curr) => ({
-                    ...curr,
-                    address: !curr.address,
-                  }))
-                }
-                className="w-full px-3 py-2 border-b border-[#edf1f5] flex justify-between items-center text-left"
-              >
-                <h4 className="text-[14px] font-semibold text-[#586377] inline-flex items-center gap-1">
-                  {docSectionOpen.address ? (
-                    <ChevronDown size={14} />
-                  ) : (
-                    <ChevronRight size={14} />
-                  )}
-                  Address
-                </h4>
-                <span className="text-[11px] text-[#a4afbf]">Last updated on 03 May, 2024</span>
-              </button>
-              {docSectionOpen.address && (
-                <div className="p-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDocItemOpen((curr) => ({
-                        ...curr,
-                        presentAddress: !curr.presentAddress,
-                      }))
-                    }
-                    className="w-full text-left"
-                  >
-                    <div className="text-[13px] text-[#5d6779] font-semibold mb-1 inline-flex items-center gap-1">
-                      {docItemOpen.presentAddress ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                      Present Address
-                    </div>
-                    <div className="text-[12px] text-[#9ca8b8] ml-4">Present Address</div>
-                  </button>
-                  {docItemOpen.presentAddress && (
-                    <button className="border border-[#dfe5ed] h-8 px-3 text-[12px] inline-flex items-center gap-8 mt-2 ml-4">
-                      aadhar.jpg <Download size={13} className="text-[#8d9aad]" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
 
-            <div id={toJumpId("Accounts & Statutory")} className="border border-[#dfe5ed]">
-              <button
-                type="button"
-                onClick={() =>
-                  setDocSectionOpen((curr) => ({
-                    ...curr,
-                    accounts: !curr.accounts,
-                  }))
-                }
-                className="w-full px-3 py-2 border-b border-[#edf1f5] flex justify-between items-center text-left"
-              >
-                <h4 className="text-[14px] font-semibold text-[#586377] inline-flex items-center gap-1">
-                  {docSectionOpen.accounts ? (
-                    <ChevronDown size={14} />
-                  ) : (
-                    <ChevronRight size={14} />
-                  )}
-                  Accounts &amp; Statutory
-                </h4>
-                <span className="text-[11px] text-[#a4afbf]">Last updated on 03 May, 2024</span>
-              </button>
-              {docSectionOpen.accounts && (
-                <div className="p-3 space-y-4">
-                  <div>
+        {docsLoading ? (
+          <div className="border border-[#dfe5ed] bg-white min-h-[200px] flex items-center justify-center">
+            <p className="text-[13px] text-[#9ca8b8]">Loading your documents…</p>
+          </div>
+        ) : !myDocs || myDocs.length === 0 ? (
+          <div className="border border-[#dfe5ed] bg-white min-h-[300px] flex flex-col items-center justify-center gap-3 p-8">
+            <FileText size={40} className="text-[#c8d3e0]" />
+            <p className="text-[16px] text-[#7a8799]">No documents yet</p>
+            <p className="text-[13px] text-[#a2adbd] text-center">
+              Documents shared with you by HR will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="border border-[#dfe5ed] bg-white min-h-[520px] flex">
+            <JumpList
+              items={categoryNames.length > 0 ? categoryNames : ["Documents"]}
+              onJump={(item) => scrollToJump(item)}
+            />
+            <div className="flex-1 p-3 space-y-3 max-h-[520px] overflow-y-auto" data-doc-scroll>
+              {categoryNames.map((cat) => {
+                const docs = docsByCategory[cat];
+                const lastUpdated = docs.reduce((latest, d) => {
+                  const t = new Date(d.created_at).getTime();
+                  return t > latest ? t : latest;
+                }, 0);
+                const lastUpdatedStr = lastUpdated
+                  ? new Date(lastUpdated).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })
+                  : "";
+
+                return (
+                  <div key={cat} id={toJumpId(cat)} className="border border-[#dfe5ed]">
                     <button
                       type="button"
                       onClick={() =>
-                        setDocItemOpen((curr) => ({
-                          ...curr,
-                          bankAccount: !curr.bankAccount,
-                        }))
+                        setDocSectionOpen((curr) => ({ ...curr, [cat]: !curr[cat] }))
                       }
-                      className="w-full text-left"
+                      className="w-full px-3 py-2 border-b border-[#edf1f5] flex justify-between items-center text-left"
                     >
-                      <div className="text-[13px] text-[#5d6779] font-semibold inline-flex items-center gap-1">
-                        {docItemOpen.bankAccount ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                        Bank Account Details
-                      </div>
-                      <div className="text-[12px] text-[#9ca8b8] mb-2 ml-4">Bank Account Details</div>
+                      <h4 className="text-[14px] font-semibold text-[#586377] inline-flex items-center gap-1">
+                        {docSectionOpen[cat] !== false ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        {cat}
+                        <span className="ml-2 text-[11px] font-normal text-[#a4afbf]">
+                          ({docs.length})
+                        </span>
+                      </h4>
+                      {lastUpdatedStr && (
+                        <span className="text-[11px] text-[#a4afbf]">Last updated {lastUpdatedStr}</span>
+                      )}
                     </button>
-                    {docItemOpen.bankAccount && (
-                      <button className="border border-[#dfe5ed] h-8 px-3 text-[12px] inline-flex items-center gap-8 ml-4">
-                        aadhar.jpg <Download size={13} className="text-[#8d9aad]" />
-                      </button>
+
+                    {docSectionOpen[cat] !== false && (
+                      <div className="p-3 space-y-2">
+                        {docs.map((doc) => (
+                          <div key={doc.document_id} className="flex items-center justify-between border border-[#e8edf3] rounded px-3 py-2 bg-[#fafbfc]">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <FileText size={14} className="text-[#8b9fc0] shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-[13px] font-medium text-[#3a4558] truncate">{doc.title}</p>
+                                {doc.description && (
+                                  <p className="text-[11px] text-[#9ca8b8] truncate">{doc.description}</p>
+                                )}
+                                <p className="text-[11px] text-[#b0bac7] mt-0.5">
+                                  {doc.file_type} · {doc.file_size} ·{" "}
+                                  {new Date(doc.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 shrink-0 ml-3">
+                              <a
+                                href={docFileUrl(doc.file_url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="border border-[#dfe5ed] h-7 px-3 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#5a78ad]"
+                                title="View document"
+                              >
+                                <Search size={12} /> View
+                              </a>
+                              <a
+                                href={docFileUrl(doc.file_url)}
+                                download
+                                className="border border-[#dfe5ed] h-7 px-3 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#8d9aad]"
+                                title="Download document"
+                              >
+                                <Download size={12} /> Download
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setDocItemOpen((curr) => ({
-                          ...curr,
-                          pan: !curr.pan,
-                        }))
-                      }
-                      className="w-full text-left"
-                    >
-                      <div className="text-[13px] text-[#5d6779] font-semibold inline-flex items-center gap-1">
-                        {docItemOpen.pan ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                        Permanent Account Number
-                      </div>
-                      <div className="text-[12px] text-[#9ca8b8] mb-2 ml-4">Permanent Account Number</div>
-                    </button>
-                    {docItemOpen.pan && (
-                      <button className="border border-[#dfe5ed] h-8 px-3 text-[12px] inline-flex items-center gap-8 ml-4">
-                        aadhar.jpg <Download size={13} className="text-[#8d9aad]" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
+                );
+              })}
             </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }

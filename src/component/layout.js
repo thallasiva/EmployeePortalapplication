@@ -4,9 +4,13 @@ import { Navigate, Outlet } from "react-router-dom";
 import { Sidebar } from "./sidebar";
 import { Navbar } from "./navbar";
 import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
+import { useIdleLogout } from "../hooks/useIdleLogout";
 
 export default function Layout() {
   const [open, setOpen] = useState(true);
+
+  // Auto-logout after 5 minutes of inactivity. Timer resets on any mouse/key/scroll activity.
+  useIdleLogout({ timeoutMs: 5 * 60 * 1000, enabled: true });
 
   const user = getStoredUser();
 

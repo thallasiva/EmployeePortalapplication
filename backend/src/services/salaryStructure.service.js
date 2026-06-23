@@ -1,6 +1,7 @@
 const BaseService = require('./base.service');
 const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const { encryptSalaryFields, applyVisibility } = require('../utils/encryption');
 
 const LIST_SELECT = `
   SELECT s.*, e.emp_code, CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name
@@ -16,7 +17,11 @@ class SalaryStructureService extends BaseService {
     ]);
   }
 
-  async list({ employee_id, limit, offset } = {}) {
+  /**
+   * @param {object} opts
+   * @param {object} [opts.reqUser]  req.user — used to apply salary visibility rules
+   */
+  async list({ employee_id, limit, offset, reqUser } = {}) {
     const where = [];
     const params = [];
 
@@ -37,20 +42,57 @@ class SalaryStructureService extends BaseService {
       `SELECT COUNT(*) AS total FROM salary_structures s ${whereSql}`,
       where.length ? params.slice(0, params.length - (limit !== undefined ? 2 : 0)) : []
     );
-    return { rows, total: countRows[0]?.total || 0 };
+
+    // Apply visibility: admins see full data, others see masked values
+    const visible = rows.map((r) => applyVisibility(r, reqUser, r.employee_id));
+    return { rows: visible, total: countRows[0]?.total || 0 };
   }
 
-  async latestForEmployee(employeeId) {
+  async latestForEmployee(employeeId, reqUser = null) {
     const rows = await query(
       `${LIST_SELECT} WHERE s.employee_id = ? ORDER BY s.effective_from DESC LIMIT 1`,
       [employeeId]
     );
-    return rows[0] || null;
+    const row = rows[0] || null;
+    return applyVisibility(row, reqUser, employeeId);
   }
 
-  async getDetails(id) {
+  async getDetails(id, reqUser = null, ownerId = null) {
     const rows = await query(`${LIST_SELECT} WHERE s.id = ?`, [id]);
-    return rows[0] || null;
+    const row = rows[0] || null;
+    return applyVisibility(row, reqUser, ownerId ?? row?.employee_id);
+  }
+
+  /** Override: encrypt salary data before INSERT */
+  async create(data) {
+    const salaryEncrypted = encryptSalaryFields(data);
+    const row = await super.create(data);
+    if (salaryEncrypted && row) {
+      await require('../config/db').query(
+        'UPDATE salary_structures SET salary_encrypted = ? WHERE id = ?',
+        [salaryEncrypted, row.id]
+      );
+    }
+    return row;
+  }
+
+  /** Override: encrypt salary data before UPDATE */
+  async update(id, data) {
+    const row = await super.update(id, data);
+    // Re-fetch full record to build an accurate encrypted blob
+    const full = await require('../config/db').query(
+      'SELECT * FROM salary_structures WHERE id = ?', [id]
+    );
+    if (full[0]) {
+      const salaryEncrypted = encryptSalaryFields(full[0]);
+      if (salaryEncrypted) {
+        await require('../config/db').query(
+          'UPDATE salary_structures SET salary_encrypted = ? WHERE id = ?',
+          [salaryEncrypted, id]
+        );
+      }
+    }
+    return row;
   }
 
   /**

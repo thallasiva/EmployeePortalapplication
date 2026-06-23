@@ -144,6 +144,52 @@ export default function PayslipSheet({ data }) {
         <p className="netpay-words">({data.net_pay_words})</p>
       </div>
 
+      {/* Employer Statutory Contributions (CTC components) */}
+      {(data.eps || data.epf || data.edli || data.esi_employer) && (
+        <>
+          <div className="payslip-print-section-title">Employer Statutory Contributions (CTC)</div>
+          <table className="payslip-print-table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th className="payslip-print-amount">Rate</th>
+                <th className="payslip-print-amount">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.eps != null && (
+                <tr>
+                  <td>EPS — Employer Pension Fund (8.33%)</td>
+                  <td className="payslip-print-amount">8.33%</td>
+                  <td className="payslip-print-amount">{num(data.eps)}</td>
+                </tr>
+              )}
+              {data.epf != null && (
+                <tr>
+                  <td>EPF — Employer Provident Fund (3.67%)</td>
+                  <td className="payslip-print-amount">3.67%</td>
+                  <td className="payslip-print-amount">{num(data.epf)}</td>
+                </tr>
+              )}
+              {data.edli != null && (
+                <tr>
+                  <td>EDLI — Employees Deposit Linked Insurance (0.5%)</td>
+                  <td className="payslip-print-amount">0.50%</td>
+                  <td className="payslip-print-amount">{num(data.edli)}</td>
+                </tr>
+              )}
+              {data.esi_employer > 0 && (
+                <tr>
+                  <td>ESI — Employer Contribution (3.25%)</td>
+                  <td className="payslip-print-amount">3.25%</td>
+                  <td className="payslip-print-amount">{num(data.esi_employer)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
+
       {/* TDS Details */}
       <div className="payslip-print-section-title">TDS Details</div>
       <table className="payslip-print-table">

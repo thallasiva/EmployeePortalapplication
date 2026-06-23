@@ -1,3 +1,5 @@
+'use strict';
+
 require('dotenv').config();
 
 function required(name, fallback) {
@@ -39,4 +41,7 @@ module.exports = {
     pass: required('SMTP_PASS', ''),
     from: required('SMTP_FROM', 'HRMS <no-reply@hrms.local>'),
   },
+
+  // 32-byte hex key for AES-256-GCM salary encryption
+  salaryEncryptionKey: required('SALARY_ENCRYPTION_KEY', ''),
 };

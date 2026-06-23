@@ -56,4 +56,30 @@ const balances = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Leave balances fetched').send(res);
 });
 
-module.exports = { list, myRequests, getOne, apply, review, cancel, balances };
+/** GET /leave-requests/admin/balances?year= — all employees × all leave types matrix */
+const allBalances = asyncHandler(async (req, res) => {
+  const data = await leaveRequestService.allBalances(req.query.year);
+  new ApiResponse(200, data, 'All leave balances fetched').send(res);
+});
+
+/** PUT /leave-requests/admin/adjust — upsert one employee's leave balance */
+const adjustBalance = asyncHandler(async (req, res) => {
+  const result = await leaveRequestService.adjustBalance(req.body);
+  new ApiResponse(200, result, 'Leave balance updated').send(res);
+});
+
+/** POST /leave-requests/admin/initialize-year — create missing balance rows for a year */
+const initializeYear = asyncHandler(async (req, res) => {
+  const year = Number(req.body.year) || new Date().getFullYear();
+  const result = await leaveRequestService.initializeBalancesForYear(year);
+  new ApiResponse(200, result, `Leave balances initialized for ${year}`).send(res);
+});
+
+/** GET /leave-requests/admin/summary?year=&department_id=&status= */
+const leaveSummary = asyncHandler(async (req, res) => {
+  const { year, department_id, status } = req.query;
+  const data = await leaveRequestService.leaveSummary(year, { department_id, status });
+  new ApiResponse(200, data, 'Leave summary fetched').send(res);
+});
+
+module.exports = { list, myRequests, getOne, apply, review, cancel, balances, allBalances, adjustBalance, initializeYear, leaveSummary };

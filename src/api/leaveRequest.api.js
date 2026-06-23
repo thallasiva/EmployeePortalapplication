@@ -29,3 +29,19 @@ export const reviewLeaveRequest = (id, payload) =>
 /** GET /leave-requests/employees/:employeeId/balances */
 export const getEmployeeLeaveBalances = (employeeId) =>
   apiClient.get(`/leave-requests/employees/${employeeId}/balances`).then(unwrap);
+
+/** GET /leave-requests/admin/balances?year= — all employees matrix */
+export const getAllLeaveBalances = (year) =>
+  apiClient.get("/leave-requests/admin/balances", { params: { year } }).then(unwrap);
+
+/** PUT /leave-requests/admin/adjust */
+export const adjustLeaveBalance = (payload) =>
+  apiClient.put("/leave-requests/admin/adjust", payload).then(unwrap);
+
+/** POST /leave-requests/admin/initialize-year */
+export const initializeLeaveYear = (year) =>
+  apiClient.post("/leave-requests/admin/initialize-year", { year }).then(unwrap);
+
+/** GET /leave-requests/admin/summary?year=&department_id=&status= */
+export const getLeaveSummary = (params) =>
+  apiClient.get("/leave-requests/admin/summary", { params }).then(unwrap);

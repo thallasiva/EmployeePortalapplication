@@ -1,48 +1,40 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
-  ReportPageHeader,
-  ReportIconStatCard,
-  ReportTableToolbar,
-  ReportAvatar,
-  ReportStatusBadge,
+  ReportPageHeader, ReportIconStatCard, ReportTableToolbar,
+  ReportAvatar, ReportStatusBadge,
 } from "../../../component/reports/ReportsLayout";
-import { EMPLOYEE_STATS, EMPLOYEE_CHART, EMPLOYEE_LIST } from "../../../data/reportsData";
+import { listEmployees } from "../../../api/employee.api";
+import { getDepartmentName } from "../../../utils/employeeDisplay";
 
-function EmployeeBarChart({ data }) {
-  const yMax = 150;
+function EmployeeBarChart({ employees }) {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const data = useMemo(() => {
+    const counts = months.map((m, i) => {
+      const active = employees.filter(e => {
+        if (!e.emp_joining_date) return false;
+        const d = new Date(e.emp_joining_date);
+        return d.getMonth() === i;
+      }).length;
+      return { label: m, active, inactive: 0 };
+    });
+    return counts;
+  }, [employees]);
+
+  const yMax = Math.max(...data.map(d => d.active), 1);
+
   return (
     <div className="report-chart-card">
       <div className="report-chart-card__header">
-        <h3 className="report-chart-card__title">
-          <span className="report-chart-card__title-dot" />
-          Employee
-        </h3>
-        <select className="report-chart-card__select" defaultValue="year">
-          <option value="year">This Year</option>
-        </select>
+        <h3 className="report-chart-card__title"><span className="report-chart-card__title-dot" />Joinings by Month</h3>
       </div>
       <div className="report-bar-legend">
-        <span><i style={{ background: "#22c55e" }} /> Active Employees</span>
-        <span><i style={{ background: "#e2e8f0" }} /> Inactive Employees</span>
+        <span><i style={{ background: "#22c55e" }} /> Joined</span>
       </div>
       <div className="report-bar-chart">
-        {data.map((row) => (
+        {data.map(row => (
           <div key={row.label} className="report-bar-group">
             <div className="report-bar-pair">
-              <div
-                className="report-bar"
-                style={{
-                  height: `${(row.active / yMax) * 150}px`,
-                  background: "#22c55e",
-                }}
-              />
-              <div
-                className="report-bar"
-                style={{
-                  height: `${(row.inactive / yMax) * 150}px`,
-                  background: "#e2e8f0",
-                }}
-              />
+              <div className="report-bar" style={{ height: `${(row.active / yMax) * 150}px`, background: "#22c55e" }} />
             </div>
             <span className="report-bar-label">{row.label}</span>
           </div>
@@ -53,56 +45,88 @@ function EmployeeBarChart({ data }) {
 }
 
 export default function EmployeeReport() {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    listEmployees({ limit: 500 })
+      .then(({ data }) => setEmployees(data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const active   = employees.filter(e => e.employee_status === "Active").length;
+  const inactive = employees.filter(e => e.employee_status !== "Active").length;
+  const thisMonth = useMemo(() => {
+    const now = new Date();
+    return employees.filter(e => {
+      if (!e.emp_joining_date) return false;
+      const d = new Date(e.emp_joining_date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+  }, [employees]);
+
+  const stats = [
+    { label: "Total Employees", value: employees.length, color: "#f97316", trend: "All time" },
+    { label: "Active",          value: active,            color: "#22c55e", trend: "Currently active" },
+    { label: "New This Month",  value: thisMonth,         color: "#3b82f6", trend: "Joined this month" },
+    { label: "Inactive",        value: inactive,          color: "#ef4444", trend: "Not active" },
+  ];
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return employees;
+    return employees.filter(e =>
+      [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title]
+        .some(v => (v || "").toLowerCase().includes(q))
+    );
+  }, [employees, search]);
+
+  if (loading) return <div className="report-page"><p className="text-sm text-gray-400 p-6">Loading…</p></div>;
+
   return (
     <div className="report-page">
       <ReportPageHeader title="Employee Report" />
-
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {EMPLOYEE_STATS.map((stat) => (
-            <ReportIconStatCard key={stat.label} {...stat} icon="👤" />
-          ))}
+          {stats.map(s => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon="👤" color={s.color} trend={s.trend} />)}
         </div>
-        <EmployeeBarChart data={EMPLOYEE_CHART} />
+        <EmployeeBarChart employees={employees} />
       </div>
-
       <div className="report-table-section">
-        <ReportTableToolbar title="Employees List" />
+        <ReportTableToolbar title={`Employees (${filtered.length})`} onSearch={setSearch} />
         <div style={{ overflowX: "auto" }}>
           <table className="report-data-table">
             <thead>
               <tr>
-                <th><input type="checkbox" className="report-checkbox" aria-label="Select all" /></th>
-                <th>Emp ID ↕</th>
-                <th>Name ↕</th>
-                <th>Email ↕</th>
-                <th>Department ↕</th>
-                <th>Phone ↕</th>
-                <th>Joining Date ↕</th>
-                <th>Status ↕</th>
+                <th>Emp ID</th><th>Name</th><th>Email</th>
+                <th>Department</th><th>Phone</th><th>Joining Date</th><th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {EMPLOYEE_LIST.map((row) => (
-                <tr key={row.id}>
-                  <td><input type="checkbox" className="report-checkbox" aria-label={`Select ${row.name}`} /></td>
-                  <td>{row.id}</td>
-                  <td>
-                    <div className="report-person-cell">
-                      <ReportAvatar name={row.name} />
-                      <div className="report-person-cell__info">
-                        <span className="report-person-cell__name">{row.name}</span>
-                        <span className="report-person-cell__sub">{row.role}</span>
+              {filtered.map(emp => {
+                const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || "—";
+                return (
+                  <tr key={emp.employee_id}>
+                    <td>{emp.emp_code || `EMP${String(emp.employee_id).padStart(3,"0")}`}</td>
+                    <td>
+                      <div className="report-person-cell">
+                        <ReportAvatar name={name} />
+                        <div className="report-person-cell__info">
+                          <span className="report-person-cell__name">{name}</span>
+                          <span className="report-person-cell__sub">{emp.emp_job_title || "—"}</span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td>{row.email}</td>
-                  <td>{row.department}</td>
-                  <td>{row.phone}</td>
-                  <td>{row.joining}</td>
-                  <td><ReportStatusBadge status={row.status} /></td>
-                </tr>
-              ))}
+                    </td>
+                    <td>{emp.email}</td>
+                    <td>{getDepartmentName(emp)}</td>
+                    <td>{emp.mobile || "—"}</td>
+                    <td>{emp.emp_joining_date ? new Date(emp.emp_joining_date).toLocaleDateString("en-GB") : "—"}</td>
+                    <td><ReportStatusBadge status={emp.employee_status || "Active"} /></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

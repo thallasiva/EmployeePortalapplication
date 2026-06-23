@@ -1,293 +1,431 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Wallet, TrendingDown, PiggyBank, FileText, Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
+import {
+  getMyPayslips,
+  getPayslipFull,
+  generateMyPayslip,
+  getMySalaryStructure,
+} from "../../../api/payroll.api";
 import { calculatePayslip } from "../../../utils/payslipCalculations";
-import { getCurrentPayslipMonthLabel } from "../../../lib/dateUtils";
-import { getMyPayslips, getPayslipFull, generateMyPayslip, getMySalaryStructure } from "../../../api/payroll.api";
 import { downloadPayslipPdf } from "../../../utils/payslipPdfGenerator";
 import { errorToast } from "../../../utils/ToastControllers";
-import PieChart, { formatINR } from "../../../component/charts/InteractivePieChart";
+import { getCurrentUser } from "../../../api/auth.api";
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
 ];
 
-const Payslips = () => {
-  const navigate = useNavigate();
-  const monthLabel = getCurrentPayslipMonthLabel();
+function fmtAmt(n) {
+  const v = Number(n) || 0;
+  return v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
-  const [basicSalary, setBasicSalary] = useState(0);
-  const breakdown = useMemo(() => calculatePayslip(basicSalary), [basicSalary]);
-
-  const [myPayslips, setMyPayslips] = useState([]);
-  const [loadingPayslips, setLoadingPayslips] = useState(true);
-  const [downloadingId, setDownloadingId] = useState(null);
-  const [downloadingCurrent, setDownloadingCurrent] = useState(false);
-
-  // Determine the Basic salary that drives the on-screen breakdown charts.
-  // Prefer the employee's salary structure (the live source of truth, kept
-  // up to date by Admin/HR). Fall back to the current month's already
-  // generated payslip if no salary structure is on file yet.
-  useEffect(() => {
-    let cancelled = false;
-
-    getMySalaryStructure()
-      .then((structure) => {
-        if (cancelled) return;
-
-        const structureBasic = Number(structure?.basic) || 0;
-        if (structureBasic > 0) {
-          setBasicSalary(structureBasic);
-          return;
-        }
-
-        const now = new Date();
-        const month = now.getMonth() + 1;
-        const year = now.getFullYear();
-        const currentPayslip = myPayslips.find(
-          (p) => Number(p.month) === month && Number(p.year) === year
-        );
-        setBasicSalary(Number(currentPayslip?.basic) || 0);
-      })
-      .catch(() => {
-        if (!cancelled) setBasicSalary(0);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [myPayslips]);
-
-  const loadMyPayslips = () => {
-    setLoadingPayslips(true);
-    return getMyPayslips({ limit: 24 })
-      .then(({ data }) => {
-        setMyPayslips(data || []);
-        return data || [];
-      })
-      .catch(() => {
-        setMyPayslips([]);
-        return [];
-      })
-      .finally(() => {
-        setLoadingPayslips(false);
-      });
-  };
-
-  useEffect(() => {
-    loadMyPayslips();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const overviewData = [
-    { label: "Net Pay", value: breakdown.netSalary, color: "#16a34a" },
-    { label: "Deductions", value: breakdown.totalDeductions, color: "#dc2626" },
-  ];
-
-  const earningsData = [
-    { label: "Basic Salary", value: breakdown.basic, color: "#2563eb" },
-    { label: "HRA", value: breakdown.hra, color: "#0891b2" },
-    { label: "Special Allowance", value: breakdown.specialAllowance, color: "#d97706" },
-    { label: "LTA", value: breakdown.lta, color: "#4f46e5" },
-    { label: "Telephone & Internet Allowance", value: breakdown.telephoneAndInternet, color: "#0d9488" },
-    { label: "Medical Allowance", value: breakdown.medicalAllowance, color: "#db2777" },
-    { label: "Conveyance Allowance", value: breakdown.conveyanceAllowance, color: "#059669" },
-    { label: "Bonus", value: breakdown.bonus, color: "#65a30d" },
-    { label: "Incentives", value: breakdown.incentives, color: "#ca8a04" },
-    { label: "Arrears", value: breakdown.arrears, color: "#7c3aed" },
-    { label: "Other Earnings", value: breakdown.otherEarnings, color: "#6b7280" },
-  ];
-
-  const deductionsData = [
-    { label: "PF", value: breakdown.pf, color: "#d97706" },
-    { label: "Professional Tax", value: breakdown.profTax, color: "#be123c" },
-    { label: "Income Tax", value: breakdown.incomeTax, color: "#dc2626" },
-  ];
-
-  const handleDownloadPdf = async (payslipId) => {
-    setDownloadingId(payslipId);
-    try {
-      const full = await getPayslipFull(payslipId);
-      await downloadPayslipPdf(full);
-    } catch (err) {
-      errorToast(err?.response?.data?.message || err?.message || "Failed to generate the payslip PDF.");
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-
-  /**
-   * Downloads the payslip for the current month. Always (re)generates it
-   * first via the self-service endpoint - this is idempotent and ensures
-   * the payslip reflects the employee's latest salary structure, even if
-   * one was already generated earlier (e.g. before a salary update). Then
-   * refreshes the "My Payslips" list so it shows the latest figures too.
-   */
-  const handleDownloadCurrent = async () => {
-    setDownloadingCurrent(true);
-    try {
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const year = now.getFullYear();
-
-      const record = await generateMyPayslip({ month, year });
-      await loadMyPayslips();
-
-      const full = await getPayslipFull(record.payslip_id);
-      await downloadPayslipPdf(full);
-    } catch (err) {
-      errorToast(err?.response?.data?.message || err?.message || "Failed to generate the payslip PDF.");
-    } finally {
-      setDownloadingCurrent(false);
-    }
-  };
+// ── Employee details side panel ───────────────────────────────────────────────
+function EmployeePanel({ user, payslip, structure, month, year, onHide }) {
+  const empNo   = payslip?.emp_code     || user?.emp_code     || user?.employee_code || "—";
+  const empName = [
+    payslip?.first_name || user?.first_name || "",
+    payslip?.last_name  || user?.last_name  || "",
+  ].join(" ").trim() || user?.name || "—";
+  const bank    = payslip?.bank_name          || structure?.bank_name          || user?.bank_name          || "—";
+  const bankAcc = payslip?.bank_account_number || structure?.bank_account_number || user?.bank_account_number || "—";
+  const rawDate = payslip?.emp_joining_date   || user?.emp_joining_date        || user?.joining_date       || structure?.joining_date;
+  const joinDate = rawDate
+    ? new Date(rawDate).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })
+    : "—";
+  const pfNo    = payslip?.pf_number  || structure?.pf_number  || user?.pf_number  || user?.pf_no  || "—";
+  const netPay  = Number(payslip?.net_salary ?? payslip?.net_pay ?? 0);
+  const monthLabel = month ? `${MONTH_NAMES[Number(month) - 1]} ${year}` : "—";
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] p-6">
-      {/* HEADER */}
-      <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-brand to-brand-600 p-6 text-white shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-[22px] font-semibold">Payslips</h1>
-            <p className="mt-0.5 text-sm text-white/80">Salary breakdown for {monthLabel}</p>
-          </div>
+    <div style={{ background:"#fffde7", border:"1px solid #e8e1a0", borderRadius:8, padding:16, minWidth:220 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <span style={{ fontSize:11, color:"#7b7b3b", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em" }}>
+          Employee details
+        </span>
+        <button
+          type="button"
+          onClick={onHide}
+          style={{ fontSize:11, color:"#f18200", background:"none", border:"none", cursor:"pointer", fontWeight:600 }}
+        >
+          Hide
+        </button>
+      </div>
+      {[
+        { label:"Employee No",      value: empNo },
+        { label:"Name",             value: empName },
+        { label:"Bank",             value: bank },
+        { label:"Bank Account No",  value: bankAcc },
+        { label:"Joining Date",     value: joinDate },
+        { label:"PF No",            value: pfNo },
+      ].map(({ label, value }) => (
+        <div key={label} style={{ marginBottom:10 }}>
+          <div style={{ fontSize:10, color:"#9e9e5a" }}>{label}</div>
+          <div style={{ fontSize:13, color: value !== "—" ? "#333" : "#bbb", fontWeight:500, marginTop:2, wordBreak:"break-all" }}>{value}</div>
+        </div>
+      ))}
+      <div style={{ marginTop:14, paddingTop:12, borderTop:"1px dashed #d4ce7a" }}>
+        <div style={{ fontSize:11, color:"#7b7b3b" }}>Net Pay for {monthLabel}</div>
+        <div style={{ fontSize:22, fontWeight:800, color:"#1a1a1a", marginTop:4 }}>
+          ₹{fmtAmt(netPay)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Payslip tab ───────────────────────────────────────────────────────────────
+function PayslipTab({ payslip, structure }) {
+  const b = useMemo(() => {
+    const basic = Number(payslip?.basic || structure?.basic || 0);
+    return basic > 0 ? calculatePayslip(basic) : null;
+  }, [payslip, structure]);
+
+  const earnings = b ? [
+    { label:"BASIC",                           value: b.basic },
+    { label:"HRA",                             value: b.hra },
+    { label:"SPECIAL ALLOWANCE",               value: b.specialAllowance },
+    { label:"LTA",                             value: b.lta },
+    { label:"TELEPHONE AND INTERNET EXPENSES", value: b.telephoneAndInternet },
+  ] : [];
+
+  const deductions = b ? [
+    { label:"PF",          value: b.pf },
+    { label:"PROF TAX",    value: b.profTax },
+    { label:"INCOME TAX",  value: b.incomeTax },
+  ] : [];
+
+  const totalEarnings  = earnings.reduce((s, r) => s + r.value, 0);
+  const totalDeductions = deductions.reduce((s, r) => s + r.value, 0);
+
+  const tableSt = { width:"100%", borderCollapse:"collapse", fontSize:13 };
+  const thSt   = { background:"#fff8f0", padding:"6px 10px", textAlign:"right", fontSize:11, color:"#5a7a8a", fontWeight:600 };
+  const thLSt  = { ...thSt, textAlign:"left" };
+  const tdSt   = { padding:"7px 10px", borderBottom:"1px solid #f0f0f0", color:"#333" };
+  const tdRSt  = { ...tdSt, textAlign:"right", fontFamily:"monospace", color:"#222" };
+  const tfSt   = { padding:"8px 10px", fontWeight:700, color:"#1a1a1a" };
+  const tfRSt  = { ...tfSt, textAlign:"right", fontFamily:"monospace", fontSize:14 };
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:16, alignItems:"start" }}>
+      {/* Earnings */}
+      <div style={{ border:"1px solid #ffe0b2", borderRadius:6, overflow:"hidden" }}>
+        <table style={tableSt}>
+          <thead>
+            <tr>
+              <th style={thLSt}>Earnings</th>
+              <th style={thSt}>Amount in (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {earnings.map((r) => (
+              <tr key={r.label}>
+                <td style={tdSt}>{r.label}</td>
+                <td style={tdRSt}>{fmtAmt(r.value)}</td>
+              </tr>
+            ))}
+            {!earnings.length && (
+              <tr><td colSpan={2} style={{ ...tdSt, color:"#aaa", textAlign:"center" }}>No data</td></tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr style={{ borderTop:"2px solid #ffe0b2" }}>
+              <td style={tfSt}>Total</td>
+              <td style={tfRSt}>{fmtAmt(totalEarnings)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* Deductions */}
+      <div style={{ border:"1px solid #ffe0b2", borderRadius:6, overflow:"hidden" }}>
+        <table style={tableSt}>
+          <thead>
+            <tr>
+              <th style={thLSt}>Deductions</th>
+              <th style={thSt}>Amount in (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deductions.map((r) => (
+              <tr key={r.label}>
+                <td style={tdSt}>{r.label}</td>
+                <td style={tdRSt}>{fmtAmt(r.value)}</td>
+              </tr>
+            ))}
+            {!deductions.length && (
+              <tr><td colSpan={2} style={{ ...tdSt, color:"#aaa", textAlign:"center" }}>No data</td></tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr style={{ borderTop:"2px solid #ffe0b2" }}>
+              <td style={tfSt}>Total</td>
+              <td style={tfRSt}>{fmtAmt(totalDeductions)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* Employee details */}
+      <EmployeePanel
+        payslip={payslip}
+        structure={structure}
+        month={payslip?.month}
+        year={payslip?.year}
+      />
+    </div>
+  );
+}
+
+// ── CTC Payslip tab ───────────────────────────────────────────────────────────
+function CtcPayslipTab({ payslip, structure }) {
+  const b = useMemo(() => {
+    const basic = Number(payslip?.basic || structure?.basic || 0);
+    return basic > 0 ? calculatePayslip(basic) : null;
+  }, [payslip, structure]);
+
+  const items = b ? [
+    { label:"FULL BASIC",                           value: b.basic },
+    { label:"FULL HRA",                             value: b.hra },
+    { label:"FULL SPECIAL ALLOWANCE",               value: b.specialAllowance },
+    { label:"FULL LTA",                             value: b.lta },
+    { label:"FULL TELEPHONE AND INTERNET EXEPENSES",value: b.telephoneAndInternet },
+    { label:"FULL EMPLOYER PF",                     value: b.pf, highlight:"#c8380a" },
+    { label:"MONTHLY GROSS",                        value: b.totalEarnings, highlight:"#f18200", bold:true },
+    { label:"MONTHLY CTC",                          value: b.totalEarnings + b.pf, highlight:"#f18200", bold:true },
+  ] : [];
+
+  const tableSt = { width:"100%", borderCollapse:"collapse", fontSize:13 };
+  const thSt = { background:"#fff8f0", padding:"6px 10px", fontSize:11, color:"#5a7a8a", fontWeight:600, textAlign:"right" };
+  const thLSt = { ...thSt, textAlign:"left" };
+  const tdSt = { padding:"7px 10px", borderBottom:"1px solid #f0f0f0" };
+  const tdRSt = { ...tdSt, textAlign:"right", fontFamily:"monospace" };
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:16, alignItems:"start" }}>
+      <div style={{ border:"1px solid #ffe0b2", borderRadius:6, overflow:"hidden" }}>
+        <table style={tableSt}>
+          <thead>
+            <tr>
+              <th style={thLSt}>Items</th>
+              <th style={thSt}>Amount in (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((r) => (
+              <tr key={r.label}>
+                <td style={{ ...tdSt, color: r.highlight || "#333", fontWeight: r.bold ? 700 : 400 }}>{r.label}</td>
+                <td style={{ ...tdRSt, color: r.highlight || "#222", fontWeight: r.bold ? 700 : 400 }}>{fmtAmt(r.value)}</td>
+              </tr>
+            ))}
+            {!items.length && (
+              <tr><td colSpan={2} style={{ ...tdSt, color:"#aaa", textAlign:"center" }}>No salary structure found.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <EmployeePanel
+        payslip={payslip}
+        structure={structure}
+        month={payslip?.month}
+        year={payslip?.year}
+      />
+    </div>
+  );
+}
+
+// ── Reimb. Payslip tab ────────────────────────────────────────────────────────
+function ReimbPayslipTab() {
+  return (
+    <div style={{ border:"1px solid #e0e0e0", borderRadius:8, padding:60, textAlign:"center", background:"#fafbfc", minHeight:260 }}>
+      <div style={{ fontSize:52, marginBottom:12 }}>📋</div>
+      <p style={{ color:"#94a3b8", fontSize:13 }}>
+        Looks like your reimbursement payslip has not been generated yet. Drop by later and we'll have it ready for you.
+      </p>
+    </div>
+  );
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+const TABS = [
+  { key:"payslip", label:"Payslip" },
+  { key:"ctc",     label:"CTC Payslip" },
+  { key:"reimb",   label:"Reimb. Payslip" },
+];
+
+export default function Payslips() {
+  const now = new Date();
+  const [activeTab, setActiveTab] = useState("payslip");
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+  const [selectedYear, setSelectedYear]   = useState(now.getFullYear());
+
+  const [structure, setStructure]   = useState(null);
+  const [myPayslips, setMyPayslips] = useState([]);
+  const [user, setUser]             = useState(null);
+  const [showInfo, setShowInfo]     = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const [loading, setLoading]       = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      getMySalaryStructure().catch(() => null),
+      getMyPayslips({ limit: 36 }).then((r) => r?.data || r || []).catch(() => []),
+      getCurrentUser().catch(() => null),
+    ]).then(([s, p, u]) => {
+      setStructure(s);
+      setMyPayslips(Array.isArray(p) ? p : []);
+      setUser(u);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  // Current payslip (for selected month/year)
+  const currentPayslip = useMemo(() =>
+    myPayslips.find((p) => Number(p.month) === selectedMonth && Number(p.year) === selectedYear),
+    [myPayslips, selectedMonth, selectedYear]
+  );
+
+  // Month options from payslips + last 12 months
+  const monthOptions = useMemo(() => {
+    const opts = new Map();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      opts.set(`${y}-${m}`, { month: m, year: y });
+    }
+    myPayslips.forEach((p) => {
+      const key = `${p.year}-${p.month}`;
+      opts.set(key, { month: Number(p.month), year: Number(p.year) });
+    });
+    return [...opts.values()].sort((a, b) => b.year - a.year || b.month - a.month);
+  }, [myPayslips]);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const record = await generateMyPayslip({ month: selectedMonth, year: selectedYear });
+      const full   = await getPayslipFull(record.payslip_id);
+      await downloadPayslipPdf(full);
+    } catch (err) {
+      errorToast(err?.response?.data?.message || err?.message || "Download failed.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const monthLabel = `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
+
+  if (loading) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:200, color:"#94a3b8" }}>
+        <Loader2 size={20} style={{ marginRight:8, animation:"spin 1s linear infinite" }} />
+        Loading payslips…
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background:"#f5f7fb", minHeight:"100vh", padding:20 }}>
+      {/* Tab bar + controls */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+        <div style={{ display:"flex", gap:0 }}>
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setActiveTab(t.key)}
+              style={{
+                padding:"8px 22px", fontSize:13, fontWeight:600, cursor:"pointer",
+                background: activeTab === t.key ? "#f18200" : "#fff",
+                color:      activeTab === t.key ? "#fff" : "#555",
+                border:     "1px solid #d0dde8",
+                borderRadius: t.key === "payslip" ? "6px 0 0 6px" : t.key === "reimb" ? "0 6px 6px 0" : "0",
+                borderLeft:   t.key !== "payslip" ? "none" : undefined,
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <button
             type="button"
-            onClick={handleDownloadCurrent}
-            disabled={downloadingCurrent}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand hover:bg-white/90 disabled:opacity-60 self-start"
+            onClick={handleDownload}
+            disabled={downloading}
+            style={{
+              display:"flex", alignItems:"center", gap:6,
+              padding:"8px 14px", background:"#f18200", color:"#fff",
+              border:"none", borderRadius:6, fontSize:13, fontWeight:600, cursor:"pointer",
+              opacity: downloading ? 0.7 : 1,
+            }}
           >
-            <Download size={16} />
-            {downloadingCurrent ? "Preparing…" : "Download Payslip"}
+            <Download size={14} />
+            {downloading ? "…" : ""}
           </button>
-        </div>
-
-        {/* Summary cards */}
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl bg-white/10 px-4 py-3">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/70">
-              <Wallet size={14} />
-              Gross Pay
-            </div>
-            <p className="mt-1 text-xl font-semibold">{formatINR(breakdown.totalEarnings)}</p>
-          </div>
-          <div className="rounded-xl bg-white/10 px-4 py-3">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/70">
-              <TrendingDown size={14} />
-              Deductions
-            </div>
-            <p className="mt-1 text-xl font-semibold">{formatINR(breakdown.totalDeductions)}</p>
-          </div>
-          <div className="rounded-xl bg-white/10 px-4 py-3">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/70">
-              <PiggyBank size={14} />
-              Net Pay
-            </div>
-            <p className="mt-1 text-xl font-semibold">{formatINR(breakdown.netSalary)}</p>
-          </div>
+          <select
+            value={`${selectedYear}-${selectedMonth}`}
+            onChange={(e) => {
+              const [y, m] = e.target.value.split("-").map(Number);
+              setSelectedYear(y);
+              setSelectedMonth(m);
+            }}
+            style={{ padding:"7px 12px", border:"1px solid #cdd5e0", borderRadius:6, fontSize:13, outline:"none", background:"#fff" }}
+          >
+            {monthOptions.map(({ month, year }) => (
+              <option key={`${year}-${month}`} value={`${year}-${month}`}>
+                {MONTH_NAMES[month - 1]} {year}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* SALARY OVERVIEW */}
-      {/* <div className="mb-4 rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-[15px] font-semibold text-[#334155]">Salary Overview</h2>
-        <p className="mb-4 text-sm text-gray-500">
-          Of your gross pay of <span className="font-semibold text-gray-700">{formatINR(breakdown.totalEarnings)}</span>, you take
-          home <span className="font-semibold text-emerald-600">{formatINR(breakdown.netSalary)}</span> after{" "}
-          <span className="font-semibold text-rose-600">{formatINR(breakdown.totalDeductions)}</span> in deductions. Hover over the
-          chart or legend for details.
-        </p>
-        <PieChart data={overviewData} size={180} />
-      </div> */}
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* EARNINGS BREAKDOWN */}
-        <div className="rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-[15px] font-semibold text-[#334155]">Earnings Breakdown</h2>
-          <PieChart data={earningsData} size={170} />
-          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-sm font-semibold">
-            <span className="text-gray-700">Gross Pay</span>
-            <span className="text-emerald-600">{formatINR(breakdown.totalEarnings)}</span>
-          </div>
+      {/* Tab content + Employee panel */}
+      <div style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
+        <div style={{ flex:1, background:"#fff", border:"1px solid #ffe0b2", borderRadius:8, padding:20 }}>
+          {activeTab === "payslip" && (
+            <PayslipTab payslip={currentPayslip} structure={structure} />
+          )}
+          {activeTab === "ctc" && (
+            <CtcPayslipTab payslip={currentPayslip} structure={structure} />
+          )}
+          {activeTab === "reimb" && <ReimbPayslipTab />}
         </div>
 
-        {/* DEDUCTIONS BREAKDOWN */}
-        <div className="rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-[15px] font-semibold text-[#334155]">Deductions Breakdown</h2>
-          <PieChart data={deductionsData} size={170} />
-          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-sm font-semibold">
-            <span className="text-gray-700">Total Deductions</span>
-            <span className="text-rose-600">{formatINR(breakdown.totalDeductions)}</span>
-          </div>
-        </div>
+        {/* Info toggle button (shown when panel hidden) */}
+        {!showInfo && (
+          <button
+            type="button"
+            onClick={() => setShowInfo(true)}
+            style={{ padding:"8px 14px", background:"#fff", border:"1px solid #e8e1a0", borderRadius:6, fontSize:12, fontWeight:600, color:"#7b7b3b", cursor:"pointer", whiteSpace:"nowrap" }}
+          >
+            Show Info
+          </button>
+        )}
+
+        {/* Employee panel */}
+        {showInfo && (
+          <EmployeePanel
+            user={user}
+            payslip={currentPayslip}
+            structure={structure}
+            month={selectedMonth}
+            year={selectedYear}
+            onHide={() => setShowInfo(false)}
+          />
+        )}
       </div>
 
-      {/* MY PAYSLIPS — generated payslips, viewable/printable in the standard payslip layout */}
-      <div className="mt-4 rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-[15px] font-semibold text-[#334155]">My Payslips</h2>
-
-        {loadingPayslips ? (
-          <p className="text-sm text-gray-500">Loading payslips...</p>
-        ) : myPayslips.length === 0 ? (
-          <p className="text-sm text-gray-500">No payslips have been generated for you yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-left text-gray-500">
-                <tr>
-                  <th className="px-3 py-2">Month</th>
-                  <th className="px-3 py-2">Gross Earnings</th>
-                  <th className="px-3 py-2">Deductions</th>
-                  <th className="px-3 py-2">Net Pay</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {myPayslips.map((p) => (
-                  <tr key={p.payslip_id}>
-                    <td className="px-3 py-2 font-medium text-gray-800">
-                      {MONTH_NAMES[Number(p.month) - 1] || p.month} {p.year}
-                    </td>
-                    <td className="px-3 py-2 font-medium text-emerald-600">{formatINR(p.gross_earnings)}</td>
-                    <td className="px-3 py-2 text-rose-600">{formatINR(p.deductions)}</td>
-                    <td className="px-3 py-2 font-semibold text-gray-800">{formatINR(p.net_pay)}</td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          p.status === "Paid" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
-                        }`}
-                      >
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/payslip/${p.payslip_id}/print`)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline mr-3"
-                      >
-                        <FileText size={14} /> View / Print
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadPdf(p.payslip_id)}
-                        disabled={downloadingId === p.payslip_id}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 hover:underline disabled:opacity-60"
-                      >
-                        <Download size={14} /> {downloadingId === p.payslip_id ? "Preparing…" : "Download PDF"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Month label footer */}
+      <div style={{ textAlign:"center", marginTop:12, fontSize:12, color:"#94a3b8" }}>
+        Showing payslip for <strong>{monthLabel}</strong>
+        {!currentPayslip && activeTab !== "reimb" && (
+          <span style={{ color:"#f59e0b", marginLeft:8 }}>· Payslip not yet generated for this month</span>
         )}
       </div>
     </div>
   );
-};
-
-export default Payslips;
+}
