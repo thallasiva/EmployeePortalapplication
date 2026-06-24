@@ -141,6 +141,18 @@ function fmtDate(str) {
   return isNaN(d) ? str : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/** Format decimal hours as 02h:30min. 60 min exactly → 01hr, 0 → —  */
+function fmtDuration(hours) {
+  if (hours == null || hours === "" || isNaN(Number(hours))) return "—";
+  const totalMins = Math.round(Number(hours) * 60);
+  if (totalMins === 0) return "—";
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  const hh = String(h).padStart(2, "0");
+  const mm = String(m).padStart(2, "0");
+  return m === 0 ? `${hh}hr` : `${hh}h:${mm}min`;
+}
+
 // ─── Task Create/Edit Modal ───────────────────────────────────────────────────
 function TaskModal({ task, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -172,7 +184,8 @@ function TaskModal({ task, onClose, onSave }) {
 
   // Derived display values
   const durationDays  = calcDateDiff(form.start_date, form.end_date);
-  const durationHours = parseFloat(form.duration_hours) || null;
+  const durationHours   = parseFloat(form.duration_hours) || null;
+  const isOverHours     = durationHours !== null && durationHours > MAX_DAILY_HOURS;
   const totalHoursAcrossDays =
     durationDays && durationHours ? parseFloat((durationDays * durationHours).toFixed(2)) : null;
 
@@ -266,8 +279,8 @@ function TaskModal({ task, onClose, onSave }) {
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Duration (hours / day)
             <div className="flex items-center gap-2 mt-1.5">
-              <input type="number" min="0" max="24" step="0.5"
-                className="ts-input w-32 text-sm text-center"
+              <input type="number" min="0" max="8" step="0.5"
+                className={`ts-input w-32 text-sm text-center ${isOverHours ? "border-red-400 bg-red-50 text-red-700" : ""}`}
                 placeholder="0"
                 value={form.duration_hours}
                 onChange={e => set("duration_hours", e.target.value)} />
@@ -277,10 +290,25 @@ function TaskModal({ task, onClose, onSave }) {
             </div>
           </label>
 
+          {/* Over-hours warning */}
+          {isOverHours && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <p className="text-sm font-semibold text-red-600 mb-1">⚠️ Exceeds 8hr daily limit</p>
+              <p className="text-xs text-red-500 mb-3">
+                Regular tasks are capped at <strong>08hr / day</strong>. Set this to 8hr and submit an
+                <strong> Extra Work Request</strong> for the additional hours.
+              </p>
+              <button type="button" onClick={onClose}
+                className="text-xs font-semibold text-white bg-brand rounded-lg px-3 py-1.5 hover:bg-orange-600">
+                Close &amp; raise Extra Work Request
+              </button>
+            </div>
+          )}
+
           {/* Computed summary card */}
           {(durationDays || durationHours) && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 space-y-1">
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Duration Summary</p>
+            <div className={`border rounded-xl px-4 py-3 space-y-1 ${isOverHours ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-100"}`}>
+              <p className={`text-xs font-semibold uppercase tracking-wide ${isOverHours ? "text-red-600" : "text-brand"}`}>Duration Summary</p>
               <div className="grid grid-cols-3 gap-2 mt-1">
                 {durationDays && (
                   <div className="text-center">
@@ -290,13 +318,13 @@ function TaskModal({ task, onClose, onSave }) {
                 )}
                 {durationHours && (
                   <div className="text-center">
-                    <p className="text-xl font-bold text-indigo-600">{durationHours}h</p>
+                    <p className="text-xl font-bold text-indigo-600">{fmtDuration(durationHours)}</p>
                     <p className="text-[10px] text-gray-500">Per Day</p>
                   </div>
                 )}
                 {totalHoursAcrossDays && (
                   <div className="text-center">
-                    <p className="text-xl font-bold text-emerald-600">{totalHoursAcrossDays}h</p>
+                    <p className="text-xl font-bold text-emerald-600">{fmtDuration(totalHoursAcrossDays)}</p>
                     <p className="text-[10px] text-gray-500">Total Hours</p>
                   </div>
                 )}
@@ -421,7 +449,7 @@ function MyTasksTab() {
                 {/* Top row */}
                 <div className="flex items-start gap-2.5 w-full">
                   <span className="w-2 h-2 rounded-full mt-1.5 shrink-0 inline-block"
-                    style={{ background: t.status === "completed" ? "#16a34a" : "#2563eb" }} />
+                    style={{ background: t.status === "completed" ? "#16a34a" : "#f18200" }} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm">{t.task_name}</p>
                     <p className="text-xs text-gray-500">{t.project_name}{t.description ? ` · ${t.description}` : ""}</p>
@@ -429,10 +457,10 @@ function MyTasksTab() {
                   <span className={`text-xs px-2 py-0.5 rounded-full border capitalize shrink-0 ${
                     t.status === "completed"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-blue-50 text-blue-700 border-blue-200"
+                      : "bg-orange-50 text-orange-700 border-orange-200"
                   }`}>{t.status}</span>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <button type="button" onClick={() => setModal(t)} className="ts-icon-btn">✏️</button>
+                    <button type="button" onClick={() => setModal(t)} className="ts-icon-btn text-brand">✏️</button>
                     <button type="button" onClick={() => handleDelete(t.task_id)} className="ts-icon-btn">🗑️</button>
                   </div>
                 </div>
@@ -458,12 +486,12 @@ function MyTasksTab() {
                     )}
                     {perDay && (
                       <span className="ts-chip ts-chip--indigo">
-                        {perDay}h / day
+                        {fmtDuration(perDay)} / day
                       </span>
                     )}
                     {totalH && (
                       <span className="ts-chip ts-chip--green">
-                        ⏱ {totalH}h total
+                        ⏱ {fmtDuration(totalH)} total
                       </span>
                     )}
                   </div>
@@ -727,7 +755,7 @@ function TimesheetTab() {
                           <button type="button"
                             title="Edit task details"
                             onClick={() => setEditTask(allTasks.find(t => t.task_id === row.taskId) || null)}
-                            className="shrink-0 text-blue-400 hover:text-blue-600 text-sm px-1">✏️</button>
+                            className="shrink-0 text-brand hover:text-orange-600 text-sm px-1">✏️</button>
                         )}
                       </div>
                       <div className="flex items-center gap-1 mt-1">
@@ -735,7 +763,7 @@ function TimesheetTab() {
                           placeholder="Activity" value={row.activityDesc}
                           onChange={e => updateEntry(row.id, "activityDesc", e.target.value)} />
                         {row.taskId && (
-                          <span className="shrink-0 text-[9px] font-semibold text-blue-500 bg-blue-50 border border-blue-200 rounded px-1">Task</span>
+                          <span className="shrink-0 text-[9px] font-semibold text-brand bg-orange-50 border border-orange-200 rounded px-1">Task</span>
                         )}
                       </div>
                     </td>
@@ -758,7 +786,7 @@ function TimesheetTab() {
                         </td>
                       );
                     })}
-                    <td className="px-3 py-2 text-center font-semibold text-brand text-sm">{rowTotal(row.hours).toFixed(1)}h</td>
+                    <td className="px-3 py-2 text-center font-semibold text-brand text-sm">{fmtDuration(rowTotal(row.hours))}</td>
                     {canEdit && (
                       <td className="px-2 py-2 text-center">
                         {entries.length > 1 && (
@@ -778,12 +806,12 @@ function TimesheetTab() {
                     const over = total > MAX_DAILY_HOURS;
                     return (
                       <td key={day} className={`px-1 py-2 text-center ${over ? "text-red-600 font-bold" : "text-gray-700"}`}>
-                        {total > 0 ? `${total.toFixed(1)}h` : "—"}
+                        {total > 0 ? fmtDuration(total) : "—"}
                         {over && <div className="text-[9px] text-red-500">OVER 8h</div>}
                       </td>
                     );
                   })}
-                  <td className="px-3 py-2 text-center text-brand font-bold">{grandTotal.toFixed(1)}h</td>
+                  <td className="px-3 py-2 text-center text-brand font-bold">{fmtDuration(grandTotal)}</td>
                   {canEdit && <td />}
                 </tr>
               </tfoot>
@@ -823,7 +851,7 @@ function TimesheetTab() {
                     </span>
                     <div>
                       <span className="font-medium">{ew.task_name}</span>
-                      <span className="text-gray-400 ml-2">{ew.extra_hours}h · {ew.work_date}</span>
+                      <span className="text-gray-400 ml-2">{fmtDuration(ew.extra_hours)} · {ew.work_date}</span>
                       <p className="text-xs text-gray-500">{ew.reason}</p>
                     </div>
                   </div>
@@ -861,7 +889,7 @@ function DashboardCounts() {
   if (!counts) return null;
   const items = [
     { label: "Draft Tasks", value: counts.draftTasks, color: "text-gray-600" },
-    { label: "Submitted Weeks", value: counts.submittedWeeks, color: "text-blue-600" },
+    { label: "Submitted Weeks", value: counts.submittedWeeks, color: "text-brand" },
     { label: "Pending Approval", value: counts.pendingApproval, color: "text-amber-600" },
     { label: "Approved Weeks", value: counts.approvedWeeks, color: "text-emerald-600" },
     { label: "Rejected Weeks", value: counts.rejectedWeeks, color: "text-red-600" },

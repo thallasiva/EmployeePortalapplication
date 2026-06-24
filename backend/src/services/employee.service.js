@@ -26,7 +26,12 @@ const LIST_SELECT = `
          ci.contact_name, ci.contact_city, ci.contact_country,
          ci.permanent_address_line1, ci.permanent_address_line2, ci.permanent_address_line3,
          bd.bank_name, bd.account_number, bd.ifsc_code, bd.pan_number, bd.uan_number,
-         bd.account_type, bd.bank_branch, bd.dd_payable_at, bd.account_holder_name, bd.payment_type
+         bd.account_type, bd.bank_branch, bd.dd_payable_at, bd.account_holder_name, bd.payment_type,
+         EXISTS(
+           SELECT 1 FROM resignations r
+           WHERE r.employee_id = e.employee_id
+             AND r.status IN ('pending','rm_approved','accepted')
+         ) AS serving_notice
     FROM employees e
     LEFT JOIN departments d ON d.department_id = e.department_id
     LEFT JOIN designations ds ON ds.designation_id = e.designation_id
@@ -38,6 +43,22 @@ const LIST_SELECT = `
 class EmployeeService extends BaseService {
   constructor() {
     super('employees', 'employee_id', FILLABLE);
+  }
+
+  /** Returns all active employees with just the fields needed to build the org hierarchy. */
+  async orgChart() {
+    const rows = await query(
+      `SELECT e.employee_id, e.first_name, e.last_name, e.emp_code, e.emp_job_title,
+              e.reporting_to, e.profile_photo,
+              d.department_name, d.department_id,
+              des.designation_name
+         FROM employees e
+         LEFT JOIN departments d  ON d.department_id  = e.department_id
+         LEFT JOIN designations des ON des.designation_id = e.designation_id
+        WHERE e.employee_status = 'Active' AND e.has_left_organization = 0
+        ORDER BY e.employee_id ASC`
+    );
+    return rows;
   }
 
   async list({ department, status, search, reporting_to, limit, offset } = {}) {

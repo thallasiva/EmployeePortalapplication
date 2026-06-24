@@ -62,7 +62,7 @@ export default function EmployeeDetail() {
   const isActive = employee.employee_status === "Active";
 
   return (
-    <div className="emp-wizard">
+    <div>
       <button
         type="button"
         className="emp-wizard__btn emp-wizard__btn--prev"

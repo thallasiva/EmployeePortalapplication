@@ -49,7 +49,8 @@ const resetPassword = asyncHandler(async (req, res) => {
   new ApiResponse(200, null, 'Password has been reset successfully').send(res);
 });
 
-const logout = asyncHandler(async (_req, res) => {
+const logout = asyncHandler(async (req, res) => {
+  if (req.user?.userId) authService.bustProfileCache(req.user.userId);
   clearTokenCookies(res);
   new ApiResponse(200, null, 'Logged out successfully').send(res);
 });

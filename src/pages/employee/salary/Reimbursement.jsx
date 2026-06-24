@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, X, Upload, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { getMySalaryStructure } from "../../../api/payroll.api";
-import { calculatePayslip } from "../../../utils/payslipCalculations";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import { FiscalYearPicker } from "../../../component/YearPicker";
 import { getCurrentFiscalYearStart, getFiscalYearRangeLabel } from "../../../lib/dateUtils";
 
@@ -96,9 +96,9 @@ export default function Reimbursement() {
     getMySalaryStructure()
       .then((s) => {
         if (s?.basic) {
-          const b = calculatePayslip(Number(s.basic));
+          const b = buildSalaryBreakdown(s);
           setEntitlements([
-            { title: "Telephone & Internet", annual: b.telephoneAndInternet * 12, claimed: 1500, color: "#f97316" },
+            { title: "Telephone & Internet", annual: b.telephone * 12, claimed: 1500, color: "#f97316" },
             { title: "LTA (Leave Travel)", annual: b.lta * 12, claimed: 5000, color: "#f59e0b" },
             { title: "Medical Allowance", annual: b.medicalAllowance * 12, claimed: 0, color: "#10b981" },
           ]);

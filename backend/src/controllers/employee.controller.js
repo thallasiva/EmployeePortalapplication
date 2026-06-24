@@ -16,6 +16,14 @@ const list = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Employee list fetched', buildMeta({ page, limit, total })).send(res);
 });
 
+const getMe = asyncHandler(async (req, res) => {
+  const empId = req.user.employeeId;
+  if (!empId) throw ApiError.badRequest('No employee linked to this account');
+  const profile = await employeeService.getProfile(empId);
+  if (!profile) throw ApiError.notFound('Employee profile not found');
+  new ApiResponse(200, profile, 'My profile fetched').send(res);
+});
+
 const getOne = asyncHandler(async (req, res) => {
   const profile = await employeeService.getProfile(req.params.id);
   if (!profile) throw ApiError.notFound('Employee not found');
@@ -73,6 +81,11 @@ const updateBankDetails = asyncHandler(async (req, res) => {
   new ApiResponse(200, result, 'Bank details updated').send(res);
 });
 
+const orgChart = asyncHandler(async (req, res) => {
+  const rows = await employeeService.orgChart();
+  new ApiResponse(200, rows, 'Org chart data fetched').send(res);
+});
+
 const directory = asyncHandler(async (req, res) => {
   const rows = await employeeService.directory(req.query);
   new ApiResponse(200, rows, 'People directory fetched').send(res);
@@ -86,12 +99,14 @@ const myTeam = asyncHandler(async (req, res) => {
 module.exports = {
   ...base,
   list,
+  getMe,
   getOne,
   create,
   getContactInfo,
   updateContactInfo,
   getBankDetails,
   updateBankDetails,
+  orgChart,
   directory,
   myTeam,
 };

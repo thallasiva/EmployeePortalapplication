@@ -38,3 +38,9 @@ export const getBankDetails = (id) => apiClient.get(`/employees/${id}/bank-detai
 /** PUT /employees/:id/bank-details */
 export const updateBankDetails = (id, payload) =>
   apiClient.put(`/employees/${id}/bank-details`, payload).then(unwrap);
+
+/** GET /employees/me — logged-in employee full profile */
+export const getMyProfile = () => apiClient.get("/employees/me").then(unwrap);
+
+/** GET /employees/org-chart — full flat list for building hierarchy tree */
+export const getOrgChart = () => apiClient.get("/employees/org-chart").then(unwrap);

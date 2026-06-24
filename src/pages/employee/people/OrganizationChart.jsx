@@ -1,84 +1,138 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Search, ZoomIn, ZoomOut, RotateCcw, Network, Crown } from "lucide-react";
-import { getMyTeam } from "../../../api/employee.api";
-import { getLoggedInUser } from "../../../lib/dateUtils";
+import apiClient, { unwrap } from "../../../api/client";
+import { getCurrentUser } from "../../../api/auth.api";
 import "./orgChart.css";
 
-/* ─── Helpers ──────────────────────────────────────────────────────────────── */
-
-function fullName(emp) {
-  return [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.emp_code || "—";
+/* ── helpers ──────────────────────────────────────────────────────────── */
+function fullName(e) {
+  return [e.first_name, e.last_name].filter(Boolean).join(" ") || e.emp_code || "—";
+}
+function initials(name) {
+  const p = (name || "?").trim().split(/\s+/);
+  return ((p[0]?.[0] ?? "") + (p[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
-function getInitials(name) {
-  const parts = (name || "?").trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
-}
-
-// Stable color per department id (or index fallback)
 const PALETTE = [
-  "#6366f1", "#a855f7", "#ec4899", "#f97316",
-  "#10b981", "#ef4444", "#3b82f6", "#84cc16",
-  "#f59e0b", "#06b6d4",
+  "#f18200","#6366f1","#a855f7","#ec4899",
+  "#10b981","#ef4444","#3b82f6","#84cc16",
+  "#f59e0b","#06b6d4","#8b5cf6","#14b8a6",
 ];
-
-function deptColor(deptId, deptIdx) {
-  const idx = deptId != null ? Number(deptId) % PALETTE.length : deptIdx % PALETTE.length;
-  return PALETTE[idx];
+function deptColor(deptId) {
+  if (deptId == null) return "#94a3b8";
+  return PALETTE[Number(deptId) % PALETTE.length];
 }
 
-/* ─── OrgCard ───────────────────────────────────────────────────────────────── */
-function OrgCard({ node, matched, isSelf, isManager }) {
-  const color = node.color || "#94a3b8";
+/** Convert flat employee array → nested tree.
+ *  Roots = employees whose reporting_to is null OR points to an unknown id. */
+function buildTree(flat) {
+  const map = {};
+  flat.forEach(e => {
+    map[e.employee_id] = {
+      ...e,
+      name:       fullName(e),
+      color:      deptColor(e.department_id),
+      children:   [],
+    };
+  });
+
+  const roots = [];
+  flat.forEach(e => {
+    const node = map[e.employee_id];
+    if (e.reporting_to && map[e.reporting_to]) {
+      map[e.reporting_to].children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  // Sort children alphabetically
+  function sort(node) {
+    node.children.sort((a, b) => a.name.localeCompare(b.name));
+    node.children.forEach(sort);
+  }
+  roots.forEach(sort);
+  roots.sort((a, b) => a.name.localeCompare(b.name));
+
+  // If single root, return it; if multiple, wrap in a virtual root
+  if (roots.length === 1) return roots[0];
+  if (roots.length === 0) return null;
+  return { employee_id: "__root__", name: "Organisation", title: "", color: "#94a3b8",
+           department_name: "", children: roots };
+}
+
+/* ── OrgCard ──────────────────────────────────────────────────────────── */
+function OrgCard({ node, isSelf, search }) {
+  const color   = node.color || "#94a3b8";
+  const matched = search && node.name.toLowerCase().includes(search.toLowerCase().trim());
+  const isRoot  = !node.reporting_to;
+  const hasKids = node.children?.length > 0;
 
   return (
-    <div
-      className={`org-card ${matched ? "org-card--highlight" : ""}`}
-      style={isSelf ? { outline: `2px solid ${color}`, outlineOffset: 2 } : undefined}
-    >
-      {isManager && (
-        <div style={{ position: "absolute", top: 6, right: 8 }}>
-          <Crown size={12} style={{ color: "#d97706" }} />
+    <div className={`org-card${matched ? " org-card--highlight" : ""}`}
+      style={{ outline: isSelf ? `2px solid ${color}` : undefined, outlineOffset: 2 }}>
+      {isRoot && hasKids && (
+        <div style={{ position:"absolute", top:6, right:8 }}>
+          <Crown size={12} color="#d97706" />
         </div>
       )}
-      <div className="org-avatar" style={{ backgroundColor: `${color}1a`, color, position: "relative" }}>
-        {getInitials(node.name)}
+
+      {/* Avatar */}
+      <div className="org-avatar" style={{ background:`${color}1a`, color }}>
+        {node.profile_photo
+          ? <img src={node.profile_photo} alt={node.name}
+              style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }} />
+          : initials(node.name)}
       </div>
+
       <p className="org-name">{node.name}</p>
-      <p className="org-title">{node.title || "—"}</p>
-      <div style={{ display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap", marginTop: 2 }}>
-        <span className="org-badge" style={{ backgroundColor: `${color}1a`, color }}>
-          {node.department || "—"}
-        </span>
-        {isSelf && (
-          <span style={{
-            fontSize: 9, fontWeight: 700, background: "#dbeafe", color: "#1d4ed8",
-            borderRadius: 4, padding: "1px 5px",
-          }}>
-            YOU
+      <p className="org-title">{node.emp_job_title || node.designation_name || "—"}</p>
+
+      <div style={{ display:"flex", gap:4, justifyContent:"center", flexWrap:"wrap", marginTop:4 }}>
+        {node.department_name && (
+          <span className="org-badge" style={{ background:`${color}18`, color }}>
+            {node.department_name}
           </span>
+        )}
+        {isSelf && (
+          <span style={{ fontSize:9, fontWeight:700, background:"#fff8f0", color:"#f18200",
+            border:"1px solid #f18200", borderRadius:4, padding:"1px 5px" }}>YOU</span>
         )}
       </div>
     </div>
   );
 }
 
-/* ─── OrgNode ───────────────────────────────────────────────────────────────── */
+/* ── OrgNode ──────────────────────────────────────────────────────────── */
 function OrgNode({ node, search, selfId }) {
-  const matched = !!search && node.name.toLowerCase().includes(search.trim().toLowerCase());
+  const [collapsed, setCollapsed] = useState(false);
+  const hasKids = node.children?.length > 0;
+  const isSelf  = node.employee_id === selfId;
 
   return (
     <li>
-      <OrgCard
-        node={node}
-        matched={matched}
-        isSelf={node.employeeId === selfId}
-        isManager={!!node.isManager}
-      />
-      {node.children && node.children.length > 0 && (
+      <div style={{ position:"relative", display:"inline-block" }}>
+        <OrgCard node={node} isSelf={isSelf} search={search} />
+        {hasKids && (
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            title={collapsed ? "Expand" : "Collapse"}
+            style={{
+              position:"absolute", bottom:-10, left:"50%", transform:"translateX(-50%)",
+              width:20, height:20, borderRadius:"50%", border:"1px solid #e2e8f0",
+              background:"#fff", color:"#94a3b8", fontSize:12, lineHeight:"18px",
+              cursor:"pointer", zIndex:10, display:"flex", alignItems:"center",
+              justifyContent:"center", boxShadow:"0 1px 3px rgba(0,0,0,0.1)",
+            }}>
+            {collapsed ? "+" : "−"}
+          </button>
+        )}
+      </div>
+
+      {hasKids && !collapsed && (
         <ul>
-          {node.children.map((child) => (
-            <OrgNode key={child.employeeId} node={child} search={search} selfId={selfId} />
+          {node.children.map(child => (
+            <OrgNode key={child.employee_id} node={child} search={search} selfId={selfId} />
           ))}
         </ul>
       )}
@@ -86,14 +140,16 @@ function OrgNode({ node, search, selfId }) {
   );
 }
 
-/* ─── Legend ────────────────────────────────────────────────────────────────── */
-function Legend({ items }) {
-  if (!items.length) return null;
+/* ── Legend ───────────────────────────────────────────────────────────── */
+function Legend({ depts }) {
+  if (!depts.length) return null;
   return (
-    <div className="flex flex-wrap items-center gap-4 mt-4 mb-5">
-      {items.map((d) => (
-        <span key={d.id} className="flex items-center gap-1.5 text-xs text-[#64748b]">
-          <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+    <div style={{ display:"flex", flexWrap:"wrap", gap:"10px 20px", margin:"12px 0 20px" }}>
+      {depts.map(d => (
+        <span key={d.id} style={{ display:"flex", alignItems:"center", gap:6,
+          fontSize:12, color:"#64748b" }}>
+          <span style={{ width:10, height:10, borderRadius:"50%",
+            background:d.color, display:"inline-block" }} />
           {d.label}
         </span>
       ))}
@@ -101,168 +157,165 @@ function Legend({ items }) {
   );
 }
 
-/* ─── Main ───────────────────────────────────────────────────────────────────── */
-export default function OrganizationChart() {
-  const currentUser = getLoggedInUser();
-  const selfId = currentUser?.employeeId ?? currentUser?.employee_id;
-
-  const [orgTree, setOrgTree]   = useState(null);
-  const [legend, setLegend]     = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-  const [search, setSearch]     = useState("");
-  const [zoom, setZoom]         = useState(100);
-
-  useEffect(() => {
-    setLoading(true);
-    getMyTeam()
-      .then(({ manager, teammates }) => {
-        // Build a dept color map from actual dept IDs
-        const deptMap = new Map(); // deptId → { label, color, idx }
-        const allPeople = [...(manager ? [manager] : []), ...(teammates || [])];
-        let deptIdx = 0;
-        allPeople.forEach((emp) => {
-          if (emp.department_id != null && !deptMap.has(emp.department_id)) {
-            deptMap.set(emp.department_id, {
-              label: emp.department_name || `Dept ${emp.department_id}`,
-              color: deptColor(emp.department_id, deptIdx++),
-            });
-          }
-        });
-
-        // Build legend items
-        const legendItems = [...deptMap.entries()].map(([id, v]) => ({
-          id,
-          label: v.label,
-          color: v.color,
-        }));
-
-        // Build org tree nodes
-        function toNode(emp, isManager = false) {
-          const dc = deptMap.get(emp.department_id) || { color: "#94a3b8", label: emp.department_name || "—" };
-          return {
-            employeeId: emp.employee_id,
-            name: fullName(emp),
-            title: emp.emp_job_title || emp.designation_name || "—",
-            department: dc.label,
-            color: dc.color,
-            isManager,
-            children: [],
-          };
-        }
-
-        if (!manager && (!teammates || teammates.length === 0)) {
-          setOrgTree(null);
-          setLegend(legendItems);
-          return;
-        }
-
-        // Root = manager (or a placeholder if no manager)
-        const root = manager
-          ? toNode(manager, true)
-          : {
-              employeeId: null,
-              name: "No Manager",
-              title: "—",
-              department: "—",
-              color: "#94a3b8",
-              isManager: true,
-              children: [],
-            };
-
-        root.children = (teammates || []).map((emp) => toNode(emp));
-
-        setOrgTree(root);
-        setLegend(legendItems);
-      })
-      .catch((err) => setError(err?.message || "Failed to load organization chart"))
-      .finally(() => setLoading(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+/* ── Stats bar ────────────────────────────────────────────────────────── */
+function StatsBar({ flat }) {
+  const depts = new Set(flat.map(e => e.department_name).filter(Boolean)).size;
+  const maxDepth = (() => {
+    const map = {};
+    flat.forEach(e => { map[e.employee_id] = e; });
+    function depth(id, visited = new Set()) {
+      if (!id || visited.has(id)) return 0;
+      visited.add(id);
+      const emp = map[id];
+      return 1 + (emp?.reporting_to ? depth(emp.reporting_to, visited) : 0);
+    }
+    return Math.max(0, ...flat.map(e => depth(e.employee_id)));
+  })();
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-1">
-        <div className="flex items-center gap-2">
-          <Network size={22} className="text-[#2ea7ff]" />
+    <div style={{ display:"flex", gap:12, marginBottom:16, flexWrap:"wrap" }}>
+      {[
+        { label:"Total Employees", value: flat.length, color:"#f18200" },
+        { label:"Departments",     value: depts,       color:"#6366f1" },
+        { label:"Hierarchy Levels",value: maxDepth,    color:"#10b981" },
+      ].map(s => (
+        <div key={s.label} style={{ background:"#fff", border:"1px solid #e2e8f0",
+          borderRadius:10, padding:"10px 18px", minWidth:130, textAlign:"center",
+          boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
+          <div style={{ fontSize:22, fontWeight:800, color:s.color }}>{s.value}</div>
+          <div style={{ fontSize:11, color:"#94a3b8", marginTop:2 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Main ─────────────────────────────────────────────────────────────── */
+export default function OrganizationChart() {
+  const [flat,    setFlat]    = useState([]);
+  const [tree,    setTree]    = useState(null);
+  const [depts,   setDepts]   = useState([]);
+  const [selfId,  setSelfId]  = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+  const [search,  setSearch]  = useState("");
+  const [zoom,    setZoom]    = useState(100);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    Promise.all([
+      apiClient.get("/employees/org-chart").then(unwrap),
+      getCurrentUser().catch(() => null),
+    ]).then(([rows, me]) => {
+      setFlat(rows);
+      setSelfId(me?.employeeId || me?.employee_id || null);
+
+      // Build dept legend
+      const deptMap = new Map();
+      rows.forEach(e => {
+        if (e.department_id && !deptMap.has(e.department_id)) {
+          deptMap.set(e.department_id, {
+            id:    e.department_id,
+            label: e.department_name || `Dept ${e.department_id}`,
+            color: deptColor(e.department_id),
+          });
+        }
+      });
+      setDepts([...deptMap.values()]);
+      setTree(buildTree(rows));
+    })
+    .catch(e => setError(e?.response?.data?.message || "Failed to load org chart"))
+    .finally(() => setLoading(false));
+  }, []);
+
+  // Filter: highlight search matches (collapse unmatched branches)
+  const matchedIds = search.trim()
+    ? new Set(flat.filter(e => fullName(e).toLowerCase().includes(search.toLowerCase())).map(e => e.employee_id))
+    : null;
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#f5f7fb", padding:24 }}>
+      {/* Header */}
+      <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"space-between",
+        alignItems:"center", gap:16, marginBottom:16 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <Network size={22} color="#f18200" />
           <div>
-            <h1 className="text-[22px] font-semibold text-[#1f2937]">Organization Chart</h1>
-            <p className="text-sm text-[#64748b]">Your team hierarchy.</p>
+            <h1 style={{ fontSize:20, fontWeight:700, color:"#1f2937", margin:0 }}>Organization Chart</h1>
+            <p style={{ fontSize:13, color:"#64748b", margin:0 }}>Full company reporting hierarchy</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search people..."
-              className="h-[38px] w-[220px] pl-9 pr-3 rounded-lg border border-[#dbe2ea] bg-white text-sm outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
-            />
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {/* Search */}
+          <div style={{ position:"relative" }}>
+            <Search size={14} style={{ position:"absolute", left:10, top:"50%",
+              transform:"translateY(-50%)", color:"#94a3b8" }} />
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search people…"
+              style={{ height:36, width:210, paddingLeft:30, paddingRight:12,
+                border:"1px solid #dbe2ea", borderRadius:8, fontSize:13,
+                outline:"none", background:"#fff" }} />
           </div>
 
-          <div className="flex items-center gap-1 bg-white border border-[#dbe2ea] rounded-lg h-[38px] px-2">
-            <button
-              type="button"
-              onClick={() => setZoom((z) => Math.max(50, z - 10))}
-              className="p-1.5 text-[#64748b] hover:text-[#1f2937] rounded"
-              aria-label="Zoom out"
-            >
-              <ZoomOut size={16} />
+          {/* Zoom controls */}
+          <div style={{ display:"flex", alignItems:"center", gap:2, background:"#fff",
+            border:"1px solid #dbe2ea", borderRadius:8, height:36, padding:"0 6px" }}>
+            <button onClick={() => setZoom(z => Math.max(40, z - 10))}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:4,
+                color:"#64748b", display:"flex" }}>
+              <ZoomOut size={15} />
             </button>
-            <span className="text-xs font-medium text-[#475569] w-10 text-center select-none">
-              {zoom}%
-            </span>
-            <button
-              type="button"
-              onClick={() => setZoom((z) => Math.min(150, z + 10))}
-              className="p-1.5 text-[#64748b] hover:text-[#1f2937] rounded"
-              aria-label="Zoom in"
-            >
-              <ZoomIn size={16} />
+            <span style={{ fontSize:12, color:"#475569", minWidth:36, textAlign:"center" }}>{zoom}%</span>
+            <button onClick={() => setZoom(z => Math.min(160, z + 10))}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:4,
+                color:"#64748b", display:"flex" }}>
+              <ZoomIn size={15} />
             </button>
-            <button
-              type="button"
-              onClick={() => setZoom(100)}
-              className="p-1.5 text-[#64748b] hover:text-[#1f2937] rounded border-l border-[#e2e8f0] ml-1"
-              aria-label="Reset zoom"
-            >
-              <RotateCcw size={16} />
+            <button onClick={() => setZoom(100)}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:4,
+                color:"#64748b", borderLeft:"1px solid #e2e8f0", marginLeft:2, display:"flex" }}>
+              <RotateCcw size={15} />
             </button>
           </div>
         </div>
       </div>
 
-      <Legend items={legend} />
+      {!loading && !error && flat.length > 0 && <StatsBar flat={flat} />}
+      <Legend depts={depts} />
 
-      <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-sm overflow-auto p-8">
+      {/* Chart canvas */}
+      <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
+        boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"auto", padding:32 }}
+        ref={containerRef}>
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-sm text-[#94a3b8]">
-            Loading chart…
-          </div>
+          <div style={{ display:"flex", justifyContent:"center", padding:60,
+            fontSize:14, color:"#94a3b8" }}>Loading hierarchy…</div>
         ) : error ? (
-          <div className="flex items-center justify-center py-20 text-sm text-red-500">
-            {error}
-          </div>
-        ) : !orgTree ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Network size={40} strokeWidth={1.2} className="text-[#cbd5e1]" />
-            <p className="text-sm text-[#94a3b8]">
-              No team data found. Make sure your employee profile has a reporting manager set.
+          <div style={{ display:"flex", justifyContent:"center", padding:60,
+            fontSize:14, color:"#ef4444" }}>{error}</div>
+        ) : !tree ? (
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
+            padding:60, gap:12 }}>
+            <Network size={40} strokeWidth={1.2} color="#cbd5e1" />
+            <p style={{ fontSize:13, color:"#94a3b8" }}>
+              No employees found. Make sure employees have reporting managers set.
             </p>
           </div>
         ) : (
-          <div
-            className="org-tree"
-            style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center", transition: "transform 0.15s ease" }}
-          >
+          <div className="org-tree"
+            style={{ transform:`scale(${zoom/100})`, transformOrigin:"top center",
+              transition:"transform 0.15s ease" }}>
             <ul>
-              <OrgNode node={orgTree} search={search} selfId={selfId} />
+              <OrgNode node={tree} search={search} selfId={selfId} />
             </ul>
           </div>
         )}
       </div>
+
+      <p style={{ fontSize:11, color:"#94a3b8", textAlign:"center", marginTop:12 }}>
+        Click <strong>−</strong> on any card to collapse that branch · <strong>+</strong> to expand
+      </p>
     </div>
   );
 }

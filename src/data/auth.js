@@ -85,6 +85,8 @@ export function persistAuthSession({ accessToken, refreshToken, user } = {}) {
 /** Clears tokens + cached user, logging the user out locally. */
 export function logoutUser() {
   clearTokens();
+  // Bust the /auth/me module-level cache so stale profile is not served after re-login
+  try { require('../api/auth.api').bustMeCache?.(); } catch {}
 }
 
 export function getRolesForSelect() {

@@ -18,6 +18,7 @@ export default function EmployeeGridCard({ employee })
   const name = getEmployeeDisplayName(employee);
   const department = getDepartmentName(employee);
   const isActive = employee.employee_status === "Active";
+  const servingNotice = !!employee.serving_notice;
 
   return (
     <article
@@ -37,10 +38,16 @@ export default function EmployeeGridCard({ employee })
         <span className={`emp-card__dept ${getDeptBadgeClass(department)}`}>
           {department}
         </span>
-        <span className={`emp-card__status ${isActive ? "is-active" : "is-inactive"}`}>
-          {isActive && <Check size={12} />}
-          {employee.employee_status}
-        </span>
+        {servingNotice ? (
+          <span className="emp-card__status" style={{ background:"#fff7ed", color:"#ea580c", border:"1px solid #fed7aa" }}>
+            Serving Notice
+          </span>
+        ) : (
+          <span className={`emp-card__status ${isActive ? "is-active" : "is-inactive"}`}>
+            {isActive && <Check size={12} />}
+            {employee.employee_status}
+          </span>
+        )}
       </div>
       <div className="emp-card__contact">
         <span>
@@ -71,7 +78,7 @@ export function EmployeeListTable({ employees })
         <thead>
           <tr>
             <th className="emp-table__id">Employee Number</th>
-            <th>Employee Name</th>
+            <th className="emp-table__sticky-col">Employee Name</th>
             <th>Department</th>
             <th>Role</th>
             <th>Email</th>
@@ -125,7 +132,7 @@ export function EmployeeListTable({ employees })
               style={{ cursor: "pointer" }}
             >
               <td className="emp-table__id">{formatEmployeeId(p)}</td>
-              <td>
+              <td className="emp-table__sticky-col">
                 <div className="emp-table__name-cell">
                   <span className="emp-table__avatar">{getEmployeeInitials(p)}</span>
                   <span className="font-medium">{getEmployeeDisplayName(p)}</span>
@@ -136,9 +143,15 @@ export function EmployeeListTable({ employees })
               <td>{p.email}</td>
               <td>{p.mobile}</td>
               <td>
-                <span className={`emp-card__status ${p.employee_status === "Active" ? "is-active" : "is-inactive"}`}>
-                  {p.employee_status}
-                </span>
+                {p.serving_notice ? (
+                  <span className="emp-card__status" style={{ background:"#fff7ed", color:"#ea580c", border:"1px solid #fed7aa" }}>
+                    Serving Notice
+                  </span>
+                ) : (
+                  <span className={`emp-card__status ${p.employee_status === "Active" ? "is-active" : "is-inactive"}`}>
+                    {p.employee_status}
+                  </span>
+                )}
               </td>
               <td>{p.emp_joining_date || "—"}</td>
               <td>{p.gender || "—"}</td>

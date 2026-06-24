@@ -11,6 +11,7 @@ const TeamRegularizations     = lazy(() => import("../pages/manager/TeamRegulari
 const PerformanceApprisial    = lazy(() => import("../pages/manager/PerformanceApprisial"));
 const TeamAttendanceAppraisal = lazy(() => import("../pages/manager/TeamAttendanceAppraisal"));
 const ManagerTimesheets       = lazy(() => import("../pages/manager/ManagerTimesheets"));
+const TeamResignations        = lazy(() => import("../pages/manager/TeamResignations"));
 
 function Page({ children }) {
   return (
@@ -33,6 +34,7 @@ const ManagerRoutes = () => {
       <Route path="team/performance"            element={<Page><PerformanceApprisial /></Page>} />
       <Route path="team/appraisal-attendance"   element={<Page><TeamAttendanceAppraisal /></Page>} />
       <Route path="timesheets"                  element={<Page><ManagerTimesheets /></Page>} />
+      <Route path="team/resignations"           element={<Page><TeamResignations /></Page>} />
     </Routes>
   );
 };
