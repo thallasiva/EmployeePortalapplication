@@ -1,38 +1,42 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Home,
-  Users,
-  Building,
-  Calendar,
-  LogOut,
-  Settings,
-  FileOutput,
+import
+  {
+    Home,
+    Users,
+    Building,
+    Calendar,
+    LogOut,
+    Settings,
+    FileOutput,
 
-  UserPen,
-  Proportions,
-  Radio,
-  LayoutGrid,
-  ClipboardList,
-  HandCoins,
-  SquareCheck,
-  UserRoundPlus,
-  BookOpen,
-  UserRound,
-  Info,
-  Layers,
-  GitBranch,
-  Clock,
-  ChevronDown,
-  ChevronRight,
-  FileText,
-  Network,
-} from "lucide-react";
+    UserPen,
+    Proportions,
+    Radio,
+    LayoutGrid,
+    ClipboardList,
+    HandCoins,
+    SquareCheck,
+    UserRoundPlus,
+    BookOpen,
+    UserRound,
+    Info,
+    Layers,
+    GitBranch,
+    Clock,
+    ChevronDown,
+    ChevronRight,
+    FileText,
+    Network,
+    IdCard,
+    Award,
+  } from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN, logoutUser } from "../data/auth";
 
 const BRAND_NAME = "NAT IT";
 
-const isPathActive = (pathname, link, search = "") => {
+const isPathActive = (pathname, link, search = "") =>
+{
   if (!link) return false;
   // Split query string from link
   const [linkPath, linkQuery] = link.split("?");
@@ -44,7 +48,8 @@ const isPathActive = (pathname, link, search = "") => {
     target === "/employee/home" ||
     target === "/employee/engage" ||
     target === "/manager"
-  ) {
+  )
+  {
     return normalized === target && (!linkQuery || search.includes(linkQuery));
   }
 
@@ -54,7 +59,8 @@ const isPathActive = (pathname, link, search = "") => {
   return pathMatch;
 };
 
-export const Sidebar = ({ open }) => {
+export const Sidebar = ({ open }) =>
+{
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const [expanded, setExpanded] = useState(null);
@@ -87,9 +93,9 @@ export const Sidebar = ({ open }) => {
       label: "Leave",
       icon: <FileOutput size={20} />,
       children: [
-        { label: "Leave Requests",  navigationLink: "/dashboard/leave?tab=requests"  },
-        { label: "Leave Balances",  navigationLink: "/dashboard/leave?tab=balances"  },
-        { label: "Leave Types",     navigationLink: "/dashboard/leave?tab=types"     },
+        { label: "Leave Requests", navigationLink: "/dashboard/leave?tab=requests" },
+        { label: "Leave Balances", navigationLink: "/dashboard/leave?tab=balances" },
+        { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" },
       ],
     },
     {
@@ -126,6 +132,21 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/dashboard/onboarding",
     },
     {
+      label: "Appraisal",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/performance",
+    },
+    {
+      label: "IT Declaration",
+      icon: <FileText size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/it-declaration",
+    },
+    {
+      label: "Resignations",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/resignations",
+    },
+    {
       label: "Settings",
       icon: <Settings size={20} />,
       navigationLink: "/dashboard/settings",
@@ -156,6 +177,11 @@ export const Sidebar = ({ open }) => {
       navigationLink: "/employee/home",
     },
     {
+      label: "My Info",
+      icon: <IdCard size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/my-info",
+    },
+    {
       label: "Engage",
       icon: <Radio size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/engage",
@@ -177,16 +203,26 @@ export const Sidebar = ({ open }) => {
       ],
     },
     {
+      label: "Appraisal",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/appraisal",
+    },
+    {
+      label: "Resignation",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/resignation",
+    },
+    {
       label: "Salary",
       icon: <HandCoins size={20} strokeWidth={1.75} />,
       children: [
         { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
-        { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
+        { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" },
         { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
+        { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
+        { label: "Loans and Advances", navigationLink: "/employee/payroll/loans" },
         { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
         { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
-        { label: "Loans", navigationLink: "/employee/payroll/loans" },
-        { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" },
         { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
       ],
     },
@@ -256,19 +292,22 @@ export const Sidebar = ({ open }) => {
   const items = isAdmin(user)
     ? adminItems
     : isReportingManager(user)
-    ? [teamOverviewItem, managerTimesheetItem, ...employeeItems]
-    : employeeItems;
+      ? [teamOverviewItem, managerTimesheetItem, ...employeeItems]
+      : employeeItems;
 
-  const toggleAccordion = (index) => {
+  const toggleAccordion = (index) =>
+  {
     setExpanded(expanded === index ? null : index);
   };
 
-  const handleLogout = () => {
+  const handleLogout = () =>
+  {
     logoutUser();
     navigate("/login");
   };
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const activeIndex = items.findIndex(
       (item) =>
         item.children &&
@@ -276,7 +315,8 @@ export const Sidebar = ({ open }) => {
           isPathActive(pathname, child.navigationLink, search)
         )
     );
-    if (activeIndex >= 0) {
+    if (activeIndex >= 0)
+    {
       setExpanded(activeIndex);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- items derived from role
@@ -302,9 +342,8 @@ export const Sidebar = ({ open }) => {
 
   return (
     <aside
-      className={`relative flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ${
-        open ? "w-64" : "w-[4.5rem]"
-      }`}
+      className={`relative flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ${open ? "w-64" : "w-[4.5rem]"
+        }`}
     >
       <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-100 min-h-[4.5rem]">
         <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-bold text-sm shadow-sm">
@@ -321,12 +360,14 @@ export const Sidebar = ({ open }) => {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        {items.map((item, index) => {
+        {items.map((item, index) =>
+        {
           const childActive = item.children?.some((child) =>
             isPathActive(pathname, child.navigationLink, search)
           );
 
-          if (!item.children) {
+          if (!item.children)
+          {
             const active = isPathActive(pathname, item.navigationLink, search);
             return (
               <div
@@ -385,7 +426,8 @@ export const Sidebar = ({ open }) => {
 
               {expanded === index && open && (
                 <div className="mt-1 ml-3 pl-3 border-l-2 border-brand-100 space-y-0.5">
-                  {item.children.map((child, childIndex) => {
+                  {item.children.map((child, childIndex) =>
+                  {
                     const childActive = isPathActive(
                       pathname,
                       child.navigationLink,
@@ -395,7 +437,8 @@ export const Sidebar = ({ open }) => {
                       <div
                         key={childIndex}
                         className={childItemClass(childActive)}
-                        onClick={() => {
+                        onClick={() =>
+                        {
                           const [p, q] = child.navigationLink.split("?");
                           navigate(q ? `${p}?${q}` : p);
                         }}
@@ -414,9 +457,8 @@ export const Sidebar = ({ open }) => {
       <div className="p-3 border-t border-gray-100">
         <button
           type="button"
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${
-            !open ? "justify-center" : ""
-          }`}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${!open ? "justify-center" : ""
+            }`}
           onClick={handleLogout}
           title={!open ? "Logout" : undefined}
         >

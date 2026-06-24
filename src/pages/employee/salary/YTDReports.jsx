@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Download, ChevronDown, ChevronUp } from "lucide-react";
 import { getMyPayslips, getMySalaryStructure } from "../../../api/payroll.api";
-import { calculatePayslip } from "../../../utils/payslipCalculations";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import { FiscalYearPicker } from "../../../component/YearPicker";
 import {
   getCurrentFiscalYearStart,
@@ -120,13 +120,13 @@ export default function YTDReports() {
         };
       }
       if (structure?.basic) {
-        const b = calculatePayslip(Number(structure.basic));
+        const b = buildSalaryBreakdown(structure);
         return {
           label: MONTH_LABELS[mIdx], hasData: false,
-          basic: b.basic, hra: b.hra, special: b.specialAllowance,
-          lta: b.lta, telephone: b.telephoneAndInternet,
-          gross: b.totalEarnings, pf: b.pf, profTax: b.profTax,
-          incomeTax: b.incomeTax, netPay: b.netSalary, workDays: 30, daysInMonth: 30,
+          basic: b.basic, hra: b.hra, special: b.special,
+          lta: b.lta, telephone: b.telephone,
+          gross: b.gross, pf: b.pf, profTax: b.profTax,
+          incomeTax: 0, netPay: b.net, workDays: 26, daysInMonth: 30,
         };
       }
       return {

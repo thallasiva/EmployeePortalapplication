@@ -34,6 +34,8 @@ const Reports                = lazy(() => import("../pages/admin/Report"));
 const PayRollForm            = lazy(() => import("../pages/admin/PayRollForm"));
 const AdminPayslips          = lazy(() => import("../pages/admin/AdminPayslips"));
 const AdminPerformanceRollout = lazy(() => import("../pages/admin/AdminPerformanceRollout"));
+const AdminITDeclaration      = lazy(() => import("../pages/admin/AdminITDeclaration"));
+const AdminResignations       = lazy(() => import("../pages/admin/AdminResignations"));
 const AdminTimesheets        = lazy(() => import("../pages/admin/AdminTimesheets"));
 const Onboarding             = lazy(() => import("../pages/admin/Onboarding"));
 const Manage                 = lazy(() => import("../pages/admin/Manage"));
@@ -76,6 +78,8 @@ const AdminRoutes = () => {
       <Route path="payroll"                      element={<Page><PayRollForm /></Page>} />
       <Route path="payroll/payslips"             element={<Page><AdminPayslips /></Page>} />
       <Route path="performance"                  element={<Page><AdminPerformanceRollout /></Page>} />
+      <Route path="it-declaration"               element={<Page><AdminITDeclaration /></Page>} />
+      <Route path="resignations"                element={<Page><AdminResignations /></Page>} />
       <Route path="timesheets"                   element={<Page><AdminTimesheets /></Page>} />
       <Route path="report/*"                     element={<Page><Reports /></Page>} />
       <Route path="onboarding"                   element={<Page><Onboarding /></Page>} />

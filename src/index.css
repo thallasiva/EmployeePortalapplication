@@ -134,4 +134,81 @@
     font-weight: 600;
     border-radius: 0.5rem;
   }
+
+  /* ── Reusable scrollable table shell ─────────────────────────────────────
+     Usage:
+       <div class="tbl-shell">
+         <table class="tbl">
+           <thead>  ← headers stay frozen while rows scroll
+           <tbody>
+         </table>
+       </div>
+
+     The outer div provides: fixed height, both-axis scroll, border & radius.
+     The inner <table> must NOT set its own overflow.
+  ── */
+
+  .tbl-shell {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: calc(100vh - 260px);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .tbl thead th {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: #f9fafb;
+    color: #64748b;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+  }
+
+  .tbl tbody td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+  }
+
+  .tbl tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .tbl tbody tr:hover td {
+    background: #fafafa;
+  }
+
+  /* sticky first column — add class="tbl__pin" to any th/td you want frozen */
+  .tbl__pin {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fff;
+    box-shadow: 2px 0 6px -2px rgba(0,0,0,0.07);
+  }
+
+  .tbl thead .tbl__pin {
+    background: #f9fafb;
+    z-index: 5;
+  }
+
+  .tbl tbody tr:hover td.tbl__pin {
+    background: #fafafa;
+  }
 }

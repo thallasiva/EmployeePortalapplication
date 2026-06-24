@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { Download, LayoutGrid, List, Upload, ChevronDown, ChevronRight, Users } from "lucide-react";
+import { Download, LayoutGrid, List, Upload, ChevronDown, ChevronRight, Users, Search, X } from "lucide-react";
 import Teams from "./Teams";
 import Offices from "./Offices";
 import { useNavigate } from "react-router-dom";
@@ -50,6 +50,7 @@ function TeamGroupCard({ department, employees }) {
           {employees.map(emp => {
             const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.email;
             const isActive = emp.employee_status === "Active";
+            const servingNotice = !!emp.serving_notice;
             return (
               <div
                 key={emp.employee_id}
@@ -66,9 +67,15 @@ function TeamGroupCard({ department, employees }) {
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
                   <span className="text-xs text-gray-400 hidden sm:block truncate max-w-[140px]">{emp.email}</span>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                    {emp.employee_status || "Active"}
-                  </span>
+                  {servingNotice ? (
+                    <span className="text-[11px] px-2 py-0.5 rounded-full font-medium bg-orange-50 text-orange-600 border border-orange-200">
+                      Serving Notice
+                    </span>
+                  ) : (
+                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      {emp.employee_status || "Active"}
+                    </span>
+                  )}
                 </div>
               </div>
             );
@@ -110,8 +117,9 @@ export default function Employee() {
   const csvInputRef = useRef(null);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("teams"); // default to team view
+  const [viewMode, setViewMode] = useState("grid");
   const [selectedTab, setSelectedTab] = useState("All");
+  const [search, setSearch] = useState("");
 
   const refreshEmployees = async () => {
     setLoading(true);
@@ -127,10 +135,25 @@ export default function Employee() {
 
   useEffect(() => { refreshEmployees(); }, []);
 
+  const filteredEmployees = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return employees;
+    return employees.filter(emp => {
+      const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ").toLowerCase();
+      return (
+        name.includes(q) ||
+        emp.email?.toLowerCase().includes(q) ||
+        emp.emp_code?.toLowerCase().includes(q) ||
+        emp.department_name?.toLowerCase().includes(q) ||
+        emp.emp_job_title?.toLowerCase().includes(q) ||
+        emp.mobile?.includes(q)
+      );
+    });
+  }, [employees, search]);
+
   const tabsMenu = [
     { id: 1, tabName: "All" },
-    { id: 2, tabName: "Teams" },
-    { id: 3, tabName: "Offices" },
+    { id: 2, tabName: "Teams" }
   ];
 
   const handleCsvImport = (e) => {
@@ -198,38 +221,66 @@ export default function Employee() {
       {selectedTab === "All" && (
         <div className="space-y-4">
           <div className="emp-toolbar">
-            <span className="font-medium">
-              {loading ? "Loading employees…" : `${employees.length} Employees`}
+            <span className="font-medium text-sm text-gray-700">
+              {loading ? "Loading employees…" : (
+                search
+                  ? <>{filteredEmployees.length} <span className="text-gray-400 font-normal">of {employees.length} Employees</ span></>
+                  : `${employees.length} Employees`
+              )}
             </span>
-            <div className="emp-view-toggle">
-              <button type="button" className={viewMode === "teams" ? "active" : ""} onClick={() => setViewMode("teams")} title="Team view">
-                <Users size={16} />
-              </button>
-              <button type="button" className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")} title="Grid view">
-                <LayoutGrid size={16} />
-              </button>
-              <button type="button" className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")} title="List view">
-                <List size={16} />
-              </button>
+            <div className="flex items-center gap-2">
+              {/* Search box */}
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search name, email, dept…"
+                  className="h-8 pl-8 pr-7 text-sm border border-gray-200 rounded-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 w-56 transition"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+              {/* View toggle */}
+              <div className="emp-view-toggle">
+                <button type="button" className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")} title="Grid view">
+                  <LayoutGrid size={16} />
+                </button>
+                <button type="button" className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")} title="List view">
+                  <List size={16} />
+                </button>
+              </div>
             </div>
           </div>
 
           {loading ? (
             <p className="text-sm text-gray-400 py-8 text-center">Loading employees…</p>
-          ) : viewMode === "teams" ? (
-            <TeamGroupedView employees={employees} />
+          ) : filteredEmployees.length === 0 ? (
+            <div className="py-16 text-center">
+              <Search size={32} className="mx-auto mb-3 text-gray-300" />
+              <p className="text-sm text-gray-500">No employees match "<span className="font-medium">{search}</span>"</p>
+              <button type="button" onClick={() => setSearch("")} className="mt-2 text-sm text-brand hover:underline">Clear search</button>
+            </div>
           ) : viewMode === "grid" ? (
             <div className="emp-grid">
-              {employees.map(emp => <EmployeeGridCard key={emp.employee_id} employee={emp} />)}
+              {filteredEmployees.map(emp => <EmployeeGridCard key={emp.employee_id} employee={emp} />)}
             </div>
           ) : (
-            <EmployeeListTable employees={employees} />
+            <EmployeeListTable employees={filteredEmployees} />
           )}
         </div>
       )}
 
       {selectedTab === "Teams" && <Teams />}
-      {selectedTab === "Offices" && <Offices employees={[]} />}
+     
     </div>
   );
 }

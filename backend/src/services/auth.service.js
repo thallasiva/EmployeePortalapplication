@@ -3,6 +3,20 @@ const { query, withTransaction } = require('../config/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
+
+/* ── Profile cache: avoids a DB round-trip on every /auth/me call ── */
+const _profileCache = new Map();   // userId → { data, expiresAt }
+const PROFILE_TTL_MS = 60_000;    // 60 seconds
+
+function cacheProfile(userId, data) {
+  _profileCache.set(userId, { data, expiresAt: Date.now() + PROFILE_TTL_MS });
+}
+function getCachedProfile(userId) {
+  const hit = _profileCache.get(userId);
+  if (!hit || Date.now() > hit.expiresAt) { _profileCache.delete(userId); return null; }
+  return hit.data;
+}
+function bustProfileCache(userId) { _profileCache.delete(userId); }
 const { issueMfaTempToken } = require('../services/mfa.service');
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -155,9 +169,13 @@ async function refresh(refreshToken) {
 }
 
 async function getProfile(userId) {
+  const cached = getCachedProfile(userId);
+  if (cached) return cached;
   const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.user_id = ?`, [userId]);
   if (!rows.length) throw ApiError.notFound('User not found');
-  return toProfile(rows[0]);
+  const profile = toProfile(rows[0]);
+  cacheProfile(userId, profile);
+  return profile;
 }
 
 async function changePassword(userId, currentPassword, newPassword) {
@@ -169,6 +187,7 @@ async function changePassword(userId, currentPassword, newPassword) {
 
   const newHash = await hashPassword(newPassword);
   await query('UPDATE users SET password_hash = ? WHERE user_id = ?', [newHash, userId]);
+  bustProfileCache(userId);
 }
 
 /**
@@ -222,4 +241,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   issueTokensForUser,
+  bustProfileCache,
 };

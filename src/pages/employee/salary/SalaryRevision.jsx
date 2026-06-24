@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { TrendingUp, Download } from "lucide-react";
 import { getMySalaryStructure, listSalaryStructures } from "../../../api/payroll.api";
-import { calculatePayslip } from "../../../utils/payslipCalculations";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import { getCurrentUser } from "../../../api/auth.api";
 
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
@@ -129,7 +129,7 @@ export default function SalaryRevision() {
 
   const breakdown = useMemo(() => {
     const basic = Number(structure?.basic || 0);
-    return basic > 0 ? calculatePayslip(basic) : null;
+    return basic > 0 ? buildSalaryBreakdown({ basic }) : null;
   }, [structure]);
 
   const currentCTC = breakdown ? (breakdown.totalEarnings + breakdown.pf) * 12 : 0;
@@ -144,10 +144,10 @@ export default function SalaryRevision() {
     }
 
     return allStructures.map((s, i) => {
-      const b = calculatePayslip(Number(s.basic || 0));
-      const newCTC = b ? (b.totalEarnings + b.pf) * 12 : 0;
+      const b = buildSalaryBreakdown(s);
+      const newCTC = b ? (b.ctc) * 12 : 0;
       const prevS  = allStructures[i + 1];
-      const prevB  = prevS ? calculatePayslip(Number(prevS.basic || 0)) : null;
+      const prevB  = prevS ? buildSalaryBreakdown(prevS) : null;
       const prevCTC = prevB ? (prevB.totalEarnings + prevB.pf) * 12 : 0;
       const effDate = s.effective_from || s.effective_date;
       const prevEffDate = prevS?.effective_from || prevS?.effective_date;

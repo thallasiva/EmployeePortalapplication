@@ -35,6 +35,9 @@ const OrganizationChart   = lazy(() => import("../pages/employee/people/Organiza
 const Hiring              = lazy(() => import("../pages/employee/hiring/Hiring"));
 const RequestHub          = lazy(() => import("../pages/employee/request/RequestHub"));
 const WorkflowDelegates   = lazy(() => import("../pages/employee/workflow/WorkflowDelegates"));
+const MyInfo              = lazy(() => import("../pages/employee/myinfo/MyInfo"));
+const Resignation         = lazy(() => import("../pages/employee/myinfo/Resignation"));
+const SelfAppraisal       = lazy(() => import("../pages/employee/appraisal/SelfAppraisal"));
 
 function Page({ children }) {
   return (
@@ -84,6 +87,9 @@ const EmployeeRoutes = () => {
       <Route path="helpdesk"                 element={<Page><Helpdesk /></Page>} />
       <Route path="request-hub"              element={<Page><RequestHub /></Page>} />
       <Route path="workflow-delegates"       element={<Page><WorkflowDelegates /></Page>} />
+      <Route path="my-info"                  element={<Page><MyInfo /></Page>} />
+      <Route path="resignation"             element={<Page><Resignation /></Page>} />
+      <Route path="appraisal"               element={<Page><SelfAppraisal /></Page>} />
     </Routes>
   );
 };

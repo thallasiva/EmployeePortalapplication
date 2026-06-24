@@ -23,6 +23,9 @@ router.use('/payroll', require('./payroll.routes'));
 
 router.use('/hiring', require('./hiring.routes'));
 router.use('/reviews', require('./review.routes'));
+router.use('/appraisal', require('./appraisal.routes'));
+router.use('/it-declaration', require('./itDeclaration.routes'));
+router.use('/resignations',   require('./resignation.routes'));
 
 router.use('/helpdesk', require('./helpdesk.routes'));
 router.use('/documents', require('./document.routes'));

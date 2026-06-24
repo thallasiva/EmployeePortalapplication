@@ -347,11 +347,11 @@ async function employeeDashboardCounts(employee_id) {
     [employee_id]
   );
   return {
-    draftTasks: taskCount[0]?.cnt || 0,
-    submittedWeeks: (row?.draft || 0) + (row?.pending || 0) + (row?.approved || 0) + (row?.rejected || 0),
-    pendingApproval: row?.pending || 0,
-    approvedWeeks: row?.approved || 0,
-    rejectedWeeks: row?.rejected || 0,
+    draftTasks:     Number(taskCount[0]?.cnt   || 0),
+    submittedWeeks: Number(row?.draft  || 0) + Number(row?.pending || 0) + Number(row?.approved || 0) + Number(row?.rejected || 0),
+    pendingApproval: Number(row?.pending  || 0),
+    approvedWeeks:   Number(row?.approved || 0),
+    rejectedWeeks:   Number(row?.rejected || 0),
   };
 }
 
@@ -367,9 +367,9 @@ async function managerDashboardCounts(manager_employee_id) {
     [manager_employee_id]
   );
   return {
-    pendingApprovals: row?.pending || 0,
-    approvedTimesheets: row?.approved || 0,
-    rejectedTimesheets: row?.rejected || 0,
+    pendingApprovals:   Number(row?.pending  || 0),
+    approvedTimesheets: Number(row?.approved || 0),
+    rejectedTimesheets: Number(row?.rejected || 0),
   };
 }
 
@@ -384,11 +384,11 @@ async function adminDashboardCounts() {
   const [emp] = await query(`SELECT COUNT(*) AS cnt FROM employees WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'Employee' LIMIT 1)`);
   const [mgr] = await query(`SELECT COUNT(*) AS cnt FROM employees WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'Reporting Manager' LIMIT 1)`);
   return {
-    totalEmployees: emp?.cnt || 0,
-    totalManagers: mgr?.cnt || 0,
-    pendingTimesheets: ts?.pending || 0,
-    approvedTimesheets: ts?.approved || 0,
-    rejectedTimesheets: ts?.rejected || 0,
+    totalEmployees:     Number(emp?.cnt      || 0),
+    totalManagers:      Number(mgr?.cnt      || 0),
+    pendingTimesheets:  Number(ts?.pending   || 0),
+    approvedTimesheets: Number(ts?.approved  || 0),
+    rejectedTimesheets: Number(ts?.rejected  || 0),
   };
 }
 
@@ -400,7 +400,12 @@ async function managerFullDashboard(manager_employee_id) {
   const teamMembers = await query(
     `SELECT e.employee_id, e.emp_code,
             CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS name,
-            e.emp_job_title, d.department_name
+            e.emp_job_title, d.department_name,
+            EXISTS(
+              SELECT 1 FROM resignations r
+              WHERE r.employee_id = e.employee_id
+                AND r.status IN ('pending','rm_approved','accepted')
+            ) AS serving_notice
      FROM employees e
      LEFT JOIN departments d ON d.department_id = e.department_id
      WHERE e.reporting_to = ? AND e.employee_status = 'Active'

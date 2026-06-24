@@ -63,31 +63,47 @@ class SalaryStructureService extends BaseService {
     return applyVisibility(row, reqUser, ownerId ?? row?.employee_id);
   }
 
-  /** Override: encrypt salary data before INSERT */
+  /** Override: encrypt salary data on INSERT, then NULL out plaintext columns */
   async create(data) {
     const salaryEncrypted = encryptSalaryFields(data);
     const row = await super.create(data);
     if (salaryEncrypted && row) {
       await require('../config/db').query(
-        'UPDATE salary_structures SET salary_encrypted = ? WHERE id = ?',
+        `UPDATE salary_structures SET
+           salary_encrypted = ?,
+           basic = NULL, hra = NULL, conveyance = NULL,
+           medical_allowance = NULL, special_allowance = NULL,
+           pf_employee = NULL, pf_employer = NULL,
+           professional_tax = NULL, income_tax = NULL, ctc = NULL
+         WHERE id = ?`,
         [salaryEncrypted, row.id]
       );
     }
     return row;
   }
 
-  /** Override: encrypt salary data before UPDATE */
+  /** Override: encrypt salary data on UPDATE, then NULL out plaintext columns */
   async update(id, data) {
     const row = await super.update(id, data);
-    // Re-fetch full record to build an accurate encrypted blob
+    // Re-fetch full record to get all fields for the encrypted blob
     const full = await require('../config/db').query(
       'SELECT * FROM salary_structures WHERE id = ?', [id]
     );
     if (full[0]) {
-      const salaryEncrypted = encryptSalaryFields(full[0]);
+      // Merge incoming data (plaintext) with existing encrypted fields
+      const { decryptSalaryRow } = require('../utils/encryption');
+      const existing = decryptSalaryRow(full[0]);
+      const merged = { ...existing, ...data };
+      const salaryEncrypted = encryptSalaryFields(merged);
       if (salaryEncrypted) {
         await require('../config/db').query(
-          'UPDATE salary_structures SET salary_encrypted = ? WHERE id = ?',
+          `UPDATE salary_structures SET
+             salary_encrypted = ?,
+             basic = NULL, hra = NULL, conveyance = NULL,
+             medical_allowance = NULL, special_allowance = NULL,
+             pf_employee = NULL, pf_employer = NULL,
+             professional_tax = NULL, income_tax = NULL, ctc = NULL
+           WHERE id = ?`,
           [salaryEncrypted, id]
         );
       }

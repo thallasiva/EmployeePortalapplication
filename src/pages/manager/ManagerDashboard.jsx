@@ -161,7 +161,16 @@ const ManagerDashboard = () => {
                         </td>
                         <td className="text-sm text-gray-600">{m.department_name || "—"}</td>
                         <td>
-                          <span className={`admin-status-badge ${att.cls}`}>{att.label}</span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`admin-status-badge ${att.cls}`}>{att.label}</span>
+                            {!!m.serving_notice && (
+                              <span style={{ fontSize:10, padding:"2px 8px", borderRadius:999,
+                                background:"#fff7ed", color:"#ea580c", border:"1px solid #fed7aa",
+                                fontWeight:700, whiteSpace:"nowrap" }}>
+                                Serving Notice
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="text-sm text-gray-600">{fmt(m.check_in)}</td>
                         <td className="text-sm text-gray-600">{fmt(m.check_out)}</td>

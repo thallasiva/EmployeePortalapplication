@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Download, ChevronDown, ChevronUp, ChevronRight, Info } from "lucide-react";
 import { getMyPayslips, getMySalaryStructure } from "../../../api/payroll.api";
 import { getCurrentUser } from "../../../api/auth.api";
-import { calculatePayslip } from "../../../utils/payslipCalculations";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import { FiscalYearPicker } from "../../../component/YearPicker";
 import {
   getCurrentFiscalYearStart,
@@ -282,16 +282,19 @@ export default function ITStatement() {
   const [structure, setStructure] = useState(null);
   const [empInfo, setEmpInfo]     = useState(null);
   const [loading, setLoading]     = useState(true);
-  const [regime, setRegime]       = useState("new"); // "new" | "old"
+  const [regime, setRegime]       = useState("new"); // "new" | "old" — overridden by API
   const [showInfo, setShowInfo]   = useState(false);
-  const [allOpen, setAllOpen]     = useState(true);
+  const ALL_OPEN = { a:true,b:true,c:true,d:true,f:true,g:true,i:true,k:true,ki:true,kh:true,m:true,o:true,p:true,q:true,r:true };
+  const ALL_CLOSED = { a:false,b:false,c:false,d:false,f:false,g:false,i:false,k:false,ki:false,kh:false,m:false,o:false,p:false,q:false,r:false };
+
+  const [allOpen, setAllOpen]     = useState(false);
   const [showHRA, setShowHRA]     = useState(false);
   const [showViewDetails, setShowViewDetails] = useState(false);
-  const [open, setOpen] = useState({ a:true,b:true,c:true,d:true,f:true,g:true,i:true,k:true,ki:false,kh:false,m:true,o:true,p:true,q:true,r:true });
+  const [open, setOpen] = useState(ALL_CLOSED);
   const tog = (k) => setOpen((p) => ({ ...p, [k]:!p[k] }));
   const toggleAll = () => {
     const next = !allOpen; setAllOpen(next);
-    setOpen({ a:next,b:next,c:next,d:next,f:next,g:next,i:next,k:next,ki:false,kh:false,m:next,o:next,p:next,q:next,r:next });
+    setOpen(next ? ALL_OPEN : ALL_CLOSED);
   };
 
   useEffect(() => {
@@ -303,6 +306,9 @@ export default function ITStatement() {
       .then(([p, s, u]) => {
         setPayslips(p);
         setStructure(s);
+        // Set regime from employee profile (DB-driven)
+        const savedRegime = u?.tax_regime || s?.tax_regime;
+        if (savedRegime === "old" || savedRegime === "new") setRegime(savedRegime);
         const latestSlip = Array.isArray(p) ? p[0] : null;
         setEmpInfo({
           name:      `${u?.first_name ?? u?.name ?? latestSlip?.first_name ?? ""}${u?.last_name ? " "+u.last_name : latestSlip?.last_name ? " "+latestSlip.last_name : ""}`.trim() || "—",
@@ -326,17 +332,17 @@ export default function ITStatement() {
     return FISCAL_ORDER.map((mIdx) => {
       const year = mIdx >= 3 ? fy : fy + 1;
       const slip = payslips.find((p) => Number(p.month)===mIdx+1 && Number(p.year)===year);
-      if (slip) return { label:MONTH_LABELS[mIdx],
-        basic:Number(slip.basic??0), hra:Number(slip.hra??0), special:Number(slip.special_allowance??0),
-        lta:Number(slip.lta??0), telephone:Number(slip.telephone_and_internet??0),
-        gross:Number(slip.gross_salary??slip.total_earnings??0),
-        pf:Number(slip.pf_employee??slip.pf??0), profTax:Number(slip.professional_tax??200),
-        netPay:Number(slip.net_salary??slip.net_pay??0) };
+      if (slip) {
+        const b = buildSalaryBreakdown(structure, slip);
+        return { label:MONTH_LABELS[mIdx], basic:b.basic, hra:b.hra, special:b.special,
+          lta:b.lta, telephone:b.telephone, gross:b.gross,
+          pf:b.pf, profTax:b.profTax, netPay:b.net };
+      }
       if (structure?.basic) {
-        const b = calculatePayslip(Number(structure.basic));
-        return { label:MONTH_LABELS[mIdx], basic:b.basic, hra:b.hra, special:b.specialAllowance,
-          lta:b.lta, telephone:b.telephoneAndInternet, gross:b.totalEarnings,
-          pf:b.pf, profTax:b.profTax, netPay:b.netSalary };
+        const b = buildSalaryBreakdown(structure);
+        return { label:MONTH_LABELS[mIdx], basic:b.basic, hra:b.hra, special:b.special,
+          lta:b.lta, telephone:b.telephone, gross:b.gross,
+          pf:b.pf, profTax:b.profTax, netPay:b.net };
       }
       return { label:MONTH_LABELS[mIdx], basic:0,hra:0,special:0,lta:0,telephone:0,gross:0,pf:0,profTax:0,netPay:0 };
     });

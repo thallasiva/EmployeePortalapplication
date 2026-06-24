@@ -1,202 +1,539 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { CheckCircle, FileText, AlertCircle, Users } from 'lucide-react';
-import { getCurrentPayslipMonthLabel } from '../../../lib/dateUtils';
+import React, { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import {
+  CheckCircle, FileText, AlertCircle, Users,
+  Eye, EyeOff, Download, Loader2,
+  Briefcase, Calendar, TrendingUp, Clock,
+} from "lucide-react";
+import { getCurrentPayslipMonthLabel } from "../../../lib/dateUtils";
+import { getMyPayslips, getMySalaryStructure, generateMyPayslip, getPayslipFull } from "../../../api/payroll.api";
+import { getCurrentUser } from "../../../api/auth.api";
+import { listHolidays } from "../../../api/holiday.api";
+import { getMyLeaveBalances } from "../../../api/leaveRequest.api";
+import { getMyTodayAttendance, getMyMonthlyAttendance } from "../../../api/attendance.api";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
+import InteractivePieChart, { formatINR as fmtINR } from "../../../component/charts/InteractivePieChart";
+import { downloadPayslipPdf } from "../../../utils/payslipPdfGenerator";
+import { errorToast } from "../../../utils/ToastControllers";
+
+/* ─── helpers ─────────────────────────────────────────────────────────────── */
+const fmt = (n) =>
+  Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const QUICK_LINKS = [
-  { label: 'CTC Payslip', to: '/employee/payroll/payslips' },
-  { label: 'Reimbursement Payslip', to: '/employee/payroll/reimbursements' },
-  { label: 'IT Statement', to: '/employee/payroll/it-statement' },
-  { label: 'YTD Reports', to: '/employee/payroll/ytd-reports' },
-  { label: 'Loan Statement', to: '/employee/payroll/loans' },
+  { label: "CTC Payslip",           to: "/employee/payroll/payslips" },
+  { label: "Reimbursement Payslip", to: "/employee/payroll/reimbursements" },
+  { label: "IT Statement",          to: "/employee/payroll/it-statement" },
+  { label: "YTD Reports",           to: "/employee/payroll/ytd-reports" },
+  { label: "Loan Statement",        to: "/employee/payroll/loans" },
 ];
 
-const Dashboard = () => {
-  const payslipMonthLabel = getCurrentPayslipMonthLabel();
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
+}
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
+
+/* ─── Salary row ──────────────────────────────────────────────────────────── */
+function SalRow({ label, value, show, color, bold }) {
+  return (
+    <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0",
+      borderBottom:"1px solid #f8fafc" }}>
+      <span style={{ fontSize:13, color:"#64748b" }}>{label}</span>
+      <span style={{ fontSize:13, fontWeight: bold ? 700 : 500,
+        color: color || "#1e293b", letterSpacing: show ? 0 : "0.12em" }}>
+        {show ? `₹${fmt(value)}` : "•••••"}
+      </span>
+    </div>
+  );
+}
+
+/* ─── Stat tile ───────────────────────────────────────────────────────────── */
+function Tile({ icon, label, value, sub, bg, color }) {
+  return (
+    <div style={{ background:"#fff", borderRadius:10, padding:"14px 16px",
+      boxShadow:"0 1px 4px rgba(0,0,0,0.07)", display:"flex", alignItems:"center", gap:14 }}>
+      <div style={{ width:42, height:42, borderRadius:10, background: bg || "#fff8f0",
+        display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+        {icon}
+      </div>
+      <div style={{ minWidth:0 }}>
+        <div style={{ fontSize:11, color:"#94a3b8", fontWeight:600, textTransform:"uppercase",
+          letterSpacing:"0.05em" }}>{label}</div>
+        <div style={{ fontSize:18, fontWeight:800, color: color || "#1e293b", marginTop:2 }}>{value}</div>
+        {sub && <div style={{ fontSize:11, color:"#94a3b8", marginTop:1 }}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════ */
+export default function Dashboard() {
+  const now   = new Date();
+  const month = now.getMonth() + 1;
+  const year  = now.getFullYear();
+  const payslipLabel = getCurrentPayslipMonthLabel();
+
+  /* state */
+  const [user,         setUser]         = useState(null);
+  const [structure,    setStructure]    = useState(null);
+  const [payslips,     setPayslips]     = useState([]);
+  const [holidays,     setHolidays]     = useState([]);
+  const [leaveBalance, setLeaveBalance] = useState([]);
+  const [todayAtt,     setTodayAtt]     = useState(null);
+  const [monthAtt,     setMonthAtt]     = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [showSal,      setShowSal]      = useState(false);
+  const [downloading,  setDownloading]  = useState(false);
+
+  useEffect(() => {
+    const today = now.toISOString().split("T")[0];
+    Promise.all([
+      getCurrentUser().catch(() => null),
+      getMySalaryStructure().catch(() => null),
+      getMyPayslips({ limit: 3 }).then((r) => (Array.isArray(r) ? r : r?.data ?? [])).catch(() => []),
+      listHolidays({ year, limit: 20 })
+        .then((r) => (Array.isArray(r) ? r : r?.data ?? []))
+        .catch(() => []),
+      getMyLeaveBalances().then((r) => (Array.isArray(r) ? r : r?.data ?? [])).catch(() => []),
+      getMyTodayAttendance().catch(() => null),
+      getMyMonthlyAttendance({ month, year }).catch(() => null),
+    ]).then(([u, s, p, h, lb, att, mAtt]) => {
+      setUser(u);
+      setStructure(s);
+      setPayslips(Array.isArray(p) ? p : []);
+      const todayMs = new Date(today).getTime();
+      const upcoming = (Array.isArray(h) ? h : [])
+        .filter((hol) => {
+          const d = new Date(hol.holiday_date || hol.date);
+          return !isNaN(d) && d.getTime() >= todayMs;
+        })
+        .sort((a, b) =>
+          new Date(a.holiday_date || a.date) - new Date(b.holiday_date || b.date)
+        )
+        .slice(0, 4);
+      setHolidays(upcoming);
+      setLeaveBalance(Array.isArray(lb) ? lb : []);
+      setTodayAtt(att);
+      setMonthAtt(mAtt);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const currentSlip = useMemo(
+    () => payslips.find((p) => Number(p.month) === month && Number(p.year) === year),
+    [payslips, month, year]
+  );
+  const sal = useMemo(() => buildSalaryBreakdown(structure, currentSlip), [structure, currentSlip]);
+
+  const empName = user
+    ? `${user.first_name || user.name || ""}${user.last_name ? " " + user.last_name : ""}`.trim()
+    : "";
+  const empCode     = user?.emp_code || user?.employee_code || "—";
+  const designation = user?.emp_job_title || user?.designation || "—";
+  const department  = user?.department_name || "—";
+  const joinDate    = user?.emp_joining_date
+    ? new Date(user.emp_joining_date).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })
+    : "—";
+
+  const paidDays    = sal.fromPayslip ? sal.paidDays    : (sal.basic > 0 ? 26 : 0);
+  const workDays    = sal.fromPayslip ? sal.workingDays : (sal.basic > 0 ? 26 : 0);
+  const lopDays     = sal.fromPayslip ? sal.lopDays     : 0;
+
+  const presentDays = monthAtt?.present_days  ?? monthAtt?.presentDays  ?? 0;
+  const absentDays  = monthAtt?.absent_days   ?? monthAtt?.absentDays   ?? 0;
+
+  const checkIn  = todayAtt?.check_in_time  || todayAtt?.checkIn  || null;
+  const checkOut = todayAtt?.check_out_time || todayAtt?.checkOut || null;
+
+  const fmtTime = (t) => {
+    if (!t) return "—";
+    try {
+      const d = new Date(t);
+      if (isNaN(d)) return t;
+      return d.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit", hour12:true });
+    } catch { return t; }
   };
 
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const rec  = await generateMyPayslip({ month, year });
+      const full = await getPayslipFull(rec.payslip_id);
+      await downloadPayslipPdf(full);
+    } catch (err) {
+      errorToast(err?.response?.data?.message || "Download failed.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const fmtHolDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return {
+      badge: d.toLocaleDateString("en-GB", { day:"2-digit", month:"short" }),
+      weekday: d.toLocaleDateString("en-US", { weekday:"long" }),
+    };
+  };
+
+  const initials = empName
+    ? empName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">{getGreeting()}</h1>
-        <p className="text-gray-600 mt-2">"Life is 10% what happens to us and 90% how we react to it." - Dennis P. Kimbro</p>
+    <div style={{ minHeight:"100vh", background:"#f0f4f8", padding:20 }}>
+
+      {/* ── Profile banner ── */}
+      <div style={{ background:"linear-gradient(135deg,#f18200 0%,#e07000 100%)", borderRadius:12,
+        padding:"20px 24px", marginBottom:20, display:"flex", flexWrap:"wrap",
+        alignItems:"center", gap:20, color:"#fff" }}>
+        {/* Avatar */}
+        <div style={{ width:60, height:60, borderRadius:"50%", background:"rgba(255,255,255,0.25)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize:22, fontWeight:800, color:"#fff", flexShrink:0 }}>
+          {loading ? "…" : initials}
+        </div>
+
+        {/* Name + meta */}
+        <div style={{ flex:1, minWidth:200 }}>
+          <div style={{ fontSize:20, fontWeight:800 }}>
+            {loading ? "Loading…" : (empName || "Employee")}
+          </div>
+          <div style={{ fontSize:13, opacity:0.85, marginTop:3 }}>
+            {empCode} &nbsp;·&nbsp; {designation} &nbsp;·&nbsp; {department}
+          </div>
+          <div style={{ fontSize:12, opacity:0.7, marginTop:2 }}>
+            Joined: {joinDate}
+          </div>
+        </div>
+
+        {/* Today's attendance */}
+        <div style={{ background:"rgba(255,255,255,0.15)", borderRadius:10, padding:"12px 20px",
+          minWidth:180, textAlign:"center" }}>
+          <div style={{ fontSize:11, opacity:0.8, marginBottom:4, fontWeight:600, textTransform:"uppercase" }}>
+            Today's Attendance
+          </div>
+          <div style={{ fontSize:13, fontWeight:600 }}>
+            In: {loading ? "…" : fmtTime(checkIn)} &nbsp;|&nbsp; Out: {loading ? "…" : fmtTime(checkOut)}
+          </div>
+          {todayAtt?.status && (
+            <div style={{ fontSize:11, marginTop:4, opacity:0.8 }}>{todayAtt.status}</div>
+          )}
+        </div>
+
+        {/* Greeting */}
+        <div style={{ textAlign:"right" }}>
+          <div style={{ fontSize:14, opacity:0.85 }}>{greeting()}</div>
+          <div style={{ fontSize:11, opacity:0.65, marginTop:2 }}>{payslipLabel}</div>
+        </div>
       </div>
 
-      {/* Banner */}
-      <div className="bg-pink-50 border border-pink-200 rounded-lg p-6 mb-8 flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800">Unite by greyHR</h2>
-          <p className="text-gray-600 mt-1">Your Gateway to Possibilities</p>
-          <p className="text-sm text-gray-500 mt-1">Loans, Taxes, Salary Advances, All within greyHRI</p>
-        </div>
-        <button className="bg-brand hover:bg-brand-600 text-white px-6 py-2 rounded-lg font-medium">
-          Explore
-        </button>
+      {/* ── Stat tiles ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:20 }}>
+        <Tile icon={<TrendingUp size={20} color="#f18200" />} label="Gross Pay" bg="#fff8f0"
+          value={loading ? "…" : (showSal ? `₹${fmt(sal.gross)}` : "•••••")} color="#f18200" />
+        <Tile icon={<TrendingUp size={20} color="#e11d48" />} label="Deductions" bg="#fff1f2"
+          value={loading ? "…" : (showSal ? `₹${fmt(sal.deductions)}` : "•••••")} color="#e11d48" />
+        <Tile icon={<TrendingUp size={20} color="#16a34a" />} label="Net Pay" bg="#f0fdf4"
+          value={loading ? "…" : (showSal ? `₹${fmt(sal.net)}` : "•••••")} color="#16a34a" />
+        <Tile icon={<Calendar size={20} color="#f18200" />} label="Paid Days" bg="#fff8f0"
+          value={loading ? "…" : `${paidDays}/${workDays}`}
+          sub={lopDays > 0 ? `LOP: ${lopDays} days` : undefined} />
+        <Tile icon={<Clock size={20} color="#6366f1" />} label="Present This Month" bg="#f5f3ff"
+          value={loading ? "…" : (presentDays || paidDays)} color="#6366f1" />
       </div>
 
-      {/* Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Review Card */}
-        <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center justify-center">
-          <div className="mb-4">
-            <CheckCircle className="w-12 h-12 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Review</h3>
-          <p className="text-gray-600 text-center text-sm">Hurrah! You've nothing to review.</p>
-        </div>
+      {/* ── Main grid ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))", gap:18 }}>
 
-        {/* Upcoming Holidays */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Upcoming Holidays</h3>
-            <span className="text-brand">→</span>
+        {/* ── Payslip card ── */}
+        <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)", padding:20 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+            <span style={{ fontSize:15, fontWeight:700, color:"#1e293b" }}>Payslip</span>
+            <Link to="/employee/payroll/payslips"
+              style={{ fontSize:12, color:"#f18200", fontWeight:600, textDecoration:"none" }}>View All →</Link>
           </div>
-          <div className="space-y-3">
-            <div>
-              <p className="font-medium text-gray-800">27 May</p>
-              <p className="text-sm text-gray-600">Wednesday</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">02 Jun</p>
-              <p className="text-sm text-gray-600">Tuesday - Telanagana Formation Day</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">14 Sep</p>
-              <p className="text-sm text-gray-600">Monday - Vinayaka Chavithi</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-800">02 Oct</p>
-              <p className="text-sm text-gray-600">Friday - Gandhi Jayanthi</p>
-            </div>
-          </div>
-        </div>
 
-        {/* Payslip */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Payslip</h3>
-          <div className="flex justify-center mb-6">
-            <div className="relative w-32 h-32">
-              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="54"
-                  fill="none"
-                  stroke="#e0e0e0"
-                  strokeWidth="8"
+          {loading ? (
+            <div style={{ display:"flex", justifyContent:"center", padding:30 }}>
+              <Loader2 size={24} color="#f18200" style={{ animation:"spin 1s linear infinite" }} />
+            </div>
+          ) : sal.basic === 0 ? (
+            <p style={{ color:"#94a3b8", fontSize:13, textAlign:"center", padding:"20px 0" }}>
+              No salary structure found.
+            </p>
+          ) : (
+            <>
+              {showSal ? (
+                <InteractivePieChart
+                  size={160}
+                  donut={true}
+                  legendBelow={true}
+                  valueFormatter={fmtINR}
+                  data={[
+                    { label: "Net Pay",   value: sal.net,     color: "#16a34a" },
+                    { label: "PF",        value: sal.pf,      color: "#f18200" },
+                    { label: "Prof. Tax", value: sal.profTax, color: "#dc2626" },
+                  ]}
                 />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="54"
-                  fill="none"
-                  stroke="#1e40af"
-                  strokeWidth="8"
-                  strokeDasharray="169.65 169.65"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-sm text-gray-600">Paid Days</p>
-                <p className="text-2xl font-bold text-gray-800">30</p>
+              ) : (
+                <div style={{ display:"flex", gap:20, alignItems:"center" }}>
+                  {/* Hidden state: grey donut placeholder */}
+                  <div style={{ position:"relative", width:160, height:160, flexShrink:0 }}>
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                      <circle cx="80" cy="80" r="70" fill="#f1f5f9" />
+                      <circle cx="80" cy="80" r="42" fill="#fff" />
+                    </svg>
+                    <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column",
+                      alignItems:"center", justifyContent:"center" }}>
+                      <span style={{ fontSize:22, color:"#94a3b8", letterSpacing:"0.15em" }}>•••</span>
+                      <span style={{ fontSize:11, color:"#cbd5e1", marginTop:4 }}>Hidden</span>
+                    </div>
+                  </div>
+                  {/* Legend placeholders */}
+                  <div style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+                    {[
+                      { label:"Net Pay",   color:"#16a34a" },
+                      { label:"PF",        color:"#f18200" },
+                      { label:"Prof. Tax", color:"#dc2626" },
+                    ].map(row => (
+                      <div key={row.label} style={{ display:"flex", justifyContent:"space-between",
+                        alignItems:"center", fontSize:13 }}>
+                        <span style={{ display:"flex", alignItems:"center", gap:6, color:"#64748b" }}>
+                          <span style={{ width:10, height:10, borderRadius:"50%",
+                            background: row.color, display:"inline-block" }} />
+                          {row.label}
+                        </span>
+                        <span style={{ color:"#94a3b8", letterSpacing:"0.15em" }}>•••••</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {!sal.fromPayslip && (
+                <div style={{ fontSize:11, color:"#f59e0b", background:"#fffbeb",
+                  border:"1px solid #fde68a", borderRadius:6, padding:"4px 10px",
+                  marginBottom:12, textAlign:"center" }}>
+                  Projected from salary structure — payslip not yet generated
+                </div>
+              )}
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={handleDownload} disabled={downloading}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+                    padding:"8px 0", border:"1px solid #f18200", borderRadius:6, background:"#fff",
+                    color:"#f18200", fontWeight:600, fontSize:13, cursor:"pointer", opacity:downloading?0.6:1 }}>
+                  <Download size={13} />
+                  {downloading ? "…" : "Download"}
+                </button>
+                <button onClick={() => setShowSal((v) => !v)}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+                    padding:"8px 0", border:"1px solid #f18200", borderRadius:6, background:"#fff",
+                    color:"#f18200", fontWeight:600, fontSize:13, cursor:"pointer" }}>
+                  {showSal ? <EyeOff size={13} /> : <Eye size={13} />}
+                  {showSal ? "Hide" : "Show Salary"}
+                </button>
               </div>
-            </div>
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between items-center pb-2 border-b">
-              <span className="text-gray-600">Gross Pay</span>
-              <span>•••••</span>
-            </div>
-            <div className="flex justify-between items-center pb-2 border-b">
-              <span className="text-gray-600">Deduction</span>
-              <span>•••••</span>
-            </div>
-            <div className="flex justify-between items-center pb-4 border-b">
-              <span className="text-gray-600">Net Pay</span>
-              <span>•••••</span>
-            </div>
-          </div>
-          <div className="flex gap-3 mt-6">
-            <button className="flex-1 text-brand font-medium text-sm border border-brand rounded py-2 hover:bg-brand-50">
-              Download
-            </button>
-            <button className="flex-1 text-brand font-medium text-sm border border-brand rounded py-2 hover:bg-brand-50">
-              Show Salary
-            </button>
-          </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">{payslipMonthLabel}</p>
+            </>
+          )}
         </div>
 
-        {/* Quick Access */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Access</h3>
-          <div className="space-y-3">
+        {/* ── Salary breakdown ── */}
+        {sal.basic > 0 && (
+          <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)", padding:20 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <span style={{ fontSize:15, fontWeight:700, color:"#1e293b" }}>Salary Components</span>
+              <button onClick={() => setShowSal((v) => !v)}
+                style={{ background:"none", border:"none", cursor:"pointer", color:"#f18200",
+                  fontSize:12, fontWeight:600, display:"flex", alignItems:"center", gap:4 }}>
+                {showSal ? <EyeOff size={12} /> : <Eye size={12} />}
+                {showSal ? "Hide" : "Reveal"}
+              </button>
+            </div>
+
+            <div style={{ fontSize:10, color:"#f18200", fontWeight:700, textTransform:"uppercase",
+              letterSpacing:"0.07em", marginBottom:6 }}>Earnings</div>
+            {[
+              { label:"Basic",             value: sal.basic },
+              { label:"HRA",               value: sal.hra },
+              { label:"Special Allowance", value: sal.special },
+              { label:"LTA",               value: sal.lta },
+              { label:"Telephone",         value: sal.telephone },
+              { label:"Conveyance",        value: sal.conveyance },
+              { label:"Medical",           value: sal.medical },
+            ].filter(r => r.value > 0).map(r => (
+              <div key={r.label} style={{ display:"flex", justifyContent:"space-between",
+                padding:"5px 0", borderBottom:"1px solid #f8fafc", fontSize:13 }}>
+                <span style={{ color:"#475569" }}>{r.label}</span>
+                <span style={{ color:"#1e293b", fontWeight:500, letterSpacing: showSal?0:"0.1em" }}>
+                  {showSal ? `₹${fmt(r.value)}` : "•••"}
+                </span>
+              </div>
+            ))}
+
+            <div style={{ fontSize:10, color:"#e11d48", fontWeight:700, textTransform:"uppercase",
+              letterSpacing:"0.07em", marginTop:10, marginBottom:6 }}>Deductions</div>
+            {[
+              { label:"Provident Fund",   value: sal.pf },
+              { label:"Professional Tax", value: sal.profTax },
+            ].filter(r => r.value > 0).map(r => (
+              <div key={r.label} style={{ display:"flex", justifyContent:"space-between",
+                padding:"5px 0", borderBottom:"1px solid #f8fafc", fontSize:13 }}>
+                <span style={{ color:"#475569" }}>{r.label}</span>
+                <span style={{ color:"#e11d48", fontWeight:500, letterSpacing: showSal?0:"0.1em" }}>
+                  {showSal ? `₹${fmt(r.value)}` : "•••"}
+                </span>
+              </div>
+            ))}
+
+            <div style={{ display:"flex", justifyContent:"space-between",
+              marginTop:10, paddingTop:10, borderTop:"2px solid #f1f5f9" }}>
+              <span style={{ fontSize:14, fontWeight:700, color:"#1e293b" }}>Net Pay</span>
+              <span style={{ fontSize:14, fontWeight:800, color:"#16a34a", letterSpacing: showSal?0:"0.1em" }}>
+                {showSal ? `₹${fmt(sal.net)}` : "•••••"}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ── Leave balances ── */}
+        <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)", padding:20 }}>
+          <div style={{ fontSize:15, fontWeight:700, color:"#1e293b", marginBottom:14 }}>Leave Balance</div>
+          {loading ? (
+            <div style={{ color:"#94a3b8", fontSize:13 }}>Loading…</div>
+          ) : leaveBalance.length === 0 ? (
+            <div style={{ color:"#94a3b8", fontSize:13, textAlign:"center", padding:"16px 0" }}>
+              No leave balance data.
+            </div>
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {leaveBalance.map((lb) => {
+                const used  = Number(lb.used_days  ?? lb.used  ?? 0);
+                const total = Number(lb.total_days ?? lb.total ?? lb.annual_quota ?? 0);
+                const avail = Number(lb.available  ?? lb.balance ?? (total - used));
+                const pct   = total > 0 ? Math.min((used / total) * 100, 100) : 0;
+                return (
+                  <div key={lb.leave_type_id || lb.id}>
+                    <div style={{ display:"flex", justifyContent:"space-between", fontSize:13, marginBottom:4 }}>
+                      <span style={{ color:"#334155", fontWeight:600 }}>{lb.leave_type_name || lb.name}</span>
+                      <span style={{ color:"#64748b" }}>
+                        <span style={{ fontWeight:700, color:"#16a34a" }}>{avail}</span> / {total} avail
+                      </span>
+                    </div>
+                    <div style={{ height:6, background:"#f1f5f9", borderRadius:3 }}>
+                      <div style={{ height:"100%", borderRadius:3, width:`${pct}%`,
+                        background: pct > 70 ? "#ef4444" : pct > 40 ? "#f59e0b" : "#f18200",
+                        transition:"width 0.4s" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Upcoming holidays ── */}
+        <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)", padding:20 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+            <span style={{ fontSize:15, fontWeight:700, color:"#1e293b" }}>Upcoming Holidays</span>
+            <Link to="/employee/leave/holiday-calendar"
+              style={{ fontSize:12, color:"#f18200", fontWeight:600, textDecoration:"none" }}>View All →</Link>
+          </div>
+          {loading ? (
+            <div style={{ color:"#94a3b8", fontSize:13 }}>Loading…</div>
+          ) : holidays.length === 0 ? (
+            <div style={{ color:"#94a3b8", fontSize:13, textAlign:"center", padding:"16px 0" }}>
+              No upcoming holidays.
+            </div>
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              {holidays.map((hol) => {
+                const dateStr = hol.holiday_date || hol.date;
+                const { badge, weekday } = fmtHolDate(dateStr);
+                return (
+                  <div key={hol.holiday_id || dateStr}
+                    style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <div style={{ background:"#fff8f0", border:"1px solid #fde8c8",
+                      borderRadius:8, padding:"6px 10px", textAlign:"center", minWidth:52 }}>
+                      <div style={{ fontSize:13, fontWeight:800, color:"#f18200" }}>{badge.split(" ")[0]}</div>
+                      <div style={{ fontSize:10, color:"#94a3b8" }}>{badge.split(" ")[1]}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:600, color:"#1e293b" }}>
+                        {hol.holiday_name || hol.name}
+                      </div>
+                      <div style={{ fontSize:11, color:"#94a3b8" }}>{weekday}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Quick access ── */}
+        <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)", padding:20 }}>
+          <div style={{ fontSize:15, fontWeight:700, color:"#1e293b", marginBottom:14 }}>Quick Access</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
             {QUICK_LINKS.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="block text-brand hover:text-brand-700 text-sm font-medium"
-              >
+              <Link key={item.to} to={item.to}
+                style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                  padding:"10px 12px", background:"#fff8f0", borderRadius:8, border:"1px solid #fde8c8",
+                  color:"#f18200", fontWeight:600, fontSize:13, textDecoration:"none" }}>
                 {item.label}
+                <span>→</span>
               </Link>
             ))}
           </div>
         </div>
 
-        {/* IT Declaration */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-400">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">IT Declaration</h3>
-          <div className="flex items-start gap-3 mb-4">
-            <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-1" />
-            <p className="text-sm text-gray-700">
-              Hurry! Your IT declaration is awaiting. Please submit it before the window gets closed.
+        {/* ── IT Declaration ── */}
+        <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)",
+          padding:20, borderLeft:"4px solid #f18200" }}>
+          <div style={{ fontSize:15, fontWeight:700, color:"#1e293b", marginBottom:10 }}>IT Declaration</div>
+          <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:16 }}>
+            <AlertCircle size={18} color="#f18200" style={{ flexShrink:0, marginTop:1 }} />
+            <p style={{ fontSize:13, color:"#475569", margin:0, lineHeight:1.5 }}>
+              Submit your IT declaration before the window closes to ensure correct TDS deduction.
             </p>
           </div>
-          <button className="w-full border border-brand text-brand font-medium py-2 rounded hover:bg-brand-50">
-            Declare
-          </button>
+          <Link to="/employee/payroll/it-declaration"
+            style={{ display:"block", textAlign:"center", padding:"9px 0",
+              border:"1px solid #f18200", borderRadius:8, color:"#f18200",
+              fontWeight:600, fontSize:13, textDecoration:"none" }}>
+            Declare Now
+          </Link>
         </div>
 
-        {/* POI - Proof of Investments */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">POI</h3>
-          <div className="flex flex-col items-center justify-center py-6">
-            <FileText className="w-12 h-12 text-gray-400 mb-4" />
-            <p className="text-sm text-gray-700 text-center mb-4">
-              Hold on! You can submit your Proof of Investments (POI) once released.
+        {/* ── POI ── */}
+        <div style={{ background:"#fff", borderRadius:10, boxShadow:"0 1px 4px rgba(0,0,0,0.07)", padding:20 }}>
+          <div style={{ fontSize:15, fontWeight:700, color:"#1e293b", marginBottom:14 }}>POI</div>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"12px 0" }}>
+            <FileText size={36} color="#cbd5e1" style={{ marginBottom:10 }} />
+            <p style={{ fontSize:13, color:"#64748b", textAlign:"center", margin:"0 0 14px" }}>
+              Submit Proof of Investments once the window is released.
             </p>
-            <button className="border border-brand text-brand font-medium px-6 py-2 rounded hover:bg-brand-50">
+            <Link to="/employee/payroll/proof-investment"
+              style={{ padding:"8px 24px", border:"1px solid #f18200", borderRadius:8,
+                color:"#f18200", fontWeight:600, fontSize:13, textDecoration:"none" }}>
               Track
-            </button>
+            </Link>
           </div>
         </div>
 
-        {/* Hiring */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Hiring</h3>
-          <div className="flex flex-col items-center justify-center py-6">
-            <Users className="w-12 h-12 text-gray-400 mb-4" />
-            <p className="text-sm text-gray-700 text-center">
-              All good! You have no pending tasks.
-            </p>
-          </div>
-        </div>
       </div>
 
-      {/* Footer */}
-      <div className="mt-12 flex justify-center gap-6 text-sm text-gray-600">
-        <span>Privacy Policy</span>
-        <span>|</span>
-        <span>Terms of Service</span>
+      {/* ── Footer ── */}
+      <div style={{ marginTop:36, display:"flex", justifyContent:"center",
+        gap:20, fontSize:12, color:"#94a3b8" }}>
+        <span>Privacy Policy</span><span>|</span><span>Terms of Service</span>
       </div>
     </div>
   );
-};
+}
 
-export default Dashboard;
+function fmtHolDate(dateStr) {
+  const d = new Date(dateStr);
+  return {
+    badge: d.toLocaleDateString("en-GB", { day:"2-digit", month:"short" }),
+    weekday: d.toLocaleDateString("en-US", { weekday:"long" }),
+  };
+}

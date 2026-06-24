@@ -211,12 +211,20 @@ class PayslipService extends BaseService {
     const payslipId = out[0].payslip_id;
     if (!payslipId) throw ApiError.internal('Failed to generate payslip');
 
-    // Encrypt salary fields and persist to salary_encrypted column
+    // Encrypt salary fields then NULL out plaintext columns
     const row = await query('SELECT * FROM payslips WHERE payslip_id = ?', [payslipId]);
     if (row[0]) {
       const encrypted = encryptSalaryFields(row[0]);
       if (encrypted) {
-        await query('UPDATE payslips SET salary_encrypted = ? WHERE payslip_id = ?', [encrypted, payslipId]);
+        await query(
+          `UPDATE payslips SET
+             salary_encrypted = ?,
+             basic = NULL, hra = NULL, allowances = NULL,
+             gross_earnings = NULL, ctc = NULL,
+             deductions = NULL, net_pay = NULL
+           WHERE payslip_id = ?`,
+          [encrypted, payslipId]
+        );
       }
     }
 
