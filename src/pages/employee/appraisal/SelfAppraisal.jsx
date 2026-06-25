@@ -79,6 +79,7 @@ export default function SelfAppraisal() {
   const [ratings,   setRatings]   = useState({});
   const [overall,   setOverall]   = useState("");
   const [toast,     setToast]     = useState(null);
+  const [enrolled,  setEnrolled]  = useState(true);
 
   const load = async () => {
     setLoading(true);
@@ -86,6 +87,7 @@ export default function SelfAppraisal() {
       const d = await getMyAppraisal();
       setCycle(d.cycle);
       setAppraisal(d.appraisal);
+      setEnrolled(d.enrolled !== false);
       setParams(d.parameters || []);
       const map = {};
       (d.parameters||[]).forEach(p => { map[p.key]={self_rating:0,self_comments:""}; });
@@ -139,6 +141,21 @@ export default function SelfAppraisal() {
       <p style={{ fontSize:14, color:"#64748b", margin:0 }}>
         Your HR team hasn't rolled out a performance appraisal yet.<br/>
         You'll see your form here once it's live.
+      </p>
+    </div>
+  );
+
+  if (!enrolled) return (
+    <div style={{ minHeight:"60vh", display:"flex", flexDirection:"column", alignItems:"center",
+      justifyContent:"center", gap:16, padding:40, textAlign:"center" }}>
+      <div style={{ width:72, height:72, borderRadius:"50%", background:"#fff7ed",
+        display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <Lock size={32} style={{ color:"#f18200" }} />
+      </div>
+      <h2 style={{ fontSize:18, fontWeight:700, color:"#1e293b", margin:0 }}>Appraisal Not Yet Assigned</h2>
+      <p style={{ fontSize:14, color:"#64748b", margin:0, maxWidth:380 }}>
+        Your HR admin hasn't enrolled you in the {cycle.fy_label} appraisal cycle yet.<br/>
+        Please check back later or contact your HR team.
       </p>
     </div>
   );

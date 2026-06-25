@@ -63,8 +63,9 @@ function colTotal(entries, day) {
 }
 
 // ─── Extra Work Modal ─────────────────────────────────────────────────────────
-function ExtraWorkModal({ timesheetId, overDays, onClose, onSubmit }) {
-  const [form, setForm] = useState({ work_date: overDays[0] || "", task_name: "", extra_hours: "", reason: "" });
+function ExtraWorkModal({ timesheetId, overDays = [], onClose, onSubmit }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({ work_date: overDays[0] || today, task_name: "", extra_hours: "", reason: "" });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
@@ -82,10 +83,15 @@ function ExtraWorkModal({ timesheetId, overDays, onClose, onSubmit }) {
         <h2 className="text-lg font-bold text-gray-800">Extra Work Request</h2>
         {err && <p className="text-sm text-red-500">{err}</p>}
         <label className="block text-xs font-semibold text-gray-600">Work Date
-          <select className="ts-input mt-1 w-full" value={form.work_date}
-            onChange={e => setForm(f => ({ ...f, work_date: e.target.value }))}>
-            {overDays.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
+          {overDays.length > 1 ? (
+            <select className="ts-input mt-1 w-full" value={form.work_date}
+              onChange={e => setForm(f => ({ ...f, work_date: e.target.value }))}>
+              {overDays.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          ) : (
+            <input type="date" className="ts-input mt-1 w-full" value={form.work_date}
+              onChange={e => setForm(f => ({ ...f, work_date: e.target.value }))} />
+          )}
         </label>
         <label className="block text-xs font-semibold text-gray-600">Task Name
           <input className="ts-input mt-1 w-full" value={form.task_name}
@@ -99,10 +105,18 @@ function ExtraWorkModal({ timesheetId, overDays, onClose, onSubmit }) {
           <textarea rows={3} className="ts-input mt-1 w-full resize-none" value={form.reason}
             onChange={e => setForm(f => ({ ...f, reason: e.target.value }))} placeholder="Why was extra work required?" />
         </label>
-        <div className="flex gap-2 justify-end pt-2">
+        <div className="flex gap-2 justify-end pt-4">
           <button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
-          <button type="button" onClick={handle} disabled={saving} className="ts-btn-primary">
-            {saving ? "Submitting…" : "Submit Request"}
+          <button type="button" onClick={handle} disabled={saving}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "10px 24px", borderRadius: 8,
+              background: saving ? "#fbd38d" : "#f18200",
+              color: "#fff", fontSize: 14, fontWeight: 700,
+              border: "none", cursor: saving ? "not-allowed" : "pointer",
+              transition: "background 0.15s",
+            }}>
+            {saving ? "Submitting…" : "⚡ Submit Extra Hours"}
           </button>
         </div>
       </div>
@@ -154,7 +168,7 @@ function fmtDuration(hours) {
 }
 
 // ─── Task Create/Edit Modal ───────────────────────────────────────────────────
-function TaskModal({ task, onClose, onSave }) {
+function TaskModal({ task, existingTasks = [], onClose, onSave, onOpenExtraWork }) {
   const [form, setForm] = useState({
     task_name:    task?.task_name    || "",
     project_name: task?.project_name || PROJECTS[0],
@@ -170,30 +184,65 @@ function TaskModal({ task, onClose, onSave }) {
 
   const set = (key, val) => setForm(f => {
     const next = { ...f, [key]: val };
-
-    // Auto-calculate duration_hours from start_time + end_time
     if (key === "start_time" || key === "end_time") {
       const st = key === "start_time" ? val : f.start_time;
       const et = key === "end_time"   ? val : f.end_time;
       const diff = calcTimeDiff(st, et);
       if (diff !== null) next.duration_hours = String(diff);
     }
-
     return next;
   });
 
+  // Build a map of date → total hours already committed by OTHER tasks
+  const existingDailyHours = React.useMemo(() => {
+    const map = {};
+    (existingTasks || []).forEach(t => {
+      if (task?.task_id && t.task_id === task.task_id) return; // exclude self when editing
+      if (!t.start_date || !t.end_date || !t.duration_hours) return;
+      const s = new Date(t.start_date);
+      const e = new Date(t.end_date);
+      for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+        const key = d.toISOString().slice(0, 10);
+        map[key] = (map[key] || 0) + parseFloat(t.duration_hours || 0);
+      }
+    });
+    return map;
+  }, [existingTasks, task]);
+
+  // For current form date range, find the worst-case existing hours on any overlapping day
+  const maxExistingOnRange = React.useMemo(() => {
+    if (!form.start_date || !form.end_date) return 0;
+    let max = 0;
+    const s = new Date(form.start_date);
+    const e = new Date(form.end_date);
+    for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+      const key = d.toISOString().slice(0, 10);
+      max = Math.max(max, existingDailyHours[key] || 0);
+    }
+    return max;
+  }, [form.start_date, form.end_date, existingDailyHours]);
+
   // Derived display values
-  const durationDays  = calcDateDiff(form.start_date, form.end_date);
-  const durationHours   = parseFloat(form.duration_hours) || null;
-  const isOverHours     = durationHours !== null && durationHours > MAX_DAILY_HOURS;
+  const durationDays         = calcDateDiff(form.start_date, form.end_date);
+  const durationHours        = parseFloat(form.duration_hours) || null;
+  const isOverHours          = durationHours !== null && durationHours > MAX_DAILY_HOURS;
+
+  // Total hours check: existing + this task would exceed 8h on some day
+  const projectedTotal       = maxExistingOnRange + (durationHours || 0);
+  const exceedsWithExisting  = !isOverHours && durationHours !== null && projectedTotal > MAX_DAILY_HOURS && maxExistingOnRange > 0;
+  const extraHoursNeeded     = exceedsWithExisting ? parseFloat((projectedTotal - MAX_DAILY_HOURS).toFixed(2)) : 0;
+
   const totalHoursAcrossDays =
     durationDays && durationHours ? parseFloat((durationDays * durationHours).toFixed(2)) : null;
+
+  const isBlocked = isOverHours || exceedsWithExisting;
 
   const handle = async () => {
     if (!form.task_name.trim()) { setErr("Task name is required"); return; }
     if (form.start_date && form.end_date && form.end_date < form.start_date) {
       setErr("End date must be on or after Start date"); return;
     }
+    if (isBlocked) return; // safety guard
     setSaving(true);
     try {
       await onSave({
@@ -279,8 +328,8 @@ function TaskModal({ task, onClose, onSave }) {
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Duration (hours / day)
             <div className="flex items-center gap-2 mt-1.5">
-              <input type="number" min="0" max="8" step="0.5"
-                className={`ts-input w-32 text-sm text-center ${isOverHours ? "border-red-400 bg-red-50 text-red-700" : ""}`}
+              <input type="number" min="0" max="24" step="0.5"
+                className={`ts-input w-32 text-sm text-center ${isBlocked ? "border-red-400 bg-red-50 text-red-700" : ""}`}
                 placeholder="0"
                 value={form.duration_hours}
                 onChange={e => set("duration_hours", e.target.value)} />
@@ -290,25 +339,56 @@ function TaskModal({ task, onClose, onSave }) {
             </div>
           </label>
 
-          {/* Over-hours warning */}
+          {/* ── Exceeded 8h because this single task is > 8h ── */}
           {isOverHours && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               <p className="text-sm font-semibold text-red-600 mb-1">⚠️ Exceeds 8hr daily limit</p>
               <p className="text-xs text-red-500 mb-3">
-                Regular tasks are capped at <strong>08hr / day</strong>. Set this to 8hr and submit an
-                <strong> Extra Work Request</strong> for the additional hours.
+                Regular tasks are capped at <strong>08hr / day</strong>. Set this to 8hr and raise an
+                <strong> Extra Work Request</strong> for the remaining hours.
               </p>
-              <button type="button" onClick={onClose}
+              <button type="button"
+                onClick={() => { onClose(); onOpenExtraWork?.(); }}
                 className="text-xs font-semibold text-white bg-brand rounded-lg px-3 py-1.5 hover:bg-orange-600">
-                Close &amp; raise Extra Work Request
+                Close &amp; Raise Extra Work Request
+              </button>
+            </div>
+          )}
+
+          {/* ── Exceeded 8h because existing tasks + this task > 8h ── */}
+          {exceedsWithExisting && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 space-y-2">
+              <p className="text-sm font-semibold text-red-600">⛔ Daily hour limit exceeded</p>
+              <div className="text-xs text-red-500 space-y-1">
+                <div className="flex justify-between">
+                  <span>Already logged</span>
+                  <span className="font-semibold">{fmtDuration(maxExistingOnRange)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>This task</span>
+                  <span className="font-semibold">{fmtDuration(durationHours)}</span>
+                </div>
+                <div className="flex justify-between border-t border-red-200 pt-1 mt-1">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-bold text-red-700">{fmtDuration(projectedTotal)} / 8hr limit</span>
+                </div>
+              </div>
+              <p className="text-xs text-red-500 pt-1">
+                Reduce this task to <strong>{fmtDuration(MAX_DAILY_HOURS - maxExistingOnRange)}</strong> or raise an
+                <strong> Extra Work Request</strong> for the extra <strong>{fmtDuration(extraHoursNeeded)}</strong>.
+              </p>
+              <button type="button"
+                onClick={() => { onClose(); onOpenExtraWork?.(); }}
+                className="text-xs font-semibold text-white bg-brand rounded-lg px-3 py-1.5 hover:bg-orange-600">
+                ⚡ Raise Extra Work Request ({fmtDuration(extraHoursNeeded)} extra)
               </button>
             </div>
           )}
 
           {/* Computed summary card */}
-          {(durationDays || durationHours) && (
-            <div className={`border rounded-xl px-4 py-3 space-y-1 ${isOverHours ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-100"}`}>
-              <p className={`text-xs font-semibold uppercase tracking-wide ${isOverHours ? "text-red-600" : "text-brand"}`}>Duration Summary</p>
+          {(durationDays || durationHours) && !isBlocked && (
+            <div className="bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand">Duration Summary</p>
               <div className="grid grid-cols-3 gap-2 mt-1">
                 {durationDays && (
                   <div className="text-center">
@@ -344,7 +424,9 @@ function TaskModal({ task, onClose, onSave }) {
         {/* Footer */}
         <div className="flex gap-2 justify-end px-6 pb-5">
           <button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
-          <button type="button" onClick={handle} disabled={saving} className="ts-btn-primary">
+          <button type="button" onClick={handle} disabled={saving || isBlocked}
+            title={isBlocked ? "Fix the hour limit error above before saving" : undefined}
+            className={`ts-btn-primary ${isBlocked ? "opacity-40 cursor-not-allowed" : ""}`}>
             {saving ? "Saving…" : task ? "Update Task" : "Create Task"}
           </button>
         </div>
@@ -403,7 +485,8 @@ function mergeTaskRows(existingRows, tasks, dates) {
 function MyTasksTab() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null);
+  const [modal, setModal] = useState(null);   // null | "create" | task object
+  const [showExtraWork, setShowExtraWork] = useState(false);
   const [err, setErr] = useState("");
 
   const load = useCallback(async () => {
@@ -426,13 +509,23 @@ function MyTasksTab() {
     catch { setErr("Delete failed"); }
   };
 
+  // Quick extra work submit (no timesheet required — timesheet_id is optional)
+  const handleExtraWorkSubmit = async (form) => {
+    await createExtraWorkRequest(form);
+  };
+
   if (loading) return <div className="ts-loading">Loading tasks…</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-base font-bold text-gray-800">My Tasks</h2>
-        <button type="button" className="ts-btn-primary" onClick={() => setModal("create")}>+ New Task</button>
+        <div className="flex gap-2">
+          <button type="button" className="ts-btn-extra" onClick={() => setShowExtraWork(true)}>
+            ⚡ Extra Work Request
+          </button>
+          <button type="button" className="ts-btn-primary" onClick={() => setModal("create")}>+ New Task</button>
+        </div>
       </div>
       {err && <p className="text-sm text-red-500">{err}</p>}
 
@@ -503,7 +596,22 @@ function MyTasksTab() {
       )}
 
       {modal && (
-        <TaskModal task={modal === "create" ? null : modal} onClose={() => setModal(null)} onSave={handleSave} />
+        <TaskModal
+          task={modal === "create" ? null : modal}
+          existingTasks={tasks}
+          onClose={() => setModal(null)}
+          onSave={handleSave}
+          onOpenExtraWork={() => setShowExtraWork(true)}
+        />
+      )}
+
+      {showExtraWork && (
+        <ExtraWorkModal
+          timesheetId={null}
+          overDays={[new Date().toISOString().slice(0, 10)]}
+          onClose={() => setShowExtraWork(false)}
+          onSubmit={handleExtraWorkSubmit}
+        />
       )}
     </div>
   );
@@ -824,7 +932,7 @@ function TimesheetTab() {
               <button type="button" onClick={addRow} className="text-sm font-medium text-brand hover:underline">+ Add Row</button>
               <div className="flex gap-2">
                 <button type="button" onClick={handleSave} disabled={saving} className="ts-btn-ghost text-sm">
-   
+                  {saving ? "Saving…" : "Save Draft"}
                 </button>
                 {hasOvertime ? (
                   <button type="button" onClick={() => setShowExtraWork(true)} className="ts-btn-warning text-sm">

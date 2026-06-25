@@ -44,6 +44,7 @@ const Settings               = lazy(() => import("../pages/admin/Settings"));
 const Profile                = lazy(() => import("../pages/admin/Profile"));
 const MfaSetup               = lazy(() => import("../pages/admin/MfaSetup"));
 const LeaveSummaryReport     = lazy(() => import("../pages/admin/LeaveSummaryReport"));
+const HelpdeskAdmin          = lazy(() => import("../pages/admin/helpdesk/HelpdeskAdmin"));
 
 // ── Suspense wrapper ─────────────────────────────────────────────────────────
 // Each route gets its own ErrorBoundary so one crash doesn't unmount the rest.
@@ -89,6 +90,7 @@ const AdminRoutes = () => {
       <Route path="profile"                      element={<Page><Profile /></Page>} />
       <Route path="security/mfa"                 element={<Page><MfaSetup /></Page>} />
       <Route path="leave/summary"               element={<Page><LeaveSummaryReport /></Page>} />
+      <Route path="helpdesk"                    element={<Page><HelpdeskAdmin /></Page>} />
     </Routes>
   );
 };

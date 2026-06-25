@@ -36,9 +36,10 @@
 .ts-btn-primary {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   padding: 8px 18px;
   border-radius: 8px;
-  background: #2563eb;
+  background: #f18200;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -46,8 +47,24 @@
   cursor: pointer;
   transition: background 0.15s;
 }
-.ts-btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.ts-btn-primary:hover:not(:disabled) { background: #d97200; }
 .ts-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ts-btn-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid #fed7aa;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ts-btn-extra:hover { background: #ffedd5; border-color: #f18200; }
 
 .ts-btn-ghost {
   display: inline-flex;

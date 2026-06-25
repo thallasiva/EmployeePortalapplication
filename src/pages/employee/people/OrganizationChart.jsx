@@ -24,27 +24,48 @@ function deptColor(deptId) {
 }
 
 /** Convert flat employee array → nested tree.
- *  Roots = employees whose reporting_to is null OR points to an unknown id. */
+ *  Roots = employees whose reporting_to is null OR points to an unknown id.
+ *  Falls back gracefully when all employees have a manager (no root found). */
 function buildTree(flat) {
+  if (!flat || flat.length === 0) return null;
+
   const map = {};
   flat.forEach(e => {
     map[e.employee_id] = {
       ...e,
-      name:       fullName(e),
-      color:      deptColor(e.department_id),
-      children:   [],
+      name:     fullName(e),
+      color:    deptColor(e.department_id),
+      children: [],
     };
   });
 
   const roots = [];
   flat.forEach(e => {
     const node = map[e.employee_id];
-    if (e.reporting_to && map[e.reporting_to]) {
+    // Only attach as child if manager exists in THIS list AND is not self
+    if (e.reporting_to && e.reporting_to !== e.employee_id && map[e.reporting_to]) {
       map[e.reporting_to].children.push(node);
     } else {
       roots.push(node);
     }
   });
+
+  // Fallback 1: roots still empty (e.g. everyone's manager is in the list but it's a cycle)
+  // → pick employees who nobody else reports to (the "most senior" nodes)
+  if (roots.length === 0) {
+    const isChild = new Set(flat.map(e => e.employee_id).filter(id => {
+      const e = map[id];
+      return e.reporting_to && e.reporting_to !== e.employee_id && map[e.reporting_to];
+    }));
+    flat.forEach(e => {
+      if (!isChild.has(e.employee_id)) roots.push(map[e.employee_id]);
+    });
+  }
+
+  // Fallback 2: complete cycle → show everyone at top level
+  if (roots.length === 0) {
+    flat.forEach(e => roots.push(map[e.employee_id]));
+  }
 
   // Sort children alphabetically
   function sort(node) {
@@ -54,9 +75,7 @@ function buildTree(flat) {
   roots.forEach(sort);
   roots.sort((a, b) => a.name.localeCompare(b.name));
 
-  // If single root, return it; if multiple, wrap in a virtual root
   if (roots.length === 1) return roots[0];
-  if (roots.length === 0) return null;
   return { employee_id: "__root__", name: "Organisation", title: "", color: "#94a3b8",
            department_name: "", children: roots };
 }
@@ -173,17 +192,17 @@ function StatsBar({ flat }) {
   })();
 
   return (
-    <div style={{ display:"flex", gap:12, marginBottom:16, flexWrap:"wrap" }}>
+    <div style={{ display:"flex", gap:8, marginBottom:6, flexWrap:"wrap" }}>
       {[
         { label:"Total Employees", value: flat.length, color:"#f18200" },
         { label:"Departments",     value: depts,       color:"#6366f1" },
         { label:"Hierarchy Levels",value: maxDepth,    color:"#10b981" },
       ].map(s => (
         <div key={s.label} style={{ background:"#fff", border:"1px solid #e2e8f0",
-          borderRadius:10, padding:"10px 18px", minWidth:130, textAlign:"center",
-          boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
-          <div style={{ fontSize:22, fontWeight:800, color:s.color }}>{s.value}</div>
-          <div style={{ fontSize:11, color:"#94a3b8", marginTop:2 }}>{s.label}</div>
+          borderRadius:8, padding:"6px 14px", minWidth:110, textAlign:"center",
+          boxShadow:"0 1px 2px rgba(0,0,0,0.04)", display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ fontSize:18, fontWeight:800, color:s.color }}>{s.value}</div>
+          <div style={{ fontSize:11, color:"#94a3b8", textAlign:"left", lineHeight:1.2 }}>{s.label}</div>
         </div>
       ))}
     </div>
@@ -234,59 +253,68 @@ export default function OrganizationChart() {
     : null;
 
   return (
-    <div style={{ minHeight:"100vh", background:"#f5f7fb", padding:24 }}>
-      {/* Header */}
+    <div style={{
+      height:"calc(100vh - 4.25rem)", background:"#f5f7fb",
+      display:"flex", flexDirection:"column", padding:"12px 16px 8px", overflow:"hidden",
+    }}>
+      {/* Header row */}
       <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"space-between",
-        alignItems:"center", gap:16, marginBottom:16 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <Network size={22} color="#f18200" />
+        alignItems:"center", gap:10, marginBottom:10, flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <Network size={20} color="#f18200" />
           <div>
-            <h1 style={{ fontSize:20, fontWeight:700, color:"#1f2937", margin:0 }}>Organization Chart</h1>
-            <p style={{ fontSize:13, color:"#64748b", margin:0 }}>Full company reporting hierarchy</p>
+            <h1 style={{ fontSize:17, fontWeight:700, color:"#1f2937", margin:0 }}>Organization Chart</h1>
+            <p style={{ fontSize:12, color:"#64748b", margin:0 }}>Full company reporting hierarchy</p>
           </div>
         </div>
 
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           {/* Search */}
           <div style={{ position:"relative" }}>
-            <Search size={14} style={{ position:"absolute", left:10, top:"50%",
+            <Search size={13} style={{ position:"absolute", left:9, top:"50%",
               transform:"translateY(-50%)", color:"#94a3b8" }} />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search people…"
-              style={{ height:36, width:210, paddingLeft:30, paddingRight:12,
-                border:"1px solid #dbe2ea", borderRadius:8, fontSize:13,
+              style={{ height:32, width:190, paddingLeft:28, paddingRight:10,
+                border:"1px solid #dbe2ea", borderRadius:8, fontSize:12,
                 outline:"none", background:"#fff" }} />
           </div>
 
           {/* Zoom controls */}
           <div style={{ display:"flex", alignItems:"center", gap:2, background:"#fff",
-            border:"1px solid #dbe2ea", borderRadius:8, height:36, padding:"0 6px" }}>
+            border:"1px solid #dbe2ea", borderRadius:8, height:32, padding:"0 4px" }}>
             <button onClick={() => setZoom(z => Math.max(40, z - 10))}
               style={{ background:"none", border:"none", cursor:"pointer", padding:4,
                 color:"#64748b", display:"flex" }}>
-              <ZoomOut size={15} />
+              <ZoomOut size={14} />
             </button>
-            <span style={{ fontSize:12, color:"#475569", minWidth:36, textAlign:"center" }}>{zoom}%</span>
+            <span style={{ fontSize:11, color:"#475569", minWidth:34, textAlign:"center" }}>{zoom}%</span>
             <button onClick={() => setZoom(z => Math.min(160, z + 10))}
               style={{ background:"none", border:"none", cursor:"pointer", padding:4,
                 color:"#64748b", display:"flex" }}>
-              <ZoomIn size={15} />
+              <ZoomIn size={14} />
             </button>
             <button onClick={() => setZoom(100)}
               style={{ background:"none", border:"none", cursor:"pointer", padding:4,
                 color:"#64748b", borderLeft:"1px solid #e2e8f0", marginLeft:2, display:"flex" }}>
-              <RotateCcw size={15} />
+              <RotateCcw size={14} />
             </button>
           </div>
         </div>
       </div>
 
-      {!loading && !error && flat.length > 0 && <StatsBar flat={flat} />}
-      <Legend depts={depts} />
+      {/* Stats + Legend row */}
+      <div style={{ flexShrink:0, marginBottom:8 }}>
+        {!loading && !error && flat.length > 0 && <StatsBar flat={flat} />}
+        <Legend depts={depts} />
+      </div>
 
-      {/* Chart canvas */}
-      <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
-        boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"auto", padding:32 }}
+      {/* Chart canvas — flex:1 fills remaining height, scrolls internally */}
+      <div style={{
+        flex:1, background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
+        boxShadow:"0 1px 4px rgba(0,0,0,0.06)", overflow:"auto", padding:20,
+        minHeight:0,
+      }}
         ref={containerRef}>
         {loading ? (
           <div style={{ display:"flex", justifyContent:"center", padding:60,
@@ -298,9 +326,7 @@ export default function OrganizationChart() {
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
             padding:60, gap:12 }}>
             <Network size={40} strokeWidth={1.2} color="#cbd5e1" />
-            <p style={{ fontSize:13, color:"#94a3b8" }}>
-              No employees found. Make sure employees have reporting managers set.
-            </p>
+            <p style={{ fontSize:13, color:"#94a3b8" }}>No active employees found.</p>
           </div>
         ) : (
           <div className="org-tree"
@@ -313,7 +339,8 @@ export default function OrganizationChart() {
         )}
       </div>
 
-      <p style={{ fontSize:11, color:"#94a3b8", textAlign:"center", marginTop:12 }}>
+      {/* Footer hint */}
+      <p style={{ fontSize:10, color:"#94a3b8", textAlign:"center", margin:"6px 0 0", flexShrink:0 }}>
         Click <strong>−</strong> on any card to collapse that branch · <strong>+</strong> to expand
       </p>
     </div>

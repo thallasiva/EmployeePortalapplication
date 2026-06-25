@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import { Download, LayoutGrid, List, Upload, ChevronDown, ChevronRight, Users, Search, X } from "lucide-react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import {
+  Download, LayoutGrid, List, Upload, ChevronDown, ChevronRight,
+  Users, Search, X, Filter, Check,
+} from "lucide-react";
 import Teams from "./Teams";
-import Offices from "./Offices";
 import { useNavigate } from "react-router-dom";
 import { listEmployees, createEmployee } from "../../api/employee.api";
 import { getErrorMessage } from "../../api/client";
@@ -10,7 +12,21 @@ import { downloadEmployeeCsv } from "../../utils/employeeCsvExport";
 import EmployeeGridCard, { EmployeeListTable } from "../../component/employee/EmployeeViews";
 import { successToast, errorToast } from "../../utils/ToastControllers";
 import { getDepartmentName } from "../../utils/employeeDisplay";
+import { getEmployeeStatus } from "../../utils/employeeStatus";
 import "../../component/employee/employee.css";
+
+// ── Status badge helper ──────────────────────────────────────────────────────
+function StatusChip({ employee, size = "sm" }) {
+  const { label, bg, color, border } = getEmployeeStatus(employee);
+  const px = size === "sm" ? "6px 10px" : "3px 8px";
+  const fs = size === "sm" ? 11 : 10;
+  return (
+    <span style={{
+      fontSize: fs, fontWeight: 600, padding: px, borderRadius: 999,
+      background: bg, color, border: `1px solid ${border}`, whiteSpace: "nowrap",
+    }}>{label}</span>
+  );
+}
 
 // ── Team-grouped view ────────────────────────────────────────────────────────
 const AVATAR_COLORS = ["#6366f1","#8b5cf6","#ec4899","#f97316","#14b8a6","#3b82f6","#22c55e","#ef4444"];
@@ -28,11 +44,8 @@ function TeamGroupCard({ department, employees }) {
   const navigate = useNavigate();
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
-      >
+      <button type="button" onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
             <Users size={16} />
@@ -44,38 +57,23 @@ function TeamGroupCard({ department, employees }) {
         </div>
         {expanded ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
       </button>
-
       {expanded && (
         <div className="border-t border-gray-100 divide-y divide-gray-50">
           {employees.map(emp => {
             const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.email;
-            const isActive = emp.employee_status === "Active";
-            const servingNotice = !!emp.serving_notice;
             return (
-              <div
-                key={emp.employee_id}
+              <div key={emp.employee_id}
                 onClick={() => navigate(`/dashboard/employee/${emp.employee_id}`)}
-                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-              >
+                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
                 <span className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                  style={{ background: avatarColor(name) }}>
-                  {getInitials(name)}
-                </span>
+                  style={{ background: avatarColor(name) }}>{getInitials(name)}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
                   <p className="text-xs text-gray-400 truncate">{emp.emp_job_title || "—"}</p>
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
                   <span className="text-xs text-gray-400 hidden sm:block truncate max-w-[140px]">{emp.email}</span>
-                  {servingNotice ? (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full font-medium bg-orange-50 text-orange-600 border border-orange-200">
-                      Serving Notice
-                    </span>
-                  ) : (
-                    <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                      {emp.employee_status || "Active"}
-                    </span>
-                  )}
+                  <StatusChip employee={emp} size="xs" />
                 </div>
               </div>
             );
@@ -96,14 +94,12 @@ function TeamGroupedView({ employees }) {
     });
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [employees]);
-
   if (!groups.length) return <p className="text-sm text-gray-400 py-8 text-center">No employees found.</p>;
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-600">{employees.length} employees across {groups.length} team{groups.length !== 1 ? "s" : ""}</span>
-      </div>
+      <span className="text-sm font-medium text-gray-600">
+        {employees.length} employees across {groups.length} team{groups.length !== 1 ? "s" : ""}
+      </span>
       {groups.map(([dept, emps]) => (
         <TeamGroupCard key={dept} department={dept} employees={emps} />
       ))}
@@ -111,20 +107,198 @@ function TeamGroupedView({ employees }) {
   );
 }
 
+// ── Filter section (one collapsible group inside the panel) ─────────────────
+function FilterSection({ sec, collapsed, onToggle }) {
+  const SHOW = 6;
+  const [showAll, setShowAll] = useState(false);
+  const visibleOpts = showAll ? sec.options : sec.options.slice(0, SHOW);
+  const activeCount = sec.selected.size;
+  return (
+    <div style={{ borderBottom:"1px solid #334155" }}>
+      <button type="button" onClick={onToggle}
+        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between",
+          padding:"12px 20px", background:"none", border:"none", cursor:"pointer", color:"#e2e8f0" }}>
+        <span style={{ fontSize:12, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase" }}>{sec.label}</span>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          {activeCount > 0 && (
+            <span style={{ background:"#f43f5e", color:"#fff", borderRadius:999, fontSize:10, fontWeight:700, padding:"1px 6px" }}>{activeCount}</span>
+          )}
+          <ChevronDown size={13} style={{ color:"#64748b", transform: collapsed ? "rotate(-90deg)" : "none", transition:"0.15s" }} />
+        </div>
+      </button>
+      {!collapsed && (
+        <div style={{ paddingBottom:8 }}>
+          {visibleOpts.map(opt => {
+            const sel = sec.selected.has(opt.value);
+            return (
+              <button key={opt.value} type="button"
+                onClick={() => {
+                  const next = new Set(sec.selected);
+                  if (next.has(opt.value)) next.delete(opt.value); else next.add(opt.value);
+                  sec.onChange(next);
+                }}
+                style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between",
+                  padding:"8px 20px", background: sel ? "rgba(244,63,94,0.12)" : "none",
+                  border:"none", cursor:"pointer", textAlign:"left" }}>
+                <span style={{ fontSize:13, color: sel ? "#f9a8b4" : "#cbd5e1" }}>{opt.label}</span>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  {opt.count !== undefined && <span style={{ fontSize:11, color:"#475569" }}>{opt.count}</span>}
+                  <span style={{
+                    width:14, height:14, borderRadius:3, flexShrink:0,
+                    border:`1.5px solid ${sel ? "#f43f5e" : "#475569"}`,
+                    background: sel ? "#f43f5e" : "transparent",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                  }}>
+                    {sel && <Check size={9} color="#fff" />}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+          {sec.options.length > SHOW && (
+            <button onClick={() => setShowAll(s => !s)}
+              style={{ padding:"6px 20px", background:"none", border:"none", cursor:"pointer", fontSize:12, color:"#64748b", fontWeight:600 }}>
+              {showAll ? "Show less" : `See all (${sec.options.length})`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Slide-out Filter Panel ───────────────────────────────────────────────────
+function FilterPanel({ open, onClose, sections, activePills, activeFilterCount, resultCount, onClearAll }) {
+  const [collapsed, setCollapsed] = useState({});
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    if (open) document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  const toggleSection = (id) => setCollapsed(c => ({ ...c, [id]: !c[id] }));
+
+  if (!open) return null;
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose}
+        style={{ position:"fixed", inset:0, zIndex:400, background:"rgba(0,0,0,0.25)" }} />
+
+      {/* Panel */}
+      <div ref={ref} style={{
+        position:"fixed", top:0, right:0, bottom:0, zIndex:401,
+        width:300, background:"#1e293b", color:"#e2e8f0",
+        display:"flex", flexDirection:"column", boxShadow:"-4px 0 24px rgba(0,0,0,0.25)",
+      }}>
+        {/* Header */}
+        <div style={{ padding:"18px 20px 14px", borderBottom:"1px solid #334155",
+          display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <Filter size={14} style={{ color:"#94a3b8" }} />
+            <span style={{ fontSize:13, fontWeight:700, letterSpacing:"0.08em", color:"#e2e8f0", textTransform:"uppercase" }}>Filter</span>
+          </div>
+          <button onClick={onClose}
+            style={{ background:"none", border:"none", cursor:"pointer", color:"#64748b", display:"flex" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Active filters */}
+        {activePills.length > 0 && (
+          <div style={{ padding:"12px 20px", borderBottom:"1px solid #334155" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.06em" }}>Active filters</span>
+              <span style={{ fontSize:12, color:"#94a3b8" }}>{resultCount} results</span>
+            </div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {activePills.map(p => (
+                <span key={p.id} style={{
+                  display:"inline-flex", alignItems:"center", gap:5,
+                  background:"#f43f5e", color:"#fff", borderRadius:999,
+                  fontSize:12, fontWeight:600, padding:"4px 10px",
+                }}>
+                  {p.label}
+                  <button onClick={p.remove}
+                    style={{ background:"none", border:"none", cursor:"pointer", color:"#fff", display:"flex", padding:0 }}>
+                    <X size={11} />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <button onClick={onClearAll}
+              style={{ marginTop:10, fontSize:12, color:"#f43f5e", background:"none", border:"none",
+                cursor:"pointer", fontWeight:600, padding:0, display:"flex", alignItems:"center", gap:4 }}>
+              ✕ Clear all filters
+            </button>
+          </div>
+        )}
+
+        {/* Filter sections */}
+        <div style={{ flex:1, overflowY:"auto", padding:"8px 0" }}>
+          {sections.map(sec => (
+            <FilterSection key={sec.id} sec={sec}
+              collapsed={!!collapsed[sec.id]}
+              onToggle={() => toggleSection(sec.id)} />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Active filter pill (toolbar) ─────────────────────────────────────────────
+function FilterPill({ label, onRemove }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa",
+      borderRadius: 999, fontSize: 11, fontWeight: 600, padding: "3px 10px",
+    }}>
+      {label}
+      <button type="button" onClick={onRemove}
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}>
+        <X size={11} color="#f18200" />
+      </button>
+    </span>
+  );
+}
+
 // ── Main page ────────────────────────────────────────────────────────────────
+const STATUS_OPTIONS = [
+  { value: "Active",        label: "Active" },
+  { value: "Notice Period", label: "Notice Period" },
+  { value: "Resigned",      label: "Resigned" },
+  { value: "Inactive",      label: "Inactive" },
+];
+const TYPE_OPTIONS = [
+  { value: "Full-Time",   label: "Full-Time" },
+  { value: "Part-Time",   label: "Part-Time" },
+  { value: "Contract",    label: "Contract" },
+  { value: "Intern",      label: "Intern" },
+];
+
 export default function Employee() {
   const navigate = useNavigate();
   const csvInputRef = useRef(null);
   const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState("grid");
+  const [loading, setLoading]     = useState(true);
+  const [viewMode, setViewMode]   = useState("grid");
   const [selectedTab, setSelectedTab] = useState("All");
-  const [search, setSearch] = useState("");
+  const [search, setSearch]       = useState("");
+
+  // Multi-select filters
+  const [filterStatus,     setFilterStatus]     = useState(new Set());
+  const [filterDept,       setFilterDept]       = useState(new Set());
+  const [filterType,       setFilterType]       = useState(new Set());
+  const [filterPanelOpen,  setFilterPanelOpen]  = useState(false);
 
   const refreshEmployees = async () => {
     setLoading(true);
     try {
-      const { data } = await listEmployees({ limit: 200 });
+      const { data } = await listEmployees({ limit: 500 });
       setEmployees(data);
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to load employees"));
@@ -135,25 +309,94 @@ export default function Employee() {
 
   useEffect(() => { refreshEmployees(); }, []);
 
-  const filteredEmployees = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return employees;
-    return employees.filter(emp => {
-      const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ").toLowerCase();
-      return (
-        name.includes(q) ||
-        emp.email?.toLowerCase().includes(q) ||
-        emp.emp_code?.toLowerCase().includes(q) ||
-        emp.department_name?.toLowerCase().includes(q) ||
-        emp.emp_job_title?.toLowerCase().includes(q) ||
-        emp.mobile?.includes(q)
-      );
+  // Derive unique dept options from loaded employees
+  const deptOptions = useMemo(() => {
+    const counts = {};
+    employees.forEach(e => {
+      const d = e.department_name || "General";
+      counts[d] = (counts[d] || 0) + 1;
     });
-  }, [employees, search]);
+    return Object.entries(counts)
+      .sort(([a],[b]) => a.localeCompare(b))
+      .map(([name, count]) => ({ value: name, label: name, count }));
+  }, [employees]);
+
+  // Build status options with counts
+  const statusOptions = useMemo(() => {
+    const counts = {};
+    employees.forEach(e => {
+      const { label } = getEmployeeStatus(e);
+      counts[label] = (counts[label] || 0) + 1;
+    });
+    return STATUS_OPTIONS.map(o => ({ ...o, count: counts[o.value] || 0 })).filter(o => o.count > 0);
+  }, [employees]);
+
+  const filteredEmployees = useMemo(() => {
+    let list = employees;
+
+    // Status filter — match against canonical status label
+    if (filterStatus.size > 0) {
+      list = list.filter(e => {
+        const { label } = getEmployeeStatus(e);
+        return filterStatus.has(label);
+      });
+    }
+    // Department filter
+    if (filterDept.size > 0) {
+      list = list.filter(e => filterDept.has(e.department_name || "General"));
+    }
+    // Employee type filter
+    if (filterType.size > 0) {
+      list = list.filter(e => filterType.has(e.employee_type || "Full-Time"));
+    }
+    // Text search
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter(e => {
+        const name = [e.first_name, e.last_name].filter(Boolean).join(" ").toLowerCase();
+        return (
+          name.includes(q) ||
+          e.email?.toLowerCase().includes(q) ||
+          e.emp_code?.toLowerCase().includes(q) ||
+          e.department_name?.toLowerCase().includes(q) ||
+          e.emp_job_title?.toLowerCase().includes(q) ||
+          e.mobile?.includes(q)
+        );
+      });
+    }
+    return list;
+  }, [employees, search, filterStatus, filterDept, filterType]);
+
+  const activeFilterCount = filterStatus.size + filterDept.size + filterType.size;
+
+  const clearAllFilters = useCallback(() => {
+    setFilterStatus(new Set());
+    setFilterDept(new Set());
+    setFilterType(new Set());
+    setSearch("");
+  }, []);
+
+  // Build pill labels for active filters
+  const activePills = useMemo(() => {
+    const pills = [];
+    filterStatus.forEach(v => pills.push({
+      id: `status:${v}`, label: `Status: ${v}`,
+      remove: () => setFilterStatus(s => { const n = new Set(s); n.delete(v); return n; }),
+    }));
+    filterDept.forEach(v => pills.push({
+      id: `dept:${v}`, label: `Dept: ${v}`,
+      remove: () => setFilterDept(s => { const n = new Set(s); n.delete(v); return n; }),
+    }));
+    filterType.forEach(v => pills.push({
+      id: `type:${v}`, label: `Type: ${v}`,
+      remove: () => setFilterType(s => { const n = new Set(s); n.delete(v); return n; }),
+    }));
+    return pills;
+  }, [filterStatus, filterDept, filterType]);
 
   const tabsMenu = [
     { id: 1, tabName: "All" },
-    { id: 2, tabName: "Teams" }
+    { id: 2, tabName: "Teams" },
   ];
 
   const handleCsvImport = (e) => {
@@ -164,10 +407,8 @@ export default function Employee() {
       let rows = [];
       try { rows = parseEmployeeCsv(event.target.result); }
       catch { errorToast("Failed to parse CSV. Check file format."); e.target.value = ""; return; }
-
       const codeToId = new Map();
       employees.forEach(emp => { if (emp.emp_code) codeToId.set(String(emp.emp_code), emp.employee_id); });
-
       let created = 0, failed = 0;
       for (const row of rows) {
         const { employee, contactInfo, bankDetails, managerEmployeeNumber } = mapCsvRowToEmployee(row);
@@ -194,14 +435,14 @@ export default function Employee() {
 
   return (
     <div className="space-y-6">
+      {/* Top bar */}
       <div className="flex justify-between items-center flex-wrap gap-3">
         <div className="flex bg-white rounded-xl shadow overflow-hidden">
           {tabsMenu.map(item => (
-            <button
-              className={`${selectedTab === item.tabName ? "selected px-6 py-2" : "notSelected px-6 py-2"}`}
-              key={item.id} type="button"
-              onClick={() => setSelectedTab(item.tabName)}
-            >{item.tabName}</button>
+            <button className={`${selectedTab === item.tabName ? "selected px-6 py-2" : "notSelected px-6 py-2"}`}
+              key={item.id} type="button" onClick={() => setSelectedTab(item.tabName)}>
+              {item.tabName}
+            </button>
           ))}
         </div>
         <div className="emp-toolbar__actions">
@@ -219,55 +460,103 @@ export default function Employee() {
       </div>
 
       {selectedTab === "All" && (
-        <div className="space-y-4">
-          <div className="emp-toolbar">
-            <span className="font-medium text-sm text-gray-700">
-              {loading ? "Loading employees…" : (
-                search
-                  ? <>{filteredEmployees.length} <span className="text-gray-400 font-normal">of {employees.length} Employees</ span></>
-                  : `${employees.length} Employees`
+        <div className="space-y-3">
+          {/* Toolbar: search + filters + view toggle */}
+          <div style={{
+            background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
+            padding: "12px 16px", display: "flex", alignItems: "center",
+            flexWrap: "wrap", gap: 10,
+          }}>
+            {/* Search */}
+            <div style={{ position: "relative", flex: "1 1 200px", minWidth: 160, maxWidth: 280 }}>
+              <Search size={14} style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", color:"#94a3b8", pointerEvents:"none" }} />
+              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search name, email, code…"
+                style={{
+                  width: "100%", height: 34, paddingLeft: 32, paddingRight: search ? 28 : 12,
+                  border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13,
+                  outline: "none", boxSizing: "border-box",
+                }} />
+              {search && (
+                <button type="button" onClick={() => setSearch("")}
+                  style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                  <X size={13} color="#94a3b8" />
+                </button>
               )}
-            </span>
-            <div className="flex items-center gap-2">
-              {/* Search box */}
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search name, email, dept…"
-                  className="h-8 pl-8 pr-7 text-sm border border-gray-200 rounded-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 w-56 transition"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => setSearch("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
-              {/* View toggle */}
-              <div className="emp-view-toggle">
-                <button type="button" className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")} title="Grid view">
-                  <LayoutGrid size={16} />
-                </button>
-                <button type="button" className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")} title="List view">
-                  <List size={16} />
-                </button>
-              </div>
+            </div>
+
+            {/* Filter button */}
+            <button type="button" onClick={() => setFilterPanelOpen(true)}
+              style={{
+                display:"flex", alignItems:"center", gap:6, height:34, padding:"0 14px",
+                border: activeFilterCount > 0 ? "1.5px solid #f18200" : "1px solid #e2e8f0",
+                borderRadius:8, background: activeFilterCount > 0 ? "#fff7ed" : "#fff",
+                fontSize:13, fontWeight:600,
+                color: activeFilterCount > 0 ? "#c2410c" : "#64748b", cursor:"pointer",
+              }}>
+              <Filter size={14} />
+              Filters
+              {activeFilterCount > 0 && (
+                <span style={{ background:"#f18200", color:"#fff", borderRadius:999,
+                  fontSize:10, fontWeight:700, padding:"1px 6px", minWidth:18, textAlign:"center" }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            {/* Filter panel */}
+            <FilterPanel
+              open={filterPanelOpen}
+              onClose={() => setFilterPanelOpen(false)}
+              resultCount={filteredEmployees.length}
+              activePills={activePills}
+              activeFilterCount={activeFilterCount}
+              onClearAll={clearAllFilters}
+              sections={[
+                { id:"status", label:"Status",        options:statusOptions, selected:filterStatus, onChange:setFilterStatus },
+                { id:"dept",   label:"Department",    options:deptOptions,   selected:filterDept,   onChange:setFilterDept   },
+                { id:"type",   label:"Employee Type", options:TYPE_OPTIONS,  selected:filterType,   onChange:setFilterType   },
+              ]}
+            />
+
+            {/* View toggle */}
+            <div className="emp-view-toggle" style={{ marginLeft:"auto" }}>
+              <button type="button" className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")} title="Grid view">
+                <LayoutGrid size={16} />
+              </button>
+              <button type="button" className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")} title="List view">
+                <List size={16} />
+              </button>
             </div>
           </div>
 
+          {/* Active filter pills + count */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", minHeight:activePills.length > 0 ? 28 : 0 }}>
+            {activePills.length > 0 && (
+              <span style={{ fontSize:12, color:"#94a3b8", fontWeight:500 }}>
+                {filteredEmployees.length} of {employees.length} employees
+              </span>
+            )}
+            {activePills.length === 0 && !loading && (
+              <span style={{ fontSize:13, color:"#64748b", fontWeight:500 }}>
+                {loading ? "Loading…" : `${filteredEmployees.length} Employees`}
+              </span>
+            )}
+            {activePills.map(p => (
+              <FilterPill key={p.id} label={p.label} onRemove={p.remove} />
+            ))}
+          </div>
+
+          {/* Results */}
           {loading ? (
             <p className="text-sm text-gray-400 py-8 text-center">Loading employees…</p>
           ) : filteredEmployees.length === 0 ? (
             <div className="py-16 text-center">
               <Search size={32} className="mx-auto mb-3 text-gray-300" />
-              <p className="text-sm text-gray-500">No employees match "<span className="font-medium">{search}</span>"</p>
-              <button type="button" onClick={() => setSearch("")} className="mt-2 text-sm text-brand hover:underline">Clear search</button>
+              <p className="text-sm text-gray-500 mb-1">No employees match the current filters</p>
+              <button type="button" onClick={clearAllFilters} className="mt-2 text-sm text-brand hover:underline">
+                Clear filters
+              </button>
             </div>
           ) : viewMode === "grid" ? (
             <div className="emp-grid">
@@ -279,8 +568,50 @@ export default function Employee() {
         </div>
       )}
 
-      {selectedTab === "Teams" && <Teams />}
-     
+      {selectedTab === "Teams" && (
+        <div className="space-y-3">
+          {/* Teams tab also gets search + filter */}
+          <div style={{
+            background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
+            padding:"12px 16px", display:"flex", alignItems:"center", flexWrap:"wrap", gap:10,
+          }}>
+            <div style={{ position:"relative", flex:"1 1 200px", minWidth:160, maxWidth:280 }}>
+              <Search size={14} style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", color:"#94a3b8", pointerEvents:"none" }} />
+              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search employees…"
+                style={{ width:"100%", height:34, paddingLeft:32, paddingRight:search?28:12, border:"1px solid #e2e8f0", borderRadius:8, fontSize:13, outline:"none", boxSizing:"border-box" }} />
+              {search && (
+                <button type="button" onClick={() => setSearch("")}
+                  style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                  <X size={13} color="#94a3b8" />
+                </button>
+              )}
+            </div>
+            <button type="button" onClick={() => setFilterPanelOpen(true)}
+              style={{
+                display:"flex", alignItems:"center", gap:6, height:34, padding:"0 14px",
+                border: activeFilterCount > 0 ? "1.5px solid #f18200" : "1px solid #e2e8f0",
+                borderRadius:8, background: activeFilterCount > 0 ? "#fff7ed" : "#fff",
+                fontSize:13, fontWeight:600,
+                color: activeFilterCount > 0 ? "#c2410c" : "#64748b", cursor:"pointer",
+              }}>
+              <Filter size={14} />
+              Filters
+              {activeFilterCount > 0 && (
+                <span style={{ background:"#f18200", color:"#fff", borderRadius:999,
+                  fontSize:10, fontWeight:700, padding:"1px 6px", minWidth:18, textAlign:"center" }}>
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
+          {loading ? (
+            <p className="text-sm text-gray-400 py-8 text-center">Loading employees…</p>
+          ) : (
+            <TeamGroupedView employees={filteredEmployees} />
+          )}
+        </div>
+      )}
     </div>
   );
 }

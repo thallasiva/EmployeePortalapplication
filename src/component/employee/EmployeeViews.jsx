@@ -1,6 +1,7 @@
 import React from "react";
-import { Check, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { EmployeeStatusBadge } from "../../utils/employeeStatus";
 import
 {
   formatEmployeeId,
@@ -17,8 +18,6 @@ export default function EmployeeGridCard({ employee })
   const navigate = useNavigate();
   const name = getEmployeeDisplayName(employee);
   const department = getDepartmentName(employee);
-  const isActive = employee.employee_status === "Active";
-  const servingNotice = !!employee.serving_notice;
 
   return (
     <article
@@ -38,16 +37,7 @@ export default function EmployeeGridCard({ employee })
         <span className={`emp-card__dept ${getDeptBadgeClass(department)}`}>
           {department}
         </span>
-        {servingNotice ? (
-          <span className="emp-card__status" style={{ background:"#fff7ed", color:"#ea580c", border:"1px solid #fed7aa" }}>
-            Serving Notice
-          </span>
-        ) : (
-          <span className={`emp-card__status ${isActive ? "is-active" : "is-inactive"}`}>
-            {isActive && <Check size={12} />}
-            {employee.employee_status}
-          </span>
-        )}
+        <EmployeeStatusBadge employee={employee} />
       </div>
       <div className="emp-card__contact">
         <span>
@@ -142,17 +132,7 @@ export function EmployeeListTable({ employees })
               <td><span className="emp-table__role">{p.emp_job_title}</span></td>
               <td>{p.email}</td>
               <td>{p.mobile}</td>
-              <td>
-                {p.serving_notice ? (
-                  <span className="emp-card__status" style={{ background:"#fff7ed", color:"#ea580c", border:"1px solid #fed7aa" }}>
-                    Serving Notice
-                  </span>
-                ) : (
-                  <span className={`emp-card__status ${p.employee_status === "Active" ? "is-active" : "is-inactive"}`}>
-                    {p.employee_status}
-                  </span>
-                )}
-              </td>
+              <td><EmployeeStatusBadge employee={p} style={{ fontSize:10, padding:"2px 8px" }} /></td>
               <td>{p.emp_joining_date || "—"}</td>
               <td>{p.gender || "—"}</td>
               <td>{p.dob || "—"}</td>

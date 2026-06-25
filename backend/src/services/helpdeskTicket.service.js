@@ -93,6 +93,30 @@ class HelpdeskTicketService extends BaseService {
     return this.getDetails(id);
   }
 
+  /** Tickets raised by employees whose reporting_to = managerId */
+  async listTeam(managerId, { status, priority, category, search, limit, offset } = {}) {
+    const where = ['e.reporting_to = ?'];
+    const params = [managerId];
+
+    if (status)   { where.push('t.status = ?');   params.push(status); }
+    if (priority) { where.push('t.priority = ?'); params.push(priority); }
+    if (category) { where.push('t.category = ?'); params.push(category); }
+    if (search)   { where.push('t.subject LIKE ?'); params.push(`%${search}%`); }
+
+    const whereSql = `WHERE ${where.join(' AND ')}`;
+    let sql = `${LIST_SELECT} ${whereSql} ORDER BY t.created_at DESC`;
+    if (limit !== undefined) {
+      sql += ' LIMIT ? OFFSET ?';
+      params.push(Number(limit), Number(offset || 0));
+    }
+    const rows = await query(sql, params);
+    const countRows = await query(
+      `SELECT COUNT(*) AS total FROM helpdesk_tickets t JOIN employees e ON e.employee_id = t.employee_id ${whereSql}`,
+      limit !== undefined ? params.slice(0, params.length - 2) : params
+    );
+    return { rows, total: countRows[0]?.total || 0 };
+  }
+
   async addComment(ticketId, commentedBy, comment) {
     const exists = await this.existsById(ticketId);
     if (!exists) throw ApiError.notFound('Ticket not found');

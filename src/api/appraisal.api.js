@@ -10,3 +10,8 @@ export const getTeamAppraisals    = ()       => apiClient.get(`${BASE}/team`).th
 export const saveManagerRating    = (id, b)  => apiClient.put(`${BASE}/${id}/manager-rate`, b).then(unwrap);
 export const getAllAppraisals      = (params) => apiClient.get(`${BASE}/all`, { params }).then(unwrap);
 export const updateAppraisalStatus = (id, status) => apiClient.put(`${BASE}/${id}/status`, { status }).then(unwrap);
+
+/* Enrollment */
+export const getEnrollments   = ()            => apiClient.get(`${BASE}/enrollments`).then(unwrap);
+export const enrollEmployees  = (employeeIds) => apiClient.post(`${BASE}/enrollments`, { employee_ids: employeeIds }).then(unwrap);
+export const unenrollEmployee = (empId)       => apiClient.delete(`${BASE}/enrollments/${empId}`).then(unwrap);

@@ -11,6 +11,13 @@ const list = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Tickets fetched', buildMeta({ page, limit, total })).send(res);
 });
 
+const teamTickets = asyncHandler(async (req, res) => {
+  const { page, limit, offset } = getPagination(req.query);
+  const { status, priority, category, search } = req.query;
+  const { rows, total } = await ticketService.listTeam(req.user.employeeId, { status, priority, category, search, limit, offset });
+  new ApiResponse(200, rows, 'Team tickets fetched', buildMeta({ page, limit, total })).send(res);
+});
+
 const myTickets = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { status, priority, category } = req.query;
@@ -44,4 +51,4 @@ const addComment = asyncHandler(async (req, res) => {
   new ApiResponse(201, record, 'Comment added').send(res);
 });
 
-module.exports = { list, myTickets, getOne, create, updateStatus, assign, addComment };
+module.exports = { list, teamTickets, myTickets, getOne, create, updateStatus, assign, addComment };
