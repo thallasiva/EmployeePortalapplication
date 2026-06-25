@@ -3,6 +3,7 @@ import { Users, ChevronDown, ChevronRight, Mail, Phone, Briefcase } from "lucide
 import { listEmployees } from "../../api/employee.api";
 import { getDepartmentName } from "../../utils/employeeDisplay";
 import { avatarDataUri } from "../../lib/placeholders";
+import { EmployeeStatusBadge } from "../../utils/employeeStatus";
 
 const AVATAR_COLORS = ["#6366f1","#8b5cf6","#ec4899","#f97316","#14b8a6","#3b82f6","#22c55e"];
 function initials(name = "") { return name.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase()||"?"; }
@@ -31,7 +32,6 @@ function TeamCard({ team, members }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
             {members.map(emp => {
               const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.email;
-              const isActive = emp.employee_status === "Active";
               return (
                 <div key={emp.employee_id} className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors">
                   <span className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
@@ -41,9 +41,7 @@ function TeamCard({ team, members }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                        {emp.employee_status || "Active"}
-                      </span>
+                      <EmployeeStatusBadge employee={emp} style={{ fontSize: 10, padding: "2px 7px" }} />
                     </div>
                     <p className="text-xs text-gray-500 truncate flex items-center gap-1 mt-0.5">
                       <Briefcase size={10} className="shrink-0" /> {emp.emp_job_title || "—"}

@@ -16,6 +16,8 @@ router.use(authenticate);
 
 // Self-service
 router.get('/me', controller.myTickets);
+// Manager — see tickets from direct reports
+router.get('/team', controller.teamTickets);
 router.post('/', validate(createTicketSchema), controller.create);
 router.post('/:id/comments', validate(addCommentSchema), controller.addComment);
 

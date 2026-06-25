@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Mail, Phone } from "lucide-react";
 import { getEmployee } from "../../api/employee.api";
 import { getErrorMessage } from "../../api/client";
 import { errorToast } from "../../utils/ToastControllers";
 import { avatarDataUri } from "../../lib/placeholders";
+import { EmployeeStatusBadge } from "../../utils/employeeStatus";
 import "../../component/employee/employee.css";
 
 function formatDate(val) {
@@ -59,7 +60,6 @@ export default function EmployeeDetail() {
   }
 
   const { contactInfo, bankDetails } = employee;
-  const isActive = employee.employee_status === "Active";
 
   return (
     <div>
@@ -84,12 +84,9 @@ export default function EmployeeDetail() {
             <p style={{ margin: "0.25rem 0 0", color: "#64748b" }}>
               {employee.emp_job_title || "—"} · {employee.department_name || "General"}
             </p>
-            <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-              <span className={`emp-card__status ${isActive ? "is-active" : "is-inactive"}`}>
-                {isActive && <Check size={12} />}
-                {employee.employee_status}
-              </span>
-              <span className="emp-table__id" style={{ alignSelf: "center" }}>{employee.emp_code || `EMP${String(employee.employee_id).padStart(3, "0")}`}</span>
+            <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+              <EmployeeStatusBadge employee={employee} />
+              <span className="emp-table__id">{employee.emp_code || `EMP${String(employee.employee_id).padStart(3, "0")}`}</span>
             </div>
           </div>
         </div>

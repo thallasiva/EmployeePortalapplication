@@ -1,13 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
-  Megaphone, CheckCircle2, XCircle, Lock, CalendarDays, Users,
-  ChevronDown, ChevronUp, Star, RefreshCw, Filter, Download,
-  AlertCircle, Clock, UserCheck,
+  Megaphone, CheckCircle2, Lock, CalendarDays, Users,
+  ChevronDown, ChevronUp, Star, RefreshCw,
+  AlertCircle, Clock, UserCheck, UserPlus, X, Search, Check,
 } from "lucide-react";
 import {
   getAppraisalCycle, toggleAppraisalCycle, updateCycleSettings,
   getAllAppraisals, updateAppraisalStatus,
+  getEnrollments, enrollEmployees, unenrollEmployee,
 } from "../../api/appraisal.api";
+import { listEmployees } from "../../api/employee.api";
 
 const BRAND = "#f18200";
 
@@ -141,10 +143,19 @@ export default function AdminPerformanceRollout() {
   const [toggling, setToggling] = useState(false);
   const [saved,    setSaved]   = useState(false);
   const [tab,      setTab]     = useState("rollout"); // rollout | submissions
-  const [filter,   setFilter]  = useState("all");    // all | submitted | draft | not_started
+  const [filter,   setFilter]  = useState("all");
   const [search,   setSearch]  = useState("");
   const [settings, setSettings] = useState({ fy_label:"", deadline:"" });
   const [editSettings, setEditSettings] = useState(false);
+
+  // Enrollment state
+  const [enrollments,   setEnrollments]   = useState([]);
+  const [allEmployees,  setAllEmployees]  = useState([]);
+  const [enrollSearch,  setEnrollSearch]  = useState("");
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [enrolling,     setEnrolling]     = useState(false);
+  const [selectedEmps,  setSelectedEmps]  = useState(new Set());
+  const [empDropOpen,   setEmpDropOpen]   = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -157,7 +168,68 @@ export default function AdminPerformanceRollout() {
     setLoading(false);
   };
 
+  const loadEnrollments = useCallback(async () => {
+    setEnrollLoading(true);
+
+    // Load employee list independently so a failing enrollments API doesn't block it
+    try {
+      const emps = await listEmployees({ limit: 500 });
+      const rows = emps?.data || [];
+      setAllEmployees(rows);
+    } catch (e) {
+      console.error("Failed to load employee list:", e);
+    }
+
+    try {
+      const enr = await getEnrollments();
+      setEnrollments(Array.isArray(enr) ? enr : []);
+    } catch (e) {
+      console.error("Failed to load enrollments:", e);
+      setEnrollments([]);
+    }
+
+    setEnrollLoading(false);
+  }, []);
+
   useEffect(() => { load(); }, []);
+  useEffect(() => { if (tab === "rollout") loadEnrollments(); }, [tab, loadEnrollments]);
+
+  const handleEnroll = async () => {
+    if (!selectedEmps.size) return;
+    setEnrolling(true);
+    try {
+      await enrollEmployees([...selectedEmps]);
+      setSelectedEmps(new Set());
+      await loadEnrollments();
+    } catch {}
+    setEnrolling(false);
+  };
+
+  const handleUnenroll = async (empId) => {
+    try {
+      await unenrollEmployee(empId);
+      await loadEnrollments();
+    } catch {}
+  };
+
+  const enrolledIds = useMemo(() => new Set(enrollments.map(e => e.employee_id)), [enrollments]);
+
+  const unenrolledEmployees = useMemo(() => {
+    const q = enrollSearch.trim().toLowerCase();
+    return allEmployees
+      .map(e => ({
+        ...e,
+        _name: (e.employee_name || `${e.first_name || ""} ${e.last_name || ""}`.trim()).trim(),
+      }))
+      .filter(e =>
+        e.employee_id &&
+        !enrolledIds.has(e.employee_id) &&
+        (!q || e._name.toLowerCase().includes(q) ||
+               (e.department_name||"").toLowerCase().includes(q) ||
+               (e.emp_job_title||"").toLowerCase().includes(q))
+      );
+  }, [allEmployees, enrolledIds, enrollSearch]);
+
 
   const handleToggle = async () => {
     setToggling(true);
@@ -374,6 +446,219 @@ export default function AdminPerformanceRollout() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── ENROLLMENT PANEL ── */}
+          <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12, overflow:"hidden" }}>
+            {/* Header */}
+            <div style={{ padding:"14px 20px", borderBottom:"1px solid #f1f5f9",
+              display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+              <div>
+                <h2 style={{ fontSize:15, fontWeight:700, color:"#1e293b", margin:0, display:"flex", alignItems:"center", gap:8 }}>
+                  <UserPlus size={16} style={{ color:BRAND }} />
+                  Employee Enrollment
+                </h2>
+                <p style={{ fontSize:12, color:"#94a3b8", margin:"3px 0 0" }}>
+                  {enrollments.length} enrolled · {unenrolledEmployees.length + enrollments.length} total employees
+                </p>
+              </div>
+              {selectedEmps.size > 0 && (
+                <button onClick={handleEnroll} disabled={enrolling}
+                  style={{ padding:"8px 20px", borderRadius:8, border:"none", cursor:"pointer",
+                    background:BRAND, color:"#fff", fontWeight:700, fontSize:13,
+                    display:"flex", alignItems:"center", gap:6 }}>
+                  <UserPlus size={13} />
+                  {enrolling ? "Rolling out…" : `Roll Out to ${selectedEmps.size} Employee${selectedEmps.size > 1 ? "s" : ""}`}
+                </button>
+              )}
+            </div>
+
+            {enrollLoading ? (
+              <div style={{ padding:32, textAlign:"center", color:"#94a3b8", fontSize:13 }}>Loading employees…</div>
+            ) : (
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", minHeight:280 }}>
+
+                {/* ── LEFT: Employee custom dropdown ── */}
+                <div style={{ borderRight:"1px solid #f1f5f9", padding:"16px" }}>
+                  <p style={{ fontSize:11, fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.05em", margin:"0 0 8px" }}>Select Employees</p>
+
+                  {/* Trigger */}
+                  <div style={{ position:"relative" }}>
+                    <button type="button" onClick={() => setEmpDropOpen(o => !o)}
+                      style={{ width:"100%", height:40, display:"flex", alignItems:"center", justifyContent:"space-between",
+                        padding:"0 12px", border:"1px solid #e2e8f0", borderRadius:9, background:"#fff",
+                        fontSize:13, color: selectedEmps.size > 0 ? "#1e293b" : "#94a3b8", cursor:"pointer" }}>
+                      <span style={{ display:"flex", alignItems:"center", gap:6 }}>
+                        <Users size={13} style={{ color:"#94a3b8", flexShrink:0 }} />
+                        {selectedEmps.size === 0
+                          ? "Choose employees..."
+                          : selectedEmps.size === unenrolledEmployees.length
+                            ? "All employees selected"
+                            : `${selectedEmps.size} employee${selectedEmps.size > 1 ? "s" : ""} selected`}
+                      </span>
+                      <ChevronDown size={13} style={{ color:"#94a3b8", transform: empDropOpen ? "rotate(180deg)" : "none", transition:"0.15s", flexShrink:0 }} />
+                    </button>
+
+                    {/* Dropdown panel */}
+                    {empDropOpen && (
+                      <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:300,
+                        background:"#fff", border:"1px solid #e2e8f0", borderRadius:10,
+                        boxShadow:"0 8px 24px rgba(0,0,0,0.10)", overflow:"hidden" }}>
+
+                        {/* Search */}
+                        <div style={{ padding:"8px 10px", borderBottom:"1px solid #f1f5f9" }}>
+                          <div style={{ position:"relative" }}>
+                            <Search size={12} style={{ position:"absolute", left:8, top:"50%", transform:"translateY(-50%)", color:"#94a3b8", pointerEvents:"none" }} />
+                            <input type="text" value={enrollSearch} onChange={e => setEnrollSearch(e.target.value)}
+                              autoFocus placeholder="Search..."
+                              style={{ width:"100%", height:32, paddingLeft:26, border:"1px solid #e2e8f0",
+                                borderRadius:7, fontSize:13, outline:"none", boxSizing:"border-box" }} />
+                          </div>
+                        </div>
+
+                        {/* Select all row */}
+                        <div onClick={() => {
+                            if (selectedEmps.size === unenrolledEmployees.length && unenrolledEmployees.length > 0) {
+                              setSelectedEmps(new Set());
+                            } else {
+                              setSelectedEmps(new Set(unenrolledEmployees.map(e => e.employee_id)));
+                            }
+                          }}
+                          style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                            padding:"10px 14px", cursor:"pointer", background:"#f8fafc",
+                            borderBottom:"1px solid #f1f5f9" }}>
+                          <span style={{ fontSize:13, fontWeight:600, color:"#1e293b" }}>
+                            Select all ({unenrolledEmployees.length})
+                          </span>
+                          <div style={{
+                            width:16, height:16, borderRadius:4, flexShrink:0,
+                            border:`1.5px solid ${selectedEmps.size === unenrolledEmployees.length && unenrolledEmployees.length > 0 ? BRAND : "#d1d5db"}`,
+                            background: selectedEmps.size === unenrolledEmployees.length && unenrolledEmployees.length > 0 ? BRAND : "#fff",
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                          }}>
+                            {selectedEmps.size === unenrolledEmployees.length && unenrolledEmployees.length > 0 && <Check size={10} color="#fff" />}
+                          </div>
+                        </div>
+
+                        {/* Employee rows */}
+                        <div style={{ maxHeight:260, overflowY:"auto" }}>
+                          {unenrolledEmployees.length === 0 ? (
+                            <p style={{ fontSize:13, color:"#94a3b8", padding:"16px 14px", textAlign:"center", margin:0 }}>
+                              {allEmployees.length === 0 ? "No employees found" : "All employees are enrolled"}
+                            </p>
+                          ) : unenrolledEmployees.map(emp => {
+                            const sel = selectedEmps.has(emp.employee_id);
+                            return (
+                              <div key={emp.employee_id}
+                                onClick={() => setSelectedEmps(s => {
+                                  const n = new Set(s);
+                                  if (n.has(emp.employee_id)) n.delete(emp.employee_id); else n.add(emp.employee_id);
+                                  return n;
+                                })}
+                                style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                                  padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid #f8fafc",
+                                  background: sel ? "#fff7ed" : "#fff" }}>
+                                <div style={{ minWidth:0 }}>
+                                  <div style={{ fontSize:13, fontWeight:600, color:"#1e293b" }}>{emp._name}</div>
+                                  <div style={{ fontSize:11, color:"#94a3b8", marginTop:1 }}>{emp.department_name || "—"}</div>
+                                </div>
+                                <div style={{
+                                  width:16, height:16, borderRadius:4, flexShrink:0,
+                                  border:`1.5px solid ${sel ? BRAND : "#d1d5db"}`,
+                                  background: sel ? BRAND : "#fff",
+                                  display:"flex", alignItems:"center", justifyContent:"center", marginLeft:10,
+                                }}>
+                                  {sel && <Check size={10} color="#fff" />}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Done footer */}
+                        <div style={{ padding:"8px 14px", borderTop:"1px solid #f1f5f9",
+                          display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <span style={{ fontSize:12, color:"#94a3b8" }}>{selectedEmps.size} selected</span>
+                          <button onClick={() => setEmpDropOpen(false)}
+                            style={{ fontSize:12, fontWeight:700, color:BRAND, background:"none", border:"none", cursor:"pointer" }}>
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selected chips */}
+                  {selectedEmps.size > 0 && (
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginTop:10 }}>
+                      {[...selectedEmps].slice(0,6).map(id => {
+                        const emp = unenrolledEmployees.find(e => e.employee_id === id);
+                        return emp ? (
+                          <span key={id} style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11,
+                            fontWeight:600, padding:"3px 8px", borderRadius:999,
+                            background:"#fff7ed", color:"#c2410c", border:"1px solid #fed7aa" }}>
+                            {emp._name.split(" ")[0]}
+                            <X size={10} style={{ cursor:"pointer" }} onClick={() => setSelectedEmps(s => { const n=new Set(s); n.delete(id); return n; })} />
+                          </span>
+                        ) : null;
+                      })}
+                      {selectedEmps.size > 6 && <span style={{ fontSize:11, color:"#94a3b8", alignSelf:"center" }}>+{selectedEmps.size - 6} more</span>}
+                      <button onClick={() => setSelectedEmps(new Set())}
+                        style={{ fontSize:11, color:"#94a3b8", background:"none", border:"none", cursor:"pointer", alignSelf:"center" }}>
+                        Clear all
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── RIGHT: Enrolled employees ── */}
+                <div>
+                  <div style={{ padding:"10px 14px", borderBottom:"1px solid #f1f5f9", background:"#f8fafc" }}>
+                    <span style={{ fontSize:12, fontWeight:600, color:"#64748b" }}>
+                      Enrolled &amp; Rolled Out ({enrollments.length})
+                    </span>
+                  </div>
+                  <div style={{ maxHeight:340, overflowY:"auto" }}>
+                    {enrollments.length === 0 ? (
+                      <div style={{ padding:28, textAlign:"center" }}>
+                        <Users size={28} style={{ color:"#e2e8f0", marginBottom:8 }} />
+                        <p style={{ fontSize:12, color:"#94a3b8", margin:0 }}>
+                          Select employees on the left and click Roll Out
+                        </p>
+                      </div>
+                    ) : enrollments.map(enr => {
+                      const statusCfg = {
+                        submitted: { bg:"#dcfce7", color:"#15803d", label:"Submitted" },
+                        approved:  { bg:"#dbeafe", color:"#1d4ed8", label:"Approved" },
+                        draft:     { bg:"#fef9c3", color:"#ca8a04", label:"Draft" },
+                      }[enr.appraisal_status] || { bg:"#f1f5f9", color:"#64748b", label:"Not Started" };
+                      return (
+                        <div key={enr.employee_id}
+                          style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px",
+                            borderBottom:"1px solid #f8fafc" }}>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:13, fontWeight:600, color:"#1e293b" }}>{enr.employee_name}</div>
+                            <div style={{ fontSize:11, color:"#94a3b8" }}>
+                              {enr.department_name || "—"}{enr.manager_name ? ` · Mgr: ${enr.manager_name}` : ""}
+                            </div>
+                          </div>
+                          <span style={{ fontSize:11, fontWeight:600, padding:"2px 9px", borderRadius:999,
+                            background:statusCfg.bg, color:statusCfg.color, flexShrink:0 }}>{statusCfg.label}</span>
+                          <button onClick={() => handleUnenroll(enr.employee_id)}
+                            style={{ width:22, height:22, borderRadius:5, border:"1px solid #e2e8f0",
+                              background:"#fff", cursor:"pointer", display:"flex", alignItems:"center",
+                              justifyContent:"center", color:"#94a3b8", flexShrink:0 }}
+                            title="Remove from appraisal">
+                            <X size={11} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+            )}
           </div>
         </>
       )}

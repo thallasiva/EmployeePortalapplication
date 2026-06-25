@@ -1,36 +1,37 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import
-  {
-    Home,
-    Users,
-    Building,
-    Calendar,
-    LogOut,
-    Settings,
-    FileOutput,
+{
+  Home,
+  Users,
+  Building,
+  Calendar,
+  LogOut,
+  Settings,
+  Headphones,
+  FileOutput,
 
-    UserPen,
-    Proportions,
-    Radio,
-    LayoutGrid,
-    ClipboardList,
-    HandCoins,
-    SquareCheck,
-    UserRoundPlus,
-    BookOpen,
-    UserRound,
-    Info,
-    Layers,
-    GitBranch,
-    Clock,
-    ChevronDown,
-    ChevronRight,
-    FileText,
-    Network,
-    IdCard,
-    Award,
-  } from "lucide-react";
+  UserPen,
+  Proportions,
+  Radio,
+  LayoutGrid,
+  ClipboardList,
+  HandCoins,
+  SquareCheck,
+  UserRoundPlus,
+  BookOpen,
+  UserRound,
+  Info,
+  Layers,
+  GitBranch,
+  Clock,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Network,
+  IdCard,
+  Award,
+} from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN, logoutUser } from "../data/auth";
 
 const BRAND_NAME = "NAT IT";
@@ -119,6 +120,11 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Salary", navigationLink: "/dashboard/payroll" },
         { label: "Payslips", navigationLink: "/dashboard/payroll/payslips" },
+        {
+          label: "IT Declaration",
+          // icon: <FileText size={20} strokeWidth={1.75} />,
+          navigationLink: "/dashboard/it-declaration",
+        },
       ],
     },
     {
@@ -136,20 +142,26 @@ export const Sidebar = ({ open }) =>
       icon: <Award size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/performance",
     },
-    {
-      label: "IT Declaration",
-      icon: <FileText size={20} strokeWidth={1.75} />,
-      navigationLink: "/dashboard/it-declaration",
-    },
+
     {
       label: "Resignations",
       icon: <LogOut size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/resignations",
     },
     {
+      label: "Helpdesk",
+      icon: <Headphones size={20} />,
+      navigationLink: "/dashboard/helpdesk",
+    },
+    {
       label: "Settings",
       icon: <Settings size={20} />,
       navigationLink: "/dashboard/settings",
+    },
+    {
+      label: "Workflow Delegates",
+      icon: <GitBranch size={20} />,
+      navigationLink: "/employee/workflow-delegates",
     },
     {
       label: "Profile",
@@ -168,6 +180,18 @@ export const Sidebar = ({ open }) =>
     label: "Timesheets",
     icon: <Clock size={20} strokeWidth={1.75} />,
     navigationLink: "/manager/timesheets",
+  };
+
+  const managerDelegatesItem = {
+    label: "Workflow Delegates",
+    icon: <GitBranch size={20} strokeWidth={1.75} />,
+    navigationLink: "/employee/workflow-delegates",
+  };
+
+  const managerHelpdeskItem = {
+    label: "Helpdesk",
+    icon: <Headphones size={20} strokeWidth={1.75} />,
+    navigationLink: "/manager/helpdesk",
   };
 
   const employeeItems = [
@@ -282,17 +306,12 @@ export const Sidebar = ({ open }) =>
       icon: <Layers size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/request-hub",
     },
-    {
-      label: "Workflow Delegates",
-      icon: <GitBranch size={20} strokeWidth={1.75} />,
-      navigationLink: "/employee/workflow-delegates",
-    },
   ];
 
   const items = isAdmin(user)
     ? adminItems
     : isReportingManager(user)
-      ? [teamOverviewItem, managerTimesheetItem, ...employeeItems]
+      ? [teamOverviewItem, managerTimesheetItem, managerHelpdeskItem, managerDelegatesItem, ...employeeItems]
       : employeeItems;
 
   const toggleAccordion = (index) =>
@@ -345,17 +364,34 @@ export const Sidebar = ({ open }) =>
       className={`relative flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ${open ? "w-64" : "w-[4.5rem]"
         }`}
     >
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-100 min-h-[4.5rem]">
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white font-bold text-sm shadow-sm">
-          N
-        </div>
-        {open && (
-          <div className="min-w-0">
-            <p className="text-lg font-bold text-gray-900 tracking-tight leading-tight">
-              {BRAND_NAME}
-            </p>
-            <p className="text-xs text-gray-500 font-medium">HR Portal</p>
-          </div>
+      {/* Logo */}
+      <div className="flex items-start justify-start px-3 py-3 border-b border-gray-100 min-h-[4.5rem]">
+        {open ? (
+          <>
+            <img
+              src="https://www.natit.in/assets/images/logo.png"
+              alt="NAT IT"
+              style={{ height: 40, maxWidth: 140, objectFit: "contain" }}
+              onError={e => {
+                e.target.style.display = "none";
+                e.target.nextSibling.style.display = "flex";
+              }}
+            />
+            <div style={{ display: "none", flexDirection: "column", alignItems: "flex-start" }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#1e293b" }}>NAT <span style={{ color: "#f18200" }}>IT</span></span>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>HR PORTAL</span>
+            </div>
+          </>
+        ) : (
+          <img
+            src="https://www.natit.in/assets/images/logo.png"
+            alt="NAT IT"
+            style={{ height: 32, width: 32, objectFit: "contain" }}
+            onError={e => {
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
+            }}
+          />
         )}
       </div>
 
