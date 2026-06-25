@@ -1,6 +1,8 @@
 -- ── Migration 020: Recreate resignations table with correct schema ───────────
 -- Run: mysql -u root -p hrms_db < migration_020_recreate_resignations.sql
 
+USE hrms_db;
+
 DROP TABLE IF EXISTS resignations;
 
 CREATE TABLE resignations (

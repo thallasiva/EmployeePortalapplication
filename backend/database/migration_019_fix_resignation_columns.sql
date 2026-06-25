@@ -2,6 +2,8 @@
 -- Run this if the table was created with old column names (submission_date / required_lwd)
 -- mysql -u root -p hrms_db < migration_019_fix_resignation_columns.sql
 
+USE hrms_db;
+
 -- Rename submission_date → start_date (if exists)
 ALTER TABLE resignations
   CHANGE COLUMN submission_date start_date DATE NOT NULL;

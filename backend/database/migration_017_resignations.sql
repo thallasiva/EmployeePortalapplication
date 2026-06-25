@@ -1,6 +1,8 @@
 -- ── Migration 017: Resignations ──────────────────────────────────────────────
 -- Run: mysql -u root -p hrms_db < migration_017_resignations.sql
 
+USE hrms_db;
+
 CREATE TABLE IF NOT EXISTS resignations (
   resignation_id    INT AUTO_INCREMENT PRIMARY KEY,
   employee_id       INT NOT NULL,

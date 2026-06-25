@@ -1,4 +1,7 @@
 -- ── Appraisal Cycles ──────────────────────────────────────────────────────────
+
+USE hrms_db;
+
 CREATE TABLE IF NOT EXISTS appraisal_cycles (
   cycle_id      INT AUTO_INCREMENT PRIMARY KEY,
   fy_label      VARCHAR(50)  NOT NULL DEFAULT 'FY 2025-2026',

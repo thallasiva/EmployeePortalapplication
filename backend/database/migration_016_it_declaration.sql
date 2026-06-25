@@ -1,6 +1,8 @@
 -- ── Migration 016: IT Declaration & Proof of Investment ─────────────────────
 -- Run: mysql -u root -p hrms_db < migration_016_it_declaration.sql
 
+USE hrms_db;
+
 -- 1. Admin creates one cycle per financial year
 CREATE TABLE IF NOT EXISTS it_declaration_cycles (
   cycle_id      INT AUTO_INCREMENT PRIMARY KEY,

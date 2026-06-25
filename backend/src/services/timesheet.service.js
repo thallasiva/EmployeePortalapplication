@@ -286,7 +286,7 @@ async function createExtraWorkRequest({ employee_id, timesheet_id, work_date, ta
   const result = await query(
     `INSERT INTO extra_work_requests (employee_id, timesheet_id, work_date, task_name, extra_hours, reason)
      VALUES (?,?,?,?,?,?)`,
-    [employee_id, timesheet_id, toDateStr(work_date), task_name, extra_hours, reason]
+    [employee_id, timesheet_id || null, toDateStr(work_date), task_name, extra_hours, reason]
   );
   const [row] = await query(`SELECT * FROM extra_work_requests WHERE extra_work_id = ?`, [result.insertId]);
   return row;

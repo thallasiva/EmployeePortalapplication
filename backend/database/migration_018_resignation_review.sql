@@ -1,6 +1,8 @@
 -- ── Migration 018: Resignation multi-step review ────────────────────────────
 -- Run: mysql -u root -p hrms_db < migration_018_resignation_review.sql
 
+USE hrms_db;
+
 ALTER TABLE resignations
   MODIFY COLUMN status
     ENUM('pending','rm_approved','rm_rejected','accepted','rejected','withdrawn')

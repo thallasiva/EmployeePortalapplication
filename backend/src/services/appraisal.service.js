@@ -40,10 +40,59 @@ async function updateCycleSettings(adminEmployeeId, { fy_label, deadline }) {
   return getActiveCycle();
 }
 
+/* ── Enrollment ─────────────────────────────────────────────────────────── */
+async function getEnrollments(cycleId) {
+  return query(
+    `SELECT ae.employee_id, ae.enrolled_at,
+            CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
+            e.emp_code, e.emp_job_title, d.department_name,
+            CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS manager_name,
+            sa.status AS appraisal_status
+       FROM appraisal_enrollments ae
+       JOIN employees e ON e.employee_id = ae.employee_id
+       LEFT JOIN departments d ON d.department_id = e.department_id
+       LEFT JOIN employees m ON m.employee_id = e.reporting_to
+       LEFT JOIN self_appraisals sa ON sa.employee_id = ae.employee_id AND sa.cycle_id = ae.cycle_id
+      WHERE ae.cycle_id = ?
+      ORDER BY e.first_name`,
+    [cycleId]
+  );
+}
+
+async function enrollEmployees(cycleId, adminEmployeeId, employeeIds) {
+  for (const empId of employeeIds) {
+    await query(
+      `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
+      [cycleId, empId, adminEmployeeId]
+    );
+  }
+  return getEnrollments(cycleId);
+}
+
+async function unenrollEmployee(cycleId, employeeId) {
+  await query(
+    `DELETE FROM appraisal_enrollments WHERE cycle_id=? AND employee_id=?`,
+    [cycleId, employeeId]
+  );
+  return { success: true };
+}
+
+async function isEnrolled(cycleId, employeeId) {
+  const [row] = await query(
+    `SELECT 1 FROM appraisal_enrollments WHERE cycle_id=? AND employee_id=?`,
+    [cycleId, employeeId]
+  );
+  return !!row;
+}
+
 /* ── Employee: get/save/submit ──────────────────────────────────────────── */
 async function getMyAppraisal(employeeId) {
   const cycle = await getActiveCycle();
-  if (!cycle) return { cycle: null, appraisal: null, ratings: [] };
+  if (!cycle) return { cycle: null, appraisal: null, ratings: [], enrolled: false };
+
+  // Check enrollment
+  const enrolled = await isEnrolled(cycle.cycle_id, employeeId);
+  if (!enrolled) return { cycle, appraisal: null, ratings: [], parameters: PARAMS, enrolled: false };
 
   const [appraisal] = await query(
     `SELECT * FROM self_appraisals WHERE cycle_id=? AND employee_id=?`,
@@ -56,7 +105,7 @@ async function getMyAppraisal(employeeId) {
       [appraisal.appraisal_id]
     );
   }
-  return { cycle, appraisal: appraisal || null, ratings, parameters: PARAMS };
+  return { cycle, appraisal: appraisal || null, ratings, parameters: PARAMS, enrolled: true };
 }
 
 async function saveMyAppraisal(employeeId, { ratings, overall_comments, submit }) {
@@ -129,9 +178,11 @@ async function getTeamAppraisals(managerEmployeeId) {
      LEFT JOIN departments d ON d.department_id = e.department_id
      LEFT JOIN self_appraisals sa
             ON sa.employee_id = e.employee_id AND sa.cycle_id = ?
+     INNER JOIN appraisal_enrollments ae
+            ON ae.employee_id = e.employee_id AND ae.cycle_id = ?
      WHERE e.reporting_to = ? AND e.employee_status = 'Active'
      ORDER BY e.first_name`,
-    [cycle.cycle_id, managerEmployeeId]
+    [cycle.cycle_id, cycle.cycle_id, managerEmployeeId]
   );
 
   // For each submitted, also get ratings
@@ -238,5 +289,6 @@ module.exports = {
   getMyAppraisal, saveMyAppraisal,
   getTeamAppraisals, saveManagerRating,
   getAllAppraisals, updateAppraisalStatus,
+  getEnrollments, enrollEmployees, unenrollEmployee, isEnrolled,
   PARAMS,
 };
