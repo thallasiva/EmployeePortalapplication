@@ -10,6 +10,8 @@
 --    salary data (who accessed what and when).
 --
 -- Run once per environment. Safe to re-run (IF NOT EXISTS guards).
+
+USE hrms_db;
 -- =============================================================
 
 SET FOREIGN_KEY_CHECKS = 0;

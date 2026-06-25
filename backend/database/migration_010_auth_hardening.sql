@@ -8,6 +8,8 @@
 --      check when MFA is required, replaced by a full JWT after TOTP verify
 -- =============================================================
 
+USE hrms_db;
+
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ── MFA columns ───────────────────────────────────────────────

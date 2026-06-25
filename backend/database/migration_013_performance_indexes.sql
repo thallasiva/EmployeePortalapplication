@@ -1,6 +1,8 @@
 -- migration_013: Performance indexes for common query paths
 -- Run once: mysql -u root -p hrms_db < migration_013_performance_indexes.sql
 
+USE hrms_db;
+
 -- users: FK to employees (used in every JOIN for /auth/me)
 ALTER TABLE users
   ADD INDEX IF NOT EXISTS idx_users_employee_id (employee_id);

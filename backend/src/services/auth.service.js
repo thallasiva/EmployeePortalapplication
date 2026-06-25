@@ -25,7 +25,8 @@ const LOCKOUT_MINUTES = 15;
 const USER_WITH_ROLE_SQL = `
   SELECT u.user_id, u.email, u.password_hash, u.role_id, u.employee_id, u.status,
          r.role_name,
-         e.first_name, e.last_name, e.emp_code, e.emp_job_title, e.department_id
+         e.first_name, e.last_name, e.emp_code, e.emp_job_title, e.department_id,
+         e.profile_photo
     FROM users u
     JOIN roles r ON r.role_id = u.role_id
     LEFT JOIN employees e ON e.employee_id = u.employee_id
@@ -52,6 +53,7 @@ function toProfile(userRow) {
     empCode: userRow.emp_code || null,
     jobTitle: userRow.emp_job_title || null,
     departmentId: userRow.department_id || null,
+    profilePhoto: userRow.profile_photo || null,
   };
 }
 

@@ -4,7 +4,7 @@
 --         extra_work_requests
 -- ============================================================
 
-USE hrms;
+USE hrms_db;
 
 -- ── 1. Employee-owned tasks ──────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS employee_tasks (

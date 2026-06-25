@@ -46,5 +46,31 @@ const updateStatus = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Status updated').send(res);
 });
 
-module.exports = { getCycle, toggleCycle, updateSettings, getMyAppraisal, saveMyAppraisal,
-  getTeamAppraisals, saveManagerRating, getAllAppraisals, updateStatus };
+/* Enrollment */
+const getEnrollments = asyncHandler(async (req, res) => {
+  const cycle = await svc.getActiveCycle();
+  if (!cycle) return new ApiResponse(200, [], 'No active cycle').send(res);
+  const data = await svc.getEnrollments(cycle.cycle_id);
+  new ApiResponse(200, data, 'Enrollments fetched').send(res);
+});
+const enrollEmployees = asyncHandler(async (req, res) => {
+  const cycle = await svc.getActiveCycle();
+  if (!cycle) throw require('../utils/ApiError').badRequest('No appraisal cycle found');
+  const { employee_ids } = req.body;
+  if (!Array.isArray(employee_ids) || !employee_ids.length)
+    throw require('../utils/ApiError').badRequest('employee_ids array required');
+  const data = await svc.enrollEmployees(cycle.cycle_id, req.user.employeeId, employee_ids);
+  new ApiResponse(200, data, 'Employees enrolled').send(res);
+});
+const unenrollEmployee = asyncHandler(async (req, res) => {
+  const cycle = await svc.getActiveCycle();
+  if (!cycle) throw require('../utils/ApiError').badRequest('No appraisal cycle found');
+  await svc.unenrollEmployee(cycle.cycle_id, Number(req.params.employeeId));
+  new ApiResponse(200, { success: true }, 'Employee unenrolled').send(res);
+});
+
+module.exports = {
+  getCycle, toggleCycle, updateSettings, getMyAppraisal, saveMyAppraisal,
+  getTeamAppraisals, saveManagerRating, getAllAppraisals, updateStatus,
+  getEnrollments, enrollEmployees, unenrollEmployee,
+};

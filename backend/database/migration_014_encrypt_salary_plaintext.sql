@@ -7,6 +7,8 @@
 -- After running this SQL, restart the backend so the app service re-encrypts
 -- any rows that still have salary_encrypted = NULL.
 
+USE hrms_db;
+
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ── salary_structures: allow NULL so we can clear plaintext ──────────────────

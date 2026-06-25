@@ -36,6 +36,7 @@ router.use('/workflow-delegates', require('./workflowDelegate.routes'));
 router.use('/request-hub', require('./requestHub.routes'));
 
 router.use('/timesheets', require('./timesheet.routes'));
+router.use('/work-schedules', require('./workSchedule.routes'));
 
 router.use('/reports', require('./report.routes'));
 router.use('/dashboard', require('./dashboard.routes'));
