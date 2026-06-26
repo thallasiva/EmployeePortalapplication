@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Star, CheckCircle2, Lock, Send, Save, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, CheckCircle2, Lock, Send, Save, AlertCircle, ChevronDown, ChevronUp, UserCheck } from "lucide-react";
 import { getMyAppraisal, saveMyAppraisal } from "../../../api/appraisal.api";
 
 const BRAND = "#f18200";
@@ -27,6 +27,18 @@ function StarPicker({ value, onChange, disabled }) {
       {value > 0 && (
         <span style={{ fontSize:12, fontWeight:600, color:BRAND, marginLeft:6 }}>{labels[value]}</span>
       )}
+    </span>
+  );
+}
+
+function StarDisplay({ value, color = BRAND, size = 16 }) {
+  return (
+    <span style={{ display:"flex", alignItems:"center", gap:3 }}>
+      {[1,2,3,4,5].map(n => (
+        <Star key={n} size={size}
+          style={{ color: n <= value ? color : "#e2e8f0", fill: n <= value ? color : "#e2e8f0" }} />
+      ))}
+      <span style={{ fontSize:12, color:"#64748b", marginLeft:4 }}>{value}/5</span>
     </span>
   );
 }
@@ -70,6 +82,80 @@ function ParamCard({ param, idx, rating, onChange, disabled }) {
   );
 }
 
+/* ── Manager Feedback Section ───────────────────────────────────────────── */
+function ManagerFeedback({ ratings, params }) {
+  const reviewed = ratings.filter(r => r.manager_rating);
+  if (!reviewed.length) return null;
+
+  const avgMgr = (reviewed.reduce((s,r) => s + r.manager_rating, 0) / reviewed.length).toFixed(1);
+
+  return (
+    <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
+      overflow:"hidden", marginBottom:20 }}>
+      {/* Header */}
+      <div style={{ background:"linear-gradient(135deg,#6366f1,#4f46e5)", padding:"14px 18px",
+        display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <UserCheck size={20} style={{ color:"#fff" }} />
+          <div>
+            <p style={{ fontSize:14, fontWeight:700, color:"#fff", margin:0 }}>Manager's Review</p>
+            <p style={{ fontSize:11, opacity:0.8, color:"#fff", margin:0 }}>
+              Your reporting manager has submitted feedback
+            </p>
+          </div>
+        </div>
+        <div style={{ textAlign:"right" }}>
+          <p style={{ fontSize:22, fontWeight:800, color:"#fff", margin:0 }}>{avgMgr}</p>
+          <p style={{ fontSize:10, color:"rgba(255,255,255,0.7)", margin:0 }}>Overall Avg / 5</p>
+        </div>
+      </div>
+
+      {/* Per-parameter manager ratings */}
+      <div style={{ padding:"16px 18px" }}>
+        <div style={{ display:"grid", gap:10 }}>
+          {params.map(p => {
+            const r = ratings.find(x => x.parameter_key === p.key);
+            if (!r || !r.manager_rating) return null;
+            return (
+              <div key={p.key} style={{ background:"#f8fafc", border:"1px solid #e2e8f0",
+                borderRadius:10, padding:"12px 14px" }}>
+                <p style={{ fontSize:13, fontWeight:600, color:"#1e293b", margin:"0 0 8px" }}>
+                  {p.label}
+                </p>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                  {/* Self */}
+                  <div>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#94a3b8",
+                      textTransform:"uppercase", letterSpacing:"0.05em", margin:"0 0 5px" }}>Your Rating</p>
+                    <StarDisplay value={r.self_rating || 0} color={BRAND} />
+                    {r.self_comments && (
+                      <p style={{ fontSize:11, color:"#64748b", margin:"5px 0 0", fontStyle:"italic" }}>
+                        "{r.self_comments}"
+                      </p>
+                    )}
+                  </div>
+                  {/* Manager */}
+                  <div>
+                    <p style={{ fontSize:11, fontWeight:700, color:"#6366f1",
+                      textTransform:"uppercase", letterSpacing:"0.05em", margin:"0 0 5px" }}>Manager's Rating</p>
+                    <StarDisplay value={r.manager_rating} color="#6366f1" />
+                    {r.manager_comments && (
+                      <p style={{ fontSize:11, color:"#4338ca", margin:"5px 0 0", fontStyle:"italic",
+                        background:"#eef2ff", padding:"6px 10px", borderRadius:6 }}>
+                        "{r.manager_comments}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SelfAppraisal() {
   const [loading,   setLoading]   = useState(true);
   const [saving,    setSaving]    = useState(false);
@@ -77,6 +163,7 @@ export default function SelfAppraisal() {
   const [appraisal, setAppraisal] = useState(null);
   const [params,    setParams]    = useState([]);
   const [ratings,   setRatings]   = useState({});
+  const [rawRatings, setRawRatings] = useState([]);
   const [overall,   setOverall]   = useState("");
   const [toast,     setToast]     = useState(null);
   const [enrolled,  setEnrolled]  = useState(true);
@@ -89,6 +176,7 @@ export default function SelfAppraisal() {
       setAppraisal(d.appraisal);
       setEnrolled(d.enrolled !== false);
       setParams(d.parameters || []);
+      setRawRatings(d.ratings || []);
       const map = {};
       (d.parameters||[]).forEach(p => { map[p.key]={self_rating:0,self_comments:""}; });
       (d.ratings||[]).forEach(r => { map[r.parameter_key]={self_rating:r.self_rating||0,self_comments:r.self_comments||""}; });
@@ -119,6 +207,7 @@ export default function SelfAppraisal() {
       }));
       const d = await saveMyAppraisal({ ratings:ratingsArr, overall_comments:overall, submit });
       setAppraisal(d.appraisal);
+      setRawRatings(d.ratings || []);
       notify(submit ? "Appraisal submitted!" : "Draft saved.");
     } catch(e) {
       notify(e?.response?.data?.message||"Failed to save.","error");
@@ -150,7 +239,7 @@ export default function SelfAppraisal() {
       justifyContent:"center", gap:16, padding:40, textAlign:"center" }}>
       <div style={{ width:72, height:72, borderRadius:"50%", background:"#fff7ed",
         display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <Lock size={32} style={{ color:"#f18200" }} />
+        <Lock size={32} style={{ color:BRAND }} />
       </div>
       <h2 style={{ fontSize:18, fontWeight:700, color:"#1e293b", margin:0 }}>Appraisal Not Yet Assigned</h2>
       <p style={{ fontSize:14, color:"#64748b", margin:0, maxWidth:380 }}>
@@ -161,7 +250,7 @@ export default function SelfAppraisal() {
   );
 
   return (
-    <div style={{ maxWidth:760, margin:"0 auto", padding:"24px 16px" }}>
+    <div style={{  margin:"0 auto", padding:"24px 16px" }}>
       {toast && (
         <div style={{ position:"fixed", top:20, right:20, zIndex:999,
           background:toast.type==="error"?"#fef2f2":"#f0fdf4",
@@ -241,21 +330,27 @@ export default function SelfAppraisal() {
             background:isSubmitted?"#f8fafc":"#fff" }} />
       </div>
 
+      {/* Manager Feedback — shown after manager reviews */}
+      {isSubmitted && rawRatings.some(r => r.manager_rating) && (
+        <ManagerFeedback ratings={rawRatings} params={params} />
+      )}
+
       {/* Actions */}
       {!isSubmitted && (
         <div style={{ display:"flex", gap:12, justifyContent:"flex-end" }}>
           <button onClick={()=>handleSave(false)} disabled={saving}
-            style={{ padding:"10px 22px", borderRadius:8, border:"1px solid #e2e8f0",
-              background:"#fff", color:"#64748b", fontWeight:600, fontSize:13,
-              cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 20px",
+              borderRadius:8, border:"1px solid #e2e8f0", background:"#fff",
+              color:"#374151", fontWeight:600, fontSize:13, cursor:"pointer" }}>
             <Save size={14}/>{saving?"Saving…":"Save Draft"}
           </button>
           <button onClick={()=>handleSave(true)} disabled={saving||!allRated}
-            title={!allRated?"Rate all parameters first":""}
-            style={{ padding:"10px 22px", borderRadius:8, border:"none",
-              background:allRated?BRAND:"#e2e8f0", color:allRated?"#fff":"#94a3b8",
-              fontWeight:600, fontSize:13, cursor:allRated?"pointer":"not-allowed",
-              display:"flex", alignItems:"center", gap:6 }}>
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 20px",
+              borderRadius:8, border:"none",
+              background:allRated?BRAND:"#e2e8f0",
+              color:allRated?"#fff":"#94a3b8",
+              fontWeight:600, fontSize:13,
+              cursor:allRated?"pointer":"not-allowed" }}>
             <Send size={14}/>{saving?"Submitting…":"Submit Appraisal"}
           </button>
         </div>

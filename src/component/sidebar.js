@@ -33,6 +33,7 @@ import
   Award,
 } from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, ROLE_ADMIN, logoutUser } from "../data/auth";
+import { getAppraisalCycle } from "../api/appraisal.api";
 
 const BRAND_NAME = "NAT IT";
 
@@ -69,7 +70,18 @@ export const Sidebar = ({ open }) =>
   const user = getStoredUser();
   const role = user?.role ?? ROLE_ADMIN;
 
+  // Appraisal menu is only visible when admin has rolled out an active cycle
+  const [appraisalActive, setAppraisalActive] = useState(false);
+  useEffect(() => {
+    if (!isAdmin(user)) {
+      getAppraisalCycle()
+        .then(cycle => setAppraisalActive(cycle?.status === "active"))
+        .catch(() => setAppraisalActive(false));
+    }
+  }, []);
+
   const adminItems = [
+    // ── Core ──────────────────────────────────────────────
     {
       label: "Dashboard",
       icon: <Home size={20} />,
@@ -80,15 +92,11 @@ export const Sidebar = ({ open }) =>
       icon: <Users size={20} />,
       navigationLink: "/dashboard/employee",
     },
+    // ── Time & Attendance ──────────────────────────────────
     {
-      label: "Company",
-      icon: <Building size={20} />,
-      navigationLink: "/dashboard/company",
-    },
-    {
-      label: "Calendar",
-      icon: <Calendar size={20} />,
-      navigationLink: "/dashboard/calendar",
+      label: "Attendance",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/attendance",
     },
     {
       label: "Leave",
@@ -96,35 +104,7 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Leave Requests", navigationLink: "/dashboard/leave?tab=requests" },
         { label: "Leave Balances", navigationLink: "/dashboard/leave?tab=balances" },
-        { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" },
-      ],
-    },
-    {
-      label: "Attendance",
-      icon: <Clock size={20} />,
-      navigationLink: "/dashboard/attendance",
-    },
-    {
-      label: "Documents",
-      icon: <BookOpen size={20} />,
-      navigationLink: "/dashboard/documents",
-    },
-    {
-      label: "Reports",
-      icon: <Proportions size={20} />,
-      navigationLink: "/dashboard/report",
-    },
-    {
-      label: "Payroll",
-      icon: <FileText size={20} />,
-      children: [
-        { label: "Salary", navigationLink: "/dashboard/payroll" },
-        { label: "Payslips", navigationLink: "/dashboard/payroll/payslips" },
-        {
-          label: "IT Declaration",
-          // icon: <FileText size={20} strokeWidth={1.75} />,
-          navigationLink: "/dashboard/it-declaration",
-        },
+        { label: "Leave Types",    navigationLink: "/dashboard/leave?tab=types" },
       ],
     },
     {
@@ -132,6 +112,22 @@ export const Sidebar = ({ open }) =>
       icon: <Clock size={20} />,
       navigationLink: "/dashboard/timesheets",
     },
+    {
+      label: "Calendar",
+      icon: <Calendar size={20} />,
+      navigationLink: "/dashboard/calendar",
+    },
+    // ── Compensation ───────────────────────────────────────
+    {
+      label: "Payroll",
+      icon: <FileText size={20} />,
+      children: [
+        { label: "Salary",         navigationLink: "/dashboard/payroll" },
+        { label: "Payslips",       navigationLink: "/dashboard/payroll/payslips" },
+        { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" },
+      ],
+    },
+    // ── People Ops ─────────────────────────────────────────
     {
       label: "Onboarding",
       icon: <UserRoundPlus size={20} />,
@@ -142,26 +138,42 @@ export const Sidebar = ({ open }) =>
       icon: <Award size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/performance",
     },
-
     {
       label: "Resignations",
       icon: <LogOut size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/resignations",
     },
+    // ── Reporting & Docs ───────────────────────────────────
+    {
+      label: "Reports",
+      icon: <Proportions size={20} />,
+      navigationLink: "/dashboard/report",
+    },
+    {
+      label: "Documents",
+      icon: <BookOpen size={20} />,
+      navigationLink: "/dashboard/documents",
+    },
+    // ── Support & Config ───────────────────────────────────
     {
       label: "Helpdesk",
       icon: <Headphones size={20} />,
       navigationLink: "/dashboard/helpdesk",
     },
     {
-      label: "Settings",
-      icon: <Settings size={20} />,
-      navigationLink: "/dashboard/settings",
+      label: "Company",
+      icon: <Building size={20} />,
+      navigationLink: "/dashboard/company",
     },
     {
       label: "Workflow Delegates",
       icon: <GitBranch size={20} />,
       navigationLink: "/employee/workflow-delegates",
+    },
+    {
+      label: "Settings",
+      icon: <Settings size={20} />,
+      navigationLink: "/dashboard/settings",
     },
     {
       label: "Profile",
@@ -176,17 +188,13 @@ export const Sidebar = ({ open }) =>
     navigationLink: "/manager",
   };
 
-  const managerTimesheetItem = {
-    label: "Timesheets",
-    icon: <Clock size={20} strokeWidth={1.75} />,
-    navigationLink: "/manager/timesheets",
-  };
+  // const managerTimesheetItem = {
+  //   label: "Timesheets",
+  //   icon: <Clock size={20} strokeWidth={1.75} />,
+  //   navigationLink: "/manager/timesheets",
+  // };
 
-  const managerDelegatesItem = {
-    label: "Workflow Delegates",
-    icon: <GitBranch size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/workflow-delegates",
-  };
+
 
   const managerHelpdeskItem = {
     label: "Helpdesk",
@@ -195,6 +203,7 @@ export const Sidebar = ({ open }) =>
   };
 
   const employeeItems = [
+    // ── Core ──────────────────────────────────────────────
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
@@ -205,87 +214,58 @@ export const Sidebar = ({ open }) =>
       icon: <IdCard size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/my-info",
     },
+    // ── Time & Attendance ──────────────────────────────────
     {
-      label: "Engage",
-      icon: <Radio size={20} strokeWidth={1.75} />,
-      navigationLink: "/employee/engage",
-    },
-    {
-      label: "My Worklife",
-      icon: <LayoutGrid size={20} strokeWidth={1.75} />,
+      label: "Attendance",
+      icon: <SquareCheck size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Kudos", navigationLink: "/employee/worklife/kudos" },
-        { label: "Feedback", navigationLink: "/employee/worklife/feedback" },
-      ],
-    },
-    {
-      label: "To do",
-      icon: <ClipboardList size={20} strokeWidth={1.75} />,
-      children: [
-        { label: "Tasks", navigationLink: "/employee/todo/tasks" },
-        { label: "Review", navigationLink: "/employee/todo/review" },
-      ],
-    },
-    {
-      label: "Appraisal",
-      icon: <Award size={20} strokeWidth={1.75} />,
-      navigationLink: "/employee/appraisal",
-    },
-    {
-      label: "Resignation",
-      icon: <LogOut size={20} strokeWidth={1.75} />,
-      navigationLink: "/employee/resignation",
-    },
-    {
-      label: "Salary",
-      icon: <HandCoins size={20} strokeWidth={1.75} />,
-      children: [
-        { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
-        { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" },
-        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
-        { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
-        { label: "Loans and Advances", navigationLink: "/employee/payroll/loans" },
-        { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
-        { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
-        { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
+        { label: "Attendance Info",    navigationLink: "/employee/attendance/daily" },
+        { label: "My Regularizations", navigationLink: "/employee/attendance/regularizations" },
+        { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
+        { label: "Shift Roster",       navigationLink: "/employee/attendance/shifts" },
       ],
     },
     {
       label: "Leave",
       icon: <Calendar size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
-        { label: "Apply Leave", navigationLink: "/employee/leave/apply" },
-        { label: "Leave Calendar", navigationLink: "/employee/leave/calendar" },
+        { label: "Leave Balance",    navigationLink: "/employee/leave/balance" },
+        { label: "Apply Leave",      navigationLink: "/employee/leave/apply" },
+        { label: "Leave Calendar",   navigationLink: "/employee/leave/calendar" },
         { label: "Holiday Calendar", navigationLink: "/employee/leave/holiday-calendar" },
       ],
     },
+    // ── Compensation ───────────────────────────────────────
     {
-      label: "Attendance",
-      icon: <SquareCheck size={20} strokeWidth={1.75} />,
+      label: "Salary",
+      icon: <HandCoins size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Attendance Info", navigationLink: "/employee/attendance/daily" },
-        {
-          label: "My Regularizations",
-          navigationLink: "/employee/attendance/regularizations",
-        },
-        { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
-        { label: "Shift Roster", navigationLink: "/employee/attendance/shifts" },
+        { label: "Payslips",           navigationLink: "/employee/payroll/payslips" },
+        { label: "Salary Revision",    navigationLink: "/employee/payroll/salary-revision" },
+        { label: "IT Declaration",     navigationLink: "/employee/payroll/it-declaration" },
+        { label: "Proof of Investment",navigationLink: "/employee/payroll/claims" },
+        { label: "IT Statement",       navigationLink: "/employee/payroll/it-statement" },
+        { label: "YTD Reports",        navigationLink: "/employee/payroll/ytd-reports" },
+        { label: "Reimbursements",     navigationLink: "/employee/payroll/reimbursements" },
+        { label: "Loans and Advances", navigationLink: "/employee/payroll/loans" },
       ],
     },
+    // ── Performance & Tasks ────────────────────────────────
+    // Appraisal only shown when admin has an active rollout
+    ...(appraisalActive ? [{
+      label: "Appraisal",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/appraisal",
+    }] : []),
     {
-      label: "Hiring",
-      icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
-      badge: "New",
+      label: "To Do",
+      icon: <ClipboardList size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Internal Jobs", navigationLink: "/employee/hiring" },
+        { label: "Tasks",  navigationLink: "/employee/todo/tasks" },
+        { label: "Review", navigationLink: "/employee/todo/review" },
       ],
     },
-    {
-      label: "Document Center",
-      icon: <BookOpen size={20} strokeWidth={1.75} />,
-      navigationLink: "/employee/documents",
-    },
+    // ── People & Org ───────────────────────────────────────
     {
       label: "People",
       icon: <UserRound size={20} strokeWidth={1.75} />,
@@ -297,8 +277,27 @@ export const Sidebar = ({ open }) =>
       navigationLink: "/employee/org-chart",
     },
     {
+      label: "Engage",
+      icon: <Radio size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/engage",
+    },
+    {
+      label: "My Worklife",
+      icon: <LayoutGrid size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Kudos",    navigationLink: "/employee/worklife/kudos" },
+        { label: "Feedback", navigationLink: "/employee/worklife/feedback" },
+      ],
+    },
+    // ── Docs & Requests ────────────────────────────────────
+    {
+      label: "Document Center",
+      icon: <BookOpen size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/documents",
+    },
+    {
       label: "Helpdesk",
-      icon: <Info size={20} strokeWidth={1.75} />,
+      icon: <Headphones size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/helpdesk",
     },
     {
@@ -306,13 +305,35 @@ export const Sidebar = ({ open }) =>
       icon: <Layers size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/request-hub",
     },
+    // ── Career & Exit ──────────────────────────────────────
+    {
+      label: "Hiring",
+      icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
+      badge: "New",
+      children: [
+        { label: "Internal Jobs", navigationLink: "/employee/hiring" },
+      ],
+    },
+    {
+      label: "Resignation",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/resignation",
+    },
+    // ── Config ─────────────────────────────────────────────
+    {
+      label: "Workflow Delegates",
+      icon: <GitBranch size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/workflow-delegates",
+    },
   ];
 
   const items = isAdmin(user)
     ? adminItems
     : isReportingManager(user)
-      ? [teamOverviewItem, managerTimesheetItem, managerHelpdeskItem, managerDelegatesItem, ...employeeItems]
+      ? [teamOverviewItem, managerHelpdeskItem, ...employeeItems]
       : employeeItems;
+
+  // managerTimesheetItem, ,
 
   const toggleAccordion = (index) =>
   {
@@ -372,7 +393,8 @@ export const Sidebar = ({ open }) =>
               src="https://www.natit.in/assets/images/logo.png"
               alt="NAT IT"
               style={{ height: 40, maxWidth: 140, objectFit: "contain" }}
-              onError={e => {
+              onError={e =>
+              {
                 e.target.style.display = "none";
                 e.target.nextSibling.style.display = "flex";
               }}
@@ -387,7 +409,8 @@ export const Sidebar = ({ open }) =>
             src="https://www.natit.in/assets/images/logo.png"
             alt="NAT IT"
             style={{ height: 32, width: 32, objectFit: "contain" }}
-            onError={e => {
+            onError={e =>
+            {
               e.target.style.display = "none";
               e.target.nextSibling.style.display = "flex";
             }}
@@ -436,18 +459,14 @@ export const Sidebar = ({ open }) =>
                 onClick={() => toggleAccordion(index)}
                 title={!open ? item.label : undefined}
               >
-                <span
-                  className={
-                    childActive ? "text-brand" : "text-gray-500"
-                  }
-                >
+                <span className={childActive ? "text-brand" : "text-gray-500"}>
                   {item.icon}
                 </span>
                 {open && (
                   <>
                     <span className="flex-1 truncate">{item.label}</span>
                     {item.badge && (
-                      <span className="shrink-0 text-[10px] font-normal  tracking-wide px-1  rounded bg-red-500 text-white">
+                      <span className="shrink-0 text-[10px] font-normal tracking-wide px-1 rounded bg-red-500 text-white">
                         {item.badge}
                       </span>
                     )}
@@ -464,11 +483,7 @@ export const Sidebar = ({ open }) =>
                 <div className="mt-1 ml-3 pl-3 border-l-2 border-brand-100 space-y-0.5">
                   {item.children.map((child, childIndex) =>
                   {
-                    const childActive = isPathActive(
-                      pathname,
-                      child.navigationLink,
-                      search
-                    );
+                    const childActive = isPathActive(pathname, child.navigationLink, search);
                     return (
                       <div
                         key={childIndex}
@@ -493,8 +508,7 @@ export const Sidebar = ({ open }) =>
       <div className="p-3 border-t border-gray-100">
         <button
           type="button"
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${!open ? "justify-center" : ""
-            }`}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${!open ? "justify-center" : ""}`}
           onClick={handleLogout}
           title={!open ? "Logout" : undefined}
         >
