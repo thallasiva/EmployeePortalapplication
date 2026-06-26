@@ -31,3 +31,30 @@ export const assignTicket = (id, assigned_to) =>
 /** Add comment */
 export const addComment = (id, comment) =>
   apiClient.post(`/helpdesk/${id}/comments`, { comment }).then(unwrap);
+
+/**
+ * Manager — approve (forward to team) or reject a ticket.
+ * action           : 'approve' | 'reject'
+ * forwardedToTeam  : 'IT Team' | 'Admin Team' | 'HR Team' | 'Finance Team'  (required on approve)
+ * comment          : reason  (required on reject, optional on approve)
+ */
+export const managerAction = (id, action, forwardedToTeam = null, comment = '') =>
+  apiClient.put(`/helpdesk/${id}/manager-action`, {
+    action,
+    forwarded_to_team: forwardedToTeam,
+    comment,
+  }).then(unwrap);
+
+/**
+ * Employee — confirm resolution and close their own ticket.
+ * Only allowed when status === 'Resolved'.
+ */
+export const closeTicket = (id) =>
+  apiClient.put(`/helpdesk/${id}/close`).then(unwrap);
+
+/**
+ * Employee — reopen ticket when not satisfied with resolution.
+ * Only allowed when status === 'Resolved'.
+ */
+export const reopenTicket = (id, comment = '') =>
+  apiClient.put(`/helpdesk/${id}/reopen`, { comment }).then(unwrap);

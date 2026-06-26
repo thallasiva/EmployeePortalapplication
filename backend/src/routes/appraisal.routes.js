@@ -9,22 +9,22 @@ router.use(authenticate);
 router.get('/cycle', c.getCycle);
 
 /* Employee */
-router.get('/my',        c.getMyAppraisal);
-router.post('/my/save',  c.saveMyAppraisal);
+router.get('/my',       c.getMyAppraisal);
+router.post('/my/save', c.saveMyAppraisal);
 
 /* Manager + Admin */
-router.get('/team',             authorizeRoles('Reporting Manager','Admin'), c.getTeamAppraisals);
-router.put('/:id/manager-rate', authorizeRoles('Reporting Manager','Admin'), c.saveManagerRating);
+router.get('/team',             authorizeRoles('Reporting Manager', 'Admin'), c.getTeamAppraisals);
+router.put('/:id/manager-rate', authorizeRoles('Reporting Manager', 'Admin'), c.saveManagerRating);
 
 /* Admin only */
-router.get('/all',                        authorizeRoles('Admin'), c.getAllAppraisals);
-router.put('/:id/status',                 authorizeRoles('Admin'), c.updateStatus);
-router.put('/cycle/toggle',               authorizeRoles('Admin'), c.toggleCycle);
-router.put('/cycle/settings',             authorizeRoles('Admin'), c.updateSettings);
+router.get('/all',             authorizeRoles('Admin'), c.getAllAppraisals);
+router.put('/:id/status',      authorizeRoles('Admin'), c.updateStatus);
+router.put('/cycle/toggle',    authorizeRoles('Admin'), c.toggleCycle);
+router.put('/cycle/settings',  authorizeRoles('Admin'), c.updateSettings);
 
-/* Enrollment */
-router.get('/enrollments',                authorizeRoles('Admin'), c.getEnrollments);
-router.post('/enrollments',               authorizeRoles('Admin'), c.enrollEmployees);
-router.delete('/enrollments/:employeeId', authorizeRoles('Admin'), c.unenrollEmployee);
+/* Enrollment (Admin) */
+router.get('/enrollments',                    authorizeRoles('Admin'), c.getEnrollments);
+router.post('/enrollments',                   authorizeRoles('Admin'), c.enrollEmployees);
+router.delete('/enrollments/:employeeId',     authorizeRoles('Admin'), c.unenrollEmployee);
 
 module.exports = router;

@@ -5,6 +5,7 @@ import {
   getTimesheetDetail, getEmployeeDashboardCounts,
   createExtraWorkRequest, getMyExtraWork,
 } from "../../../api/timesheet.api";
+import AddTaskModal from "./AddTaskModal";
 import "./tasks.css";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -618,8 +619,21 @@ function MyTasksTab() {
 }
 
 // ─── Timesheet Tab ────────────────────────────────────────────────────────────
-function TimesheetTab() {
+function TimesheetTab({ jumpTo = null }) {
   const [weekOffset, setWeekOffset] = useState(0);
+
+  // Jump to a specific week when navigated from history
+  useEffect(() => {
+    if (!jumpTo?.week_start) return;
+    const now = new Date();
+    const day = now.getDay() || 7;
+    const curMonday = new Date(now);
+    curMonday.setDate(now.getDate() - day + 1);
+    const target = new Date(jumpTo.week_start);
+    const diffMs = target.getTime() - curMonday.getTime();
+    const diffWeeks = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+    setWeekOffset(diffWeeks);
+  }, [jumpTo]);
   const [entries, setEntries] = useState([]);
   const [nextId, setNextId] = useState(2);
   const [timesheet, setTimesheet] = useState(null);
@@ -914,54 +928,54 @@ function TimesheetTab() {
                     const over = total > MAX_DAILY_HOURS;
                     return (
                       <td key={day} className={`px-1 py-2 text-center ${over ? "text-red-600 font-bold" : "text-gray-700"}`}>
-                        {total > 0 ? fmtDuration(total) : "—"}
-                        {over && <div className="text-[9px] text-red-500">OVER 8h</div>}
+                        {total > 0 ? fmtDuration(total) : <span className="text-gray-300">—</span>}
                       </td>
                     );
                   })}
-                  <td className="px-3 py-2 text-center text-brand font-bold">{fmtDuration(grandTotal)}</td>
+                  <td className="px-3 py-2 text-center font-bold text-brand">
+                    {fmtDuration(entries.reduce((s, r) => s + rowTotal(r.hours), 0))}
+                  </td>
                   {canEdit && <td />}
                 </tr>
               </tfoot>
             </table>
           </div>
 
-          {/* Actions */}
+          {/* Action bar */}
           {canEdit && (
-            <div className="flex items-center justify-between">
-              <button type="button" onClick={addRow} className="text-sm font-medium text-brand hover:underline">+ Add Row</button>
-              <div className="flex gap-2">
-                <button type="button" onClick={handleSave} disabled={saving} className="ts-btn-ghost text-sm">
-                  {saving ? "Saving…" : "Save Draft"}
+            <div className="flex items-center gap-3 justify-end">
+              {hasOvertime && (
+                <button type="button" onClick={() => setShowExtraWork(true)}
+                  className="ts-btn-ghost text-amber-600 border-amber-300 text-sm">
+                  ⚠ Extra Work Request
                 </button>
-                {hasOvertime ? (
-                  <button type="button" onClick={() => setShowExtraWork(true)} className="ts-btn-warning text-sm">
-                    ⚡ Extra Work Request
-                  </button>
-                ) : (
-                  <button type="button" onClick={handleSubmit} disabled={submitting || saving} className="ts-btn-primary text-sm">
-                    {submitting ? "Submitting…" : "Submit for Approval"}
-                  </button>
-                )}
-              </div>
+              )}
+              <button type="button" onClick={addRow} className="ts-btn-ghost text-sm">+ Add Row</button>
+              <button type="button" onClick={handleSave} disabled={saving}
+                className="ts-btn-ghost text-sm">{saving ? "Saving…" : "Save Draft"}</button>
+              <button type="button" onClick={handleSubmit} disabled={saving || hasOvertime}
+                title={hasOvertime ? "Fix overtime before submitting" : undefined}
+                className={`ts-btn-primary text-sm ${hasOvertime ? "opacity-40 cursor-not-allowed" : ""}`}>
+                {saving ? "Submitting…" : "Submit for Approval"}
+              </button>
             </div>
           )}
 
-          {/* Extra work history */}
+          {/* Extra Work panel */}
           {myExtraWork.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Extra Work Requests</h3>
-              <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-600 mb-2">Extra Work Requests This Week</p>
+              <div className="space-y-1">
                 {myExtraWork.map(ew => (
-                  <div key={ew.extra_work_id} className="flex items-start gap-3 text-sm">
-                    <span className={`text-xs px-2 py-0.5 rounded-full border shrink-0 capitalize ${STATUS_STYLE[ew.status] || ""}`}>
-                      {ew.status}
-                    </span>
-                    <div>
-                      <span className="font-medium">{ew.task_name}</span>
-                      <span className="text-gray-400 ml-2">{fmtDuration(ew.extra_hours)} · {ew.work_date}</span>
-                      <p className="text-xs text-gray-500">{ew.reason}</p>
-                    </div>
+                  <div key={ew.extra_work_id} className="flex items-center gap-3 text-xs text-gray-600">
+                    <span className="font-medium text-gray-800">{ew.task_name}</span>
+                    <span>{ew.extra_hours}h</span>
+                    <span className="text-gray-400">{ew.work_date?.slice(0, 10)}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                      ew.status === "approved" ? "bg-emerald-50 text-emerald-700"
+                      : ew.status === "rejected" ? "bg-red-50 text-red-600"
+                      : "bg-amber-50 text-amber-700"
+                    }`}>{ew.status}</span>
                   </div>
                 ))}
               </div>
@@ -973,65 +987,202 @@ function TimesheetTab() {
       {showExtraWork && (
         <ExtraWorkModal
           timesheetId={timesheet?.timesheet_id}
-          overDays={overDays}
+          overDays={dates.filter((_, i) => colTotal(entries, DAYS[i]) > MAX_DAILY_HOURS).map(d => toDateStr(d))}
           onClose={() => setShowExtraWork(false)}
           onSubmit={handleExtraWorkSubmit}
         />
       )}
-
       {editTask && (
-        <TaskModal
-          task={editTask}
-          onClose={() => setEditTask(null)}
-          onSave={handleUpdateTask}
-        />
+        <AddTaskModal task={editTask} onClose={() => setEditTask(null)} onSave={handleUpdateTask} />
       )}
     </div>
   );
 }
 
-// ─── Dashboard Counts ─────────────────────────────────────────────────────────
-function DashboardCounts() {
-  const [counts, setCounts] = useState(null);
-  useEffect(() => { getEmployeeDashboardCounts().then(setCounts).catch(() => {}); }, []);
-  if (!counts) return null;
-  const items = [
-    { label: "Draft Tasks", value: counts.draftTasks, color: "text-gray-600" },
-    { label: "Submitted Weeks", value: counts.submittedWeeks, color: "text-brand" },
-    { label: "Pending Approval", value: counts.pendingApproval, color: "text-amber-600" },
-    { label: "Approved Weeks", value: counts.approvedWeeks, color: "text-emerald-600" },
-    { label: "Rejected Weeks", value: counts.rejectedWeeks, color: "text-red-600" },
-  ];
+// ─── Timesheet History (filterable list of all weeks) ──────────────────────────
+function TimesheetHistory({ statusFilter, onSelectWeek }) {
+  const [timesheets, setTimesheets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getMyTimesheets().then(rows => {
+      const filtered = statusFilter ? rows.filter(t => t.status === statusFilter) : rows;
+      filtered.sort((a, b) => (b.week_start > a.week_start ? 1 : -1));
+      setTimesheets(filtered);
+    }).catch(() => setTimesheets([])).finally(() => setLoading(false));
+  }, [statusFilter]);
+
+  const STATUS_COLOR = {
+    draft:    "bg-gray-100 text-gray-600",
+    pending:  "bg-amber-50 text-amber-700",
+    approved: "bg-emerald-50 text-emerald-700",
+    rejected: "bg-red-50 text-red-600",
+  };
+
+  if (loading) return <div className="ts-loading">Loading…</div>;
+  if (!timesheets.length) return (
+    <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+      <span className="text-4xl">📋</span>
+      <p className="text-sm">No {statusFilter || ""} timesheets found.</p>
+    </div>
+  );
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
-      {items.map(({ label, value, color }) => (
-        <div key={label} className="bg-white rounded-xl border border-gray-200 shadow-sm py-3 px-4 text-center">
-          <p className={`text-xl font-bold ${color}`}>{value ?? 0}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+    <div className="space-y-2">
+      {timesheets.map(t => (
+        <div key={t.timesheet_id}
+          onClick={() => onSelectWeek(t)}
+          className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex items-center justify-between cursor-pointer hover:border-brand hover:shadow-md transition-all">
+          <div>
+            <p className="text-sm font-semibold text-gray-800">
+              {t.week_start ? new Date(t.week_start).toLocaleDateString("en-GB", { day:"2-digit", month:"short" }) : "—"}
+              {" – "}
+              {t.week_end ? new Date(t.week_end).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }) : ""}
+            </p>
+            {t.comments && t.status === "rejected" && (
+              <p className="text-xs text-red-500 mt-0.5 truncate max-w-xs">Reason: {t.comments}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLOR[t.status] || "bg-gray-100 text-gray-500"}`}>
+              {t.status}
+            </span>
+            <span className="text-gray-300 text-sm">→</span>
+          </div>
         </div>
       ))}
     </div>
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main export ───────────────────────────────────────────────────────────────
 export default function Tasks() {
-  const [activeTab, setActiveTab] = useState("tasks");
+  const [activeTab,   setActiveTab]   = useState("tasks");
+  const [tsFilter,    setTsFilter]    = useState(null);   // null | "pending" | "approved" | "rejected"
+  const [showHistory, setShowHistory] = useState(false);  // true = show list, false = show week entry
+  const [jumpWeek,    setJumpWeek]    = useState(null);   // timesheet row to jump to
+  const [counts,      setCounts]      = useState(null);
+
+  useEffect(() => {
+    getEmployeeDashboardCounts().then(setCounts).catch(() => {});
+  }, []);
+
+  const handleStatClick = (tab, filter = null) => {
+    setActiveTab(tab);
+    if (tab === "timesheets") {
+      setTsFilter(filter);
+      setShowHistory(true);
+      setJumpWeek(null);
+    }
+  };
+
+  const handleSelectWeek = (ts) => {
+    setJumpWeek(ts);
+    setShowHistory(false);
+  };
+
+  const STAT_CARDS = [
+    {
+      label: "Draft Tasks",
+      value: counts?.draftTasks ?? "—",
+      bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-700", num: "text-gray-800",
+      onClick: () => handleStatClick("tasks"),
+    },
+    {
+      label: "Total Weeks",
+      value: counts?.submittedWeeks ?? "—",
+      bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", num: "text-blue-700",
+      onClick: () => handleStatClick("timesheets", null),
+    },
+    {
+      label: "Pending Approval",
+      value: counts?.pendingApproval ?? "—",
+      bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-600", num: "text-amber-700",
+      onClick: () => handleStatClick("timesheets", "pending"),
+    },
+    {
+      label: "Approved Weeks",
+      value: counts?.approvedWeeks ?? "—",
+      bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-600", num: "text-emerald-700",
+      onClick: () => handleStatClick("timesheets", "approved"),
+    },
+    {
+      label: "Rejected Weeks",
+      value: counts?.rejectedWeeks ?? "—",
+      bg: "bg-red-50", border: "border-red-200", text: "text-red-500", num: "text-red-600",
+      onClick: () => handleStatClick("timesheets", "rejected"),
+    },
+  ];
+
+  const TABS = [
+    { id: "tasks",      label: "My Tasks" },
+    { id: "timesheets", label: "Timesheets" },
+  ];
+
   return (
-    <div className="tasks-page">
-      <DashboardCounts />
-      <div className="flex gap-2 mb-5">
-        {[{ key: "tasks", label: "My Tasks" }, { key: "timesheet", label: "Timesheet" }].map(tab => (
-          <button key={tab.key} type="button" onClick={() => setActiveTab(tab.key)}
-            className={`text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${
-              activeTab === tab.key
-                ? "bg-brand text-white border-brand"
-                : "bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand"
-            }`}>{tab.label}</button>
+    <div className="min-h-screen bg-gray-50 p-5 space-y-5">
+
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {STAT_CARDS.map(card => (
+          <button key={card.label} onClick={card.onClick}
+            className={`${card.bg} border ${card.border} rounded-xl px-4 py-3 text-left hover:shadow-md transition-all cursor-pointer group`}>
+            <p className={`text-2xl font-extrabold ${card.num} group-hover:scale-105 transition-transform`}>
+              {card.value}
+            </p>
+            <p className={`text-xs font-semibold mt-1 ${card.text}`}>{card.label}</p>
+          </button>
         ))}
       </div>
-      {activeTab === "tasks" && <MyTasksTab />}
-      {activeTab === "timesheet" && <TimesheetTab />}
+
+      {/* ── Tabs ── */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Tab strip */}
+        <div className="flex border-b border-gray-100 px-4 pt-1">
+          {TABS.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors mr-1 ${
+                activeTab === tab.id
+                  ? "border-brand text-brand"
+                  : "border-transparent text-gray-500 hover:text-gray-800"
+              }`}>
+              {tab.label}
+            </button>
+          ))}
+          {/* History/Entry toggle for timesheets tab */}
+          {activeTab === "timesheets" && (
+            <div className="ml-auto flex items-center gap-2 pb-1">
+              {tsFilter && (
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  tsFilter === "pending"  ? "bg-amber-50 text-amber-700"
+                  : tsFilter === "approved" ? "bg-emerald-50 text-emerald-700"
+                  : "bg-red-50 text-red-600"
+                }`}>
+                  {tsFilter} ×
+                  <button onClick={() => setTsFilter(null)} className="ml-1 text-gray-400 hover:text-gray-700">×</button>
+                </span>
+              )}
+              <button onClick={() => setShowHistory(h => !h)}
+                className="text-xs font-semibold px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">
+                {showHistory ? "Week Entry" : "All Weeks"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Tab content */}
+        <div className="p-4">
+          {activeTab === "tasks" && <MyTasksTab />}
+          {activeTab === "timesheets" && (
+            showHistory
+              ? <TimesheetHistory
+                  statusFilter={tsFilter}
+                  onSelectWeek={handleSelectWeek}
+                />
+              : <TimesheetTab jumpTo={jumpWeek} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -28,15 +28,16 @@ const ManagerRoutes = () => {
 
   return (
     <Routes>
-      <Route index                              element={<Page><ManagerDashboard /></Page>} />
-      <Route path="team/attendance"             element={<Page><TeamAttendance /></Page>} />
-      <Route path="team/leave"                  element={<Page><TeamLeaveRequests /></Page>} />
-      <Route path="team/regularizations"        element={<Page><TeamRegularizations /></Page>} />
-      <Route path="team/performance"            element={<Page><PerformanceApprisial /></Page>} />
-      <Route path="team/appraisal-attendance"   element={<Page><TeamAttendanceAppraisal /></Page>} />
-      <Route path="timesheets"                  element={<Page><ManagerTimesheets /></Page>} />
-      <Route path="team/resignations"           element={<Page><TeamResignations /></Page>} />
-      <Route path="helpdesk"                   element={<Page><ManagerHelpdesk /></Page>} />
+      <Route index                            element={<Page><ManagerDashboard /></Page>} />
+      <Route path="team/attendance"           element={<Page><TeamAttendance /></Page>} />
+      <Route path="team/leave"                element={<Page><TeamLeaveRequests /></Page>} />
+      <Route path="team/regularizations"      element={<Page><TeamRegularizations /></Page>} />
+      <Route path="team/performance"          element={<Page><PerformanceApprisial /></Page>} />
+      <Route path="team/appraisal-attendance" element={<Page><TeamAttendanceAppraisal /></Page>} />
+      <Route path="timesheets"                element={<Page><ManagerTimesheets /></Page>} />
+      <Route path="team/resignations"         element={<Page><TeamResignations /></Page>} />
+      <Route path="helpdesk"                  element={<Page><ManagerHelpdesk /></Page>} />
+      <Route path="*"                         element={<Navigate to="/manager" replace />} />
     </Routes>
   );
 };

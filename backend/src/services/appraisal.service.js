@@ -27,6 +27,18 @@ async function toggleCycle(adminEmployeeId) {
     `UPDATE appraisal_cycles SET status=?, rolled_out_at=?, rolled_out_by=? WHERE cycle_id=?`,
     [newStatus, rolledAt, adminEmployeeId, cycle.cycle_id]
   );
+  // When enabling: auto-enroll ALL active employees so they immediately see the appraisal form
+  if (newStatus === 'active') {
+    const activeEmployees = await query(
+      `SELECT employee_id FROM employees WHERE employee_status = 'Active'`
+    );
+    for (const emp of activeEmployees) {
+      await query(
+        `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
+        [cycle.cycle_id, emp.employee_id, adminEmployeeId]
+      );
+    }
+  }
   return getActiveCycle();
 }
 
@@ -90,9 +102,18 @@ async function getMyAppraisal(employeeId) {
   const cycle = await getActiveCycle();
   if (!cycle) return { cycle: null, appraisal: null, ratings: [], enrolled: false };
 
-  // Check enrollment
+  // Lazy enrollment: if cycle is active and employee not yet enrolled, auto-enroll them
   const enrolled = await isEnrolled(cycle.cycle_id, employeeId);
-  if (!enrolled) return { cycle, appraisal: null, ratings: [], parameters: PARAMS, enrolled: false };
+  if (!enrolled) {
+    if (cycle.status === 'active') {
+      await query(
+        `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
+        [cycle.cycle_id, employeeId, employeeId]
+      );
+    } else {
+      return { cycle, appraisal: null, ratings: [], parameters: PARAMS, enrolled: false };
+    }
+  }
 
   const [appraisal] = await query(
     `SELECT * FROM self_appraisals WHERE cycle_id=? AND employee_id=?`,
@@ -133,7 +154,6 @@ async function saveMyAppraisal(employeeId, { ratings, overall_comments, submit }
     );
   }
 
-  // Upsert ratings
   for (const r of (ratings || [])) {
     const [existing] = await query(
       `SELECT rating_id FROM appraisal_ratings WHERE appraisal_id=? AND parameter_key=?`,
@@ -185,7 +205,6 @@ async function getTeamAppraisals(managerEmployeeId) {
     [cycle.cycle_id, cycle.cycle_id, managerEmployeeId]
   );
 
-  // For each submitted, also get ratings
   for (const member of team) {
     if (member.appraisal_id) {
       member.ratings = await query(
@@ -201,7 +220,6 @@ async function getTeamAppraisals(managerEmployeeId) {
 }
 
 async function saveManagerRating(managerEmployeeId, appraisalId, { ratings, manager_feedback }) {
-  // Verify this appraisal belongs to a direct report
   const [appraisal] = await query(
     `SELECT sa.*, e.reporting_to FROM self_appraisals sa
      JOIN employees e ON e.employee_id = sa.employee_id
@@ -219,25 +237,23 @@ async function saveManagerRating(managerEmployeeId, appraisalId, { ratings, mana
       [r.manager_rating ?? null, r.manager_comments ?? null, appraisalId, r.parameter_key]
     );
   }
-  if (manager_feedback !== undefined) {
-    await query(
-      `UPDATE self_appraisals SET overall_comments=COALESCE(overall_comments,'')
-       WHERE appraisal_id=?`, [appraisalId]
-    );
-  }
+
+  // manager_feedback (overall) is passed from frontend but stored as per-parameter comments above
+  // No separate column needed — per-parameter manager_comments in appraisal_ratings are sufficient
+
   return { success: true };
 }
 
 /* ── Admin: all appraisals ──────────────────────────────────────────────── */
 async function getAllAppraisals(filters = {}) {
   const cycle = await getActiveCycle();
-  if (!cycle) return { cycle: null, appraisals: [] };
+  if (!cycle) return { cycle: null, appraisals: [], notSubmitted: [] };
 
   const where = ['sa.cycle_id = ?'];
   const params = [cycle.cycle_id];
 
-  if (filters.status) { where.push('sa.status = ?'); params.push(filters.status); }
-  if (filters.department_id) { where.push('e.department_id = ?'); params.push(filters.department_id); }
+  if (filters.status)        { where.push('sa.status = ?');          params.push(filters.status); }
+  if (filters.department_id) { where.push('e.department_id = ?');    params.push(filters.department_id); }
 
   const appraisals = await query(
     `SELECT sa.appraisal_id, sa.status AS appraisal_status, sa.submitted_at, sa.overall_comments,
@@ -245,50 +261,69 @@ async function getAllAppraisals(filters = {}) {
             CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
             e.emp_job_title, d.department_name,
             CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS manager_name
-     FROM self_appraisals sa
-     JOIN employees e ON e.employee_id = sa.employee_id
-     LEFT JOIN departments d ON d.department_id = e.department_id
-     LEFT JOIN employees m ON m.employee_id = e.reporting_to
-     WHERE ${where.join(' AND ')}
-     ORDER BY sa.submitted_at DESC`,
+       FROM self_appraisals sa
+       JOIN employees e ON e.employee_id = sa.employee_id
+       LEFT JOIN departments d ON d.department_id = e.department_id
+       LEFT JOIN employees m ON m.employee_id = e.reporting_to
+      WHERE ${where.join(' AND ')}
+      ORDER BY sa.submitted_at DESC`,
     params
   );
 
   for (const a of appraisals) {
-    a.ratings = await query(
-      `SELECT * FROM appraisal_ratings WHERE appraisal_id=?`,
+    const ratings = await query(
+      `SELECT self_rating, manager_rating FROM appraisal_ratings WHERE appraisal_id=?`,
       [a.appraisal_id]
     );
+    const selfVals = ratings.filter(r => r.self_rating).map(r => r.self_rating);
+    const mgrVals  = ratings.filter(r => r.manager_rating).map(r => r.manager_rating);
+    a.self_avg    = selfVals.length ? (selfVals.reduce((s,v) => s+v, 0) / selfVals.length).toFixed(1) : null;
+    a.manager_avg = mgrVals.length  ? (mgrVals.reduce((s,v) => s+v, 0) / mgrVals.length).toFixed(1)  : null;
+    // overall avg: prefer manager avg if available, else self avg
+    a.overall_avg = a.manager_avg || a.self_avg;
   }
 
-  // Also get employees who have NOT submitted
+  // Enrolled employees who haven't started
   const notSubmitted = await query(
     `SELECT e.employee_id, e.emp_code,
             CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
             e.emp_job_title, d.department_name,
             CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS manager_name
-     FROM employees e
-     LEFT JOIN departments d ON d.department_id = e.department_id
-     LEFT JOIN employees m ON m.employee_id = e.reporting_to
-     LEFT JOIN self_appraisals sa ON sa.employee_id = e.employee_id AND sa.cycle_id = ?
-     WHERE e.employee_status = 'Active' AND sa.appraisal_id IS NULL
-     ORDER BY e.first_name`,
-    [cycle.cycle_id]
+       FROM appraisal_enrollments ae
+       JOIN employees e ON e.employee_id = ae.employee_id
+       LEFT JOIN departments d ON d.department_id = e.department_id
+       LEFT JOIN employees m ON m.employee_id = e.reporting_to
+      WHERE ae.cycle_id = ?
+        AND ae.employee_id NOT IN (
+              SELECT employee_id FROM self_appraisals WHERE cycle_id = ?
+            )
+      ORDER BY e.first_name`,
+    [cycle.cycle_id, cycle.cycle_id]
   );
 
-  return { cycle, appraisals, notSubmitted, parameters: PARAMS };
+  return { cycle, appraisals, notSubmitted };
 }
 
 async function updateAppraisalStatus(appraisalId, status) {
-  await query(`UPDATE self_appraisals SET status=? WHERE appraisal_id=?`, [status, appraisalId]);
-  return { success: true };
+  await query(
+    `UPDATE self_appraisals SET status=? WHERE appraisal_id=?`,
+    [status, appraisalId]
+  );
+  const [row] = await query(
+    `SELECT sa.*,
+            CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name
+       FROM self_appraisals sa
+       JOIN employees e ON e.employee_id = sa.employee_id
+      WHERE sa.appraisal_id=?`,
+    [appraisalId]
+  );
+  return row;
 }
 
 module.exports = {
   getActiveCycle, toggleCycle, updateCycleSettings,
+  getEnrollments, enrollEmployees, unenrollEmployee, isEnrolled,
   getMyAppraisal, saveMyAppraisal,
   getTeamAppraisals, saveManagerRating,
   getAllAppraisals, updateAppraisalStatus,
-  getEnrollments, enrollEmployees, unenrollEmployee, isEnrolled,
-  PARAMS,
 };
