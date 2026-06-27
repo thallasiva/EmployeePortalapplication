@@ -543,20 +543,24 @@ function MyTasksTab() {
                 {/* Top row */}
                 <div className="flex items-start gap-2.5 w-full">
                   <span className="w-2 h-2 rounded-full mt-1.5 shrink-0 inline-block"
-                    style={{ background: t.status === "completed" ? "#16a34a" : "#f18200" }} />
+                    style={{ background: t.status === "completed" ? "#16a34a" : t.status === "in_timesheet" ? "#7c3aed" : "#f18200" }} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm">{t.task_name}</p>
                     <p className="text-xs text-gray-500">{t.project_name}{t.description ? ` · ${t.description}` : ""}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full border capitalize shrink-0 ${
-                    t.status === "completed"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-orange-50 text-orange-700 border-orange-200"
-                  }`}>{t.status}</span>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <button type="button" onClick={() => setModal(t)} className="ts-icon-btn text-brand">✏️</button>
-                    <button type="button" onClick={() => handleDelete(t.task_id)} className="ts-icon-btn">🗑️</button>
-                  </div>
+                    t.status === "completed"     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : t.status === "in_timesheet" ? "bg-violet-50 text-violet-700 border-violet-200"
+                    : "bg-orange-50 text-orange-700 border-orange-200"
+                  }`}>{t.status === "in_timesheet" ? "In Timesheet" : t.status}</span>
+                  {t.status === "in_timesheet" ? (
+                    <span className="text-[10px] text-violet-400 italic shrink-0">locked</span>
+                  ) : (
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <button type="button" onClick={() => setModal(t)} className="ts-icon-btn text-brand">✏️</button>
+                      <button type="button" onClick={() => handleDelete(t.task_id)} className="ts-icon-btn">🗑️</button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Date / time / duration chips */}
@@ -999,18 +1003,38 @@ function TimesheetTab({ jumpTo = null }) {
   );
 }
 
-// ─── Timesheet History (filterable list of all weeks) ──────────────────────────
-function TimesheetHistory({ statusFilter, onSelectWeek }) {
-  const [timesheets, setTimesheets] = useState([]);
-  const [loading, setLoading] = useState(true);
+// ─── Timesheet History (filterable list of all weeks, accordion detail) ────────
+function TimesheetHistory({ statusFilter }) {
+  const [timesheets, setTimesheets]   = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [expandedId, setExpandedId]   = useState(null);
+  const [detailMap, setDetailMap]     = useState({});   // { [timesheet_id]: { loading, entries } }
 
   useEffect(() => {
+    setExpandedId(null);
     getMyTimesheets().then(rows => {
       const filtered = statusFilter ? rows.filter(t => t.status === statusFilter) : rows;
       filtered.sort((a, b) => (b.week_start > a.week_start ? 1 : -1));
       setTimesheets(filtered);
     }).catch(() => setTimesheets([])).finally(() => setLoading(false));
   }, [statusFilter]);
+
+  const toggleRow = async (ts) => {
+    const id = ts.timesheet_id;
+    // same row → collapse
+    if (expandedId === id) { setExpandedId(null); return; }
+    setExpandedId(id);
+    // fetch detail if not yet loaded
+    if (!detailMap[id]) {
+      setDetailMap(m => ({ ...m, [id]: { loading: true, entries: [] } }));
+      try {
+        const detail = await getTimesheetDetail(id);
+        setDetailMap(m => ({ ...m, [id]: { loading: false, entries: detail?.entries || [] } }));
+      } catch {
+        setDetailMap(m => ({ ...m, [id]: { loading: false, entries: [] } }));
+      }
+    }
+  };
 
   const STATUS_COLOR = {
     draft:    "bg-gray-100 text-gray-600",
@@ -1029,56 +1053,118 @@ function TimesheetHistory({ statusFilter, onSelectWeek }) {
 
   return (
     <div className="space-y-2">
-      {timesheets.map(t => (
-        <div key={t.timesheet_id}
-          onClick={() => onSelectWeek(t)}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 flex items-center justify-between cursor-pointer hover:border-brand hover:shadow-md transition-all">
-          <div>
-            <p className="text-sm font-semibold text-gray-800">
-              {t.week_start ? new Date(t.week_start).toLocaleDateString("en-GB", { day:"2-digit", month:"short" }) : "—"}
-              {" – "}
-              {t.week_end ? new Date(t.week_end).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }) : ""}
-            </p>
-            {t.comments && t.status === "rejected" && (
-              <p className="text-xs text-red-500 mt-0.5 truncate max-w-xs">Reason: {t.comments}</p>
+      {timesheets.map(t => {
+        const isOpen = expandedId === t.timesheet_id;
+        const detail = detailMap[t.timesheet_id];
+        return (
+          <div key={t.timesheet_id}
+            className={`rounded-xl border shadow-sm transition-all ${isOpen ? "border-brand" : "border-gray-200 hover:border-gray-300"}`}>
+            {/* ── Row header ── */}
+            <div
+              onClick={() => toggleRow(t)}
+              className="px-5 py-4 flex items-center justify-between cursor-pointer select-none">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  {t.week_start ? new Date(t.week_start).toLocaleDateString("en-GB", { day:"2-digit", month:"short" }) : "—"}
+                  {" – "}
+                  {t.week_end   ? new Date(t.week_end).toLocaleDateString("en-GB",   { day:"2-digit", month:"short", year:"numeric" }) : ""}
+                </p>
+                {t.comments && t.status === "rejected" && (
+                  <p className="text-xs text-red-500 mt-0.5 truncate max-w-xs">Reason: {t.comments}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-400">{t.total_hours ?? 0}h</span>
+                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLOR[t.status] || "bg-gray-100 text-gray-500"}`}>
+                  {t.status}
+                </span>
+                <span className={`text-gray-400 text-sm transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}>▶</span>
+              </div>
+            </div>
+
+            {/* ── Expanded detail ── */}
+            {isOpen && (
+              <div className="border-t border-gray-100 px-5 pb-4 pt-3 bg-gray-50 rounded-b-xl">
+                {detail?.loading ? (
+                  <p className="text-xs text-gray-400 py-2">Loading entries…</p>
+                ) : !detail?.entries?.length ? (
+                  <p className="text-xs text-gray-400 py-2">No entries recorded for this week.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-gray-400 uppercase tracking-wide">
+                          <th className="text-left pb-2 pr-4 font-semibold">Date</th>
+                          <th className="text-left pb-2 pr-4 font-semibold">Project</th>
+                          <th className="text-left pb-2 pr-4 font-semibold">Task</th>
+                          <th className="text-left pb-2 pr-4 font-semibold">Activity</th>
+                          <th className="text-right pb-2 font-semibold">Hours</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {detail.entries.map((e, i) => (
+                          <tr key={i} className="text-gray-700">
+                            <td className="py-1.5 pr-4 whitespace-nowrap text-gray-500">
+                              {e.work_date ? new Date(e.work_date).toLocaleDateString("en-GB", { day:"2-digit", month:"short" }) : "—"}
+                            </td>
+                            <td className="py-1.5 pr-4">{e.project_name || "—"}</td>
+                            <td className="py-1.5 pr-4 font-medium text-gray-800">{e.task_name || "—"}</td>
+                            <td className="py-1.5 pr-4 text-gray-500 max-w-[200px] truncate">{e.activity_desc || ""}</td>
+                            <td className="py-1.5 text-right font-semibold text-brand">{e.duration_hours ?? 0}h</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t border-gray-200 text-gray-600 font-semibold">
+                          <td colSpan={4} className="pt-2 text-gray-400 text-xs uppercase tracking-wide">Total</td>
+                          <td className="pt-2 text-right text-brand">{t.total_hours ?? 0}h</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )}
+                {t.comments && (
+                  <p className={`text-xs mt-3 pt-2 border-t border-gray-200 ${t.status === "rejected" ? "text-red-500" : "text-gray-500"}`}>
+                    <span className="font-semibold">Manager note:</span> {t.comments}
+                  </p>
+                )}
+              </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLOR[t.status] || "bg-gray-100 text-gray-500"}`}>
-              {t.status}
-            </span>
-            <span className="text-gray-300 text-sm">→</span>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
 // ─── Main export ───────────────────────────────────────────────────────────────
 export default function Tasks() {
-  const [activeTab,   setActiveTab]   = useState("tasks");
-  const [tsFilter,    setTsFilter]    = useState(null);   // null | "pending" | "approved" | "rejected"
-  const [showHistory, setShowHistory] = useState(false);  // true = show list, false = show week entry
-  const [jumpWeek,    setJumpWeek]    = useState(null);   // timesheet row to jump to
-  const [counts,      setCounts]      = useState(null);
+  // "history" = list view  |  "entry" = week entry form
+  const [activeTab,  setActiveTab]  = useState("tasks");
+  const [tsView,     setTsView]     = useState("history"); // "history" | "entry"
+  const [tsFilter,   setTsFilter]   = useState(null);      // null | status string
+  const [counts,     setCounts]     = useState(null);
 
   useEffect(() => {
     getEmployeeDashboardCounts().then(setCounts).catch(() => {});
   }, []);
 
+  // Stat card click: go to correct tab + set filter
   const handleStatClick = (tab, filter = null) => {
     setActiveTab(tab);
     if (tab === "timesheets") {
       setTsFilter(filter);
-      setShowHistory(true);
-      setJumpWeek(null);
+      setTsView("history");
     }
   };
 
-  const handleSelectWeek = (ts) => {
-    setJumpWeek(ts);
-    setShowHistory(false);
+  // Switch tab manually → always reset filter + show history list
+  const switchTab = (id) => {
+    setActiveTab(id);
+    if (id === "timesheets") {
+      setTsFilter(null);
+      setTsView("history");
+    }
   };
 
   const STAT_CARDS = [
@@ -1119,6 +1205,12 @@ export default function Tasks() {
     { id: "timesheets", label: "Timesheets" },
   ];
 
+  const FILTER_STYLE = {
+    pending:  "bg-amber-50 text-amber-700 border-amber-200",
+    approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    rejected: "bg-red-50 text-red-500 border-red-200",
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-5 space-y-5">
 
@@ -1138,9 +1230,9 @@ export default function Tasks() {
       {/* ── Tabs ── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         {/* Tab strip */}
-        <div className="flex border-b border-gray-100 px-4 pt-1">
+        <div className="flex border-b border-gray-100 px-4 pt-1 items-center">
           {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button key={tab.id} onClick={() => switchTab(tab.id)}
               className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors mr-1 ${
                 activeTab === tab.id
                   ? "border-brand text-brand"
@@ -1149,22 +1241,22 @@ export default function Tasks() {
               {tab.label}
             </button>
           ))}
-          {/* History/Entry toggle for timesheets tab */}
+
+          {/* Right-side controls for Timesheets tab */}
           {activeTab === "timesheets" && (
             <div className="ml-auto flex items-center gap-2 pb-1">
+              {/* Active filter chip */}
               {tsFilter && (
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                  tsFilter === "pending"  ? "bg-amber-50 text-amber-700"
-                  : tsFilter === "approved" ? "bg-emerald-50 text-emerald-700"
-                  : "bg-red-50 text-red-600"
-                }`}>
-                  {tsFilter} ×
-                  <button onClick={() => setTsFilter(null)} className="ml-1 text-gray-400 hover:text-gray-700">×</button>
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${FILTER_STYLE[tsFilter] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                  {tsFilter}
+                  <button onClick={() => setTsFilter(null)} className="hover:opacity-70 leading-none">×</button>
                 </span>
               )}
-              <button onClick={() => setShowHistory(h => !h)}
+              {/* Toggle history / week-entry */}
+              <button
+                onClick={() => setTsView(v => v === "history" ? "entry" : "history")}
                 className="text-xs font-semibold px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50">
-                {showHistory ? "Week Entry" : "All Weeks"}
+                {tsView === "history" ? "New Week Entry" : "All Weeks"}
               </button>
             </div>
           )}
@@ -1174,12 +1266,9 @@ export default function Tasks() {
         <div className="p-4">
           {activeTab === "tasks" && <MyTasksTab />}
           {activeTab === "timesheets" && (
-            showHistory
-              ? <TimesheetHistory
-                  statusFilter={tsFilter}
-                  onSelectWeek={handleSelectWeek}
-                />
-              : <TimesheetTab jumpTo={jumpWeek} />
+            tsView === "history"
+              ? <TimesheetHistory statusFilter={tsFilter} />
+              : <TimesheetTab jumpTo={null} />
           )}
         </div>
       </div>

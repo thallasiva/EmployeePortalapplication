@@ -7,6 +7,8 @@ import {
 import { REVIEW_NAV_SECTIONS, findReviewNavItem } from "../../../data/reviewHub";
 import { getMyLeaveRequests, listLeaveRequests } from "../../../api/leaveRequest.api";
 import { listRegularizations } from "../../../api/attendance.api";
+import { myTickets, teamTickets, allTickets } from "../../../api/helpdesk.api";
+import { getMyResignations, getTeamResignations, getAllResignations } from "../../../api/resignation.api";
 import { getStoredUser, isAdmin, isReportingManager } from "../../../data/auth";
 import "./reviewHub.css";
 
@@ -418,7 +420,333 @@ function RegularizationPanel({ search, statusFilter }) {
   );
 }
 
-/* ═══ Panel: Coming Soon ══════════════════════════════════════════════════ */
+/* ═══ Panel: Resignations ═════════════════════════════════════════════════ */
+
+const RESIGN_STATUS_CONFIG = {
+  pending:     { bg: "#fef9c3", color: "#ca8a04", border: "#facc15" },
+  rm_approved: { bg: "#dbeafe", color: "#1d4ed8", border: "#60a5fa" },
+  rm_rejected: { bg: "#fee2e2", color: "#dc2626", border: "#ef4444" },
+  accepted:    { bg: "#dcfce7", color: "#15803d", border: "#22c55e" },
+  rejected:    { bg: "#fee2e2", color: "#dc2626", border: "#ef4444" },
+  withdrawn:   { bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" },
+};
+
+function ResignBadge({ status }) {
+  const cfg = RESIGN_STATUS_CONFIG[status] || RESIGN_STATUS_CONFIG.pending;
+  const labels = {
+    pending: "Pending", rm_approved: "RM Approved", rm_rejected: "RM Rejected",
+    accepted: "Accepted", rejected: "Rejected", withdrawn: "Withdrawn",
+  };
+  return (
+    <span style={{
+      display: "inline-block", fontSize: 11, fontWeight: 700,
+      padding: "3px 10px", borderRadius: 999,
+      background: cfg.bg, color: cfg.color,
+      whiteSpace: "nowrap", flexShrink: 0,
+    }}>
+      {labels[status] || status}
+    </span>
+  );
+}
+
+function ResignCard({ r, isPrivileged }) {
+  const cfg = RESIGN_STATUS_CONFIG[r.status] || RESIGN_STATUS_CONFIG.pending;
+  return (
+    <div style={{
+      background: "#fff", border: "1px solid #e8edf2",
+      borderLeft: `4px solid ${cfg.border}`,
+      borderRadius: 10, padding: "14px 18px",
+      display: "flex", alignItems: "flex-start",
+      justifyContent: "space-between", gap: 14,
+      transition: "box-shadow 0.15s",
+    }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)"}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {isPrivileged && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <User size={13} style={{ color: "#0369a1" }} />
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{r.employee_name || empName(r)}</span>
+            {r.emp_code && <span style={{ fontSize: 11, color: "#94a3b8", background: "#f1f5f9", padding: "1px 6px", borderRadius: 4 }}>{r.emp_code}</span>}
+            {r.job_title && <span style={{ fontSize: 11, color: "#64748b" }}>{r.job_title}</span>}
+          </div>
+        )}
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Resignation</span>
+          {r.department_name && (
+            <span style={{ fontSize: 11, background: "#f0f9ff", color: "#0369a1", padding: "1px 8px", borderRadius: 4, fontWeight: 600 }}>
+              {r.department_name}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 18, marginTop: 6, flexWrap: "wrap" }}>
+          {r.resignation_date && (
+            <span style={{ fontSize: 12, color: "#64748b" }}>
+              <span style={{ color: "#94a3b8" }}>Submitted: </span>{fmtDate(r.resignation_date)}
+            </span>
+          )}
+          {r.last_working_day && (
+            <span style={{ fontSize: 12, color: "#64748b" }}>
+              <span style={{ color: "#94a3b8" }}>Last Day: </span>
+              <strong>{fmtDate(r.last_working_day)}</strong>
+            </span>
+          )}
+        </div>
+
+        {r.reason && (
+          <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0" }}>
+            <span style={{ color: "#94a3b8" }}>Reason: </span>{r.reason}
+          </p>
+        )}
+
+        {(r.manager_remarks || r.admin_remarks) && (
+          <p style={{ fontSize: 12, color: "#475569", margin: "3px 0 0" }}>
+            <span style={{ color: "#94a3b8" }}>Remarks: </span>
+            {r.manager_remarks || r.admin_remarks}
+          </p>
+        )}
+      </div>
+      <ResignBadge status={r.status} />
+    </div>
+  );
+}
+
+function ResignationsPanel({ search, statusFilter }) {
+  const [rows, setRows]       = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const user         = getStoredUser();
+  const isPrivileged = isAdmin(user) || isReportingManager(user);
+
+  useEffect(() => {
+    let dead = false;
+    setLoading(true);
+    const fetcher = isAdmin(user)
+      ? getAllResignations()
+      : isReportingManager(user)
+      ? getTeamResignations()
+      : getMyResignations();
+    Promise.resolve(fetcher)
+      .then(res => { if (!dead) setRows(toArr(res)); })
+      .catch(() => { if (!dead) setRows([]); })
+      .finally(() => { if (!dead) setLoading(false); });
+    return () => { dead = true; };
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = rows;
+    if (statusFilter === "pending") list = rows.filter(r => r.status === "pending");
+    else if (statusFilter === "decided") list = rows.filter(r => r.status !== "pending");
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(r =>
+      [r.employee_name, r.emp_code, r.job_title, r.department_name, r.reason, r.status]
+        .filter(Boolean).some(v => String(v).toLowerCase().includes(q))
+    );
+  }, [rows, statusFilter, search]);
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 13 }}>Loading…</div>;
+
+  if (!rows.length) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 24px" }}>
+        <Briefcase size={52} strokeWidth={1} style={{ color: "#cbd5e1", marginBottom: 12 }} />
+        <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>
+          {isPrivileged ? "No resignation requests found." : "You haven't submitted a resignation."}
+        </p>
+      </div>
+    );
+  }
+
+  const pending  = rows.filter(r => r.status === "pending").length;
+  const accepted = rows.filter(r => ["accepted","rm_approved"].includes(r.status)).length;
+  const rejected = rows.filter(r => ["rejected","rm_rejected"].includes(r.status)).length;
+
+  return (
+    <>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <StatChip color="#64748b" label="Total"    count={rows.length} />
+        <StatChip color="#facc15" label="Pending"  count={pending} />
+        <StatChip color="#22c55e" label="Accepted" count={accepted} />
+        <StatChip color="#ef4444" label="Rejected" count={rejected} />
+      </div>
+      {!filtered.length ? (
+        <p style={{ textAlign: "center", color: "#94a3b8", padding: "30px 0", fontSize: 13 }}>No results match your filter.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filtered.map(r => <ResignCard key={r.resignation_id} r={r} isPrivileged={isPrivileged} />)}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ═══ Panel: Helpdesk ═════════════════════════════════════════════════════ */
+
+const TICKET_STATUS_CONFIG = {
+  open:       { bg: "#dbeafe", color: "#1d4ed8", border: "#60a5fa" },
+  "in-progress": { bg: "#fef9c3", color: "#b45309", border: "#fcd34d" },
+  pending:    { bg: "#fef9c3", color: "#ca8a04", border: "#facc15" },
+  Forwarded:  { bg: "#ede9fe", color: "#6d28d9", border: "#a78bfa" },
+  resolved:   { bg: "#dcfce7", color: "#15803d", border: "#22c55e" },
+  closed:     { bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" },
+  Approved:   { bg: "#dcfce7", color: "#15803d", border: "#22c55e" },
+  Rejected:   { bg: "#fee2e2", color: "#dc2626", border: "#ef4444" },
+  Reopened:   { bg: "#fff7ed", color: "#c2410c", border: "#fb923c" },
+};
+
+function TicketBadge({ status }) {
+  const cfg = TICKET_STATUS_CONFIG[status] || { bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" };
+  return (
+    <span style={{
+      display: "inline-block", fontSize: 11, fontWeight: 700,
+      padding: "3px 10px", borderRadius: 999,
+      background: cfg.bg, color: cfg.color, whiteSpace: "nowrap", flexShrink: 0,
+    }}>
+      {status}
+    </span>
+  );
+}
+
+function TicketCard({ t, isPrivileged }) {
+  const cfg = TICKET_STATUS_CONFIG[t.status] || { border: "#cbd5e1" };
+  return (
+    <div style={{
+      background: "#fff", border: "1px solid #e8edf2",
+      borderLeft: `4px solid ${cfg.border}`,
+      borderRadius: 10, padding: "14px 18px",
+      display: "flex", alignItems: "flex-start",
+      justifyContent: "space-between", gap: 14,
+      transition: "box-shadow 0.15s",
+    }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)"}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {isPrivileged && t.employee_name && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <User size={13} style={{ color: "#0369a1" }} />
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{t.employee_name}</span>
+          </div>
+        )}
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>{t.subject || t.title || "—"}</span>
+          {t.category && (
+            <span style={{ fontSize: 11, background: "#f0f9ff", color: "#0369a1", padding: "1px 8px", borderRadius: 4, fontWeight: 600 }}>
+              {t.category}
+            </span>
+          )}
+          {t.priority && (
+            <span style={{ fontSize: 11, background: "#fff7ed", color: "#c2410c", padding: "1px 8px", borderRadius: 4, fontWeight: 600 }}>
+              {t.priority}
+            </span>
+          )}
+        </div>
+
+        {t.description && (
+          <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+            {t.description}
+          </p>
+        )}
+
+        <div style={{ display: "flex", gap: 16, marginTop: 6, flexWrap: "wrap" }}>
+          {t.created_at && (
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>Raised {fmtDate(t.created_at)}</span>
+          )}
+          {t.assigned_to_name && (
+            <span style={{ fontSize: 11, color: "#64748b" }}>
+              <span style={{ color: "#94a3b8" }}>Assigned to: </span>{t.assigned_to_name}
+            </span>
+          )}
+          {t.forwarded_to_team && (
+            <span style={{ fontSize: 11, color: "#7c3aed" }}>
+              <span style={{ color: "#94a3b8" }}>Team: </span>{t.forwarded_to_team}
+            </span>
+          )}
+        </div>
+      </div>
+      <TicketBadge status={t.status} />
+    </div>
+  );
+}
+
+function HelpdeskPanel({ search, statusFilter }) {
+  const [rows, setRows]       = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const user         = getStoredUser();
+  const isPrivileged = isAdmin(user) || isReportingManager(user);
+
+  useEffect(() => {
+    let dead = false;
+    setLoading(true);
+    const fetcher = isAdmin(user)
+      ? allTickets()
+      : isReportingManager(user)
+      ? teamTickets()
+      : myTickets();
+    Promise.resolve(fetcher)
+      .then(res => { if (!dead) setRows(toArr(res)); })
+      .catch(() => { if (!dead) setRows([]); })
+      .finally(() => { if (!dead) setLoading(false); });
+    return () => { dead = true; };
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = rows;
+    if (statusFilter === "pending") list = rows.filter(r => ["open","pending","in-progress","Forwarded","Reopened"].includes(r.status));
+    else if (statusFilter === "decided") list = rows.filter(r => ["resolved","closed","Approved","Rejected"].includes(r.status));
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(r =>
+      [r.subject, r.title, r.category, r.priority, r.status, r.employee_name, r.description]
+        .filter(Boolean).some(v => String(v).toLowerCase().includes(q))
+    );
+  }, [rows, statusFilter, search]);
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 13 }}>Loading…</div>;
+
+  if (!rows.length) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 24px" }}>
+        <MailOpen size={52} strokeWidth={1} style={{ color: "#cbd5e1", marginBottom: 12 }} />
+        <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>
+          {isPrivileged ? "No helpdesk tickets found." : "You haven’t raised any helpdesk tickets."}
+        </p>
+      </div>
+    );
+  }
+
+  const open     = rows.filter(r => ["open","pending","in-progress","Forwarded","Reopened"].includes(r.status)).length;
+  const resolved = rows.filter(r => ["resolved","closed","Approved"].includes(r.status)).length;
+
+  return (
+    <>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <StatChip color="#64748b" label="Total"    count={rows.length} />
+        <StatChip color="#60a5fa" label="Open"     count={open} />
+        <StatChip color="#22c55e" label="Resolved" count={resolved} />
+      </div>
+      {!filtered.length ? (
+        <p style={{ textAlign: "center", color: "#94a3b8", padding: "30px 0", fontSize: 13 }}>No results match your filter.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filtered.map(t => <TicketCard key={t.ticket_id} t={t} isPrivileged={isPrivileged} />)}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ═══ Panel: Coming Soon ══════════════════════════════════════════════════════ */
 
 function ComingSoonPanel({ label }) {
   return (
@@ -431,7 +759,7 @@ function ComingSoonPanel({ label }) {
   );
 }
 
-/* ─── router ──────────────────────────────────────────────────────────────── */
+/* ─── router ────────────────────────────────────────────────────────────────────────────── */
 
 function PanelRouter({ item, search, statusFilter }) {
   if (!item) return null;
@@ -439,6 +767,8 @@ function PanelRouter({ item, search, statusFilter }) {
     case "leave-decisions":  return <LeaveDecisionsPanel search={search} statusFilter={statusFilter} />;
     case "leave-cancel":     return <LeaveCancelPanel search={search} />;
     case "regularization":   return <RegularizationPanel search={search} statusFilter={statusFilter} />;
+    case "resignations":     return <ResignationsPanel search={search} statusFilter={statusFilter} />;
+    case "helpdesk":         return <HelpdeskPanel search={search} statusFilter={statusFilter} />;
     default:                 return <ComingSoonPanel label={item.label} />;
   }
 }
@@ -451,7 +781,7 @@ const TABS = [
   { key: "decided", label: "Decided",  icon: <CheckCircle2 size={13} /> },
 ];
 
-const showTabs = (dataType) => ["leave-decisions", "regularization"].includes(dataType);
+const showTabs = (dataType) => ["leave-decisions", "regularization", "resignations", "helpdesk"].includes(dataType);
 
 export default function Review() {
   const [activeItemId,  setActiveItemId]  = useState("leave");
