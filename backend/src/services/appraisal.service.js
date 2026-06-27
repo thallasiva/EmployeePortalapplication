@@ -13,43 +13,123 @@ const PARAMS = [
 ];
 
 /* ── Cycle ──────────────────────────────────────────────────────────────── */
+
+/** Returns the currently active cycle (if any) */
 async function getActiveCycle() {
-  const [row] = await query(`SELECT * FROM appraisal_cycles ORDER BY cycle_id DESC LIMIT 1`);
-  return row || null;
+  const [row] = await query(
+    `SELECT * FROM appraisal_cycles WHERE status = 'active' ORDER BY cycle_id DESC LIMIT 1`
+  );
+  // Fallback: return latest cycle regardless of status (for sidebar check etc.)
+  if (!row) {
+    const [latest] = await query(`SELECT * FROM appraisal_cycles ORDER BY cycle_id DESC LIMIT 1`);
+    return latest || null;
+  }
+  return row;
 }
 
+/** Returns all cycles ordered newest first */
+async function getAllCycles() {
+  return query(`SELECT * FROM appraisal_cycles ORDER BY cycle_id DESC`);
+}
+
+/** Admin creates a new inactive cycle */
+async function createCycle(adminEmployeeId, { fy_label, deadline }) {
+  if (!fy_label) throw ApiError.badRequest('FY label is required');
+  const result = await query(
+    `INSERT INTO appraisal_cycles (fy_label, status, deadline, rolled_out_by) VALUES (?, 'inactive', ?, ?)`,
+    [fy_label, deadline || null, adminEmployeeId]
+  );
+  const [row] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [result.insertId]);
+  return row;
+}
+
+/** Admin updates cycle name/deadline (any status) */
+async function updateCycleSettings(adminEmployeeId, cycleId, { fy_label, deadline }) {
+  const [cycle] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
+  if (!cycle) throw ApiError.notFound('Cycle not found');
+  await query(
+    `UPDATE appraisal_cycles SET fy_label=COALESCE(?,fy_label), deadline=COALESCE(?,deadline) WHERE cycle_id=?`,
+    [fy_label || null, deadline || null, cycleId]
+  );
+  const [updated] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
+  return updated;
+}
+
+/**
+ * Admin rolls out a cycle:
+ *  - Sets status = 'active'
+ *  - rollout_type = 'all' → enrolls all active employees
+ *  - rollout_type = 'selected' → enrolls only the given employee_ids
+ * Only one cycle can be active at a time.
+ */
+async function rolloutCycle(adminEmployeeId, cycleId, { rollout_type = 'all', employee_ids = [] }) {
+  // Ensure no other cycle is active
+  const [alreadyActive] = await query(
+    `SELECT cycle_id FROM appraisal_cycles WHERE status = 'active' AND cycle_id != ?`,
+    [cycleId]
+  );
+  if (alreadyActive) throw ApiError.badRequest('Another appraisal cycle is already active. Disable it first.');
+
+  const [cycle] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
+  if (!cycle) throw ApiError.notFound('Cycle not found');
+  if (cycle.status === 'active') throw ApiError.badRequest('Cycle is already active');
+
+  await query(
+    `UPDATE appraisal_cycles SET status='active', rollout_type=?, rolled_out_at=NOW(), rolled_out_by=?, disabled_at=NULL, disabled_by=NULL WHERE cycle_id=?`,
+    [rollout_type, adminEmployeeId, cycleId]
+  );
+
+  // Enroll employees
+  const targets = rollout_type === 'all'
+    ? (await query(`SELECT employee_id FROM employees WHERE employee_status = 'Active'`)).map(e => e.employee_id)
+    : employee_ids.map(Number).filter(Boolean);
+
+  for (const empId of targets) {
+    await query(
+      `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
+      [cycleId, empId, adminEmployeeId]
+    );
+  }
+
+  const [updated] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
+  return updated;
+}
+
+/**
+ * Admin disables a cycle:
+ *  - Sets status = 'inactive'
+ *  - Resets all self_appraisals for this cycle back to 'draft' (status → "New")
+ *  - Clears submitted_at so employees can re-submit when cycle is re-enabled
+ */
+async function disableCycle(adminEmployeeId, cycleId) {
+  const [cycle] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
+  if (!cycle) throw ApiError.notFound('Cycle not found');
+  if (cycle.status !== 'active') throw ApiError.badRequest('Cycle is not active');
+
+  // Reset all employee appraisals for this cycle to draft ("New")
+  await query(
+    `UPDATE self_appraisals SET status = 'draft', submitted_at = NULL WHERE cycle_id = ?`,
+    [cycleId]
+  );
+
+  await query(
+    `UPDATE appraisal_cycles SET status='inactive', disabled_at=NOW(), disabled_by=? WHERE cycle_id=?`,
+    [adminEmployeeId, cycleId]
+  );
+
+  const [updated] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
+  return updated;
+}
+
+// Keep for backward compat (sidebar check uses getActiveCycle)
 async function toggleCycle(adminEmployeeId) {
   const cycle = await getActiveCycle();
   if (!cycle) throw ApiError.notFound('No appraisal cycle found');
-  const newStatus = cycle.status === 'active' ? 'inactive' : 'active';
-  const rolledAt  = newStatus === 'active' ? new Date() : null;
-  await query(
-    `UPDATE appraisal_cycles SET status=?, rolled_out_at=?, rolled_out_by=? WHERE cycle_id=?`,
-    [newStatus, rolledAt, adminEmployeeId, cycle.cycle_id]
-  );
-  // When enabling: auto-enroll ALL active employees so they immediately see the appraisal form
-  if (newStatus === 'active') {
-    const activeEmployees = await query(
-      `SELECT employee_id FROM employees WHERE employee_status = 'Active'`
-    );
-    for (const emp of activeEmployees) {
-      await query(
-        `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
-        [cycle.cycle_id, emp.employee_id, adminEmployeeId]
-      );
-    }
+  if (cycle.status === 'active') {
+    return disableCycle(adminEmployeeId, cycle.cycle_id);
+  } else {
+    return rolloutCycle(adminEmployeeId, cycle.cycle_id, { rollout_type: 'all' });
   }
-  return getActiveCycle();
-}
-
-async function updateCycleSettings(adminEmployeeId, { fy_label, deadline }) {
-  const cycle = await getActiveCycle();
-  if (!cycle) throw ApiError.notFound('No appraisal cycle found');
-  await query(
-    `UPDATE appraisal_cycles SET fy_label=COALESCE(?,fy_label), deadline=COALESCE(?,deadline) WHERE cycle_id=?`,
-    [fy_label || null, deadline || null, cycle.cycle_id]
-  );
-  return getActiveCycle();
 }
 
 /* ── Enrollment ─────────────────────────────────────────────────────────── */
@@ -245,12 +325,24 @@ async function saveManagerRating(managerEmployeeId, appraisalId, { ratings, mana
 }
 
 /* ── Admin: all appraisals ──────────────────────────────────────────────── */
-async function getAllAppraisals(filters = {}) {
-  const cycle = await getActiveCycle();
+async function getAllAppraisals(cycleIdOrFilters = {}, filters = {}) {
+  // Support calling as getAllAppraisals(cycleId, filters) or getAllAppraisals(filters)
+  let cycleId, actualFilters;
+  if (typeof cycleIdOrFilters === 'number') {
+    cycleId = cycleIdOrFilters;
+    actualFilters = filters;
+  } else {
+    actualFilters = cycleIdOrFilters;
+    const cycle = await getActiveCycle();
+    cycleId = cycle?.cycle_id;
+  }
+
+  if (!cycleId) return { cycle: null, appraisals: [], notSubmitted: [] };
+  const [cycle] = await require('../config/db').query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
   if (!cycle) return { cycle: null, appraisals: [], notSubmitted: [] };
 
   const where = ['sa.cycle_id = ?'];
-  const params = [cycle.cycle_id];
+  const params = [cycleId];
 
   if (filters.status)        { where.push('sa.status = ?');          params.push(filters.status); }
   if (filters.department_id) { where.push('e.department_id = ?');    params.push(filters.department_id); }
@@ -321,9 +413,15 @@ async function updateAppraisalStatus(appraisalId, status) {
 }
 
 module.exports = {
-  getActiveCycle, toggleCycle, updateCycleSettings,
+  // Cycle management
+  getActiveCycle, getAllCycles, createCycle, updateCycleSettings,
+  rolloutCycle, disableCycle, toggleCycle,
+  // Enrollment
   getEnrollments, enrollEmployees, unenrollEmployee, isEnrolled,
+  // Employee
   getMyAppraisal, saveMyAppraisal,
+  // Manager
   getTeamAppraisals, saveManagerRating,
+  // Admin
   getAllAppraisals, updateAppraisalStatus,
 };

@@ -165,8 +165,18 @@ async function saveEntries(employee_id, weekDateStr, entries) {
       throw ApiError.badRequest(`Cannot edit a timesheet with status: ${ts.status}`);
     }
 
+    // Collect task_ids currently linked to this timesheet (before deletion)
+    const [prevEntries] = await conn.query(
+      `SELECT DISTINCT task_id FROM timesheet_entries WHERE timesheet_id = ? AND task_id IS NOT NULL`,
+      [ts.timesheet_id]
+    );
+    const prevTaskIds = prevEntries.map(r => r.task_id);
+
     // Delete old entries and re-insert
     await conn.query(`DELETE FROM timesheet_entries WHERE timesheet_id = ?`, [ts.timesheet_id]);
+
+    // Collect new task_ids from incoming entries
+    const newTaskIds = [...new Set(entries.map(e => e.task_id).filter(Boolean))];
 
     let totalHours = 0;
     for (const entry of entries) {
@@ -187,6 +197,23 @@ async function saveEntries(employee_id, weekDateStr, entries) {
           entry.end_time || null,
           hours,
         ]
+      );
+    }
+
+    // Sync task statuses:
+    // Tasks removed from timesheet → revert to 'open'
+    const removedTaskIds = prevTaskIds.filter(id => !newTaskIds.includes(id));
+    if (removedTaskIds.length) {
+      await conn.query(
+        `UPDATE employee_tasks SET status = 'open' WHERE task_id IN (?) AND employee_id = ? AND status = 'in_timesheet'`,
+        [removedTaskIds, employee_id]
+      );
+    }
+    // Tasks added/kept in timesheet → mark 'in_timesheet'
+    if (newTaskIds.length) {
+      await conn.query(
+        `UPDATE employee_tasks SET status = 'in_timesheet' WHERE task_id IN (?) AND employee_id = ?`,
+        [newTaskIds, employee_id]
       );
     }
 
@@ -277,6 +304,21 @@ async function reviewTimesheet(timesheet_id, { decision, reviewed_by, comments =
     `UPDATE weekly_timesheets SET status = ?, reviewed_by = ?, reviewed_at = NOW(), comments = ? WHERE timesheet_id = ?`,
     [status, reviewed_by, comments, timesheet_id]
   );
+
+  // Sync task statuses based on decision
+  const linkedEntries = await query(
+    `SELECT DISTINCT task_id FROM timesheet_entries WHERE timesheet_id = ? AND task_id IS NOT NULL`,
+    [timesheet_id]
+  );
+  const linkedTaskIds = linkedEntries.map(r => r.task_id);
+  if (linkedTaskIds.length) {
+    const newTaskStatus = status === 'approved' ? 'completed' : 'open';
+    await query(
+      `UPDATE employee_tasks SET status = ? WHERE task_id IN (?)`,
+      [newTaskStatus, linkedTaskIds]
+    );
+  }
+
   return getTimesheetById(timesheet_id);
 }
 
