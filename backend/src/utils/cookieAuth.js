@@ -11,10 +11,12 @@ const { env } = require('../config/env');
 
 const IS_PROD = env === 'production';
 
+// Cross-domain deployment (Vercel frontend + Railway backend) requires
+// SameSite=None + Secure so the browser sends cookies on cross-site requests.
 const BASE_OPTS = {
-  httpOnly: true,                        // not accessible via document.cookie
-  secure: IS_PROD,                       // HTTPS only in production
-  sameSite: IS_PROD ? 'Strict' : 'Lax', // Lax in dev to work on http://localhost
+  httpOnly: true,    // not accessible via document.cookie
+  secure: IS_PROD,   // HTTPS only in production
+  sameSite: IS_PROD ? 'None' : 'Lax', // None required for cross-domain (Vercel ↔ Railway)
   path: '/',
 };
 

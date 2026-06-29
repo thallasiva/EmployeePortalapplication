@@ -2,6 +2,9 @@ const express = require('express');
 
 const router = express.Router();
 
+// Health check — used by Railway to confirm the service is up
+router.get('/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }));
+
 router.use('/auth', require('./auth.routes'));
 router.use('/auth/mfa', require('./mfa.routes'));
 
