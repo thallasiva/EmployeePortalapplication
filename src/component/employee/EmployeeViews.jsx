@@ -10,14 +10,22 @@ import
   getEmployeeDisplayName,
   getEmployeeInitials,
 } from "../../utils/employeeDisplay";
-import { avatarDataUri } from "../../lib/placeholders";
 import "./employee.css";
+
+const AVATAR_COLORS = ["#f18200","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#f59e0b","#84cc16"];
+function nameToColor(name = "") {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
 
 export default function EmployeeGridCard({ employee })
 {
   const navigate = useNavigate();
   const name = getEmployeeDisplayName(employee);
   const department = getDepartmentName(employee);
+  const initials = getEmployeeInitials(employee) || "?";
+  const bg = nameToColor(name);
 
   return (
     <article
@@ -25,11 +33,10 @@ export default function EmployeeGridCard({ employee })
       onClick={() => navigate(`/dashboard/employee/${employee.employee_id}`)}
       style={{ cursor: "pointer" }}
     >
-      <img
+      <div
         className="emp-card__avatar"
-        src={avatarDataUri(employee.employee_id, 72)}
-        alt={name}
-      />
+        style={{ background: bg, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:26, fontWeight:700 }}
+      >{initials}</div>
       <h3 className="emp-card__name">{name}</h3>
       <p className="emp-card__title">{employee.emp_job_title}</p>
       <p className="emp-card__id">{formatEmployeeId(employee)}</p>

@@ -21,7 +21,7 @@ export function getDepartmentName(employeeOrId) {
 }
 
 export function getEmployeeDisplayName(emp) {
-  return `${emp.first_name || ""} ${emp.lasst_name || emp.last_name || ""}`.trim();
+  return `${emp.first_name || ""} ${emp.last_name || emp.lasst_name || ""}`.trim();
 }
 
 export function getEmployeeInitials(emp) {
