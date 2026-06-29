@@ -1,18 +1,6 @@
 const BaseService = require('./base.service');
-const { query, callProcedure } = require('../config/db');
+const { callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
-const LIST_SELECT = `
-  SELECT lr.*, e.emp_code, CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name,
-         d.department_name,
-         lt.leave_type_name,
-         CONCAT(rv.first_name, ' ', IFNULL(rv.last_name, '')) AS reviewer_name
-    FROM leave_requests lr
-    JOIN employees e ON e.employee_id = lr.employee_id
-    JOIN leave_types lt ON lt.leave_type_id = lr.leave_type_id
-    LEFT JOIN departments d ON d.department_id = e.department_id
-    LEFT JOIN employees rv ON rv.employee_id = lr.reviewed_by
-`;
 
 class LeaveRequestService extends BaseService {
   constructor() {
@@ -23,33 +11,24 @@ class LeaveRequestService extends BaseService {
   }
 
   async list({ employee_id, status, leave_type_id, department_id, reporting_to, limit, offset } = {}) {
-    const where = [];
-    const params = [];
-
-    if (employee_id) { where.push('lr.employee_id = ?'); params.push(employee_id); }
-    if (status)      { where.push('lr.status = ?');      params.push(status); }
-    if (leave_type_id) { where.push('lr.leave_type_id = ?'); params.push(leave_type_id); }
-    if (department_id) { where.push('e.department_id = ?');  params.push(department_id); }
-    if (reporting_to)  { where.push('e.reporting_to = ?');   params.push(reporting_to); }
-
-    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
-    let sql = `${LIST_SELECT} ${whereSql} ORDER BY lr.applied_on DESC`;
-    if (limit !== undefined) {
-      sql += ' LIMIT ? OFFSET ?';
-      params.push(Number(limit), Number(offset || 0));
-    }
-
-    const rows = await query(sql, params);
-    const countRows = await query(
-      `SELECT COUNT(*) AS total FROM leave_requests lr JOIN employees e ON e.employee_id = lr.employee_id ${whereSql}`,
-      where.length ? params.slice(0, params.length - (limit !== undefined ? 2 : 0)) : []
+    const results = await callProcedure(
+      'sp_list_leave_requests(?, ?, ?, ?, ?, ?, ?)',
+      [
+        employee_id   ?? null,
+        status        ?? null,
+        leave_type_id ?? null,
+        department_id ?? null,
+        reporting_to  ?? null,
+        limit != null ? Number(limit)       : null,
+        limit != null ? Number(offset || 0) : null,
+      ]
     );
-    return { rows, total: countRows[0]?.total || 0 };
+    return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
 
   async getDetails(id) {
-    const rows = await query(`${LIST_SELECT} WHERE lr.leave_request_id = ?`, [id]);
-    return rows[0] || null;
+    const results = await callProcedure('sp_get_leave_request(?)', [id]);
+    return (results[0] ?? results)[0] ?? null;
   }
 
   async apply(data) {
@@ -57,6 +36,7 @@ class LeaveRequestService extends BaseService {
       data.employee_id, data.leave_type_id, data.from_date, data.from_session || null,
       data.to_date, data.to_session || null, data.days, data.reason || null,
     ]);
+    const { query } = require('../config/db');
     const out = await query('SELECT @request_id AS request_id, @status_msg AS status_msg');
     const { request_id, status_msg } = out[0];
     if (!request_id) throw ApiError.badRequest(status_msg || 'Unable to submit leave request');
@@ -74,28 +54,22 @@ class LeaveRequestService extends BaseService {
   }
 
   async cancel(id, employeeId) {
-    const request = await this.findById(id);
-    if (!request) throw ApiError.notFound('Leave request not found');
-    if (request.employee_id !== employeeId) throw ApiError.forbidden('You can only cancel your own leave requests');
-    if (request.status !== 'Pending') throw ApiError.conflict('Only pending leave requests can be cancelled');
-    await query('UPDATE leave_requests SET status = ? WHERE leave_request_id = ?', ['Cancelled', id]);
+    await callProcedure('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
+    const { query } = require('../config/db');
+    const out = await query('SELECT @ok AS ok, @msg AS msg');
+    if (!out[0]?.ok) {
+      const msg = out[0]?.msg ?? 'Cannot cancel';
+      if (msg.includes('not found'))  throw ApiError.notFound(msg);
+      if (msg.includes('your own'))   throw ApiError.forbidden(msg);
+      throw ApiError.conflict(msg);
+    }
     return this.getDetails(id);
   }
 
   async balances(employeeId, year) {
     const targetYear = year || new Date().getFullYear();
-    return query(
-      `SELECT lt.leave_type_id, lt.leave_type_name, lt.annual_quota, lt.carry_forward_limit,
-              IFNULL(lb.opening_balance, 0) AS opening_balance,
-              IFNULL(lb.granted, lt.annual_quota) AS granted,
-              IFNULL(lb.availed, 0) AS availed,
-              IFNULL(lb.balance, lt.annual_quota) AS balance
-         FROM leave_types lt
-         LEFT JOIN leave_balances lb
-           ON lb.leave_type_id = lt.leave_type_id AND lb.employee_id = ? AND lb.year = ?
-        ORDER BY lt.leave_type_name`,
-      [employeeId, targetYear]
-    );
+    const results = await callProcedure('sp_get_leave_balances(?, ?)', [employeeId, targetYear]);
+    return results[0] ?? results;
   }
 
   /** Returns ALL active employees x all leave types matrix for a given year */
@@ -338,60 +312,20 @@ class LeaveRequestService extends BaseService {
   async leaveSummary(year, { department_id, status } = {}) {
     const targetYear = Number(year) || new Date().getFullYear();
 
-    // 1. Employees
-    const empWhere = ["e.employee_status != 'Deleted'"];
-    const empParams = [];
-    if (department_id) { empWhere.push('e.department_id = ?'); empParams.push(department_id); }
-    if (status)        { empWhere.push('e.employee_status = ?'); empParams.push(status); }
-
-    const employees = await query(`
-      SELECT e.employee_id, e.emp_code,
-             CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name,
-             e.employee_status,
-             e.emp_joining_date,
-             e.confirmation_date,
-             d.department_name,
-             des.designation_name
-        FROM employees e
-        LEFT JOIN departments d ON d.department_id = e.department_id
-        LEFT JOIN designations des ON des.designation_id = e.designation_id
-       WHERE ${empWhere.join(' AND ')}
-       ORDER BY e.emp_code
-    `, empParams);
-
-    // 2. Leave types
-    const leaveTypes = await query(
-      `SELECT leave_type_id, leave_type_name FROM leave_types ORDER BY leave_type_name`
+    // Single stored procedure call — returns 4 result sets
+    const results = await callProcedure(
+      'sp_get_leave_summary(?, ?, ?)',
+      [targetYear, department_id ?? null, status ?? null]
     );
 
-    // 3. Balances (opening, granted, availed, closing)
-    const balances = await query(
-      `SELECT lb.employee_id, lb.leave_type_id,
-              lb.opening_balance, lb.granted, lb.availed,
-              GREATEST(0, lb.opening_balance + lb.granted - lb.availed) AS closing_balance
-         FROM leave_balances lb WHERE lb.year = ?`,
-      [targetYear]
-    );
+    const employees   = results[0] ?? [];
+    const leaveTypes  = results[1] ?? [];
+    const balances    = results[2] ?? [];
+    const monthlyRows = results[3] ?? [];
+
     const balMap = {};
     balances.forEach((b) => { balMap[`${b.employee_id}_${b.leave_type_id}`] = b; });
 
-    // 4. Approved leave requests grouped by employee, leave type, and month
-    const empIds = employees.map((e) => e.employee_id);
-    let monthlyRows = [];
-    if (empIds.length > 0) {
-      monthlyRows = await query(`
-        SELECT lr.employee_id, lr.leave_type_id,
-               MONTH(lr.from_date) AS month,
-               SUM(lr.days) AS days_taken
-          FROM leave_requests lr
-         WHERE lr.status = 'Approved'
-           AND YEAR(lr.from_date) = ?
-           AND lr.employee_id IN (${empIds.map(() => '?').join(',')})
-         GROUP BY lr.employee_id, lr.leave_type_id, MONTH(lr.from_date)
-      `, [targetYear, ...empIds]);
-    }
-
-    // Build monthly map: { "empId_ltId_month": days }
     const monthMap = {};
     monthlyRows.forEach((r) => {
       monthMap[`${r.employee_id}_${r.leave_type_id}_${r.month}`] = Number(r.days_taken) || 0;
@@ -399,12 +333,17 @@ class LeaveRequestService extends BaseService {
 
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    const result = employees.map((emp) => {
-      const leaveData = leaveTypes.map((lt) => {
+    const result = employees.map((emp) => ({
+      employee_id:       emp.employee_id,
+      emp_code:          emp.emp_code,
+      employee_name:     emp.employee_name,
+      employee_status:   emp.employee_status,
+      department_name:   emp.department_name,
+      designation_name:  emp.designation_name,
+      emp_joining_date:  emp.emp_joining_date,
+      confirmation_date: emp.confirmation_date,
+      leave_data: leaveTypes.map((lt) => {
         const b = balMap[`${emp.employee_id}_${lt.leave_type_id}`];
-        const monthly = MONTHS.map((_, i) =>
-          monthMap[`${emp.employee_id}_${lt.leave_type_id}_${i + 1}`] || 0
-        );
         return {
           leave_type_id:   lt.leave_type_id,
           leave_type_name: lt.leave_type_name,
@@ -412,21 +351,12 @@ class LeaveRequestService extends BaseService {
           granted:         b ? Number(b.granted)         || 0 : 0,
           availed:         b ? Number(b.availed)         || 0 : 0,
           closing_balance: b ? Number(b.closing_balance) || 0 : 0,
-          monthly,          // [jan, feb, ..., dec]
+          monthly: MONTHS.map((_, i) =>
+            monthMap[`${emp.employee_id}_${lt.leave_type_id}_${i + 1}`] || 0
+          ),
         };
-      });
-      return {
-        employee_id:      emp.employee_id,
-        emp_code:         emp.emp_code,
-        employee_name:    emp.employee_name,
-        employee_status:  emp.employee_status,
-        department_name:  emp.department_name,
-        designation_name: emp.designation_name,
-        emp_joining_date: emp.emp_joining_date,
-        confirmation_date: emp.confirmation_date,
-        leave_data:       leaveData,
-      };
-    });
+      }),
+    }));
 
     return { employees: result, leaveTypes, year: targetYear, months: MONTHS };
   }

@@ -2,23 +2,17 @@
  * TimesheetService
  * Handles employee_tasks, weekly_timesheets, timesheet_entries, extra_work_requests
  */
-const { query, withTransaction } = require('../config/db');
+const { query, callProcedure, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function isoWeekBounds(dateStr) {
-  // Returns { weekStart (Mon), weekEnd (Sun) } for the ISO week that contains dateStr
   const d = new Date(dateStr);
-  const day = d.getUTCDay() || 7; // 1=Mon … 7=Sun
-  const mon = new Date(d);
-  mon.setUTCDate(d.getUTCDate() - day + 1);
-  const sun = new Date(mon);
-  sun.setUTCDate(mon.getUTCDate() + 6);
-  return {
-    weekStart: mon.toISOString().slice(0, 10),
-    weekEnd: sun.toISOString().slice(0, 10),
-  };
+  const day = d.getUTCDay() || 7;
+  const mon = new Date(d); mon.setUTCDate(d.getUTCDate() - day + 1);
+  const sun = new Date(mon); sun.setUTCDate(mon.getUTCDate() + 6);
+  return { weekStart: mon.toISOString().slice(0, 10), weekEnd: sun.toISOString().slice(0, 10) };
 }
 
 function toDateStr(d) {
@@ -32,43 +26,34 @@ async function createTask({
   start_date = null, end_date = null, start_time = null, end_time = null,
   duration_hours = null,
 }) {
-  const result = await query(
-    `INSERT INTO employee_tasks
-       (employee_id, task_name, project_name, description,
-        start_date, end_date, start_time, end_time, duration_hours)
-     VALUES (?,?,?,?,?,?,?,?,?)`,
-    [employee_id, task_name, project_name, description,
-     start_date || null, end_date || null,
-     start_time || null, end_time || null,
+  await callProcedure(
+    'sp_create_task(?, ?, ?, ?, ?, ?, ?, ?, ?, @task_id)',
+    [employee_id, task_name, project_name || '', description || '',
+     start_date || null, end_date || null, start_time || null, end_time || null,
      duration_hours != null ? parseFloat(duration_hours) : null]
   );
-  return getTaskById(result.insertId);
+  const out = await query('SELECT @task_id AS task_id');
+  return getTaskById(out[0].task_id);
 }
 
 async function getTaskById(task_id) {
-  const [row] = await query(`SELECT * FROM employee_tasks WHERE task_id = ?`, [task_id]);
-  return row || null;
+  const results = await callProcedure('sp_get_task(?)', [task_id]);
+  return (results[0] ?? results)[0] ?? null;
 }
 
 async function listMyTasks(employee_id) {
-  return query(
-    `SELECT * FROM employee_tasks WHERE employee_id = ? ORDER BY created_at DESC`,
-    [employee_id]
-  );
+  const results = await callProcedure('sp_list_my_tasks(?)', [employee_id]);
+  return results[0] ?? results;
 }
 
 async function updateTask(task_id, employee_id, fields) {
-  const allowed = [
-    'task_name', 'project_name', 'description', 'status',
-    'start_date', 'end_date', 'start_time', 'end_time', 'duration_hours',
-  ];
-  const sets = [];
-  const params = [];
+  // Dynamic update — stored procedures don't support dynamic SET lists,
+  // so we build the UPDATE here but keep all other operations as procedures.
+  const allowed = ['task_name', 'project_name', 'description', 'status',
+                   'start_date', 'end_date', 'start_time', 'end_time', 'duration_hours'];
+  const sets = [], params = [];
   for (const [k, v] of Object.entries(fields)) {
-    if (allowed.includes(k)) {
-      sets.push(`${k} = ?`);
-      params.push(v === '' ? null : v);
-    }
+    if (allowed.includes(k)) { sets.push(`${k} = ?`); params.push(v === '' ? null : v); }
   }
   if (!sets.length) throw ApiError.badRequest('Nothing to update');
   params.push(task_id, employee_id);
@@ -77,27 +62,17 @@ async function updateTask(task_id, employee_id, fields) {
 }
 
 async function deleteTask(task_id, employee_id) {
-  const result = await query(
-    `DELETE FROM employee_tasks WHERE task_id = ? AND employee_id = ?`,
-    [task_id, employee_id]
-  );
-  if (result.affectedRows === 0) throw ApiError.notFound('Task not found');
+  await callProcedure('sp_delete_task(?, ?, @affected)', [task_id, employee_id]);
+  const out = await query('SELECT @affected AS affected');
+  if (!out[0]?.affected) throw ApiError.notFound('Task not found');
 }
 
 // ─── Weekly Timesheets ───────────────────────────────────────────────────────
 
 async function getOrCreateWeeklyTimesheet(employee_id, weekStart, weekEnd) {
-  let [ts] = await query(
-    `SELECT * FROM weekly_timesheets WHERE employee_id = ? AND week_start = ?`,
-    [employee_id, weekStart]
-  );
-  if (!ts) {
-    const r = await query(
-      `INSERT INTO weekly_timesheets (employee_id, week_start, week_end, status) VALUES (?,?,?,'draft')`,
-      [employee_id, weekStart, weekEnd]
-    );
-    [ts] = await query(`SELECT * FROM weekly_timesheets WHERE timesheet_id = ?`, [r.insertId]);
-  }
+  await callProcedure('sp_get_weekly_timesheet(?, ?, ?, @ts_id)', [employee_id, weekStart, weekEnd]);
+  const out = await query('SELECT @ts_id AS ts_id');
+  const [ts] = await query('SELECT * FROM weekly_timesheets WHERE timesheet_id = ?', [out[0].ts_id]);
   return ts;
 }
 

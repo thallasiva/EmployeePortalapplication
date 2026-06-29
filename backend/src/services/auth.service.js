@@ -1,117 +1,74 @@
 const crypto = require('crypto');
-const { query, withTransaction } = require('../config/db');
+const { query, callProcedure } = require('../config/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
-
-/* ── Profile cache: avoids a DB round-trip on every /auth/me call ── */
-const _profileCache = new Map();   // userId → { data, expiresAt }
-const PROFILE_TTL_MS = 60_000;    // 60 seconds
-
-function cacheProfile(userId, data) {
-  _profileCache.set(userId, { data, expiresAt: Date.now() + PROFILE_TTL_MS });
-}
-function getCachedProfile(userId) {
-  const hit = _profileCache.get(userId);
-  if (!hit || Date.now() > hit.expiresAt) { _profileCache.delete(userId); return null; }
-  return hit.data;
-}
-function bustProfileCache(userId) { _profileCache.delete(userId); }
 const { issueMfaTempToken } = require('../services/mfa.service');
 
+/* ── Profile cache ── */
+const _profileCache  = new Map();
+const PROFILE_TTL_MS = 60_000;
+function cacheProfile(id, data)   { _profileCache.set(id, { data, expiresAt: Date.now() + PROFILE_TTL_MS }); }
+function getCachedProfile(id)     { const h = _profileCache.get(id); if (!h || Date.now() > h.expiresAt) { _profileCache.delete(id); return null; } return h.data; }
+function bustProfileCache(id)     { _profileCache.delete(id); }
+
 const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_MINUTES = 15;
+const LOCKOUT_MINUTES     = 15;
 
-const USER_WITH_ROLE_SQL = `
-  SELECT u.user_id, u.email, u.password_hash, u.role_id, u.employee_id, u.status,
-         r.role_name,
-         e.first_name, e.last_name, e.emp_code, e.emp_job_title, e.department_id,
-         e.profile_photo
-    FROM users u
-    JOIN roles r ON r.role_id = u.role_id
-    LEFT JOIN employees e ON e.employee_id = u.employee_id
-`;
-
-function toAuthPayload(userRow) {
+function toAuthPayload(u) {
+  return { userId: u.user_id, employeeId: u.employee_id, email: u.email, roleId: u.role_id, roleName: u.role_name };
+}
+function toProfile(u) {
   return {
-    userId: userRow.user_id,
-    employeeId: userRow.employee_id,
-    email: userRow.email,
-    roleId: userRow.role_id,
-    roleName: userRow.role_name,
+    userId: u.user_id, email: u.email, role: u.role_id, roleName: u.role_name,
+    employeeId: u.employee_id,
+    name:         [u.first_name, u.last_name].filter(Boolean).join(' ') || null,
+    empCode:      u.emp_code      || null,
+    jobTitle:     u.emp_job_title || null,
+    departmentId: u.department_id || null,
+    profilePhoto: u.profile_photo || null,
   };
 }
 
-function toProfile(userRow) {
-  return {
-    userId: userRow.user_id,
-    email: userRow.email,
-    role: userRow.role_id,
-    roleName: userRow.role_name,
-    employeeId: userRow.employee_id,
-    name: [userRow.first_name, userRow.last_name].filter(Boolean).join(' ') || null,
-    empCode: userRow.emp_code || null,
-    jobTitle: userRow.emp_job_title || null,
-    departmentId: userRow.department_id || null,
-    profilePhoto: userRow.profile_photo || null,
-  };
+async function _getUserById(userId) {
+  const results = await callProcedure('sp_get_user_by_id(?)', [userId]);
+  return (results[0] ?? results)[0] ?? null;
 }
 
 async function issueTokens(userRow) {
-  const payload = toAuthPayload(userRow);
-  const accessToken = signAccessToken(payload);
+  const payload      = toAuthPayload(userRow);
+  const accessToken  = signAccessToken(payload);
   const refreshToken = signRefreshToken({ userId: payload.userId });
-  await query('UPDATE users SET last_login = NOW(), failed_login_attempts = 0, locked_until = NULL WHERE user_id = ?', [userRow.user_id]);
+  await callProcedure('sp_login_success(?)', [userRow.user_id]);
   return { accessToken, refreshToken, user: toProfile(userRow) };
 }
 
-/**
- * Issues a full JWT pair given only a userId.
- * Used by the MFA verify step after TOTP is confirmed.
- */
 async function issueTokensForUser(userId) {
-  const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.user_id = ?`, [userId]);
-  if (!rows.length || rows[0].status !== 'Active') {
-    throw ApiError.unauthorized('Account is not active');
-  }
-  return issueTokens(rows[0]);
+  const userRow = await _getUserById(userId);
+  if (!userRow || userRow.status !== 'Active') throw ApiError.unauthorized('Account is not active');
+  return issueTokens(userRow);
 }
 
 async function register({ email, password, firstName, lastName, mobile, roleId, departmentId, designationId, empJobTitle }) {
   const existing = await query('SELECT user_id FROM users WHERE email = ?', [email]);
-  if (existing.length) {
-    throw ApiError.conflict('An account with this email already exists');
-  }
+  if (existing.length) throw ApiError.conflict('An account with this email already exists');
 
   const passwordHash = await hashPassword(password);
-
-  return withTransaction(async (conn) => {
-    const empCode = `EMP${Date.now().toString().slice(-6)}`;
-    const [empResult] = await conn.query(
-      `INSERT INTO employees (emp_code, first_name, last_name, email, mobile, emp_job_title, department_id, designation_id, employee_type, employee_status, emp_joining_date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Full-Time', 'Active', CURDATE())`,
-      [empCode, firstName, lastName || null, email, mobile || null, empJobTitle || 'Employee', departmentId || null, designationId || null]
-    );
-
-    const employeeId = empResult.insertId;
-
-    await conn.query(
-      `INSERT INTO users (email, password_hash, role_id, employee_id, status) VALUES (?, ?, ?, ?, 'Active')`,
-      [email, passwordHash, roleId || 2, employeeId]
-    );
-
-    return { employeeId, empCode };
-  });
+  await callProcedure(
+    'sp_register_user(?, ?, ?, ?, ?, ?, ?, ?, ?, @employee_id, @emp_code)',
+    [firstName, lastName ?? null, email, mobile ?? null, empJobTitle ?? 'Employee',
+     departmentId ?? null, designationId ?? null, passwordHash, roleId ?? 2]
+  );
+  const out = await query('SELECT @employee_id AS employee_id, @emp_code AS emp_code');
+  return { employeeId: out[0].employee_id, empCode: out[0].emp_code };
 }
 
 async function login({ email, password }) {
-  const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.email = ?`, [email]);
-  const userRow = rows[0];
+  const results = await callProcedure('sp_get_user_for_login(?)', [email]);
+  const userRow = (results[0] ?? results)[0] ?? null;
 
-  // Always compare password to avoid user-enumeration timing attacks
+  // Always compare to prevent timing-based user enumeration
   const dummyHash = '$2a$12$invalidhashinvalidhashinvalidhas';
-  const passwordToCheck = userRow ? userRow.password_hash : dummyHash;
-
   if (!userRow) {
     await comparePassword(password, dummyHash).catch(() => {});
     throw ApiError.unauthorized('Invalid email or password');
@@ -121,61 +78,41 @@ async function login({ email, password }) {
     const remaining = userRow.locked_until
       ? Math.ceil((new Date(userRow.locked_until) - Date.now()) / 60000)
       : LOCKOUT_MINUTES;
-    throw ApiError.forbidden(`Account locked due to too many failed attempts. Try again in ${remaining} minute(s).`);
+    throw ApiError.forbidden(`Account locked. Try again in ${remaining} minute(s).`);
   }
+  if (userRow.status !== 'Active') throw ApiError.forbidden('This account is not active. Contact your administrator.');
 
-  if (userRow.status !== 'Active') {
-    throw ApiError.forbidden('This account is not active. Contact your administrator.');
-  }
-
-  const valid = await comparePassword(password, passwordToCheck);
+  const valid = await comparePassword(password, userRow.password_hash);
   if (!valid) {
-    // Increment failure counter; lock if threshold reached
-    const attempts = (userRow.failed_login_attempts || 0) + 1;
-    if (attempts >= MAX_FAILED_ATTEMPTS) {
-      const lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000);
-      await query(
-        'UPDATE users SET failed_login_attempts = ?, locked_until = ? WHERE user_id = ?',
-        [attempts, lockedUntil, userRow.user_id]
-      );
-      throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
-    }
-    await query('UPDATE users SET failed_login_attempts = ? WHERE user_id = ?', [attempts, userRow.user_id]);
+    await callProcedure('sp_login_fail(?, ?, ?, @locked, @attempts)', [userRow.user_id, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES]);
+    const out = await query('SELECT @locked AS locked');
+    if (out[0]?.locked) throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
     throw ApiError.unauthorized('Invalid email or password');
   }
 
-  // Password correct — check if MFA is required
   if (userRow.mfa_enabled) {
     const mfaTempToken = await issueMfaTempToken(userRow.user_id);
     return { mfaRequired: true, mfaTempToken };
   }
-
   return issueTokens(userRow);
 }
 
 async function refresh(refreshToken) {
   let decoded;
-  try {
-    decoded = verifyRefreshToken(refreshToken);
-  } catch {
-    throw ApiError.unauthorized('Invalid or expired refresh token');
-  }
+  try { decoded = verifyRefreshToken(refreshToken); }
+  catch { throw ApiError.unauthorized('Invalid or expired refresh token'); }
 
-  const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.user_id = ?`, [decoded.userId]);
-  const userRow = rows[0];
-  if (!userRow || userRow.status !== 'Active') {
-    throw ApiError.unauthorized('Account is no longer active');
-  }
-
+  const userRow = await _getUserById(decoded.userId);
+  if (!userRow || userRow.status !== 'Active') throw ApiError.unauthorized('Account is no longer active');
   return issueTokens(userRow);
 }
 
 async function getProfile(userId) {
   const cached = getCachedProfile(userId);
   if (cached) return cached;
-  const rows = await query(`${USER_WITH_ROLE_SQL} WHERE u.user_id = ?`, [userId]);
-  if (!rows.length) throw ApiError.notFound('User not found');
-  const profile = toProfile(rows[0]);
+  const userRow = await _getUserById(userId);
+  if (!userRow) throw ApiError.notFound('User not found');
+  const profile = toProfile(userRow);
   cacheProfile(userId, profile);
   return profile;
 }
@@ -183,65 +120,27 @@ async function getProfile(userId) {
 async function changePassword(userId, currentPassword, newPassword) {
   const rows = await query('SELECT password_hash FROM users WHERE user_id = ?', [userId]);
   if (!rows.length) throw ApiError.notFound('User not found');
-
   const valid = await comparePassword(currentPassword, rows[0].password_hash);
   if (!valid) throw ApiError.badRequest('Current password is incorrect');
-
   const newHash = await hashPassword(newPassword);
-  await query('UPDATE users SET password_hash = ? WHERE user_id = ?', [newHash, userId]);
+  await callProcedure('sp_change_password(?, ?)', [userId, newHash]);
   bustProfileCache(userId);
 }
 
-/**
- * Generates a password-reset token. In production this would be emailed to
- * the user; here it is returned so the frontend's "Forgot Password" flow
- * can complete end-to-end.
- */
 async function forgotPassword(email) {
-  const rows = await query('SELECT user_id FROM users WHERE email = ?', [email]);
-  if (!rows.length) {
-    // Avoid leaking whether an email is registered
-    return { message: 'If that email exists, a reset link has been sent' };
-  }
-
-  const token = crypto.randomBytes(32).toString('hex');
-  const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
-  await query('UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE user_id = ?', [
-    token,
-    expiry,
-    rows[0].user_id,
-  ]);
-
+  const token  = crypto.randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 60 * 60 * 1000);
+  const results = await callProcedure('sp_set_reset_token(?, ?, ?)', [email, token, expiry]);
+  const affected = (results[0] ?? results)[0]?.affected ?? 0;
+  if (!affected) return { message: 'If that email exists, a reset link has been sent' };
   return { message: 'If that email exists, a reset link has been sent', resetToken: token };
 }
 
 async function resetPassword(token, newPassword) {
-  const rows = await query(
-    'SELECT user_id, reset_token_expiry FROM users WHERE reset_token = ?',
-    [token]
-  );
-  const userRow = rows[0];
-  if (!userRow) throw ApiError.badRequest('Invalid or expired reset token');
-  if (new Date(userRow.reset_token_expiry) < new Date()) {
-    throw ApiError.badRequest('Reset token has expired');
-  }
-
   const newHash = await hashPassword(newPassword);
-  await query(
-    'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = ?',
-    [newHash, userRow.user_id]
-  );
+  await callProcedure('sp_reset_password(?, ?, @ok)', [token, newHash]);
+  const out = await query('SELECT @ok AS ok');
+  if (!out[0]?.ok) throw ApiError.badRequest('Invalid or expired reset token');
 }
 
-module.exports = {
-  register,
-  login,
-  refresh,
-  getProfile,
-  changePassword,
-  forgotPassword,
-  resetPassword,
-  issueTokensForUser,
-  bustProfileCache,
-};
+module.exports = { register, login, refresh, getProfile, changePassword, forgotPassword, resetPassword, issueTokensForUser, bustProfileCache };
