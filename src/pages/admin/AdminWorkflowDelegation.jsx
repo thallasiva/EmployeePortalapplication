@@ -225,7 +225,7 @@ function OrgChart({ nodes, onSelect, highlightIds = new Set() }) {
   };
 
   return (
-    <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '70vh' }}>
+    <div style={{ overflowX: 'auto', overflowY: 'visible' }}>
       <svg width={svgW} height={svgH} style={{ display: 'block', minWidth: svgW }}>
 
         {/* ── Connector lines ── */}
@@ -779,29 +779,60 @@ export default function AdminWorkflowDelegation() {
         <StatCard icon={Shield}        label="Active Delegations"  value={stats?.delegated_workflows} color={BRAND} />
       </div>
 
-      {/* Two-column: hierarchy left, search+delegations right */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 16, alignItems: "start" }}>
+      {/* Single full-width card: chart + Find Employee sidebar inside */}
+      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
+        overflow: "hidden", marginBottom: 16 }}>
 
-        {/* LEFT — focused path view when result selected, else full chart */}
-        <div style={{ minHeight: 520 }}>
-          {focusedPath ? (
-            <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
-              {/* Header */}
-              <div style={{ padding: "14px 16px", borderBottom: "1px solid #f3f4f6",
-                display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <GitBranch size={16} color={BRAND} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>Reporting Hierarchy</span>
-                </div>
-                <button onClick={() => setFocusedPath(null)}
-                  style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 7,
-                    padding: "4px 10px", fontSize: 12, color: "#6b7280", cursor: "pointer" }}>
-                  ✕ Show full chart
-                </button>
+        {/* Card header */}
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid #f3f4f6",
+          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <GitBranch size={16} color={BRAND} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>Organisation Chart</span>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            {[["#0369a1","Top Level"],["#0284c7","Manager"],["#38bdf8","Employee"],["#d97706","Delegated"],["#9ca3af","Inactive"]].map(([c,l]) => (
+              <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6b7280" }}>
+                <div style={{ width: 10, height: 10, borderRadius: 2, background: c }} />{l}
               </div>
+            ))}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f9fafb",
+              border: "1px solid #e5e7eb", borderRadius: 7, padding: "5px 10px" }}>
+              <Search size={12} color="#9ca3af" />
+              <input value={treeSearch} onChange={e => setTreeSearch(e.target.value)}
+                placeholder="Filter chart…"
+                style={{ border: "none", background: "none", outline: "none", fontSize: 12, width: 100 }} />
+              {treeSearch && (
+                <button onClick={() => setTreeSearch("")}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", padding: 0 }}>
+                  <X size={11} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
 
-              {/* Focused 3-node SVG: Main → Manager → Employee */}
-              <div style={{ padding: 32, background: "#f8fafc", display: "flex", justifyContent: "center" }}>
+        {/* Card body: chart (scrollable) | Find Employee sidebar */}
+        <div style={{ display: "flex", background: "#f8fafc", minHeight: 360 }}>
+
+          {/* Chart area — flex:1 with overflow scroll, minWidth:0 prevents grid blowout */}
+          <div style={{ flex: 1, minWidth: 0, overflowX: "auto", overflowY: "auto",
+            maxHeight: "65vh", padding: 16 }}>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: 60, color: "#9ca3af" }}>
+                <RefreshCw size={20} style={{ animation: "spin 1s linear infinite" }} />
+                <div style={{ marginTop: 8, fontSize: 13 }}>Loading chart…</div>
+              </div>
+            ) : focusedPath ? (
+              /* Focused path mini-view */
+              <div>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+                  <button onClick={() => setFocusedPath(null)}
+                    style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 7,
+                      padding: "4px 10px", fontSize: 12, color: "#6b7280", cursor: "pointer" }}>
+                    ✕ Show full chart
+                  </button>
+                </div>
                 {(() => {
                   const NW = 180, NH = 64, GAP = 70;
                   const nodes3 = [
@@ -812,13 +843,10 @@ export default function AdminWorkflowDelegation() {
                     focusedPath.employee
                       ? { ...focusedPath.employee, role: "Selected Employee", color: "#f18200" } : null,
                   ].filter(Boolean);
-
                   const svgW = nodes3.length * (NW + GAP) - GAP + 20;
                   const svgH = NH + 80;
-
                   return (
                     <svg width={svgW} height={svgH} style={{ overflow: "visible" }}>
-                      {/* Connector lines */}
                       {nodes3.slice(0, -1).map((_, i) => {
                         const x1 = 10 + i * (NW + GAP) + NW;
                         const x2 = 10 + (i + 1) * (NW + GAP);
@@ -830,8 +858,6 @@ export default function AdminWorkflowDelegation() {
                           </g>
                         );
                       })}
-
-                      {/* Node boxes */}
                       {nodes3.map((node, i) => {
                         const x = 10 + i * (NW + GAP);
                         const y = 10;
@@ -839,23 +865,20 @@ export default function AdminWorkflowDelegation() {
                         return (
                           <g key={node.id}>
                             {isEmployee && (
-                              <rect x={x - 4} y={y - 4} width={NW + 8} height={NH + 8} rx={11}
+                              <rect x={x-4} y={y-4} width={NW+8} height={NH+8} rx={11}
                                 fill="none" stroke="#f18200" strokeWidth={2.5} />
                             )}
                             <rect x={x+2} y={y+2} width={NW} height={NH} rx={8} fill="#00000012" />
                             <rect x={x} y={y} width={NW} height={NH} rx={8} fill={node.color} />
-                            <text x={x + NW/2} y={y + 26} textAnchor="middle"
-                              fill="white" fontSize={13} fontWeight="700"
+                            <text x={x+NW/2} y={y+26} textAnchor="middle" fill="white" fontSize={13} fontWeight="700"
                               style={{ fontFamily: "system-ui,sans-serif", pointerEvents: "none" }}>
-                              {(node.name || "").length > 20 ? node.name.slice(0, 19) + "…" : node.name}
+                              {(node.name||"").length>20 ? node.name.slice(0,19)+"…" : node.name}
                             </text>
-                            <text x={x + NW/2} y={y + 44} textAnchor="middle"
-                              fill="rgba(255,255,255,0.85)" fontSize={10}
+                            <text x={x+NW/2} y={y+44} textAnchor="middle" fill="rgba(255,255,255,0.85)" fontSize={10}
                               style={{ fontFamily: "system-ui,sans-serif", pointerEvents: "none" }}>
                               {node.role}
                             </text>
-                            {/* Label below box */}
-                            <text x={x + NW/2} y={y + NH + 18} textAnchor="middle"
+                            <text x={x+NW/2} y={y+NH+18} textAnchor="middle"
                               fill={isEmployee ? BRAND : "#6b7280"} fontSize={11} fontWeight={isEmployee ? 700 : 400}
                               style={{ fontFamily: "system-ui,sans-serif" }}>
                               {node.name}
@@ -866,46 +889,50 @@ export default function AdminWorkflowDelegation() {
                     </svg>
                   );
                 })()}
-              </div>
-
-              {/* Employee detail card */}
-              {focusedPath.raw && (
-                <div style={{ padding: "16px 20px", borderTop: "1px solid #f3f4f6" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 6 }}>
-                    {focusedPath.raw.full_name}
-                  </div>
-                  <div style={{ fontSize: 12, color: "#6b7280" }}>
-                    {focusedPath.raw.designation_name || "—"} · {focusedPath.raw.department_name || "—"}
-                  </div>
-                  {focusedPath.manager && (
-                    <div style={{ marginTop: 8, fontSize: 12, color: "#374151" }}>
-                      <span style={{ color: "#9ca3af" }}>Reporting to: </span>
-                      <span style={{ fontWeight: 600, color: BRAND }}>{focusedPath.manager.name}</span>
+                {focusedPath.raw && (
+                  <div style={{ marginTop: 16, padding: "12px 14px", background: "#fff",
+                    border: "1px solid #e5e7eb", borderRadius: 10 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{focusedPath.raw.full_name}</div>
+                    <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                      {focusedPath.raw.designation_name || "—"} · {focusedPath.raw.department_name || "—"}
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            renderChartPanel(treeSearch, setTreeSearch)
-          )}
-        </div>
+                    {focusedPath.manager && (
+                      <div style={{ marginTop: 6, fontSize: 12, color: "#374151" }}>
+                        <span style={{ color: "#9ca3af" }}>Reporting to: </span>
+                        <span style={{ fontWeight: 600, color: BRAND }}>{focusedPath.manager.name}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : visibleTree.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 60, color: "#9ca3af", fontSize: 13 }}>
+                {treeSearch ? "No matching employees" : "No data — restart the backend to auto-seed hierarchy"}
+              </div>
+            ) : (
+              <OrgChart nodes={visibleTree} onSelect={setSelectedNode} highlightIds={highlightIds} />
+            )}
+          </div>
 
-        {/* RIGHT — search + alerts */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-          {/* Employee search */}
-          <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 16 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 10,
+          {/* Find Employee sidebar — fixed 280px inside the same card */}
+          <div style={{ width: 280, flexShrink: 0, borderLeft: "1px solid #e5e7eb",
+            padding: 16, background: "#fff", display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827",
               display: "flex", alignItems: "center", gap: 8 }}>
               <Search size={15} color={BRAND} /> Find Employee
             </div>
+
+            {/* Search input */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f9fafb",
-              border: "1px solid #e5e7eb", borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
-              <Search size={13} color="#9ca3af" />
-              <input value={searchQ} onChange={e => { setSearchQ(e.target.value); if (!e.target.value) { setFocusedPath(null); setSearchResults([]); } }}
+              border: "1px solid #e5e7eb", borderRadius: 8, padding: "8px 10px" }}>
+              <Search size={13} color="#9ca3af" style={{ flexShrink: 0 }} />
+              <input
+                value={searchQ}
+                onChange={e => { setSearchQ(e.target.value); if (!e.target.value) { setFocusedPath(null); setSearchResults([]); } }}
                 placeholder="Name, code, email…"
-                style={{ border: "none", background: "none", outline: "none", fontSize: 13, flex: 1 }} />
+                style={{ border: "none", background: "none", outline: "none", fontSize: 12,
+                  flex: 1, minWidth: 0 }}
+              />
               {searching && <RefreshCw size={13} color={BRAND} style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />}
               {searchQ && !searching && (
                 <button onClick={() => { setSearchQ(""); setSearchResults([]); setFocusedPath(null); }}
@@ -915,85 +942,103 @@ export default function AdminWorkflowDelegation() {
               )}
             </div>
 
-            {searchResults.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 320, overflowY: "auto" }}>
-                {searchResults.map(r => (
-                  <div key={r.employee_id}
-                    onClick={() => {
-                      const path = r.hierarchy_path || [];
-                      setFocusedPath({
-                        main:     path[0]     || null,
-                        manager:  path.length >= 2 ? path[path.length - 2] : null,
-                        employee: path[path.length - 1] || { id: r.employee_id, name: r.full_name },
-                        raw: r,
-                      });
-                      setHighlightIds(new Set());
-                    }}
-                    style={{
-                      border: `2px solid ${focusedPath?.raw?.employee_id === r.employee_id ? BRAND : "#e5e7eb"}`,
-                      borderRadius: 10, padding: "11px 13px", cursor: "pointer",
-                      background: focusedPath?.raw?.employee_id === r.employee_id ? "#fff8f0" : "#fff",
-                      transition: "all .15s",
-                    }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{r.full_name}</div>
-                      <span style={{ ...statusColor(r.employee_status), borderRadius: 5, padding: "2px 8px", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
-                        {r.employee_status}
-                      </span>
+            {/* Results */}
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {searchResults.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {searchResults.map(r => (
+                    <div key={r.employee_id}
+                      onClick={() => {
+                        const path = r.hierarchy_path || [];
+                        setFocusedPath({
+                          main:     path[0] || null,
+                          manager:  path.length >= 2 ? path[path.length - 2] : null,
+                          employee: path[path.length - 1] || { id: r.employee_id, name: r.full_name },
+                          raw: r,
+                        });
+                        setHighlightIds(new Set());
+                      }}
+                      style={{
+                        border: `2px solid ${focusedPath?.raw?.employee_id === r.employee_id ? BRAND : "#e5e7eb"}`,
+                        borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+                        background: focusedPath?.raw?.employee_id === r.employee_id ? "#fff8f0" : "#fff",
+                        transition: "all .15s",
+                      }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#111827",
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {r.full_name}
+                        </div>
+                        <span style={{ ...statusColor(r.employee_status), borderRadius: 5,
+                          padding: "1px 6px", fontSize: 10, fontWeight: 600, flexShrink: 0 }}>
+                          {r.employee_status}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 2,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {r.designation_name || "—"} · {r.department_name || "—"}
+                      </div>
+                      <div style={{ marginTop: 4, fontSize: 10, color: BRAND, fontWeight: 600 }}>
+                        Click to view hierarchy →
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
-                      {r.designation_name || "—"} · {r.department_name || "—"}
-                    </div>
-                    <div style={{ marginTop: 5, fontSize: 10, color: BRAND, fontWeight: 600 }}>
-                      Click to view hierarchy →
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : searchQ && !searching ? (
-              <div style={{ textAlign: "center", padding: "14px", color: "#9ca3af", fontSize: 12 }}>No results found</div>
-            ) : null}
+                  ))}
+                </div>
+              ) : searchQ && !searching ? (
+                <div style={{ textAlign: "center", padding: "14px 0", color: "#9ca3af", fontSize: 12 }}>
+                  No results found
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "24px 0", color: "#d1d5db" }}>
+                  <Search size={28} style={{ margin: "0 auto 8px", display: "block", opacity: 0.4 }} />
+                  <div style={{ fontSize: 12 }}>Search to find an employee<br />and view their hierarchy</div>
+                </div>
+              )}
+            </div>
           </div>
-
-          {/* Unassigned alert */}
-          {stats?.without_manager > 0 && (
-            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <AlertTriangle size={15} color="#f59e0b" />
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#92400e" }}>
-                  {stats.without_manager} employees without a manager
-                </span>
-              </div>
-              <button onClick={() => setActiveTab("unassigned")}
-                style={{ background: BRAND, color: "#fff", border: "none", borderRadius: 7,
-                  padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                Assign Now →
-              </button>
-            </div>
-          )}
-
-          {/* Active delegations */}
-          {delegations.filter(d => d.status === "Active").length > 0 && (
-            <div style={{ background: "#fff8f0", border: "1px solid #fed7aa", borderRadius: 12, padding: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", marginBottom: 10,
-                display: "flex", alignItems: "center", gap: 6 }}>
-                <Shield size={14} color="#d97706" /> Active Delegations
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {delegations.filter(d => d.status === "Active").slice(0, 4).map(d => (
-                  <div key={d.id} style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    <span style={{ fontWeight: 600, color: "#111827" }}>{d.employee_name}</span>
-                    <ArrowRight size={11} color="#d97706" />
-                    <span style={{ color: "#92400e" }}>{d.delegate_name}</span>
-                    <span style={{ marginLeft: "auto", color: "#9ca3af", fontSize: 11, whiteSpace: "nowrap" }}>
-                      until {fmtDate(d.to_date)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
+      </div>
+
+      {/* Alerts row below the chart card */}
+      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+        {stats?.without_manager > 0 && (
+          <div style={{ flex: 1, minWidth: 240, background: "#fffbeb", border: "1px solid #fde68a",
+            borderRadius: 12, padding: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <AlertTriangle size={15} color="#f59e0b" />
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#92400e" }}>
+                {stats.without_manager} employees without a manager
+              </span>
+            </div>
+            <button onClick={() => setActiveTab("unassigned")}
+              style={{ background: BRAND, color: "#fff", border: "none", borderRadius: 7,
+                padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              Assign Now →
+            </button>
+          </div>
+        )}
+
+        {delegations.filter(d => d.status === "Active").length > 0 && (
+          <div style={{ flex: 1, minWidth: 240, background: "#fff8f0", border: "1px solid #fed7aa",
+            borderRadius: 12, padding: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", marginBottom: 10,
+              display: "flex", alignItems: "center", gap: 6 }}>
+              <Shield size={14} color="#d97706" /> Active Delegations
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {delegations.filter(d => d.status === "Active").slice(0, 4).map(d => (
+                <div key={d.id} style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 600, color: "#111827" }}>{d.employee_name}</span>
+                  <ArrowRight size={11} color="#d97706" />
+                  <span style={{ color: "#92400e" }}>{d.delegate_name}</span>
+                  <span style={{ marginLeft: "auto", color: "#9ca3af", fontSize: 11, whiteSpace: "nowrap" }}>
+                    until {fmtDate(d.to_date)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

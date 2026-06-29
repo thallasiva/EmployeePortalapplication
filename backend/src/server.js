@@ -82,55 +82,95 @@ async function runAutoMigrations() {
       logger.info('[MIGRATION] workflow_delegates.reason column added');
     }
 
-    // ── Migration 033: fix / seed org hierarchy (always runs — fixes cycles) ───
+    // ── Migration 033: seed org hierarchy ONLY if nobody has reporting_to set ──
+    // This runs once on a fresh DB. After that, manual assignments in the UI
+    // are preserved — we no longer overwrite on every restart.
     {
-      logger.info('[MIGRATION] Rebuilding org hierarchy to fix any cycles…');
+      const assigned = await query(
+        `SELECT COUNT(*) AS cnt FROM employees WHERE reporting_to IS NOT NULL AND employee_status = 'Active'`
+      );
+      const alreadySeeded = Number(assigned[0]?.cnt) > 0;
 
-      const emps = await query(`
-        SELECT e.employee_id, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS full_name,
-               e.department_id, e.designation_id, d.designation_name
-          FROM employees e
-          LEFT JOIN designations d ON d.designation_id = e.designation_id
-         WHERE e.employee_status = 'Active'
-         ORDER BY e.employee_id
-      `);
+      if (!alreadySeeded) {
+        logger.info('[MIGRATION] No hierarchy set — running initial org hierarchy seed…');
 
-      if (emps.length > 1) {
-        function rankDesig(name = '') {
-          const n = (name || '').toLowerCase();
-          if (/ceo|chief executive|president|founder|managing director/.test(n)) return 6;
-          if (/cto|cfo|coo|cpo|chief/.test(n))   return 5;
-          if (/vp|vice president|director/.test(n)) return 4;
-          if (/head|manager|lead/.test(n))          return 3;
-          if (/senior|sr\.|principal|specialist/.test(n)) return 2;
-          return 1;
-        }
+        const emps = await query(`
+          SELECT e.employee_id, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS full_name,
+                 e.department_id, e.designation_id, d.designation_name
+            FROM employees e
+            LEFT JOIN designations d ON d.designation_id = e.designation_id
+           WHERE e.employee_status = 'Active'
+           ORDER BY e.employee_id
+        `);
 
-        emps.forEach(e => { e._rank = rankDesig(e.designation_name); });
-        const sorted = [...emps].sort((a, b) => b._rank - a._rank || a.employee_id - b.employee_id);
-        const ceo = sorted[0];
-
-        // CEO has no manager
-        await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [ceo.employee_id]);
-
-        for (const emp of sorted) {
-          if (emp.employee_id === ceo.employee_id) continue;
-          const higher = sorted.filter(e => e._rank > emp._rank && e.employee_id !== emp.employee_id);
-          let manager;
-          if (higher.length) {
-            const minRank  = Math.min(...higher.map(e => e._rank));
-            const direct   = higher.filter(e => e._rank === minRank);
-            const sameDept = direct.filter(e => e.department_id === emp.department_id);
-            manager = sameDept[0] || direct[0];
-          } else {
-            manager = ceo;
+        if (emps.length > 1) {
+          function rankDesig(name = '') {
+            const n = (name || '').toLowerCase();
+            if (/ceo|chief executive|president|founder|managing director/.test(n)) return 6;
+            if (/cto|cfo|coo|cpo|chief/.test(n))   return 5;
+            if (/vp|vice president|director/.test(n)) return 4;
+            if (/head|manager|lead/.test(n))          return 3;
+            if (/senior|sr\.|principal|specialist/.test(n)) return 2;
+            return 1;
           }
-          await query(`UPDATE employees SET reporting_to = ? WHERE employee_id = ?`,
-            [manager.employee_id, emp.employee_id]);
-          logger.info(`[MIGRATION] ${emp.full_name} → ${manager.full_name}`);
-        }
 
-        logger.info(`[MIGRATION] Org hierarchy fixed for ${emps.length} employees`);
+          emps.forEach(e => { e._rank = rankDesig(e.designation_name); });
+          const sorted = [...emps].sort((a, b) => b._rank - a._rank || a.employee_id - b.employee_id);
+          const ceo = sorted[0];
+
+          // CEO has no manager
+          await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [ceo.employee_id]);
+
+          for (const emp of sorted) {
+            if (emp.employee_id === ceo.employee_id) continue;
+            const higher = sorted.filter(e => e._rank > emp._rank && e.employee_id !== emp.employee_id);
+            let manager;
+            if (higher.length) {
+              const minRank  = Math.min(...higher.map(e => e._rank));
+              const direct   = higher.filter(e => e._rank === minRank);
+              const sameDept = direct.filter(e => e.department_id === emp.department_id);
+              manager = sameDept[0] || direct[0];
+            } else {
+              manager = ceo;
+            }
+            await query(`UPDATE employees SET reporting_to = ? WHERE employee_id = ?`,
+              [manager.employee_id, emp.employee_id]);
+            logger.info(`[MIGRATION] ${emp.full_name} → ${manager.full_name}`);
+          }
+
+          logger.info(`[MIGRATION] Initial org hierarchy seeded for ${emps.length} employees`);
+        }
+      } else {
+        logger.info('[MIGRATION] Org hierarchy already set — skipping auto-seed (preserving manual assignments)');
+      }
+    }
+
+    // ── Migration 034: ensure Admin user's employee is always the org root ───
+    // Runs every startup but only touches reporting_to for the admin employee
+    // and anyone else stuck with NULL reporting_to who isn't the admin.
+    {
+      // Find the employee linked to the Admin role (role_id = 1)
+      const adminRows = await query(
+        `SELECT u.employee_id FROM users u WHERE u.role_id = 1 AND u.employee_id IS NOT NULL LIMIT 1`
+      );
+      if (adminRows.length && adminRows[0].employee_id) {
+        const adminEmpId = adminRows[0].employee_id;
+
+        // Admin employee must have reporting_to = NULL (they're the root)
+        await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [adminEmpId]);
+
+        // Any OTHER active employee with reporting_to = NULL (orphaned roots)
+        // should report to the admin employee
+        await query(
+          `UPDATE employees
+              SET reporting_to = ?
+            WHERE employee_id != ?
+              AND (reporting_to IS NULL OR reporting_to = 0)
+              AND employee_status = 'Active'`,
+          [adminEmpId, adminEmpId]
+        );
+
+        logger.info(`[MIGRATION 034] Org root fixed → employee_id=${adminEmpId} is the CEO`);
       }
     }
 

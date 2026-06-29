@@ -587,7 +587,7 @@ export const Sidebar = ({ open }) =>
 
       {/* ── User footer ───────────────────────────────────────────────────── */}
       <div style={{ padding: "10px 8px", borderTop: "1px solid #f5f5f5" }}>
-        {open && user && (
+        {/* {open && user && (
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: "10px 10px", borderRadius: 10, background: "#fafafa",
@@ -611,7 +611,7 @@ export const Sidebar = ({ open }) =>
               </div>
             </div>
           </div>
-        )}
+        )} */}
         <button type="button"
           style={{
             width: "100%", display: "flex", alignItems: "center", gap: 10,
