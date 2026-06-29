@@ -17,10 +17,14 @@ class AttendanceService extends BaseService {
     ]);
   }
 
-  async list({ employee_id, department_id, from_date, to_date, status, limit, offset } = {}) {
+  async list({ employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset } = {}) {
     const where = [];
     const params = [];
 
+    if (reporting_to) {
+      where.push('e.reporting_to = ?');
+      params.push(reporting_to);
+    }
     if (employee_id) {
       where.push('a.employee_id = ?');
       params.push(employee_id);

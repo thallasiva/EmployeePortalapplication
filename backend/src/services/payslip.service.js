@@ -5,6 +5,7 @@ const emailService = require('./email.service');
 const { computeTdsSection } = require('../utils/taxCalculator');
 const { rupeesInWords } = require('../utils/numberToWords');
 const { calculateEarningsDeductionsBreakdown } = require('../utils/payslipBreakdown');
+const { encryptSalaryFields, applyVisibility, maskSalaryRow } = require('../utils/encryption');
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -32,7 +33,7 @@ class PayslipService extends BaseService {
     ]);
   }
 
-  async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset } = {}) {
+  async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser } = {}) {
     const where = [];
     const params = [];
 
@@ -74,12 +75,13 @@ class PayslipService extends BaseService {
       where.length ? params.slice(0, params.length - (limit !== undefined ? 2 : 0)) : []
     );
 
-    // Normalise CTC: prefer the stored column (populated by sp_generate_payslip);
-    // fall back to the on-the-fly computed value for older rows that pre-date migration 007.
+    // Normalise CTC and apply salary visibility based on requesting user
     const normalised = rows.map((r) => {
       const ctc = Number(r.ctc) > 0 ? Number(r.ctc) : Number(r.ctc_computed) || 0;
       const { ctc_computed, ...rest } = r;
-      return { ...rest, ctc };
+      const normalRow = { ...rest, ctc };
+      // Each employee can see their own payslip; admins see all; others get masked
+      return applyVisibility(normalRow, reqUser, r.employee_id);
     });
 
     return { rows: normalised, total: countRows[0]?.total || 0 };
@@ -121,11 +123,10 @@ class PayslipService extends BaseService {
     const basic = Number(row.basic) || 0;
 
     // --- Earnings / Deductions breakdown ---
-    // Mirrors calculatePayslip() used by the on-screen "Earnings Breakdown" /
-    // "Deductions Breakdown" charts on the employee Payslips page, so the
-    // downloaded/printed PDF shows the exact same line items and totals.
-    const { earnings, deductions, totalEarnings, employerPf } =
-      calculateEarningsDeductionsBreakdown(basic);
+    const {
+      earnings, deductions, totalEarnings,
+      eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax,
+    } = calculateEarningsDeductionsBreakdown(basic);
 
     const pfMonthly = deductions.find((d) => d.label === 'PF')?.amount || 0;
     const professionTaxMonthly = deductions.find((d) => d.label === 'PROF TAX')?.amount || 0;
@@ -187,15 +188,20 @@ class PayslipService extends BaseService {
       net_pay: netSalary,
       net_pay_words: rupeesInWords(netSalary),
       // CTC: prefer value stored by sp_generate_payslip (migration 007+);
-      // fall back to gross + employer PF for older payslips.
-      ctc: Number(row.ctc) > 0 ? Number(row.ctc) : totalEarnings + employerPf,
+      // fall back to gross + all employer costs for older payslips.
+      ctc: Number(row.ctc) > 0 ? Number(row.ctc) : totalEarnings + employerPf + edli + esiEmployer,
+      // Employer statutory contributions (for payslip CTC section)
+      eps,
+      epf,
+      edli,
+      esi_employer: esiEmployer,
       tds,
     };
   }
 
   /**
    * Generates (or refreshes) a single employee's payslip for a month/year
-   * via sp_generate_payslip.
+   * via sp_generate_payslip. Encrypts salary fields after generation.
    */
   async generate({ employee_id, month, year, payroll_run_id }) {
     await callProcedure('sp_generate_payslip(?, ?, ?, ?, @payslip_id)', [
@@ -204,6 +210,24 @@ class PayslipService extends BaseService {
     const out = await query('SELECT @payslip_id AS payslip_id');
     const payslipId = out[0].payslip_id;
     if (!payslipId) throw ApiError.internal('Failed to generate payslip');
+
+    // Encrypt salary fields then NULL out plaintext columns
+    const row = await query('SELECT * FROM payslips WHERE payslip_id = ?', [payslipId]);
+    if (row[0]) {
+      const encrypted = encryptSalaryFields(row[0]);
+      if (encrypted) {
+        await query(
+          `UPDATE payslips SET
+             salary_encrypted = ?,
+             basic = NULL, hra = NULL, allowances = NULL,
+             gross_earnings = NULL, ctc = NULL,
+             deductions = NULL, net_pay = NULL
+           WHERE payslip_id = ?`,
+          [encrypted, payslipId]
+        );
+      }
+    }
+
     return this.getDetails(payslipId);
   }
 

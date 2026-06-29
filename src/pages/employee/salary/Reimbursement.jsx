@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, X, Upload, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { getMySalaryStructure } from "../../../api/payroll.api";
-import { calculatePayslip } from "../../../utils/payslipCalculations";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import { FiscalYearPicker } from "../../../component/YearPicker";
 import { getCurrentFiscalYearStart, getFiscalYearRangeLabel } from "../../../lib/dateUtils";
 
@@ -75,7 +75,7 @@ function ClaimModal({ onClose }) {
               Cancel
             </button>
             <button onClick={onClose}
-              style={{ flex: 1, padding: 10, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "#3b82f6", color: "#fff", cursor: "pointer" }}>
+              style={{ flex: 1, padding: 10, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "#f18200", color: "#fff", cursor: "pointer" }}>
               Submit Claim
             </button>
           </div>
@@ -96,9 +96,9 @@ export default function Reimbursement() {
     getMySalaryStructure()
       .then((s) => {
         if (s?.basic) {
-          const b = calculatePayslip(Number(s.basic));
+          const b = buildSalaryBreakdown(s);
           setEntitlements([
-            { title: "Telephone & Internet", annual: b.telephoneAndInternet * 12, claimed: 1500, color: "#06b6d4" },
+            { title: "Telephone & Internet", annual: b.telephone * 12, claimed: 1500, color: "#f97316" },
             { title: "LTA (Leave Travel)", annual: b.lta * 12, claimed: 5000, color: "#f59e0b" },
             { title: "Medical Allowance", annual: b.medicalAllowance * 12, claimed: 0, color: "#10b981" },
           ]);
@@ -126,7 +126,7 @@ export default function Reimbursement() {
           <FiscalYearPicker value={fiscalYearStart} onChange={setFiscalYearStart}
             selectClassName="h-[38px] px-4 border border-[#d5dbe3] bg-white rounded text-[14px] outline-none" />
           <button onClick={() => setShowModal(true)}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 18px", background: "#3b82f6", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 18px", background: "#f18200", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
             <Plus size={15} />Add Claim
           </button>
         </div>
@@ -138,8 +138,8 @@ export default function Reimbursement() {
           <button key={k} type="button" onClick={() => setActiveTab(k)}
             style={{
               padding: "10px 20px", fontSize: 13, fontWeight: activeTab === k ? 700 : 400,
-              color: activeTab === k ? "#3b82f6" : "#64748b", background: "none", border: "none",
-              borderBottom: activeTab === k ? "2px solid #3b82f6" : "2px solid transparent",
+              color: activeTab === k ? "#f18200" : "#64748b", background: "none", border: "none",
+              borderBottom: activeTab === k ? "2px solid #f18200" : "2px solid transparent",
               cursor: "pointer", marginBottom: -1,
             }}>{l}</button>
         ))}
@@ -211,7 +211,7 @@ export default function Reimbursement() {
                   </div>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>{fmt(c.amount)}</span>
                   <StatusBadge status={c.status} />
-                  <button style={{ fontSize: 12, color: "#3b82f6", background: "none", border: "none", cursor: "pointer", padding: 0 }}>View</button>
+                  <button style={{ fontSize: 12, color: "#f18200", background: "none", border: "none", cursor: "pointer", padding: 0 }}>View</button>
                 </div>
               ))}
               <div style={{ padding: "12px 18px", background: "#f8fafc", borderTop: "1px solid #e8edf2", display: "flex", justifyContent: "flex-end", gap: 24 }}>

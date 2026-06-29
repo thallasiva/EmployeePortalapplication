@@ -1,0 +1,35 @@
+holiday_name,holiday_date,shift,location,is_restricted
+Republic Day,2026-01-26,general,,0
+Holi,2026-03-25,general,,0
+Good Friday,2026-04-18,general,,0
+Ugadi,2026-03-30,general,Hyderabad,1
+Pongal,2026-01-14,general,Chennai,1
+Independence Day,2026-08-15,general,,0
+Gandhi Jayanti,2026-10-02,general,,0
+Dussehra,2026-10-02,general,,0
+Diwali,2026-10-20,general,,0
+Eid ul-Fitr,2026-03-31,general,,1
+Christmas,2026-12-25,general,,0
+Christmas Eve,2026-12-24,general,,1
+Republic Day,2026-01-26,mid,,0
+Independence Day,2026-08-15,mid,,0
+Diwali,2026-10-20,mid,,0
+Christmas,2026-12-25,mid,,0
+Holi,2026-03-25,mid,,0
+Eid ul-Fitr,2026-03-31,mid,,1
+Ugadi,2026-03-30,mid,Hyderabad,1
+Pongal,2026-01-14,mid,Chennai,1
+Republic Day,2026-01-25,night,,0
+Independence Day,2026-08-14,night,,0
+Diwali,2026-10-19,night,,0
+Christmas,2026-12-24,night,,0
+Holi,2026-03-24,night,,0
+Gandhi Jayanti,2026-10-01,night,,0
+New Year Eve,2024-12-31,night,,0
+Eid ul-Fitr,2026-03-30,night,,1
+Karnataka Rajyotsava,2026-11-01,general,Bangalore,0
+Telangana Formation Day,2026-06-02,general,Hyderabad,0
+Tamil New Year,2026-04-14,general,Chennai,0
+Gudi Padwa,2026-03-30,general,Mumbai,0
+Karnataka Rajyotsava,2026-11-01,mid,Bangalore,0
+Telangana Formation Day,2026-06-02,mid,Hyderabad,0

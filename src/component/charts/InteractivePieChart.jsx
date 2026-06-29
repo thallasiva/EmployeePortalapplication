@@ -19,7 +19,7 @@ export const formatINR = (value) => `₹${Math.round(Number(value) || 0).toLocal
  * @param {(value: number) => string} [valueFormatter]
  * @param {string} [title]
  */
-export default function InteractivePieChart({ data, size = 180, donut = true, valueFormatter = formatINR, title }) {
+export default function InteractivePieChart({ data, size = 180, donut = true, valueFormatter = formatINR, title, legendBelow = false }) {
   const [activeIndex, setActiveIndex] = useState(null);
   const r = size / 2;
   const total = data.reduce((sum, d) => sum + (Number(d.value) || 0), 0);
@@ -40,7 +40,7 @@ export default function InteractivePieChart({ data, size = 180, donut = true, va
   const singleIndex = nonZero.length === 1 ? data.indexOf(nonZero[0]) : -1;
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
+    <div className={legendBelow ? "flex flex-col items-center gap-3" : "flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6"}>
       {title && <h3 className="sr-only">{title}</h3>}
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} role="img" aria-label={title || "Pie chart"}>

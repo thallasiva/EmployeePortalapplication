@@ -20,10 +20,13 @@
 }
 
 .admin-dash-stat-value {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: 900;
   color: var(--adm-text);
-  line-height: 1.2;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-dash-progress {

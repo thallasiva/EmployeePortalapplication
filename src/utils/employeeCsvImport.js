@@ -1,5 +1,13 @@
 import { EMPLOYEE_FIELD_MAP, parseBooleanFlag } from "./employeeFieldMap";
 
+/** Triggers a browser download of the employee CSV import template. */
+export function downloadEmployeeCsvTemplate(filename = "employee_import_template.csv") {
+  const a = document.createElement("a");
+  a.href = "/templates/employee_import_template.csv";
+  a.download = filename;
+  a.click();
+}
+
 function parseCsvLine(line) {
   const result = [];
   let current = "";

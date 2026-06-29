@@ -11,6 +11,10 @@ const FILLABLE = [
   'father_name', 'spouse_name', 'aadhaar_number', 'aadhaar_name', 'aadhaar_enrolment_number',
   'access_card_number', 'access_card_from_date', 'access_card_to_date',
   'pf_number', 'pf_join_date', 'esi_number', 'has_left_organization',
+  // Extended fields (migration_009)
+  'biometric_id', 'actual_dob', 'pan_number', 'project_cost_centre',
+  'contract_end_date', 'date_of_confirmation', 'educational_qualification',
+  'total_exp_before_joining', 'previous_employer', 'bgv_status', 'previous_designation',
 ];
 
 const LIST_SELECT = `
@@ -22,7 +26,12 @@ const LIST_SELECT = `
          ci.contact_name, ci.contact_city, ci.contact_country,
          ci.permanent_address_line1, ci.permanent_address_line2, ci.permanent_address_line3,
          bd.bank_name, bd.account_number, bd.ifsc_code, bd.pan_number, bd.uan_number,
-         bd.account_type, bd.bank_branch, bd.dd_payable_at, bd.account_holder_name, bd.payment_type
+         bd.account_type, bd.bank_branch, bd.dd_payable_at, bd.account_holder_name, bd.payment_type,
+         EXISTS(
+           SELECT 1 FROM resignations r
+           WHERE r.employee_id = e.employee_id
+             AND r.status IN ('pending','rm_approved','accepted')
+         ) AS serving_notice
     FROM employees e
     LEFT JOIN departments d ON d.department_id = e.department_id
     LEFT JOIN designations ds ON ds.designation_id = e.designation_id
@@ -36,10 +45,30 @@ class EmployeeService extends BaseService {
     super('employees', 'employee_id', FILLABLE);
   }
 
-  async list({ department, status, search, limit, offset } = {}) {
+  /** Returns all active employees with just the fields needed to build the org hierarchy. */
+  async orgChart() {
+    const rows = await query(
+      `SELECT e.employee_id, e.first_name, e.last_name, e.emp_code, e.emp_job_title,
+              e.reporting_to, e.profile_photo,
+              d.department_name, d.department_id,
+              des.designation_name
+         FROM employees e
+         LEFT JOIN departments d  ON d.department_id  = e.department_id
+         LEFT JOIN designations des ON des.designation_id = e.designation_id
+        WHERE e.employee_status = 'Active' AND e.has_left_organization = 0
+        ORDER BY e.employee_id ASC`
+    );
+    return rows;
+  }
+
+  async list({ department, status, search, reporting_to, limit, offset } = {}) {
     const conditions = [];
     const params = [];
 
+    if (reporting_to) {
+      conditions.push('e.reporting_to = ?');
+      params.push(reporting_to);
+    }
     if (department) {
       conditions.push('e.department_id = ?');
       params.push(department);
@@ -172,6 +201,41 @@ class EmployeeService extends BaseService {
 
     const rows = await query('SELECT * FROM employee_bank_details WHERE employee_id = ?', [employeeId]);
     return rows[0];
+  }
+
+  /**
+   * Returns the team context for the logged-in employee:
+   *  - their manager's record
+   *  - all active teammates (employees under the same manager)
+   */
+  async myTeam(employeeId) {
+    // Get self to find reporting_to
+    const selfRows = await query(
+      `${LIST_SELECT} WHERE e.employee_id = ?`,
+      [employeeId]
+    );
+    const self = selfRows[0] || null;
+    const managerId = self ? self.reporting_to : null;
+
+    if (!managerId) {
+      // Employee has no manager — show just themselves
+      return { manager: null, teammates: self ? [self] : [], currentEmployeeId: employeeId };
+    }
+
+    // Get manager record
+    const managerRows = await query(
+      `${LIST_SELECT} WHERE e.employee_id = ?`,
+      [managerId]
+    );
+    const manager = managerRows[0] || null;
+
+    // Get all active teammates (report to same manager)
+    const teammates = await query(
+      `${LIST_SELECT} WHERE e.reporting_to = ? AND e.employee_status = 'Active' ORDER BY e.first_name`,
+      [managerId]
+    );
+
+    return { manager, teammates, currentEmployeeId: employeeId };
   }
 
   async directory({ location, department, holidayCalendar } = {}) {

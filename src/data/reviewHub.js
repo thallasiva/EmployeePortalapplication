@@ -35,12 +35,12 @@ export const REVIEW_NAV_SECTIONS = [
       {
         id: "resignations",
         label: "Resignations",
-        dataType: "coming-soon",
+        dataType: "resignations",
       },
       {
         id: "helpdesk",
         label: "Helpdesk",
-        dataType: "coming-soon",
+        dataType: "helpdesk",
       },
     ],
   },

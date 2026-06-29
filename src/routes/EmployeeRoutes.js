@@ -1,40 +1,54 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import EmployeeDashboard from "../pages/employee/Dashboard/EmployeeDashboard";
-import AttendanceInfo from "../pages/employee/attendance/AttendanceInfo";
-import MyRegularizations from "../pages/employee/attendance/MyRegularizations";
-import AttendanceMuster from "../pages/employee/attendance/AttendanceMuster";
-import ShiftRoster from "../pages/employee/attendance/ShiftRoster";
-import LeaveBalances from "../pages/employee/leave/LeaveBalance";
-import LeaveApply from "../pages/employee/leave/LeaveApply";
-import LeaveCalendar from "../pages/employee/leave/LeaveCalendar";
-import HolidayCalendar from "../pages/employee/leave/HolidayCalendar";
-import Payslips from "../pages/employee/salary/Payslips";
-import ITDeclaration from "../pages/employee/salary/ITDeclaration";
-import ITStatement from "../pages/employee/salary/ITStatement";
-import Reimbursement from "../pages/employee/salary/Reimbursement";
-import ProofInvestment from "../pages/employee/salary/ProofInvestment";
-import DocumentCenter from "../pages/employee/documents/DocumentCenter";
-import Helpdesk from "../pages/employee/helpdesk/Helpdesk";
-import Engage from "../pages/employee/engage/Engage";
-import Kudos from "../pages/employee/worklife/Kudos";
-import Feedback from "../pages/employee/worklife/Feedback";
-import Tasks from "../pages/employee/tasks/Tasks";
-import TaskReview from "../pages/employee/tasks/Review";
-import People from "../pages/employee/people/People";
-import OrganizationChart from "../pages/employee/people/OrganizationChart";
-import Hiring from "../pages/employee/hiring/Hiring";
-import RequestHub from "../pages/employee/request/RequestHub";
-import WorkflowDelegates from "../pages/employee/workflow/WorkflowDelegates";
-import Loans from "../pages/employee/salary/Loans";
-import YTDReports from "../pages/employee/salary/YTDReports";
-import SalaryRevision from "../pages/employee/salary/SalaryRevision";
 import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
 import { PATH_ADMIN_HOME } from "./paths";
+import LoadingFallback from "../component/LoadingFallback";
+import ErrorBoundary from "../component/ErrorBoundary";
+
+// ── Lazy imports ─────────────────────────────────────────────────────────────
+const EmployeeDashboard   = lazy(() => import("../pages/employee/Dashboard/EmployeeDashboard"));
+const AttendanceInfo      = lazy(() => import("../pages/employee/attendance/AttendanceInfo"));
+const MyRegularizations   = lazy(() => import("../pages/employee/attendance/MyRegularizations"));
+const AttendanceMuster    = lazy(() => import("../pages/employee/attendance/AttendanceMuster"));
+const ShiftRoster         = lazy(() => import("../pages/employee/attendance/ShiftRoster"));
+const LeaveBalances       = lazy(() => import("../pages/employee/leave/LeaveBalance"));
+const LeaveApply          = lazy(() => import("../pages/employee/leave/LeaveApply"));
+const LeaveCalendar       = lazy(() => import("../pages/employee/leave/LeaveCalendar"));
+const HolidayCalendar     = lazy(() => import("../pages/employee/leave/HolidayCalendar"));
+const Payslips            = lazy(() => import("../pages/employee/salary/Payslips"));
+const ITDeclaration       = lazy(() => import("../pages/employee/salary/ITDeclaration"));
+const ITStatement         = lazy(() => import("../pages/employee/salary/ITStatement"));
+const Reimbursement       = lazy(() => import("../pages/employee/salary/Reimbursement"));
+const ProofInvestment     = lazy(() => import("../pages/employee/salary/ProofInvestment"));
+const Loans               = lazy(() => import("../pages/employee/salary/Loans"));
+const YTDReports          = lazy(() => import("../pages/employee/salary/YTDReports"));
+const SalaryRevision      = lazy(() => import("../pages/employee/salary/SalaryRevision"));
+const DocumentCenter      = lazy(() => import("../pages/employee/documents/DocumentCenter"));
+const Helpdesk            = lazy(() => import("../pages/employee/helpdesk/Helpdesk"));
+const Engage              = lazy(() => import("../pages/employee/engage/Engage"));
+const Kudos               = lazy(() => import("../pages/employee/worklife/Kudos"));
+const Feedback            = lazy(() => import("../pages/employee/worklife/Feedback"));
+const Tasks               = lazy(() => import("../pages/employee/tasks/Tasks"));
+const TaskReview          = lazy(() => import("../pages/employee/tasks/Review"));
+const People              = lazy(() => import("../pages/employee/people/People"));
+const OrganizationChart   = lazy(() => import("../pages/employee/people/OrganizationChart"));
+const Hiring              = lazy(() => import("../pages/employee/hiring/Hiring"));
+const RequestHub          = lazy(() => import("../pages/employee/request/RequestHub"));
+const WorkflowDelegates   = lazy(() => import("../pages/employee/workflow/WorkflowDelegates"));
+const MyInfo              = lazy(() => import("../pages/employee/myinfo/MyInfo"));
+const Resignation         = lazy(() => import("../pages/employee/myinfo/Resignation"));
+const SelfAppraisal       = lazy(() => import("../pages/employee/appraisal/SelfAppraisal"));
+
+function Page({ children }) {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
+    </ErrorBoundary>
+  );
+}
 
 const EmployeeRoutes = () => {
   const user = getStoredUser();
-
   if (!isEmployee(user) && !isReportingManager(user)) {
     return <Navigate to={PATH_ADMIN_HOME} replace />;
   }
@@ -42,37 +56,40 @@ const EmployeeRoutes = () => {
   return (
     <Routes>
       <Route index element={<Navigate to="home" replace />} />
-      <Route path="home" element={<EmployeeDashboard />} />
-      <Route path="engage" element={<Engage />} />
-      <Route path="engine" element={<Navigate to="/employee/engage" replace />} />
-      <Route path="todo/tasks" element={<Tasks />} />
-      <Route path="todo/review" element={<TaskReview />} />
-      <Route path="worklife/kudos" element={<Kudos />} />
-      <Route path="worklife/feedback" element={<Feedback />} />
-      <Route path="attendance/daily" element={<AttendanceInfo />} />
-      <Route path="attendance/regularizations" element={<MyRegularizations />} />
-      <Route path="attendance/monthly" element={<AttendanceMuster />} />
-      <Route path="attendance/shifts" element={<ShiftRoster />} />
-      <Route path="leave/balance" element={<LeaveBalances />} />
-      <Route path="leave/apply" element={<LeaveApply />} />
-      <Route path="leave/calendar" element={<LeaveCalendar />} />
-      <Route path="leave/holiday-calendar" element={<HolidayCalendar />} />
-      <Route path="payroll/payslips" element={<Payslips />} />
-      <Route path="payroll/it-declaration" element={<ITDeclaration />} />
-      <Route path="payroll/it-statement" element={<ITStatement />} />
-      <Route path="payroll/reimbursements" element={<Reimbursement />} />
-      <Route path="payroll/claims" element={<ProofInvestment />} />
-      <Route path="payroll/loans" element={<Loans />} />
-      <Route path="payroll/ytd-reports" element={<YTDReports />} />
-      <Route path="payroll/salary-revision" element={<SalaryRevision />} />
-      <Route path="hiring" element={<Hiring />} />
-      <Route path="documents" element={<DocumentCenter />} />
-      <Route path="documents/upload" element={<DocumentCenter />} />
-      <Route path="people" element={<People />} />
-      <Route path="org-chart" element={<OrganizationChart />} />
-      <Route path="helpdesk" element={<Helpdesk />} />
-      <Route path="request-hub" element={<RequestHub />} />
-      <Route path="workflow-delegates" element={<WorkflowDelegates />} />
+      <Route path="home"                     element={<Page><EmployeeDashboard /></Page>} />
+      <Route path="engage"                   element={<Page><Engage /></Page>} />
+      <Route path="engine"                   element={<Navigate to="/employee/engage" replace />} />
+      <Route path="todo/tasks"               element={<Page><Tasks /></Page>} />
+      <Route path="todo/review"              element={<Page><TaskReview /></Page>} />
+      <Route path="worklife/kudos"           element={<Page><Kudos /></Page>} />
+      <Route path="worklife/feedback"        element={<Page><Feedback /></Page>} />
+      <Route path="attendance/daily"         element={<Page><AttendanceInfo /></Page>} />
+      <Route path="attendance/regularizations" element={<Page><MyRegularizations /></Page>} />
+      <Route path="attendance/monthly"       element={<Page><AttendanceMuster /></Page>} />
+      <Route path="attendance/shifts"        element={<Page><ShiftRoster /></Page>} />
+      <Route path="leave/balance"            element={<Page><LeaveBalances /></Page>} />
+      <Route path="leave/apply"              element={<Page><LeaveApply /></Page>} />
+      <Route path="leave/calendar"           element={<Page><LeaveCalendar /></Page>} />
+      <Route path="leave/holiday-calendar"   element={<Page><HolidayCalendar /></Page>} />
+      <Route path="payroll/payslips"         element={<Page><Payslips /></Page>} />
+      <Route path="payroll/it-declaration"   element={<Page><ITDeclaration /></Page>} />
+      <Route path="payroll/it-statement"     element={<Page><ITStatement /></Page>} />
+      <Route path="payroll/reimbursements"   element={<Page><Reimbursement /></Page>} />
+      <Route path="payroll/claims"           element={<Page><ProofInvestment /></Page>} />
+      <Route path="payroll/loans"            element={<Page><Loans /></Page>} />
+      <Route path="payroll/ytd-reports"      element={<Page><YTDReports /></Page>} />
+      <Route path="payroll/salary-revision"  element={<Page><SalaryRevision /></Page>} />
+      <Route path="hiring"                   element={<Page><Hiring /></Page>} />
+      <Route path="documents"                element={<Page><DocumentCenter /></Page>} />
+      <Route path="documents/upload"         element={<Page><DocumentCenter /></Page>} />
+      <Route path="people"                   element={<Page><People /></Page>} />
+      <Route path="org-chart"                element={<Page><OrganizationChart /></Page>} />
+      <Route path="helpdesk"                 element={<Page><Helpdesk /></Page>} />
+      <Route path="request-hub"              element={<Page><RequestHub /></Page>} />
+      <Route path="workflow-delegates"       element={<Page><WorkflowDelegates /></Page>} />
+      <Route path="my-info"                  element={<Page><MyInfo /></Page>} />
+      <Route path="resignation"             element={<Page><Resignation /></Page>} />
+      <Route path="appraisal"               element={<Page><SelfAppraisal /></Page>} />
     </Routes>
   );
 };

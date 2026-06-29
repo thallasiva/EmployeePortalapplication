@@ -274,8 +274,40 @@ function ImportHolidayCalendarModal({ onClose, onImported }) {
           <p className="text-sm text-gray-600">
             Upload a CSV file with columns <strong>Holiday Name</strong> and{" "}
             <strong>Date</strong> (YYYY-MM-DD). Optional columns:{" "}
-            <strong>Calendar</strong>, <strong>Restricted</strong>.
+            <strong>Shift</strong>, <strong>Location</strong>, <strong>Restricted</strong>.
           </p>
+
+          {/* Template download banner */}
+          <div style={{
+            display:"flex", alignItems:"center", justifyContent:"space-between",
+            background:"#fff8f0", border:"1px solid #fed7aa", borderRadius:10,
+            padding:"10px 14px",
+          }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:18 }}>📥</span>
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:"#92400e" }}>Not sure about the format?</div>
+                <div style={{ fontSize:11, color:"#b45309" }}>Download the template and fill it in</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const a = document.createElement("a");
+                a.href = "/templates/holiday_import_template.csv";
+                a.download = "holiday_import_template.csv";
+                a.click();
+              }}
+              style={{
+                display:"inline-flex", alignItems:"center", gap:5,
+                padding:"6px 14px", borderRadius:8, fontSize:12, fontWeight:700,
+                background:"#f18200", color:"#fff", border:"none", cursor:"pointer",
+                whiteSpace:"nowrap",
+              }}
+            >
+              ⬇ Download Template
+            </button>
+          </div>
 
           <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center cursor-pointer hover:border-brand hover:bg-brand-50/40">
             <Upload size={24} className="text-gray-400" />

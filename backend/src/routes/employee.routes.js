@@ -14,7 +14,10 @@ const router = express.Router();
 
 router.use(authenticate);
 
+router.get('/me', controller.getMe);
+router.get('/org-chart', controller.orgChart);
 router.get('/directory', controller.directory);
+router.get('/my-team', controller.myTeam);
 
 router.get('/', requirePermission('employees', 'view'), controller.list);
 router.post('/', requirePermission('employees', 'add'), validate(createEmployeeSchema), controller.create);

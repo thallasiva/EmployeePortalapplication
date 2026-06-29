@@ -11,8 +11,17 @@ const base = createCrudController(employeeService, { entityName: 'Employee' });
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { department, status, search } = req.query;
-  const { rows, total } = await employeeService.list({ department, status, search, limit, offset });
+  const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
+  const { rows, total } = await employeeService.list({ department, status, search, reporting_to, limit, offset });
   new ApiResponse(200, rows, 'Employee list fetched', buildMeta({ page, limit, total })).send(res);
+});
+
+const getMe = asyncHandler(async (req, res) => {
+  const empId = req.user.employeeId;
+  if (!empId) throw ApiError.badRequest('No employee linked to this account');
+  const profile = await employeeService.getProfile(empId);
+  if (!profile) throw ApiError.notFound('Employee profile not found');
+  new ApiResponse(200, profile, 'My profile fetched').send(res);
 });
 
 const getOne = asyncHandler(async (req, res) => {
@@ -72,19 +81,32 @@ const updateBankDetails = asyncHandler(async (req, res) => {
   new ApiResponse(200, result, 'Bank details updated').send(res);
 });
 
+const orgChart = asyncHandler(async (req, res) => {
+  const rows = await employeeService.orgChart();
+  new ApiResponse(200, rows, 'Org chart data fetched').send(res);
+});
+
 const directory = asyncHandler(async (req, res) => {
   const rows = await employeeService.directory(req.query);
   new ApiResponse(200, rows, 'People directory fetched').send(res);
 });
 
+const myTeam = asyncHandler(async (req, res) => {
+  const data = await employeeService.myTeam(req.user.employeeId);
+  new ApiResponse(200, data, 'My team fetched').send(res);
+});
+
 module.exports = {
   ...base,
   list,
+  getMe,
   getOne,
   create,
   getContactInfo,
   updateContactInfo,
   getBankDetails,
   updateBankDetails,
+  orgChart,
   directory,
+  myTeam,
 };

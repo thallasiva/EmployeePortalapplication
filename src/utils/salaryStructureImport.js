@@ -176,15 +176,9 @@ export function buildSalaryStructureCsvTemplate() {
 }
 
 /** Triggers a browser download of the salary structure CSV template. */
-export function downloadSalaryStructureCsvTemplate(filename = "salary-structure-template.csv") {
-  const csv = buildSalaryStructureCsvTemplate();
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+export function downloadSalaryStructureCsvTemplate(filename = "salary_structure_import_template.csv") {
+  const a = document.createElement("a");
+  a.href = "/templates/salary_structure_import_template.csv";
+  a.download = filename;
+  a.click();
 }

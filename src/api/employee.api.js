@@ -8,6 +8,10 @@ export const listEmployees = (params) =>
 export const getEmployeeDirectory = (params) =>
   apiClient.get("/employees/directory", { params }).then(unwrap);
 
+/** GET /employees/my-team — returns { manager, teammates[], currentEmployeeId } */
+export const getMyTeam = () =>
+  apiClient.get("/employees/my-team").then(unwrap);
+
 /** GET /employees/:id */
 export const getEmployee = (id) => apiClient.get(`/employees/${id}`).then(unwrap);
 
@@ -34,3 +38,9 @@ export const getBankDetails = (id) => apiClient.get(`/employees/${id}/bank-detai
 /** PUT /employees/:id/bank-details */
 export const updateBankDetails = (id, payload) =>
   apiClient.put(`/employees/${id}/bank-details`, payload).then(unwrap);
+
+/** GET /employees/me — logged-in employee full profile */
+export const getMyProfile = () => apiClient.get("/employees/me").then(unwrap);
+
+/** GET /employees/org-chart — full flat list for building hierarchy tree */
+export const getOrgChart = () => apiClient.get("/employees/org-chart").then(unwrap);

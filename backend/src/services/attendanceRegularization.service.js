@@ -17,10 +17,14 @@ class AttendanceRegularizationService extends BaseService {
     ]);
   }
 
-  async list({ employee_id, status, limit, offset } = {}) {
+  async list({ employee_id, status, reporting_to, limit, offset } = {}) {
     const where = [];
     const params = [];
 
+    if (reporting_to) {
+      where.push('e.reporting_to = ?');
+      params.push(reporting_to);
+    }
     if (employee_id) {
       where.push('r.employee_id = ?');
       params.push(employee_id);

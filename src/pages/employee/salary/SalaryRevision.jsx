@@ -1,41 +1,172 @@
-import React, { useEffect, useState } from "react";
-import { TrendingUp, Calendar } from "lucide-react";
-import { getMySalaryStructure } from "../../../api/payroll.api";
-import { calculatePayslip } from "../../../utils/payslipCalculations";
+import React, { useEffect, useState, useMemo } from "react";
+import { TrendingUp, Download } from "lucide-react";
+import { getMySalaryStructure, listSalaryStructures } from "../../../api/payroll.api";
+import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
+import { getCurrentUser } from "../../../api/auth.api";
 
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
-const fmtL = (n) => {
-  const v = Math.round(Number(n) || 0);
-  if (v >= 100000) return `₹${(v / 100000).toFixed(1)}L`;
-  return fmt(v);
-};
+const fmtAmt = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-function StatCard({ label, value, sub, color = "#1e293b", bg = "#fff" }) {
+function parseDateStr(d) {
+  if (!d) return null;
+  const dt = new Date(d);
+  return isNaN(dt) ? null : dt;
+}
+
+function formatDateLabel(d) {
+  if (!d) return "—";
+  const dt = parseDateStr(d);
+  if (!dt) return d;
+  return dt.toLocaleString("en-IN", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+}
+
+function formatPayoutMonth(d) {
+  if (!d) return "—";
+  const dt = parseDateStr(d);
+  if (!dt) return d;
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[dt.getMonth()]}, ${dt.getFullYear()}`;
+}
+
+function getDurationLabel(ms) {
+  if (ms <= 0) return "—";
+  const days = Math.floor(ms / 86400000);
+  if (days < 30) return `${days} day${days !== 1 ? "s" : ""}`;
+  const months = Math.floor(days / 30);
+  const remDays = days % 30;
+  const parts = [`${months} month${months !== 1 ? "s" : ""}`];
+  if (remDays > 0) parts.push(`${remDays} day${remDays !== 1 ? "s" : ""}`);
+  return parts.join(" ");
+}
+
+// ── SVG Line chart ────────────────────────────────────────────────────────────
+function RevisionLineChart({ rows }) {
+  if (!rows || rows.length < 1) return null;
+
+  const W = 800, H = 200, PAD = { top: 20, right: 30, bottom: 40, left: 60 };
+  const inner = { w: W - PAD.left - PAD.right, h: H - PAD.top - PAD.bottom };
+
+  const values = rows.map((r) => Number(r.newCTC) || 0);
+  const min = Math.min(...values) * 0.95;
+  const max = Math.max(...values) * 1.05;
+
+  const toX = (i) => PAD.left + (rows.length === 1 ? inner.w / 2 : (i / (rows.length - 1)) * inner.w);
+  const toY = (v) => PAD.top + inner.h - ((v - min) / (max - min || 1)) * inner.h;
+
+  const points = rows.map((r, i) => `${toX(i)},${toY(Number(r.newCTC) || 0)}`).join(" ");
+  const fillPoints = [`${toX(0)},${PAD.top + inner.h}`, ...rows.map((r, i) => `${toX(i)},${toY(Number(r.newCTC) || 0)}`), `${toX(rows.length - 1)},${PAD.top + inner.h}`].join(" ");
+
+  const fmtL = (n) => {
+    const v = Math.round(Number(n) || 0);
+    return v >= 100000 ? `${(v / 100000).toFixed(2)}L` : `${(v / 1000).toFixed(0)}k`;
+  };
+
+  // Y-axis ticks
+  const yTicks = 4;
+  const yTickVals = Array.from({ length: yTicks + 1 }, (_, i) => min + (i / yTicks) * (max - min));
+
   return (
-    <div style={{ background: bg, border: "1px solid #e2e8f0", borderRadius: 12, padding: "18px 20px" }}>
-      <p style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>{label}</p>
-      <p style={{ fontSize: 26, fontWeight: 800, color, margin: "8px 0 0" }}>{value}</p>
-      {sub && <p style={{ fontSize: 12, color: "#94a3b8", margin: "4px 0 0" }}>{sub}</p>}
-    </div>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ fontFamily: "sans-serif" }}>
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f97316" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#f97316" stopOpacity="0.01" />
+        </linearGradient>
+      </defs>
+
+      {/* Y-axis ticks */}
+      {yTickVals.map((v, i) => (
+        <g key={i}>
+          <line x1={PAD.left} y1={toY(v)} x2={PAD.left + inner.w} y2={toY(v)} stroke="#f1f5f9" strokeWidth={1} />
+          <text x={PAD.left - 6} y={toY(v) + 4} textAnchor="end" fontSize={9} fill="#94a3b8">{fmtL(v)}</text>
+        </g>
+      ))}
+
+      {/* Area fill */}
+      <polygon points={fillPoints} fill="url(#lineGrad)" />
+
+      {/* Line */}
+      <polyline points={points} fill="none" stroke="#f97316" strokeWidth={2.5} strokeLinejoin="round" />
+
+      {/* Dots + X labels */}
+      {rows.map((r, i) => {
+        const x = toX(i);
+        const y = toY(Number(r.newCTC) || 0);
+        const dt = parseDateStr(r.effectiveDate);
+        const label = dt ? dt.toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"2-digit" }) : "—";
+        return (
+          <g key={i}>
+            <circle cx={x} cy={y} r={5} fill="#f97316" stroke="#fff" strokeWidth={2} />
+            <text x={x} y={PAD.top + inner.h + 18} textAnchor="middle" fontSize={9} fill="#94a3b8">{label}</text>
+          </g>
+        );
+      })}
+    </svg>
   );
 }
 
+// ── Main ─────────────────────────────────────────────────────────────────────
 export default function SalaryRevision() {
-  const [loading, setLoading]   = useState(true);
-  const [structure, setStructure] = useState(null);
-  const [breakdown, setBreakdown] = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [structure, setStructure]   = useState(null);
+  const [allStructures, setAll]     = useState([]);
+  const [user, setUser]             = useState(null);
 
   useEffect(() => {
-    getMySalaryStructure()
-      .then((s) => {
-        setStructure(s);
-        if (s?.basic) setBreakdown(calculatePayslip(Number(s.basic)));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      getMySalaryStructure().catch(() => null),
+      getCurrentUser().catch(() => null),
+    ]).then(async ([s, u]) => {
+      setStructure(s);
+      setUser(u);
+      // Try to get all salary structures for this employee (revision history)
+      if (u?.employee_id) {
+        const all = await listSalaryStructures({ employee_id: u.employee_id, limit: 50 }).catch(() => []);
+        setAll(Array.isArray(all) ? all.sort((a, b) => new Date(b.effective_date || b.effective_from) - new Date(a.effective_date || a.effective_from)) : []);
+      }
+    }).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Loading…</div>;
+  const breakdown = useMemo(() => {
+    const basic = Number(structure?.basic || 0);
+    return basic > 0 ? buildSalaryBreakdown({ basic }) : null;
+  }, [structure]);
+
+  const currentCTC = breakdown ? (breakdown.totalEarnings + breakdown.pf) * 12 : 0;
+  const effectiveDate = structure?.effective_from || structure?.effective_date || null;
+
+  // Build revision rows from all structures
+  const revisionRows = useMemo(() => {
+    if (!allStructures.length && structure) {
+      // Only current structure available — show single row
+      const ctc = breakdown ? (breakdown.totalEarnings + breakdown.pf) * 12 : 0;
+      return [{ effectiveDate, newCTC: ctc, prevCTC: 0, payoutMonth: effectiveDate, duration: 0, diffAmt: ctc, diffPct: null }];
+    }
+
+    return allStructures.map((s, i) => {
+      const b = buildSalaryBreakdown(s);
+      const newCTC = b ? (b.ctc) * 12 : 0;
+      const prevS  = allStructures[i + 1];
+      const prevB  = prevS ? buildSalaryBreakdown(prevS) : null;
+      const prevCTC = prevB ? (prevB.totalEarnings + prevB.pf) * 12 : 0;
+      const effDate = s.effective_from || s.effective_date;
+      const prevEffDate = prevS?.effective_from || prevS?.effective_date;
+      const durationMs = prevEffDate ? new Date(effDate) - new Date(prevEffDate) : 0;
+      const diffAmt = newCTC - prevCTC;
+      const diffPct = prevCTC > 0 ? Math.round((diffAmt / prevCTC) * 100) : null;
+      return { effectiveDate: effDate, newCTC, prevCTC, payoutMonth: effDate, duration: durationMs, diffAmt, diffPct };
+    });
+  }, [allStructures, structure, breakdown, effectiveDate]);
+
+  // Duration since last revision
+  const lastRevision = revisionRows[0];
+  const durationSince = lastRevision?.effectiveDate
+    ? getDurationLabel(Date.now() - new Date(lastRevision.effectiveDate).getTime())
+    : "—";
+
+  if (loading) {
+    return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Loading…</div>;
+  }
 
   if (!structure) {
     return (
@@ -46,142 +177,71 @@ export default function SalaryRevision() {
     );
   }
 
-  const currentBasic = Number(structure.basic) || 0;
-  const currentCTC   = breakdown ? breakdown.totalEarnings * 12 : currentBasic * 12;
-  const effectiveDate = structure.effective_from || structure.effective_date || "—";
-
-  // Simulate revision history (previous CTC was 20% less)
-  const prevCTC   = Math.round(currentCTC / 1.2);
-  const hikeAmt   = currentCTC - prevCTC;
-  const hikePct   = prevCTC > 0 ? Math.round((hikeAmt / prevCTC) * 100) : 0;
-  const arrears   = Math.round(hikeAmt / 12); // 1 month arrear estimate
-
-  const HISTORY = [
-    {
-      date:   effectiveDate,
-      oldCTC: prevCTC,
-      newCTC: currentCTC,
-      hike:   hikePct,
-      status: "Active",
-    },
-    {
-      date:   "01-Apr-2025",
-      oldCTC: Math.round(prevCTC / 1.15),
-      newCTC: prevCTC,
-      hike:   15,
-      status: "Closed",
-    },
-  ];
-
   return (
     <div style={{ minHeight: "100vh", background: "#f5f7fb", padding: 24 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: "0 0 20px" }}>Salary Revision</h1>
 
-      {/* Current revision summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
-        <StatCard label="Current CTC" value={fmtL(currentCTC)} sub="Per annum" color="#1e293b" />
-        <StatCard label="Hike %" value={`${hikePct}%`} sub="Last revision" color="#15803d" bg="#f0fdf4" />
-        <StatCard label="Effective Date" value={effectiveDate !== "—" ? effectiveDate : "Current"} sub="Last revision date" />
-        <StatCard label="Est. Arrears" value={fmt(arrears)} sub="~1 month" color="#b45309" bg="#fffbeb" />
-      </div>
-
-      {/* Current salary breakdown */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc" }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Current Monthly Breakdown</span>
-          </div>
-          <div style={{ padding: "8px 18px 16px" }}>
-            {breakdown && [
-              { label: "Basic Salary", value: breakdown.basic, color: "#3b82f6" },
-              { label: "HRA", value: breakdown.hra, color: "#06b6d4" },
-              { label: "Special Allowance", value: breakdown.specialAllowance, color: "#8b5cf6" },
-              { label: "LTA", value: breakdown.lta, color: "#f59e0b" },
-              { label: "Medical Allowance", value: breakdown.medicalAllowance, color: "#10b981" },
-              { label: "Other Earnings", value: breakdown.totalEarnings - breakdown.basic - breakdown.hra - breakdown.specialAllowance - breakdown.lta - breakdown.medicalAllowance, color: "#64748b" },
-            ].map(({ label, value, color }) => {
-              const pct = Math.round((value / breakdown.totalEarnings) * 100);
-              return (
-                <div key={label} style={{ padding: "8px 0", borderBottom: "1px solid #f8fafc" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, color: "#475569" }}>{label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{fmt(value)}</span>
-                  </div>
-                  <div style={{ height: 4, background: "#f1f5f9", borderRadius: 999 }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 999 }} />
-                  </div>
-                </div>
-              );
-            })}
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0 0", borderTop: "2px solid #e2e8f0", marginTop: 6 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Gross Monthly</span>
-              <span style={{ fontSize: 15, fontWeight: 800, color: "#1e293b" }}>{fmt(breakdown?.totalEarnings)}</span>
-            </div>
-          </div>
+      {/* Top summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20, maxWidth: 640 }}>
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px" }}>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>Duration since last revision</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#1e293b" }}>{durationSince}</div>
         </div>
-
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc" }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Deductions & Net</span>
-          </div>
-          <div style={{ padding: "8px 18px 16px" }}>
-            {breakdown && [
-              { label: "PF (Employee)", value: breakdown.pf, color: "#ef4444" },
-              { label: "Professional Tax", value: breakdown.profTax, color: "#f97316" },
-              { label: "Income Tax (TDS)", value: breakdown.incomeTax, color: "#dc2626" },
-            ].map(({ label, value, color }) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid #f8fafc" }}>
-                <span style={{ fontSize: 12, color: "#475569" }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color }}>{fmt(value)}</span>
-              </div>
-            ))}
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 16px", background: "#f0fdf4", borderRadius: 8, marginTop: 12, border: "1px solid #bbf7d0" }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#15803d" }}>Net Monthly Take-Home</span>
-              <span style={{ fontSize: 18, fontWeight: 800, color: "#15803d" }}>{fmt(breakdown?.netSalary)}</span>
+        <div style={{ background: "#fffde7", border: "1px solid #f0e680", borderRadius: 10, padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e5a" }}>Last Revision Period</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", marginTop: 2 }}>
+              {lastRevision?.effectiveDate ? new Date(lastRevision.effectiveDate).toLocaleDateString("en-CA") : "—"}
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 0" }}>
-              <span style={{ fontSize: 12, color: "#64748b" }}>Annual CTC</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>{fmt(currentCTC)}</span>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#9e9e5a" }}>Last Revision Percentage</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#16a34a", marginTop: 2 }}>
+              {lastRevision?.diffPct != null ? `+${lastRevision.diffPct}%` : "—"}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Revision History */}
+      {/* Timeline chart */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>CTC Revision Timeline</span>
+          <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#f18200", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            <Download size={13} /> Download
+          </button>
+        </div>
+        <RevisionLineChart rows={[...revisionRows].reverse()} />
+      </div>
+
+      {/* CTC Revision Details table */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
-        <div style={{ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 8, background: "#fafbfc" }}>
-          <Calendar size={16} style={{ color: "#64748b" }} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Revision History</span>
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>CTC Revision Details</span>
         </div>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ background: "#f8fafc" }}>
-                {["Effective Date", "Previous CTC", "Revised CTC", "Hike %", "Status"].map((h) => (
-                  <th key={h} style={{ padding: "10px 18px", textAlign: "left", color: "#64748b", fontWeight: 600, borderBottom: "1px solid #e8edf2" }}>{h}</th>
+                {["Last Revision Date", "Payout Month", "Revised Monthly CTC in ₹", "Previous Monthly CTC in ₹", "Duration between revision", "Amount in ₹", "Percentage"].map((h) => (
+                  <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontWeight: 600, borderBottom: "1px solid #e8edf2", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {HISTORY.map((row, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "#fff"}
-                >
-                  <td style={{ padding: "12px 18px", fontWeight: 500, color: "#1e293b" }}>{row.date}</td>
-                  <td style={{ padding: "12px 18px", color: "#64748b" }}>{fmtL(row.oldCTC)}</td>
-                  <td style={{ padding: "12px 18px", fontWeight: 700, color: "#1e293b" }}>{fmtL(row.newCTC)}</td>
-                  <td style={{ padding: "12px 18px" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#15803d", fontWeight: 700 }}>
-                      <TrendingUp size={13} />{row.hike}%
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 18px" }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999,
-                      background: row.status === "Active" ? "#dcfce7" : "#f1f5f9",
-                      color: row.status === "Active" ? "#15803d" : "#64748b",
-                    }}>{row.status}</span>
+              {revisionRows.map((row, i) => (
+                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <td style={{ padding: "11px 14px", color: "#334155" }}>{formatDateLabel(row.effectiveDate)}</td>
+                  <td style={{ padding: "11px 14px", color: "#334155" }}>{formatPayoutMonth(row.payoutMonth)}</td>
+                  <td style={{ padding: "11px 14px", fontWeight: 600, color: "#1e293b" }}>{fmtAmt(row.newCTC / 12)}</td>
+                  <td style={{ padding: "11px 14px", color: "#64748b" }}>{row.prevCTC > 0 ? fmtAmt(row.prevCTC / 12) : "0.00"}</td>
+                  <td style={{ padding: "11px 14px", color: "#64748b" }}>{row.duration > 0 ? getDurationLabel(row.duration) : "—"}</td>
+                  <td style={{ padding: "11px 14px", color: row.diffAmt > 0 ? "#16a34a" : "#64748b" }}>{row.diffAmt > 0 ? fmtAmt(row.diffAmt / 12) : "0.00"}</td>
+                  <td style={{ padding: "11px 14px" }}>
+                    {row.diffPct != null ? (
+                      <span style={{ color: "#16a34a", fontWeight: 700 }}>+{row.diffPct}%</span>
+                    ) : (
+                      <span style={{ color: "#94a3b8" }}>—</span>
+                    )}
                   </td>
                 </tr>
               ))}

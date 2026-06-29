@@ -7,12 +7,10 @@ import {
   UserX,
   AlertTriangle,
   Building2,
-  FileText,
   ClipboardCheck,
   ChevronRight,
   TrendingUp,
 } from "lucide-react";
-import { ADMIN_QUICK_ACTIONS } from "../../data/adminDashboardData";
 import { useAdminDashboard } from "../../hooks/useAdminDashboard";
 import LeaveEmployeeDetailTable from "../../component/admin/LeaveEmployeeDetailTable";
 import AdminChatbot from "../../component/admin/AdminChatbot";
@@ -257,25 +255,6 @@ export default function Dashboard() {
         />
       </section>
 
-      {/* Quick actions */}
-      <section className="admin-dash-card">
-        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <FileText size={16} />
-          Quick actions
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          {ADMIN_QUICK_ACTIONS.map((action) => (
-            <button
-              key={action.path}
-              type="button"
-              onClick={() => navigate(action.path)}
-              className={`${action.color} text-white text-xs font-semibold py-3 px-2 rounded-lg hover:opacity-90 transition-opacity`}
-            >
-              {action.label}
-            </button>
-          ))}
-        </div>
-      </section>
 
       <AdminChatbot />
     </div>

@@ -406,4 +406,216 @@ BEGIN
   ORDER BY d.day_date;
 END $$
 
+-- =====================================================================
+-- HOLIDAY STORED PROCEDURES
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- sp_migrate_holidays_shift_location
+-- Idempotent: adds shift + location columns if they don't already exist
+-- Run once after deploying on an existing database
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_migrate_holidays_shift_location $$
+CREATE PROCEDURE sp_migrate_holidays_shift_location ()
+BEGIN
+  -- Add shift column if missing
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'holidays'
+      AND COLUMN_NAME  = 'shift'
+  ) THEN
+    ALTER TABLE holidays
+      ADD COLUMN shift ENUM('general','mid','night') NOT NULL DEFAULT 'general' AFTER holiday_calendar;
+    ALTER TABLE holidays ADD INDEX idx_holidays_shift (shift);
+  END IF;
+
+  -- Add location column if missing
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'holidays'
+      AND COLUMN_NAME  = 'location'
+  ) THEN
+    ALTER TABLE holidays
+      ADD COLUMN location VARCHAR(100) DEFAULT NULL AFTER shift;
+    ALTER TABLE holidays ADD INDEX idx_holidays_location (location);
+  END IF;
+
+  -- Back-fill existing rows
+  UPDATE holidays SET shift = 'general' WHERE shift IS NULL OR shift = '';
+END $$
+
+
+-- ---------------------------------------------------------------------
+-- sp_list_holidays
+-- Returns two result sets: [0] data rows, [1] count row
+-- Filters by year / shift / location / calendar (all optional)
+-- Uses static conditional WHERE — no dynamic SQL
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_list_holidays $$
+CREATE PROCEDURE sp_list_holidays (
+  IN p_year             INT,
+  IN p_shift            VARCHAR(10),
+  IN p_location         VARCHAR(100),
+  IN p_holiday_calendar VARCHAR(100),
+  IN p_limit            INT,
+  IN p_offset           INT
+)
+BEGIN
+  -- Result set 1: rows (with optional pagination)
+  IF p_limit > 0 THEN
+    SELECT *
+      FROM holidays
+     WHERE (p_year             IS NULL OR p_year             = 0  OR YEAR(holiday_date) = p_year)
+       AND (p_shift            IS NULL OR p_shift            = '' OR shift            = p_shift)
+       AND (p_location         IS NULL OR p_location         = '' OR location         = p_location)
+       AND (p_holiday_calendar IS NULL OR p_holiday_calendar = '' OR holiday_calendar = p_holiday_calendar)
+     ORDER BY holiday_date ASC
+     LIMIT p_limit OFFSET p_offset;
+  ELSE
+    SELECT *
+      FROM holidays
+     WHERE (p_year             IS NULL OR p_year             = 0  OR YEAR(holiday_date) = p_year)
+       AND (p_shift            IS NULL OR p_shift            = '' OR shift            = p_shift)
+       AND (p_location         IS NULL OR p_location         = '' OR location         = p_location)
+       AND (p_holiday_calendar IS NULL OR p_holiday_calendar = '' OR holiday_calendar = p_holiday_calendar)
+     ORDER BY holiday_date ASC;
+  END IF;
+
+  -- Result set 2: total count (always unfiltered by LIMIT)
+  SELECT COUNT(*) AS total
+    FROM holidays
+   WHERE (p_year             IS NULL OR p_year             = 0  OR YEAR(holiday_date) = p_year)
+     AND (p_shift            IS NULL OR p_shift            = '' OR shift            = p_shift)
+     AND (p_location         IS NULL OR p_location         = '' OR location         = p_location)
+     AND (p_holiday_calendar IS NULL OR p_holiday_calendar = '' OR holiday_calendar = p_holiday_calendar);
+END $$
+
+
+-- ---------------------------------------------------------------------
+-- sp_list_holiday_locations
+-- Returns distinct non-null location values for the filter dropdown
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_list_holiday_locations $$
+CREATE PROCEDURE sp_list_holiday_locations ()
+BEGIN
+  SELECT DISTINCT location
+    FROM holidays
+   WHERE location IS NOT NULL AND location <> ''
+   ORDER BY location ASC;
+END $$
+
+
+-- ---------------------------------------------------------------------
+-- sp_create_holiday
+-- Inserts a single holiday row and returns the new ID
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_create_holiday $$
+CREATE PROCEDURE sp_create_holiday (
+  IN  p_holiday_name     VARCHAR(100),
+  IN  p_holiday_date     DATE,
+  IN  p_holiday_calendar VARCHAR(100),
+  IN  p_shift            ENUM('general','mid','night'),
+  IN  p_location         VARCHAR(100),
+  IN  p_is_restricted    TINYINT(1),
+  OUT p_holiday_id       INT
+)
+BEGIN
+  INSERT INTO holidays (holiday_name, holiday_date, holiday_calendar, shift, location, is_restricted)
+  VALUES (
+    p_holiday_name,
+    p_holiday_date,
+    IFNULL(p_holiday_calendar, 'India - Default'),
+    IFNULL(p_shift, 'general'),
+    NULLIF(p_location, ''),
+    IFNULL(p_is_restricted, 0)
+  );
+  SET p_holiday_id = LAST_INSERT_ID();
+END $$
+
+
+-- ---------------------------------------------------------------------
+-- sp_update_holiday
+-- Updates an existing holiday row by ID
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_update_holiday $$
+CREATE PROCEDURE sp_update_holiday (
+  IN p_holiday_id       INT,
+  IN p_holiday_name     VARCHAR(100),
+  IN p_holiday_date     DATE,
+  IN p_holiday_calendar VARCHAR(100),
+  IN p_shift            ENUM('general','mid','night'),
+  IN p_location         VARCHAR(100),
+  IN p_is_restricted    TINYINT(1)
+)
+BEGIN
+  UPDATE holidays
+     SET holiday_name     = IFNULL(p_holiday_name,     holiday_name),
+         holiday_date     = IFNULL(p_holiday_date,     holiday_date),
+         holiday_calendar = IFNULL(p_holiday_calendar, holiday_calendar),
+         shift            = IFNULL(p_shift,            shift),
+         location         = NULLIF(p_location, ''),
+         is_restricted    = IFNULL(p_is_restricted,    is_restricted)
+   WHERE holiday_id = p_holiday_id;
+END $$
+
+
+-- ---------------------------------------------------------------------
+-- sp_delete_holiday
+-- Deletes a holiday by ID
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_delete_holiday $$
+CREATE PROCEDURE sp_delete_holiday (
+  IN p_holiday_id INT
+)
+BEGIN
+  DELETE FROM holidays WHERE holiday_id = p_holiday_id;
+END $$
+
+
+-- ---------------------------------------------------------------------
+-- sp_bulk_import_holidays
+-- Accepts a JSON array of holiday objects and inserts each one.
+-- JSON element shape: { name, date, calendar, shift, location, restricted }
+-- Returns rows inserted count.
+-- ---------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS sp_bulk_import_holidays $$
+CREATE PROCEDURE sp_bulk_import_holidays (
+  IN  p_json     JSON,
+  OUT p_imported INT
+)
+BEGIN
+  DECLARE v_i       INT DEFAULT 0;
+  DECLARE v_total   INT;
+  DECLARE v_name    VARCHAR(100);
+  DECLARE v_date    DATE;
+  DECLARE v_cal     VARCHAR(100);
+  DECLARE v_shift   VARCHAR(10);
+  DECLARE v_loc     VARCHAR(100);
+  DECLARE v_restr   TINYINT(1);
+
+  SET p_imported = 0;
+  SET v_total    = JSON_LENGTH(p_json);
+
+  WHILE v_i < v_total DO
+    SET v_name  = JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].holiday_name')));
+    SET v_date  = JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].holiday_date')));
+    SET v_cal   = IFNULL(JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].holiday_calendar'))), 'India - Default');
+    SET v_shift = IFNULL(JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].shift'))), 'general');
+    SET v_loc   = NULLIF(JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].location'))), '');
+    SET v_restr = IFNULL(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].is_restricted')), 0);
+
+    IF v_name IS NOT NULL AND v_name <> 'null' AND v_date IS NOT NULL THEN
+      INSERT INTO holidays (holiday_name, holiday_date, holiday_calendar, shift, location, is_restricted)
+      VALUES (v_name, v_date, v_cal, v_shift, v_loc, v_restr);
+      SET p_imported = p_imported + 1;
+    END IF;
+
+    SET v_i = v_i + 1;
+  END WHILE;
+
+  SELECT p_imported AS imported;
+END $$
+
 DELIMITER ;

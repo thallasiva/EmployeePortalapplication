@@ -283,11 +283,16 @@ CREATE TABLE IF NOT EXISTS leave_requests (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS holidays (
-  holiday_id   INT AUTO_INCREMENT PRIMARY KEY,
-  holiday_name VARCHAR(100) NOT NULL,
-  holiday_date DATE NOT NULL,
+  holiday_id       INT AUTO_INCREMENT PRIMARY KEY,
+  holiday_name     VARCHAR(100) NOT NULL,
+  holiday_date     DATE NOT NULL,
   holiday_calendar VARCHAR(100) DEFAULT 'India - Default',
-  is_restricted TINYINT(1) DEFAULT 0
+  shift            ENUM('general','mid','night') NOT NULL DEFAULT 'general',
+  location         VARCHAR(100) DEFAULT NULL,
+  is_restricted    TINYINT(1) DEFAULT 0,
+  INDEX idx_holidays_shift    (shift),
+  INDEX idx_holidays_location (location),
+  INDEX idx_holidays_date     (holiday_date)
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -554,7 +559,26 @@ CREATE TABLE IF NOT EXISTS calendar_events (
 ) ENGINE=InnoDB;
 
 -- =====================================================================
--- 13. AUDIT LOG
+-- 13. REPORTING HISTORY (Org Hierarchy Audit Trail)
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS reporting_history (
+  id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+  employee_id     INT NOT NULL,
+  old_manager_id  INT DEFAULT NULL,
+  new_manager_id  INT DEFAULT NULL,
+  changed_by      INT DEFAULT NULL,
+  reason          VARCHAR(255) DEFAULT NULL,
+  change_type     ENUM('assign','transfer','bulk_transfer','delegation') NOT NULL DEFAULT 'assign',
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_rh_employee   FOREIGN KEY (employee_id)    REFERENCES employees(employee_id) ON DELETE CASCADE,
+  CONSTRAINT fk_rh_old_mgr    FOREIGN KEY (old_manager_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+  CONSTRAINT fk_rh_new_mgr    FOREIGN KEY (new_manager_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+  CONSTRAINT fk_rh_changed_by FOREIGN KEY (changed_by)     REFERENCES employees(employee_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 14. AUDIT LOG
 -- =====================================================================
 
 CREATE TABLE IF NOT EXISTS audit_logs (

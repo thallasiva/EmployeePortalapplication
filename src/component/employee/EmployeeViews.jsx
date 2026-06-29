@@ -1,6 +1,7 @@
 import React from "react";
-import { Check, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { EmployeeStatusBadge } from "../../utils/employeeStatus";
 import
 {
   formatEmployeeId,
@@ -9,15 +10,22 @@ import
   getEmployeeDisplayName,
   getEmployeeInitials,
 } from "../../utils/employeeDisplay";
-import { avatarDataUri } from "../../lib/placeholders";
 import "./employee.css";
+
+const AVATAR_COLORS = ["#f18200","#3b82f6","#10b981","#8b5cf6","#ef4444","#06b6d4","#f59e0b","#84cc16"];
+function nameToColor(name = "") {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
 
 export default function EmployeeGridCard({ employee })
 {
   const navigate = useNavigate();
   const name = getEmployeeDisplayName(employee);
   const department = getDepartmentName(employee);
-  const isActive = employee.employee_status === "Active";
+  const initials = getEmployeeInitials(employee) || "?";
+  const bg = nameToColor(name);
 
   return (
     <article
@@ -25,11 +33,10 @@ export default function EmployeeGridCard({ employee })
       onClick={() => navigate(`/dashboard/employee/${employee.employee_id}`)}
       style={{ cursor: "pointer" }}
     >
-      <img
+      <div
         className="emp-card__avatar"
-        src={avatarDataUri(employee.employee_id, 72)}
-        alt={name}
-      />
+        style={{ background: bg, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:26, fontWeight:700 }}
+      >{initials}</div>
       <h3 className="emp-card__name">{name}</h3>
       <p className="emp-card__title">{employee.emp_job_title}</p>
       <p className="emp-card__id">{formatEmployeeId(employee)}</p>
@@ -37,10 +44,7 @@ export default function EmployeeGridCard({ employee })
         <span className={`emp-card__dept ${getDeptBadgeClass(department)}`}>
           {department}
         </span>
-        <span className={`emp-card__status ${isActive ? "is-active" : "is-inactive"}`}>
-          {isActive && <Check size={12} />}
-          {employee.employee_status}
-        </span>
+        <EmployeeStatusBadge employee={employee} />
       </div>
       <div className="emp-card__contact">
         <span>
@@ -71,7 +75,7 @@ export function EmployeeListTable({ employees })
         <thead>
           <tr>
             <th className="emp-table__id">Employee Number</th>
-            <th>Employee Name</th>
+            <th className="emp-table__sticky-col">Employee Name</th>
             <th>Department</th>
             <th>Role</th>
             <th>Email</th>
@@ -125,7 +129,7 @@ export function EmployeeListTable({ employees })
               style={{ cursor: "pointer" }}
             >
               <td className="emp-table__id">{formatEmployeeId(p)}</td>
-              <td>
+              <td className="emp-table__sticky-col">
                 <div className="emp-table__name-cell">
                   <span className="emp-table__avatar">{getEmployeeInitials(p)}</span>
                   <span className="font-medium">{getEmployeeDisplayName(p)}</span>
@@ -135,11 +139,7 @@ export function EmployeeListTable({ employees })
               <td><span className="emp-table__role">{p.emp_job_title}</span></td>
               <td>{p.email}</td>
               <td>{p.mobile}</td>
-              <td>
-                <span className={`emp-card__status ${p.employee_status === "Active" ? "is-active" : "is-inactive"}`}>
-                  {p.employee_status}
-                </span>
-              </td>
+              <td><EmployeeStatusBadge employee={p} style={{ fontSize:10, padding:"2px 8px" }} /></td>
               <td>{p.emp_joining_date || "—"}</td>
               <td>{p.gender || "—"}</td>
               <td>{p.dob || "—"}</td>
