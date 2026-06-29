@@ -16,7 +16,11 @@ class OrgHierarchyService {
   async getDashboardStats() {
     const [total, unassigned, managers, delegations] = await Promise.all([
       query(`SELECT COUNT(*) AS cnt FROM employees WHERE employee_status = 'Active'`),
-      query(`SELECT COUNT(*) AS cnt FROM employees WHERE employee_status = 'Active' AND (reporting_to IS NULL OR reporting_to = 0)`),
+      query(`SELECT COUNT(*) AS cnt FROM employees e
+               LEFT JOIN users u ON u.employee_id = e.employee_id
+              WHERE e.employee_status = 'Active'
+                AND (e.reporting_to IS NULL OR e.reporting_to = 0)
+                AND (u.role_id IS NULL OR u.role_id != 1)`),
       // Distinct employees who have at least one active subordinate (i.e. actual managers)
       query(`SELECT COUNT(DISTINCT reporting_to) AS cnt FROM employees WHERE reporting_to IS NOT NULL AND employee_status = 'Active'`),
       query(`SELECT COUNT(*) AS cnt FROM workflow_delegates WHERE status = 'Active' AND to_date >= CURDATE()`),
@@ -89,8 +93,10 @@ class OrgHierarchyService {
 
   /* ─────────────────── Full Org Tree ─────────────────── */
   async getHierarchyTree({ department_id, status } = {}) {
-    // Always re-seed to fix any circular references in the data
-    await this._autoSeedHierarchyIfNeeded();
+    // NOTE: auto-seed was removed from here — it was overwriting manual
+    // manager assignments on every page load. The initial hierarchy seeding
+    // happens once at server startup (Migration 033). Cycle detection below
+    // (hasCycle) handles any corrupt data defensively without reassigning.
 
     const where = ["e.employee_status != 'Terminated'"];
     const params = [];
@@ -168,10 +174,13 @@ class OrgHierarchyService {
 
   /* ─────────────────── Unassigned Employees ─────────────────── */
   async getUnassigned() {
+    // Exclude the org-root (Admin role) — they legitimately have no reporting manager
     return query(
       `${EMP_SELECT}
+        LEFT JOIN users u ON u.employee_id = e.employee_id
         WHERE (e.reporting_to IS NULL OR e.reporting_to = 0)
           AND e.employee_status = 'Active'
+          AND (u.role_id IS NULL OR u.role_id != 1)
         ORDER BY e.first_name`
     );
   }

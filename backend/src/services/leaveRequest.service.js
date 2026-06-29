@@ -160,15 +160,15 @@ class LeaveRequestService extends BaseService {
     const y = Number(year);
     if (!m || !y) throw new (require('../utils/ApiError'))('Invalid month or year', 400);
 
-    // 1. Find Earned Leave type
+    // 1. Find Earned Leave type (leave_types has no short_code column)
     const elTypes = await query(
       `SELECT leave_type_id FROM leave_types
-        WHERE short_code = 'EL'
-           OR leave_type_name LIKE '%Earned%'
+        WHERE leave_type_name LIKE '%Earned%'
+           OR leave_type_name LIKE '%EL%'
            OR leave_type_name LIKE '%PL%'
-       ORDER BY FIELD(short_code,'EL') DESC, leave_type_id ASC LIMIT 1`
+       ORDER BY leave_type_id ASC LIMIT 1`
     );
-    if (!elTypes.length) throw new (require('../utils/ApiError'))('No Earned Leave type configured (short_code EL)', 400);
+    if (!elTypes.length) throw new (require('../utils/ApiError'))('No Earned Leave type configured', 400);
     const leaveTypeId = elTypes[0].leave_type_id;
 
     // 2. Get all active employees
