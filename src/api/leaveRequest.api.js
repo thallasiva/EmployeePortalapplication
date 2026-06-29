@@ -45,3 +45,10 @@ export const initializeLeaveYear = (year) =>
 /** GET /leave-requests/admin/summary?year=&department_id=&status= */
 export const getLeaveSummary = (params) =>
   apiClient.get("/leave-requests/admin/summary", { params }).then(unwrap);
+
+/**
+ * POST /leave-requests/admin/accrue-earned-leave
+ * { month, year } — defaults to previous month
+ */
+export const accrueEarnedLeave = (payload) =>
+  apiClient.post("/leave-requests/admin/accrue-earned-leave", payload).then(unwrap);

@@ -82,4 +82,23 @@ const leaveSummary = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Leave summary fetched').send(res);
 });
 
-module.exports = { list, myRequests, getOne, apply, review, cancel, balances, allBalances, adjustBalance, initializeYear, leaveSummary };
+/**
+ * POST /leave-requests/admin/accrue-earned-leave
+ * Body: { month, year }  — defaults to previous month if omitted
+ */
+const accrueEarnedLeave = asyncHandler(async (req, res) => {
+  const now  = new Date();
+  // default: previous month
+  const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
+  const prevYear  = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const month = Number(req.body.month) || prevMonth;
+  const year  = Number(req.body.year)  || prevYear;
+  const result = await leaveRequestService.accrueEarnedLeave(month, year);
+  new ApiResponse(200, result, `Earned leave accrued for ${month}/${year}: ${result.accrued} employees`).send(res);
+});
+
+module.exports = {
+  list, myRequests, getOne, apply, review, cancel,
+  balances, allBalances, adjustBalance, initializeYear, leaveSummary,
+  accrueEarnedLeave,
+};

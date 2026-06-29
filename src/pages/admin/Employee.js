@@ -7,7 +7,7 @@ import Teams from "./Teams";
 import { useNavigate } from "react-router-dom";
 import { listEmployees, createEmployee } from "../../api/employee.api";
 import { getErrorMessage } from "../../api/client";
-import { parseEmployeeCsv, mapCsvRowToEmployee } from "../../utils/employeeCsvImport";
+import { parseEmployeeCsv, mapCsvRowToEmployee, downloadEmployeeCsvTemplate } from "../../utils/employeeCsvImport";
 import { downloadEmployeeCsv } from "../../utils/employeeCsvExport";
 import EmployeeGridCard, { EmployeeListTable } from "../../component/employee/EmployeeViews";
 import { successToast, errorToast } from "../../utils/ToastControllers";
@@ -447,6 +447,9 @@ export default function Employee() {
         </div>
         <div className="emp-toolbar__actions">
           <input ref={csvInputRef} type="file" accept=".csv" className="emp-csv-input" onChange={handleCsvImport} />
+          <button type="button" className="emp-btn emp-btn--outline" onClick={() => downloadEmployeeCsvTemplate()} title="Download CSV template">
+            <Download size={16} style={{ display:"inline", verticalAlign:"middle", marginRight:4 }} /> Template
+          </button>
           <button type="button" className="emp-btn emp-btn--outline" onClick={() => csvInputRef.current?.click()}>
             <Upload size={16} style={{ display:"inline", verticalAlign:"middle", marginRight:4 }} /> Import CSV
           </button>

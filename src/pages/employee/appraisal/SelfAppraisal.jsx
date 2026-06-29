@@ -4,6 +4,27 @@ import { getMyAppraisal, saveMyAppraisal } from "../../../api/appraisal.api";
 
 const BRAND = "#f18200";
 
+const CYCLE_TYPE_MAP = {
+  monthly:     { label:"Monthly",     color:"#7c3aed", bg:"#f3e8ff", icon:"📅" },
+  quarterly:   { label:"Quarterly",   color:"#0369a1", bg:"#e0f2fe", icon:"📊" },
+  half_yearly: { label:"Half-Yearly", color:"#b45309", bg:"#fef3c7", icon:"📈" },
+  yearly:      { label:"Yearly",      color:"#166534", bg:"#dcfce7", icon:"🏆" },
+};
+
+function CycleTypeBadge({ type }) {
+  const t = CYCLE_TYPE_MAP[type] || { label: type || "Yearly", color:"#166534", bg:"#dcfce7", icon:"🏆" };
+  return (
+    <span style={{
+      display:"inline-flex", alignItems:"center", gap:5,
+      background:t.bg, color:t.color,
+      borderRadius:999, padding:"3px 12px",
+      fontSize:12, fontWeight:700, letterSpacing:0.2,
+    }}>
+      {t.icon} {t.label} Appraisal
+    </span>
+  );
+}
+
 function fmtDate(v) {
   if (!v) return "—";
   return new Date(v).toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
@@ -242,8 +263,9 @@ export default function SelfAppraisal() {
         <Lock size={32} style={{ color:BRAND }} />
       </div>
       <h2 style={{ fontSize:18, fontWeight:700, color:"#1e293b", margin:0 }}>Appraisal Not Yet Assigned</h2>
+      {cycle.cycle_type && <CycleTypeBadge type={cycle.cycle_type} />}
       <p style={{ fontSize:14, color:"#64748b", margin:0, maxWidth:380 }}>
-        Your HR admin hasn't enrolled you in the {cycle.fy_label} appraisal cycle yet.<br/>
+        Your HR admin hasn't enrolled you in the <strong>{cycle.fy_label}</strong> appraisal cycle yet.<br/>
         Please check back later or contact your HR team.
       </p>
     </div>
@@ -265,10 +287,19 @@ export default function SelfAppraisal() {
       {/* Header */}
       <div style={{ background:`linear-gradient(135deg,${BRAND},#e07000)`,
         borderRadius:14, padding:"18px 22px", color:"#fff", marginBottom:20 }}>
-        <h1 style={{ fontSize:18, fontWeight:700, margin:"0 0 4px" }}>Self Performance Appraisal</h1>
-        <p style={{ fontSize:13, opacity:0.85, margin:0 }}>
-          {cycle.fy_label} · Deadline: {fmtDate(cycle.deadline)}
-        </p>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+          <div>
+            <h1 style={{ fontSize:18, fontWeight:700, margin:"0 0 4px" }}>Self Performance Appraisal</h1>
+            <p style={{ fontSize:13, opacity:0.85, margin:0 }}>
+              {cycle.fy_label}{cycle.deadline ? ` · Deadline: ${fmtDate(cycle.deadline)}` : ""}
+            </p>
+          </div>
+          {cycle.cycle_type && (
+            <div style={{ flexShrink:0 }}>
+              <CycleTypeBadge type={cycle.cycle_type} />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Status */}

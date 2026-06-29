@@ -1,0 +1,4 @@
+Employee Number,Employee Name,Email,Date Of Joining,Gender,Date Of Birth,Manager Employee Number,PAN Number,UAN Number,PF Number,ESI Number,Aadhaar Number,Bank Name,Bank Account Number,IFSC Code,Payment Type
+EMP00001,Ravi Kumar,ravi.kumar@natsoft.in,2024-01-15,Male,1990-06-20,,ABCDE1234F,100987654321,MH/12345/6789,1234567890,1234 5678 9012,HDFC Bank,50100123456789,HDFC0001234,Bank Transfer
+EMP00002,Priya Sharma,priya.sharma@natsoft.in,2024-03-01,Female,1993-11-05,EMP00001,BCDEF2345G,100123456789,MH/23456/7890,,9876 5432 1098,ICICI Bank,628301234567,ICIC0002345,Bank Transfer
+EMP00003,Arun Patel,arun.patel@natsoft.in,2023-07-10,Male,1988-02-28,EMP00001,CDEFG3456H,100456789012,MH/34567/8901,9876543210,2345 6789 0123,SBI,32109876543,SBIN0003456,Bank Transfer

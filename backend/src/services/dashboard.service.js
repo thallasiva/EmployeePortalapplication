@@ -32,7 +32,7 @@ class DashboardService {
     const rows = await query(
       `SELECT a.*, CONCAT(e.first_name, ' ', IFNULL(e.last_name,'')) AS performed_by_name
          FROM audit_logs a
-         LEFT JOIN employees e ON e.employee_id = a.performed_by
+         LEFT JOIN employees e ON e.employee_id = a.user_id
         ORDER BY a.created_at DESC
         LIMIT ?`,
       [Number(limit)]
