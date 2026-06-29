@@ -33,23 +33,27 @@ async function getAllCycles() {
 }
 
 /** Admin creates a new inactive cycle */
-async function createCycle(adminEmployeeId, { fy_label, deadline }) {
+async function createCycle(adminEmployeeId, { fy_label, deadline, cycle_type }) {
   if (!fy_label) throw ApiError.badRequest('FY label is required');
+  const validTypes = ['monthly', 'quarterly', 'half_yearly', 'yearly'];
+  const type = validTypes.includes(cycle_type) ? cycle_type : 'yearly';
   const result = await query(
-    `INSERT INTO appraisal_cycles (fy_label, status, deadline, rolled_out_by) VALUES (?, 'inactive', ?, ?)`,
-    [fy_label, deadline || null, adminEmployeeId]
+    `INSERT INTO appraisal_cycles (fy_label, cycle_type, status, deadline, rolled_out_by) VALUES (?, ?, 'inactive', ?, ?)`,
+    [fy_label, type, deadline || null, adminEmployeeId]
   );
   const [row] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [result.insertId]);
   return row;
 }
 
 /** Admin updates cycle name/deadline (any status) */
-async function updateCycleSettings(adminEmployeeId, cycleId, { fy_label, deadline }) {
+async function updateCycleSettings(adminEmployeeId, cycleId, { fy_label, deadline, cycle_type }) {
   const [cycle] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
   if (!cycle) throw ApiError.notFound('Cycle not found');
+  const validTypes = ['monthly', 'quarterly', 'half_yearly', 'yearly'];
+  const typeVal = validTypes.includes(cycle_type) ? cycle_type : null;
   await query(
-    `UPDATE appraisal_cycles SET fy_label=COALESCE(?,fy_label), deadline=COALESCE(?,deadline) WHERE cycle_id=?`,
-    [fy_label || null, deadline || null, cycleId]
+    `UPDATE appraisal_cycles SET fy_label=COALESCE(?,fy_label), deadline=COALESCE(?,deadline), cycle_type=COALESCE(?,cycle_type) WHERE cycle_id=?`,
+    [fy_label || null, deadline || null, typeVal, cycleId]
   );
   const [updated] = await query(`SELECT * FROM appraisal_cycles WHERE cycle_id = ?`, [cycleId]);
   return updated;
@@ -182,17 +186,18 @@ async function getMyAppraisal(employeeId) {
   const cycle = await getActiveCycle();
   if (!cycle) return { cycle: null, appraisal: null, ratings: [], enrolled: false };
 
+  // If cycle is not active, employees should not see the appraisal form
+  if (cycle.status !== 'active') {
+    return { cycle, appraisal: null, ratings: [], parameters: PARAMS, enrolled: false };
+  }
+
   // Lazy enrollment: if cycle is active and employee not yet enrolled, auto-enroll them
   const enrolled = await isEnrolled(cycle.cycle_id, employeeId);
   if (!enrolled) {
-    if (cycle.status === 'active') {
-      await query(
-        `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
-        [cycle.cycle_id, employeeId, employeeId]
-      );
-    } else {
-      return { cycle, appraisal: null, ratings: [], parameters: PARAMS, enrolled: false };
-    }
+    await query(
+      `INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by) VALUES (?,?,?)`,
+      [cycle.cycle_id, employeeId, employeeId]
+    );
   }
 
   const [appraisal] = await query(
@@ -425,3 +430,4 @@ module.exports = {
   // Admin
   getAllAppraisals, updateAppraisalStatus,
 };
+

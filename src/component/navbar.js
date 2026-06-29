@@ -1,5 +1,9 @@
 import { Menu, User } from "lucide-react";
 import { isAdmin, isReportingManager } from "../data/auth";
+import { API_BASE_URL } from "../api/client";
+
+// Strip trailing "/api" to get the server origin for static file URLs
+const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 export const Navbar = ({ toggleSidebar, user }) => {
   const displayName = user?.name || user?.email || "User";
@@ -9,7 +13,11 @@ export const Navbar = ({ toggleSidebar, user }) => {
     ? "Reporting Manager"
     : "Employee";
 
-  const photoUrl = user?.profilePhoto || null;
+  // profile_photo stored as "/uploads/filename.jpg" — prepend server origin
+  const rawPhoto = user?.profilePhoto || null;
+  const photoUrl = rawPhoto
+    ? rawPhoto.startsWith("http") ? rawPhoto : `${SERVER_ORIGIN}${rawPhoto}`
+    : null;
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2 bg-white border-b border-gray-200 shadow-sm">

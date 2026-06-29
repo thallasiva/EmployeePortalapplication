@@ -33,6 +33,7 @@ router.use('/documents', require('./document.routes'));
 router.use('/companies', require('./company.routes'));
 router.use('/calendar-events', require('./calendar.routes'));
 router.use('/workflow-delegates', require('./workflowDelegate.routes'));
+router.use('/org-hierarchy',     require('./orgHierarchy.routes'));
 router.use('/request-hub', require('./requestHub.routes'));
 
 router.use('/timesheets', require('./timesheet.routes'));

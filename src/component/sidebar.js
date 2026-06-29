@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import
 {
@@ -70,7 +70,8 @@ export const Sidebar = ({ open }) =>
   const user = getStoredUser();
   const role = user?.role ?? ROLE_ADMIN;
 
-  // Appraisal menu is only visible when admin has rolled out an active cycle
+  // Appraisal menu is only visible when admin has rolled out an active cycle.
+  // Re-check on every route change so disabling a cycle hides the tab immediately.
   const [appraisalActive, setAppraisalActive] = useState(false);
   useEffect(() => {
     if (!isAdmin(user)) {
@@ -78,7 +79,7 @@ export const Sidebar = ({ open }) =>
         .then(cycle => setAppraisalActive(cycle?.status === "active"))
         .catch(() => setAppraisalActive(false));
     }
-  }, []);
+  }, [pathname]);
 
   const adminItems = [
     // ── Core ──────────────────────────────────────────────
@@ -121,10 +122,69 @@ export const Sidebar = ({ open }) =>
     {
       label: "Payroll",
       icon: <FileText size={20} />,
+      navigationLink: "/dashboard/payroll",
+    },
+    {
+      label: "Payroll Inputs",
+      icon: <HandCoins size={20} />,
       children: [
-        { label: "Salary",         navigationLink: "/dashboard/payroll" },
-        { label: "Payslips",       navigationLink: "/dashboard/payroll/payslips" },
-        { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" },
+        { label: "Salary Structures",       navigationLink: "/dashboard/payroll/salary" },
+        { label: "Salary Revisions",        navigationLink: "/dashboard/payroll/setup?tab=revision" },
+        { label: "Income Tax",              navigationLink: "/dashboard/it-declaration" },
+        { label: "Reimbursement",           navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
+        { label: "Loan & Advances",         navigationLink: "/employee/payroll/loans" },
+        { label: "Employee LOP Days",       navigationLink: "/dashboard/payroll/inputs?tab=lop" },
+        { label: "Overtime Register",       navigationLink: "/dashboard/payroll/inputs?tab=overtime" },
+        { label: "Arrears",                 navigationLink: "/dashboard/payroll/inputs?tab=arrears" },
+        { label: "Final Settlement",        navigationLink: "/dashboard/payroll/inputs?tab=settlement" },
+        { label: "Stop Salary Processing",  navigationLink: "/dashboard/payroll/inputs?tab=stop" },
+      ],
+    },
+    {
+      label: "Verify",
+      icon: <BookOpen size={20} />,
+      children: [
+        { label: "Quick Salary Statement",  navigationLink: "/dashboard/payroll/statement?tab=quick" },
+        { label: "Payroll Statement",       navigationLink: "/dashboard/payroll/statement?tab=statement" },
+        { label: "CTC Payslip",             navigationLink: "/dashboard/payroll/statement?tab=ctc" },
+        { label: "Payroll Differences",     navigationLink: "/dashboard/payroll/statement?tab=diff" },
+      ],
+    },
+    {
+      label: "Published Info",
+      icon: <BookOpen size={20} />,
+      children: [
+        { label: "Payslip",                 navigationLink: "/dashboard/payroll/payslips" },
+        { label: "CTC Payslip",             navigationLink: "/dashboard/payroll/statement?tab=ctc" },
+        { label: "YTD Summary",             navigationLink: "/dashboard/payroll/ytd?tab=ytd" },
+        { label: "PF YTD Statement",        navigationLink: "/dashboard/payroll/ytd?tab=pf-ytd" },
+        { label: "Reimbursement Statement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
+        { label: "Loan Statement",          navigationLink: "/employee/payroll/loans" },
+        { label: "IT Statement",            navigationLink: "/employee/payroll/it-statement" },
+        { label: "IT Declaration",          navigationLink: "/dashboard/it-declaration" },
+      ],
+    },
+    {
+      label: "Payroll Admin",
+      icon: <Layers size={20} />,
+      children: [
+        { label: "Form 16",                 navigationLink: "/dashboard/payroll/tax-forms?tab=form16" },
+        { label: "Form 24Q",                navigationLink: "/dashboard/payroll/tax-forms?tab=form24q" },
+        { label: "Employee IT Declaration", navigationLink: "/dashboard/it-declaration" },
+        { label: "PAN Status",              navigationLink: "/dashboard/payroll/compliance?tab=pan" },
+        { label: "Revision Planner",        navigationLink: "/dashboard/payroll/setup?tab=revision" },
+        { label: "Remittances",             navigationLink: "/dashboard/payroll/compliance?tab=remittances" },
+        { label: "Payroll Release",         navigationLink: "/dashboard/payroll/compliance?tab=release" },
+        { label: "POI Overview",            navigationLink: "/dashboard/payroll/tax-forms?tab=poi" },
+        { label: "PF KYC Mapping",          navigationLink: "/dashboard/payroll/compliance?tab=pf-kyc" },
+      ],
+    },
+    {
+      label: "Payroll Setup",
+      icon: <Layers size={20} />,
+      children: [
+        { label: "Salary Components",       navigationLink: "/dashboard/payroll/setup?tab=components" },
+        { label: "Payroll Settings",        navigationLink: "/dashboard/payroll/setup?tab=settings" },
       ],
     },
     // ── People Ops ─────────────────────────────────────────
@@ -166,9 +226,15 @@ export const Sidebar = ({ open }) =>
       navigationLink: "/dashboard/company",
     },
     {
-      label: "Workflow Delegates",
-      icon: <GitBranch size={20} />,
-      navigationLink: "/employee/workflow-delegates",
+      label: "Workflow & Hierarchy",
+      icon: <Network size={20} />,
+      children: [
+        { label: "Org Hierarchy",      navigationLink: "/dashboard/workflow-delegation" },
+        { label: "Reporting Managers", navigationLink: "/dashboard/workflow-delegation" },
+        { label: "Manager Transfer",   navigationLink: "/dashboard/workflow-delegation" },
+        { label: "Delegation",         navigationLink: "/dashboard/workflow-delegation" },
+        { label: "Audit History",      navigationLink: "/dashboard/workflow-delegation" },
+      ],
     },
     {
       label: "Settings",
@@ -381,70 +447,88 @@ export const Sidebar = ({ open }) =>
       .join(" ");
 
   return (
-    <aside
-      className={`relative flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ${open ? "w-64" : "w-[4.5rem]"
-        }`}
-    >
-      {/* Logo */}
-      <div className="flex items-start justify-start px-3 py-3 border-b border-gray-100 min-h-[4.5rem]">
+    <aside style={{
+      position: "relative",
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
+      background: "#fff",
+      borderRight: "1px solid #f0f0f0",
+      transition: "width .25s cubic-bezier(.4,0,.2,1)",
+      width: open ? 248 : 68,
+      flexShrink: 0,
+      fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
+    }}>
+
+      {/* ── Logo ──────────────────────────────────────────────────────────── */}
+      <div style={{
+        display: "flex", alignItems: "center",
+        padding: open ? "12px 16px" : "12px 14px",
+        borderBottom: "1px solid #f5f5f5",
+        minHeight: 68, gap: 10,
+        justifyContent: open ? "flex-start" : "center",
+      }}>
         {open ? (
-          <>
-            <img
-              src="https://www.natit.in/assets/images/logo.png"
-              alt="NAT IT"
-              style={{ height: 40, maxWidth: 140, objectFit: "contain" }}
-              onError={e =>
-              {
-                e.target.style.display = "none";
-                e.target.nextSibling.style.display = "flex";
-              }}
-            />
-            <div style={{ display: "none", flexDirection: "column", alignItems: "flex-start" }}>
-              <span style={{ fontSize: 15, fontWeight: 800, color: "#1e293b" }}>NAT <span style={{ color: "#f18200" }}>IT</span></span>
-              <span style={{ fontSize: 10, color: "#94a3b8" }}>HR PORTAL</span>
-            </div>
-          </>
-        ) : (
+          /* Expanded — full logo image */
           <img
             src="https://www.natit.in/assets/images/logo.png"
             alt="NAT IT"
-            style={{ height: 32, width: 32, objectFit: "contain" }}
-            onError={e =>
-            {
+            style={{ height: 44, maxWidth: 160, objectFit: "contain" }}
+            onError={e => {
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
+            }}
+          />
+        ) : (
+          /* Collapsed — small logo icon */
+          <img
+            src="https://www.natit.in/assets/images/logo.png"
+            alt="NAT IT"
+            style={{ width: 36, height: 36, objectFit: "contain" }}
+            onError={e => {
               e.target.style.display = "none";
               e.target.nextSibling.style.display = "flex";
             }}
           />
         )}
+        {/* Fallback if logo fails to load */}
+        <div style={{
+          display: "none", width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+          background: "linear-gradient(135deg,#f18200,#fb923c)",
+          alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 8px rgba(241,130,0,.35)",
+        }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", letterSpacing: -1 }}>N</span>
+        </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        {items.map((item, index) =>
-        {
+      {/* ── Nav ───────────────────────────────────────────────────────────── */}
+      <nav style={{ flex: 1, overflowY: "auto", padding: "10px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+        {items.map((item, index) => {
           const childActive = item.children?.some((child) =>
             isPathActive(pathname, child.navigationLink, search)
           );
 
-          if (!item.children)
-          {
+          if (!item.children) {
             const active = isPathActive(pathname, item.navigationLink, search);
             return (
-              <div
-                key={index}
-                className={menuItemClass(active)}
+              <div key={index} className={menuItemClass(active)}
                 onClick={() => navigate(item.navigationLink)}
                 title={!open ? item.label : undefined}
-              >
-                <span className={active ? "text-white" : "text-gray-500"}>
-                  {item.icon}
+                style={{ minHeight: 38 }}>
+                <span style={{ flexShrink: 0, color: active ? "#fff" : "#9ca3af", display: "flex" }}>
+                  {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open && (
                   <>
-                    <span className="truncate flex-1">{item.label}</span>
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {item.label}
+                    </span>
                     {item.badge && (
-                      <span className="shrink-0 text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded bg-red-500 text-white">
-                        {item.badge}
-                      </span>
+                      <span style={{
+                        flexShrink: 0, fontSize: 9, fontWeight: 700, letterSpacing: ".04em",
+                        padding: "1px 6px", borderRadius: 999, background: "#ef4444", color: "#fff"
+                      }}>{item.badge}</span>
                     )}
                   </>
                 )}
@@ -454,46 +538,42 @@ export const Sidebar = ({ open }) =>
 
           return (
             <div key={index}>
-              <div
-                className={menuItemClass(false, childActive)}
+              <div className={menuItemClass(false, childActive)}
                 onClick={() => toggleAccordion(index)}
                 title={!open ? item.label : undefined}
-              >
-                <span className={childActive ? "text-brand" : "text-gray-500"}>
-                  {item.icon}
+                style={{ minHeight: 38 }}>
+                <span style={{ flexShrink: 0, color: childActive ? "#f18200" : "#9ca3af", display: "flex" }}>
+                  {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open && (
                   <>
-                    <span className="flex-1 truncate">{item.label}</span>
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {item.label}
+                    </span>
                     {item.badge && (
-                      <span className="shrink-0 text-[10px] font-normal tracking-wide px-1 rounded bg-red-500 text-white">
-                        {item.badge}
-                      </span>
+                      <span style={{
+                        flexShrink: 0, fontSize: 9, fontWeight: 700,
+                        padding: "1px 6px", borderRadius: 999, background: "#ef4444", color: "#fff"
+                      }}>{item.badge}</span>
                     )}
-                    {expanded === index ? (
-                      <ChevronDown size={16} className="shrink-0 text-gray-400" />
-                    ) : (
-                      <ChevronRight size={16} className="shrink-0 text-gray-400" />
-                    )}
+                    {expanded === index
+                      ? <ChevronDown size={14} style={{ flexShrink: 0, color: "#9ca3af" }}/>
+                      : <ChevronRight size={14} style={{ flexShrink: 0, color: "#9ca3af" }}/>}
                   </>
                 )}
               </div>
 
               {expanded === index && open && (
-                <div className="mt-1 ml-3 pl-3 border-l-2 border-brand-100 space-y-0.5">
-                  {item.children.map((child, childIndex) =>
-                  {
-                    const childActive = isPathActive(pathname, child.navigationLink, search);
+                <div style={{ marginTop: 2, marginLeft: 12, paddingLeft: 12, borderLeft: "2px solid #ffedd5", display: "flex", flexDirection: "column", gap: 1 }}>
+                  {item.children.map((child, childIndex) => {
+                    const isChildActive = isPathActive(pathname, child.navigationLink, search);
                     return (
-                      <div
-                        key={childIndex}
-                        className={childItemClass(childActive)}
-                        onClick={() =>
-                        {
+                      <div key={childIndex} className={childItemClass(isChildActive)}
+                        onClick={() => {
                           const [p, q] = child.navigationLink.split("?");
                           navigate(q ? `${p}?${q}` : p);
                         }}
-                      >
+                        style={{ paddingLeft: 10, minHeight: 30 }}>
                         {child.label}
                       </div>
                     );
@@ -505,15 +585,47 @@ export const Sidebar = ({ open }) =>
         })}
       </nav>
 
-      <div className="p-3 border-t border-gray-100">
-        <button
-          type="button"
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${!open ? "justify-center" : ""}`}
-          onClick={handleLogout}
-          title={!open ? "Logout" : undefined}
-        >
-          <LogOut size={20} />
-          {open && <span>Logout</span>}
+      {/* ── User footer ───────────────────────────────────────────────────── */}
+      <div style={{ padding: "10px 8px", borderTop: "1px solid #f5f5f5" }}>
+        {open && user && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 10px", borderRadius: 10, background: "#fafafa",
+            marginBottom: 6, border: "1px solid #f0f0f0",
+          }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+              background: "linear-gradient(135deg,#f18200,#fb923c)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 12, fontWeight: 800, color: "#fff",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}>
+              {(user.name || user.email || "U").charAt(0).toUpperCase()}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user.name || "User"}
+              </div>
+              <div style={{ fontSize: 10, color: "#9ca3af", textTransform: "capitalize" }}>
+                {user.role || "Admin"}
+              </div>
+            </div>
+          </div>
+        )}
+        <button type="button"
+          style={{
+            width: "100%", display: "flex", alignItems: "center", gap: 10,
+            padding: open ? "8px 10px" : "8px", borderRadius: 8,
+            justifyContent: open ? "flex-start" : "center",
+            color: "#ef4444", fontSize: 12, fontWeight: 600,
+            transition: "background .15s", cursor: "pointer",
+            background: "none", border: "none",
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = "#fff1f2"}
+          onMouseLeave={e => e.currentTarget.style.background = "none"}
+          onClick={handleLogout} title={!open ? "Logout" : undefined}>
+          <LogOut size={17}/>
+          {open && <span>Sign out</span>}
         </button>
       </div>
     </aside>

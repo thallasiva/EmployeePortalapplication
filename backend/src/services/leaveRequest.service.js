@@ -149,6 +149,92 @@ class LeaveRequestService extends BaseService {
     return { employees: result, leaveTypes, year: targetYear };
   }
 
+  /**
+   * AUTO EARNED LEAVE ACCRUAL
+   * Formula: floor(workingDays / 14 * 2) / 2  →  nearest 0.5-day increment
+   * Source:  payslips.paid_days for that month (accurate); fallback = count Mon–Fri
+   * Target:  leave_balances row for "Earned Leave" (short_code='EL' or first match)
+   */
+  async accrueEarnedLeave(month, year) {
+    const m = Number(month);
+    const y = Number(year);
+    if (!m || !y) throw new (require('../utils/ApiError'))('Invalid month or year', 400);
+
+    // 1. Find Earned Leave type
+    const elTypes = await query(
+      `SELECT leave_type_id FROM leave_types
+        WHERE short_code = 'EL'
+           OR leave_type_name LIKE '%Earned%'
+           OR leave_type_name LIKE '%PL%'
+       ORDER BY FIELD(short_code,'EL') DESC, leave_type_id ASC LIMIT 1`
+    );
+    if (!elTypes.length) throw new (require('../utils/ApiError'))('No Earned Leave type configured (short_code EL)', 400);
+    const leaveTypeId = elTypes[0].leave_type_id;
+
+    // 2. Get all active employees
+    const employees = await query(
+      `SELECT employee_id FROM employees WHERE employee_status = 'Active'`
+    );
+    if (!employees.length) return { accrued: 0, skipped: 0, month: m, year: y };
+
+    // 3. Get paid_days from payslips for this month (most accurate)
+    const paidRows = await query(
+      `SELECT employee_id, IFNULL(paid_days, working_days) AS paid_days
+         FROM payslips WHERE month = ? AND year = ?`,
+      [m, y]
+    );
+    const paidMap = {};
+    paidRows.forEach(r => { paidMap[r.employee_id] = Number(r.paid_days) || 0; });
+
+    // 4. Fallback: count Mon–Fri in the month
+    const daysInMonth = new Date(y, m, 0).getDate();
+    let calendarWorkDays = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(y, m - 1, d).getDay();
+      if (dow !== 0 && dow !== 6) calendarWorkDays++;
+    }
+
+    // 5. Accrue for each employee
+    let accrued = 0, skipped = 0;
+    const currentYear = y; // leave balance year
+
+    for (const emp of employees) {
+      const workDays = paidMap[emp.employee_id] || calendarWorkDays;
+      // Round to nearest 0.5
+      const earnDays = Math.floor(workDays / 14 * 2) / 2;
+      if (earnDays <= 0) { skipped++; continue; }
+
+      // Upsert balance row — add to granted & recalculate balance
+      const existing = await query(
+        `SELECT opening_balance, granted, availed, balance
+           FROM leave_balances
+          WHERE employee_id = ? AND leave_type_id = ? AND year = ?`,
+        [emp.employee_id, leaveTypeId, currentYear]
+      );
+
+      if (existing.length) {
+        const ob = Number(existing[0].opening_balance) || 0;
+        const gr = Number(existing[0].granted) + earnDays;
+        const av = Number(existing[0].availed) || 0;
+        const bal = Math.max(0, ob + gr - av);
+        await query(
+          `UPDATE leave_balances SET granted = ?, balance = ?
+            WHERE employee_id = ? AND leave_type_id = ? AND year = ?`,
+          [gr, bal, emp.employee_id, leaveTypeId, currentYear]
+        );
+      } else {
+        await query(
+          `INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
+           VALUES (?, ?, ?, 0, ?, 0, ?)`,
+          [emp.employee_id, leaveTypeId, currentYear, earnDays, earnDays]
+        );
+      }
+      accrued++;
+    }
+
+    return { accrued, skipped, earnedPerEmployee: null, month: m, year: y, leaveTypeId };
+  }
+
   /** Admin: upsert one employee's leave balance row */
   async adjustBalance({ employeeId, leaveTypeId, year, opening_balance, granted, availed }) {
     const targetYear = Number(year) || new Date().getFullYear();

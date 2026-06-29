@@ -1,8 +1,17 @@
-import apiClient, { unwrap, unwrapList } from "./client";
+import apiClient, { unwrap } from "./client";
 
-/** GET /holidays?year=&holiday_calendar=&page=&limit= */
+/**
+ * GET /holidays
+ * params: { year, holiday_calendar, shift, location, page, limit }
+ * shift: 'general' | 'mid' | 'night'
+ * Returns a plain array of holiday objects.
+ */
 export const listHolidays = (params) =>
-  apiClient.get("/holidays", { params }).then(unwrapList);
+  apiClient.get("/holidays", { params }).then(unwrap);
+
+/** GET /holidays/locations — distinct location values */
+export const listHolidayLocations = () =>
+  apiClient.get("/holidays/locations").then(unwrap);
 
 /** GET /holidays/:id */
 export const getHoliday = (id) => apiClient.get(`/holidays/${id}`).then(unwrap);
