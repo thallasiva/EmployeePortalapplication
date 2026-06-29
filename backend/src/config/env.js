@@ -7,8 +7,6 @@ function required(name, fallback) {
   return value;
 }
 
-// Parse Railway's DATABASE_URL if individual vars aren't set
-// Format: mysql://user:password@host:port/database
 function parseDbUrl(url) {
   if (!url) return null;
   try {
@@ -40,26 +38,27 @@ module.exports = {
   },
 
   jwt: {
-    secret: required('JWT_SECRET', 'dev_secret_change_me'),
-    expiresIn: required('JWT_EXPIRES_IN', '1d'),
-    refreshSecret: required('JWT_REFRESH_SECRET', 'dev_refresh_secret_change_me'),
-    refreshExpiresIn: required('JWT_REFRESH_EXPIRES_IN', '7d'),
+    secret:           required('JWT_SECRET',              'dev_secret_change_me'),
+    expiresIn:        required('JWT_EXPIRES_IN',          '1d'),
+    refreshSecret:    required('JWT_REFRESH_SECRET',      'dev_refresh_secret_change_me'),
+    refreshExpiresIn: required('JWT_REFRESH_EXPIRES_IN',  '7d'),
   },
 
   upload: {
-    dir: required('UPLOAD_DIR', 'uploads'),
+    dir:   required('UPLOAD_DIR',    'uploads'),
     maxMb: Number(required('MAX_UPLOAD_MB', 10)),
   },
 
   email: {
-    host: required('SMTP_HOST', ''),
-    port: Number(required('SMTP_PORT', 587)),
+    host:   required('SMTP_HOST',   ''),
+    port:   Number(required('SMTP_PORT', 587)),
     secure: String(required('SMTP_SECURE', 'false')).toLowerCase() === 'true',
-    user: required('SMTP_USER', ''),
-    pass: required('SMTP_PASS', ''),
-    from: required('SMTP_FROM', 'HRMS <no-reply@hrms.local>'),
+    user:   required('SMTP_USER',   ''),
+    pass:   required('SMTP_PASS',   ''),
+    from:   required('SMTP_FROM',   'HRMS <no-reply@hrms.local>'),
   },
 
-  // 32-byte hex key for AES-256-GCM salary encryption
-  salaryEncryptionKey: required('SALARY_ENCRYPTION_KEY', ''),
+  salary: {
+    encryptionKey: required('SALARY_ENCRYPTION_KEY', ''),
+  },
 };
