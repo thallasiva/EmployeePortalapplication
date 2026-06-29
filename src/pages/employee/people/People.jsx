@@ -209,9 +209,7 @@ export default function People() {
       const self = filteredList.find(p => p.id === selfId);
       setSelectedId(self ? self.id : filteredList[0].id);
     }
-
   }, [filteredList, selfId, selectedId]);
-
 
   const selected = allEmployees.find(p => p.id === selectedId) ?? null;
 
