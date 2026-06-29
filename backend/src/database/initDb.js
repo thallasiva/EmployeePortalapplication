@@ -64,18 +64,39 @@ async function runFile(conn, file) {
     console.warn(`  ⚠  Skipping (not found): ${file}`);
     return;
   }
-  const sql = fs.readFileSync(filePath, 'utf8');
-  // Split on delimiter boundaries, skip empty statements
+  let sql = fs.readFileSync(filePath, 'utf8');
+
+  // Strip single-line comments FIRST so they don't swallow adjacent SQL
+  // when we split on semicolons (a comment before CREATE TABLE would
+  // cause the whole chunk to be treated as a comment and filtered out).
+  sql = sql.replace(/--[^\n]*/g, '');
+
+  // MySQL 8.0 doesn't support "ADD COLUMN IF NOT EXISTS" (that's MariaDB only).
+  // Normalise to plain "ADD COLUMN" and let error-code 1060 silently skip dupes.
+  sql = sql.replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\s+/gi, 'ADD COLUMN ');
+  // Similarly, "DROP INDEX IF EXISTS" isn't standard MySQL — normalise it.
+  sql = sql.replace(/\bDROP\s+INDEX\s+IF\s+EXISTS\s+/gi, 'DROP INDEX ');
+
   const statements = sql
-    .split(/;\s*(\n|$)/)
+    .split(';')
     .map(s => s.trim())
-    .filter(s => s.length > 0 && !s.startsWith('--'));
+    .filter(s => s.length > 0)
+    // Railway provides its own database — skip DB-switching statements
+    .filter(s => !/^(USE\s|CREATE\s+DATABASE)/i.test(s));
+
   for (const stmt of statements) {
     try {
       await conn.query(stmt);
     } catch (err) {
-      // Ignore "already exists" / "duplicate" errors from re-runs
-      if (err.code && (err.code === 'ER_TABLE_EXISTS_ERROR' || err.code === 'ER_DUP_ENTRY' || err.errno === 1050 || err.errno === 1062)) {
+      // Ignore "already exists" / "duplicate" / "doesn't exist" errors from re-runs
+      const ignored = new Set([
+        'ER_TABLE_EXISTS_ERROR',  // 1050 – CREATE TABLE on existing table
+        'ER_DUP_ENTRY',           // 1062 – INSERT duplicate key
+        'ER_DUP_FIELDNAME',       // 1060 – ADD COLUMN on existing column
+        'ER_CANT_DROP_FIELD_OR_KEY', // 1091 – DROP column/key that doesn't exist
+      ]);
+      const ignoredNums = new Set([1050, 1062, 1060, 1091]);
+      if (ignored.has(err.code) || ignoredNums.has(err.errno)) {
         // silently skip
       } else {
         console.warn(`  ⚠  ${file}: ${err.message.slice(0, 120)}`);
