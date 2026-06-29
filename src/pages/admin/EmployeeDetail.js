@@ -310,7 +310,7 @@ export default function EmployeeDetail() {
 
       <div className="emp-wizard__card" style={{marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-          <img className="emp-card__avatar" src={avatarDataUri(`${employee.first_name||""} ${employee.last_name||""}`.trim() || String(employee.employee_id), 72)} alt={`${employee.first_name} ${employee.last_name||""}`}/>
+          <img className="emp-card__avatar" src={avatarDataUri(employee.employee_id,72)} alt={`${employee.first_name} ${employee.last_name||""}`}/>
           <div style={{flex:1}}>
             {editMode ? (
               <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>

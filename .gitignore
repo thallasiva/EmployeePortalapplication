@@ -18,15 +18,6 @@
 .env.test.local
 .env.production.local
 
-# Backend secrets — never commit real .env
-backend/.env
-backend/.env.*
-!backend/.env.example
-
-# Uploads directory (ephemeral on Railway)
-backend/uploads/*
-!backend/uploads/.gitkeep
-
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -21,7 +21,6 @@
   border-radius: 999px;
   object-fit: cover;
   margin-bottom: 0.25rem;
-  flex-shrink: 0;
 }
 
 .emp-card__name {

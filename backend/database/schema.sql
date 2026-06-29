@@ -106,7 +106,6 @@ CREATE TABLE IF NOT EXISTS employees (
   pf_join_date     DATE DEFAULT NULL,
   esi_number       VARCHAR(40) DEFAULT NULL,
   has_left_organization TINYINT(1) DEFAULT 0,
-  tax_regime       ENUM('new','old') NOT NULL DEFAULT 'new',
   created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at       DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_employee_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL,
@@ -134,7 +133,7 @@ CREATE TABLE IF NOT EXISTS employee_contact_info (
   CONSTRAINT fk_contact_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS employee_bank_details (
+CREATE TABLE employee_bank_details (
     employee_id INT PRIMARY KEY,
 
     bank_name VARCHAR(100) DEFAULT NULL,
@@ -153,8 +152,8 @@ CREATE TABLE IF NOT EXISTS employee_bank_details (
     esi_number VARCHAR(30) DEFAULT NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS users (
   user_id       INT AUTO_INCREMENT PRIMARY KEY,

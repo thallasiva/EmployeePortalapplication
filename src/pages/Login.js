@@ -190,40 +190,11 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Quick-login credential tiles */}
-        <div style={{ marginTop: 16 }}>
-          <p style={{ textAlign: "center", fontSize: 11, color: "#9ca3af", marginBottom: 8 }}>
-            Quick login — click to fill credentials
-          </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-            {[
-              { role: "Admin",    email: "admin@yopmail.com",          color: "#f18200" },
-              { role: "Manager",  email: "tirumalarao@yopmail.com",    color: "#7c3aed" },
-              { role: "Employee", email: "seetharamaiah@yopmail.com",  color: "#0369a1" },
-            ].map(({ role, email, color }) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => {
-                  loginForm.setFieldValue("email", email);
-                  loginForm.setFieldValue("password", "Admin@123");
-                }}
-                style={{
-                  border: `1px solid ${color}33`, background: `${color}0d`,
-                  borderRadius: 8, padding: "6px 12px", cursor: "pointer",
-                  fontSize: 11, color, fontWeight: 600, lineHeight: 1.4,
-                  textAlign: "left", minWidth: 130,
-                }}
-              >
-                <div style={{ fontWeight: 700, marginBottom: 1 }}>{role}</div>
-                <div style={{ fontWeight: 400, opacity: 0.8, fontSize: 10 }}>{email}</div>
-              </button>
-            ))}
-          </div>
-          <p style={{ textAlign: "center", fontSize: 10, color: "#d1d5db", marginTop: 6 }}>
-            All demo accounts use password: Admin@123
-          </p>
-        </div>
+        <p className="text-center text-xs text-slate-400 mt-4">
+          Default admin: admin@yopmail.com / Admin@123
+          <br />
+          Your dashboard automatically shows your assigned shift (General, Mid or Night).
+        </p>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Don&apos;t have an account?{" "}
