@@ -13,12 +13,13 @@ import Layout from "./component/layout";
 import AdminRoutes from "./routes/AdminRoutes";
 import EmployeeRoutes from "./routes/EmployeeRoutes";
 import ManagerRoutes from "./routes/ManagerRoutes";
+import RecruiterRoutes from "./routes/RecruiterRoutes";
 
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
 import PayslipPrintView from "./pages/payslip/PayslipPrintView";
-import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager } from "./data/auth";
+import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager, isRecruitmentRole } from "./data/auth";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -100,6 +101,20 @@ const AppRoutes = () => {
           path="*"
           element={<EmployeeRoutes />}
         />
+      </Route>
+
+      {/* RECRUITER TEAM LEAD + RECRUITER */}
+      <Route
+        path="/recruiter/*"
+        element={
+          isRecruitmentRole(user) ? (
+            <Layout />
+          ) : (
+            <Navigate to={getHomePath(user)} replace />
+          )
+        }
+      >
+        <Route path="*" element={<RecruiterRoutes />} />
       </Route>
 
     </Routes>

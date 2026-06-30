@@ -10,11 +10,15 @@ import { setAuthTokens, clearAuthSession as clearTokens } from "../api/client";
 export const ROLE_ADMIN = 1;
 export const ROLE_EMPLOYEE = 2;
 export const ROLE_REPORTING_MANAGER = 3;
+export const ROLE_RECRUITER_LEAD = 4;
+export const ROLE_RECRUITER = 5;
 
-/** Coerce role from API/form/localStorage to 1 (admin), 2 (employee), or 3 (reporting manager). */
+const ALL_ROLES = [ROLE_ADMIN, ROLE_EMPLOYEE, ROLE_REPORTING_MANAGER, ROLE_RECRUITER_LEAD, ROLE_RECRUITER];
+
+/** Coerce role from API/form/localStorage to a valid role number. */
 export function normalizeRole(role) {
   const n = Number(role);
-  if (n === ROLE_ADMIN || n === ROLE_EMPLOYEE || n === ROLE_REPORTING_MANAGER) return n;
+  if (ALL_ROLES.includes(n)) return n;
   return null;
 }
 
@@ -31,6 +35,7 @@ export function getHomePath(user) {
   const role = resolveRoleForUser(user);
   if (role === ROLE_ADMIN) return "/dashboard";
   if (role === ROLE_REPORTING_MANAGER) return "/manager";
+  if (role === ROLE_RECRUITER_LEAD || role === ROLE_RECRUITER) return "/recruiter/recruitment";
   if (role === ROLE_EMPLOYEE) return "/employee/home";
   return "/login";
 }
@@ -45,6 +50,19 @@ export function isEmployee(user) {
 
 export function isReportingManager(user) {
   return resolveRoleForUser(user) === ROLE_REPORTING_MANAGER;
+}
+
+export function isRecruiterLead(user) {
+  return resolveRoleForUser(user) === ROLE_RECRUITER_LEAD;
+}
+
+export function isRecruiter(user) {
+  return resolveRoleForUser(user) === ROLE_RECRUITER;
+}
+
+export function isRecruitmentRole(user) {
+  const role = resolveRoleForUser(user);
+  return role === ROLE_RECRUITER_LEAD || role === ROLE_RECRUITER;
 }
 
 /** Shift assigned to the logged-in employee/RM (defaults to "general"). */

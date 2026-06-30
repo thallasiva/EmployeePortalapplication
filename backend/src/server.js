@@ -261,6 +261,16 @@ enforceSecrets();
     logger.info(`HRMS backend listening on http://localhost:${port}`);
   });
 
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.error(`Port ${port} is already in use. Stop the existing backend process or set PORT to another value in backend/.env.`);
+      process.exit(1);
+    }
+
+    logger.error('Backend server failed to start:', err.message);
+    process.exit(1);
+  });
+
   const shutdown = (signal) => {
     logger.info(`${signal} received, shutting down...`);
     server.close(() => process.exit(0));

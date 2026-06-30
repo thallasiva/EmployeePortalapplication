@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "db:migrate:009": "node src/database/runSql.js migration_009_employee_extended_fields.sql"
+    "db:init": "node src/database/runSql.js schema.sql procedures.sql seed.sql",
+    "db:procedures": "node src/database/runSql.js procedures.sql",
+    "db:patch:auth": "node src/database/runSql.js patch_auth_procedures.sql",
+    "db:migrate:009": "node src/database/runSql.js migration_009_employee_extended_fields.sql",
+    "db:migrate:033": "node src/database/runSql.js migration_033_recruiter_employees.sql"
   },
   "license": "MIT",
   "dependencies": {

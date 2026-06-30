@@ -53,6 +53,7 @@ const AdminPayrollCompliance = lazy(() => import("../pages/admin/AdminPayrollCom
 const AdminPayrollTaxForms   = lazy(() => import("../pages/admin/AdminPayrollTaxForms"));
 const AdminPayrollSetup          = lazy(() => import("../pages/admin/AdminPayrollSetup"));
 const AdminWorkflowDelegation    = lazy(() => import("../pages/admin/AdminWorkflowDelegation"));
+const Recruitment                = lazy(() => import("../pages/admin/Recruitment"));
 
 // ── Suspense wrapper ─────────────────────────────────────────────────────────
 // Each route gets its own ErrorBoundary so one crash doesn't unmount the rest.
@@ -107,6 +108,7 @@ const AdminRoutes = () => {
       <Route path="payroll/tax-forms"           element={<Page><AdminPayrollTaxForms /></Page>} />
       <Route path="payroll/setup"               element={<Page><AdminPayrollSetup /></Page>} />
       <Route path="workflow-delegation"         element={<Page><AdminWorkflowDelegation /></Page>} />
+      <Route path="recruitment"                 element={<Page><Recruitment /></Page>} />
     </Routes>
   );
 };
