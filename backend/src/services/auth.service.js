@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { query, callProcedure } = require('../config/db');
+const { callProcedure, readOuts } = require('../config/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
@@ -50,8 +50,8 @@ async function issueTokensForUser(userId) {
 }
 
 async function register({ email, password, firstName, lastName, mobile, roleId, departmentId, designationId, empJobTitle }) {
-  const existing = await query('SELECT user_id FROM users WHERE email = ?', [email]);
-  if (existing.length) throw ApiError.conflict('An account with this email already exists');
+  const existsResults = await callProcedure('sp_check_email_exists(?)', [email]);
+  if ((existsResults[0] ?? []).length) throw ApiError.conflict('An account with this email already exists');
 
   const passwordHash = await hashPassword(password);
   await callProcedure(
@@ -59,7 +59,7 @@ async function register({ email, password, firstName, lastName, mobile, roleId, 
     [firstName, lastName ?? null, email, mobile ?? null, empJobTitle ?? 'Employee',
      departmentId ?? null, designationId ?? null, passwordHash, roleId ?? 2]
   );
-  const out = await query('SELECT @employee_id AS employee_id, @emp_code AS emp_code');
+  const out = await readOuts('employee_id', 'emp_code');
   return { employeeId: out[0].employee_id, empCode: out[0].emp_code };
 }
 
@@ -85,7 +85,7 @@ async function login({ email, password }) {
   const valid = await comparePassword(password, userRow.password_hash);
   if (!valid) {
     await callProcedure('sp_login_fail(?, ?, ?, @locked, @attempts)', [userRow.user_id, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES]);
-    const out = await query('SELECT @locked AS locked');
+    const out = await readOuts('locked');
     if (out[0]?.locked) throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
     throw ApiError.unauthorized('Invalid email or password');
   }
@@ -118,7 +118,8 @@ async function getProfile(userId) {
 }
 
 async function changePassword(userId, currentPassword, newPassword) {
-  const rows = await query('SELECT password_hash FROM users WHERE user_id = ?', [userId]);
+  const _pwResults = await callProcedure('sp_get_user_password_hash(?)', [userId]);
+  const rows = _pwResults[0] ?? [];
   if (!rows.length) throw ApiError.notFound('User not found');
   const valid = await comparePassword(currentPassword, rows[0].password_hash);
   if (!valid) throw ApiError.badRequest('Current password is incorrect');
@@ -139,8 +140,8 @@ async function forgotPassword(email) {
 async function resetPassword(token, newPassword) {
   const newHash = await hashPassword(newPassword);
   await callProcedure('sp_reset_password(?, ?, @ok)', [token, newHash]);
-  const out = await query('SELECT @ok AS ok');
-  if (!out[0]?.ok) throw ApiError.badRequest('Invalid or expired reset token');
+  const out = await readOuts('ok');
+  if (!out?.ok) throw ApiError.badRequest('Invalid or expired reset token');
 }
 
 module.exports = { register, login, refresh, getProfile, changePassword, forgotPassword, resetPassword, issueTokensForUser, bustProfileCache };

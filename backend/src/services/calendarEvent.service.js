@@ -1,47 +1,37 @@
 const BaseService = require('./base.service');
-const { query } = require('../config/db');
-
-const LIST_SELECT = `
-  SELECT ce.*, CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS created_by_name
-    FROM calendar_events ce
-    LEFT JOIN employees e ON e.employee_id = ce.created_by
-`;
+const { callProcedure } = require('../config/db');
 
 class CalendarEventService extends BaseService {
   constructor() {
     super('calendar_events', 'event_id', ['title', 'description', 'event_date', 'event_type', 'created_by']);
   }
 
-  async list({ month, year, event_type, limit, offset } = {}) {
-    const where = [];
-    const params = [];
-
-    if (month) {
-      where.push('MONTH(ce.event_date) = ?');
-      params.push(month);
-    }
-    if (year) {
-      where.push('YEAR(ce.event_date) = ?');
-      params.push(year);
-    }
-    if (event_type) {
-      where.push('ce.event_type = ?');
-      params.push(event_type);
+  async list({ month, year, event_type, employee_id, limit, offset } = {}) {
+    // Build from/to dates from month+year if provided
+    let fromDate = null;
+    let toDate   = null;
+    if (month && year) {
+      fromDate = `${year}-${String(month).padStart(2, '0')}-01`;
+      const lastDay = new Date(year, month, 0).getDate();
+      toDate = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
+    } else if (year) {
+      fromDate = `${year}-01-01`;
+      toDate   = `${year}-12-31`;
     }
 
-    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
-    let sql = `${LIST_SELECT} ${whereSql} ORDER BY ce.event_date ASC`;
-    if (limit !== undefined) {
-      sql += ' LIMIT ? OFFSET ?';
-      params.push(Number(limit), Number(offset || 0));
-    }
-
-    const rows = await query(sql, params);
-    const countRows = await query(
-      `SELECT COUNT(*) AS total FROM calendar_events ce ${whereSql}`,
-      where.length ? params.slice(0, params.length - (limit !== undefined ? 2 : 0)) : []
+    const results = await callProcedure(
+      'sp_list_calendar_events(?, ?, ?, ?, ?, ?, ?)',
+      [
+        employee_id ?? null,
+        null,            // visibility — no filter from this context
+        event_type ?? null,
+        fromDate,
+        toDate,
+        limit != null ? Number(limit)       : null,
+        limit != null ? Number(offset || 0) : null,
+      ]
     );
-    return { rows, total: countRows[0]?.total || 0 };
+    return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
 }
 

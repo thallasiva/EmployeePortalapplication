@@ -61,10 +61,28 @@ async function withTransaction(fn) {
   }
 }
 
+/**
+ * Read MySQL session OUT-parameter variables set by the most recent
+ * stored-procedure call.  Pass the bare variable names (no @):
+ *
+ *   const { ok, msg } = await readOuts('ok', 'msg');
+ *
+ * Eliminates the need for raw `query('SELECT @ok AS ok, ...')` calls in
+ * service files.
+ *
+ * @param {...string} vars  Bare session variable names (without @)
+ * @returns {Promise<object>}
+ */
+async function readOuts(...vars) {
+  const sql = 'SELECT ' + vars.map(v => `@${v} AS \`${v}\``).join(', ');
+  const [rows] = await pool.query(sql);
+  return rows[0] ?? {};
+}
+
 async function testConnection() {
   const conn = await pool.getConnection();
   await conn.ping();
   conn.release();
 }
 
-module.exports = { pool, query, callProcedure, withTransaction, testConnection };
+module.exports = { pool, query, callProcedure, readOuts, withTransaction, testConnection };

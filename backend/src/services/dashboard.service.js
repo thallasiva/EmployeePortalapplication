@@ -1,4 +1,4 @@
-const { callProcedure, query } = require('../config/db');
+const { callProcedure } = require('../config/db');
 
 class DashboardService {
   async stats() {
@@ -17,27 +17,13 @@ class DashboardService {
   }
 
   async birthdaysAndAnniversaries(month) {
-    const rows = await query(
-      `SELECT employee_id, emp_code, CONCAT(first_name, ' ', IFNULL(last_name,'')) AS employee_name,
-              dob, emp_joining_date
-         FROM employees
-        WHERE employee_status = 'Active'
-          AND (MONTH(dob) = ? OR MONTH(emp_joining_date) = ?)`,
-      [month, month]
-    );
-    return rows;
+    const results = await callProcedure('sp_birthdays_anniversaries(?)', [Number(month)]);
+    return results[0] ?? [];
   }
 
   async recentActivities(limit = 10) {
-    const rows = await query(
-      `SELECT a.*, CONCAT(e.first_name, ' ', IFNULL(e.last_name,'')) AS performed_by_name
-         FROM audit_logs a
-         LEFT JOIN employees e ON e.employee_id = a.user_id
-        ORDER BY a.created_at DESC
-        LIMIT ?`,
-      [Number(limit)]
-    );
-    return rows;
+    const results = await callProcedure('sp_recent_activities(?)', [Number(limit)]);
+    return results[0] ?? [];
   }
 }
 

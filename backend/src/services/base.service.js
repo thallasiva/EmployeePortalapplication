@@ -2,9 +2,18 @@ const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Generic CRUD repository over a single table. Concrete services extend
- * this for standard list/get/create/update/delete behaviour and add their
- * own methods for anything more specialised (joins, stored procedures...).
+ * Generic CRUD repository — dynamic-table infrastructure layer.
+ *
+ * WHY this file uses query() directly:
+ *   Stored procedures require hardcoded table names. This class is a
+ *   parameterised ORM utility (table name passed via constructor), so
+ *   inline query() is the only option. It is intentionally kept thin.
+ *
+ * RULE: No business logic goes here. Every concrete service MUST override
+ *   all public methods with dedicated stored-procedure calls so that query()
+ *   is never reached at runtime for production operations.
+ *   (The only exception is fallback coverage for admin/settings tables that
+ *   have no service-specific overrides yet.)
  */
 class BaseService {
   /**

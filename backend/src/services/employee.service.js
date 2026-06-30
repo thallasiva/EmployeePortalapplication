@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, query } = require('../config/db');
+const { callProcedure, readOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 const FILLABLE = [
@@ -77,7 +77,7 @@ class EmployeeService extends BaseService {
         data.password_hash    ?? null,
       ]
     );
-    const out = await query('SELECT @employee_id AS employee_id');
+    const out = await readOuts('employee_id');
     return this.getProfile(out[0].employee_id);
   }
 

@@ -4,13 +4,13 @@
  * the exact format of the uploaded HR report templates.
  */
 const ExcelJS = require('exceljs');
-const { query } = require('../config/db');
+const { callProcedure } = require('../config/db');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function getCompany() {
-  const rows = await query('SELECT * FROM companies LIMIT 1').catch(() => []);
-  return rows[0] || { company_name: 'Company Name', address: '' };
+  const results = await callProcedure('sp_get_company()').catch(() => []);
+  return (results[0] ?? [])[0] || { company_name: 'Company Name', address: '' };
 }
 
 function fmtDate(val) {
@@ -52,25 +52,8 @@ function dataStyle() {
 // ─── 1. EMP DATA ──────────────────────────────────────────────────────────────
 
 async function generateEmpData() {
-  const employees = await query(`
-    SELECT e.*,
-           d.department_name,
-           ds.designation_name,
-           CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS reporting_manager_name,
-           m.emp_code AS manager_emp_code,
-           ci.current_address, ci.permanent_address,
-           ci.personal_email, ci.alternate_mobile,
-           ci.emergency_contact_name, ci.emergency_contact_relation, ci.emergency_contact_phone,
-           bd.bank_name, bd.account_number, bd.ifsc_code, bd.pan_number AS bank_pan,
-           bd.uan_number
-      FROM employees e
-      LEFT JOIN departments d ON d.department_id = e.department_id
-      LEFT JOIN designations ds ON ds.designation_id = e.designation_id
-      LEFT JOIN employees m ON m.employee_id = e.reporting_to
-      LEFT JOIN employee_contact_info ci ON ci.employee_id = e.employee_id
-      LEFT JOIN employee_bank_details bd ON bd.employee_id = e.employee_id
-     ORDER BY e.employee_id
-  `);
+  const _empResults = await callProcedure('sp_report_emp_data()');
+  const employees = _empResults[0] ?? [];
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('EMP Data');
@@ -161,25 +144,8 @@ async function generateLeaveBalance(asOnDate) {
   const date = asOnDate ? new Date(asOnDate) : new Date();
   const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ');
 
-  const rows = await query(`
-    SELECT e.emp_code, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS emp_name,
-           m.emp_code AS mgr_code,
-           CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS mgr_name,
-           d.department_name,
-           SUM(CASE WHEN lt.leave_type_name LIKE '%Comp%' OR lt.leave_type_name LIKE '%Compensatory%' THEN lb.balance_days ELSE 0 END) AS comp_off,
-           SUM(CASE WHEN lt.leave_type_name LIKE '%Earned%' OR lt.leave_type_name = 'EL' THEN lb.balance_days ELSE 0 END) AS earned_leave,
-           SUM(CASE WHEN lt.leave_type_name LIKE '%Paternity%' THEN lb.balance_days ELSE 0 END) AS paternity,
-           SUM(CASE WHEN lt.leave_type_name LIKE '%Restricted%' OR lt.leave_type_name = 'RH' THEN lb.balance_days ELSE 0 END) AS restricted_holiday,
-           SUM(CASE WHEN lt.leave_type_name LIKE '%Sick%' OR lt.leave_type_name = 'SL' THEN lb.balance_days ELSE 0 END) AS sick_leave
-      FROM leave_balances lb
-      JOIN employees e ON e.employee_id = lb.employee_id
-      JOIN leave_types lt ON lt.leave_type_id = lb.leave_type_id
-      LEFT JOIN employees m ON m.employee_id = e.reporting_to
-      LEFT JOIN departments d ON d.department_id = e.department_id
-     WHERE e.employee_status = 'Active'
-     GROUP BY e.employee_id
-     ORDER BY e.emp_code
-  `);
+  const _lbResults = await callProcedure('sp_report_leave_balance()');
+  const rows = _lbResults[0] ?? [];
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Leave Balance');
@@ -226,32 +192,11 @@ async function generateLeaveSummary(fromDate, toDate) {
   const fromLabel = new Date(from).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   const toLabel   = new Date(to).toLocaleDateString('en-GB',   { day:'2-digit', month:'short', year:'numeric' });
 
-  const empRows = await query(`
-    SELECT e.emp_code, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS emp_name,
-           e.employee_status, e.date_of_confirmation, e.emp_joining_date,
-           d.department_name, ds.designation_name
-      FROM employees e
-      LEFT JOIN departments d ON d.department_id = e.department_id
-      LEFT JOIN designations ds ON ds.designation_id = e.designation_id
-     WHERE e.employee_status = 'Active'
-     ORDER BY e.emp_code
-  `);
-
-  const leaveTypes = await query(`SELECT leave_type_id, leave_type_name, short_code FROM leave_types ORDER BY leave_type_id`);
-
-  // Per-employee leave availed per leave type
-  const availed = await query(`
-    SELECT lr.employee_id, lr.leave_type_id, IFNULL(SUM(lr.days), 0) AS days_availed
-      FROM leave_requests lr
-     WHERE lr.status = 'approved'
-       AND lr.from_date >= ? AND lr.to_date <= ?
-     GROUP BY lr.employee_id, lr.leave_type_id
-  `, [from, to]);
-
-  const balances = await query(`
-    SELECT lb.employee_id, lb.leave_type_id, lb.balance_days
-      FROM leave_balances lb
-  `);
+  const _lsResults = await callProcedure('sp_report_leave_summary_data(?, ?)', [from, to]);
+  const empRows   = _lsResults[0] ?? [];
+  const leaveTypes = _lsResults[1] ?? [];
+  const availed   = _lsResults[2] ?? [];
+  const balances  = _lsResults[3] ?? [];
 
   const availedMap = {};
   availed.forEach((r) => {
@@ -315,17 +260,8 @@ async function generatePfStatement(month, year) {
   const y  = Number(year)  || new Date().getFullYear();
   const mLabel = `${monthName(m)} ${y}`;
 
-  const rows = await query(`
-    SELECT e.emp_code, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS emp_name,
-           e.emp_joining_date, e.emp_exit_date, e.pf_number,
-           bd.uan_number,
-           p.gross_earnings, p.basic, p.net_pay
-      FROM employees e
-      LEFT JOIN employee_bank_details bd ON bd.employee_id = e.employee_id
-      LEFT JOIN payslips p ON p.employee_id = e.employee_id AND p.month = ? AND p.year = ?
-     WHERE e.employee_status = 'Active' OR (e.has_left_organization = 1 AND YEAR(e.emp_exit_date) = ? AND MONTH(e.emp_exit_date) = ?)
-     ORDER BY e.emp_code
-  `, [m, y, y, m]);
+  const _pfResults = await callProcedure('sp_report_pf_statement(?, ?)', [m, y]);
+  const rows = _pfResults[0] ?? [];
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('PF Statement');
@@ -441,14 +377,8 @@ async function generateProfessionTax(month, year, state) {
     return slab ? slab.rate : 200;
   }
 
-  const rows = await query(`
-    SELECT e.emp_code, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS emp_name,
-           p.gross_earnings, p.basic
-      FROM employees e
-      LEFT JOIN payslips p ON p.employee_id = e.employee_id AND p.month = ? AND p.year = ?
-     WHERE e.employee_status = 'Active'
-     ORDER BY e.emp_code
-  `, [m, y]);
+  const _ptResults = await callProcedure('sp_report_payslips_for_month(?, ?)', [m, y]);
+  const rows = _ptResults[0] ?? [];
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Profession Tax');
@@ -513,14 +443,8 @@ async function generateEcrFile(month, year, estbCode) {
   const y = Number(year)  || new Date().getFullYear();
   const code = estbCode || 'ESTBCODE';
 
-  const rows = await query(`
-    SELECT e.emp_code, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS emp_name,
-           p.gross_earnings, p.basic
-      FROM employees e
-      LEFT JOIN payslips p ON p.employee_id = e.employee_id AND p.month = ? AND p.year = ?
-     WHERE e.employee_status = 'Active'
-     ORDER BY e.emp_code
-  `, [m, y]);
+  const _ecrResults = await callProcedure('sp_report_payslips_for_month(?, ?)', [m, y]);
+  const rows = _ecrResults[0] ?? [];
 
   const lines = rows.map((r) => {
     const gross   = Math.round(Number(r.gross_earnings) || 0);

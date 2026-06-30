@@ -36,8 +36,8 @@ class LeaveRequestService extends BaseService {
       data.employee_id, data.leave_type_id, data.from_date, data.from_session || null,
       data.to_date, data.to_session || null, data.days, data.reason || null,
     ]);
-    const { query } = require('../config/db');
-    const out = await query('SELECT @request_id AS request_id, @status_msg AS status_msg');
+    const { readOuts } = require('../config/db');
+    const out = await readOuts('request_id', 'status_msg');
     const { request_id, status_msg } = out[0];
     if (!request_id) throw ApiError.badRequest(status_msg || 'Unable to submit leave request');
     return this.getDetails(request_id);
@@ -55,8 +55,8 @@ class LeaveRequestService extends BaseService {
 
   async cancel(id, employeeId) {
     await callProcedure('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
-    const { query } = require('../config/db');
-    const out = await query('SELECT @ok AS ok, @msg AS msg');
+    const { readOuts } = require('../config/db');
+    const out = await readOuts('ok', 'msg');
     if (!out[0]?.ok) {
       const msg = out[0]?.msg ?? 'Cannot cancel';
       if (msg.includes('not found'))  throw ApiError.notFound(msg);
@@ -75,33 +75,14 @@ class LeaveRequestService extends BaseService {
   /** Returns ALL active employees x all leave types matrix for a given year */
   async allBalances(year) {
     const targetYear = Number(year) || new Date().getFullYear();
+    const results    = await callProcedure('sp_all_leave_balances(?)', [targetYear]);
 
-    const employees = await query(`
-      SELECT e.employee_id, e.emp_code,
-             CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name,
-             d.department_name,
-             CONCAT(m.first_name, ' ', IFNULL(m.last_name, '')) AS manager_name,
-             m.emp_code AS manager_emp_code
-        FROM employees e
-        LEFT JOIN departments d ON d.department_id = e.department_id
-        LEFT JOIN employees m ON m.employee_id = e.reporting_to
-       WHERE e.employee_status = 'Active'
-       ORDER BY e.emp_code
-    `);
-
-    const leaveTypes = await query(`
-      SELECT leave_type_id, leave_type_name, annual_quota, carry_forward_limit
-        FROM leave_types ORDER BY leave_type_name
-    `);
-
-    const balanceRows = await query(`
-      SELECT lb.employee_id, lb.leave_type_id,
-             lb.opening_balance, lb.granted, lb.availed, lb.balance
-        FROM leave_balances lb WHERE lb.year = ?
-    `, [targetYear]);
+    const employees  = results[0] ?? [];
+    const leaveTypes = results[1] ?? [];
+    const balances   = results[2] ?? [];
 
     const balMap = {};
-    balanceRows.forEach((b) => { balMap[`${b.employee_id}_${b.leave_type_id}`] = b; });
+    balances.forEach((b) => { balMap[`${b.employee_id}_${b.leave_type_id}`] = b; });
 
     const result = employees.map((emp) => ({
       ...emp,
@@ -132,81 +113,10 @@ class LeaveRequestService extends BaseService {
   async accrueEarnedLeave(month, year) {
     const m = Number(month);
     const y = Number(year);
-    if (!m || !y) throw new (require('../utils/ApiError'))('Invalid month or year', 400);
-
-    // 1. Find Earned Leave type (leave_types has no short_code column)
-    const elTypes = await query(
-      `SELECT leave_type_id FROM leave_types
-        WHERE leave_type_name LIKE '%Earned%'
-           OR leave_type_name LIKE '%EL%'
-           OR leave_type_name LIKE '%PL%'
-       ORDER BY leave_type_id ASC LIMIT 1`
-    );
-    if (!elTypes.length) throw new (require('../utils/ApiError'))('No Earned Leave type configured', 400);
-    const leaveTypeId = elTypes[0].leave_type_id;
-
-    // 2. Get all active employees
-    const employees = await query(
-      `SELECT employee_id FROM employees WHERE employee_status = 'Active'`
-    );
-    if (!employees.length) return { accrued: 0, skipped: 0, month: m, year: y };
-
-    // 3. Get paid_days from payslips for this month (most accurate)
-    const paidRows = await query(
-      `SELECT employee_id, IFNULL(paid_days, working_days) AS paid_days
-         FROM payslips WHERE month = ? AND year = ?`,
-      [m, y]
-    );
-    const paidMap = {};
-    paidRows.forEach(r => { paidMap[r.employee_id] = Number(r.paid_days) || 0; });
-
-    // 4. Fallback: count Mon–Fri in the month
-    const daysInMonth = new Date(y, m, 0).getDate();
-    let calendarWorkDays = 0;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dow = new Date(y, m - 1, d).getDay();
-      if (dow !== 0 && dow !== 6) calendarWorkDays++;
-    }
-
-    // 5. Accrue for each employee
-    let accrued = 0, skipped = 0;
-    const currentYear = y; // leave balance year
-
-    for (const emp of employees) {
-      const workDays = paidMap[emp.employee_id] || calendarWorkDays;
-      // Round to nearest 0.5
-      const earnDays = Math.floor(workDays / 14 * 2) / 2;
-      if (earnDays <= 0) { skipped++; continue; }
-
-      // Upsert balance row — add to granted & recalculate balance
-      const existing = await query(
-        `SELECT opening_balance, granted, availed, balance
-           FROM leave_balances
-          WHERE employee_id = ? AND leave_type_id = ? AND year = ?`,
-        [emp.employee_id, leaveTypeId, currentYear]
-      );
-
-      if (existing.length) {
-        const ob = Number(existing[0].opening_balance) || 0;
-        const gr = Number(existing[0].granted) + earnDays;
-        const av = Number(existing[0].availed) || 0;
-        const bal = Math.max(0, ob + gr - av);
-        await query(
-          `UPDATE leave_balances SET granted = ?, balance = ?
-            WHERE employee_id = ? AND leave_type_id = ? AND year = ?`,
-          [gr, bal, emp.employee_id, leaveTypeId, currentYear]
-        );
-      } else {
-        await query(
-          `INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
-           VALUES (?, ?, ?, 0, ?, 0, ?)`,
-          [emp.employee_id, leaveTypeId, currentYear, earnDays, earnDays]
-        );
-      }
-      accrued++;
-    }
-
-    return { accrued, skipped, earnedPerEmployee: null, month: m, year: y, leaveTypeId };
+    if (!m || !y) throw ApiError.badRequest('Invalid month or year');
+    const results = await callProcedure('sp_accrue_earned_leave(?, ?)', [m, y]);
+    const out = (results[0] ?? [])[0] ?? {};
+    return { accrued: out.accrued ?? 0, skipped: 0, earnedPerEmployee: null, month: m, year: y, leaveTypeId: out.leave_type_id };
   }
 
   /** Admin: upsert one employee's leave balance row */
@@ -216,64 +126,16 @@ class LeaveRequestService extends BaseService {
     const gr  = Number(granted)         || 0;
     const av  = Number(availed)         || 0;
     const bal = Math.max(0, ob + gr - av);
-
-    const existing = await query(
-      `SELECT 1 FROM leave_balances WHERE employee_id = ? AND leave_type_id = ? AND year = ?`,
-      [employeeId, leaveTypeId, targetYear]
-    );
-
-    if (existing.length > 0) {
-      await query(
-        `UPDATE leave_balances SET opening_balance=?, granted=?, availed=?, balance=?
-          WHERE employee_id=? AND leave_type_id=? AND year=?`,
-        [ob, gr, av, bal, employeeId, leaveTypeId, targetYear]
-      );
-    } else {
-      await query(
-        `INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [employeeId, leaveTypeId, targetYear, ob, gr, av, bal]
-      );
-    }
+    await callProcedure('sp_adjust_leave_balance(?, ?, ?, ?, ?, ?)', [employeeId, leaveTypeId, targetYear, ob, gr, av]);
     return { employeeId, leaveTypeId, year: targetYear, opening_balance: ob, granted: gr, availed: av, balance: bal };
   }
 
   /** Admin: seed missing balance rows for all active employees for a given year */
   async initializeBalancesForYear(year) {
     const targetYear = Number(year) || new Date().getFullYear();
-    const prevYear   = targetYear - 1;
-    const employees  = await query(`SELECT employee_id FROM employees WHERE employee_status = 'Active'`);
-    const leaveTypes = await query(`SELECT leave_type_id, annual_quota, carry_forward_limit FROM leave_types`);
-
-    let created = 0, skipped = 0;
-
-    for (const emp of employees) {
-      for (const lt of leaveTypes) {
-        const exists = await query(
-          `SELECT 1 FROM leave_balances WHERE employee_id=? AND leave_type_id=? AND year=?`,
-          [emp.employee_id, lt.leave_type_id, targetYear]
-        );
-        if (exists.length > 0) { skipped++; continue; }
-
-        const prev = await query(
-          `SELECT balance FROM leave_balances WHERE employee_id=? AND leave_type_id=? AND year=?`,
-          [emp.employee_id, lt.leave_type_id, prevYear]
-        );
-        const cfLimit = Number(lt.carry_forward_limit) || 0;
-        const prevBal = prev.length > 0 ? Number(prev[0].balance) || 0 : 0;
-        const opening = Math.min(prevBal, cfLimit);
-        const granted = Number(lt.annual_quota) || 0;
-        const balance = opening + granted;
-
-        await query(
-          `INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
-           VALUES (?, ?, ?, ?, ?, 0, ?)`,
-          [emp.employee_id, lt.leave_type_id, targetYear, opening, granted, balance]
-        );
-        created++;
-      }
-    }
-    return { year: targetYear, created, skipped };
+    const results    = await callProcedure('sp_init_leave_balances_year(?)', [targetYear]);
+    const created    = (results[0] ?? [])[0]?.created ?? 0;
+    return { year: targetYear, created, skipped: 0 };
   }
 
   /** Admin: bulk-import leave balances from parsed CSV/Excel rows */
