@@ -5,14 +5,14 @@ import { getDepartmentName } from "../../../utils/employeeDisplay";
 import {
   ReportPageHeader,
   ReportAvatar,
-  ReportStatusBadge,
-} from "../../../component/reports/ReportsLayout";
+  ReportStatusBadge } from
+"../../../component/reports/ReportsLayout";import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 const ROLE_COLORS = {
   Admin: "bg-purple-100 text-purple-700",
   HR: "bg-blue-100 text-blue-700",
   Manager: "bg-amber-100 text-amber-700",
-  Employee: "bg-gray-100 text-gray-600",
+  Employee: "bg-gray-100 text-gray-600"
 };
 
 export default function UserReport() {
@@ -22,10 +22,10 @@ export default function UserReport() {
   const [deptFilter, setDeptFilter] = useState("All");
 
   useEffect(() => {
-    listEmployees({ limit: 500 })
-      .then((data) => setEmployees(Array.isArray(data) ? data : []))
-      .catch(() => setEmployees([]))
-      .finally(() => setLoading(false));
+    listEmployees({ limit: 500 }).
+    then((data) => setEmployees(Array.isArray(data) ? data : [])).
+    catch(() => setEmployees([])).
+    finally(() => setLoading(false));
   }, []);
 
   const departments = useMemo(() => {
@@ -52,21 +52,21 @@ export default function UserReport() {
       <ReportPageHeader title="User Report" />
 
       {/* Stats */}
-      <div className="report-stats-grid" style={{ maxWidth: 800 }}>
+      <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
-          { label: "Total Users", value: employees.length, barWidth: "100%", barColor: "#f18200" },
-          { label: "Active", value: activeCount, barWidth: `${employees.length ? (activeCount / employees.length) * 100 : 0}%`, barColor: "#16a34a" },
-          { label: "Inactive", value: inactiveCount, barWidth: `${employees.length ? (inactiveCount / employees.length) * 100 : 0}%`, barColor: "#ef4444" },
-          { label: "Departments", value: deptCount, barWidth: "100%", barColor: "#f97316" },
-        ].map((s) => (
-          <div key={s.label} className="report-stat-card">
+        { label: "Total Users", value: employees.length, barWidth: "100%", barColor: "#f18200" },
+        { label: "Active", value: activeCount, barWidth: `${employees.length ? activeCount / employees.length * 100 : 0}%`, barColor: "#16a34a" },
+        { label: "Inactive", value: inactiveCount, barWidth: `${employees.length ? inactiveCount / employees.length * 100 : 0}%`, barColor: "#ef4444" },
+        { label: "Departments", value: deptCount, barWidth: "100%", barColor: "#f97316" }].
+        map((s) =>
+        <div key={s.label} className="report-stat-card">
             <p className="report-stat-card__value">{s.value}</p>
             <p className="report-stat-card__label">{s.label}</p>
             <div className="report-stat-card__bar-bg">
-              <div className="report-stat-card__bar" style={{ width: s.barWidth, background: s.barColor }} />
+              <div className={joinClasses("report-stat-card__bar", cssClass({ width: s.barWidth, background: s.barColor }))} />
             </div>
           </div>
-        ))}
+        )}
       </div>
 
       <div className="report-table-section">
@@ -79,27 +79,27 @@ export default function UserReport() {
               placeholder="Search user…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="text-sm outline-none w-40"
-            />
+              className="text-sm outline-none w-40" />
+            
           </div>
           <select
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
-            className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white"
-          >
+            className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
+            
             {departments.map((d) => <option key={d}>{d}</option>)}
           </select>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center h-40 text-gray-400 text-sm">Loading users…</div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400 gap-2">
+        {loading ?
+        <div className="flex items-center justify-center h-40 text-gray-400 text-sm">Loading users…</div> :
+        filtered.length === 0 ?
+        <div className="flex flex-col items-center justify-center h-40 text-gray-400 gap-2">
             <Users size={32} className="opacity-30" />
             <p className="text-sm">No users found.</p>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
+          </div> :
+
+        <div className={cssClass({ overflowX: "auto" })}>
             <table className="report-data-table">
               <thead>
                 <tr>
@@ -115,16 +115,16 @@ export default function UserReport() {
               </thead>
               <tbody>
                 {filtered.map((emp, idx) => {
-                  const name = `${emp.first_name ?? ""} ${emp.last_name ?? ""}`.trim();
-                  const role = emp.emp_job_title?.toLowerCase().includes("admin") ? "Admin"
-                    : emp.emp_job_title?.toLowerCase().includes("hr") ? "HR"
-                    : emp.emp_job_title?.toLowerCase().includes("manager") ? "Manager"
-                    : "Employee";
-                  const joined = emp.emp_joining_date
-                    ? new Date(emp.emp_joining_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-                    : "—";
-                  return (
-                    <tr key={emp.employee_id ?? idx}>
+                const name = `${emp.first_name ?? ""} ${emp.last_name ?? ""}`.trim();
+                const role = emp.emp_job_title?.toLowerCase().includes("admin") ? "Admin" :
+                emp.emp_job_title?.toLowerCase().includes("hr") ? "HR" :
+                emp.emp_job_title?.toLowerCase().includes("manager") ? "Manager" :
+                "Employee";
+                const joined = emp.emp_joining_date ?
+                new Date(emp.emp_joining_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) :
+                "—";
+                return (
+                  <tr key={emp.employee_id ?? idx}>
                       <td><input type="checkbox" className="report-checkbox" aria-label={`Select ${name}`} /></td>
                       <td className="text-gray-500">{emp.emp_code ?? "—"}</td>
                       <td>
@@ -147,14 +147,14 @@ export default function UserReport() {
                       <td>
                         <ReportStatusBadge status={emp.employee_status === "Active" ? "Active" : "Inactive"} />
                       </td>
-                    </tr>
-                  );
-                })}
+                    </tr>);
+
+              })}
               </tbody>
             </table>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }

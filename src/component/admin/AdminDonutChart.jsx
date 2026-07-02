@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import "./adminCharts.css";
+import "./adminCharts.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 
 function polarToCartesian(cx, cy, radius, angleDeg) {
-  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
+  const angleRad = (angleDeg - 90) * Math.PI / 180;
   return {
     x: cx + radius * Math.cos(angleRad),
-    y: cy + radius * Math.sin(angleRad),
+    y: cy + radius * Math.sin(angleRad)
   };
 }
 
@@ -23,7 +23,7 @@ export default function AdminDonutChart({
   centerValue,
   centerLabel = "Total",
   size = 160,
-  strokeWidth = 22,
+  strokeWidth = 22
 }) {
   const total = useMemo(
     () => segments.reduce((sum, s) => sum + (s.value || 0), 0),
@@ -37,13 +37,13 @@ export default function AdminDonutChart({
     const radius = (size - strokeWidth) / 2;
 
     return segments.map((seg) => {
-      const slice = total ? (seg.value / total) * 360 : 0;
+      const slice = total ? seg.value / total * 360 : 0;
       const start = cursor;
       const end = cursor + slice;
       cursor = end;
       return {
         ...seg,
-        d: describeArc(cx, cy, radius, start, end - 0.5),
+        d: describeArc(cx, cy, radius, start, end - 0.5)
       };
     });
   }, [segments, total, size, strokeWidth]);
@@ -52,17 +52,17 @@ export default function AdminDonutChart({
 
   return (
     <div className="admin-chart">
-      {(title || subtitle) && (
-        <div className="admin-chart__header">
+      {(title || subtitle) &&
+      <div className="admin-chart__header">
           <div>
             {title && <p className="admin-chart__title">{title}</p>}
             {subtitle && <p className="admin-chart__subtitle">{subtitle}</p>}
           </div>
         </div>
-      )}
+      }
 
       <div className="admin-donut">
-        <div className="admin-donut__svg-wrap" style={{ width: size, height: size }}>
+        <div className={joinClasses("admin-donut__svg-wrap", cssClass({ width: size, height: size }))}>
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
             <circle
               cx={size / 2}
@@ -70,19 +70,19 @@ export default function AdminDonutChart({
               r={(size - strokeWidth) / 2}
               fill="none"
               stroke="#f3f4f6"
-              strokeWidth={strokeWidth}
-            />
+              strokeWidth={strokeWidth} />
+            
             {arcs.map((arc) =>
-              arc.value > 0 ? (
-                <path
-                  key={arc.label}
-                  d={arc.d}
-                  fill="none"
-                  stroke={arc.color}
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="butt"
-                />
-              ) : null
+            arc.value > 0 ?
+            <path
+              key={arc.label}
+              d={arc.d}
+              fill="none"
+              stroke={arc.color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="butt" /> :
+
+            null
             )}
           </svg>
           <div className="admin-donut__center">
@@ -92,27 +92,27 @@ export default function AdminDonutChart({
         </div>
 
         <div className="admin-donut__legend">
-          {segments.map((seg) => (
-            <div key={seg.label} className="admin-donut__legend-row">
+          {segments.map((seg) =>
+          <div key={seg.label} className="admin-donut__legend-row">
               <span className="admin-donut__legend-label">
                 <span
-                  className="admin-chart__swatch"
-                  style={{ background: seg.color, width: 10, height: 10 }}
-                />
+                className={joinClasses("admin-chart__swatch", cssClass(
+                  { background: seg.color, width: 10, height: 10 }))} />
+              
                 {seg.label}
               </span>
               <span className="admin-donut__legend-value">
                 {seg.value}
-                {total > 0 && (
-                  <span className="text-gray-400 font-normal ml-1">
-                    ({Math.round((seg.value / total) * 100)}%)
+                {total > 0 &&
+              <span className="text-gray-400 font-normal ml-1">
+                    ({Math.round(seg.value / total * 100)}%)
                   </span>
-                )}
+              }
               </span>
             </div>
-          ))}
+          )}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

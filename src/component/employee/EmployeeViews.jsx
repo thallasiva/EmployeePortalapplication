@@ -2,16 +2,16 @@ import React from "react";
 import { Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EmployeeStatusBadge } from "../../utils/employeeStatus";
-import
-{
+import {
+
   formatEmployeeId,
   getDepartmentName,
   getDeptBadgeClass,
   getEmployeeDisplayName,
-  getEmployeeInitials,
-} from "../../utils/employeeDisplay";
+  getEmployeeInitials } from
+"../../utils/employeeDisplay";
 import { avatarDataUri } from "../../lib/placeholders";
-import "./employee.css";
+import "./employee.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 
 export default function EmployeeGridCard({ employee })
 {
@@ -21,15 +21,15 @@ export default function EmployeeGridCard({ employee })
 
   return (
     <article
-      className="emp-card"
-      onClick={() => navigate(`/dashboard/employee/${employee.employee_id}`)}
-      style={{ cursor: "pointer" }}
-    >
+      className={joinClasses("emp-card", cssClass(
+
+        { cursor: "pointer" }))} onClick={() => navigate(`/dashboard/employee/${employee.employee_id}`)}>
+      
       <img
         className="emp-card__avatar"
         src={avatarDataUri(employee.employee_id, 72)}
-        alt={name}
-      />
+        alt={name} />
+      
       <h3 className="emp-card__name">{name}</h3>
       <p className="emp-card__title">{employee.emp_job_title}</p>
       <p className="emp-card__id">{formatEmployeeId(employee)}</p>
@@ -49,13 +49,13 @@ export default function EmployeeGridCard({ employee })
           {employee.mobile}
         </span>
       </div>
-      {employee.assigned_member && (
-        <p className="emp-card__assigned">
+      {employee.assigned_member &&
+      <p className="emp-card__assigned">
           Assigned to: <strong>{employee.assigned_member}</strong>
         </p>
-      )}
-    </article>
-  );
+      }
+    </article>);
+
 }
 
 export function EmployeeListTable({ employees })
@@ -115,12 +115,12 @@ export function EmployeeListTable({ employees })
           </tr>
         </thead>
         <tbody>
-          {employees.map((p) => (
-            <tr
-              key={p.employee_id}
-              onClick={() => navigate(`/dashboard/employee/${p.employee_id}`)}
-              style={{ cursor: "pointer" }}
-            >
+          {employees.map((p) =>
+          <tr
+            key={p.employee_id}
+            onClick={() => navigate(`/dashboard/employee/${p.employee_id}`)} className={cssClass(
+              { cursor: "pointer" })}>
+            
               <td className="emp-table__id">{formatEmployeeId(p)}</td>
               <td className="emp-table__sticky-col">
                 <div className="emp-table__name-cell">
@@ -132,7 +132,7 @@ export function EmployeeListTable({ employees })
               <td><span className="emp-table__role">{p.emp_job_title}</span></td>
               <td>{p.email}</td>
               <td>{p.mobile}</td>
-              <td><EmployeeStatusBadge employee={p} style={{ fontSize:10, padding:"2px 8px" }} /></td>
+              <td><EmployeeStatusBadge employee={p} className={cssClass({ fontSize: 10, padding: "2px 8px" })} /></td>
               <td>{p.emp_joining_date || "—"}</td>
               <td>{p.gender || "—"}</td>
               <td>{p.dob || "—"}</td>
@@ -172,9 +172,9 @@ export function EmployeeListTable({ employees })
               <td>{p.has_left_organization ? "Yes" : "No"}</td>
               <td>{p.emp_exit_date || "—"}</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
-    </div>
-  );
+    </div>);
+
 }

@@ -6,15 +6,15 @@ import { createEmployee, listEmployees } from "../../api/employee.api";
 import { listDepartments } from "../../api/department.api";
 import { getErrorMessage } from "../../api/client";
 import { errorToast } from "../../utils/ToastControllers";
-import "../../component/employee/employee.css";
+import "../../component/employee/employee.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 
 const STEPS = [
-  { id: 0, label: "Personal Info" },
-  { id: 1, label: "Employment" },
-  { id: 2, label: "Compensation" },
-  { id: 3, label: "Bank" },
-  { id: 4, label: "Review" },
-];
+{ id: 0, label: "Personal Info" },
+{ id: 1, label: "Employment" },
+{ id: 2, label: "Compensation" },
+{ id: 3, label: "Bank" },
+{ id: 4, label: "Review" }];
+
 
 const INITIAL_VALUES = {
   employee_id: "",
@@ -77,7 +77,7 @@ const INITIAL_VALUES = {
   emergency_contact_phone: "",
   permanent_address_line1: "",
   permanent_address_line2: "",
-  permanent_address_line3: "",
+  permanent_address_line3: ""
 };
 
 function validateStep(step, values) {
@@ -109,8 +109,8 @@ function Field({ label, required, error, children }) {
       </label>
       {children}
       {error && <p className="emp-field__error">{error}</p>}
-    </div>
-  );
+    </div>);
+
 }
 
 export default function CreateEmployee() {
@@ -124,12 +124,12 @@ export default function CreateEmployee() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    listDepartments()
-      .then(setDepartments)
-      .catch((err) => errorToast(getErrorMessage(err, "Failed to load departments")));
-    listEmployees({ limit: 200 })
-      .then(({ data }) => setMembers(data))
-      .catch((err) => errorToast(getErrorMessage(err, "Failed to load employees")));
+    listDepartments().
+    then(setDepartments).
+    catch((err) => errorToast(getErrorMessage(err, "Failed to load departments")));
+    listEmployees({ limit: 200 }).
+    then(({ data }) => setMembers(data)).
+    catch((err) => errorToast(getErrorMessage(err, "Failed to load employees")));
   }, []);
 
   const setField = (name, value) => {
@@ -209,7 +209,7 @@ export default function CreateEmployee() {
           emergency_contact_phone: values.emergency_contact_phone || undefined,
           permanent_address_line1: values.permanent_address_line1 || undefined,
           permanent_address_line2: values.permanent_address_line2 || undefined,
-          permanent_address_line3: values.permanent_address_line3 || undefined,
+          permanent_address_line3: values.permanent_address_line3 || undefined
         },
         bankDetails: {
           bank_name: values.bank_name || undefined,
@@ -221,8 +221,8 @@ export default function CreateEmployee() {
           account_holder_name: values.account_holder_name || undefined,
           payment_type: values.payment_type || undefined,
           pan_number: values.pan_number || undefined,
-          uan_number: values.uan_number || undefined,
-        },
+          uan_number: values.uan_number || undefined
+        }
       });
       setShowSuccessModal(true);
     } catch (err) {
@@ -233,14 +233,14 @@ export default function CreateEmployee() {
   };
 
   const formatSalary = (val) =>
-    Number(val).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  Number(val).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
   const formatDate = (val) => {
     if (!val) return "—";
     return new Date(val).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year: "numeric",
+      year: "numeric"
     });
   };
 
@@ -252,162 +252,162 @@ export default function CreateEmployee() {
       </div>
 
       <div className="emp-stepper">
-        {STEPS.map((s, idx) => (
-          <React.Fragment key={s.id}>
+        {STEPS.map((s, idx) =>
+        <React.Fragment key={s.id}>
             <div className="emp-stepper__item">
               <span
-                className={`emp-stepper__circle ${
-                  step > s.id ? "is-done" : step === s.id ? "is-active" : ""
-                }`}
-              >
+              className={`emp-stepper__circle ${
+              step > s.id ? "is-done" : step === s.id ? "is-active" : ""}`
+              }>
+              
                 {step > s.id ? <Check size={14} /> : s.id + 1}
               </span>
               <span className={`emp-stepper__label ${step === s.id ? "is-active" : ""}`}>
                 {s.label}
               </span>
             </div>
-            {idx < STEPS.length - 1 && (
-              <div className={`emp-stepper__line ${step > s.id ? "is-done" : ""}`} />
-            )}
+            {idx < STEPS.length - 1 &&
+          <div className={`emp-stepper__line ${step > s.id ? "is-done" : ""}`} />
+          }
           </React.Fragment>
-        ))}
+        )}
       </div>
 
       <div className="emp-wizard__card">
-        {step === 0 && (
-          <>
+        {step === 0 &&
+        <>
             <h2>Personal Information</h2>
             <div className="emp-wizard__grid">
               <Field label="Employee ID" required error={errors.employee_id}>
                 <input
-                  value={values.employee_id}
-                  onChange={(e) => setField("employee_id", e.target.value)}
-                  placeholder="e.g. EMP-007"
-                />
+                value={values.employee_id}
+                onChange={(e) => setField("employee_id", e.target.value)}
+                placeholder="e.g. EMP-007" />
+              
               </Field>
               <Field label="Biometric ID">
                 <input
-                  value={values.biometric_id}
-                  onChange={(e) => setField("biometric_id", e.target.value)}
-                  placeholder="Biometric / swipe card ID"
-                />
+                value={values.biometric_id}
+                onChange={(e) => setField("biometric_id", e.target.value)}
+                placeholder="Biometric / swipe card ID" />
+              
               </Field>
               <Field label="First Name" required error={errors.first_name}>
                 <input
-                  value={values.first_name}
-                  onChange={(e) => setField("first_name", e.target.value)}
-                  placeholder="First name"
-                />
+                value={values.first_name}
+                onChange={(e) => setField("first_name", e.target.value)}
+                placeholder="First name" />
+              
               </Field>
               <Field label="Last Name" required error={errors.last_name}>
                 <input
-                  value={values.last_name}
-                  onChange={(e) => setField("last_name", e.target.value)}
-                  placeholder="Last name"
-                />
+                value={values.last_name}
+                onChange={(e) => setField("last_name", e.target.value)}
+                placeholder="Last name" />
+              
               </Field>
               <Field label="Email" required error={errors.email}>
                 <input
-                  type="email"
-                  value={values.email}
-                  onChange={(e) => setField("email", e.target.value)}
-                  placeholder="email@company.com"
-                />
+                type="email"
+                value={values.email}
+                onChange={(e) => setField("email", e.target.value)}
+                placeholder="email@company.com" />
+              
               </Field>
               <Field label="Phone" required error={errors.mobile}>
                 <input
-                  value={values.mobile}
-                  onChange={(e) => setField("mobile", e.target.value)}
-                  placeholder="Phone number"
-                />
+                value={values.mobile}
+                onChange={(e) => setField("mobile", e.target.value)}
+                placeholder="Phone number" />
+              
               </Field>
             </div>
           </>
-        )}
+        }
 
-        {step === 1 && (
-          <>
+        {step === 1 &&
+        <>
             <h2>Employment Details</h2>
             <div className="emp-wizard__grid">
               <Field label="Department" required error={errors.department_id}>
                 <select
-                  value={values.department_id}
-                  onChange={(e) => setField("department_id", e.target.value)}
-                >
+                value={values.department_id}
+                onChange={(e) => setField("department_id", e.target.value)}>
+                
                   <option value="">Select department</option>
-                  {departments.map((d) => (
-                    <option key={d.department_id} value={d.department_id}>
+                  {departments.map((d) =>
+                <option key={d.department_id} value={d.department_id}>
                       {d.department_name}
                     </option>
-                  ))}
+                )}
                 </select>
               </Field>
               <Field label="Role / Job Title" required error={errors.emp_job_title}>
                 <input
-                  value={values.emp_job_title}
-                  onChange={(e) => setField("emp_job_title", e.target.value)}
-                  placeholder="Job title / role"
-                />
+                value={values.emp_job_title}
+                onChange={(e) => setField("emp_job_title", e.target.value)}
+                placeholder="Job title / role" />
+              
               </Field>
               <Field label="Previous Designation">
                 <input
-                  value={values.previous_designation}
-                  onChange={(e) => setField("previous_designation", e.target.value)}
-                  placeholder="Designation at previous employer"
-                />
+                value={values.previous_designation}
+                onChange={(e) => setField("previous_designation", e.target.value)}
+                placeholder="Designation at previous employer" />
+              
               </Field>
               <Field label="Manager">
                 <select
-                  value={values.reporting_to}
-                  onChange={(e) => setField("reporting_to", e.target.value)}
-                >
+                value={values.reporting_to}
+                onChange={(e) => setField("reporting_to", e.target.value)}>
+                
                   <option value="none">None</option>
-                  {members.map((m) => (
-                    <option key={m.employee_id} value={m.employee_id}>
+                  {members.map((m) =>
+                <option key={m.employee_id} value={m.employee_id}>
                       {m.first_name} {m.last_name}
                     </option>
-                  ))}
+                )}
                 </select>
               </Field>
               <Field label="Assign to Specific Member">
                 <select
-                  value={values.assigned_member}
-                  onChange={(e) => setField("assigned_member", e.target.value)}
-                >
+                value={values.assigned_member}
+                onChange={(e) => setField("assigned_member", e.target.value)}>
+                
                   <option value="">None</option>
-                  {members.map((m) => (
-                    <option key={`assign-${m.employee_id}`} value={`${m.first_name} ${m.last_name}`}>
+                  {members.map((m) =>
+                <option key={`assign-${m.employee_id}`} value={`${m.first_name} ${m.last_name}`}>
                       {m.first_name} {m.last_name}
                     </option>
-                  ))}
+                )}
                 </select>
               </Field>
               <Field label="Start Date" required error={errors.emp_joining_date}>
                 <input
-                  type="date"
-                  value={values.emp_joining_date}
-                  onChange={(e) => setField("emp_joining_date", e.target.value)}
-                />
+                type="date"
+                value={values.emp_joining_date}
+                onChange={(e) => setField("emp_joining_date", e.target.value)} />
+              
               </Field>
               <Field label="Date of Confirmation">
                 <input
-                  type="date"
-                  value={values.date_of_confirmation}
-                  onChange={(e) => setField("date_of_confirmation", e.target.value)}
-                />
+                type="date"
+                value={values.date_of_confirmation}
+                onChange={(e) => setField("date_of_confirmation", e.target.value)} />
+              
               </Field>
               <Field label="Contract End Date">
                 <input
-                  type="date"
-                  value={values.contract_end_date}
-                  onChange={(e) => setField("contract_end_date", e.target.value)}
-                />
+                type="date"
+                value={values.contract_end_date}
+                onChange={(e) => setField("contract_end_date", e.target.value)} />
+              
               </Field>
               <Field label="Employment Type">
                 <select
-                  value={values.employee_type}
-                  onChange={(e) => setField("employee_type", e.target.value)}
-                >
+                value={values.employee_type}
+                onChange={(e) => setField("employee_type", e.target.value)}>
+                
                   <option value="Full-Time">Full-Time</option>
                   <option value="Part-Time">Part-Time</option>
                   <option value="Contract">Contract</option>
@@ -415,33 +415,33 @@ export default function CreateEmployee() {
               </Field>
               <Field label="Project / Cost Centre">
                 <input
-                  value={values.project_cost_centre}
-                  onChange={(e) => setField("project_cost_centre", e.target.value)}
-                  placeholder="e.g. CC-HR-001"
-                />
+                value={values.project_cost_centre}
+                onChange={(e) => setField("project_cost_centre", e.target.value)}
+                placeholder="e.g. CC-HR-001" />
+              
               </Field>
               <Field label="Previous Employer">
                 <input
-                  value={values.previous_employer}
-                  onChange={(e) => setField("previous_employer", e.target.value)}
-                  placeholder="Last company name"
-                />
+                value={values.previous_employer}
+                onChange={(e) => setField("previous_employer", e.target.value)}
+                placeholder="Last company name" />
+              
               </Field>
               <Field label="Total Exp Before Joining (yrs)">
                 <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  value={values.total_exp_before_joining}
-                  onChange={(e) => setField("total_exp_before_joining", e.target.value)}
-                  placeholder="e.g. 3.5"
-                />
+                type="number"
+                step="0.5"
+                min="0"
+                value={values.total_exp_before_joining}
+                onChange={(e) => setField("total_exp_before_joining", e.target.value)}
+                placeholder="e.g. 3.5" />
+              
               </Field>
               <Field label="BGV Status">
                 <select
-                  value={values.bgv_status}
-                  onChange={(e) => setField("bgv_status", e.target.value)}
-                >
+                value={values.bgv_status}
+                onChange={(e) => setField("bgv_status", e.target.value)}>
+                
                   <option value="">Select status</option>
                   <option value="Pending">Pending</option>
                   <option value="In Progress">In Progress</option>
@@ -452,25 +452,25 @@ export default function CreateEmployee() {
               </Field>
             </div>
           </>
-        )}
+        }
 
-        {step === 2 && (
-          <>
+        {step === 2 &&
+        <>
             <h2>Compensation</h2>
             <div className="emp-wizard__grid">
               <Field label="Annual Salary (USD)" required error={errors.ctc}>
                 <input
-                  type="number"
-                  value={values.ctc}
-                  onChange={(e) => setField("ctc", e.target.value)}
-                  placeholder="e.g. 75000"
-                />
+                type="number"
+                value={values.ctc}
+                onChange={(e) => setField("ctc", e.target.value)}
+                placeholder="e.g. 75000" />
+              
               </Field>
               <Field label="Benefits Plan">
                 <select
-                  value={values.benefits_plan}
-                  onChange={(e) => setField("benefits_plan", e.target.value)}
-                >
+                value={values.benefits_plan}
+                onChange={(e) => setField("benefits_plan", e.target.value)}>
+                
                   <option value="standard">Standard</option>
                   <option value="premium">Premium</option>
                   <option value="basic">Basic</option>
@@ -478,10 +478,10 @@ export default function CreateEmployee() {
               </Field>
             </div>
           </>
-        )}
+        }
 
-        {step === 3 && (
-          <>
+        {step === 3 &&
+        <>
             <h2>Personal &amp; Statutory Details</h2>
             <div className="emp-wizard__grid">
               <Field label="Gender">
@@ -514,10 +514,10 @@ export default function CreateEmployee() {
               </Field>
               <Field label="Educational Qualification">
                 <input
-                  value={values.educational_qualification}
-                  onChange={(e) => setField("educational_qualification", e.target.value)}
-                  placeholder="e.g. B.Tech, MBA"
-                />
+                value={values.educational_qualification}
+                onChange={(e) => setField("educational_qualification", e.target.value)}
+                placeholder="e.g. B.Tech, MBA" />
+              
               </Field>
               <Field label="Aadhaar Number">
                 <input value={values.aadhaar_number} onChange={(e) => setField("aadhaar_number", e.target.value)} />
@@ -625,10 +625,10 @@ export default function CreateEmployee() {
               </Field>
             </div>
           </>
-        )}
+        }
 
-        {step === 4 && (
-          <>
+        {step === 4 &&
+        <>
             <h2>Review &amp; Confirm</h2>
             <div className="emp-review-section">
               <h3>Personal Information</h3>
@@ -647,13 +647,13 @@ export default function CreateEmployee() {
                 <div><dt>Role</dt><dd>{values.emp_job_title}</dd></div>
                 <div><dt>Previous Designation</dt><dd>{values.previous_designation || "—"}</dd></div>
                 <div><dt>Manager</dt><dd>{
-                  values.reporting_to === "none"
-                    ? "None"
-                    : (() => {
-                        const m = members.find((x) => String(x.employee_id) === String(values.reporting_to));
-                        return m ? `${m.first_name} ${m.last_name}` : "—";
-                      })()
-                }</dd></div>
+                  values.reporting_to === "none" ?
+                  "None" :
+                  (() => {
+                    const m = members.find((x) => String(x.employee_id) === String(values.reporting_to));
+                    return m ? `${m.first_name} ${m.last_name}` : "—";
+                  })()
+                  }</dd></div>
                 <div><dt>Start Date</dt><dd>{formatDate(values.emp_joining_date)}</dd></div>
                 <div><dt>Date of Confirmation</dt><dd>{formatDate(values.date_of_confirmation)}</dd></div>
                 <div><dt>Contract End Date</dt><dd>{formatDate(values.contract_end_date)}</dd></div>
@@ -668,7 +668,7 @@ export default function CreateEmployee() {
               <h3>Compensation</h3>
               <dl className="emp-review-grid">
                 <div><dt>Salary</dt><dd>{values.ctc ? `${formatSalary(values.ctc)}/yr` : "—"}</dd></div>
-                <div><dt>Benefits</dt><dd style={{ textTransform: "capitalize" }}>{values.benefits_plan}</dd></div>
+                <div><dt>Benefits</dt><dd className={cssClass({ textTransform: "capitalize" })}>{values.benefits_plan}</dd></div>
               </dl>
             </div>
             <div className="emp-review-section">
@@ -685,38 +685,38 @@ export default function CreateEmployee() {
               </dl>
             </div>
           </>
-        )}
+        }
       </div>
 
       <div className="emp-wizard__footer">
-        {step > 0 ? (
-          <button type="button" className="emp-wizard__btn emp-wizard__btn--prev" onClick={goPrev}>
+        {step > 0 ?
+        <button type="button" className="emp-wizard__btn emp-wizard__btn--prev" onClick={goPrev}>
             <ChevronLeft size={16} />
             Previous
-          </button>
-        ) : (
-          <span />
-        )}
+          </button> :
+
+        <span />
+        }
         <div className="emp-wizard__footer-right">
           <button type="button" className="emp-wizard__btn emp-wizard__btn--cancel" onClick={() => navigate("/dashboard/employee")}>
             Cancel
           </button>
-          {step < STEPS.length - 1 ? (
-            <button type="button" className="emp-wizard__btn emp-wizard__btn--next" onClick={goNext}>
+          {step < STEPS.length - 1 ?
+          <button type="button" className="emp-wizard__btn emp-wizard__btn--next" onClick={goNext}>
               Next
               <ChevronRight size={16} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="emp-wizard__btn emp-wizard__btn--create disabled:opacity-60"
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
+            </button> :
+
+          <button
+            type="button"
+            className="emp-wizard__btn emp-wizard__btn--create disabled:opacity-60"
+            onClick={handleSubmit}
+            disabled={submitting}>
+            
               <Check size={16} />
               {submitting ? "Creating..." : "Create Employee"}
             </button>
-          )}
+          }
         </div>
       </div>
 
@@ -726,8 +726,8 @@ export default function CreateEmployee() {
         message="Employee created successfully."
         okLabel="Ok"
         onConfirm={() => navigate("/dashboard/employee")}
-        onClose={() => navigate("/dashboard/employee")}
-      />
-    </div>
-  );
+        onClose={() => navigate("/dashboard/employee")} />
+      
+    </div>);
+
 }

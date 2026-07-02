@@ -142,6 +142,15 @@ const { upload: uploadConfig } = require('./config/env');
 const uploadDir = require('path').resolve(process.cwd(), uploadConfig.dir);
 app.use('/uploads', express.static(uploadDir, { index: false }));
 
+// ── Health check ───────────────────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    env,
+    database: req.app.locals.dbConnected ? 'connected' : 'disconnected',
+  });
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api', routes);
 

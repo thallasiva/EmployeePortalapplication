@@ -19,7 +19,7 @@
  *   <SafeHTML html={serverContent} as="span" className="prose" />
  */
 import React, { memo, useMemo } from "react";
-import { safeHtml } from "../utils/sanitize";
+import { safeHtml } from "../utils/sanitize";import { cssClass, joinClasses } from "../utils/classStyles";
 
 const SafeHTML = memo(function SafeHTML({ html, as: Tag = "div", className, style, ...rest }) {
   // Memoised so sanitisation only runs when html changes
@@ -27,12 +27,12 @@ const SafeHTML = memo(function SafeHTML({ html, as: Tag = "div", className, styl
 
   return (
     <Tag
-      className={className}
-      style={style}
+      className={joinClasses(className, cssClass(
+        style))}
       dangerouslySetInnerHTML={sanitised}
-      {...rest}
-    />
-  );
+      {...rest} />);
+
+
 });
 
 export default SafeHTML;

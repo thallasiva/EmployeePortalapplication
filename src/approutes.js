@@ -1,6 +1,6 @@
 // AppRoutes.jsx
 
-import React from "react";
+import React, { lazy } from "react";
 import {
   Navigate,
   Route,
@@ -8,20 +8,22 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import Layout from "./component/layout";
-
-import AdminRoutes from "./routes/AdminRoutes";
-import EmployeeRoutes from "./routes/EmployeeRoutes";
-import ManagerRoutes from "./routes/ManagerRoutes";
-import RecruiterRoutes from "./routes/RecruiterRoutes";
-
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import Register from "./pages/Register";
-import PayslipPrintView from "./pages/payslip/PayslipPrintView";
+import LazyPage from "./routes/LazyPage";
+import PerformanceDemoRoute from "./routes/PerformanceDemoRoute";
 import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager, isRecruitmentRole } from "./data/auth";
 
-const AppRoutes = () => {
+const Layout = lazy(() => import("./component/layout"));
+const AdminRoutes = lazy(() => import("./routes/AdminRoutes"));
+const EmployeeRoutes = lazy(() => import("./routes/EmployeeRoutes"));
+const ManagerRoutes = lazy(() => import("./routes/ManagerRoutes"));
+const RecruiterRoutes = lazy(() => import("./routes/RecruiterRoutes"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Register = lazy(() => import("./pages/Register"));
+const PayslipPrintView = lazy(() => import("./pages/payslip/PayslipPrintView"));
+
+const AppRoutes = () =>
+{
   const location = useLocation();
   const user = getStoredUser();
   void location.key;
@@ -38,38 +40,37 @@ const AppRoutes = () => {
       {/* AUTH */}
       <Route
         path="/login"
-        element={<Login />}
+        element={<LazyPage label="Loading login..."><Login /></LazyPage>}
       />
 
       <Route
         path="/forgotpwd"
-        element={<ForgotPassword />}
+        element={<LazyPage label="Loading reset page..."><ForgotPassword /></LazyPage>}
       />
 
       <Route
         path="/register"
-        element={<Register />}
+        element={<LazyPage label="Loading registration..."><Register /></LazyPage>}
       />
 
-      {/* PRINTABLE PAYSLIP — full-page view, accessible to any authenticated user
-          (the backend enforces self-access or payroll:view permission) */}
+      {/* PRINTABLE PAYSLIP */}
       <Route
         path="/payslip/:id/print"
-        element={user ? <PayslipPrintView /> : <Navigate to="/login" replace />}
+        element={user ? <LazyPage label="Loading payslip..."><PayslipPrintView /></LazyPage> : <Navigate to="/login" replace />}
       />
+
+      <Route path="/performance-showcase" element={<PerformanceDemoRoute />} />
 
       {/* ADMIN */}
       <Route
         path="/dashboard/*"
         element={
-          isAdmin(user) ? (
-            <Layout />
-          ) : (
-            <Navigate to={getHomePath(user)} replace />
-          )
+          user
+            ? <Layout />
+            : <Navigate to="/login" replace />
         }
       >
-        <Route path="*" element={<AdminRoutes />} />
+        <Route path="*" element={<LazyPage label="Loading admin module..."><AdminRoutes /></LazyPage>} />
       </Route>
 
       {/* REPORTING MANAGER */}
@@ -83,14 +84,14 @@ const AppRoutes = () => {
           )
         }
       >
-        <Route path="*" element={<ManagerRoutes />} />
+        <Route path="*" element={<LazyPage label="Loading manager module..."><ManagerRoutes /></LazyPage>} />
       </Route>
 
-      {/* EMPLOYEE */}
+      {/* EMPLOYEE - also allow recruiter roles so their sidebar employee links work */}
       <Route
         path="/employee/*"
         element={
-          isEmployee(user) || isReportingManager(user) ? (
+          isEmployee(user) || isReportingManager(user) || isRecruitmentRole(user) ? (
             <Layout />
           ) : (
             <Navigate to={getHomePath(user)} replace />
@@ -99,7 +100,7 @@ const AppRoutes = () => {
       >
         <Route
           path="*"
-          element={<EmployeeRoutes />}
+          element={<LazyPage label="Loading employee module..."><EmployeeRoutes /></LazyPage>}
         />
       </Route>
 
@@ -114,7 +115,7 @@ const AppRoutes = () => {
           )
         }
       >
-        <Route path="*" element={<RecruiterRoutes />} />
+        <Route path="*" element={<LazyPage label="Loading recruitment module..."><RecruiterRoutes /></LazyPage>} />
       </Route>
 
     </Routes>

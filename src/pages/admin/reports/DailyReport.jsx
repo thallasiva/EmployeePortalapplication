@@ -4,10 +4,10 @@ import {
   ReportIconStatCard,
   ReportTableToolbar,
   ReportAvatar,
-  ReportStatusBadge,
-} from "../../../component/reports/ReportsLayout";
+  ReportStatusBadge } from
+"../../../component/reports/ReportsLayout";
 import ReportLineChart from "../../../component/reports/ReportLineChart";
-import { DAILY_STATS, DAILY_LINE, DAILY_LIST } from "../../../data/reportsData";
+import { DAILY_STATS, DAILY_LINE, DAILY_LIST } from "../../../data/reportsData";import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 export default function DailyReport() {
   return (
@@ -16,9 +16,9 @@ export default function DailyReport() {
 
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {DAILY_STATS.map((stat) => (
-            <ReportIconStatCard key={stat.label} {...stat} icon="●" />
-          ))}
+          {DAILY_STATS.map((stat) =>
+          <ReportIconStatCard key={stat.label} {...stat} icon="●" />
+          )}
         </div>
         <div className="report-chart-card">
           <div className="report-chart-card__header">
@@ -34,14 +34,14 @@ export default function DailyReport() {
             present={DAILY_LINE.present}
             absent={DAILY_LINE.absent}
             labels={DAILY_LINE.labels}
-            absentColor="#ef4444"
-          />
+            absentColor="#ef4444" />
+          
         </div>
       </div>
 
       <div className="report-table-section">
         <ReportTableToolbar title="Daily Attendance List" />
-        <div style={{ overflowX: "auto" }}>
+        <div className={cssClass({ overflowX: "auto" })}>
           <table className="report-data-table">
             <thead>
               <tr>
@@ -52,8 +52,8 @@ export default function DailyReport() {
               </tr>
             </thead>
             <tbody>
-              {DAILY_LIST.map((row) => (
-                <tr key={`${row.name}-${row.date}`}>
+              {DAILY_LIST.map((row) =>
+              <tr key={`${row.name}-${row.date}`}>
                   <td>
                     <div className="report-person-cell">
                       <ReportAvatar name={row.name} />
@@ -67,11 +67,11 @@ export default function DailyReport() {
                   <td>{row.department}</td>
                   <td><ReportStatusBadge status={row.status} /></td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

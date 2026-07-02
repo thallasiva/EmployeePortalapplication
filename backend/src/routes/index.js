@@ -42,4 +42,6 @@ router.use('/work-schedules', require('./workSchedule.routes'));
 router.use('/reports', require('./report.routes'));
 router.use('/dashboard', require('./dashboard.routes'));
 
+router.use('/recruitment', require('../controllers/recruitment/recruitment.routes'));
+
 module.exports = router;

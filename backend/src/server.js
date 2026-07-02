@@ -3,6 +3,44 @@ const { port, env, jwt, salaryEncryptionKey } = require('./config/env');
 const { testConnection, query } = require('./config/db');
 const logger = require('./utils/logger');
 
+function getPreferredPort(startPort) {
+  const requestedPort = Number(startPort);
+  if (!Number.isFinite(requestedPort) || requestedPort <= 0) {
+    return 5000;
+  }
+  return requestedPort;
+}
+
+function listenWithFallback(startPort) {
+  return new Promise((resolve, reject) => {
+    const tryListen = (candidatePort, attempt) => {
+      const server = app.listen(candidatePort, () => {
+        logger.info(`HRMS backend listening on http://localhost:${candidatePort}`);
+        resolve(server);
+      });
+
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE' && attempt < 10) {
+          logger.warn(`Port ${candidatePort} is already in use. Trying ${candidatePort + 1}...`);
+          server.close(() => tryListen(candidatePort + 1, attempt + 1));
+          return;
+        }
+
+        if (err.code === 'EADDRINUSE') {
+          logger.error(`Unable to start backend: no free port found after trying ${candidatePort}.`);
+          reject(err);
+          return;
+        }
+
+        logger.error('Backend server failed to start:', err.message);
+        reject(err);
+      });
+    };
+
+    tryListen(getPreferredPort(startPort), 1);
+  });
+}
+
 // ── Auto-migrations ──────────────────────────────────────────────────────────
 // Safely adds missing columns on every startup (idempotent).
 // Uses information_schema so it never errors if the column already exists.
@@ -245,31 +283,25 @@ function enforceSecrets() {
 enforceSecrets();
 
 (async () => {
+  let dbReady = false;
+
   try {
     await testConnection();
+    dbReady = true;
     logger.info('Connected to MySQL database');
   } catch (err) {
-    logger.error('Failed to connect to MySQL database:', err.message);
-    logger.error('Make sure the database is running and .env is configured correctly.');
-    process.exit(1);
+    logger.warn('Database unavailable at startup:', err.message);
+    logger.warn('The backend will continue in degraded mode. Configure MySQL and restart to enable full database features.');
   }
 
-  await runAutoMigrations();
+  app.locals.dbConnected = dbReady;
+
+  if (dbReady) {
+    await runAutoMigrations();
+  }
   startCronJobs();
 
-  const server = app.listen(port, () => {
-    logger.info(`HRMS backend listening on http://localhost:${port}`);
-  });
-
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      logger.error(`Port ${port} is already in use. Stop the existing backend process or set PORT to another value in backend/.env.`);
-      process.exit(1);
-    }
-
-    logger.error('Backend server failed to start:', err.message);
-    process.exit(1);
-  });
+  const server = await listenWithFallback(port);
 
   const shutdown = (signal) => {
     logger.info(`${signal} received, shutting down...`);

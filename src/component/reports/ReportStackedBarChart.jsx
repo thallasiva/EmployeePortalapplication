@@ -1,11 +1,11 @@
-import React from "react";
+import React from "react";import { cssClass, joinClasses } from "../../utils/classStyles";
 
 const LEAVE_SERIES = [
-  { key: "annual", color: "#22c55e", name: "Annual" },
-  { key: "casual", color: "#eab308", name: "Casual" },
-  { key: "medical", color: "#1e293b", name: "Medical" },
-  { key: "others", color: "#f97316", name: "Others" },
-];
+{ key: "annual", color: "#22c55e", name: "Annual" },
+{ key: "casual", color: "#eab308", name: "Casual" },
+{ key: "medical", color: "#1e293b", name: "Medical" },
+{ key: "others", color: "#f97316", name: "Others" }];
+
 
 export default function ReportStackedBarChart({ data }) {
   const yMax = 100;
@@ -23,11 +23,11 @@ export default function ReportStackedBarChart({ data }) {
         </select>
       </div>
       <div className="report-bar-legend">
-        {LEAVE_SERIES.map((s) => (
-          <span key={s.key}>
-            <i style={{ background: s.color }} /> {s.name}
+        {LEAVE_SERIES.map((s) =>
+        <span key={s.key}>
+            <i className={cssClass({ background: s.color })} /> {s.name}
           </span>
-        ))}
+        )}
       </div>
       <div className="report-stacked-chart">
         {data.map((row) => {
@@ -35,25 +35,25 @@ export default function ReportStackedBarChart({ data }) {
           return (
             <div key={row.label} className="report-stacked-col">
               <div
-                className="report-stacked-bars"
-                style={{ height: `${(total / yMax) * 100}%` }}
-              >
-                {LEAVE_SERIES.map((s) => (
-                  <div
-                    key={s.key}
-                    className="report-stacked-seg"
-                    style={{
-                      height: total ? `${((row[s.key] || 0) / total) * 100}%` : 0,
-                      background: s.color,
-                    }}
-                  />
-                ))}
+                className={joinClasses("report-stacked-bars", cssClass(
+                  { height: `${total / yMax * 100}%` }))}>
+                
+                {LEAVE_SERIES.map((s) =>
+                <div
+                  key={s.key}
+                  className={joinClasses("report-stacked-seg", cssClass(
+                    {
+                      height: total ? `${(row[s.key] || 0) / total * 100}%` : 0,
+                      background: s.color
+                    }))} />
+
+                )}
               </div>
               <span className="report-stacked-label">{row.label}</span>
-            </div>
-          );
+            </div>);
+
         })}
       </div>
-    </div>
-  );
+    </div>);
+
 }

@@ -3,21 +3,21 @@ import { isAdmin, isReportingManager } from "../data/auth";
 import { API_BASE_URL } from "../api/client";
 
 // Strip trailing "/api" to get the server origin for static file URLs
-const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+import { cssClass, joinClasses } from "../utils/classStyles";const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 export const Navbar = ({ toggleSidebar, user }) => {
   const displayName = user?.name || user?.email || "User";
-  const roleLabel = isAdmin(user)
-    ? "Administrator"
-    : isReportingManager(user)
-    ? "Reporting Manager"
-    : "Employee";
+  const roleLabel = isAdmin(user) ?
+  "Administrator" :
+  isReportingManager(user) ?
+  "Reporting Manager" :
+  "Employee";
 
   // profile_photo stored as "/uploads/filename.jpg" — prepend server origin
   const rawPhoto = user?.profilePhoto || null;
-  const photoUrl = rawPhoto
-    ? rawPhoto.startsWith("http") ? rawPhoto : `${SERVER_ORIGIN}${rawPhoto}`
-    : null;
+  const photoUrl = rawPhoto ?
+  rawPhoto.startsWith("http") ? rawPhoto : `${SERVER_ORIGIN}${rawPhoto}` :
+  null;
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2 bg-white border-b border-gray-200 shadow-sm">
@@ -28,8 +28,8 @@ export const Navbar = ({ toggleSidebar, user }) => {
           type="button"
           onClick={toggleSidebar}
           className="p-2 rounded-lg text-gray-500 hover:bg-orange-50 hover:text-brand transition-colors"
-          aria-label="Toggle sidebar"
-        >
+          aria-label="Toggle sidebar">
+          
           <Menu size={22} />
         </button>
 
@@ -43,33 +43,33 @@ export const Navbar = ({ toggleSidebar, user }) => {
         </div>
 
         {/* Profile picture or avatar icon */}
-        {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt={displayName}
-            onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
-            style={{
+        {photoUrl ?
+        <img
+          src={photoUrl}
+          alt={displayName}
+          onError={(e) => {e.target.style.display = "none";e.target.nextSibling.style.display = "flex";}} className={cssClass(
+            {
               width: 38, height: 38, borderRadius: "50%",
               objectFit: "cover", border: "2px solid #fed7aa",
-              flexShrink: 0,
-            }}
-          />
-        ) : null}
+              flexShrink: 0
+            })} /> :
+
+        null}
 
         {/* Fallback avatar — shown when no photo OR img fails to load */}
         <div
-          style={{
-            width: 38, height: 38, borderRadius: "50%",
-            background: "#fff7ed", border: "2px solid #fed7aa",
-            display: photoUrl ? "none" : "flex",
-            alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}
-          aria-hidden
-        >
-          <User size={20} style={{ color: "#f18200" }} strokeWidth={1.8} />
+
+
+
+
+
+
+
+          aria-hidden className={cssClass({ width: 38, height: 38, borderRadius: "50%", background: "#fff7ed", border: "2px solid #fed7aa", display: photoUrl ? "none" : "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 })}>
+          
+          <User size={20} strokeWidth={1.8} className={cssClass({ color: "#f18200" })} />
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 };

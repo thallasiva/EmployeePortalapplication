@@ -1,4 +1,4 @@
-/**
+import { cssClass, joinClasses } from "./classStyles"; /**
  * Canonical employee status resolution.
  *
  * Priority:
@@ -37,16 +37,16 @@ export function getEmployeeStatus(employee) {
 export function EmployeeStatusBadge({ employee, style = {} }) {
   const { label, bg, color, border } = getEmployeeStatus(employee);
   return (
-    <span style={{
+    <span className={cssClass({
       display: "inline-flex", alignItems: "center", gap: 5,
       fontSize: 11, fontWeight: 600, padding: "3px 10px",
       borderRadius: 999, background: bg, color, border: `1px solid ${border}`,
-      whiteSpace: "nowrap", ...style,
-    }}>
-      {label === "Active" && (
-        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", flexShrink: 0 }} />
-      )}
+      whiteSpace: "nowrap", ...style
+    })}>
+      {label === "Active" &&
+      <span className={cssClass({ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", flexShrink: 0 })} />
+      }
       {label}
-    </span>
-  );
+    </span>);
+
 }

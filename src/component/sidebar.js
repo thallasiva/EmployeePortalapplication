@@ -33,7 +33,7 @@ import
   Award,
   UserSearch,
 } from "lucide-react";
-import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, ROLE_ADMIN, logoutUser } from "../data/auth";
+import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
 
 const BRAND_NAME = "NAT IT";
@@ -261,10 +261,33 @@ export const Sidebar = ({ open }) =>
     navigationLink: "/manager",
   };
 
-  const recruitmentItem = {
+  // Hiring sidebar for Recruiter Team Lead — full management access
+  const hiringItemTL = {
     label: "Recruitment",
-    icon: <UserSearch size={20} strokeWidth={1.75} />,
-    navigationLink: "/recruiter/recruitment",
+    icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
+    badge: "New",
+    children: [
+      { label: "Dashboard",   navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "Jobs",        navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Candidates",  navigationLink: "/recruiter/recruitment?page=candidates" },
+      { label: "Interviews",  navigationLink: "/recruiter/recruitment?page=interviews" },
+      { label: "Offers",      navigationLink: "/recruiter/recruitment?page=offers" },
+      { label: "Onboarding",  navigationLink: "/recruiter/recruitment?page=onboarding" },
+      { label: "Reports",     navigationLink: "/recruiter/recruitment?page=reports" },
+    ],
+  };
+
+  // Hiring sidebar for Recruiter — limited to own tasks
+  const hiringItemRecruiter = {
+    label: "Recruitment",
+    icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
+    badge: "New",
+    children: [
+      { label: "My Dashboard",  navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "My Jobs",       navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Candidates",    navigationLink: "/recruiter/recruitment?page=candidates" },
+      { label: "Interviews",    navigationLink: "/recruiter/recruitment?page=interviews" },
+    ],
   };
 
   const employeeItems = [
@@ -392,15 +415,21 @@ export const Sidebar = ({ open }) =>
     },
   ];
 
-  const roleExtraItems = [
-    ...(isReportingManager(user) ? [teamOverviewItem] : []),
-    ...(isRecruitmentRole(user) ? [recruitmentItem] : []),
-  ];
+  // Build role-aware hiring entry for recruiter roles
+  const hiringEntry = isRecruiterLead(user) ? hiringItemTL : hiringItemRecruiter;
+
+  // Replace the plain "Hiring" entry in employeeItems with the role-expanded one for recruiters
+  // For recruiter roles: Recruitment goes first, then remaining employee items
+  const employeeItemsWithoutHiring = employeeItems.filter(item => item.label !== "Hiring");
+  const employeeItemsForRecruiters = [hiringEntry, ...employeeItemsWithoutHiring];
 
   const items = isAdmin(user)
     ? adminItems
-    : [...roleExtraItems, ...employeeItems];
-
+    : isReportingManager(user)
+      ? [teamOverviewItem, ...employeeItems]
+      : isRecruitmentRole(user)
+        ? employeeItemsForRecruiters
+        : employeeItems;
   const toggleAccordion = (index) =>
   {
     setExpanded(expanded === index ? null : index);
@@ -434,6 +463,7 @@ export const Sidebar = ({ open }) =>
       active ? "sidebar-menu-item-active" : "",
       childActive && !active ? "sidebar-menu-item-parent-active" : "",
       !open ? "justify-center px-2" : "",
+      "cursor-pointer",
     ]
       .filter(Boolean)
       .join(" ");
@@ -442,70 +472,33 @@ export const Sidebar = ({ open }) =>
     [
       "sidebar-child-item",
       active ? "sidebar-child-item-active" : "",
+      "cursor-pointer",
     ]
       .filter(Boolean)
       .join(" ");
 
   return (
-    <aside style={{
-      position: "relative",
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      background: "#fff",
-      borderRight: "1px solid #f0f0f0",
-      transition: "width .25s cubic-bezier(.4,0,.2,1)",
-      width: open ? 248 : 68,
-      flexShrink: 0,
-      fontFamily: "'Inter', 'Plus Jakarta Sans', system-ui, sans-serif",
-    }}>
+    <aside className={[
+      "relative flex h-screen shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
+      open ? "w-[248px]" : "w-[68px]",
+    ].join(" ")}>
 
       {/* ── Logo ──────────────────────────────────────────────────────────── */}
-      <div style={{
-        display: "flex", alignItems: "center",
-        padding: open ? "12px 16px" : "12px 14px",
-        borderBottom: "1px solid #f5f5f5",
-        minHeight: 68, gap: 10,
-        justifyContent: open ? "flex-start" : "center",
-      }}>
-        {open ? (
-          /* Expanded — full logo image */
-          <img
-            src="https://www.natit.in/assets/images/logo.png"
-            alt="NAT IT"
-            style={{ height: 44, maxWidth: 160, objectFit: "contain" }}
-            onError={e =>
-            {
-              e.target.style.display = "none";
-              e.target.nextSibling.style.display = "flex";
-            }}
-          />
-        ) : (
-          /* Collapsed — small logo icon */
-          <img
-            src="https://www.natit.in/assets/images/logo.png"
-            alt="NAT IT"
-            style={{ width: 36, height: 36, objectFit: "contain" }}
-            onError={e =>
-            {
-              e.target.style.display = "none";
-              e.target.nextSibling.style.display = "flex";
-            }}
-          />
-        )}
+      <div className={[
+        "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
+        open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3",
+      ].join(" ")}>
+        
         {/* Fallback if logo fails to load */}
-        <div style={{
-          display: "none", width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-          background: "linear-gradient(135deg,#f18200,#fb923c)",
-          alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 8px rgba(241,130,0,.35)",
-        }}>
-          <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", letterSpacing: -1 }}>N</span>
-        </div>
+        <img
+            src="https://www.natit.in/assets/images/logo.png"
+            alt="logo"
+          />
+       
       </div>
 
       {/* ── Nav ───────────────────────────────────────────────────────────── */}
-      <nav style={{ flex: 1, overflowY: "auto", padding: "10px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2.5">
         {items.map((item, index) =>
         {
           const childActive = item.children?.some((child) =>
@@ -519,20 +512,20 @@ export const Sidebar = ({ open }) =>
               <div key={index} className={menuItemClass(active)}
                 onClick={() => navigate(item.navigationLink)}
                 title={!open ? item.label : undefined}
-                style={{ minHeight: 38 }}>
-                <span style={{ flexShrink: 0, color: active ? "#fff" : "#9ca3af", display: "flex" }}>
+              >
+                <span className={[
+                  "flex shrink-0",
+                  active ? "text-white" : "text-gray-400",
+                ].join(" ")}>
                   {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open && (
                   <>
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span style={{
-                        flexShrink: 0, fontSize: 9, fontWeight: 700, letterSpacing: ".04em",
-                        padding: "1px 6px", borderRadius: 999, background: "#ef4444", color: "#fff"
-                      }}>{item.badge}</span>
+                      <span className="shrink-0 rounded-full bg-red-500 px-1.5 py-px text-[9px] font-bold tracking-wide text-white">{item.badge}</span>
                     )}
                   </>
                 )}
@@ -545,30 +538,30 @@ export const Sidebar = ({ open }) =>
               <div className={menuItemClass(false, childActive)}
                 onClick={() => toggleAccordion(index)}
                 title={!open ? item.label : undefined}
-                style={{ minHeight: 38 }}>
-                <span style={{ flexShrink: 0, color: childActive ? "#f18200" : "#9ca3af", display: "flex" }}>
+              >
+                <span className={[
+                  "flex shrink-0",
+                  childActive ? "text-brand-500" : "text-gray-400",
+                ].join(" ")}>
                   {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open && (
                   <>
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span style={{
-                        flexShrink: 0, fontSize: 9, fontWeight: 700,
-                        padding: "1px 6px", borderRadius: 999, background: "#ef4444", color: "#fff"
-                      }}>{item.badge}</span>
+                      <span className="shrink-0 rounded-full bg-red-500 px-1.5 py-px text-[9px] font-bold text-white">{item.badge}</span>
                     )}
                     {expanded === index
-                      ? <ChevronDown size={14} style={{ flexShrink: 0, color: "#9ca3af" }} />
-                      : <ChevronRight size={14} style={{ flexShrink: 0, color: "#9ca3af" }} />}
+                      ? <ChevronDown size={14} className="shrink-0 text-gray-400" />
+                      : <ChevronRight size={14} className="shrink-0 text-gray-400" />}
                   </>
                 )}
               </div>
 
               {expanded === index && open && (
-                <div style={{ marginTop: 2, marginLeft: 12, paddingLeft: 12, borderLeft: "2px solid #ffedd5", display: "flex", flexDirection: "column", gap: 1 }}>
+                <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
                   {item.children.map((child, childIndex) =>
                   {
                     const isChildActive = isPathActive(pathname, child.navigationLink, search);
@@ -579,7 +572,7 @@ export const Sidebar = ({ open }) =>
                           const [p, q] = child.navigationLink.split("?");
                           navigate(q ? `${p}?${q}` : p);
                         }}
-                        style={{ paddingLeft: 10, minHeight: 30 }}>
+                      >
                         {child.label}
                       </div>
                     );
@@ -592,19 +585,13 @@ export const Sidebar = ({ open }) =>
       </nav>
 
       {/* ── User footer ───────────────────────────────────────────────────── */}
-      <div style={{ padding: "10px 8px", borderTop: "1px solid #f5f5f5" }}>
-      
+      <div className="border-t border-[#f5f5f5] px-2 py-2.5">
+
         <button type="button"
-          style={{
-            width: "100%", display: "flex", alignItems: "center", gap: 10,
-            padding: open ? "8px 10px" : "8px", borderRadius: 8,
-            justifyContent: open ? "flex-start" : "center",
-            color: "#ef4444", fontSize: 12, fontWeight: 600,
-            transition: "background .15s", cursor: "pointer",
-            background: "none", border: "none",
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = "#fff1f2"}
-          onMouseLeave={e => e.currentTarget.style.background = "none"}
+          className={[
+            "flex w-full items-center gap-2.5 rounded px-2 py-2 text-sm font-semibold text-red-500 transition hover:bg-rose-50",
+            open ? "justify-start px-2.5" : "justify-center",
+          ].join(" ")}
           onClick={handleLogout} title={!open ? "Logout" : undefined}>
           <LogOut size={17} />
           {open && <span>Sign out</span>}
@@ -613,4 +600,3 @@ export const Sidebar = ({ open }) =>
     </aside>
   );
 };
-

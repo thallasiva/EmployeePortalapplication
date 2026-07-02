@@ -4,17 +4,17 @@ import { listPayslips } from "../../../api/payroll.api";
 import {
   ReportPageHeader,
   ReportAvatar,
-  ReportStatusBadge,
-} from "../../../component/reports/ReportsLayout";
+  ReportStatusBadge } from
+"../../../component/reports/ReportsLayout";import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 const MONTHS = [
-  { value: 1, label: "January" }, { value: 2, label: "February" },
-  { value: 3, label: "March" },   { value: 4, label: "April" },
-  { value: 5, label: "May" },     { value: 6, label: "June" },
-  { value: 7, label: "July" },    { value: 8, label: "August" },
-  { value: 9, label: "September" },{ value: 10, label: "October" },
-  { value: 11, label: "November" },{ value: 12, label: "December" },
-];
+{ value: 1, label: "January" }, { value: 2, label: "February" },
+{ value: 3, label: "March" }, { value: 4, label: "April" },
+{ value: 5, label: "May" }, { value: 6, label: "June" },
+{ value: 7, label: "July" }, { value: 8, label: "August" },
+{ value: 9, label: "September" }, { value: 10, label: "October" },
+{ value: 11, label: "November" }, { value: 12, label: "December" }];
+
 
 function formatINR(val) {
   const n = Number(val);
@@ -32,10 +32,10 @@ export default function PayslipReport() {
 
   useEffect(() => {
     setLoading(true);
-    listPayslips({ month, year, limit: 500 })
-      .then((data) => setPayslips(Array.isArray(data) ? data : []))
-      .catch(() => setPayslips([]))
-      .finally(() => setLoading(false));
+    listPayslips({ month, year, limit: 500 }).
+    then((data) => setPayslips(Array.isArray(data) ? data : [])).
+    catch(() => setPayslips([])).
+    finally(() => setLoading(false));
   }, [month, year]);
 
   const filtered = useMemo(() => {
@@ -43,9 +43,9 @@ export default function PayslipReport() {
     if (!q) return payslips;
     return payslips.filter(
       (p) =>
-        `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) ||
-        (p.emp_code ?? "").toLowerCase().includes(q) ||
-        (p.department_name ?? "").toLowerCase().includes(q)
+      `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) ||
+      (p.emp_code ?? "").toLowerCase().includes(q) ||
+      (p.department_name ?? "").toLowerCase().includes(q)
     );
   }, [payslips, search]);
 
@@ -62,21 +62,21 @@ export default function PayslipReport() {
       <ReportPageHeader title="Payslip Report" />
 
       {/* Stats */}
-      <div className="report-stats-grid" style={{ maxWidth: 800 }}>
+      <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
-          { label: "Total Payslips", value: totalPayslips, barWidth: "100%", barColor: "#f18200" },
-          { label: "Paid", value: paidCount, barWidth: `${totalPayslips ? (paidCount / totalPayslips) * 100 : 0}%`, barColor: "#16a34a" },
-          { label: "Pending", value: pendingCount, barWidth: `${totalPayslips ? (pendingCount / totalPayslips) * 100 : 0}%`, barColor: "#f97316" },
-          { label: "Total Gross", value: formatINR(totalGross), barWidth: "100%", barColor: "#8b5cf6" },
-        ].map((s) => (
-          <div key={s.label} className="report-stat-card">
+        { label: "Total Payslips", value: totalPayslips, barWidth: "100%", barColor: "#f18200" },
+        { label: "Paid", value: paidCount, barWidth: `${totalPayslips ? paidCount / totalPayslips * 100 : 0}%`, barColor: "#16a34a" },
+        { label: "Pending", value: pendingCount, barWidth: `${totalPayslips ? pendingCount / totalPayslips * 100 : 0}%`, barColor: "#f97316" },
+        { label: "Total Gross", value: formatINR(totalGross), barWidth: "100%", barColor: "#8b5cf6" }].
+        map((s) =>
+        <div key={s.label} className="report-stat-card">
             <p className="report-stat-card__value">{s.value}</p>
             <p className="report-stat-card__label">{s.label}</p>
             <div className="report-stat-card__bar-bg">
-              <div className="report-stat-card__bar" style={{ width: s.barWidth, background: s.barColor }} />
+              <div className={joinClasses("report-stat-card__bar", cssClass({ width: s.barWidth, background: s.barColor }))} />
             </div>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Filters */}
@@ -91,36 +91,36 @@ export default function PayslipReport() {
               placeholder="Search employee…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="text-sm outline-none w-40"
-            />
+              className="text-sm outline-none w-40" />
+            
           </div>
 
           <select
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
-            className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white"
-          >
+            className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
+            
             {MONTHS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
 
           <select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white"
-          >
+            className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
+            
             {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center h-40 text-gray-400 text-sm">Loading payslips…</div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400 gap-2">
+        {loading ?
+        <div className="flex items-center justify-center h-40 text-gray-400 text-sm">Loading payslips…</div> :
+        filtered.length === 0 ?
+        <div className="flex flex-col items-center justify-center h-40 text-gray-400 gap-2">
             <FileText size={32} className="opacity-30" />
             <p className="text-sm">No payslips found for {MONTHS.find((m) => m.value === month)?.label} {year}.</p>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
+          </div> :
+
+        <div className={cssClass({ overflowX: "auto" })}>
             <table className="report-data-table">
               <thead>
                 <tr>
@@ -136,10 +136,10 @@ export default function PayslipReport() {
               </thead>
               <tbody>
                 {filtered.map((p, idx) => {
-                  const name = `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Employee";
-                  const monthLabel = MONTHS.find((m) => m.value === Number(p.month))?.label ?? p.month;
-                  return (
-                    <tr key={p.id ?? idx}>
+                const name = `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Employee";
+                const monthLabel = MONTHS.find((m) => m.value === Number(p.month))?.label ?? p.month;
+                return (
+                  <tr key={p.id ?? idx}>
                       <td>{idx + 1}</td>
                       <td>
                         <div className="report-person-cell">
@@ -162,14 +162,14 @@ export default function PayslipReport() {
                           <Download size={11} /> PDF
                         </button>
                       </td>
-                    </tr>
-                  );
-                })}
+                    </tr>);
+
+              })}
               </tbody>
             </table>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }

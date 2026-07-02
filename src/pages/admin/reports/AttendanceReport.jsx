@@ -4,12 +4,12 @@ import {
   ReportPageHeader,
   ReportIconStatCard,
   ReportAvatar,
-  ReportStatusBadge,
-} from "../../../component/reports/ReportsLayout";
+  ReportStatusBadge } from
+"../../../component/reports/ReportsLayout";
 import ReportLineChart from "../../../component/reports/ReportLineChart";
 import {
-  applyAttendanceRegularization,
-} from "../../../utils/attendanceRegularization";
+  applyAttendanceRegularization } from
+"../../../utils/attendanceRegularization";
 import {
   buildWeekChart,
   buildWeekStats,
@@ -17,17 +17,17 @@ import {
   generateWeekAttendance,
   shiftWeek,
   startOfWeek,
-  summarizeWeek,
-} from "../../../utils/reportWeekUtils";
+  summarizeWeek } from
+"../../../utils/reportWeekUtils";import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 const STATUS_FILTER_OPTIONS = [
-  { value: "", label: "All Status" },
-  { value: "Present", label: "Present" },
-  { value: "Late", label: "Late" },
-  { value: "Absent", label: "Absent" },
-  { value: "On Leave", label: "On Leave" },
-  { value: "Weekend", label: "Weekend" },
-];
+{ value: "", label: "All Status" },
+{ value: "Present", label: "Present" },
+{ value: "Late", label: "Late" },
+{ value: "Absent", label: "Absent" },
+{ value: "On Leave", label: "On Leave" },
+{ value: "Weekend", label: "Weekend" }];
+
 
 export default function AttendanceReport() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
@@ -42,11 +42,11 @@ export default function AttendanceReport() {
 
   const rows = useMemo(
     () =>
-      baseRows.map((row) =>
-        regularizedIds.has(row.id)
-          ? applyAttendanceRegularization({ ...row, status: "Present" })
-          : row
-      ),
+    baseRows.map((row) =>
+    regularizedIds.has(row.id) ?
+    applyAttendanceRegularization({ ...row, status: "Present" }) :
+    row
+    ),
     [baseRows, regularizedIds]
   );
 
@@ -59,10 +59,10 @@ export default function AttendanceReport() {
     return rows.filter((row) => {
       const matchesStatus = !statusFilter || row.status === statusFilter;
       const matchesSearch =
-        !query ||
-        row.name.toLowerCase().includes(query) ||
-        row.role.toLowerCase().includes(query) ||
-        row.date.includes(query);
+      !query ||
+      row.name.toLowerCase().includes(query) ||
+      row.role.toLowerCase().includes(query) ||
+      row.date.includes(query);
       return matchesStatus && matchesSearch;
     });
   }, [rows, statusFilter, searchQuery]);
@@ -80,16 +80,16 @@ export default function AttendanceReport() {
 
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {stats.map((stat) => (
-            <ReportIconStatCard
-              key={stat.label}
-              label={stat.label}
-              value={stat.value}
-              icon="📅"
-              color={stat.color}
-              trend={stat.trend}
-            />
-          ))}
+          {stats.map((stat) =>
+          <ReportIconStatCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            icon="📅"
+            color={stat.color}
+            trend={stat.trend} />
+
+          )}
         </div>
         <div className="report-chart-card">
           <div className="report-chart-card__header">
@@ -104,8 +104,8 @@ export default function AttendanceReport() {
           <ReportLineChart
             present={chart.present}
             absent={chart.absent}
-            labels={chart.labels}
-          />
+            labels={chart.labels} />
+          
         </div>
       </div>
 
@@ -130,24 +130,24 @@ export default function AttendanceReport() {
             <select
               className="report-filter-select"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              {STATUS_FILTER_OPTIONS.map((opt) => (
-                <option key={opt.value || "all"} value={opt.value}>
+              onChange={(e) => setStatusFilter(e.target.value)}>
+              
+              {STATUS_FILTER_OPTIONS.map((opt) =>
+              <option key={opt.value || "all"} value={opt.value}>
                   {opt.label}
                 </option>
-              ))}
+              )}
             </select>
             <input
               type="search"
               className="report-search"
               placeholder="Search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+              onChange={(e) => setSearchQuery(e.target.value)} />
+            
           </div>
         </div>
-        <div style={{ overflowX: "auto" }}>
+        <div className={cssClass({ overflowX: "auto" })}>
           <table className="report-data-table">
             <thead>
               <tr>
@@ -165,15 +165,15 @@ export default function AttendanceReport() {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.length === 0 ? (
-                <tr>
+              {filteredRows.length === 0 ?
+              <tr>
                   <td colSpan={11} className="report-table-empty">
                     No attendance records match the selected filters.
                   </td>
-                </tr>
-              ) : (
-                filteredRows.map((row) => (
-                <tr key={row.id}>
+                </tr> :
+
+              filteredRows.map((row) =>
+              <tr key={row.id}>
                   <td>
                     <div className="report-person-cell">
                       <ReportAvatar name={row.name} />
@@ -192,35 +192,35 @@ export default function AttendanceReport() {
                   <td>{row.late}</td>
                   <td>{row.overtime}</td>
                   <td>
-                    {row.status === "Weekend" ? (
-                      <span className="text-gray-400">—</span>
-                    ) : (
-                      <span className={`report-production ${row.productionGood ? "is-good" : "is-low"}`}>
+                    {row.status === "Weekend" ?
+                  <span className="text-gray-400">—</span> :
+
+                  <span className={`report-production ${row.productionGood ? "is-good" : "is-low"}`}>
                         🕐 {row.production}
                       </span>
-                    )}
+                  }
                   </td>
                   <td>
-                    {row.status !== "Weekend" && row.status !== "Absent" && row.status !== "On Leave" ? (
-                      <button
-                        type="button"
-                        className="report-regularize-btn"
-                        onClick={() => handleRegularize(row.id)}
-                        disabled={regularizedIds.has(row.id)}
-                      >
+                    {row.status !== "Weekend" && row.status !== "Absent" && row.status !== "On Leave" ?
+                  <button
+                    type="button"
+                    className="report-regularize-btn"
+                    onClick={() => handleRegularize(row.id)}
+                    disabled={regularizedIds.has(row.id)}>
+                    
                         {regularizedIds.has(row.id) ? "Regularized" : "Regularizations"}
-                      </button>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
+                      </button> :
+
+                  <span className="text-gray-400">—</span>
+                  }
                   </td>
                 </tr>
-                ))
-              )}
+              )
+              }
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

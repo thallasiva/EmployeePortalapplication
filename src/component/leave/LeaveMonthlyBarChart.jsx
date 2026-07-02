@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import "./leaveGroupedBarChart.css";
+import "./leaveGroupedBarChart.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 
 const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 
 const Y_MAX = 5;
 const CHART_HEIGHT = 130;
 
 function barHeight(value) {
   if (!value || value <= 0) return 0;
-  return Math.round((value / Y_MAX) * CHART_HEIGHT);
+  return Math.round(value / Y_MAX * CHART_HEIGHT);
 }
 
 export default function LeaveMonthlyBarChart({ chart, year }) {
@@ -37,45 +37,45 @@ export default function LeaveMonthlyBarChart({ chart, year }) {
               {MONTHS.map((month, index) => {
                 const tip = tooltips[index];
                 const showTip =
-                  hoveredIndex === index &&
-                  (balance[index] > 0 || consumed[index] > 0);
+                hoveredIndex === index && (
+                balance[index] > 0 || consumed[index] > 0);
 
                 return (
                   <div
                     key={month}
                     className="leave-grouped-chart__month-group"
                     onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                  >
-                    {showTip && (
-                      <div className="leave-grouped-chart__tooltip">
+                    onMouseLeave={() => setHoveredIndex(null)}>
+                    
+                    {showTip &&
+                    <div className="leave-grouped-chart__tooltip">
                         <div className="leave-grouped-chart__tooltip-title">
                           {month} {year}
                         </div>
                         <div className="leave-grouped-chart__tooltip-row">
                           <span
-                            className="leave-grouped-chart__legend-swatch leave-grouped-chart__legend-swatch--balance"
-                          />
+                          className="leave-grouped-chart__legend-swatch leave-grouped-chart__legend-swatch--balance" />
+                        
                           Balance: {balance[index]}
                         </div>
-                        {tip && (
-                          <div className="leave-grouped-chart__tooltip-sub">
+                        {tip &&
+                      <div className="leave-grouped-chart__tooltip-sub">
                             Opening Balance: {tip.openingBalance} | Granted:{" "}
                             {tip.granted}
                           </div>
-                        )}
+                      }
                       </div>
-                    )}
+                    }
                     <div
-                      className="leave-grouped-chart__bar leave-grouped-chart__bar--balance"
-                      style={{ height: barHeight(balance[index]) }}
-                    />
+                      className={joinClasses("leave-grouped-chart__bar leave-grouped-chart__bar--balance", cssClass(
+                        { height: barHeight(balance[index]) }))} />
+                    
                     <div
-                      className="leave-grouped-chart__bar leave-grouped-chart__bar--consumed"
-                      style={{ height: barHeight(consumed[index]) }}
-                    />
-                  </div>
-                );
+                      className={joinClasses("leave-grouped-chart__bar leave-grouped-chart__bar--consumed", cssClass(
+                        { height: barHeight(consumed[index]) }))} />
+                    
+                  </div>);
+
               })}
             </div>
           </div>
@@ -83,11 +83,11 @@ export default function LeaveMonthlyBarChart({ chart, year }) {
           <div className="leave-grouped-chart__x-axis" />
 
           <div className="leave-grouped-chart__x-labels">
-            {MONTHS.map((month) => (
-              <span key={month}>
+            {MONTHS.map((month) =>
+            <span key={month}>
                 {month} {yearShort}
               </span>
-            ))}
+            )}
           </div>
         </div>
       </div>
@@ -102,6 +102,6 @@ export default function LeaveMonthlyBarChart({ chart, year }) {
           Consumed
         </span>
       </div>
-    </div>
-  );
+    </div>);
+
 }

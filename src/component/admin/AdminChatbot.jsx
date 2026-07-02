@@ -2,17 +2,17 @@ import React, { useMemo, useState } from "react";
 import { MessageCircle, Send, X, Bot } from "lucide-react";
 import { INITIAL_LEAVE_REQUESTS } from "../../data/adminLeaveData";
 import { getApprovedLeavesToday } from "../../utils/adminLeaveUtils";
-import "./adminChatbot.css";
+import "./adminChatbot.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 
 const WELCOME =
-  "Hi! I'm your HR Admin Assistant (demo). Try:\n• \"Who is on leave today?\"\n• \"Show pending leave requests\"\n• \"Approve Priya Sharma leave\"\n\nLater you can connect this to auto-approve via API.";
+"Hi! I'm your HR Admin Assistant (demo). Try:\n• \"Who is on leave today?\"\n• \"Show pending leave requests\"\n• \"Approve Priya Sharma leave\"\n\nLater you can connect this to auto-approve via API.";
 
 const SUGGESTIONS = [
-  "Who is on leave today?",
-  "Show pending requests",
-  "Approve Priya Sharma leave",
-  "How many employees are late?",
-];
+"Who is on leave today?",
+"Show pending requests",
+"Approve Priya Sharma leave",
+"How many employees are late?"];
+
 
 function matchReply(text, pending, onLeave) {
   const q = text.toLowerCase().trim();
@@ -48,8 +48,8 @@ export default function AdminChatbot() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "bot", text: WELCOME },
-  ]);
+  { role: "bot", text: WELCOME }]
+  );
 
   const pending = useMemo(
     () => INITIAL_LEAVE_REQUESTS.filter((r) => r.status === "Pending"),
@@ -73,8 +73,8 @@ export default function AdminChatbot() {
 
   return (
     <>
-      {open && (
-        <div className="admin-chatbot-panel">
+      {open &&
+      <div className="admin-chatbot-panel">
           <div className="admin-chatbot-header flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot size={20} />
@@ -84,68 +84,68 @@ export default function AdminChatbot() {
               </div>
             </div>
             <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="p-1 hover:bg-white/20 rounded"
-              aria-label="Close chat"
-            >
+            type="button"
+            onClick={() => setOpen(false)}
+            className="p-1 hover:bg-white/20 rounded"
+            aria-label="Close chat">
+            
               <X size={18} />
             </button>
           </div>
 
           <div className="admin-chatbot-messages">
-            {messages.map((msg, i) => (
-              <div
-                key={`${msg.role}-${i}`}
-                className={`admin-chatbot-msg admin-chatbot-msg--${msg.role}`}
-                style={{ whiteSpace: "pre-line" }}
-              >
+            {messages.map((msg, i) =>
+          <div
+            key={`${msg.role}-${i}`}
+            className={joinClasses(`admin-chatbot-msg admin-chatbot-msg--${msg.role}`, cssClass(
+              { whiteSpace: "pre-line" }))}>
+            
                 {msg.text}
               </div>
-            ))}
+          )}
           </div>
 
           <div className="admin-chatbot-suggestions">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                className="admin-chatbot-chip"
-                onClick={() => send(s)}
-              >
+            {SUGGESTIONS.map((s) =>
+          <button
+            key={s}
+            type="button"
+            className="admin-chatbot-chip"
+            onClick={() => send(s)}>
+            
                 {s}
               </button>
-            ))}
+          )}
           </div>
 
           <form
-            className="admin-chatbot-input-row"
-            onSubmit={(e) => {
-              e.preventDefault();
-              send(input);
-            }}
-          >
+          className="admin-chatbot-input-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}>
+          
             <input
-              className="admin-chatbot-input"
-              placeholder="Ask about leave, attendance..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
+            className="admin-chatbot-input"
+            placeholder="Ask about leave, attendance..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)} />
+          
             <button type="submit" className="admin-chatbot-send" aria-label="Send">
               <Send size={16} />
             </button>
           </form>
         </div>
-      )}
+      }
 
       <button
         type="button"
         className="admin-chatbot-fab"
         onClick={() => setOpen((o) => !o)}
-        aria-label="Open admin assistant"
-      >
+        aria-label="Open admin assistant">
+        
         <MessageCircle size={26} />
       </button>
-    </>
-  );
+    </>);
+
 }

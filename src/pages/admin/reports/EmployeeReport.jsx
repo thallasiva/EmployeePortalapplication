@@ -1,16 +1,16 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
   ReportPageHeader, ReportIconStatCard, ReportTableToolbar,
-  ReportAvatar, ReportStatusBadge,
-} from "../../../component/reports/ReportsLayout";
+  ReportAvatar, ReportStatusBadge } from
+"../../../component/reports/ReportsLayout";
 import { listEmployees } from "../../../api/employee.api";
-import { getDepartmentName } from "../../../utils/employeeDisplay";
+import { getDepartmentName } from "../../../utils/employeeDisplay";import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 function EmployeeBarChart({ employees }) {
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const data = useMemo(() => {
     const counts = months.map((m, i) => {
-      const active = employees.filter(e => {
+      const active = employees.filter((e) => {
         if (!e.emp_joining_date) return false;
         const d = new Date(e.emp_joining_date);
         return d.getMonth() === i;
@@ -20,7 +20,7 @@ function EmployeeBarChart({ employees }) {
     return counts;
   }, [employees]);
 
-  const yMax = Math.max(...data.map(d => d.active), 1);
+  const yMax = Math.max(...data.map((d) => d.active), 1);
 
   return (
     <div className="report-chart-card">
@@ -28,20 +28,20 @@ function EmployeeBarChart({ employees }) {
         <h3 className="report-chart-card__title"><span className="report-chart-card__title-dot" />Joinings by Month</h3>
       </div>
       <div className="report-bar-legend">
-        <span><i style={{ background: "#22c55e" }} /> Joined</span>
+        <span><i className={cssClass({ background: "#22c55e" })} /> Joined</span>
       </div>
       <div className="report-bar-chart">
-        {data.map(row => (
-          <div key={row.label} className="report-bar-group">
+        {data.map((row) =>
+        <div key={row.label} className="report-bar-group">
             <div className="report-bar-pair">
-              <div className="report-bar" style={{ height: `${(row.active / yMax) * 150}px`, background: "#22c55e" }} />
+              <div className={joinClasses("report-bar", cssClass({ height: `${row.active / yMax * 150}px`, background: "#22c55e" }))} />
             </div>
             <span className="report-bar-label">{row.label}</span>
           </div>
-        ))}
+        )}
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 export default function EmployeeReport() {
@@ -50,17 +50,17 @@ export default function EmployeeReport() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    listEmployees({ limit: 500 })
-      .then(({ data }) => setEmployees(data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    listEmployees({ limit: 500 }).
+    then(({ data }) => setEmployees(data || [])).
+    catch(() => {}).
+    finally(() => setLoading(false));
   }, []);
 
-  const active   = employees.filter(e => e.employee_status === "Active").length;
-  const inactive = employees.filter(e => e.employee_status !== "Active").length;
+  const active = employees.filter((e) => e.employee_status === "Active").length;
+  const inactive = employees.filter((e) => e.employee_status !== "Active").length;
   const thisMonth = useMemo(() => {
     const now = new Date();
-    return employees.filter(e => {
+    return employees.filter((e) => {
       if (!e.emp_joining_date) return false;
       const d = new Date(e.emp_joining_date);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
@@ -68,18 +68,18 @@ export default function EmployeeReport() {
   }, [employees]);
 
   const stats = [
-    { label: "Total Employees", value: employees.length, color: "#f97316", trend: "All time" },
-    { label: "Active",          value: active,            color: "#22c55e", trend: "Currently active" },
-    { label: "New This Month",  value: thisMonth,         color: "#3b82f6", trend: "Joined this month" },
-    { label: "Inactive",        value: inactive,          color: "#ef4444", trend: "Not active" },
-  ];
+  { label: "Total Employees", value: employees.length, color: "#f97316", trend: "All time" },
+  { label: "Active", value: active, color: "#22c55e", trend: "Currently active" },
+  { label: "New This Month", value: thisMonth, color: "#3b82f6", trend: "Joined this month" },
+  { label: "Inactive", value: inactive, color: "#ef4444", trend: "Not active" }];
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return employees;
-    return employees.filter(e =>
-      [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title]
-        .some(v => (v || "").toLowerCase().includes(q))
+    return employees.filter((e) =>
+    [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title].
+    some((v) => (v || "").toLowerCase().includes(q))
     );
   }, [employees, search]);
 
@@ -90,13 +90,13 @@ export default function EmployeeReport() {
       <ReportPageHeader title="Employee Report" />
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {stats.map(s => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon="👤" color={s.color} trend={s.trend} />)}
+          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon="👤" color={s.color} trend={s.trend} />)}
         </div>
         <EmployeeBarChart employees={employees} />
       </div>
       <div className="report-table-section">
         <ReportTableToolbar title={`Employees (${filtered.length})`} onSearch={setSearch} />
-        <div style={{ overflowX: "auto" }}>
+        <div className={cssClass({ overflowX: "auto" })}>
           <table className="report-data-table">
             <thead>
               <tr>
@@ -105,11 +105,11 @@ export default function EmployeeReport() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(emp => {
+              {filtered.map((emp) => {
                 const name = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || "—";
                 return (
                   <tr key={emp.employee_id}>
-                    <td>{emp.emp_code || `EMP${String(emp.employee_id).padStart(3,"0")}`}</td>
+                    <td>{emp.emp_code || `EMP${String(emp.employee_id).padStart(3, "0")}`}</td>
                     <td>
                       <div className="report-person-cell">
                         <ReportAvatar name={name} />
@@ -124,13 +124,13 @@ export default function EmployeeReport() {
                     <td>{emp.mobile || "—"}</td>
                     <td>{emp.emp_joining_date ? new Date(emp.emp_joining_date).toLocaleDateString("en-GB") : "—"}</td>
                     <td><ReportStatusBadge status={emp.employee_status || "Active"} /></td>
-                  </tr>
-                );
+                  </tr>);
+
               })}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

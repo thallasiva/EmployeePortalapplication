@@ -1,23 +1,8 @@
-/**
- * AdminRoutes — lazy-loaded
- * ─────────────────────────
- * Each page is a separate Webpack chunk. The browser only downloads a
- * page's JS when the user first navigates to that route, keeping the
- * initial bundle small.
- *
- * React.lazy + Suspense pattern:
- *  • React.lazy(() => import("…")) — deferred chunk download
- *  • <Suspense fallback={<LoadingFallback />}> — shows spinner during load
- *  • <ErrorBoundary> inside each route via PageWrapper — isolates crashes
- */
-import React, { lazy, Suspense } from "react";
+import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { getStoredUser, isAdmin } from "../data/auth";
-import { PATH_EMPLOYEE_HOME } from "./paths";
-import LoadingFallback from "../component/LoadingFallback";
-import ErrorBoundary from "../component/ErrorBoundary";
+import { getStoredUser } from "../data/auth";
+import LazyPage from "./LazyPage";
 
-// ── Lazy page imports ────────────────────────────────────────────────────────
 const Dashboard              = lazy(() => import("../pages/admin/Dashboard"));
 const Employee               = lazy(() => import("../pages/admin/Employee"));
 const EmployeeDetail         = lazy(() => import("../pages/admin/EmployeeDetail"));
@@ -51,26 +36,16 @@ const AdminPayrollYTD        = lazy(() => import("../pages/admin/AdminPayrollYTD
 const AdminPayrollInputs     = lazy(() => import("../pages/admin/AdminPayrollInputs"));
 const AdminPayrollCompliance = lazy(() => import("../pages/admin/AdminPayrollCompliance"));
 const AdminPayrollTaxForms   = lazy(() => import("../pages/admin/AdminPayrollTaxForms"));
-const AdminPayrollSetup          = lazy(() => import("../pages/admin/AdminPayrollSetup"));
-const AdminWorkflowDelegation    = lazy(() => import("../pages/admin/AdminWorkflowDelegation"));
-const Recruitment                = lazy(() => import("../pages/admin/Recruitment"));
+const AdminPayrollSetup      = lazy(() => import("../pages/admin/AdminPayrollSetup"));
+const AdminWorkflowDelegation = lazy(() => import("../pages/admin/AdminWorkflowDelegation"));
+const Recruitment            = lazy(() => import("../pages/admin/Recruitment"));
+const CreateJobPage          = lazy(() => import("../pages/admin/recruitment/CreateJobPage"));
 
-// ── Suspense wrapper ─────────────────────────────────────────────────────────
-// Each route gets its own ErrorBoundary so one crash doesn't unmount the rest.
-function Page({ children }) {
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<LoadingFallback />}>
-        {children}
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
+const Page = LazyPage;
 
 const AdminRoutes = () => {
   const user = getStoredUser();
-  if (!isAdmin(user)) return <Navigate to={PATH_EMPLOYEE_HOME} replace />;
-
+  if (!user) return <Navigate to="/login" replace />;
   return (
     <Routes>
       <Route index                               element={<Page><Dashboard /></Page>} />
@@ -80,7 +55,7 @@ const AdminRoutes = () => {
       <Route path="company"                      element={<Page><Company /></Page>} />
       <Route path="create-company"               element={<Page><CreateCompany /></Page>} />
       <Route path="calendar"                     element={<Page><AdminCalendar /></Page>} />
-      <Route path="calendar/form"               element={<Page><CalendarForm /></Page>} />
+      <Route path="calendar/form"                element={<Page><CalendarForm /></Page>} />
       <Route path="leave"                        element={<Page><Leave /></Page>} />
       <Route path="attendance"                   element={<Page><AdminAttendanceDashboard /></Page>} />
       <Route path="documents"                    element={<Page><AdminDocuments /></Page>} />
@@ -90,7 +65,7 @@ const AdminRoutes = () => {
       <Route path="payroll/payslips"             element={<Page><AdminPayslips /></Page>} />
       <Route path="performance"                  element={<Page><AdminPerformanceRollout /></Page>} />
       <Route path="it-declaration"               element={<Page><AdminITDeclaration /></Page>} />
-      <Route path="resignations"                element={<Page><AdminResignations /></Page>} />
+      <Route path="resignations"                 element={<Page><AdminResignations /></Page>} />
       <Route path="timesheets"                   element={<Page><AdminTimesheets /></Page>} />
       <Route path="report/*"                     element={<Page><Reports /></Page>} />
       <Route path="onboarding"                   element={<Page><Onboarding /></Page>} />
@@ -99,16 +74,17 @@ const AdminRoutes = () => {
       <Route path="settings"                     element={<Page><Settings /></Page>} />
       <Route path="profile"                      element={<Page><Profile /></Page>} />
       <Route path="security/mfa"                 element={<Page><MfaSetup /></Page>} />
-      <Route path="leave/summary"               element={<Page><LeaveSummaryReport /></Page>} />
-      <Route path="helpdesk"                    element={<Page><HelpdeskAdmin /></Page>} />
-      <Route path="payroll/statement"           element={<Page><AdminPayrollStatement /></Page>} />
-      <Route path="payroll/ytd"                 element={<Page><AdminPayrollYTD /></Page>} />
-      <Route path="payroll/inputs"              element={<Page><AdminPayrollInputs /></Page>} />
-      <Route path="payroll/compliance"          element={<Page><AdminPayrollCompliance /></Page>} />
-      <Route path="payroll/tax-forms"           element={<Page><AdminPayrollTaxForms /></Page>} />
-      <Route path="payroll/setup"               element={<Page><AdminPayrollSetup /></Page>} />
-      <Route path="workflow-delegation"         element={<Page><AdminWorkflowDelegation /></Page>} />
-      <Route path="recruitment"                 element={<Page><Recruitment /></Page>} />
+      <Route path="leave/summary"                element={<Page><LeaveSummaryReport /></Page>} />
+      <Route path="helpdesk"                     element={<Page><HelpdeskAdmin /></Page>} />
+      <Route path="payroll/statement"            element={<Page><AdminPayrollStatement /></Page>} />
+      <Route path="payroll/ytd"                  element={<Page><AdminPayrollYTD /></Page>} />
+      <Route path="payroll/inputs"               element={<Page><AdminPayrollInputs /></Page>} />
+      <Route path="payroll/compliance"           element={<Page><AdminPayrollCompliance /></Page>} />
+      <Route path="payroll/tax-forms"            element={<Page><AdminPayrollTaxForms /></Page>} />
+      <Route path="payroll/setup"                element={<Page><AdminPayrollSetup /></Page>} />
+      <Route path="workflow-delegation"          element={<Page><AdminWorkflowDelegation /></Page>} />
+      <Route path="recruitment"                  element={<Page><Recruitment /></Page>} />
+      <Route path="recruitment/create-new"       element={<Page><CreateJobPage /></Page>} />
     </Routes>
   );
 };
