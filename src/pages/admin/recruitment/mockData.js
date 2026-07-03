@@ -4,8 +4,8 @@ export const POSITION_TYPES = ['Contract', 'Contract to Hire', 'Direct Hire'];
 export const BUSINESS_UNITS = ['Nat IT', 'Natsoft'];
 export const ASSIGNMENT_STATUSES = ['Open', 'Closed', 'Completed', 'Hold'];
 export const JOB_STATUSES = ['Active', 'In Active'];
-export const INTERVIEW_LEVELS = ['Level 1', 'Level 2', 'Level 3', 'HR Round', 'Manager Round'];
-export const INTERVIEW_TYPES = ['OnCall', 'Microsoft Teams', 'In Person'];
+export const INTERVIEW_LEVELS = ['Round 1', 'Round 2', 'Round 3', 'HR', 'Final'];
+export const INTERVIEW_TYPES = ['Video Call', 'Phone', 'In-Person', 'Teams'];
 export const FEEDBACK_STATUSES = ['Selected', 'Not Selected', 'Hold'];
 export const GENDERS = ['Male', 'Female', 'Other'];
 
@@ -16,8 +16,10 @@ export const CANDIDATE_STATUSES = {
   'Offer Released': { color: '#d97706', bg: '#fef3c7', label: 'Offer Released' },
   'Offer Accepted': { color: '#059669', bg: '#d1fae5', label: 'Offer Accepted' },
   'Offer Rejected': { color: '#dc2626', bg: '#fee2e2', label: 'Offer Rejected' },
+  'Interview Scheduled': { color: '#6d28d9', bg: '#ede9fe', label: 'Interview Scheduled' },
+  'Rejected':            { color: '#dc2626', bg: '#fee2e2', label: 'Rejected' },
   'Joining Formalities': { color: '#0891b2', bg: '#cffafe', label: 'Joining Formalities' },
-  'Onboarded': { color: '#166534', bg: '#dcfce7', label: 'Onboarded' },
+  'Onboarded':           { color: '#166534', bg: '#dcfce7', label: 'Onboarded' },
 };
 
 export const MOCK_RECRUITERS = [

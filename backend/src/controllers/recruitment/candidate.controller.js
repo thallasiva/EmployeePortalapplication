@@ -11,8 +11,8 @@ const list = asyncHandler(async (req, res) => {
     status:      req.query.status,
     recruiterId: req.query.recruiterId ? Number(req.query.recruiterId) : undefined,
     search:      req.query.search,
-    roleId:      user.role_id,
-    recEmpId:    user.employee_id,
+    roleId:      user.roleId,
+    recEmpId:    user.employeeId,
     limit,
     offset,
   });
@@ -25,13 +25,16 @@ const getOne = asyncHandler(async (req, res) => {
 });
 
 const create = asyncHandler(async (req, res) => {
-  const data = await candidateSvc.create(req.body, req.user.user_id, req.ip);
+  const body = { ...req.body };
+  // Recruiter (role 5) always assigned to themselves; HR Manager picks from dropdown
+  if (req.user.roleId === 5) body.recruiterId = req.user.employeeId;
+  const data = await candidateSvc.create(body, req.user.userId, req.ip);
   new ApiResponse(201, data, "Candidate created").send(res);
 });
 
 const updateStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  const data = await candidateSvc.updateStatus(Number(req.params.id), status, req.user.user_id, req.ip);
+  const data = await candidateSvc.updateStatus(Number(req.params.id), status, req.user.userId, req.ip);
   new ApiResponse(200, data, "Candidate status updated").send(res);
 });
 

@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  MOCK_JOBS, POSITION_TYPES, BUSINESS_UNITS, ASSIGNMENT_STATUSES, JOB_STATUSES,
-} from "./mockData";
+import { POSITION_TYPES, BUSINESS_UNITS, ASSIGNMENT_STATUSES, JOB_STATUSES } from "./mockData";
+import { createJob, getErrorMessage } from "../../../api/recruitment.api";
+import { successToast, errorToast } from "../../../utils/ToastControllers";
 
 const BLANK = {
-  title: "", client: "", company: "", jobIdManual: "",
+  title: "", client: "", companyDept: "", jobIdManual: "",
   billRate: "", billCurrency: "$", payRate: "", payCurrency: "$",
   positionType: "Contract", vacancies: "", jobStatus: "",
   businessUnit: "", assignmentStatus: "Open",
-  city: "", country: "", experienceLevel: "", skills: "",
-  jobOpportunityPhone: "", description: "",
+  city: "", country: "", experienceLevel: "", skillSet: "",
+  opportunityPhone: "", description: "",
 };
 
 const EXPERIENCE_LEVELS = ["0-1 yr", "1-3 yrs", "3-5 yrs", "5-8 yrs", "8-12 yrs", "12+ yrs"];
@@ -47,42 +47,57 @@ function RateInput({ nameVal, nameCur, val, cur, onChange }) {
   );
 }
 
-// In-memory store so newly created jobs appear in the JobsPage list
-export const newJobsStore = [];
-
 export default function CreateJobPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(BLANK);
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(e) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   }
 
-  const isValid = !!(form.title && form.client && form.company && form.positionType
+  const isValid = !!(
+    form.title && form.client && form.companyDept && form.positionType
     && form.billRate && form.payRate && form.jobStatus && form.businessUnit
-    && form.vacancies && form.country && form.skills && form.description);
+    && form.vacancies && form.country && form.skillSet && form.description
+  );
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (!isValid) return;
-    const newJob = {
-      ...form,
-      id: form.jobIdManual || `JOB${String(MOCK_JOBS.length + newJobsStore.length + 1).padStart(3, "0")}`,
-      openings: Number(form.vacancies) || 1,
-      billRate: Number(form.billRate) || 0,
-      payRate: Number(form.payRate) || 0,
-      assignedRecruiters: [],
-      totalCandidates: 0,
-      createdDate: new Date().toISOString().slice(0, 10),
-      skills: form.skills ? form.skills.split(",").map(s => s.trim()).filter(Boolean) : [],
-    };
-    newJobsStore.unshift(newJob);
-    navigate(-1); // back to jobs list
+    if (!isValid || submitting) return;
+    setSubmitting(true);
+    try {
+      await createJob({
+        title:            form.title,
+        client:           form.client,
+        companyDept:      form.companyDept,
+        billRate:         Number(form.billRate),
+        billCurrency:     form.billCurrency,
+        payRate:          Number(form.payRate),
+        payCurrency:      form.payCurrency,
+        positionType:     form.positionType,
+        vacancies:        Number(form.vacancies),
+        city:             form.city || null,
+        country:          form.country,
+        experienceLevel:  form.experienceLevel,
+        jobStatus:        form.jobStatus,
+        businessUnit:     form.businessUnit,
+        assignmentStatus: form.assignmentStatus,
+        opportunityPhone: form.opportunityPhone || null,
+        skillSet:         form.skillSet,
+        description:      form.description,
+      });
+      successToast("Job request created successfully");
+      navigate(-1);
+    } catch (err) {
+      errorToast(getErrorMessage(err, "Failed to create job request"));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <div style={{ background: "#f8f9fc", minHeight: "100vh", fontFamily: "Inter, system-ui, sans-serif" }}>
-      {/* Orange title bar */}
       <div style={{ background: "#f18200", color: "#fff", padding: "15px 32px", textAlign: "center", fontSize: 19, fontWeight: 700, boxShadow: "0 2px 6px rgba(0,0,0,0.12)" }}>
         Create Job Request
       </div>
@@ -96,7 +111,6 @@ export default function CreateJobPage() {
 
       <div style={{ padding: "16px 32px 40px" }}>
         <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #e5e7eb", padding: "28px 32px", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-
           <div style={{ marginBottom: 20, padding: "10px 14px", background: "#fff7ed", borderRadius: 8, borderLeft: "3px solid #f18200", fontSize: 13, color: "#92400e" }}>
             Fields marked <strong>*</strong> are mandatory.
           </div>
@@ -111,11 +125,11 @@ export default function CreateJobPage() {
                 <input name="client" value={form.client} onChange={handleChange} placeholder="Client name" style={iStyle} />
               </FRow>
 
-              <FRow label="Job ID#">
-                <input name="jobIdManual" value={form.jobIdManual} onChange={handleChange} placeholder="e.g. 51003 (auto if blank)" style={iStyle} />
+              <FRow label="Job ID# (optional)">
+                <input name="jobIdManual" value={form.jobIdManual} onChange={handleChange} placeholder="Auto-assigned if blank" style={iStyle} />
               </FRow>
               <FRow label="Company / Dept" required>
-                <input name="company" value={form.company} onChange={handleChange} placeholder="e.g. IT / Development" style={iStyle} />
+                <input name="companyDept" value={form.companyDept} onChange={handleChange} placeholder="e.g. IT / Development" style={iStyle} />
               </FRow>
 
               <FRow label="Bill Rate" required>
@@ -131,7 +145,7 @@ export default function CreateJobPage() {
                 </select>
               </FRow>
               <FRow label="No of Vacancies" required>
-                <input name="vacancies" type="number" value={form.vacancies} onChange={handleChange} placeholder="e.g. 2" style={iStyle} />
+                <input name="vacancies" type="number" min="1" value={form.vacancies} onChange={handleChange} placeholder="e.g. 2" style={iStyle} />
               </FRow>
 
               <FRow label="City">
@@ -149,23 +163,23 @@ export default function CreateJobPage() {
               </FRow>
               <FRow label="Job Status" required>
                 <select name="jobStatus" value={form.jobStatus} onChange={handleChange} style={iStyle}>
-                  <option value="">Find items...</option>
+                  <option value="">Find items…</option>
                   {JOB_STATUSES.map(s => <option key={s}>{s}</option>)}
                 </select>
               </FRow>
 
               <FRow label="Skill Set" required>
-                <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, Spring Boot, MySQL" style={iStyle} />
+                <input name="skillSet" value={form.skillSet} onChange={handleChange} placeholder="e.g. Java, Spring Boot, MySQL" style={iStyle} />
               </FRow>
               <FRow label="Business Unit" required>
                 <select name="businessUnit" value={form.businessUnit} onChange={handleChange} style={iStyle}>
-                  <option value="">Find items...</option>
+                  <option value="">Find items…</option>
                   {BUSINESS_UNITS.map(b => <option key={b}>{b}</option>)}
                 </select>
               </FRow>
 
               <FRow label="Job Opportunity Referred by Phone">
-                <input name="jobOpportunityPhone" value={form.jobOpportunityPhone} onChange={handleChange} placeholder="Phone number" style={iStyle} />
+                <input name="opportunityPhone" value={form.opportunityPhone} onChange={handleChange} placeholder="Phone number" style={iStyle} />
               </FRow>
               <FRow label="Recruiter Assignment Status" required>
                 <select name="assignmentStatus" value={form.assignmentStatus} onChange={handleChange} style={iStyle}>
@@ -175,10 +189,9 @@ export default function CreateJobPage() {
 
               <FRow label="Job Description" required span>
                 <textarea name="description" value={form.description} onChange={handleChange}
-                  placeholder="Detailed job description, requirements, responsibilities..."
+                  placeholder="Detailed job description, requirements, responsibilities…"
                   rows={5} style={{ ...iStyle, resize: "vertical", lineHeight: 1.5 }} />
               </FRow>
-
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 4, paddingTop: 16, borderTop: "1px solid #f0f0f0" }}>
@@ -186,9 +199,9 @@ export default function CreateJobPage() {
                 style={{ padding: "9px 32px", borderRadius: 6, border: "1px solid #d1d5db", background: "#fff", color: "#374151", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
                 Reset
               </button>
-              <button type="submit" disabled={!isValid}
-                style={{ padding: "9px 32px", borderRadius: 6, border: "none", background: isValid ? "#f18200" : "#d1d5db", color: "#fff", fontSize: 14, fontWeight: 600, cursor: isValid ? "pointer" : "not-allowed" }}>
-                Submit Job Requirement
+              <button type="submit" disabled={!isValid || submitting}
+                style={{ padding: "9px 32px", borderRadius: 6, border: "none", background: (isValid && !submitting) ? "#f18200" : "#d1d5db", color: "#fff", fontSize: 14, fontWeight: 600, cursor: (isValid && !submitting) ? "pointer" : "not-allowed" }}>
+                {submitting ? "Submitting…" : "Submit Job Requirement"}
               </button>
             </div>
           </form>

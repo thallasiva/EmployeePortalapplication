@@ -44,4 +44,12 @@ module.exports = {
 
   // 32-byte hex key for AES-256-GCM salary encryption
   salaryEncryptionKey: required('SALARY_ENCRYPTION_KEY', ''),
+
+  // Microsoft Graph / Teams integration
+  azure: {
+    tenantId:        required('AZURE_TENANT_ID', ''),
+    clientId:        required('AZURE_CLIENT_ID', ''),
+    clientSecret:    required('AZURE_CLIENT_SECRET', ''),
+    organizerUserId: required('TEAMS_ORGANIZER_USER_ID', ''),
+  },
 };

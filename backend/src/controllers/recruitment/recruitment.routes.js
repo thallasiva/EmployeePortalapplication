@@ -1,33 +1,54 @@
-const express  = require("express");
-const router   = express.Router();
+const express = require("express");
+const router = express.Router();
 
 const { authenticate, authorizeRoles } = require("../../middleware/auth");
 
 // Controllers
-const jobCtrl        = require("./jobRequest.controller");
-const candidateCtrl  = require("./candidate.controller");
-const interviewCtrl  = require("./interview.controller");
-const offerCtrl      = require("./offer.controller");
+const jobCtrl = require("./jobRequest.controller");
+const candidateCtrl = require("./candidate.controller");
+const interviewCtrl = require("./interview.controller");
+const offerCtrl = require("./offer.controller");
 const onboardingCtrl = require("./onboarding.controller");
-const dashboardCtrl  = require("./dashboard.controller");
+const dashboardCtrl = require("./dashboard.controller");
 
 // Validators
 const V = require("./recruitment.validator");
+
+// Direct DB query helper for recruiter lookup
+const { query } = require("../../config/db");
 
 // All routes require authentication
 router.use(authenticate);
 
 // Allowed roles
-const ADMIN_TL     = authorizeRoles("Admin", "Recruiter Team Lead");
-const ALL_REC      = authorizeRoles("Admin", "Recruiter Team Lead", "Recruiter");
-const ADMIN_ONLY   = authorizeRoles("Admin");
+// "HR Manager" (role_id 4) = same as "Recruiter Team Lead" — different DB naming, same permissions
+const ADMIN_TL   = authorizeRoles("Admin", "Recruiter Team Lead", "HR Manager");
+const ALL_REC    = authorizeRoles("Admin", "Recruiter Team Lead", "HR Manager", "Recruiter");
+const REC_TEAM   = ALL_REC;   // HR Manager has full recruitment access same as Recruiter Team Lead
+const ADMIN_ONLY = authorizeRoles("Admin");
+
+// ── Recruiters lookup (for dropdowns) ───────────────────────────────
+router.get("/recruiters", ADMIN_TL, async (req, res, next) => {
+  try {
+    const rows = await query(
+      `SELECT e.employee_id, e.first_name, e.last_name,
+              CONCAT(e.first_name,' ',e.last_name) AS name, u.email
+       FROM   users u
+       JOIN   employees e ON e.employee_id = u.employee_id
+       WHERE  u.role_id = 5 AND u.status = 'Active' AND e.employee_status = 'Active'
+       ORDER  BY e.first_name`
+    );
+    res.json({ success: true, data: rows });
+  } catch (err) { next(err); }
+});
 
 // ── Dashboard ───────────────────────────────────────────────────────
 router.get("/dashboard",
   ALL_REC,
-  (req, res, next) => {
-    // Route to correct dashboard based on role
-    if (req.user.role_id === 5) return dashboardCtrl.recruiterDashboard(req, res, next);
+  (req, res, next) =>
+  {
+    // Route to correct dashboard based on role (JWT payload uses camelCase roleId)
+    if (req.user.roleId === 5) return dashboardCtrl.recruiterDashboard(req, res, next);
     return dashboardCtrl.adminDashboard(req, res, next);
   }
 );
@@ -35,12 +56,12 @@ router.get("/dashboard/report", ADMIN_TL, dashboardCtrl.pipelineReport);
 
 // ── Job Requests ────────────────────────────────────────────────────
 router.route("/jobs")
-  .get(ALL_REC,   jobCtrl.list)
+  .get(ALL_REC, jobCtrl.list)
   .post(ADMIN_TL, V.validateCreateJob, jobCtrl.create);
 
 router.route("/jobs/:id")
-  .get(ALL_REC,   jobCtrl.getOne)
-  .put(ADMIN_TL,  V.validateUpdateJob, jobCtrl.update)
+  .get(ALL_REC, jobCtrl.getOne)
+  .put(ADMIN_TL, V.validateUpdateJob, jobCtrl.update)
   .delete(ADMIN_TL, jobCtrl.remove);
 
 router.put("/jobs/:id/assign-recruiters",
@@ -51,58 +72,58 @@ router.put("/jobs/:id/assign-recruiters",
 
 // ── Candidates ───────────────────────────────────────────────────────
 router.route("/candidates")
-  .get(ALL_REC,  candidateCtrl.list)
-  .post(ALL_REC, V.validateCreateCandidate, candidateCtrl.create);
+  .get(ALL_REC, candidateCtrl.list)
+  .post(REC_TEAM, V.validateCreateCandidate, candidateCtrl.create);  // Recruiters add candidates
 
 router.route("/candidates/:id")
   .get(ALL_REC, candidateCtrl.getOne);
 
 router.put("/candidates/:id/status",
-  ALL_REC,
+  REC_TEAM,                                                           // Recruiters update status
   V.validateUpdateCandidateStatus,
   candidateCtrl.updateStatus
 );
 
 // ── Interviews ───────────────────────────────────────────────────────
 router.route("/interviews")
-  .get(ALL_REC,  interviewCtrl.list)
-  .post(ALL_REC, V.validateScheduleInterview, interviewCtrl.schedule);
+  .get(ALL_REC, interviewCtrl.list)
+  .post(REC_TEAM, V.validateScheduleInterview, interviewCtrl.schedule); // Recruiters schedule
 
 router.route("/interviews/:id")
   .get(ALL_REC, interviewCtrl.getOne);
 
 router.put("/interviews/:id/feedback",
-  ALL_REC,
+  ADMIN_TL,                                                             // HR Manager / TL submits feedback
   V.validateFeedback,
   interviewCtrl.submitFeedback
 );
 
 router.put("/interviews/:id/cancel",
-  ALL_REC,
+  REC_TEAM,                                                             // Recruiters cancel
   interviewCtrl.cancel
 );
 
 // ── Offers ───────────────────────────────────────────────────────────
 router.route("/offers")
-  .get(ADMIN_TL,  offerCtrl.list)
-  .post(ADMIN_TL, V.validateCreateOffer, offerCtrl.create);
+  .get(ADMIN_ONLY, offerCtrl.list)
+  .post(ADMIN_ONLY, V.validateCreateOffer, offerCtrl.create);
 
 router.route("/offers/:id")
-  .get(ADMIN_TL, offerCtrl.getOne);
+  .get(ADMIN_ONLY, offerCtrl.getOne);
 
-router.put("/offers/:id/release",  ADMIN_TL, offerCtrl.release);
-router.put("/offers/:id/respond",  ADMIN_TL, V.validateOfferResponse, offerCtrl.respond);
+router.put("/offers/:id/release", ADMIN_ONLY, offerCtrl.release);
+router.put("/offers/:id/respond", ADMIN_ONLY, V.validateOfferResponse, offerCtrl.respond);
 
 // ── Onboarding ───────────────────────────────────────────────────────
 router.route("/onboarding")
-  .get(ADMIN_TL,  onboardingCtrl.list)
-  .post(ADMIN_TL, V.validateCreateOnboarding, onboardingCtrl.create);
+  .get(ADMIN_ONLY, onboardingCtrl.list)
+  .post(ADMIN_ONLY, V.validateCreateOnboarding, onboardingCtrl.create);
 
 router.route("/onboarding/:id")
-  .get(ADMIN_TL, onboardingCtrl.getOne);
+  .get(ADMIN_ONLY, onboardingCtrl.getOne);
 
 router.put("/onboarding/:id/task",
-  ADMIN_TL,
+  ADMIN_ONLY,
   V.validateUpdateTask,
   onboardingCtrl.updateTask
 );

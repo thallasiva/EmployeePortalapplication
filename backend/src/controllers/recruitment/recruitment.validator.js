@@ -74,6 +74,7 @@ const scheduleInterviewSchema = Joi.object({
   interviewType:    Joi.string().valid(...INTERVIEW_TYPES).required(),
   interviewDate:    Joi.date().iso().required(),
   interviewTime:    Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).allow(null),
+  durationMinutes:  Joi.number().integer().valid(30, 45, 60, 90, 120).allow(null),
   interviewer:      Joi.string().max(200).allow("", null),
   teamsSubject:     Joi.string().max(500).allow("", null),
   teamsParticipants: Joi.string().allow("", null),
@@ -82,7 +83,7 @@ const scheduleInterviewSchema = Joi.object({
 });
 
 const feedbackSchema = Joi.object({
-  feedbackStatus:   Joi.string().valid("Strong Yes","Yes","Maybe","No","Strong No").required(),
+  feedbackStatus:   Joi.string().valid("Selected","Not Selected","Hold").required(),
   feedbackComments: Joi.string().allow("", null),
   shortlisted:      Joi.boolean().default(false),
 });

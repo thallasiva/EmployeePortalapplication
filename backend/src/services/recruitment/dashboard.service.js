@@ -1,10 +1,10 @@
-const { callProcedure } = require("../../utils/db");
+const { callProcedure } = require("../../config/db");
 
 class DashboardService {
   async adminDashboard() {
-    const results = await callProcedure("sp_rec_admin_dashboard", []);
+    const results = await callProcedure("sp_rec_admin_dashboard()", []);
     return {
-      stats:              (results[0] ?? [])[0] ?? {},
+      stats:             (results[0] ?? [])[0] ?? {},
       candidatePipeline:  results[1] ?? [],
       recruiterPerf:      results[2] ?? [],
       recentJobs:         results[3] ?? [],
@@ -12,7 +12,7 @@ class DashboardService {
   }
 
   async recruiterDashboard(recruiterEmpId) {
-    const results = await callProcedure("sp_rec_recruiter_dashboard", [recruiterEmpId]);
+    const results = await callProcedure("sp_rec_recruiter_dashboard(?)", [recruiterEmpId]);
     return {
       stats:              (results[0] ?? [])[0] ?? {},
       assignedJobs:       results[1] ?? [],
@@ -21,14 +21,13 @@ class DashboardService {
   }
 
   async pipelineReport({ fromDate, toDate, recruiterId } = {}) {
-    const results = await callProcedure("sp_rec_pipeline_report", [
-      fromDate || null,
-      toDate || null,
-      recruiterId || null,
-    ]);
+    const results = await callProcedure(
+      "sp_rec_pipeline_report(?, ?, ?)",
+      [fromDate || null, toDate || null, recruiterId || null]
+    );
     return {
-      funnel:       results[0] ?? [],
-      timeToHire:  (results[1] ?? [])[0] ?? {},
+      funnel:          results[0] ?? [],
+      timeToHire:     (results[1] ?? [])[0] ?? {},
       sourceBreakdown: results[2] ?? [],
     };
   }

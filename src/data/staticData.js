@@ -44,6 +44,12 @@ export const STATIC_USERS = {
     name: "Emily Chen",
     email: "recruiter2@yopmail.com",
   },
+  "hrmanager@yopmail.com": {
+    password: "Test@123",
+    role: 4,
+    name: "HR Manager",
+    email: "hrmanager@yopmail.com",
+  },
 };
 
 export const STATIC_ROLES = [

@@ -340,14 +340,10 @@ export const TABS = {
     { key: "reports", label: "Reports", icon: BarChart3 },
   ],
   4: [
-    { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { key: "requirements", label: "Requirements", icon: Briefcase },
-    { key: "candidates", label: "Candidates", icon: Users },
-    { key: "interviews", label: "Interviews", icon: CalendarCheck },
-    { key: "offers", label: "Offers", icon: FileCheck },
-    { key: "onboarding", label: "Onboarding", icon: Plus },
-    { key: "employees", label: "Employees", icon: UserPlus },
-    { key: "reports", label: "Reports", icon: BarChart3 },
+    { key: "dashboard",  label: "Dashboard",  icon: LayoutDashboard },
+    { key: "jobs",       label: "Jobs",        icon: Briefcase },
+    { key: "candidates", label: "Candidates",  icon: Users },
+    { key: "interviews", label: "Interviews",  icon: CalendarCheck },
   ],
   5: [
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },

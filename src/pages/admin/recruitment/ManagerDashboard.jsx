@@ -1,77 +1,63 @@
-import { Briefcase, CalendarCheck, FileCheck, Users } from "lucide-react";
-import ReportLineChart from "../../../component/reports/ReportLineChart";
-import Btn from "./Btn";
+import React, { useEffect, useState } from "react";
+import { Briefcase, CalendarCheck, FileCheck, Users, Loader2 } from "lucide-react";
 import Card from "./Card";
 import Stat from "./Stat";
+import DataTable from "./DataTable";
 import { statGridClass } from "./data";
 import { useNavigate } from "react-router-dom";
+import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
+import { errorToast } from "../../../utils/ToastControllers";
 
-function ManagerDashboard()
-{
-    const router = useNavigate();
-    return (
-        <>
-            <div className="flex justify-end mb-4">
-                <button
-                    onClick={() => router("/recruiter/recruitment/create-new")}
-                    className="px-4 py-2 bg-orange-500 text-white rounded"
-                >
-                    New Recruitment
-                </button>
-                {/* <button className="inline-block px-4 py-2 bg-orange-500 text-white rounded mb-4 " onClick={() => router('/admin/recruitment/createNewRecruitment')}> New Recruitment </button> */}
-            </div>
-            <div className={statGridClass}>
-                <Stat icon={Briefcase} label="Total Requirements" value="25" note="All open jobs" />
-                <Stat icon={Briefcase} label="Open Requirements" value="12" note="Actively hiring" tone="green" />
-                <Stat icon={Users} label="Total Candidates" value="150" note="Active profiles" tone="indigo" />
-                <Stat icon={CalendarCheck} label="Interviews Today" value="18" note="Scheduled" tone="purple" />
-                <Stat icon={FileCheck} label="Offers" value="12" note="Pending response" tone="orange" />
-                <Stat icon={Users} label="Joined Employees" value="10" note="This month" tone="brand" />
-            </div>
+function ManagerDashboard() {
+  const router = useNavigate();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-            <div className="grid grid-cols-1 gap-3.5 xl:grid-cols-[1fr_420px]">
-                <Card title="Recruitment Pipeline" action={<div className="text-xs text-gray-500">You Metrics</div>}>
-                    <div className="flex flex-wrap items-center justify-between gap-2 p-3.5">
-                        {[
-                            { label: "Applied", value: "35", color: "bg-blue-500" },
-                            { label: "Screening", value: "28", color: "bg-indigo-500" },
-                            { label: "Interview", value: "20", color: "bg-purple-500" },
-                            { label: "Offer", value: "15", color: "bg-orange-500" },
-                            { label: "Negotiation", value: "10", color: "bg-yellow-500" },
-                            { label: "Accepted", value: "8", color: "bg-green-500" },
-                            { label: "Rejected", value: "6", color: "bg-red-500" },
-                            { label: "On Hold", value: "5", color: "bg-gray-500" },
-                        ].map((stage) => (
-                            <div key={stage.label} className="flex flex-col items-center gap-1">
-                                <div className={`${stage.color} flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white`}>{stage.value}</div>
-                                <div className="text-xs text-gray-600">{stage.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
+  useEffect(() => {
+    getDashboard()
+      .then(setData)
+      .catch(err => errorToast(getErrorMessage(err, "Failed to load dashboard")))
+      .finally(() => setLoading(false));
+  }, []);
 
-                <Card title="Today's Interviews" action={<Btn small>View Calendar</Btn>}>
-                    <div className="space-y-2 p-3.5 text-xs text-gray-700">
-                        {[
-                            { time: "11:00 am", candidate: "React Developer", role: "L2 Technical Interview", interviewer: "Microsoft Teams", interviewerName: "Sarah Davis" },
-                            { time: "04:00 pm", candidate: ".NET Developer", role: "HR Round", interviewer: "Microsoft Teams", interviewerName: "Emily Davis" },
-                        ].map((interview) => (
-                            <div key={interview.time} className="flex items-start justify-between rounded-md border-[0.5px] border-gray-200 bg-slate-50 p-2.5">
-                                <div>
-                                    <div className="font-semibold text-gray-900">{interview.time}</div>
-                                    <div className="text-gray-600">{interview.candidate}</div>
-                                    <div className="text-gray-500">{interview.role}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-[11px] font-semibold text-blue-600">{interview.interviewer}</div>
-                                    <div className="text-[11px] text-gray-600">{interview.interviewerName}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            </div>
-        </>
-    );
+  const s = data?.stats || {};
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 60, color: "#6b7280" }}>
+      <Loader2 size={20} /> Loading dashboard…
+    </div>
+  );
+
+  return (
+    <>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => router("/recruiter/recruitment/create-new")}
+          className="px-4 py-2 bg-orange-500 text-white rounded">
+          New Recruitment
+        </button>
+      </div>
+      <div className={statGridClass}>
+        <Stat icon={Briefcase}    label="Total Requirements" value={s.total_jobs         ?? "—"} note="All jobs" />
+        <Stat icon={Briefcase}    label="Open Requirements"  value={s.open_jobs          ?? "—"} note="Actively hiring" tone="green" />
+        <Stat icon={Users}        label="Total Candidates"   value={s.total_candidates   ?? "—"} note="Active profiles" tone="indigo" />
+        <Stat icon={CalendarCheck} label="In Interview"      value={s.in_interview       ?? "—"} note="Scheduled" tone="purple" />
+        <Stat icon={FileCheck}    label="Shortlisted"        value={s.shortlisted        ?? "—"} note="Pending offer" tone="orange" />
+        <Stat icon={Users}        label="Active Onboarding"  value={s.active_onboarding  ?? "—"} note="In progress" tone="brand" />
+      </div>
+      {data?.candidatePipeline?.length > 0 && (
+        <Card title="Candidate Pipeline" style={{ marginTop: 16 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, padding: "8px 0" }}>
+            {data.candidatePipeline.map(r => (
+              <div key={r.status} style={{ padding: "8px 16px", borderRadius: 8, background: "#f9fafb", border: "1px solid #e5e7eb", minWidth: 120, textAlign: "center" }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "#f18200" }}>{r.count}</div>
+                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{r.status}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </>
+  );
 }
+
 export default ManagerDashboard;

@@ -1,6 +1,6 @@
-const { callProcedure } = require("../../utils/db");
+const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
-const AppError = require("../../utils/AppError");
+const ApiError = require("../../utils/ApiError");
 
 class OnboardingService extends BaseService {
   constructor() {
@@ -8,41 +8,41 @@ class OnboardingService extends BaseService {
   }
 
   async list({ status, search, limit = 20, offset = 0 } = {}) {
-    const results = await callProcedure("sp_rec_list_onboarding", [status || null, search || null, limit, offset]);
+    const results = await callProcedure(
+      "sp_rec_list_onboarding(?, ?, ?, ?)",
+      [status || null, search || null, limit, offset]
+    );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
 
   async getById(onboardingId) {
-    const results = await callProcedure("sp_rec_get_onboarding", [onboardingId]);
+    const results = await callProcedure("sp_rec_get_onboarding(?)", [onboardingId]);
     const row = (results[0] ?? [])[0];
-    if (!row) throw new AppError("Onboarding record not found", 404);
+    if (!row) throw new ApiError(404, "Onboarding record not found");
     return row;
   }
 
   async create(data, createdBy, ip) {
-    const results = await callProcedure("sp_rec_create_onboarding", [
-      data.candidateId,
-      data.offerId,
-      data.effectiveDate || null,
-      createdBy,
-      ip,
-    ]);
+    const results = await callProcedure(
+      "sp_rec_create_onboarding(?, ?, ?, ?, ?, @onboarding_id)",
+      [data.candidateId, data.offerId, data.effectiveDate || null, createdBy, ip]
+    );
     return (results[0] ?? [])[0];
   }
 
   async updateTask(onboardingId, taskName, taskValue, updatedBy, ip) {
-    const results = await callProcedure("sp_rec_update_onboarding_task", [
-      onboardingId,
-      taskName,
-      taskValue,
-      updatedBy,
-      ip,
-    ]);
+    const results = await callProcedure(
+      "sp_rec_update_onboarding_task(?, ?, ?, ?, ?)",
+      [onboardingId, taskName, taskValue, updatedBy, ip]
+    );
     return (results[0] ?? [])[0];
   }
 
   async finalize(onboardingId, finalizedBy, ip) {
-    const results = await callProcedure("sp_rec_finalize_onboarding", [onboardingId, finalizedBy, ip]);
+    const results = await callProcedure(
+      "sp_rec_finalize_onboarding(?, ?, ?)",
+      [onboardingId, finalizedBy, ip]
+    );
     return (results[0] ?? [])[0];
   }
 }

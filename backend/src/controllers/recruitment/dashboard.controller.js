@@ -8,7 +8,7 @@ const adminDashboard = asyncHandler(async (req, res) => {
 });
 
 const recruiterDashboard = asyncHandler(async (req, res) => {
-  const data = await dashboardSvc.recruiterDashboard(req.user.employee_id);
+  const data = await dashboardSvc.recruiterDashboard(req.user.employeeId);
   new ApiResponse(200, data, "Dashboard data fetched").send(res);
 });
 

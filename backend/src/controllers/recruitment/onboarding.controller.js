@@ -15,18 +15,18 @@ const getOne = asyncHandler(async (req, res) => {
 });
 
 const create = asyncHandler(async (req, res) => {
-  const data = await onboardingSvc.create(req.body, req.user.user_id, req.ip);
+  const data = await onboardingSvc.create(req.body, req.user.userId, req.ip);
   new ApiResponse(201, data, "Onboarding started").send(res);
 });
 
 const updateTask = asyncHandler(async (req, res) => {
   const { taskName, taskValue } = req.body;
-  const data = await onboardingSvc.updateTask(Number(req.params.id), taskName, taskValue, req.user.user_id, req.ip);
+  const data = await onboardingSvc.updateTask(Number(req.params.id), taskName, taskValue, req.user.userId, req.ip);
   new ApiResponse(200, data, "Task updated").send(res);
 });
 
 const finalize = asyncHandler(async (req, res) => {
-  const data = await onboardingSvc.finalize(Number(req.params.id), req.user.user_id, req.ip);
+  const data = await onboardingSvc.finalize(Number(req.params.id), req.user.userId, req.ip);
   new ApiResponse(200, data, "Onboarding finalized").send(res);
 });
 

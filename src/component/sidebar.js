@@ -261,19 +261,16 @@ export const Sidebar = ({ open }) =>
     navigationLink: "/manager",
   };
 
-  // Hiring sidebar for Recruiter Team Lead — full management access
+  // Hiring sidebar for Recruiter Team Lead (HR Manager) — no Offers/Onboarding/Reports
   const hiringItemTL = {
     label: "Recruitment",
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
     badge: "New",
     children: [
-      { label: "Dashboard",   navigationLink: "/recruiter/recruitment?page=dashboard" },
-      { label: "Jobs",        navigationLink: "/recruiter/recruitment?page=jobs" },
-      { label: "Candidates",  navigationLink: "/recruiter/recruitment?page=candidates" },
-      { label: "Interviews",  navigationLink: "/recruiter/recruitment?page=interviews" },
-      { label: "Offers",      navigationLink: "/recruiter/recruitment?page=offers" },
-      { label: "Onboarding",  navigationLink: "/recruiter/recruitment?page=onboarding" },
-      { label: "Reports",     navigationLink: "/recruiter/recruitment?page=reports" },
+      { label: "Dashboard",  navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "Jobs",       navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
+      { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
     ],
   };
 
@@ -283,10 +280,10 @@ export const Sidebar = ({ open }) =>
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
     badge: "New",
     children: [
-      { label: "My Dashboard",  navigationLink: "/recruiter/recruitment?page=dashboard" },
-      { label: "My Jobs",       navigationLink: "/recruiter/recruitment?page=jobs" },
-      { label: "Candidates",    navigationLink: "/recruiter/recruitment?page=candidates" },
-      { label: "Interviews",    navigationLink: "/recruiter/recruitment?page=interviews" },
+      { label: "My Dashboard", navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "My Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
+      { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
     ],
   };
 
@@ -488,13 +485,13 @@ export const Sidebar = ({ open }) =>
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
         open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3",
       ].join(" ")}>
-        
+
         {/* Fallback if logo fails to load */}
         <img
-            src="https://www.natit.in/assets/images/logo.png"
-            alt="logo"
-          />
-       
+          src="https://www.natit.in/assets/images/logo.png"
+          alt="logo"
+        />
+
       </div>
 
       {/* ── Nav ───────────────────────────────────────────────────────────── */}

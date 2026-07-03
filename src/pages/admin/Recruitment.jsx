@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Briefcase, Users, CalendarCheck,
@@ -7,7 +7,6 @@ import {
 
 import { getStoredUser } from "../../data/auth";
 import { roleInfo, getRecruiterKey } from "./recruitment/data";
-import { MOCK_INTERVIEWS } from "./recruitment/mockData";
 
 import JobsPage        from "./recruitment/JobsPage";
 import CandidatesPage  from "./recruitment/CandidatesPage";
@@ -46,30 +45,23 @@ const TABS = {
   ],
 };
 
-function RenderPage({ page, roleId, recruiterKey, interviews, setInterviews }) {
+function RenderPage({ page, roleId }) {
   switch (page) {
     case "dashboard":
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 4) return <ManagerDashboard />;
-      return <RecruiterDashboard recruiterKey={recruiterKey} />;
-    case "jobs":
-      return <JobsPage role={roleId} />;
-    case "candidates":
-      return <CandidatesPage role={roleId} interviews={interviews} setInterviews={setInterviews} />;
-    case "interviews":
-      return <InterviewsPage role={roleId} interviews={interviews} setInterviews={setInterviews} />;
-    case "offers":
-      return <OffersPage role={roleId} />;
-    case "onboarding":
-      return <OnboardingPage role={roleId} />;
-    case "employees":
-      return <EmployeesTab />;
-    case "reports":
-      return <ReportsTab />;
+      return <RecruiterDashboard />;
+    case "jobs":       return <JobsPage role={roleId} />;
+    case "candidates": return <CandidatesPage role={roleId} />;
+    case "interviews": return <InterviewsPage role={roleId} />;
+    case "offers":     return <OffersPage role={roleId} />;
+    case "onboarding": return <OnboardingPage role={roleId} />;
+    case "employees":  return <EmployeesTab />;
+    case "reports":    return <ReportsTab />;
     default:
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 4) return <ManagerDashboard />;
-      return <RecruiterDashboard recruiterKey={recruiterKey} />;
+      return <RecruiterDashboard />;
   }
 }
 
@@ -79,9 +71,6 @@ const Recruitment = () => {
   const roleId = role.id;
   const recruiterKey = getRecruiterKey(user);
   const tabs = TABS[roleId] || TABS[5];
-
-  // Shared interviews state — passed to both CandidatesPage and InterviewsPage
-  const [interviews, setInterviews] = useState(MOCK_INTERVIEWS);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activePage = searchParams.get("page") || searchParams.get("tab") || "dashboard";
@@ -132,13 +121,7 @@ const Recruitment = () => {
         })}
       </nav>
       <div style={{ padding: "0 4px" }}>
-        <RenderPage
-          page={activePage}
-          roleId={roleId}
-          recruiterKey={recruiterKey}
-          interviews={interviews}
-          setInterviews={setInterviews}
-        />
+        <RenderPage page={activePage} roleId={roleId} />
       </div>
     </div>
   );
