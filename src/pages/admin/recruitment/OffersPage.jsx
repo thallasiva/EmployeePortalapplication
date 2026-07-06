@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Eye, CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 import {
   PageHeader, Card, Btn, Field, Input,
@@ -84,9 +84,16 @@ export default function OffersPage({ role }) {
   const [saving, setSaving]         = useState(false);
   const [acting, setActing]         = useState(false);
 
+  const tableRef = useRef(null);
+
   const isAdmin   = role === 1;
   const isTL      = role === 4;
   const canCreate = isAdmin || isTL;
+
+  function selectFilter(val) {
+    setFilterStatus(val);
+    setTimeout(() => tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+  }
 
   const loadOffers = useCallback(async () => {
     setLoading(true);
@@ -225,22 +232,36 @@ export default function OffersPage({ role }) {
 
       <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
         {[
-          { label:"Total",    count:offers.length,                                  color:"#6b7280", bg:"#f3f4f6" },
-          { label:"Draft",    count:offers.filter(o=>o.status==="Draft").length,    color:"#6b7280", bg:"#f3f4f6" },
-          { label:"Released", count:offers.filter(o=>o.status==="Released").length, color:"#d97706", bg:"#fef3c7" },
-          { label:"Accepted", count:offers.filter(o=>o.status==="Accepted").length, color:"#059669", bg:"#d1fae5" },
-          { label:"Rejected", count:offers.filter(o=>o.status==="Rejected").length, color:"#dc2626", bg:"#fee2e2" },
+          { label:"Total",    val:"",         count:offers.length,                                  color:"#6b7280", bg:"#f3f4f6", border:"1px solid #e5e7eb" },
+          { label:"Draft",    val:"Draft",    count:offers.filter(o=>o.status==="Draft").length,    color:"#6b7280", bg:"#f3f4f6", border:"1px solid #e5e7eb" },
+          { label:"Released", val:"Released", count:offers.filter(o=>o.status==="Released").length, color:"#d97706", bg:"#fef3c7", border:"1px solid #fde68a" },
+          { label:"Accepted", val:"Accepted", count:offers.filter(o=>o.status==="Accepted").length, color:"#059669", bg:"#d1fae5", border:"1px solid #6ee7b7" },
+          { label:"Rejected", val:"Rejected", count:offers.filter(o=>o.status==="Rejected").length, color:"#dc2626", bg:"#fee2e2", border:"1px solid #fca5a5" },
         ].map(s => (
-          <div key={s.label} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 14px", borderRadius:20, background:s.bg }}>
+          <div key={s.label} onClick={() => selectFilter(s.val)}
+            style={{
+              display:"flex", alignItems:"center", gap:8, padding:"6px 14px", borderRadius:20,
+              background:s.bg, cursor:"pointer",
+              border: filterStatus === s.val ? `2px solid ${s.color}` : s.border,
+              boxShadow: filterStatus === s.val ? `0 0 0 2px ${s.color}30` : "none",
+              transition:"all 0.15s",
+            }}>
             <span style={{ fontSize:16, fontWeight:700, color:s.color }}>{s.count}</span>
             <span style={{ fontSize:12, color:s.color, fontWeight:500 }}>{s.label}</span>
           </div>
         ))}
       </div>
 
+      <div ref={tableRef} style={{ scrollMarginTop: 16 }}>
       <Card style={{ padding:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", borderBottom:"1px solid #f0f0f0", flexWrap:"wrap" }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Search candidate, position, offer ID…" />
+          {filterStatus && (
+            <span onClick={() => setFilterStatus("")}
+              style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"3px 10px", borderRadius:20, background:"#e0e7ff", color:"#4338ca", fontSize:12, fontWeight:600, cursor:"pointer" }}>
+              {filterStatus} ✕
+            </span>
+          )}
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
             style={{ fontSize:13, padding:"6px 10px", border:"1px solid #e5e7eb", borderRadius:8, color:"#374151" }}>
             <option value="">All Statuses</option>
@@ -257,6 +278,7 @@ export default function OffersPage({ role }) {
           : <Table columns={columns} data={visible} onRowClick={r => setDetail(r)} />
         }
       </Card>
+      </div>
 
       {/* ── Create Offer SlideOver ── */}
       <SlideOver open={offerOpen}

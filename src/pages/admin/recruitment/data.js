@@ -335,21 +335,21 @@ export function getRecruiterKey(user)
 
 export const TABS = {
   1: [
-    { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { key: "dashboard",  label: "Dashboard",  icon: LayoutDashboard },
     { key: "candidates", label: "Candidates", icon: Users },
-    { key: "reports", label: "Reports", icon: BarChart3 },
+    { key: "reports",    label: "Reports",    icon: BarChart3 },
   ],
   4: [
     { key: "dashboard",  label: "Dashboard",  icon: LayoutDashboard },
-    { key: "jobs",       label: "Jobs",        icon: Briefcase },
-    { key: "candidates", label: "Candidates",  icon: Users },
-    { key: "interviews", label: "Interviews",  icon: CalendarCheck },
-  ],
-  5: [
-    { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { key: "requirements", label: "Requirements", icon: Briefcase },
+    { key: "jobs",       label: "Jobs",       icon: Briefcase },
     { key: "candidates", label: "Candidates", icon: Users },
     { key: "interviews", label: "Interviews", icon: CalendarCheck },
+  ],
+  5: [
+    { key: "dashboard",     label: "Dashboard",    icon: LayoutDashboard },
+    { key: "requirements",  label: "Requirements", icon: Briefcase },
+    { key: "candidates",    label: "Candidates",   icon: Users },
+    { key: "interviews",    label: "Interviews",   icon: CalendarCheck },
   ],
 };
 

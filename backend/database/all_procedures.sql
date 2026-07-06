@@ -831,7 +831,10 @@ BEGIN
 END $$
 
 DROP PROCEDURE IF EXISTS sp_get_all_resignations $$
-CREATE PROCEDURE sp_get_all_resignations (IN p_status VARCHAR(30), IN p_search VARCHAR(200))
+CREATE PROCEDURE sp_get_all_resignations (
+  IN p_status VARCHAR(30)  COLLATE utf8mb4_unicode_ci,
+  IN p_search VARCHAR(200) COLLATE utf8mb4_unicode_ci
+)
 BEGIN
   SELECT r.*,
          CONCAT(e.first_name,' ',e.last_name) AS employee_name,
@@ -839,14 +842,15 @@ BEGIN
          CONCAT(rev.first_name,' ',rev.last_name) AS reviewed_by_name,
          CONCAT(mgr.first_name,' ',mgr.last_name) AS manager_reviewed_by_name
     FROM resignations r
-    JOIN employees e    ON e.employee_id  = r.employee_id
-    LEFT JOIN departments d  ON d.department_id = e.department_id
-    LEFT JOIN employees rev  ON rev.employee_id = r.reviewed_by
-    LEFT JOIN employees mgr  ON mgr.employee_id = r.manager_reviewed_by
+    JOIN employees e       ON e.employee_id  = r.employee_id
+    LEFT JOIN departments d   ON d.department_id = e.department_id
+    LEFT JOIN employees rev   ON rev.employee_id = r.reviewed_by
+    LEFT JOIN employees mgr   ON mgr.employee_id = r.manager_reviewed_by
    WHERE (p_status IS NULL OR p_status = 'all' OR r.status = p_status)
-     AND (p_search IS NULL OR CONCAT(e.first_name,' ',e.last_name) LIKE CONCAT('%',p_search,'%')
-          OR e.emp_code LIKE CONCAT('%',p_search,'%')
-          OR d.department_name LIKE CONCAT('%',p_search,'%'))
+     AND (p_search IS NULL
+          OR CONCAT(e.first_name,' ',e.last_name) COLLATE utf8mb4_unicode_ci LIKE CONCAT('%',p_search,'%')
+          OR e.emp_code        COLLATE utf8mb4_unicode_ci LIKE CONCAT('%',p_search,'%')
+          OR d.department_name COLLATE utf8mb4_unicode_ci LIKE CONCAT('%',p_search,'%'))
    ORDER BY r.created_at DESC;
 END $$
 
@@ -3296,9 +3300,11 @@ CREATE PROCEDURE sp_get_managers_list ()
 BEGIN
   SELECT mgr.employee_id,
          CONCAT(mgr.first_name,' ',IFNULL(mgr.last_name,'')) AS full_name,
-         d.designation_name, dp.department_name,
+         d.designation_name, dp.department_name, dp.department_id,
+         mgr.employee_status,
          (SELECT COUNT(*) FROM employees s WHERE s.reporting_to=mgr.employee_id AND s.employee_status='Active') AS team_count
     FROM employees mgr
+    INNER JOIN users u ON u.employee_id = mgr.employee_id AND u.role_id = 3
     LEFT JOIN designations d  ON d.designation_id = mgr.designation_id
     LEFT JOIN departments  dp ON dp.department_id = mgr.department_id
    WHERE mgr.employee_status='Active'
@@ -3344,7 +3350,10 @@ END $$
 
 DROP PROCEDURE IF EXISTS sp_search_employees_org $$
 CREATE PROCEDURE sp_search_employees_org (
-  IN p_q VARCHAR(200), IN p_department_id INT, IN p_designation_id INT, IN p_status VARCHAR(20)
+  IN p_q             VARCHAR(200) COLLATE utf8mb4_unicode_ci,
+  IN p_department_id INT,
+  IN p_designation_id INT,
+  IN p_status        VARCHAR(20)  COLLATE utf8mb4_unicode_ci
 )
 BEGIN
   SELECT e.employee_id, e.emp_code, e.first_name, e.last_name, e.email, e.employee_status,
@@ -3354,8 +3363,11 @@ BEGIN
     FROM employees e
     LEFT JOIN designations d  ON d.designation_id  = e.designation_id
     LEFT JOIN departments  dp ON dp.department_id  = e.department_id
-   WHERE (e.first_name LIKE p_q OR e.last_name LIKE p_q OR e.emp_code LIKE p_q
-          OR e.email LIKE p_q OR CONCAT(e.first_name,' ',e.last_name) LIKE p_q)
+   WHERE (e.first_name  COLLATE utf8mb4_unicode_ci LIKE p_q
+          OR e.last_name  COLLATE utf8mb4_unicode_ci LIKE p_q
+          OR e.emp_code   COLLATE utf8mb4_unicode_ci LIKE p_q
+          OR e.email      COLLATE utf8mb4_unicode_ci LIKE p_q
+          OR CONCAT(e.first_name,' ',e.last_name) COLLATE utf8mb4_unicode_ci LIKE p_q)
      AND (p_department_id  IS NULL OR e.department_id  = p_department_id)
      AND (p_designation_id IS NULL OR e.designation_id = p_designation_id)
      AND (p_status         IS NULL OR e.employee_status = p_status)
@@ -3755,15 +3767,4 @@ END $$
 DROP PROCEDURE IF EXISTS sp_delete_designation $$
 CREATE PROCEDURE sp_delete_designation (IN p_id INT)
 BEGIN
-  DELETE FROM designations WHERE designation_id = p_id;
-  SELECT ROW_COUNT() AS affected;
-END $$
-
-DELIMITER ;
-
--- =============================================================================
--- VERIFICATION — run these after executing the file:
--- =============================================================================
--- SHOW PROCEDURE STATUS WHERE Db = 'hrms_db';
--- CALL sp_get_departments();
--- CALL sp_admin_dashboard();
+  DELETE FROM designations WHE

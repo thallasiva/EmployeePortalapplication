@@ -59,7 +59,7 @@ const createCandidateSchema = Joi.object({
   city:               Joi.string().max(100).allow("", null),
   state:              Joi.string().max(100).allow("", null),
   district:           Joi.string().max(100).allow("", null),
-  recruiterId:        Joi.number().integer().positive().required(),
+  recruiterId:        Joi.number().integer().positive().optional().allow(null),
 });
 
 const updateCandidateStatusSchema = Joi.object({

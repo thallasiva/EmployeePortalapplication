@@ -6,9 +6,9 @@ import {
   User, Briefcase, DollarSign, Building2, CreditCard, MapPin } from
 "lucide-react";
 import {
-  getEmployee, updateEmployee, updateBankDetails, updateContactInfo,
-  listEmployees } from
+  getEmployee, updateEmployee, updateBankDetails, updateContactInfo } from
 "../../api/employee.api";
+import { getManagers } from "../../api/orgHierarchy.api";
 import { listDepartments } from "../../api/department.api";
 import { calculatePayslip } from "./PayRollForm";
 import { getErrorMessage } from "../../api/client";
@@ -233,9 +233,9 @@ export default function EmployeeDetail() {
 
   const loadDropdowns = async () => {
     try {
-      const [depts, emps] = await Promise.all([listDepartments(), listEmployees({ limit: 200, status: "Active" })]);
+      const [depts, mgrs] = await Promise.all([listDepartments(), getManagers()]);
       setDepartments((Array.isArray(depts) ? depts : []).map((d) => ({ value: String(d.department_id), label: d.department_name })));
-      setManagers((Array.isArray(emps) ? emps : []).filter((e) => String(e.employee_id) !== String(id)).map((e) => ({ value: String(e.employee_id), label: `${e.first_name} ${e.last_name || ""}`.trim() })));
+      setManagers((Array.isArray(mgrs) ? mgrs : []).filter((m) => String(m.employee_id) !== String(id)).map((m) => ({ value: String(m.employee_id), label: m.full_name + (m.designation_name ? ` — ${m.designation_name}` : "") })));
     } catch {/* ignore */}
   };
 

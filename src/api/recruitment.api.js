@@ -105,5 +105,29 @@ export const getDashboard = () =>
 export const getPipelineReport = (params) =>
   apiClient.get("/recruitment/dashboard/report", { params }).then(unwrap);
 
+// ─────────────────────────────────────────────────────────────────────
+// RESUME MATCH
+// ─────────────────────────────────────────────────────────────────────
+export const quickResumeMatch = (jobReqId, candidateSkills, candidateExperience) =>
+  apiClient.post("/recruitment/resume-match/quick", { jobReqId, candidateSkills, candidateExperience }).then(unwrap);
+
+export const uploadResumeMatch = (jobReqId, file) => {
+  const form = new FormData();
+  form.append("jobReqId", String(jobReqId));
+  form.append("resume", file);
+  return apiClient.post("/recruitment/resume-match/upload", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then(unwrap);
+};
+
+export const getResumeMatch = (candidateId, jobReqId) =>
+  apiClient.get(`/recruitment/resume-match/candidate/${candidateId}/job/${jobReqId}`).then(unwrap);
+
+export const computeResumeMatch = (candidateId, jobReqId) =>
+  apiClient.post(`/recruitment/resume-match/candidate/${candidateId}/job/${jobReqId}`).then(unwrap);
+
+export const listMatchesByJob = (jobReqId) =>
+  apiClient.get(`/recruitment/resume-match/job/${jobReqId}`).then(r => r.data?.data ?? []);
+
 // Re-export helper so pages can surface friendly messages
 export { getErrorMessage };

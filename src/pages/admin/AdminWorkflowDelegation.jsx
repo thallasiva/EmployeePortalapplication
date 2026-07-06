@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   getOrgStats, getOrgTree, getUnassigned, getManagers,
   getManagerDetails, searchOrg, assignManager, bulkAssign,
@@ -17,12 +18,24 @@ import {
 const BRAND = "#f18200";
 const BL = "#fff8f0";
 const TABS = [
-{ key: "overview", label: "Overview", icon: BarChart2 },
-{ key: "hierarchy", label: "Org Hierarchy", icon: GitBranch },
-{ key: "unassigned", label: "Unassigned", icon: AlertTriangle },
-{ key: "transfer", label: "Manager Transfer", icon: ArrowRightLeft },
-{ key: "delegation", label: "Delegation", icon: Shield },
-{ key: "history", label: "Audit History", icon: History }];
+{ key: "overview",  label: "Overview",            icon: BarChart2 },
+{ key: "hierarchy", label: "Org Hierarchy",        icon: GitBranch },
+{ key: "managers",  label: "Reporting Managers",   icon: UserCheck },
+{ key: "unassigned",label: "Unassigned",           icon: AlertTriangle },
+{ key: "transfer",  label: "Manager Transfer",     icon: ArrowRightLeft },
+{ key: "delegation",label: "Delegation",           icon: Shield },
+{ key: "history",   label: "Audit History",        icon: History }];
+
+/* URL ?tab= → internal key mapping */
+const URL_TAB_MAP = {
+  org:        "hierarchy",
+  managers:   "managers",
+  transfer:   "transfer",
+  delegation: "delegation",
+  audit:      "history",
+  unassigned: "unassigned",
+  overview:   "overview",
+};
 
 
 /* ── helpers ── */
@@ -32,14 +45,14 @@ const fmtDate = (d) => {
 };
 const statusColor = (s) => {
   if (!s) return { bg: "#f3f4f6", color: "#6b7280" };
-  const m = { Active: { bg: "#dcfce7", color: "#16a34a" }, Inactive: { bg: "#fee2e2", color: "#dc2626" },
+  const m = { Active: { bg: "#fff7ed", color: "#f18200" }, Inactive: { bg: "#fee2e2", color: "#dc2626" },
     Resigned: { bg: "#fef3c7", color: "#d97706" }, Terminated: { bg: "#fee2e2", color: "#dc2626" } };
   return m[s] || { bg: "#f3f4f6", color: "#6b7280" };
 };
 const nodeColor = (node) => {
   if (node.status === "Inactive" || node.status === "Resigned") return "#6b7280";
   if (node.delegate_name) return "#d97706";
-  if (node.direct_count > 0) return "#16a34a";
+  if (node.direct_count > 0) return "#f18200";
   return "#3b82f6";
 };
 
@@ -110,7 +123,7 @@ function TreeNode({ node, depth = 0, onSelect }) {
           </div>
           <div className={cssClass({ fontSize: 11, color: "#6b7280", marginTop: 1 })}>
             {node.designation} {node.department ? `· ${node.department}` : ""}
-            {node.direct_count > 0 && <span className={cssClass({ marginLeft: 6, color: "#16a34a", fontWeight: 600 })}>({node.direct_count} reports)</span>}
+            {node.direct_count > 0 && <span className={cssClass({ marginLeft: 6, color: "#f18200", fontWeight: 600 })}>({node.direct_count} reports)</span>}
           </div>
         </div>
 
@@ -178,31 +191,26 @@ function applyCollapse(node, collapsed) {
 }
 
 function OrgChart({ nodes, onSelect, highlightIds = new Set() }) {
-  const [collapsed, setCollapsed] = React.useState(new Set());
+  const [collapsed, setCollapsed] = useState(new Set());
 
-  /* Which nodes originally have children — must be before any early return */
-  const hasKids = React.useMemo(() => {
-    const map = {};
-    (nodes || []).forEach((root) => collectHasChildren(root, map));
-    return map;
-  }, [nodes]);
+  const toggle = (id) => setCollapsed((prev) => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
-  /* Early return AFTER all hooks */
   if (!nodes || nodes.length === 0) return null;
 
-  const toggle = (e, id) => {
-    e.stopPropagation();
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  /* Apply collapse before layout */
+  const visNodes = nodes.map((r) => applyCollapse(r, collapsed));
 
-  /* Build filtered tree & layout */
-  const filtered = nodes.map((r) => applyCollapse(r, collapsed));
-  const flat = [],edges = [],counter = { v: 0 };
-  filtered.forEach((root) => placeNodes(root, 0, counter, flat, edges));
+  /* Build layout from filtered tree */
+  const flat = [], edges = [], counter = { v: 0 };
+  visNodes.forEach((root) => placeNodes(root, 0, counter, flat, edges));
+
+  /* Collect which IDs have children in the ORIGINAL (unfiltered) tree */
+  const hasChildrenMap = {};
+  nodes.forEach((r) => collectHasChildren(r, hasChildrenMap));
 
   const byId = {};
   flat.forEach((n) => {byId[n.id] = n;});
@@ -249,8 +257,6 @@ function OrgChart({ nodes, onSelect, highlightIds = new Set() }) {
           const x = nx(item.depth);
           const y = ny(item);
           const bg = boxColor(item);
-          const isCollapsed = collapsed.has(item.id);
-          const showToggle = hasKids[item.id];
           const isHighlighted = highlightIds.has(item.id);
           const label = item.name.length > 20 ? item.name.slice(0, 19) + '…' : item.name;
           const desig = (item.designation || '').length > 23 ?
@@ -282,32 +288,31 @@ function OrgChart({ nodes, onSelect, highlightIds = new Set() }) {
                   { fontFamily: 'system-ui,sans-serif', pointerEvents: 'none' })}>
                   {desig}
                 </text>
-                {/* Report count chip */}
+                {/* Report count chip — top-right corner */}
                 {item.direct_count > 0 &&
                 <>
-                    <rect x={x + CHART.NW - 34} y={y + CHART.NH - 18} width={30} height={14}
-                  rx={7} fill="rgba(255,255,255,0.22)" />
-                    <text x={x + CHART.NW - 19} y={y + CHART.NH - 7}
-                  textAnchor="middle" fill="white" fontSize={9} className={cssClass(
+                    <rect x={x + CHART.NW - 34} y={y + 4} width={32} height={15}
+                  rx={7} fill="rgba(255,255,255,0.25)" />
+                    <text x={x + CHART.NW - 18} y={y + 14}
+                  textAnchor="middle" fill="white" fontSize={9} fontWeight="700" className={cssClass(
                     { fontFamily: 'system-ui,sans-serif', pointerEvents: 'none' })}>
-                      {item.direct_count} rpts
+                      {item.direct_count} 👥
                     </text>
                   </>
                 }
               </g>
 
-              {/* ── Toggle button (brand orange #f18200) ── */}
-              {showToggle &&
-              <g onClick={(e) => toggle(e, item.id)} className={cssClass({ cursor: 'pointer' })}>
-                  {/* Orange circle badge at bottom-centre of box */}
-                  <circle cx={ncx(item)} cy={ncy(item) + TOGGLE_R} r={TOGGLE_R}
-                fill="#f18200" stroke="white" strokeWidth={1.5} />
-                  <text x={ncx(item)} y={ncy(item) + TOGGLE_R + 4}
-                textAnchor="middle" fill="white" fontSize={13} fontWeight="900" className={cssClass(
-                  { fontFamily: 'system-ui,sans-serif', pointerEvents: 'none', userSelect: 'none' })}>
-                    {isCollapsed ? '+' : '−'}
-                  </text>
-                </g>
+              {/* ── Show/Hide toggle badge (bottom-center) ── */}
+              {hasChildrenMap[item.id] &&
+              <g onClick={(e) => { e.stopPropagation(); toggle(item.id); }} style={{ cursor: 'pointer' }}>
+                <circle cx={nx(item.depth) + CHART.NW / 2} cy={ny(item) + CHART.NH + TOGGLE_R + 2}
+                  r={TOGGLE_R} fill="#fff" stroke={BRAND} strokeWidth={1.5} />
+                <text x={nx(item.depth) + CHART.NW / 2} y={ny(item) + CHART.NH + TOGGLE_R + 7}
+                  textAnchor="middle" fill={BRAND} fontSize={12} fontWeight="900"
+                  className={cssClass({ fontFamily: 'system-ui,sans-serif', pointerEvents: 'none' })}>
+                  {collapsed.has(item.id) ? '+' : '−'}
+                </text>
+              </g>
               }
             </g>);
 
@@ -400,7 +405,7 @@ function ManagerDetailModal({ managerId, onClose }) {
         maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px #0003" })}>
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "20px 24px", borderBottom: "1px solid #e5e7eb" })}>
-          <div className={cssClass({ fontSize: 18, fontWeight: 700, color: "#111827" })}>Manager Details</div>
+          <div className={cssClass({ fontSize: 18, fontWeight: 700, color: "#111827" })}>Employee Details</div>
           <button onClick={onClose} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#6b7280" })}>
             <X size={20} />
           </button>
@@ -490,7 +495,19 @@ function ManagerDetailModal({ managerId, onClose }) {
    Main Page
 ══════════════════════════════════════════ */
 export default function AdminWorkflowDelegation() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const { search } = useLocation();
+  const initialTab = useMemo(() => {
+    const p = new URLSearchParams(search).get("tab");
+    return (p && URL_TAB_MAP[p]) || "overview";
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  /* Sync when sidebar link changes the URL query */
+  useEffect(() => {
+    const p = new URLSearchParams(search).get("tab");
+    const key = (p && URL_TAB_MAP[p]) || null;
+    if (key && key !== activeTab) setActiveTab(key);
+  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
   const [stats, setStats] = useState(null);
   const [tree, setTree] = useState([]);
   const [unassigned, setUnassigned] = useState([]);
@@ -533,6 +550,9 @@ export default function AdminWorkflowDelegation() {
 
   // Dept filter for tree
   const [deptFilter, setDeptFilter] = useState("");
+
+  // Reporting managers tab search
+  const [mgSearch, setMgSearch] = useState("");
 
   // Load everything
   const loadAll = useCallback(async () => {
@@ -773,7 +793,7 @@ export default function AdminWorkflowDelegation() {
       {/* Stat cards */}
       <div className={cssClass({ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 })}>
         <StatCard icon={Users} label="Total Employees" value={stats?.total_employees} color="#3b82f6" />
-        <StatCard icon={UserCheck} label="Total Managers" value={stats?.total_managers} color="#16a34a" />
+        <StatCard icon={UserCheck} label="Total Managers" value={stats?.total_managers} color="#f18200" />
         <StatCard icon={AlertTriangle} label="Without Manager" value={stats?.without_manager} color="#f59e0b"
       sub={stats?.without_manager > 0 ? "Needs attention" : undefined} />
         <StatCard icon={Shield} label="Active Delegations" value={stats?.delegated_workflows} color={BRAND} />
@@ -1087,9 +1107,9 @@ export default function AdminWorkflowDelegation() {
       </div>
 
       {unassigned.length === 0 ?
-    <div className={cssClass({ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: 32, textAlign: "center" })}>
-          <Check size={32} color="#16a34a" className={cssClass({ margin: "0 auto 10px" })} />
-          <div className={cssClass({ fontSize: 15, fontWeight: 600, color: "#16a34a" })}>All employees have reporting managers</div>
+    <div className={cssClass({ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: 32, textAlign: "center" })}>
+          <Check size={32} color="#f18200" className={cssClass({ margin: "0 auto 10px" })} />
+          <div className={cssClass({ fontSize: 15, fontWeight: 600, color: "#f18200" })}>All employees have reporting managers</div>
         </div> :
 
     <div className={cssClass({ display: "flex", flexDirection: "column", gap: 10 })}>
@@ -1382,6 +1402,113 @@ export default function AdminWorkflowDelegation() {
     </div>;
 
 
+  /* REPORTING MANAGERS */
+  const renderManagers = () => {
+    const filtered = managers.filter((m) =>
+      !mgSearch ||
+      m.full_name?.toLowerCase().includes(mgSearch.toLowerCase()) ||
+      m.designation_name?.toLowerCase().includes(mgSearch.toLowerCase()) ||
+      m.department_name?.toLowerCase().includes(mgSearch.toLowerCase())
+    );
+
+    return (
+      <div>
+        {/* Header row */}
+        <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between",
+          marginBottom: 16, gap: 12, flexWrap: "wrap" })}>
+          <div className={cssClass({ display: "flex", alignItems: "center", gap: 8 })}>
+            <UserCheck size={18} color={BRAND} />
+            <span className={cssClass({ fontSize: 16, fontWeight: 700, color: "#111827" })}>
+              Reporting Managers ({managers.length})
+            </span>
+          </div>
+          {/* Search */}
+          <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, background: "#f9fafb",
+            border: "1px solid #e5e7eb", borderRadius: 8, padding: "8px 12px", minWidth: 240 })}>
+            <Search size={14} color="#9ca3af" />
+            <input value={mgSearch} onChange={(e) => setMgSearch(e.target.value)}
+              placeholder="Search by name, designation…"
+              className={cssClass({ border: "none", background: "none", outline: "none", fontSize: 13, flex: 1 })} />
+            {mgSearch &&
+              <button onClick={() => setMgSearch("")}
+                className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", padding: 0 })}>
+                <X size={13} />
+              </button>}
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className={cssClass({ textAlign: "center", padding: 40, color: "#9ca3af", background: "#f9fafb",
+            borderRadius: 12, fontSize: 13 })}>
+            {mgSearch ? "No matching managers" : "No reporting managers found"}
+          </div>
+        ) : (
+          <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 14 })}>
+            {filtered.map((m) => {
+              const initials = (m.full_name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+              return (
+                <div key={m.employee_id}
+                  onClick={() => setSelectedNode({ id: m.employee_id, name: m.full_name })}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 20px rgba(241,130,0,0.15)"; e.currentTarget.style.borderColor = BRAND; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 1px 4px #0001"; e.currentTarget.style.borderColor = "#e5e7eb"; }}
+                  className={cssClass({ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
+                    padding: "16px 18px", cursor: "pointer", transition: "all .15s",
+                    boxShadow: "0 1px 4px #0001", display: "flex", flexDirection: "column", gap: 12 })}>
+
+                  {/* Top: avatar + name */}
+                  <div className={cssClass({ display: "flex", alignItems: "center", gap: 12 })}>
+                    <div className={cssClass({ width: 46, height: 46, borderRadius: "50%",
+                      background: `linear-gradient(135deg,${BRAND}30,${BRAND}15)`,
+                      border: `2px solid ${BRAND}40`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 16, fontWeight: 800, color: BRAND, flexShrink: 0 })}>
+                      {initials}
+                    </div>
+                    <div className={cssClass({ flex: 1, minWidth: 0 })}>
+                      <div className={cssClass({ fontSize: 14, fontWeight: 700, color: "#111827",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" })}>
+                        {m.full_name}
+                      </div>
+                      <div className={cssClass({ fontSize: 12, color: "#6b7280", marginTop: 2,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" })}>
+                        {m.designation_name || "—"}
+                      </div>
+                    </div>
+                    <span className={cssClass({ ...statusColor(m.employee_status || "Active"),
+                      borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600, flexShrink: 0 })}>
+                      {m.employee_status || "Active"}
+                    </span>
+                  </div>
+
+                  {/* Department + team */}
+                  <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "10px 12px", background: "#f9fafb", borderRadius: 8, gap: 10 })}>
+                    <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#374151" })}>
+                      <Building size={13} color="#9ca3af" />
+                      <span className={cssClass({ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        maxWidth: 140 })}>{m.department_name || "—"}</span>
+                    </div>
+                    <div className={cssClass({ display: "flex", alignItems: "center", gap: 5, fontSize: 12,
+                      fontWeight: 600, color: BRAND, flexShrink: 0 })}>
+                      <Users size={13} color={BRAND} />
+                      {m.team_count != null ? m.team_count : "—"} reports
+                    </div>
+                  </div>
+
+                  {/* View details link */}
+                  <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "flex-end",
+                    gap: 4, fontSize: 12, color: BRAND, fontWeight: 600 })}>
+                    <Eye size={13} /> View Details
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   /* ─────────────────── MAIN RENDER ─────────────────── */
   return (
     <div className={cssClass({ padding: "24px", maxWidth: 1200, margin: "0 auto", fontFamily: "inherit" })}>
@@ -1436,12 +1563,13 @@ export default function AdminWorkflowDelegation() {
 
       {/* Tab content */}
       <div>
-        {activeTab === "overview" && renderOverview()}
-        {activeTab === "hierarchy" && renderHierarchy()}
+        {activeTab === "overview"   && renderOverview()}
+        {activeTab === "hierarchy"  && renderHierarchy()}
+        {activeTab === "managers"   && renderManagers()}
         {activeTab === "unassigned" && renderUnassigned()}
-        {activeTab === "transfer" && renderTransfer()}
+        {activeTab === "transfer"   && renderTransfer()}
         {activeTab === "delegation" && renderDelegation()}
-        {activeTab === "history" && renderHistory()}
+        {activeTab === "history"    && renderHistory()}
       </div>
 
       {/* Manager Detail Modal */}

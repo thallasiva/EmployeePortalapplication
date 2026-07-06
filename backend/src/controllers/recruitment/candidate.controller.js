@@ -1,7 +1,8 @@
-const asyncHandler  = require("express-async-handler");
-const candidateSvc  = require("../../services/recruitment/candidate.service");
+const asyncHandler   = require("express-async-handler");
+const candidateSvc   = require("../../services/recruitment/candidate.service");
+const resumeMatchSvc = require("../../services/recruitment/resumeMatch.service");
 const { getPagination, buildMeta } = require("../../utils/pagination");
-const ApiResponse   = require("../../utils/ApiResponse");
+const ApiResponse    = require("../../utils/ApiResponse");
 
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
@@ -26,9 +27,15 @@ const getOne = asyncHandler(async (req, res) => {
 
 const create = asyncHandler(async (req, res) => {
   const body = { ...req.body };
-  // Recruiter (role 5) always assigned to themselves; HR Manager picks from dropdown
-  if (req.user.roleId === 5) body.recruiterId = req.user.employeeId;
+  // Auto-assign recruiter: if not provided in payload, default to the logged-in user's employee ID
+  if (!body.recruiterId) body.recruiterId = req.user.employeeId;
   const data = await candidateSvc.create(body, req.user.userId, req.ip);
+
+  // Auto-compute resume match score in background (non-blocking)
+  if (data?.candidate_id && data?.job_req_id) {
+    resumeMatchSvc.autoComputeAsync(data.candidate_id, data.job_req_id);
+  }
+
   new ApiResponse(201, data, "Candidate created").send(res);
 });
 

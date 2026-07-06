@@ -194,21 +194,27 @@ export const Sidebar = ({ open }) =>
       icon: <UserRoundPlus size={20} />,
       navigationLink: "/dashboard/onboarding",
     },
-    {
-      label: "Appraisal",
-      icon: <Award size={20} strokeWidth={1.75} />,
-      navigationLink: "/dashboard/performance",
-    },
-    {
-      label: "Resignations",
-      icon: <LogOut size={20} strokeWidth={1.75} />,
-      navigationLink: "/dashboard/resignations",
-    },
     // ── Recruitment ────────────────────────────────────────
     {
       label: "Recruitment",
       icon: <UserSearch size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/recruitment",
+      badge: "New",
+      badgeColor: "#f18200",
+    },
+    {
+      label: "Appraisal",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/performance",
+      badge: "New",
+      badgeColor: "#f18200",
+    },
+    {
+      label: "Resignation",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/resignations",
+      badge: "New",
+      badgeColor: "#f18200",
     },
     // ── Reporting & Docs ───────────────────────────────────
     {
@@ -226,21 +232,24 @@ export const Sidebar = ({ open }) =>
       label: "Helpdesk",
       icon: <Headphones size={20} />,
       navigationLink: "/dashboard/helpdesk",
+
     },
     {
       label: "Company",
       icon: <Building size={20} />,
       navigationLink: "/dashboard/company",
+      badge: "New",
+      badgeColor: "#f18200",
     },
     {
       label: "Workflow & Hierarchy",
       icon: <Network size={20} />,
       children: [
-        { label: "Org Hierarchy", navigationLink: "/dashboard/workflow-delegation" },
-        { label: "Reporting Managers", navigationLink: "/dashboard/workflow-delegation" },
-        { label: "Manager Transfer", navigationLink: "/dashboard/workflow-delegation" },
-        { label: "Delegation", navigationLink: "/dashboard/workflow-delegation" },
-        { label: "Audit History", navigationLink: "/dashboard/workflow-delegation" },
+        { label: "Org Hierarchy",       navigationLink: "/dashboard/workflow-delegation?tab=org" },
+        { label: "Reporting Managers",  navigationLink: "/dashboard/workflow-delegation?tab=managers" },
+        { label: "Manager Transfer",    navigationLink: "/dashboard/workflow-delegation?tab=transfer" },
+        { label: "Delegation",          navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
+        { label: "Audit History",       navigationLink: "/dashboard/workflow-delegation?tab=audit" },
       ],
     },
     {
@@ -267,10 +276,11 @@ export const Sidebar = ({ open }) =>
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
     badge: "New",
     children: [
-      { label: "Dashboard",  navigationLink: "/recruiter/recruitment?page=dashboard" },
-      { label: "Jobs",       navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Dashboard", navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
       { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
       { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
+      { label: "Resume Match", navigationLink: "/recruiter/recruitment?page=resume-match" },
     ],
   };
 
@@ -284,6 +294,7 @@ export const Sidebar = ({ open }) =>
       { label: "My Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
       { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
       { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
+      { label: "Resume Match", navigationLink: "/recruiter/recruitment?page=resume-match" },
     ],
   };
 
@@ -485,13 +496,27 @@ export const Sidebar = ({ open }) =>
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
         open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3",
       ].join(" ")}>
-
-        {/* Fallback if logo fails to load */}
-        <img
-          src="https://www.natit.in/assets/images/logo.png"
-          alt="logo"
-        />
-
+        {/* Brand mark — always visible */}
+        {/* <div style={{
+          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+          background: "linear-gradient(135deg, #f18200 0%, #e06800 100%)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 8px rgba(241,130,0,0.35)",
+        }}>
+          <span style={{ color: "#fff", fontWeight: 900, fontSize: 15, letterSpacing: "-0.5px" }}>N</span>
+        </div> */}
+        {/* Company name — only when sidebar is open */}
+        {open && (
+          <div>
+            {/* <div style={{ fontSize: 15, fontWeight: 800, color: "#1a2535", lineHeight: 1.1, letterSpacing: "-0.3px" }}>
+              NAT IT
+            </div>
+            <div style={{ fontSize: 9, fontWeight: 600, color: "#f18200", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              HR Portal
+            </div> */}
+            <img src="https://content.jdmagicbox.com/v2/comp/hyderabad/h4/040pxx40.xx40.181024201042.n3h4/catalogue/nat-it-services-pvt-ltd-gachibowli-hyderabad-corporate-companies-ouis92lxo2.jpg?imwidth=463.3333333333333" alt="logo" />
+          </div>
+        )}
       </div>
 
       {/* ── Nav ───────────────────────────────────────────────────────────── */}
@@ -522,7 +547,10 @@ export const Sidebar = ({ open }) =>
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span className="shrink-0 rounded-full bg-red-500 px-1.5 py-px text-[9px] font-bold tracking-wide text-white">{item.badge}</span>
+                      <span style={{ background: item.badgeColor || "#ef4444" }}
+                        className="shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white">
+                        {item.badge}
+                      </span>
                     )}
                   </>
                 )}
@@ -548,7 +576,10 @@ export const Sidebar = ({ open }) =>
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span className="shrink-0 rounded-full bg-red-500 px-1.5 py-px text-[9px] font-bold text-white">{item.badge}</span>
+                      <span style={{ background: item.badgeColor || "#ef4444" }}
+                        className="shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white">
+                        {item.badge}
+                      </span>
                     )}
                     {expanded === index
                       ? <ChevronDown size={14} className="shrink-0 text-gray-400" />

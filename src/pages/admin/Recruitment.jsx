@@ -2,7 +2,7 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   LayoutDashboard, Briefcase, Users, CalendarCheck,
-  FileCheck, UserPlus, BarChart3, CheckSquare,
+  FileCheck, UserPlus, BarChart3, CheckSquare, Zap,
 } from "lucide-react";
 
 import { getStoredUser } from "../../data/auth";
@@ -13,6 +13,7 @@ import CandidatesPage  from "./recruitment/CandidatesPage";
 import InterviewsPage  from "./recruitment/InterviewsPage";
 import OffersPage      from "./recruitment/OffersPage";
 import OnboardingPage  from "./recruitment/OnboardingPage";
+import ResumeMatchTab  from "./recruitment/ResumeMatchTab";
 
 import AdminDashboard     from "./recruitment/AdminDashboard";
 import ManagerDashboard   from "./recruitment/ManagerDashboard";
@@ -28,7 +29,6 @@ const TABS = {
     { key: "interviews", label: "Interviews", icon: CalendarCheck },
     { key: "offers",     label: "Offers",     icon: FileCheck },
     { key: "onboarding", label: "Onboarding", icon: CheckSquare },
-    { key: "employees",  label: "Employees",  icon: UserPlus },
     { key: "reports",    label: "Reports",    icon: BarChart3 },
   ],
   4: [
@@ -51,13 +51,14 @@ function RenderPage({ page, roleId }) {
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 4) return <ManagerDashboard />;
       return <RecruiterDashboard />;
-    case "jobs":       return <JobsPage role={roleId} />;
-    case "candidates": return <CandidatesPage role={roleId} />;
-    case "interviews": return <InterviewsPage role={roleId} />;
-    case "offers":     return <OffersPage role={roleId} />;
-    case "onboarding": return <OnboardingPage role={roleId} />;
-    case "employees":  return <EmployeesTab />;
-    case "reports":    return <ReportsTab />;
+    case "jobs":          return <JobsPage role={roleId} />;
+    case "candidates":    return <CandidatesPage role={roleId} />;
+    case "interviews":    return <InterviewsPage role={roleId} />;
+    case "resume-match":  return <ResumeMatchTab role={roleId} />;
+    case "offers":        return <OffersPage role={roleId} />;
+    case "onboarding":    return <OnboardingPage role={roleId} />;
+    case "employees":     return <EmployeesTab />;
+    case "reports":       return <ReportsTab />;
     default:
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 4) return <ManagerDashboard />;

@@ -4,12 +4,13 @@ const router = express.Router();
 const { authenticate, authorizeRoles } = require("../../middleware/auth");
 
 // Controllers
-const jobCtrl = require("./jobRequest.controller");
-const candidateCtrl = require("./candidate.controller");
-const interviewCtrl = require("./interview.controller");
-const offerCtrl = require("./offer.controller");
-const onboardingCtrl = require("./onboarding.controller");
-const dashboardCtrl = require("./dashboard.controller");
+const jobCtrl         = require("./jobRequest.controller");
+const candidateCtrl   = require("./candidate.controller");
+const interviewCtrl   = require("./interview.controller");
+const offerCtrl       = require("./offer.controller");
+const onboardingCtrl  = require("./onboarding.controller");
+const dashboardCtrl   = require("./dashboard.controller");
+const resumeMatchCtrl = require("./resumeMatch.controller");
 
 // Validators
 const V = require("./recruitment.validator");
@@ -128,5 +129,12 @@ router.put("/onboarding/:id/task",
   onboardingCtrl.updateTask
 );
 router.put("/onboarding/:id/finalize", ADMIN_ONLY, onboardingCtrl.finalize);
+
+// ── Resume Match ─────────────────────────────────────────────────────────────
+router.post("/resume-match/quick",                              ALL_REC, resumeMatchCtrl.quickMatch);
+router.post("/resume-match/upload",                             ALL_REC, resumeMatchCtrl.uploadAndMatch);
+router.get( "/resume-match/candidate/:candidateId/job/:jobReqId", ALL_REC, resumeMatchCtrl.getMatch);
+router.post("/resume-match/candidate/:candidateId/job/:jobReqId", ALL_REC, resumeMatchCtrl.computeMatch);
+router.get( "/resume-match/job/:jobReqId",                     ALL_REC, resumeMatchCtrl.listByJob);
 
 module.exports = router;

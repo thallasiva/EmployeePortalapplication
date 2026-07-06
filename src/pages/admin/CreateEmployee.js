@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import SuccessModal from "../../component/SuccessModal";
-import { createEmployee, listEmployees } from "../../api/employee.api";
+import { createEmployee } from "../../api/employee.api";
 import { listDepartments } from "../../api/department.api";
+import { getManagers } from "../../api/orgHierarchy.api";
 import { getErrorMessage } from "../../api/client";
 import { errorToast } from "../../utils/ToastControllers";
 import "../../component/employee/employee.css";import { cssClass, joinClasses } from "../../utils/classStyles";
@@ -127,9 +128,9 @@ export default function CreateEmployee() {
     listDepartments().
     then(setDepartments).
     catch((err) => errorToast(getErrorMessage(err, "Failed to load departments")));
-    listEmployees({ limit: 200 }).
-    then(({ data }) => setMembers(data)).
-    catch((err) => errorToast(getErrorMessage(err, "Failed to load employees")));
+    getManagers().
+    then((data) => setMembers(Array.isArray(data) ? data : [])).
+    catch((err) => errorToast(getErrorMessage(err, "Failed to load managers")));
   }, []);
 
   const setField = (name, value) => {
@@ -364,7 +365,8 @@ export default function CreateEmployee() {
                   <option value="none">None</option>
                   {members.map((m) =>
                 <option key={m.employee_id} value={m.employee_id}>
-                      {m.first_name} {m.last_name}
+                      {m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}
+                      {m.designation_name ? ` — ${m.designation_name}` : ""}
                     </option>
                 )}
                 </select>
@@ -373,11 +375,11 @@ export default function CreateEmployee() {
                 <select
                 value={values.assigned_member}
                 onChange={(e) => setField("assigned_member", e.target.value)}>
-                
+
                   <option value="">None</option>
                   {members.map((m) =>
-                <option key={`assign-${m.employee_id}`} value={`${m.first_name} ${m.last_name}`}>
-                      {m.first_name} {m.last_name}
+                <option key={`assign-${m.employee_id}`} value={m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}>
+                      {m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()}
                     </option>
                 )}
                 </select>
@@ -651,7 +653,7 @@ export default function CreateEmployee() {
                   "None" :
                   (() => {
                     const m = members.find((x) => String(x.employee_id) === String(values.reporting_to));
-                    return m ? `${m.first_name} ${m.last_name}` : "—";
+                    return m ? (m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim()) : "—";
                   })()
                   }</dd></div>
                 <div><dt>Start Date</dt><dd>{formatDate(values.emp_joining_date)}</dd></div>
