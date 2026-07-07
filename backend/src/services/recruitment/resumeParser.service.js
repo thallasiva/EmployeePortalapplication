@@ -45,6 +45,7 @@ const SKILL_VOCAB = [
   "Data Science", "Power BI", "Tableau", "Spark", "Hadoop", "Kafka",
   // Other
   "Agile", "Scrum", "Kanban", "SDLC", "OOP", "SOLID", "Design Patterns",
+  
 ];
 
 // Normalise to lower-case for matching

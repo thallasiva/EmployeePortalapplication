@@ -96,6 +96,24 @@ const myTeam = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'My team fetched').send(res);
 });
 
+const changeRole = asyncHandler(async (req, res) => {
+  const employeeId = Number(req.params.id);
+  const { roleId } = req.body;
+  if (!roleId) throw ApiError.badRequest('roleId is required');
+  await employeeService.changeRole(employeeId, Number(roleId));
+  new ApiResponse(200, { employeeId, roleId }, 'Role updated successfully').send(res);
+});
+
+const listRoles = asyncHandler(async (req, res) => {
+  const roles = await employeeService.listRoles();
+  new ApiResponse(200, roles, 'Roles fetched').send(res);
+});
+
+const listWithRoles = asyncHandler(async (req, res) => {
+  const employees = await employeeService.listEmployeesWithRoles();
+  new ApiResponse(200, employees, 'Employees with roles fetched').send(res);
+});
+
 module.exports = {
   ...base,
   list,
@@ -109,4 +127,7 @@ module.exports = {
   orgChart,
   directory,
   myTeam,
+  changeRole,
+  listRoles,
+  listWithRoles,
 };

@@ -87,8 +87,7 @@ export default function OffersPage({ role }) {
   const tableRef = useRef(null);
 
   const isAdmin   = role === 1;
-  const isTL      = role === 4;
-  const canCreate = isAdmin || isTL;
+  const canCreate = isAdmin;
 
   function selectFilter(val) {
     setFilterStatus(val);

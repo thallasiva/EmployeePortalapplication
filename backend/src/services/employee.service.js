@@ -166,6 +166,42 @@ class EmployeeService extends BaseService {
     );
     return results[0] ?? results;
   }
+  /** Change the role_id on the users row linked to this employee */
+  async changeRole(employeeId, roleId) {
+    const { query } = require('../config/db');
+    const rows = await query('SELECT user_id FROM users WHERE employee_id = ? LIMIT 1', [employeeId]);
+    if (!rows || !rows.length) throw require('../utils/ApiError').notFound('No user account linked to this employee');
+    await query('UPDATE users SET role_id = ? WHERE employee_id = ?', [roleId, employeeId]);
+    return true;
+  }
+
+  /** List all available roles */
+  async listRoles() {
+    const { query } = require('../config/db');
+    const rows = await query('SELECT role_id, role_name, description FROM roles ORDER BY role_id');
+    return rows;
+  }
+
+
+  /** List employees with their current role_id from users table */
+  async listEmployeesWithRoles() {
+    const { query } = require('../config/db');
+    const rows = await query(`
+      SELECT
+        e.employee_id, e.emp_code, e.first_name, e.last_name, e.email,
+        e.emp_job_title, ds.designation_name,
+        u.role_id, r.role_name
+      FROM employees e
+      LEFT JOIN users u         ON u.employee_id  = e.employee_id
+      LEFT JOIN roles r         ON r.role_id       = u.role_id
+      LEFT JOIN designations ds ON ds.designation_id = e.designation_id
+      WHERE e.employee_status = 'Active'
+      ORDER BY e.first_name, e.last_name
+    `);
+    return rows;
+  }
+
+
 }
 
 module.exports = new EmployeeService();

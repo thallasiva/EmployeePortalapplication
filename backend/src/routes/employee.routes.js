@@ -18,6 +18,8 @@ router.get('/me', controller.getMe);
 router.get('/org-chart', controller.orgChart);
 router.get('/directory', controller.directory);
 router.get('/my-team', controller.myTeam);
+router.get('/roles/list', controller.listRoles);
+router.get('/with-roles', controller.listWithRoles);
 
 router.get('/', requirePermission('employees', 'view'), controller.list);
 router.post('/', requirePermission('employees', 'add'), validate(createEmployeeSchema), controller.create);
@@ -31,5 +33,7 @@ router.put('/:id/contact-info', requirePermission('employees', 'edit'), validate
 
 router.get('/:id/bank-details', requirePermission('employees', 'view'), controller.getBankDetails);
 router.put('/:id/bank-details', requirePermission('employees', 'edit'), validate(bankDetailsSchema), controller.updateBankDetails);
+
+router.put('/:id/role', requirePermission('employees', 'edit'), controller.changeRole);
 
 module.exports = router;

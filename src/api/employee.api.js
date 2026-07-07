@@ -44,3 +44,11 @@ export const getMyProfile = () => apiClient.get("/employees/me").then(unwrap);
 
 /** GET /employees/org-chart — full flat list for building hierarchy tree */
 export const getOrgChart = () => apiClient.get("/employees/org-chart").then(unwrap);
+
+/** GET /employees/roles/list — all system roles */
+export const listRoles = () => apiClient.get("/employees/roles/list").then(unwrap);
+
+/** PUT /employees/:id/role — change employee role */
+export const changeEmployeeRole = (employeeId, roleId) =>
+  apiClient.put(`/employees/${employeeId}/role`, { roleId }).then(unwrap);
+

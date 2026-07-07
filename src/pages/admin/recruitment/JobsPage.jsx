@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, UserPlus, Eye, Loader2, RefreshCw } from "lucide-react";
+import { Plus, UserPlus, Eye, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   PageHeader, Card, Btn, Field, Select,
@@ -7,7 +7,7 @@ import {
 } from "./shared";
 import { POSITION_TYPES, BUSINESS_UNITS, ASSIGNMENT_STATUSES, JOB_STATUSES } from "./mockData";
 import {
-  listJobs, assignRecruiters as apiAssignRecruiters, listRecruiters, getErrorMessage,
+  listJobs, getJob, updateJob, assignRecruiters as apiAssignRecruiters, listRecruiters, getErrorMessage,
 } from "../../../api/recruitment.api";
 import { errorToast, successToast } from "../../../utils/ToastControllers";
 
@@ -15,6 +15,7 @@ export default function JobsPage({ role }) {
   const navigate = useNavigate();
 
   const [jobs, setJobs] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [recruiters, setRecruiters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -22,12 +23,15 @@ export default function JobsPage({ role }) {
   const [detailJob, setDetailJob] = useState(null);
   const [assignOpen, setAssignOpen] = useState(null);
   const [assignIds, setAssignIds] = useState([]);
+  const [originalIds, setOriginalIds] = useState([]);
   const [assigning, setAssigning] = useState(false);
+  const [loadingAssign, setLoadingAssign] = useState(false);
 
   const isAdmin = role === 1;
   const isTL = role === 4;
   const canCreate = isAdmin || isTL;
   const canAssign = isAdmin || isTL;
+  const canClose  = isAdmin || isTL;
 
   // ── Fetch jobs ──────────────────────────────────────────────────────
   const loadJobs = useCallback(async () => {
@@ -36,8 +40,9 @@ export default function JobsPage({ role }) {
       const params = {};
       if (filterStatus) params.assignmentStatus = filterStatus;
       if (search)       params.search = search;
-      const { data } = await listJobs({ ...params, limit: 100 });
+      const { data, meta } = await listJobs({ ...params, limit: 100 });
       setJobs(data ?? []);
+      setTotalCount(meta?.total ?? (data?.length ?? 0));
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to load jobs"));
     } finally {
@@ -54,6 +59,23 @@ export default function JobsPage({ role }) {
       .catch(() => {});
   }, []);
 
+  // ── Open assign modal, pre-load current recruiter IDs ─────────────
+  async function openAssign(row) {
+    setAssignOpen(row);
+    setLoadingAssign(true);
+    try {
+      const job = await getJob(row.job_req_id);
+      const ids = (job.recruiters ?? []).map(r => r.employee_id);
+      setAssignIds(ids);
+      setOriginalIds(ids);
+    } catch {
+      setAssignIds([]);
+      setOriginalIds([]);
+    } finally {
+      setLoadingAssign(false);
+    }
+  }
+
   // ── Assign recruiters ──────────────────────────────────────────────
   async function handleAssign() {
     setAssigning(true);
@@ -67,6 +89,19 @@ export default function JobsPage({ role }) {
       errorToast(getErrorMessage(err, "Failed to assign recruiters"));
     } finally {
       setAssigning(false);
+    }
+  }
+
+  // ── Close job request ─────────────────────────────────────────────
+  async function handleClose(job) {
+    if (!window.confirm(`Close "${job.title}"? This will move it from Open to Closed.`)) return;
+    try {
+      await updateJob(job.job_req_id, { assignmentStatus: "Closed" });
+      successToast("Job request closed");
+      setDetailJob(null);
+      loadJobs();
+    } catch (err) {
+      errorToast(getErrorMessage(err, "Failed to close job"));
     }
   }
 
@@ -106,16 +141,20 @@ export default function JobsPage({ role }) {
           onClick={e => { e.stopPropagation(); setDetailJob(row); }}>View</Btn>
         {canAssign && (
           <Btn size="sm" variant="secondary" icon={<UserPlus size={13} />}
-            onClick={e => { e.stopPropagation(); setAssignOpen(row); setAssignIds([]); }}>Assign</Btn>
+            onClick={e => { e.stopPropagation(); openAssign(row); }}>Assign</Btn>
+        )}
+        {canClose && row.assignment_status === "Open" && (
+          <Btn size="sm" variant="danger" icon={<XCircle size={13} />}
+            onClick={e => { e.stopPropagation(); handleClose(row); }}>Close</Btn>
         )}
       </div>
     )},
   ];
 
   // Summary counts
-  const totalOpen = jobs.filter(j => j.assignment_status === "Open").length;
+  const openJobs       = jobs.filter(j => j.assignment_status === "Open");
+  const totalOpen      = openJobs.length;
   const totalCompleted = jobs.filter(j => j.assignment_status === "Completed").length;
-  const totalVacancies = jobs.reduce((s, j) => s + (Number(j.vacancies) || 0), 0);
 
   return (
     <div>
@@ -134,10 +173,10 @@ export default function JobsPage({ role }) {
       {/* Stat cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
         {[
-          { label: "Total Jobs",     value: jobs.length,   color: "#1a2535" },
+          { label: "Total Jobs",     value: totalCount,    color: "#1a2535" },
           { label: "Open",           value: totalOpen,     color: "#059669" },
           { label: "Completed",      value: totalCompleted,color: "#7c3aed" },
-          { label: "Total Openings", value: totalVacancies,color: "#f18200" },
+          { label: "Total Openings", value: totalCount,     color: "#f18200" },
         ].map(s => (
           <Card key={s.label} style={{ padding: "14px 18px" }}>
             <div style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>{s.label}</div>
@@ -171,7 +210,17 @@ export default function JobsPage({ role }) {
       {/* Detail Modal */}
       <Modal open={!!detailJob} onClose={() => setDetailJob(null)}
         title={detailJob?.title || "Job Details"} width={640}
-        footer={<Btn variant="secondary" onClick={() => setDetailJob(null)}>Close</Btn>}>
+        footer={
+          <div style={{ display:"flex", gap:8, width:"100%" }}>
+            {canClose && detailJob?.assignment_status === "Open" && (
+              <Btn variant="danger" icon={<XCircle size={14} />} onClick={() => handleClose(detailJob)}>
+                Close Job Request
+              </Btn>
+            )}
+            <div style={{ flex:1 }} />
+            <Btn variant="secondary" onClick={() => setDetailJob(null)}>Dismiss</Btn>
+          </div>
+        }>
         {detailJob && (
           <div>
             <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
@@ -221,11 +270,11 @@ export default function JobsPage({ role }) {
 
       {/* Assign Recruiter Modal */}
       <Modal open={!!assignOpen}
-        onClose={() => { setAssignOpen(null); setAssignIds([]); }}
+        onClose={() => { setAssignOpen(null); setAssignIds([]); setOriginalIds([]); }}
         title={`Assign Recruiter — ${assignOpen?.title || ""}`} width={420}
         footer={
           <>
-            <Btn variant="secondary" onClick={() => { setAssignOpen(null); setAssignIds([]); }}>Cancel</Btn>
+            <Btn variant="secondary" onClick={() => { setAssignOpen(null); setAssignIds([]); setOriginalIds([]); }}>Cancel</Btn>
             <Btn onClick={handleAssign} disabled={assigning}>
               {assigning ? "Saving…" : "Confirm Assignment"}
             </Btn>
@@ -236,24 +285,54 @@ export default function JobsPage({ role }) {
             <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 16 }}>
               Select recruiters for <strong>{assignOpen.client}</strong> — <strong>{assignOpen.title}</strong>.
             </p>
-            {recruiters.length === 0 && (
-              <p style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", padding: 16 }}>No recruiters found</p>
+            {loadingAssign ? (
+              <div style={{ display:"flex", justifyContent:"center", padding:24, color:"#6b7280" }}>
+                <Loader2 size={18} style={{ animation:"spin 1s linear infinite" }} />
+              </div>
+            ) : (
+              <>
+                {recruiters.length === 0 && (
+                  <p style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", padding: 16 }}>No recruiters found</p>
+                )}
+                {recruiters.map(r => {
+                  const empId = r.employee_id;
+                  const name = `${r.first_name || ""} ${r.last_name || ""}`.trim();
+                  const isChecked = assignIds.includes(empId);
+                  const isOriginal = originalIds.includes(empId);
+                  const isLocked = false; // Both Admin and HR Manager can freely check/uncheck
+                  return (
+                    <label key={empId} style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                      borderRadius: 8, marginBottom: 8, cursor: isLocked ? "default" : "pointer",
+                      border: isChecked ? "1px solid #f18200" : "1px solid #e5e7eb",
+                      background: isChecked ? "#fff7ed" : "#fff",
+                      opacity: isLocked ? 0.85 : 1,
+                    }}>
+                      <input type="checkbox"
+                        checked={isChecked}
+                        disabled={isLocked}
+                        onChange={e => {
+                          if (isLocked) return;
+                          setAssignIds(ids => e.target.checked ? [...ids, empId] : ids.filter(i => i !== empId));
+                        }}
+                        style={{ accentColor: "#f18200" }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>{name}</div>
+                        <div style={{ fontSize: 11, color: "#6b7280" }}>{r.email}</div>
+                      </div>
+                      {isOriginal && isLocked && (
+                        <span style={{ fontSize: 10, color: "#059669", fontWeight: 600, background: "#d1fae5", padding: "2px 7px", borderRadius: 20 }}>Assigned</span>
+                      )}
+                      {isOriginal && !isLocked && (
+                        <span style={{ fontSize: 10, color: isChecked ? "#b45309" : "#6b7280", fontWeight: 600, background: isChecked ? "#fef3c7" : "#f3f4f6", padding: "2px 7px", borderRadius: 20 }}>
+                          {isChecked ? "Assigned" : "Removed"}
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
+              </>
             )}
-            {recruiters.map(r => {
-              const empId = r.employee_id;
-              const name = `${r.first_name || ""} ${r.last_name || ""}`.trim();
-              return (
-                <label key={empId} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb", marginBottom: 8, cursor: "pointer", background: assignIds.includes(empId) ? "#fff7ed" : "#fff" }}>
-                  <input type="checkbox" checked={assignIds.includes(empId)}
-                    onChange={e => setAssignIds(ids => e.target.checked ? [...ids, empId] : ids.filter(i => i !== empId))}
-                    style={{ accentColor: "#f18200" }} />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>{name}</div>
-                    <div style={{ fontSize: 11, color: "#6b7280" }}>{r.email}</div>
-                  </div>
-                </label>
-              );
-            })}
           </div>
         )}
       </Modal>

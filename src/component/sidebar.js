@@ -32,6 +32,7 @@ import
   IdCard,
   Award,
   UserSearch,
+  ShieldCheck,
 } from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
@@ -251,6 +252,11 @@ export const Sidebar = ({ open }) =>
         { label: "Delegation",          navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
         { label: "Audit History",       navigationLink: "/dashboard/workflow-delegation?tab=audit" },
       ],
+    },
+    {
+      label: "Role Management",
+      icon: <ShieldCheck size={20} />,
+      navigationLink: "/dashboard/role-management",
     },
     {
       label: "Settings",
@@ -614,7 +620,6 @@ export const Sidebar = ({ open }) =>
 
       {/* ── User footer ───────────────────────────────────────────────────── */}
       <div className="border-t border-[#f5f5f5] px-2 py-2.5">
-
         <button type="button"
           className={[
             "flex w-full items-center gap-2.5 rounded px-2 py-2 text-sm font-semibold text-red-500 transition hover:bg-rose-50",
@@ -628,3 +633,5 @@ export const Sidebar = ({ open }) =>
     </aside>
   );
 };
+
+export default Sidebar;

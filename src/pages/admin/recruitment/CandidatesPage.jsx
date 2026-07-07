@@ -169,12 +169,68 @@ function InterviewHistory({ candidateId, role, onMoveToNextRound }) {
     }
   }
 
+  const isRecruiterView = role === 5;
+
   if (loading) return (
     <div style={{ marginTop: 16, fontSize: 13, color: "#9ca3af", display: "flex", alignItems: "center", gap: 6 }}>
       <Loader2 size={14} /> Loading interview history…
     </div>
   );
   if (!ivs.length) return null;
+
+  // ── Recruiter: simple clean table view ──────────────────────────
+  if (isRecruiterView) {
+    const statusColor = s => s === "Completed" ? { bg:"#dcfce7", color:"#15803d" } : s === "Scheduled" ? { bg:"#fff7ed", color:"#f18200" } : { bg:"#f3f4f6", color:"#6b7280" };
+    const feedbackColor = s => s === "Selected" ? { bg:"#dcfce7", color:"#15803d" } : s === "Not Selected" ? { bg:"#fee2e2", color:"#dc2626" } : s === "Hold" ? { bg:"#fef3c7", color:"#d97706" } : { bg:"#f3f4f6", color:"#6b7280" };
+    return (
+      <div style={{ marginTop: 20 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+          <div style={{ width:3, height:16, background:"#f18200", borderRadius:2 }} />
+          <span style={{ fontSize:11, fontWeight:700, color:"#374151", textTransform:"uppercase", letterSpacing:"0.06em" }}>Interview Rounds</span>
+          <span style={{ fontSize:11, fontWeight:600, background:"#fff7ed", color:"#f18200", border:"1px solid #fed7aa", borderRadius:20, padding:"1px 8px" }}>{ivs.length} round{ivs.length!==1?"s":""}</span>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {ivs.map((iv, i) => {
+            const sc = statusColor(iv.status);
+            const fc = feedbackColor(iv.feedback_status);
+            const num = LEVEL_ORDER.indexOf(iv.level)+1 || i+1;
+            const TYPE_ICON = { "Video Call":"📹","Phone":"📞","In-Person":"🏢","Teams":"💻" };
+            return (
+              <div key={iv.interview_id} style={{ display:"grid", gridTemplateColumns:"32px 1fr auto auto", alignItems:"center", gap:12, padding:"12px 16px", background:"#fff", border:"1px solid #e5e7eb", borderRadius:10, boxShadow:"0 1px 3px #0000000a" }}>
+                {/* Round number */}
+                <div style={{ width:32, height:32, borderRadius:"50%", background:"#1a2535", color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:800, flexShrink:0 }}>
+                  {num}
+                </div>
+                {/* Details */}
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>{iv.level} {iv.interview_type ? <span style={{ fontSize:11, color:"#6b7280", fontWeight:400 }}>{TYPE_ICON[iv.interview_type]||""} {iv.interview_type}</span> : null}</div>
+                  <div style={{ fontSize:11, color:"#6b7280", marginTop:3, display:"flex", gap:10, flexWrap:"wrap" }}>
+                    {iv.interview_date && <span>📅 {iv.interview_date.slice(0,10)}</span>}
+                    {iv.interview_time && <span>⏰ {iv.interview_time.slice(0,5)}</span>}
+                    {iv.interviewer    && <span>👤 {iv.interviewer}</span>}
+                  </div>
+                  {iv.feedback_comments && (
+                    <div style={{ marginTop:6, fontSize:12, color:"#374151", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:6, padding:"6px 10px", lineHeight:1.5 }}>
+                      💬 {iv.feedback_comments}
+                    </div>
+                  )}
+                </div>
+                {/* Status */}
+                <span style={{ fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, background:sc.bg, color:sc.color, whiteSpace:"nowrap" }}>{iv.status}</span>
+                {/* Feedback */}
+                {iv.feedback_status && (
+                  <span style={{ fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:20, background:fc.bg, color:fc.color, whiteSpace:"nowrap" }}>
+                    {iv.feedback_status==="Selected"?"✅ ":iv.feedback_status==="Not Selected"?"❌ ":iv.feedback_status==="Hold"?"⏸ ":""}
+                    {iv.feedback_status}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   const dotColor = (iv) => {
     if (iv.status === "Scheduled") return "#f18200";
@@ -497,7 +553,7 @@ export default function CandidatesPage({ role }) {
     { header: "Source",       key: "source" },
     { header: "",             key: "candidate_id",  width: 120, render: (_, row) => (
       <div style={{ display: "flex", gap: 4 }}>
-        {row.status === "Schedule Interview" && (isRecruiter || isTL) && (
+        {row.status === "Schedule Interview" && isRecruiter && (
           <button
             onClick={e => { e.stopPropagation(); setDetail(row); openSchedule(row); }}
             style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", background: "#f18200", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", whiteSpace: "nowrap" }}>
@@ -666,7 +722,7 @@ export default function CandidatesPage({ role }) {
                   options={STATUS_OPTS.map(s => ({ value: s, label: s }))} />
               </div>
             )}
-            {(isRecruiter || isAdmin) && detail?.status === "Schedule Interview" && (
+            {isRecruiter && detail?.status === "Schedule Interview" && (
               <Btn icon={<Calendar size={15} />} onClick={() => openSchedule(detail)}
                 style={{ background: "#f18200", color: "#fff", border: "none" }}>
                 Schedule Interview
@@ -730,7 +786,7 @@ export default function CandidatesPage({ role }) {
             <MatchScoreWidget candidateId={detail.candidate_id} jobReqId={detail.job_req_id} />
 
             {/* Schedule CTA for recruiter/HR when status = Schedule Interview */}
-            {detail.status === "Schedule Interview" && (isRecruiter || isTL) && (
+            {detail.status === "Schedule Interview" && isRecruiter && (
               <div style={{ marginTop: 16, padding: "14px 16px", background: "linear-gradient(135deg,#fff7ed,#fef3c7)", border: "1px solid #fed7aa", borderLeft: "4px solid #f18200", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e" }}>🔔 Ready for Next Interview Round</div>

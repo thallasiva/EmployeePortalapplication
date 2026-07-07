@@ -117,7 +117,7 @@ function RoundRow({ iv, canFeedback, onFeedback, onView }) {
 }
 
 // ── Candidate accordion card ─────────────────────────────────────────────────
-function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, onFeedback, onView, onScheduleNext, defaultOpen }) {
+function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, canRaiseOffer, onFeedback, onView, onScheduleNext, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen || false);
 
   const scheduledRounds = rounds.filter(r => r.status === "Scheduled");
@@ -231,7 +231,7 @@ function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, onFe
           ))}
 
           {/* Next-step action bar — shown when last round is Selected & no round pending */}
-          {lastIsSelected && scheduledRounds.length === 0 && !rejectedRound && canFeedback && (
+          {lastIsSelected && scheduledRounds.length === 0 && !rejectedRound && canRaiseOffer && (
             <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 18px", background:"#fff7ed", borderTop:"1px dashed #fed7aa" }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:12, fontWeight:700, color:"#f18200" }}>
@@ -271,6 +271,7 @@ export default function InterviewsPage({ role }) {
   const [schedOpen, setSchedOpen] = useState(false);
   const [detail, setDetail]       = useState(null);
   const [fbOpen, setFbOpen]       = useState(null);
+  const [viewIv, setViewIv]       = useState(null);
   const [form, setForm] = useState(BLANK_INT);
   const [fb, setFb]     = useState(BLANK_FB);
   const [saving, setSaving] = useState(false);
@@ -412,10 +413,10 @@ export default function InterviewsPage({ role }) {
       {/* Stats */}
       <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
         {[
-          { label:"Candidates",  count: groups.length,                                                  color:"#6b7280", bg:"#f3f4f6" },
-          { label:"Scheduled",   count: interviews.filter(iv => iv.status==="Scheduled").length,        color:"#1d4ed8", bg:"#dbeafe" },
-          { label:"Completed",   count: interviews.filter(iv => iv.status==="Completed").length,        color:"#059669", bg:"#d1fae5" },
-          { label:"Shortlisted", count: interviews.filter(iv => iv.shortlisted===1).length,             color:"#0369a1", bg:"#e0f2fe" },
+          { label:"Candidates", count: groups.length,                                           color:"#6b7280", bg:"#f3f4f6" },
+          { label:"Scheduled",  count: interviews.filter(iv=>iv.status==="Scheduled").length,   color:"#1d4ed8", bg:"#dbeafe" },
+          { label:"Completed",  count: interviews.filter(iv=>iv.status==="Completed").length,   color:"#059669", bg:"#dcfce7" },
+          { label:"Selected",   count: interviews.filter(iv=>iv.feedback_status==="Selected").length, color:"#7c3aed", bg:"#ede9fe" },
         ].map(s => (
           <div key={s.label} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 14px", borderRadius:20, background:s.bg }}>
             <span style={{ fontSize:16, fontWeight:700, color:s.color }}>{s.count}</span>
@@ -425,13 +426,13 @@ export default function InterviewsPage({ role }) {
       </div>
 
       {/* Filters */}
-      <Card style={{ padding:"12px 16px", marginBottom:16 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-          <SearchBar value={search} onChange={setSearch} placeholder="Search candidate, job, ID…" />
+      <Card style={{ padding:0, marginBottom:16 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", flexWrap:"wrap" }}>
+          <SearchBar value={search} onChange={setSearch} placeholder="Search candidate, job, interview ID…" />
           <Select value={filterLevel}  onChange={e => setFilterLevel(e.target.value)}  options={levelOpts} />
           <Select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} options={statusOpts} />
           <div style={{ marginLeft:"auto", fontSize:12, color:"#6b7280" }}>
-            {loading ? "Loading…" : `${groups.length} candidate${groups.length!==1?"s":""} · ${filtered.length} rounds`}
+            {loading ? "Loading…" : `${groups.length} candidate${groups.length !== 1 ? "s" : ""}`}
           </div>
         </div>
       </Card>
@@ -439,202 +440,128 @@ export default function InterviewsPage({ role }) {
       {/* Accordion list */}
       {loading ? (
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:48, color:"#6b7280" }}>
-          <Loader2 size={20} /> Loading interviews…
+          <Loader2 size={20} style={{ animation:"spin 1s linear infinite" }} /> Loading interviews…
         </div>
       ) : groups.length === 0 ? (
-        <div style={{ textAlign:"center", padding:"60px 20px", color:"#9ca3af" }}>
-          <Calendar size={40} color="#e5e7eb" style={{ marginBottom:12 }} />
-          <div style={{ fontSize:14, fontWeight:600, color:"#6b7280" }}>No interviews found</div>
-          <div style={{ fontSize:12, marginTop:4 }}>Schedule an interview to get started</div>
-        </div>
+        <Card style={{ padding:48, textAlign:"center", color:"#9ca3af", fontSize:14 }}>No interviews found.</Card>
       ) : (
-        groups.map((g, i) => (
-          <CandidateAccordion
-            key={g.candidateId}
-            candidateName={g.candidateName}
-            jobTitle={g.jobTitle}
-            rounds={g.rounds}
-            canFeedback={canFeedback}
-            onFeedback={openFeedback}
-            onView={setDetail}
-            defaultOpen={i === 0}
-            onScheduleNext={(sampleRound) => {
-              // Pre-fill schedule form with candidate + job from existing round
-              setForm(f => ({
-                ...BLANK_INT,
-                candidateId: String(sampleRound?.candidate_id || ""),
-                jobReqId:    String(sampleRound?.job_req_id   || ""),
-              }));
-              setSchedOpen(true);
-            }}
-          />
-        ))
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          {groups.map((g, idx) => (
+            <CandidateAccordion
+              key={g.candidateId}
+              candidateName={g.candidateName}
+              jobTitle={g.jobTitle}
+              rounds={g.rounds}
+              canFeedback={canFeedback}
+              canRaiseOffer={isAdmin}
+              defaultOpen={idx === 0}
+              onFeedback={openFeedback}
+              onView={row => setViewIv(row)}
+              onScheduleNext={row => {
+                setForm(f => ({ ...f, candidateId: String(g.candidateId) }));
+                setSchedOpen(true);
+              }}
+            />
+          ))}
+        </div>
       )}
 
-      {/* ── Schedule SlideOver ── */}
+      {/* ── Schedule Interview SlideOver ── */}
       <SlideOver open={schedOpen} onClose={() => { setSchedOpen(false); setForm(BLANK_INT); }}
-        title="Schedule Interview"
+        title="Schedule Interview" width={520}
         footer={
           <>
             <Btn variant="secondary" onClick={() => setSchedOpen(false)}>Cancel</Btn>
-            <Btn onClick={handleSchedule} disabled={saving}>{saving ? "Saving…" : "Confirm Schedule"}</Btn>
+            <Btn onClick={handleSchedule} disabled={saving}>{saving ? "Scheduling…" : "Confirm & Schedule"}</Btn>
           </>
         }>
         <form onSubmit={handleSchedule}>
-          <Field label="Candidate" required>
-            <Select name="candidateId" value={form.candidateId} onChange={handleChange} options={candidateOpts} placeholder="Select candidate" />
-          </Field>
-          <Field label="Job / Position" required>
-            <Select name="jobReqId" value={form.jobReqId} onChange={handleChange} options={jobOpts} placeholder="Select job" />
-          </Field>
           <TwoColGrid>
+            <Field label="Candidate" required>
+              <select name="candidateId" value={form.candidateId} onChange={handleChange}
+                style={{ width:"100%", fontSize:13, padding:"8px 10px", border:"1px solid #e5e7eb", borderRadius:8, color:"#374151" }}>
+                <option value="">Select candidate</option>
+                {candidateOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+            <Field label="Job Position">
+              <select name="jobReqId" value={form.jobReqId} onChange={handleChange}
+                style={{ width:"100%", fontSize:13, padding:"8px 10px", border:"1px solid #e5e7eb", borderRadius:8, color:"#374151" }}>
+                <option value="">Select job (optional)</option>
+                {jobOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
             <Field label="Interview Level" required>
-              <Select name="level" value={form.level} onChange={handleChange} options={INTERVIEW_LEVELS} />
+              <Select name="level" value={form.level} onChange={handleChange} options={[{value:"",label:"Select level"},...INTERVIEW_LEVELS.map(l=>({value:l,label:l}))]} />
             </Field>
             <Field label="Interview Type" required>
-              <Select name="interviewType" value={form.interviewType} onChange={handleChange} options={INTERVIEW_TYPES} />
+              <Select name="interviewType" value={form.interviewType} onChange={handleChange} options={[{value:"",label:"Select type"},...INTERVIEW_TYPES.map(t=>({value:t,label:t}))]} />
             </Field>
             <Field label="Date" required>
               <Input name="interviewDate" type="date" value={form.interviewDate} onChange={handleChange} />
             </Field>
-            <Field label="From Time">
+            <Field label="Time" required>
               <Input name="interviewTime" type="time" value={form.interviewTime} onChange={handleChange} />
-            </Field>
-            <Field label="Duration">
-              <select name="durationMinutes" value={form.durationMinutes} onChange={handleChange}
-                style={{ width:"100%", fontSize:13, padding:"8px 10px", border:"1px solid #e5e7eb", borderRadius:8, color:"#374151" }}>
-                {[30,45,60,90,120].map(m => (
-                  <option key={m} value={m}>{m < 60 ? `${m} min` : `${m/60} hr${m>60?"s":""}`}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="To Time (est.)">
-              <input type="time" readOnly
-                value={(() => {
-                  if (!form.interviewTime || !form.durationMinutes) return "";
-                  const [h, min] = form.interviewTime.split(":").map(Number);
-                  const total = h * 60 + min + Number(form.durationMinutes);
-                  return `${String(Math.floor(total/60)%24).padStart(2,"0")}:${String(total%60).padStart(2,"0")}`;
-                })()}
-                style={{ width:"100%", fontSize:13, padding:"8px 10px", border:"1px solid #e5e7eb", borderRadius:8, color:"#6b7280", background:"#f9fafb" }}
-              />
             </Field>
           </TwoColGrid>
           <Field label="Interviewer Name">
-            <Input name="interviewer" value={form.interviewer} onChange={handleChange} placeholder="Full name" />
+            <Input name="interviewer" value={form.interviewer} onChange={handleChange} placeholder="e.g. Jane Smith" />
           </Field>
-          {form.interviewType === "Teams" && (
-            <div style={{ padding:"12px 14px", background:"#eff6ff", borderRadius:8, marginTop:4 }}>
-              <div style={{ fontSize:12, fontWeight:700, color:"#1d4ed8", marginBottom:10 }}>Teams Meeting Details</div>
-              <Field label="Meeting Subject"><Input name="teamsSubject" value={form.teamsSubject} onChange={handleChange} /></Field>
-              <TwoColGrid>
-                <Field label="Start Time"><Input name="teamsStart" type="datetime-local" value={form.teamsStart} onChange={handleChange} /></Field>
-                <Field label="End Time"><Input name="teamsEnd" type="datetime-local" value={form.teamsEnd} onChange={handleChange} /></Field>
-              </TwoColGrid>
-              <Field label="Participants">
-                <Input name="teamsParticipants" value={form.teamsParticipants} onChange={handleChange} placeholder="email1@natit.com, email2@natit.com" />
-              </Field>
-            </div>
-          )}
+          <Field label="Notes">
+            <Textarea name="notes" value={form.notes} onChange={handleChange} placeholder="Any pre-interview notes…" rows={3} />
+          </Field>
         </form>
       </SlideOver>
 
       {/* ── Feedback Modal ── */}
       <Modal open={!!fbOpen} onClose={() => setFbOpen(null)}
-        title={`Feedback — ${fbOpen?.interview_code || ""}`} width={480}
+        title={`Feedback — ${fbOpen?.candidate_name || ""} (${fbOpen?.level || ""})`} width={480}
         footer={
           <>
             <Btn variant="secondary" onClick={() => setFbOpen(null)}>Cancel</Btn>
-            <Btn onClick={handleFeedback} disabled={saving || !fb.feedbackStatus}>
-              {saving ? "Submitting…" : "Submit Feedback"}
-            </Btn>
+            <Btn onClick={handleFeedback} disabled={saving}>{saving ? "Saving…" : "Save Feedback"}</Btn>
           </>
         }>
         {fbOpen && (
-          <form onSubmit={handleFeedback}>
-            <div style={{ padding:"10px 14px", background:"#f9fafb", borderRadius:8, marginBottom:16, fontSize:13 }}>
-              <strong>{fbOpen.candidate_name}</strong> · <RoundBadge level={fbOpen.level} />
-              <div style={{ fontSize:11, color:"#6b7280", marginTop:4 }}>
-                {fbOpen.interview_date?.slice(0,10)} {fbOpen.interview_time ? `at ${fbOpen.interview_time.slice(0,5)}` : ""} · {fbOpen.interviewer}
-              </div>
-            </div>
-            <Field label="Interview Result" required>
+          <div>
+            <Field label="Outcome" required>
               <Select name="feedbackStatus" value={fb.feedbackStatus} onChange={handleFbChange}
-                options={FEEDBACK_STATUSES} placeholder="Select result" />
+                options={[{value:"",label:"Select outcome"},...FEEDBACK_STATUSES.map(s=>({value:s,label:s}))]} />
             </Field>
-            {fb.feedbackStatus && (
-              <div style={{ padding:"8px 12px", borderRadius:8, marginBottom:12,
-                background: fb.feedbackStatus==="Selected" ? "#d1fae5" : fb.feedbackStatus==="Not Selected" ? "#fee2e2" : "#fef3c7",
-                color:      fb.feedbackStatus==="Selected" ? "#065f46" : fb.feedbackStatus==="Not Selected" ? "#991b1b" : "#92400e",
-                fontSize:12, fontWeight:600 }}>
-                {fb.feedbackStatus === "Selected" && fbOpen.level !== "Final" && "✔ Candidate will move to next round"}
-                {fb.feedbackStatus === "Selected" && fbOpen.level === "Final" && "✔ Candidate will be Shortlisted for offer"}
-                {fb.feedbackStatus === "Not Selected" && "✖ Candidate will be Rejected"}
-                {fb.feedbackStatus === "Hold" && "⏸ Candidate status will not change"}
-              </div>
-            )}
-            <Field label="Feedback Comments">
-              <Textarea name="feedbackComments" value={fb.feedbackComments} onChange={handleFbChange}
-                placeholder="Strengths, areas to improve, recommendation…" rows={4} />
+            <Field label="Comments">
+              <Textarea name="feedbackComments" value={fb.feedbackComments} onChange={handleFbChange} rows={4} placeholder="Enter interviewer feedback…" />
             </Field>
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0", cursor:"pointer" }}>
-              <input type="checkbox" name="shortlisted" checked={fb.shortlisted} onChange={handleFbChange}
-                style={{ accentColor:"#f18200", width:16, height:16 }} />
-              <div>
-                <div style={{ fontSize:13, fontWeight:600, color:"#111827" }}>Mark as Shortlisted</div>
-                <div style={{ fontSize:11, color:"#6b7280" }}>Flags the candidate for offer release</div>
-              </div>
+            <label style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"#374151", cursor:"pointer", marginTop:8 }}>
+              <input type="checkbox" name="shortlisted" checked={fb.shortlisted} onChange={handleFbChange} style={{ accentColor:"#f18200" }} />
+              Mark as Shortlisted
             </label>
-          </form>
+          </div>
         )}
       </Modal>
 
-      {/* ── Detail Modal ── */}
-      <Modal open={!!detail} onClose={() => setDetail(null)} title="Interview Details" width={560}
-        footer={<Btn variant="secondary" onClick={() => setDetail(null)}>Close</Btn>}>
-        {detail && (() => {
-          const s = STATUS_STYLE[detail.status] || { color:"#6b7280", bg:"#f3f4f6" };
-          return (
-            <div>
-              <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap", alignItems:"center" }}>
-                <span style={{ background:s.bg, color:s.color, padding:"3px 12px", borderRadius:20, fontSize:12, fontWeight:700 }}>{detail.status}</span>
-                <RoundBadge level={detail.level} />
-                <span style={{ background:"#eff6ff", color:"#1d4ed8", padding:"3px 12px", borderRadius:20, fontSize:12 }}>{detail.interview_type}</span>
-                {detail.shortlisted===1 && <span style={{ background:"#d1fae5", color:"#059669", padding:"3px 12px", borderRadius:20, fontSize:12, fontWeight:700 }}>Shortlisted</span>}
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 20px" }}>
-                <DetailRow label="Interview ID"  value={detail.interview_code} />
-                <DetailRow label="Candidate"     value={detail.candidate_name} />
-                <DetailRow label="Job Position"  value={detail.job_title} />
-                <DetailRow label="Interviewer"   value={detail.interviewer} />
-                <DetailRow label="Date"          value={detail.interview_date?.slice(0,10)} />
-                <DetailRow label="From"          value={detail.interview_time?.slice(0,5)} />
-                <DetailRow label="Duration"      value={detail.duration_minutes ? (detail.duration_minutes<60?`${detail.duration_minutes} min`:`${detail.duration_minutes/60} hr${detail.duration_minutes>60?"s":""}`) : "—"} />
-                <DetailRow label="To (est.)"     value={(() => {
-                  if (!detail.interview_time || !detail.duration_minutes) return "—";
-                  const [h,m] = detail.interview_time.split(":").map(Number);
-                  const t = h*60+m+Number(detail.duration_minutes);
-                  return `${String(Math.floor(t/60)%24).padStart(2,"0")}:${String(t%60).padStart(2,"0")}`;
-                })()} />
-              </div>
-              {detail.teams_join_url && (
-                <div style={{ marginTop:12, padding:"12px 14px", background:"#eff6ff", borderRadius:8 }}>
-                  <a href={detail.teams_join_url} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#1d4ed8", color:"#fff", padding:"8px 16px", borderRadius:8, fontSize:13, fontWeight:600, textDecoration:"none" }}>
-                    🔗 Join Teams Meeting
-                  </a>
-                </div>
-              )}
-              {detail.feedback_status && (
-                <div style={{ marginTop:12, padding:"12px 14px", background:"#f9fafb", borderRadius:8 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:"#6b7280", marginBottom:6 }}>FEEDBACK</div>
-                  <span style={{ fontSize:13, fontWeight:700, color: FB_STYLE[detail.feedback_status]?.color || "#6b7280" }}>{detail.feedback_status}</span>
-                  {detail.feedback_comments && <p style={{ fontSize:13, color:"#374151", marginTop:6, lineHeight:1.5 }}>{detail.feedback_comments}</p>}
-                </div>
-              )}
+      {/* ── View Interview Modal ── */}
+      <Modal open={!!viewIv} onClose={() => setViewIv(null)}
+        title={`Interview — ${viewIv?.candidate_name || ""}`} width={480}
+        footer={<Btn variant="secondary" onClick={() => setViewIv(null)}>Close</Btn>}>
+        {viewIv && (
+          <div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 20px" }}>
+              <DetailRow label="Level"       value={viewIv.level} />
+              <DetailRow label="Type"        value={viewIv.interview_type} />
+              <DetailRow label="Date"        value={viewIv.interview_date?.slice(0,10)} />
+              <DetailRow label="Time"        value={viewIv.interview_time?.slice(0,5)} />
+              <DetailRow label="Interviewer" value={viewIv.interviewer || "—"} />
+              <DetailRow label="Status"      value={viewIv.status} />
+              <DetailRow label="Outcome"     value={viewIv.feedback_status || "Pending"} />
             </div>
-          );
-        })()}
+            {viewIv.feedback_comments && (
+              <div style={{ marginTop:14, padding:"10px 14px", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:8 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", marginBottom:6 }}>FEEDBACK</div>
+                <p style={{ fontSize:13, color:"#374151", margin:0, lineHeight:1.6 }}>{viewIv.feedback_comments}</p>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );
