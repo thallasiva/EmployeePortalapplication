@@ -1202,7 +1202,7 @@ export default function Tasks() {
 
   const TABS = [
   { id: "tasks", label: "My Tasks" },
-  { id: "timesheets", label: "Timesheets" }];
+  { id: "timesheets", label: "My Timesheet" }];
 
 
   const FILTER_STYLE = {

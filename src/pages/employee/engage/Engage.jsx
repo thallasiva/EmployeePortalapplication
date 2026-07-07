@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Heart, MessageCircle, Search, ChevronDown, ChevronRight,
+  Search, ChevronDown, ChevronRight,
   Calendar, HandCoins, SquareCheck, Radio, Info,
   LayoutGrid, UserRoundPlus, BookOpen,
   CheckCircle2, XCircle, AlertCircle, FileText, Cake } from
@@ -180,91 +180,84 @@ function ActivityCard({ item, navigate }) {
   const isPast = (item.offset ?? 1) < -1;
 
   return (
-    <div className={cssClass(
-      {
-        background: "#fff",
-        border: "1px solid #e8edf2",
-        borderRadius: 12,
-        padding: 20,
-        opacity: isPast ? 0.76 : 1,
-        borderLeft: isToday && item.section === "events" ? `4px solid ${sec.color}` : undefined
-      })}>
-      
-      {/* Header */}
-      <div className={cssClass({ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 })}>
-        <div className={cssClass({ display: "flex", alignItems: "center", gap: 10 })}>
-          {/* Section icon */}
-          <div className={cssClass({ width: 40, height: 40, borderRadius: 12, background: sec.bg || "#f0f3f8",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 })}>
-            {item.emoji ||
-            <span className={cssClass({ color: sec.color, display: "flex" })}>{sec.icon}</span>
-            }
-          </div>
-          <div>
-            <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" })}>
-              <span className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1a2233" })}>{item.title}</span>
-              {item.status && <StatusBadge status={item.status} />}
-              {isToday && item.section === "events" &&
-              <span className={cssClass({ fontSize: 10, fontWeight: 700, background: sec.bg, color: sec.color,
-                padding: "2px 8px", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.4px" })}>
-                  TODAY
-                </span>
-              }
-            </div>
-            <span className={cssClass({ fontSize: 11, color: "#9ca8b5" })}>
-              {sec.label}  ·  {item.label || item.timestamp && timeAgo(item.timestamp)}
-            </span>
-          </div>
-        </div>
-        {/* CTA link */}
-        {item.link &&
-        <button
-          onClick={() => navigate(item.link)} className={cssClass(
-            { fontSize: 11, fontWeight: 600, color: sec.color, background: "none",
-              border: "none", cursor: "pointer", padding: 0, whiteSpace: "nowrap" })}>
-          
-            View →
-          </button>
-        }
+    <div style={{
+      background: "#fff",
+      border: "1px solid #e8edf2",
+      borderLeft: `3px solid ${isToday && item.section === "events" ? sec.color : "#e8edf2"}`,
+      borderRadius: 10,
+      padding: "14px 16px",
+      opacity: isPast ? 0.72 : 1,
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 12,
+    }}>
+
+      {/* Icon */}
+      <div style={{
+        width: 36, height: 36, borderRadius: 10,
+        background: sec.bg || "#f0f3f8",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 18, flexShrink: 0,
+      }}>
+        {item.emoji || <span style={{ color: sec.color, display: "flex" }}>{sec.icon}</span>}
       </div>
 
-      {/* Content */}
-      <p className={cssClass({ fontSize: 13, color: "#374151", margin: "0 0 12px", lineHeight: 1.55 })}>{item.content}</p>
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0 }}>
 
-      {/* Extra chips row */}
-      {item.chips && item.chips.length > 0 &&
-      <div className={cssClass({ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 })}>
-          {item.chips.map((chip, i) =>
-        <span key={i} className={cssClass({ fontSize: 11, background: "#f5f7fb", color: "#6b7a8d",
-          padding: "3px 10px", borderRadius: 20, border: "1px solid #e8edf2" })}>
-              {chip}
-            </span>
+        {/* Title row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#1a2233" }}>{item.title}</span>
+          {item.status && <StatusBadge status={item.status} />}
+          {isToday && item.section === "events" && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, background: sec.bg, color: sec.color,
+              padding: "2px 7px", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.4px",
+            }}>Today</span>
+          )}
+        </div>
+
+        {/* Chips (key facts only) */}
+        {item.chips && item.chips.length > 0 && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+            {item.chips.map((chip, i) => (
+              <span key={i} style={{
+                fontSize: 11, background: "#f5f7fb", color: "#4b5563",
+                padding: "2px 8px", borderRadius: 20, border: "1px solid #e8edf2", fontWeight: 500,
+              }}>{chip}</span>
+            ))}
+          </div>
         )}
-        </div>
-      }
 
-      {/* Message highlight (for events) */}
-      {item.message &&
-      <div className={cssClass({ display: "inline-flex", alignItems: "center", gap: 8, background: sec.bg || "#f0f3f8",
-        borderRadius: 8, padding: "6px 12px", marginBottom: 12 })}>
-          {item.name && <Avatar name={item.name} size={22} />}
-          <span className={cssClass({ fontSize: 12, fontWeight: 600, color: sec.color })}>{item.message}</span>
-        </div>
-      }
+        {/* Event person highlight */}
+        {item.message && (
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            background: sec.bg || "#f0f3f8", borderRadius: 7,
+            padding: "4px 10px", marginBottom: 4,
+          }}>
+            {item.name && <Avatar name={item.name} size={20} />}
+            <span style={{ fontSize: 11, fontWeight: 600, color: sec.color }}>{item.message}</span>
+          </div>
+        )}
 
-      {/* Footer */}
-      <div className={cssClass({ display: "flex", alignItems: "center", gap: 16, borderTop: "1px solid #f0f3f8", paddingTop: 10 })}>
-        <button className={cssClass({ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#9ca8b5",
-          background: "none", border: "none", cursor: "pointer", padding: 0 })}>
-          <Heart size={13} /><span>React</span>
-        </button>
-        <button className={cssClass({ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#9ca8b5",
-          background: "none", border: "none", cursor: "pointer", padding: 0 })}>
-          <MessageCircle size={13} /><span>Comment</span>
-        </button>
+        {/* Meta row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
+          <span style={{ fontSize: 11, color: "#9ca8b5" }}>
+            {sec.label} · {item.label || (item.timestamp && timeAgo(item.timestamp))}
+          </span>
+          {item.link && (
+            <button onClick={() => navigate(item.link)} style={{
+              marginLeft: "auto", fontSize: 11, fontWeight: 600, color: sec.color,
+              background: "none", border: "none", cursor: "pointer", padding: 0, whiteSpace: "nowrap",
+            }}>
+              View →
+            </button>
+          )}
+        </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
 /* ─── Upcoming sidebar ───────────────────────────────────────────────────── */
@@ -370,7 +363,6 @@ const Engage = () => {
         id: `leave-${lr.leave_request_id}`, section: "leave",
         status: lr.status,
         title: `${lr.leave_type_name || "Leave"} Request`,
-        content: `You applied for ${lr.leave_type_name || "leave"} from ${from} to ${to} (${days} day${days !== 1 ? "s" : ""}).`,
         chips: [`${days} day${days !== 1 ? "s" : ""}`, `${from} → ${to}`],
         emoji: lr.status === "approved" ? "✅" : lr.status === "rejected" ? "❌" : "⏳",
         timestamp: lr.applied_on || lr.created_at,
@@ -381,18 +373,18 @@ const Engage = () => {
 
     /* Payslips */
     for (const ps of payslips) {
-      const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
       const mon = MONTHS[(ps.month || 1) - 1];
+      const netPay = ps.net_pay ? `Net ₹${Number(ps.net_pay).toLocaleString("en-IN")}` : null;
       items.push({
         id: `payslip-${ps.payslip_id}`, section: "salary",
         status: "generated",
         title: `Payslip — ${mon} ${ps.year}`,
-        content: `Your payslip for ${mon} ${ps.year} has been generated. Net Pay: ₹${Number(ps.net_pay || 0).toLocaleString("en-IN")}.`,
-        chips: ps.ctc ? [`CTC ₹${Number(ps.ctc).toLocaleString("en-IN")}`] : [],
+        chips: [netPay, ps.ctc ? `CTC ₹${Number(ps.ctc).toLocaleString("en-IN")}` : null].filter(Boolean),
         emoji: "💰",
         timestamp: ps.created_at,
         link: `/payslip/${ps.payslip_id}/print`,
-        sortTs: new Date(ps.created_at || `${ps.year}-${String(ps.month).padStart(2, "0")}-01`).getTime()
+        sortTs: new Date(ps.created_at || `${ps.year}-${String(ps.month).padStart(2,"0")}-01`).getTime()
       });
     }
 
@@ -404,8 +396,7 @@ const Engage = () => {
         id: `holiday-${h.holiday_id}`, section: "holidays",
         status: h.is_restricted ? "restricted" : "general",
         title: h.holiday_name,
-        content: `${h.is_restricted ? "Restricted holiday" : "Public holiday"} on ${fmtDate(h.holiday_date)}.${off === 0 ? " 🎉 Today!" : ""}`,
-        chips: [h.is_restricted ? "Restricted" : "General", fmtDate(h.holiday_date)],
+        chips: [h.is_restricted ? "Restricted" : "Public Holiday", fmtDate(h.holiday_date)],
         emoji: h.is_restricted ? "🔒" : "📅",
         timestamp: h.holiday_date,
         sortTs: new Date(h.holiday_date).getTime()
@@ -414,12 +405,15 @@ const Engage = () => {
 
     /* Attendance regularizations */
     for (const r of regularizations) {
+      const chips = [fmtDate(r.attendance_date)];
+      if (r.shift_in) chips.push(`In: ${r.shift_in}`);
+      if (r.shift_out) chips.push(`Out: ${r.shift_out}`);
+      if (r.reason) chips.push(r.reason.slice(0, 30));
       items.push({
         id: `reg-${r.regularization_id}`, section: "attendance",
         status: r.status,
-        title: `Regularization — ${fmtDate(r.attendance_date)}`,
-        content: `Regularization request for ${fmtDate(r.attendance_date)}. Reason: ${r.reason || "—"}.`,
-        chips: r.shift_in ? [`In: ${r.shift_in}`, `Out: ${r.shift_out || "—"}`] : [],
+        title: `Attendance Regularization`,
+        chips,
         emoji: r.status === "approved" ? "✅" : r.status === "rejected" ? "❌" : "⏳",
         timestamp: r.created_at,
         link: "/employee/attendance/regularizations",

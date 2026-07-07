@@ -1,189 +1,277 @@
-import React, { useState } from "react";
-import { DollarSign, PiggyBank, Calendar, TrendingDown, Plus, X } from "lucide-react";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { useState } from "react";
+import { Plus, X, Wallet, PiggyBank, TrendingDown, CalendarClock, CheckCircle2, Clock, ChevronRight } from "lucide-react";
 
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
 
 const LOAN_TYPES = ["Personal Loan", "Home Loan", "Vehicle Loan", "Emergency Advance", "Medical Advance"];
 
-const HISTORY = [
-{ id: "LN001", type: "Personal Loan", amount: 120000, outstanding: 70000, emi: 10000, tenure: 12, remaining: 7, status: "Active", date: "01-Apr-2025" },
-{ id: "LN002", type: "Emergency Advance", amount: 50000, outstanding: 0, emi: 5000, tenure: 10, remaining: 0, status: "Closed", date: "01-Jan-2024" }];
+const LOANS = [
+  { id: "LN001", type: "Personal Loan",    amount: 120000, outstanding: 70000, emi: 10000, tenure: 12, remaining: 7,  status: "Active", date: "01 Apr 2025" },
+  { id: "LN002", type: "Emergency Advance", amount: 50000,  outstanding: 0,     emi: 5000,  tenure: 10, remaining: 0,  status: "Closed", date: "01 Jan 2024" },
+];
 
+const TYPE_COLORS = {
+  "Personal Loan":    { bg: "#eff6ff", color: "#3b82f6" },
+  "Home Loan":        { bg: "#f0fdf4", color: "#10b981" },
+  "Vehicle Loan":     { bg: "#faf5ff", color: "#a855f7" },
+  "Emergency Advance":{ bg: "#fff7ed", color: "#f18200" },
+  "Medical Advance":  { bg: "#fef2f2", color: "#ef4444" },
+};
 
-function StatCard({ icon, label, value, color = "#1e293b", bg = "#fff" }) {
+/* ── Stat Card ────────────────────────────────────────────────────────────── */
+function StatCard({ icon, label, value, color, bgColor, sub }) {
   return (
-    <div className={cssClass({ background: bg, border: "1px solid #e2e8f0", borderRadius: 12, padding: "18px 20px", display: "flex", alignItems: "flex-start", gap: 14 })}>
-      <div className={cssClass({ width: 44, height: 44, borderRadius: 10, background: color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 })}>
-        {React.cloneElement(icon, { size: 20, style: { color } })}
+    <div className="bg-white rounded-xl border border-[#e8eef5] p-5 flex items-start gap-4">
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: bgColor }}>
+        <span style={{ color }}>{icon}</span>
       </div>
-      <div>
-        <p className={cssClass({ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 })}>{label}</p>
-        <p className={cssClass({ fontSize: 20, fontWeight: 800, color, margin: "6px 0 0" })}>{value}</p>
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wide">{label}</p>
+        <p className="text-[20px] font-bold mt-0.5 truncate" style={{ color }}>{value}</p>
+        {sub && <p className="text-[11px] text-[#94a3b8] mt-0.5">{sub}</p>}
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
+/* ── Apply Modal ──────────────────────────────────────────────────────────── */
 function ApplyModal({ onClose }) {
   const [form, setForm] = useState({ type: LOAN_TYPES[0], amount: "", tenure: "", reason: "" });
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
   const emi = form.amount && form.tenure ? Math.round(Number(form.amount) / Number(form.tenure)) : 0;
 
   return (
-    <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 })}>
-      <div className={cssClass({ background: "#fff", borderRadius: 14, width: 440, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" })}>
-        <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid #f1f5f9" })}>
-          <span className={cssClass({ fontSize: 16, fontWeight: 700, color: "#1e293b" })}>Apply for Loan</span>
-          <button onClick={onClose} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" })}><X size={20} /></button>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-[460px] max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center">
+              <Wallet size={16} color="#f18200" />
+            </div>
+            <span className="text-[16px] font-bold text-[#1e293b]">Apply for Loan</span>
+          </div>
+          <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b] transition-colors">
+            <X size={20} />
+          </button>
         </div>
-        <div className={cssClass({ padding: 22 })}>
-          {[
-          { label: "Loan Type", key: "type", type: "select" },
-          { label: "Loan Amount (₹)", key: "amount", type: "number", placeholder: "e.g. 100000" },
-          { label: "Repayment Tenure (months)", key: "tenure", type: "number", placeholder: "e.g. 12" },
-          { label: "Reason / Purpose", key: "reason", type: "text", placeholder: "Brief reason for loan" }].
-          map(({ label, key, type, placeholder }) =>
-          <div key={key} className={cssClass({ marginBottom: 16 })}>
-              <label className={cssClass({ fontSize: 12, color: "#64748b", display: "block", marginBottom: 5 })}>{label}</label>
-              {type === "select" ?
-            <select value={form[key]} onChange={(e) => set(key, e.target.value)} className={cssClass(
-              { width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" })}>
-                  {LOAN_TYPES.map((t) => <option key={t}>{t}</option>)}
-                </select> :
 
-            <input type={type} value={form[key]} onChange={(e) => set(key, e.target.value)} placeholder={placeholder} className={cssClass(
-              { width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" })} />
-            }
+        <div className="p-6 space-y-4">
+          {/* Loan Type */}
+          <div>
+            <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Loan Type</label>
+            <select
+              value={form.type}
+              onChange={(e) => set("type", e.target.value)}
+              className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10"
+            >
+              {LOAN_TYPES.map((t) => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+
+          {/* Amount + Tenure row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Loan Amount (₹)</label>
+              <input
+                type="number"
+                value={form.amount}
+                onChange={(e) => set("amount", e.target.value)}
+                placeholder="e.g. 100000"
+                className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10"
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Tenure (months)</label>
+              <input
+                type="number"
+                value={form.tenure}
+                onChange={(e) => set("tenure", e.target.value)}
+                placeholder="e.g. 12"
+                className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10"
+              />
+            </div>
+          </div>
+
+          {/* EMI preview */}
+          {emi > 0 && (
+            <div className="flex items-center gap-3 p-4 bg-[#fff8f0] border border-[#fed7aa] rounded-xl">
+              <CalendarClock size={18} color="#f18200" className="shrink-0" />
+              <div>
+                <p className="text-[11px] text-[#92400e] font-semibold uppercase tracking-wide">Estimated Monthly EMI</p>
+                <p className="text-[18px] font-extrabold text-[#f18200]">{fmt(emi)}</p>
+              </div>
             </div>
           )}
 
-          {emi > 0 &&
-          <div className={cssClass({ padding: "12px 16px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, marginBottom: 18 })}>
-              <p className={cssClass({ fontSize: 12, color: "#0369a1", margin: 0 })}>
-                Estimated monthly EMI: <strong className={cssClass({ fontSize: 14 })}>{fmt(emi)}</strong>
-              </p>
-            </div>
-          }
+          {/* Reason */}
+          <div>
+            <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Reason / Purpose</label>
+            <textarea
+              rows={3}
+              value={form.reason}
+              onChange={(e) => set("reason", e.target.value)}
+              placeholder="Brief reason for loan request…"
+              className="w-full border border-[#e2e8f0] rounded-lg p-3 text-[13px] outline-none resize-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10"
+            />
+          </div>
 
-          <div className={cssClass({ display: "flex", gap: 10 })}>
-            <button onClick={onClose} className={cssClass(
-              { flex: 1, padding: "10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, fontWeight: 600, background: "#fff", color: "#64748b", cursor: "pointer" })}>
+          {/* Actions */}
+          <div className="flex gap-3 pt-1">
+            <button onClick={onClose} className="flex-1 h-[42px] border border-[#e2e8f0] rounded-lg text-[13px] font-semibold text-[#64748b] hover:bg-[#f8fafc] transition-colors">
               Cancel
             </button>
-            <button onClick={onClose} className={cssClass(
-              { flex: 1, padding: "10px", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, background: "#f18200", color: "#fff", cursor: "pointer" })}>
+            <button onClick={onClose} className="flex-1 h-[42px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
               Submit Application
             </button>
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
-export default function Loans() {
-  const [tab, setTab] = useState("active");
-  const [showModal, setShowModal] = useState(false);
-
-  const active = HISTORY.filter((l) => l.status === "Active");
-  const closed = HISTORY.filter((l) => l.status === "Closed");
-
-  const totalOutstanding = active.reduce((a, l) => a + l.outstanding, 0);
-  const totalEMI = active.reduce((a, l) => a + l.emi, 0);
+/* ── Loan Card ────────────────────────────────────────────────────────────── */
+function LoanCard({ loan }) {
+  const paidAmt   = loan.amount - loan.outstanding;
+  const progress  = Math.round((paidAmt / loan.amount) * 100);
+  const theme     = TYPE_COLORS[loan.type] || { bg: "#f8fafc", color: "#64748b" };
+  const isActive  = loan.status === "Active";
 
   return (
-    <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
+    <div className="bg-white rounded-xl border border-[#e8eef5] overflow-hidden hover:shadow-md transition-shadow">
+      {/* Card header */}
+      <div className="px-5 py-4 flex items-start justify-between gap-4 border-b border-[#f8fafc]">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: theme.bg }}>
+            <Wallet size={20} style={{ color: theme.color }} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-[15px] font-bold text-[#1f2937]">{loan.type}</p>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isActive ? "bg-emerald-50 text-emerald-700" : "bg-[#f1f5f9] text-[#64748b]"
+              }`}>
+                {loan.status}
+              </span>
+            </div>
+            <p className="text-[12px] text-[#94a3b8] mt-0.5">ID: {loan.id} · Issued: {loan.date}</p>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-[11px] text-[#94a3b8]">Loan Amount</p>
+          <p className="text-[20px] font-extrabold text-[#1f2937]">{fmt(loan.amount)}</p>
+        </div>
+      </div>
+
+      {/* Mini stat grid */}
+      <div className="grid grid-cols-4 divide-x divide-[#f1f5f9] px-0">
+        {[
+          { label: "Outstanding", value: fmt(loan.outstanding), color: isActive ? "#ef4444" : "#94a3b8" },
+          { label: "Monthly EMI",  value: fmt(loan.emi),         color: "#f18200" },
+          { label: "Total Tenure", value: `${loan.tenure} mo`,   color: "#64748b" },
+          { label: "Remaining",    value: loan.remaining > 0 ? `${loan.remaining} mo` : "—", color: isActive ? "#6366f1" : "#94a3b8" },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="px-5 py-3">
+            <p className="text-[11px] text-[#94a3b8] font-medium">{label}</p>
+            <p className="text-[14px] font-bold mt-0.5" style={{ color }}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Repayment progress */}
+      <div className="px-5 pb-4 pt-1">
+        <div className="flex items-center justify-between mb-2 text-[12px]">
+          <span className="text-[#64748b] font-medium">Repayment Progress</span>
+          <span className="font-bold" style={{ color: theme.color }}>{progress}%</span>
+        </div>
+        <div className="h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{ width: `${progress}%`, background: isActive ? theme.color : "#10b981" }}
+          />
+        </div>
+        <div className="flex justify-between mt-2 text-[11px]">
+          <span className="text-emerald-600 font-medium">Paid: {fmt(paidAmt)}</span>
+          {loan.outstanding > 0
+            ? <span className="text-red-500 font-medium">Outstanding: {fmt(loan.outstanding)}</span>
+            : <span className="text-emerald-600 font-medium flex items-center gap-1"><CheckCircle2 size={11} /> Fully repaid</span>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+export default function Loans() {
+  const [tab, setTab]           = useState("active");
+  const [showModal, setShowModal] = useState(false);
+
+  const active = LOANS.filter((l) => l.status === "Active");
+  const closed = LOANS.filter((l) => l.status === "Closed");
+  const list   = tab === "active" ? active : closed;
+
+  const totalOutstanding = active.reduce((a, l) => a + l.outstanding, 0);
+  const totalEMI         = active.reduce((a, l) => a + l.emi, 0);
+  const totalBorrowed    = LOANS.reduce((a, l) => a + l.amount, 0);
+
+  return (
+    <div className="min-h-screen bg-[#f0f4f8]">
       {showModal && <ApplyModal onClose={() => setShowModal(false)} />}
 
-      <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 })}>
-        <h1 className={cssClass({ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 })}>Loans & Advances</h1>
+      {/* ── Page Header ── */}
+      <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-[20px] font-bold text-[#1f2937]">Loans & Advances</h1>
+          <p className="text-[13px] text-[#94a3b8] mt-0.5">Track your loan accounts and repayment schedule</p>
+        </div>
         <button
-          onClick={() => setShowModal(true)} className={cssClass(
-            { display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", background: "#f18200", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" })}>
-          
-          <Plus size={15} />Apply for Loan
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors"
+        >
+          <Plus size={15} /> Apply for Loan
         </button>
       </div>
 
-      {/* KPI cards */}
-      <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 })}>
-        <StatCard icon={<DollarSign />} label="Total Borrowed" value={fmt(HISTORY.reduce((a, l) => a + l.amount, 0))} color="#f18200" />
-        <StatCard icon={<TrendingDown />} label="Outstanding" value={fmt(totalOutstanding)} color="#ef4444" bg="#fff5f5" />
-        <StatCard icon={<PiggyBank />} label="Monthly EMI" value={fmt(totalEMI)} color="#f59e0b" bg="#fffbeb" />
-        <StatCard icon={<Calendar />} label="Active Loans" value={active.length} color="#15803d" bg="#f0fdf4" />
+      {/* ── Stat Cards ── */}
+      <div className="px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={<Wallet size={20} />}       label="Total Borrowed"   value={fmt(totalBorrowed)}    color="#f18200" bgColor="#fff8f0" />
+        <StatCard icon={<TrendingDown size={20} />}  label="Outstanding"      value={fmt(totalOutstanding)}  color="#ef4444" bgColor="#fef2f2" />
+        <StatCard icon={<CalendarClock size={20} />} label="Monthly EMI"      value={fmt(totalEMI)}          color="#6366f1" bgColor="#f5f3ff" sub="Due this month" />
+        <StatCard icon={<PiggyBank size={20} />}     label="Active Loans"     value={active.length}          color="#10b981" bgColor="#ecfdf5" sub={`${closed.length} closed`} />
       </div>
 
-      {/* Tabs */}
-      <div className={cssClass({ display: "flex", gap: 8, marginBottom: 14 })}>
-        {["active", "closed"].map((t) =>
-        <button key={t} type="button" onClick={() => setTab(t)} className={cssClass(
-          {
-            padding: "8px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: tab === t ? "#f18200" : "#fff", color: tab === t ? "#fff" : "#64748b",
-            border: tab === t ? "none" : "1px solid #e2e8f0", textTransform: "capitalize"
-          })}>{t === "active" ? "Active Loans" : "Closed Loans"}</button>
+      {/* ── Tabs ── */}
+      <div className="px-6 pb-4">
+        <div className="flex gap-1 bg-white rounded-xl border border-[#e8eef5] p-1 w-fit">
+          {[{ k: "active", l: `Active (${active.length})` }, { k: "closed", l: `Closed (${closed.length})` }].map(({ k, l }) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              className={`px-5 h-[36px] rounded-lg text-[13px] font-medium transition-all ${
+                tab === k ? "bg-[#f18200] text-white shadow-sm" : "text-[#64748b] hover:text-[#1f2937]"
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── List ── */}
+      <div className="px-6 pb-8">
+        {list.length === 0 ? (
+          <div className="bg-white rounded-xl border border-[#e8eef5] p-16 text-center">
+            <PiggyBank size={48} strokeWidth={1} className="text-[#e2e8f0] mx-auto mb-3" />
+            <p className="text-[#94a3b8] text-[14px]">No {tab} loans found.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {list.map((loan) => <LoanCard key={loan.id} loan={loan} />)}
+          </div>
         )}
       </div>
-
-      {/* List */}
-      {(tab === "active" ? active : closed).length === 0 ?
-      <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "60px 24px", textAlign: "center" })}>
-          <PiggyBank size={52} strokeWidth={1} className={cssClass({ color: "#cbd5e1", marginBottom: 12 })} />
-          <p className={cssClass({ color: "#94a3b8", fontSize: 14 })}>No {tab} loans found.</p>
-        </div> :
-
-      <div className={cssClass({ display: "flex", flexDirection: "column", gap: 12 })}>
-          {(tab === "active" ? active : closed).map((loan) => {
-          const progress = Math.round((loan.amount - loan.outstanding) / loan.amount * 100);
-          return (
-            <div key={loan.id} className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 })}>
-                <div className={cssClass({ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 })}>
-                  <div>
-                    <div className={cssClass({ display: "flex", alignItems: "center", gap: 10 })}>
-                      <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>{loan.type}</span>
-                      <span className={cssClass({ fontSize: 10, padding: "2px 8px", borderRadius: 999, fontWeight: 700,
-                      background: loan.status === "Active" ? "#dcfce7" : "#f1f5f9",
-                      color: loan.status === "Active" ? "#15803d" : "#64748b"
-                    })}>{loan.status}</span>
-                    </div>
-                    <p className={cssClass({ fontSize: 12, color: "#94a3b8", margin: "3px 0 0" })}>ID: {loan.id} · Issued: {loan.date}</p>
-                  </div>
-                  <span className={cssClass({ fontSize: 18, fontWeight: 800, color: "#1e293b" })}>{fmt(loan.amount)}</span>
-                </div>
-
-                <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 })}>
-                  {[
-                { label: "Outstanding", value: fmt(loan.outstanding), color: "#ef4444" },
-                { label: "Monthly EMI", value: fmt(loan.emi), color: "#f59e0b" },
-                { label: "Total Tenure", value: `${loan.tenure} months`, color: "#64748b" },
-                { label: "Remaining", value: `${loan.remaining} months`, color: "#f18200" }].
-                map(({ label, value, color }) =>
-                <div key={label} className={cssClass({ padding: "10px 12px", background: "#f8fafc", borderRadius: 8 })}>
-                      <p className={cssClass({ fontSize: 11, color: "#94a3b8", margin: 0 })}>{label}</p>
-                      <p className={cssClass({ fontSize: 14, fontWeight: 700, color, margin: "4px 0 0" })}>{value}</p>
-                    </div>
-                )}
-                </div>
-
-                {/* Repayment progress */}
-                <div>
-                  <div className={cssClass({ display: "flex", justifyContent: "space-between", marginBottom: 5 })}>
-                    <span className={cssClass({ fontSize: 11, color: "#64748b" })}>Repayment Progress</span>
-                    <span className={cssClass({ fontSize: 11, fontWeight: 700, color: "#f18200" })}>{progress}%</span>
-                  </div>
-                  <div className={cssClass({ height: 6, background: "#f1f5f9", borderRadius: 999 })}>
-                    <div className={cssClass({ width: `${progress}%`, height: "100%", background: "#f18200", borderRadius: 999 })} />
-                  </div>
-                  <div className={cssClass({ display: "flex", justifyContent: "space-between", marginTop: 4 })}>
-                    <span className={cssClass({ fontSize: 11, color: "#22c55e" })}>Paid: {fmt(loan.amount - loan.outstanding)}</span>
-                    <span className={cssClass({ fontSize: 11, color: "#ef4444" })}>Outstanding: {fmt(loan.outstanding)}</span>
-                  </div>
-                </div>
-              </div>);
-
-        })}
-        </div>
-      }
-    </div>);
-
+    </div>
+  );
 }

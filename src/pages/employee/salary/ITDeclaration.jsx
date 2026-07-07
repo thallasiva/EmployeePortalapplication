@@ -100,7 +100,7 @@ function AmtRow({ section, label, maxLimit, value, onChange }) {
 
 }
 
-// ── SECTION 123 & 124 Modal ───────────────────────────────────────────────────
+// ── TAX-SAVING INVESTMENTS Modal ─────────────────────────────────────────────
 const SEC123_ITEMS = [
 { section: "123", label: "5 Years of Fixed Deposit in Scheduled Bank", max: "1,50,000.00" },
 { section: "123", label: "Children Tuition Fees", max: "1,50,000.00" },
@@ -131,7 +131,7 @@ function Modal123({ values, setValues, onClose }) {
   const pct = Math.min(effective / 150000 * 100, 100);
   return (
     <Modal
-      title="Section 123 and 124"
+      title="Tax-Saving Investments (80C / 80CCD)"
       onClose={onClose}
       onSave={onClose}
       onClear={() => setValues({})}>
@@ -159,7 +159,7 @@ function Modal123({ values, setValues, onClose }) {
       {/* Note */}
       <div className={cssClass({ fontSize: 11, color: "#64748b", background: "#f8fafc", borderRadius: 6,
         padding: "7px 12px", marginBottom: 14, border: "1px solid #e2e8f0" })}>
-        All items share the combined limit of ₹1,50,000 under Sections 123 &amp; 124.
+        All items share the combined limit of ₹1,50,000 under Section 80C / 80CCD.
       </div>
       {SEC123_ITEMS.map((item) =>
       <AmtRow
@@ -175,7 +175,7 @@ function Modal123({ values, setValues, onClose }) {
 
 }
 
-// ── CHAPTER VIII Modal ─────────────────────────────────────────────────────────
+// ── OTHER DEDUCTIONS Modal ───────────────────────────────────────────────────
 const CH8_ITEMS = [
 { section: "130", label: "Additional Interest on housing loan borrowed as on 1st Apr 2016", max: "50,000.00" },
 { section: "131", label: "Additional Interest on Housing loan borrowed as on 1st Apr 2019", max: "1,50,000.00" },
@@ -204,7 +204,7 @@ function ModalCh8({ values, setValues, onClose }) {
   const total = CH8_ITEMS.reduce((s, item) => s + (Number(values[item.label]) || 0), 0);
   return (
     <Modal
-      title="Other Chapter VIII Deductions"
+      title="Other Deductions (80D / 80E / 80G)"
       onClose={onClose}
       onSave={onClose}
       onClear={() => setValues({})}>
@@ -303,7 +303,7 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
 
   return (
     <Modal
-      title="House Rent Allowance Exemption"
+      title="HRA Exemption (Sec. 10(13A))"
       onClose={onClose}
       onSave={onClose}
       onClear={() => setHraData({ houses: [blankHouse(fyMonths)] })}>
@@ -492,11 +492,11 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
 
 // ── Medical Modal ─────────────────────────────────────────────────────────────
 const MED_ITEMS = [
-{ key: "checkupParents", section: "126", label: "Preventive Health Checkup - Dependant Parents", max: "5,000.00" },
-{ key: "medBillsSenior", section: "126", label: "Medical Bills - Senior Citizen (>60)", max: "50,000.00" },
-{ key: "medInsurance", section: "126", label: "Medical Insurance Premium", max: "25,000.00", hasAge: true },
-{ key: "medInsParents", section: "126", label: "Medical Insurance Premium - Dependant Parents", max: "50,000.00", hasParentAge: true },
-{ key: "preventiveCheckup", section: "126", label: "Preventive Health Check-up", max: "5,000.00" }];
+{ key: "checkupParents", section: "80D", label: "Preventive Health Checkup - Dependant Parents", max: "5,000.00" },
+{ key: "medBillsSenior", section: "80D", label: "Medical Bills - Senior Citizen (>60)", max: "50,000.00" },
+{ key: "medInsurance", section: "80D", label: "Medical Insurance Premium", max: "25,000.00", hasAge: true },
+{ key: "medInsParents", section: "80D", label: "Medical Insurance Premium - Dependant Parents", max: "50,000.00", hasParentAge: true },
+{ key: "preventiveCheckup", section: "80D", label: "Preventive Health Check-up", max: "5,000.00" }];
 
 
 function ModalMedical({ values, setValues, onClose }) {
@@ -508,7 +508,7 @@ function ModalMedical({ values, setValues, onClose }) {
   };
   return (
     <Modal
-      title="Medical (Section 126)"
+      title="Medical & Health Benefits (Sec. 80D)"
       onClose={onClose}
       onSave={onClose}
       onClear={() => setValues({})}>
@@ -522,7 +522,7 @@ function ModalMedical({ values, setValues, onClose }) {
           <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#f18200" })}>{fmt(total)}</div>
         </div>
         <div className={cssClass({ fontSize: 11, color: "#92400e", textAlign: "right" })}>
-          Section 126<br />
+          Sec. 80D<br />
           <span className={cssClass({ fontWeight: 700 })}>Medical Benefits</span>
         </div>
       </div>
@@ -727,7 +727,7 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
 
   return (
     <Modal
-      title="Income / Loss from House Property"
+      title="House Property Income / Loss (Sec. 24)"
       onClose={onClose}
       onSave={onClose}
       onClear={() => {setHouseData([{}]);setSelfOccupied({});setActiveTab(0);}}>
@@ -884,7 +884,7 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
 
   return (
     <Modal
-      title="Other Income"
+      title="Other Sources of Income"
       onClose={onClose}
       onSave={onClose}
       onClear={() => setIncomes([{ particulars: "", amount: 0 }])}>
@@ -968,7 +968,7 @@ function ModalTcsTds({ values, setValues, onClose }) {
 
   return (
     <Modal
-      title="TCS / TDS Deduction"
+      title="Tax Credits — TDS / TCS"
       onClose={onClose}
       onSave={onClose}
       onClear={() => setValues({ tcs: 0, tds: 0 })}>
@@ -1103,34 +1103,34 @@ function buildItems({ vals123, valsCh8, hraData, medVals, houseData, selfOccupie
   const items = [];
   SEC123_ITEMS.forEach((it) => {
     const amt = Number(vals123[it.label]) || 0;
-    if (amt) items.push({ section_key: '80C', section_label: 'Section 123 and 124', sub_label: it.label, declared_amount: amt });
+    if (amt) items.push({ section_key: '80C', section_label: 'Tax-Saving Investments (80C / 80CCD)', sub_label: it.label, declared_amount: amt });
   });
   CH8_ITEMS.forEach((it) => {
     const amt = Number(valsCh8[it.label]) || 0;
-    if (amt) items.push({ section_key: 'CH8', section_label: 'Other Chapter VIII Deductions', sub_label: it.label, declared_amount: amt });
+    if (amt) items.push({ section_key: 'CH8', section_label: 'Other Deductions (80D / 80E / 80G)', sub_label: it.label, declared_amount: amt });
   });
   const hraHouses = hraData.houses || [];
   const totalHRA = hraHouses.reduce((s, h) => s + (Number(h.monthlyRent) || 0) * countMonths(h.from, h.to), 0);
   if (totalHRA > 0) {
-    items.push({ section_key: 'HRA', section_label: 'House Rent Allowance Exemption',
+    items.push({ section_key: 'HRA', section_label: 'HRA Exemption (Sec. 10(13A))',
       sub_label: JSON.stringify(hraHouses),
       declared_amount: totalHRA });
   }
   MED_ITEMS.forEach((it) => {
     const amt = Number(medVals[it.key]) || 0;
-    if (amt) items.push({ section_key: 'MEDICAL', section_label: 'Medical (Section 126)', sub_label: it.key, declared_amount: amt });
+    if (amt) items.push({ section_key: 'MEDICAL', section_label: 'Medical & Health Benefits (Sec. 80D)', sub_label: it.key, declared_amount: amt });
   });
   const houseLoss = houseData.reduce((s, h) => {
     const net = Number(h.annualValue || 0) - Number(h.municipalTax || 0) - Number(h.unrealizedRent || 0);
     return s + net - Math.round(Math.max(net, 0) * 0.3) - Number(h.homeLoanInterest || 0);
   }, 0);
   if (selfOccupied.interest > 0 || houseLoss !== 0) {
-    items.push({ section_key: 'HOUSE', section_label: 'Income / Loss from House Property',
+    items.push({ section_key: 'HOUSE', section_label: 'House Property Income / Loss (Sec. 24)',
       sub_label: JSON.stringify({ selfOccupied, houseData }), declared_amount: Math.max(-houseLoss, 0) + Math.min(Number(selfOccupied.interest || 0), 200000) });
   }
   incomes.forEach((inc) => {
     const amt = Number(inc.amount) || 0;
-    if (amt && inc.particulars) items.push({ section_key: 'OTHER_INCOME', section_label: 'Other Income', sub_label: inc.particulars, declared_amount: amt });
+    if (amt && inc.particulars) items.push({ section_key: 'OTHER_INCOME', section_label: 'Other Sources of Income', sub_label: inc.particulars, declared_amount: amt });
   });
   if (tcsTds.tcs > 0) items.push({ section_key: 'TCS', section_label: 'TCS Deduction', sub_label: 'TCS', declared_amount: Number(tcsTds.tcs) });
   if (tcsTds.tds > 0) items.push({ section_key: 'TDS', section_label: 'TDS Deduction', sub_label: 'TDS', declared_amount: Number(tcsTds.tds) });
@@ -1256,13 +1256,13 @@ export default function ITDeclaration() {
   if (loading) return <div className={cssClass({ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 14 })}>Loading…</div>;
 
   const CARDS = [
-  { key: "123", icon: "📊", title: "Section 123 and 124", declared: declared123 || null },
-  { key: "ch8", icon: "📋", title: "Other Chapter VIII Deductions", declared: declaredCh8 || null },
-  { key: "hra", icon: "🏠", title: "House Rent Allowance Exemption", declared: declaredHRA || null },
-  { key: "med", icon: "🏥", title: "Medical (Section 126)", declared: declaredMed || null },
-  { key: "house", icon: "🏡", title: "Income / Loss from House Property", declared: declaredHouse },
-  { key: "income", icon: "💰", title: "Other Income", declared: declaredIncome || null },
-  { key: "tcs", icon: "📄", title: "TCS / TDS Deduction", declared: declaredTcsTds || null }];
+  { key: "123", icon: "📊", title: "Tax-Saving Investments (80C / 80CCD)", declared: declared123 || null },
+  { key: "ch8", icon: "📋", title: "Other Deductions (80D / 80E / 80G)", declared: declaredCh8 || null },
+  { key: "hra", icon: "🏠", title: "HRA Exemption (Sec. 10(13A))", declared: declaredHRA || null },
+  { key: "med", icon: "🏥", title: "Medical & Health Benefits (Sec. 80D)", declared: declaredMed || null },
+  { key: "house", icon: "🏡", title: "House Property Income / Loss (Sec. 24)", declared: declaredHouse },
+  { key: "income", icon: "💰", title: "Other Sources of Income", declared: declaredIncome || null },
+  { key: "tcs", icon: "📄", title: "Tax Credits — TDS / TCS", declared: declaredTcsTds || null }];
 
 
   return (

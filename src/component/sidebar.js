@@ -6,7 +6,10 @@ import
   Users,
   Building,
   Calendar,
+  CalendarRange,
   LogOut,
+  Wallet,
+  Receipt,
   Settings,
   Headphones,
   FileOutput,
@@ -333,23 +336,38 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
         { label: "Apply Leave", navigationLink: "/employee/leave/apply" },
-        { label: "Leave Calendar", navigationLink: "/employee/leave/calendar" },
-        { label: "Holiday Calendar", navigationLink: "/employee/leave/holiday-calendar" },
       ],
+    },
+    {
+      label: "Calendar",
+      icon: <CalendarRange size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/leave/calendar",
     },
     // ── Compensation ───────────────────────────────────────
     {
       label: "Salary",
       icon: <HandCoins size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
+        { label: "Payslips",        navigationLink: "/employee/payroll/payslips" },
         { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
-        { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
+        { label: "YTD Reports",     navigationLink: "/employee/payroll/ytd-reports" },
+      ],
+    },
+    {
+      label: "Tax & Benefits",
+      icon: <Receipt size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "IT Declaration",      navigationLink: "/employee/payroll/it-declaration" },
         { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
-        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
-        { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" },
-        { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
-        { label: "Loans and Advances", navigationLink: "/employee/payroll/loans" },
+        { label: "IT Statement",        navigationLink: "/employee/payroll/it-statement" },
+      ],
+    },
+    {
+      label: "Finance",
+      icon: <Wallet size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Reimbursements",   navigationLink: "/employee/payroll/reimbursements" },
+        { label: "Loans & Advances", navigationLink: "/employee/payroll/loans" },
       ],
     },
     // ── Performance & Tasks ────────────────────────────────
@@ -360,11 +378,11 @@ export const Sidebar = ({ open }) =>
       navigationLink: "/employee/appraisal",
     }] : []),
     {
-      label: "To Do",
-      icon: <ClipboardList size={20} strokeWidth={1.75} />,
+      label: "Timesheet",
+      icon: <Clock size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Tasks", navigationLink: "/employee/todo/tasks" },
-        { label: "Review", navigationLink: "/employee/todo/review" },
+        { label: "My Timesheet", navigationLink: "/employee/todo/tasks" },
+        { label: "Overview", navigationLink: "/employee/todo/review" },
       ],
     },
     // ── People & Org ───────────────────────────────────────

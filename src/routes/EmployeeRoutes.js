@@ -12,8 +12,7 @@ const AttendanceMuster = lazy(() => import("../pages/employee/attendance/Attenda
 const ShiftRoster = lazy(() => import("../pages/employee/attendance/ShiftRoster"));
 const LeaveBalances = lazy(() => import("../pages/employee/leave/LeaveBalance"));
 const LeaveApply = lazy(() => import("../pages/employee/leave/LeaveApply"));
-const LeaveCalendar = lazy(() => import("../pages/employee/leave/LeaveCalendar"));
-const HolidayCalendar = lazy(() => import("../pages/employee/leave/HolidayCalendar"));
+const LeaveCalendarHub = lazy(() => import("../pages/employee/leave/LeaveCalendarHub"));
 const Payslips = lazy(() => import("../pages/employee/salary/Payslips"));
 const ITDeclaration = lazy(() => import("../pages/employee/salary/ITDeclaration"));
 const ITStatement = lazy(() => import("../pages/employee/salary/ITStatement"));
@@ -68,8 +67,8 @@ const EmployeeRoutes = () =>
       <Route path="attendance/shifts" element={<Page><ShiftRoster /></Page>} />
       <Route path="leave/balance" element={<Page><LeaveBalances /></Page>} />
       <Route path="leave/apply" element={<Page><LeaveApply /></Page>} />
-      <Route path="leave/calendar" element={<Page><LeaveCalendar /></Page>} />
-      <Route path="leave/holiday-calendar" element={<Page><HolidayCalendar /></Page>} />
+      <Route path="leave/calendar" element={<Page><LeaveCalendarHub /></Page>} />
+      <Route path="leave/holiday-calendar" element={<Page><LeaveCalendarHub /></Page>} />
       <Route path="payroll/payslips" element={<Page><Payslips /></Page>} />
       <Route path="payroll/it-declaration" element={<Page><ITDeclaration /></Page>} />
       <Route path="payroll/it-statement" element={<Page><ITStatement /></Page>} />

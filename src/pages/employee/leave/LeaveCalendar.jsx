@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { ChevronLeft, ChevronRight, Search, Filter, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
 import { getMyLeaveRequests, listLeaveRequests } from "../../../api/leaveRequest.api";
 import { listHolidays } from "../../../api/holiday.api";
 import { getStoredUser, isAdmin, isReportingManager } from "../../../data/auth";
@@ -147,9 +147,6 @@ export default function LeaveCalendar() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-[22px] font-semibold text-[#1f2937]">Leave Calendar</h1>
-        <button className="h-9 px-4 bg-[#2ea7ff] text-white rounded flex items-center gap-2 text-sm font-medium">
-          <Download size={15} /> Export
-        </button>
       </div>
 
       {/* Filter */}

@@ -10,11 +10,11 @@ import { getMyPayslips, getMySalaryStructure, generateMyPayslip, getPayslipFull 
 import { getCurrentUser } from "../../../api/auth.api";
 import { listHolidays } from "../../../api/holiday.api";
 import { getMyLeaveBalances } from "../../../api/leaveRequest.api";
-import { getMyTodayAttendance, getMyMonthlyAttendance } from "../../../api/attendance.api";
+import { getMyTodayAttendance, getMyMonthlyAttendance, checkIn as apiCheckIn, checkOut as apiCheckOut } from "../../../api/attendance.api";
 import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import InteractivePieChart, { formatINR as fmtINR } from "../../../component/charts/InteractivePieChart";
 import { downloadPayslipPdf } from "../../../utils/payslipPdfGenerator";
-import { errorToast } from "../../../utils/ToastControllers";
+import { errorToast, successToast } from "../../../utils/ToastControllers";
 
 /* ─── helpers ─────────────────────────────────────────────────────────────── */import { cssClass, joinClasses } from "../../../utils/classStyles";
 const fmt = (n) =>
@@ -85,6 +85,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showSal, setShowSal] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [checkingIn, setCheckingIn] = useState(false);
+  const [checkingOut, setCheckingOut] = useState(false);
 
   useEffect(() => {
     const today = now.toISOString().split("T")[0];
@@ -142,16 +144,42 @@ export default function Dashboard() {
   const presentDays = monthAtt?.present_days ?? monthAtt?.presentDays ?? 0;
   const absentDays = monthAtt?.absent_days ?? monthAtt?.absentDays ?? 0;
 
-  const checkIn = todayAtt?.check_in_time || todayAtt?.checkIn || null;
-  const checkOut = todayAtt?.check_out_time || todayAtt?.checkOut || null;
+  // DB returns check_in / check_out as "HH:MM:SS" time strings
+  const checkIn  = todayAtt?.check_in  || todayAtt?.check_in_time  || todayAtt?.checkIn  || null;
+  const checkOut = todayAtt?.check_out || todayAtt?.check_out_time || todayAtt?.checkOut || null;
+
+  const workHours = useMemo(() => {
+    if (!checkIn || !checkOut) return null;
+    try {
+      const toSecs = (t) => {
+        if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) {
+          const [h, m, s = 0] = t.split(':').map(Number);
+          return h * 3600 + m * 60 + s;
+        }
+        return new Date(t).getTime() / 1000;
+      };
+      const diff = toSecs(checkOut) - toSecs(checkIn);
+      if (diff <= 0) return null;
+      return `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`;
+    } catch { return null; }
+  }, [checkIn, checkOut]);
+
+  const todayLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
 
   const fmtTime = (t) => {
     if (!t) return "—";
     try {
+      // Handle "HH:MM:SS" or "HH:MM" time strings returned by DB
+      if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(String(t))) {
+        const [h, m] = String(t).split(':').map(Number);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12  = h % 12 || 12;
+        return `${String(h12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ampm}`;
+      }
       const d = new Date(t);
-      if (isNaN(d)) return t;
+      if (isNaN(d)) return String(t);
       return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
-    } catch {return t;}
+    } catch { return String(t); }
   };
 
   const handleDownload = async () => {
@@ -178,6 +206,35 @@ export default function Dashboard() {
   const initials = empName ?
   empName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) :
   "?";
+
+  const refreshAttendance = () =>
+    getMyTodayAttendance().then(setTodayAtt).catch(() => {});
+
+  const handleCheckIn = async () => {
+    setCheckingIn(true);
+    try {
+      await apiCheckIn({});
+      await refreshAttendance();
+      successToast("Checked in successfully!");
+    } catch (err) {
+      errorToast(err?.response?.data?.message || "Check-in failed.");
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
+  const handleCheckOut = async () => {
+    setCheckingOut(true);
+    try {
+      await apiCheckOut({});
+      await refreshAttendance();
+      successToast("Checked out successfully!");
+    } catch (err) {
+      errorToast(err?.response?.data?.message || "Check-out failed.");
+    } finally {
+      setCheckingOut(false);
+    }
+  };
 
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f0f4f8", padding: 20 })}>
@@ -207,16 +264,65 @@ export default function Dashboard() {
         </div>
 
         {/* Today's attendance */}
-        <div className={cssClass({ background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "12px 20px",
-          minWidth: 180, textAlign: "center" })}>
-          <div className={cssClass({ fontSize: 11, opacity: 0.8, marginBottom: 4, fontWeight: 600, textTransform: "uppercase" })}>
+        <div className={cssClass({ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "14px 20px",
+          minWidth: 220, textAlign: "center" })}>
+          <div className={cssClass({ fontSize: 11, opacity: 0.8, marginBottom: 6, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" })}>
             Today's Attendance
           </div>
-          <div className={cssClass({ fontSize: 13, fontWeight: 600 })}>
-            In: {loading ? "…" : fmtTime(checkIn)} &nbsp;|&nbsp; Out: {loading ? "…" : fmtTime(checkOut)}
+
+          {/* Time display */}
+          <div className={cssClass({ display: "flex", justifyContent: "center", gap: 16, marginBottom: 10 })}>
+            <div className={cssClass({ textAlign: "center" })}>
+              <div className={cssClass({ fontSize: 10, opacity: 0.7, marginBottom: 2 })}>CHECK IN</div>
+              <div className={cssClass({ fontSize: 14, fontWeight: 700 })}>
+                {loading ? "…" : fmtTime(checkIn)}
+              </div>
+            </div>
+            <div className={cssClass({ width: 1, background: "rgba(255,255,255,0.3)", alignSelf: "stretch" })} />
+            <div className={cssClass({ textAlign: "center" })}>
+              <div className={cssClass({ fontSize: 10, opacity: 0.7, marginBottom: 2 })}>CHECK OUT</div>
+              <div className={cssClass({ fontSize: 14, fontWeight: 700 })}>
+                {loading ? "…" : fmtTime(checkOut)}
+              </div>
+            </div>
           </div>
+
+          {/* Action buttons */}
+          <div className={cssClass({ display: "flex", gap: 8, justifyContent: "center" })}>
+            <button
+              onClick={handleCheckIn}
+              disabled={!!checkIn || checkingIn || loading}
+              className={cssClass({
+                flex: 1, height: 34, borderRadius: 8, fontSize: 12, fontWeight: 700,
+                cursor: checkIn || loading ? "not-allowed" : "pointer",
+                background: checkIn ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.95)",
+                color: checkIn ? "rgba(255,255,255,0.4)" : "#f18200",
+                border: "none",
+                transition: "all 0.2s",
+                opacity: checkIn ? 0.5 : 1,
+              })}
+            >
+              {checkingIn ? "…" : checkIn ? "Checked In ✓" : "Check In"}
+            </button>
+            <button
+              onClick={handleCheckOut}
+              disabled={!checkIn || !!checkOut || checkingOut || loading}
+              className={cssClass({
+                flex: 1, height: 34, borderRadius: 8, fontSize: 12, fontWeight: 700,
+                cursor: (!checkIn || checkOut || loading) ? "not-allowed" : "pointer",
+                background: checkOut ? "rgba(255,255,255,0.1)" : (!checkIn ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.95)"),
+                color: checkOut ? "rgba(255,255,255,0.4)" : (!checkIn ? "rgba(255,255,255,0.3)" : "#f18200"),
+                border: "none",
+                transition: "all 0.2s",
+                opacity: (!checkIn || checkOut) ? 0.5 : 1,
+              })}
+            >
+              {checkingOut ? "…" : checkOut ? "Checked Out ✓" : "Check Out"}
+            </button>
+          </div>
+
           {todayAtt?.status &&
-          <div className={cssClass({ fontSize: 11, marginTop: 4, opacity: 0.8 })}>{todayAtt.status}</div>
+          <div className={cssClass({ fontSize: 11, marginTop: 6, opacity: 0.7 })}>{todayAtt.status}</div>
           }
         </div>
 
@@ -244,6 +350,94 @@ export default function Dashboard() {
 
       {/* ── Main grid ── */}
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 18 })}>
+
+        {/* ── Today's Attendance card ── */}
+        <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20, borderTop: "3px solid #f18200" })}>
+          <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 })}>
+            <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>Today's Attendance</span>
+            {todayAtt?.status &&
+            <span className={cssClass({
+              fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 999,
+              background: todayAtt.status === "Present" ? "#dcfce7" : "#fff3e0",
+              color: todayAtt.status === "Present" ? "#15803d" : "#e07000"
+            })}>{todayAtt.status}</span>
+            }
+          </div>
+          <div className={cssClass({ fontSize: 11, color: "#94a3b8", marginBottom: 18 })}>{todayLabel}</div>
+
+          {/* Time boxes */}
+          <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 })}>
+            {/* Check In */}
+            <div className={cssClass({ background: checkIn ? "#f0fdf4" : "#f8fafc", borderRadius: 10, padding: "14px 12px", textAlign: "center", border: checkIn ? "1px solid #bbf7d0" : "1px solid #e2e8f0" })}>
+              <div className={cssClass({ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: checkIn ? "#16a34a" : "#94a3b8", marginBottom: 6 })}>
+                Check In
+              </div>
+              <div className={cssClass({ fontSize: 22, fontWeight: 800, color: checkIn ? "#15803d" : "#cbd5e1", letterSpacing: "-0.02em" })}>
+                {loading ? "…" : checkIn ? fmtTime(checkIn) : "—"}
+              </div>
+              {checkIn && (
+                <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#16a34a", display: "flex", alignItems: "center", justifyContent: "center", gap: 3 })}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
+                  Recorded
+                </div>
+              )}
+            </div>
+
+            {/* Check Out */}
+            <div className={cssClass({ background: checkOut ? "#fff8f0" : "#f8fafc", borderRadius: 10, padding: "14px 12px", textAlign: "center", border: checkOut ? "1px solid #fde8c8" : "1px solid #e2e8f0" })}>
+              <div className={cssClass({ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: checkOut ? "#f18200" : "#94a3b8", marginBottom: 6 })}>
+                Check Out
+              </div>
+              <div className={cssClass({ fontSize: 22, fontWeight: 800, color: checkOut ? "#e07000" : "#cbd5e1", letterSpacing: "-0.02em" })}>
+                {loading ? "…" : checkOut ? fmtTime(checkOut) : "—"}
+              </div>
+              {checkOut && (
+                <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#f18200", display: "flex", alignItems: "center", justifyContent: "center", gap: 3 })}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f18200", display: "inline-block" }} />
+                  Recorded
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Work hours */}
+          {workHours && (
+            <div className={cssClass({ background: "#f5f3ff", borderRadius: 8, padding: "8px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between" })}>
+              <span className={cssClass({ fontSize: 12, color: "#7c3aed", fontWeight: 600 })}>Work Duration</span>
+              <span className={cssClass({ fontSize: 16, fontWeight: 800, color: "#6d28d9" })}>{workHours}</span>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 })}>
+            <button
+              onClick={handleCheckIn}
+              disabled={!!checkIn || checkingIn || loading}
+              className={cssClass({
+                height: 40, borderRadius: 8, fontSize: 13, fontWeight: 700, border: "none",
+                background: checkIn ? "#f1f5f9" : "#16a34a",
+                color: checkIn ? "#94a3b8" : "#fff",
+                cursor: checkIn ? "not-allowed" : "pointer",
+                transition: "all 0.2s",
+              })}
+            >
+              {checkingIn ? "…" : checkIn ? "✓ Checked In" : "Check In"}
+            </button>
+            <button
+              onClick={handleCheckOut}
+              disabled={!checkIn || !!checkOut || checkingOut || loading}
+              className={cssClass({
+                height: 40, borderRadius: 8, fontSize: 13, fontWeight: 700, border: "none",
+                background: checkOut ? "#f1f5f9" : (!checkIn ? "#f1f5f9" : "#f18200"),
+                color: checkOut ? "#94a3b8" : (!checkIn ? "#94a3b8" : "#fff"),
+                cursor: (!checkIn || checkOut) ? "not-allowed" : "pointer",
+                transition: "all 0.2s",
+              })}
+            >
+              {checkingOut ? "…" : checkOut ? "✓ Checked Out" : "Check Out"}
+            </button>
+          </div>
+        </div>
 
         {/* ── Payslip card ── */}
         <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20 })}>

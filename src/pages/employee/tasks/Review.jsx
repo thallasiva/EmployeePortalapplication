@@ -826,7 +826,7 @@ export default function Review() {
               fontSize: 14, fontWeight: 700, color: "#1e293b",
               borderBottom: "1px solid #f0f4f8"
             })}>
-              Review Center
+              Overview
             </div>
 
             {/* Nav */}
@@ -881,7 +881,7 @@ export default function Review() {
             {/* Page header */}
             <div className={cssClass({ marginBottom: 20 })}>
               <h2 className={cssClass({ fontSize: 18, fontWeight: 700, color: "#1e293b", margin: 0 })}>
-                {activeItem?.label || "Review"}
+                {activeItem?.label || "Overview"}
               </h2>
               <p className={cssClass({ fontSize: 12, color: "#94a3b8", margin: "3px 0 0" })}>
                 {activeItem?.sectionLabel}

@@ -1,36 +1,42 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Star, Mail, Phone, Briefcase, Users, MapPin, User, Crown, ChevronDown, ChevronRight } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  Mail, Phone, Briefcase, MapPin, Users, Crown,
+  Calendar, Building2, UserCheck, ChevronRight, Star
+} from "lucide-react";
 import apiClient, { unwrap } from "../../../api/client";
 import { getCurrentUser } from "../../../api/auth.api";
 
-/* ─── helpers ─────────────────────────────────────────────────────────────── */import { cssClass, joinClasses } from "../../../utils/classStyles";
-const STARRED_KEY = "people-starred-ids";
-function loadStarred() {
-  try {return JSON.parse(localStorage.getItem(STARRED_KEY) || "[]");}
-  catch {return [];}
-}
-function saveStarred(ids) {localStorage.setItem(STARRED_KEY, JSON.stringify(ids));}
-
-function fullName(emp) {
-  return [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.emp_code || "—";
-}
-function initials(name) {
-  const p = (name || "?").trim().split(/\s+/);
-  return ((p[0]?.[0] ?? "") + (p[1]?.[0] ?? "")).toUpperCase() || "?";
-}
-
+/* ─── helpers ─────────────────────────────────────────────────────────────── */
 const BRAND = "#f18200";
+
 const PALETTE = [
-"#f18200", "#6366f1", "#a855f7", "#ec4899",
-"#10b981", "#ef4444", "#3b82f6", "#84cc16",
-"#f59e0b", "#06b6d4", "#8b5cf6", "#14b8a6"];
+  "#f18200","#6366f1","#a855f7","#ec4899",
+  "#10b981","#ef4444","#3b82f6","#84cc16",
+  "#f59e0b","#06b6d4","#8b5cf6","#14b8a6",
+];
 
 function deptColor(deptId) {
   if (deptId == null) return "#94a3b8";
   return PALETTE[Number(deptId) % PALETTE.length];
 }
 
-function normalize(emp, idx) {
+function fullName(emp) {
+  return [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.emp_code || "—";
+}
+
+function initials(name) {
+  const p = (name || "?").trim().split(/\s+/);
+  return ((p[0]?.[0] ?? "") + (p[1]?.[0] ?? "")).toUpperCase() || "?";
+}
+
+function fmtDate(d) {
+  if (!d || d === "—") return "—";
+  try {
+    return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  } catch { return d; }
+}
+
+function normalize(emp) {
   return {
     id: emp.employee_id,
     empCode: emp.emp_code || `EMP${String(emp.employee_id).padStart(3, "0")}`,
@@ -38,7 +44,6 @@ function normalize(emp, idx) {
     email: emp.email || "—",
     mobile: emp.mobile || emp.phone || "—",
     jobTitle: emp.emp_job_title || emp.designation_name || "—",
-    reportingTo: emp.reporting_to_name || "—",
     reportingToId: emp.reporting_to || null,
     departmentId: emp.department_id,
     departmentName: emp.department_name || "—",
@@ -48,519 +53,410 @@ function normalize(emp, idx) {
     bloodGroup: emp.blood_group || "—",
     joiningDate: emp.emp_joining_date || emp.joining_date || "—",
     location: emp.location || "—",
-    avatarIdx: idx,
-    color: deptColor(emp.department_id)
+    color: deptColor(emp.department_id),
   };
 }
 
 /* ─── Avatar ──────────────────────────────────────────────────────────────── */
-function Avatar({ name, color, photo, size = 40 }) {
-  if (photo) {
-    return (
-      <img src={photo} alt={name} className={cssClass({ width: size, height: size, borderRadius: "50%",
-        objectFit: "cover", flexShrink: 0 })} />);
-
-  }
+function Avatar({ name, color, size = 40 }) {
   return (
-    <div className={cssClass({ width: size, height: size, borderRadius: "50%",
-      background: `${color}1a`, color,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.34, fontWeight: 700, flexShrink: 0, userSelect: "none" })}>
+    <div
+      style={{
+        width: size, height: size, borderRadius: "50%",
+        background: `${color}22`, color,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: size * 0.34, fontWeight: 700, flexShrink: 0, userSelect: "none",
+        border: `2px solid ${color}33`,
+      }}
+    >
       {initials(name)}
-    </div>);
-
+    </div>
+  );
 }
 
-/* ─── sub-components ──────────────────────────────────────────────────────── */
-function InfoRow({ label, value }) {
+/* ─── Skeleton ────────────────────────────────────────────────────────────── */
+function Skeleton({ w = "100%", h = 14, r = 6, mb = 0 }) {
   return (
-    <>
-      <span className={cssClass({ fontSize: 13, color: "#64748b", paddingRight: 8 })}>{label}</span>
-      <span className={cssClass({ fontSize: 13, color: "#1e293b", fontWeight: 500 })}>{value || "—"}</span>
-    </>);
-
+    <div style={{
+      width: w, height: h, borderRadius: r,
+      background: "#f1f5f9", marginBottom: mb, flexShrink: 0,
+    }} />
+  );
 }
 
-function SectionHead({ title }) {
+/* ─── Section Label ──────────────────────────────────────────────────────── */
+function SectionLabel({ children }) {
   return (
-    <div className={cssClass({ paddingTop: 18, paddingBottom: 8 })}>
-      <p className={cssClass({ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: BRAND,
-        textTransform: "uppercase", margin: 0 })}>{title}</p>
-      <div className={cssClass({ borderTop: "1px solid #e8edf2", marginTop: 6 })} />
-    </div>);
-
+    <div style={{
+      fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
+      color: BRAND, textTransform: "uppercase", marginBottom: 12,
+    }}>
+      {children}
+    </div>
+  );
 }
 
-function SkeletonCard() {
+/* ─── Info chip row ──────────────────────────────────────────────────────── */
+function InfoChip({ icon: Icon, label, value }) {
+  if (!value || value === "—") return null;
   return (
-    <div className={cssClass({ padding: "12px 14px", borderBottom: "1px solid #f1f5f9",
-      display: "flex", alignItems: "center", gap: 10 })}>
-      <div className={cssClass({ width: 36, height: 36, borderRadius: "50%", background: "#f1f5f9" })} />
-      <div className={cssClass({ flex: 1 })}>
-        <div className={cssClass({ height: 11, width: "60%", background: "#f1f5f9", borderRadius: 4, marginBottom: 6 })} />
-        <div className={cssClass({ height: 10, width: "40%", background: "#f1f5f9", borderRadius: 4 })} />
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{
+        width: 30, height: 30, borderRadius: 8, background: "#f8fafc",
+        border: "1px solid #e8eef5", display: "flex", alignItems: "center",
+        justifyContent: "center", flexShrink: 0,
+      }}>
+        <Icon size={14} color="#94a3b8" />
       </div>
-    </div>);
-
+      <div>
+        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: 13, color: "#1e293b", fontWeight: 500 }}>{value}</div>
+      </div>
+    </div>
+  );
 }
 
-/* ─── Department group header ─────────────────────────────────────────────── */
-function DeptGroupHeader({ name, count, color, collapsed, onToggle }) {
+/* ─── Colleague card ─────────────────────────────────────────────────────── */
+function ColleagueCard({ person, isManager, isDirectReport }) {
   return (
-    <button type="button" onClick={onToggle} className={cssClass(
-      { width: "100%", display: "flex", alignItems: "center", gap: 8,
-        padding: "8px 14px", background: "#f8fafc", border: "none",
-        borderBottom: "1px solid #e2e8f0", cursor: "pointer", textAlign: "left" })}>
-      <span className={cssClass({ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 })} />
-      <span className={cssClass({ fontSize: 12, fontWeight: 700, color: "#374151", flex: 1 })}>{name}</span>
-      <span className={cssClass({ fontSize: 11, color: "#94a3b8" })}>{count}</span>
-      {collapsed ?
-      <ChevronRight size={13} className={cssClass({ color: "#94a3b8" })} /> :
-      <ChevronDown size={13} className={cssClass({ color: "#94a3b8" })} />}
-    </button>);
-
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "12px 14px", background: "#fff",
+      border: "1px solid #e8eef5", borderRadius: 12,
+      borderLeft: `3px solid ${person.color}`,
+    }}>
+      <Avatar name={person.name} color={person.color} size={40} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#1f2937", whiteSpace: "nowrap" }}>
+            {person.name}
+          </span>
+          {isManager && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+              background: "#fff8f0", color: BRAND, border: `1px solid ${BRAND}44`,
+            }}>MANAGER</span>
+          )}
+          {isDirectReport && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+              background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0",
+            }}>REPORTS TO YOU</span>
+          )}
+        </div>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{person.jobTitle}</div>
+        <div style={{ fontSize: 11, color: "#64748b", marginTop: 1 }}>{person.departmentName}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+        {person.email !== "—" && (
+          <a href={`mailto:${person.email}`} style={{
+            display: "flex", alignItems: "center", gap: 4,
+            fontSize: 11, color: BRAND, textDecoration: "none",
+          }}>
+            <Mail size={11} /> Mail
+          </a>
+        )}
+      </div>
+    </div>
+  );
 }
 
-/* ─── main ────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 export default function People() {
   const [allEmployees, setAllEmployees] = useState([]);
   const [selfId, setSelfId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [tab, setTab] = useState("everyone");
-  const [query, setQuery] = useState("");
-  const [starredIds, setStarredIds] = useState(loadStarred);
-  const [selectedId, setSelectedId] = useState(null);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [deptFilter, setDeptFilter] = useState("all");
-  const [collapsedDepts, setCollapsedDepts] = useState({});
-
-  /* fetch ------------------------------------------------------------------- */
   useEffect(() => {
     setLoading(true);
     Promise.all([
-    apiClient.get("/employees/org-chart").then(unwrap),
-    getCurrentUser().catch(() => null)]
-    ).
-    then(([rows, me]) => {
-      // Build reporting_to name map
-      const nameMap = {};
-      rows.forEach((e) => {nameMap[e.employee_id] = fullName(e);});
-      const normalized = rows.map((emp, idx) => ({
-        ...normalize(emp, idx),
-        reportingTo: emp.reporting_to ? nameMap[emp.reporting_to] || "—" : "—"
-      }));
-      setAllEmployees(normalized);
-      setSelfId(me?.employeeId || me?.employee_id || null);
-    }).
-    catch((e) => setError(e?.response?.data?.message || "Failed to load employees")).
-    finally(() => setLoading(false));
+      apiClient.get("/employees/org-chart").then(unwrap),
+      getCurrentUser().catch(() => null),
+    ])
+      .then(([rows, me]) => {
+        const nameMap = {};
+        rows.forEach((e) => { nameMap[e.employee_id] = fullName(e); });
+        const normalized = rows.map((emp) => ({
+          ...normalize(emp),
+          reportingToName: emp.reporting_to ? nameMap[emp.reporting_to] || "—" : "—",
+        }));
+        setAllEmployees(normalized);
+        setSelfId(me?.employeeId || me?.employee_id || null);
+      })
+      .catch((e) => setError(e?.response?.data?.message || "Failed to load"))
+      .finally(() => setLoading(false));
   }, []);
 
-  /* departments for filter -------------------------------------------------- */
-  const departments = useMemo(() => {
-    const seen = new Map();
-    allEmployees.forEach((e) => {
-      if (e.departmentId && !seen.has(e.departmentId))
-      seen.set(e.departmentId, { name: e.departmentName, color: e.color });
-    });
-    return [{ value: "all", label: "All Departments" },
-    ...[...seen.entries()].map(([id, d]) => ({ value: String(id), label: d.name, color: d.color }))];
-  }, [allEmployees]);
+  /* derived ----------------------------------------------------------------- */
+  const self = useMemo(() => allEmployees.find((e) => e.id === selfId) ?? null, [allEmployees, selfId]);
 
-  /* filtered list ----------------------------------------------------------- */
-  const filteredList = useMemo(() => {
-    let list = tab === "starred" ?
-    allEmployees.filter((p) => starredIds.includes(p.id)) :
-    allEmployees;
+  const manager = useMemo(
+    () => self?.reportingToId ? allEmployees.find((e) => e.id === self.reportingToId) ?? null : null,
+    [allEmployees, self]
+  );
 
-    if (deptFilter !== "all")
-    list = list.filter((p) => String(p.departmentId) === deptFilter);
+  const directReports = useMemo(
+    () => allEmployees.filter((e) => e.reportingToId === selfId),
+    [allEmployees, selfId]
+  );
 
-    const q = query.trim().toLowerCase();
-    if (q) list = list.filter((p) =>
-    p.name.toLowerCase().includes(q) ||
-    p.empCode.toLowerCase().includes(q) ||
-    p.email.toLowerCase().includes(q) ||
-    p.departmentName.toLowerCase().includes(q)
-    );
+  const peers = useMemo(
+    () => allEmployees.filter(
+      (e) => e.id !== selfId &&
+             e.reportingToId === self?.reportingToId &&
+             e.reportingToId != null
+    ),
+    [allEmployees, self, selfId]
+  );
 
-    return list;
-  }, [allEmployees, tab, starredIds, deptFilter, query]);
+  const deptTeam = useMemo(
+    () => allEmployees.filter(
+      (e) => e.id !== selfId &&
+             e.departmentId === self?.departmentId &&
+             e.reportingToId !== selfId &&
+             e.reportingToId !== self?.reportingToId
+    ),
+    [allEmployees, self, selfId]
+  );
 
-  /* group by department ----------------------------------------------------- */
-  const groupedByDept = useMemo(() => {
-    const map = new Map();
-    filteredList.forEach((p) => {
-      const key = p.departmentId ?? 0;
-      if (!map.has(key)) map.set(key, { name: p.departmentName, color: p.color, people: [] });
-      map.get(key).people.push(p);
-    });
-    // Sort each group: managers first, then alphabetically
-    map.forEach((g) => g.people.sort((a, b) => a.name.localeCompare(b.name)));
-    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [filteredList]);
-
-  /* auto-select ------------------------------------------------------------- */
-  useEffect(() => {
-    if (!filteredList.length) {setSelectedId(null);return;}
-    if (!filteredList.some((p) => p.id === selectedId)) {
-      const self = filteredList.find((p) => p.id === selfId);
-      setSelectedId(self ? self.id : filteredList[0].id);
-    }
-  }, [filteredList, selfId, selectedId]);
-
-  const selected = allEmployees.find((p) => p.id === selectedId) ?? null;
-
-  const toggleStar = (id) => {
-    setStarredIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      saveStarred(next);
-      return next;
-    });
-  };
-
-  const toggleDept = (name) => {
-    setCollapsedDepts((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  /* ── render ──────────────────────────────────────────────────────────────── */
-  return (
-    <div className={cssClass({ display: "flex", flexDirection: "column",
-      minHeight: "calc(100vh - 5.5rem)",
-      background: "#fff", borderRadius: 10,
-      border: "1px solid #e2e8f0",
-      overflow: "hidden", position: "relative",
-      margin: "-0.5rem -0.25rem" })}>
-
-      {/* Tabs */}
-      <div className={cssClass({ display: "flex", borderBottom: "1px solid #e2e8f0", padding: "0 16px" })}>
-        {[
-        { key: "everyone", label: "All Teams" },
-        { key: "starred", label: "⭐ Starred" }].
-        map(({ key, label }) =>
-        <button key={key} type="button" onClick={() => setTab(key)} className={cssClass(
-          { position: "relative", padding: "12px 16px",
-            fontSize: 13, fontWeight: tab === key ? 700 : 400,
-            color: tab === key ? "#1e293b" : "#94a3b8",
-            background: "none", border: "none", cursor: "pointer",
-            transition: "color 0.15s" })}>
-            {label}
-            {tab === key &&
-          <span className={cssClass({ position: "absolute", left: 0, right: 0, bottom: 0,
-            height: 2, background: BRAND, borderRadius: "2px 2px 0 0" })} />
-          }
-          </button>
-        )}
-
-        {/* Stats */}
-        {!loading &&
-        <div className={cssClass({ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16,
-          paddingRight: 8, fontSize: 12, color: "#94a3b8" })}>
-            <span><strong className={cssClass({ color: "#1e293b" })}>{allEmployees.length}</strong> employees</span>
-            <span><strong className={cssClass({ color: "#1e293b" })}>{departments.length - 1}</strong> departments</span>
-          </div>
-        }
-      </div>
-
-      <div className={cssClass({ display: "flex", flex: 1, minHeight: 0 })}>
-
-        {/* ── Left list ── */}
-        <div className={cssClass({ width: 310, flexShrink: 0, borderRight: "1px solid #e2e8f0",
-          display: "flex", flexDirection: "column" })}>
-
-          {/* Search + filter */}
-          <div className={cssClass({ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", display: "flex", gap: 8 })}>
-            <div className={cssClass({ flex: 1, position: "relative" })}>
-              <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search name, code, email…"
-
-
-
-              onFocus={(e) => {e.target.style.borderColor = BRAND;}}
-              onBlur={(e) => {e.target.style.borderColor = "#e2e8f0";}} className={cssClass({ width: "100%", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 36px 8px 12px", fontSize: 13, color: "#334155", outline: "none", boxSizing: "border-box" })} />
-              <Search size={15} className={cssClass({ position: "absolute", right: 10, top: "50%",
-                transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" })} />
-            </div>
-            <button type="button" onClick={() => setFilterOpen(!filterOpen)} className={cssClass(
-              { width: 38, height: 38, flexShrink: 0,
-                border: filterOpen || deptFilter !== "all" ? `1px solid ${BRAND}` : "1px solid #e2e8f0",
-                borderRadius: 8,
-                background: filterOpen || deptFilter !== "all" ? "#fff8f0" : "#fff",
-                color: filterOpen || deptFilter !== "all" ? BRAND : "#64748b",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer" })}>
-              <Filter size={16} />
-            </button>
-          </div>
-
-          {/* Dept filter dropdown */}
-          {filterOpen &&
-          <div className={cssClass({ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc" })}>
-              <label className={cssClass({ fontSize: 11, color: "#94a3b8", display: "block", marginBottom: 4 })}>
-                Filter by Department
-              </label>
-              <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className={cssClass(
-              { width: "100%", border: "1px solid #e2e8f0", borderRadius: 7,
-                padding: "7px 10px", fontSize: 13, color: "#334155",
-                background: "#fff", outline: "none" })}>
-                {departments.map((d) =>
-              <option key={d.value} value={d.value}>{d.label}</option>
-              )}
-              </select>
-              {deptFilter !== "all" &&
-            <button type="button" onClick={() => setDeptFilter("all")} className={cssClass(
-              { fontSize: 11, color: BRAND, background: "none", border: "none",
-                cursor: "pointer", marginTop: 6, padding: 0 })}>
-                  Clear filter
-                </button>
-            }
-            </div>
-          }
-
-          {/* Count */}
-          {!loading &&
-          <div className={cssClass({ padding: "6px 14px", fontSize: 11, color: "#94a3b8",
-            borderBottom: "1px solid #f8fafc" })}>
-              {filteredList.length} employee{filteredList.length !== 1 ? "s" : ""}
-              {deptFilter !== "all" ? " in this department" : ""}
-            </div>
-          }
-
-          {/* List */}
-          <div className={cssClass({ flex: 1, overflowY: "auto" })}>
-            {loading ?
-            [1, 2, 3, 4, 5].map((i) => <SkeletonCard key={i} />) :
-            error ?
-            <div className={cssClass({ padding: 24, textAlign: "center", color: "#ef4444", fontSize: 13 })}>{error}</div> :
-            filteredList.length === 0 ?
-            <div className={cssClass({ padding: 40, textAlign: "center" })}>
-                <Users size={40} strokeWidth={1.2} className={cssClass({ color: "#cbd5e1", marginBottom: 8 })} />
-                <p className={cssClass({ fontSize: 13, color: "#94a3b8" })}>
-                  {tab === "starred" ? "No starred employees yet." : "No employees found."}
-                </p>
-              </div> :
-            tab === "starred" || deptFilter !== "all" || query.trim() ? (
-            /* Flat list when filtering/searching */
-            <ul className={cssClass({ listStyle: "none", margin: 0, padding: 0 })}>
-                {filteredList.map((person) => {
-                const active = person.id === selectedId;
-                const isSelf = person.id === selfId;
-                return (
-                  <li key={person.id}>
-                      <button type="button" onClick={() => setSelectedId(person.id)}
-
-
-
-
-
-
-                    onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = "#f8fafc";}}
-                    onMouseLeave={(e) => {if (!active) e.currentTarget.style.background = "transparent";}} className={cssClass({ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", textAlign: "left", background: active ? "#fff8f0" : "transparent", border: "none", borderBottom: "1px solid #f8fafc", borderLeft: active ? `3px solid ${BRAND}` : "3px solid transparent", cursor: "pointer", transition: "background 0.12s" })}>
-                        <Avatar name={person.name} color={person.color} size={36} />
-                        <div className={cssClass({ flex: 1, minWidth: 0 })}>
-                          <div className={cssClass({ display: "flex", alignItems: "center", gap: 5 })}>
-                            <p className={cssClass({ fontSize: 13, fontWeight: active ? 700 : 500,
-                            color: "#1e293b", margin: 0, overflow: "hidden",
-                            textOverflow: "ellipsis", whiteSpace: "nowrap" })}>
-                              {person.name}
-                            </p>
-                            {isSelf &&
-                          <span className={cssClass({ fontSize: 9, fontWeight: 700,
-                            background: "#fff8f0", color: BRAND,
-                            border: `1px solid ${BRAND}`,
-                            borderRadius: 4, padding: "1px 5px", flexShrink: 0 })}>YOU</span>
-                          }
-                          </div>
-                          <p className={cssClass({ fontSize: 11, color: "#94a3b8", margin: 0 })}>
-                            {person.empCode} · {person.departmentName}
-                          </p>
-                        </div>
-                        {starredIds.includes(person.id) &&
-                      <Star size={13} className={cssClass({ color: "#fbbf24", fill: "#fbbf24", flexShrink: 0 })} />
-                      }
-                      </button>
-                    </li>);
-
-              })}
-              </ul>) : (
-
-            /* Grouped by department */
-            groupedByDept.map((group) => {
-              const collapsed = !!collapsedDepts[group.name];
-              return (
-                <div key={group.name}>
-                    <DeptGroupHeader
-                    name={group.name}
-                    count={group.people.length}
-                    color={group.color}
-                    collapsed={collapsed}
-                    onToggle={() => toggleDept(group.name)} />
-                  
-                    {!collapsed &&
-                  <ul className={cssClass({ listStyle: "none", margin: 0, padding: 0 })}>
-                        {group.people.map((person) => {
-                      const active = person.id === selectedId;
-                      const isSelf = person.id === selfId;
-                      return (
-                        <li key={person.id}>
-                              <button type="button" onClick={() => setSelectedId(person.id)}
-
-
-
-
-
-
-                          onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = "#f8fafc";}}
-                          onMouseLeave={(e) => {if (!active) e.currentTarget.style.background = "transparent";}} className={cssClass({ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 14px 8px 18px", textAlign: "left", background: active ? "#fff8f0" : "transparent", border: "none", borderBottom: "1px solid #f8fafc", borderLeft: active ? `3px solid ${BRAND}` : "3px solid transparent", cursor: "pointer", transition: "background 0.12s" })}>
-                                <Avatar name={person.name} color={person.color} size={32} />
-                                <div className={cssClass({ flex: 1, minWidth: 0 })}>
-                                  <div className={cssClass({ display: "flex", alignItems: "center", gap: 5 })}>
-                                    <p className={cssClass({ fontSize: 12, fontWeight: active ? 700 : 500,
-                                  color: "#1e293b", margin: 0, overflow: "hidden",
-                                  textOverflow: "ellipsis", whiteSpace: "nowrap" })}>
-                                      {person.name}
-                                    </p>
-                                    {isSelf &&
-                                <span className={cssClass({ fontSize: 9, fontWeight: 700,
-                                  background: "#fff8f0", color: BRAND,
-                                  border: `1px solid ${BRAND}`,
-                                  borderRadius: 4, padding: "1px 5px", flexShrink: 0 })}>YOU</span>
-                                }
-                                  </div>
-                                  <p className={cssClass({ fontSize: 11, color: "#94a3b8", margin: 0,
-                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" })}>
-                                    {person.jobTitle}
-                                  </p>
-                                </div>
-                                {starredIds.includes(person.id) &&
-                            <Star size={12} className={cssClass({ color: "#fbbf24", fill: "#fbbf24", flexShrink: 0 })} />
-                            }
-                              </button>
-                            </li>);
-
-                    })}
-                      </ul>
-                  }
-                  </div>);
-
-            }))
-            }
-          </div>
-        </div>
-
-        {/* ── Right detail ── */}
-        <div className={cssClass({ flex: 1, minWidth: 0, background: "#fafbfc", overflowY: "auto" })}>
-          {tab === "starred" && starredIds.length === 0 ?
-          <div className={cssClass({ display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", height: "100%", padding: 40 })}>
-              <Star size={64} strokeWidth={1} className={cssClass({ color: "#fcd34d", marginBottom: 12 })} />
-              <p className={cssClass({ fontSize: 14, color: "#94a3b8" })}>Star employees to find them quickly.</p>
-            </div> :
-          !selected ?
-          <div className={cssClass({ display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", height: "100%", padding: 40 })}>
-              <User size={48} strokeWidth={1} className={cssClass({ color: "#cbd5e1", marginBottom: 12 })} />
-              <p className={cssClass({ fontSize: 14, color: "#94a3b8" })}>Select an employee to view details.</p>
-            </div> :
-
-          <div className={cssClass({ padding: "24px 28px", maxWidth: 600 })}>
-              {/* Header */}
-              <div className={cssClass({ display: "flex", alignItems: "flex-start", gap: 18,
-              paddingBottom: 20, borderBottom: "1px solid #e8edf2" })}>
-                <Avatar name={selected.name} color={selected.color} size={80} />
-                <div className={cssClass({ flex: 1, minWidth: 0, paddingTop: 4 })}>
-                  <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" })}>
-                    <h2 className={cssClass({ fontSize: 20, fontWeight: 700, color: "#1e293b", margin: 0 })}>
-                      {selected.name}
-                    </h2>
-                    {selected.id === selfId &&
-                  <span className={cssClass({ fontSize: 11, fontWeight: 700,
-                    background: "#fff8f0", color: BRAND,
-                    border: `1px solid ${BRAND}`,
-                    borderRadius: 6, padding: "2px 8px" })}>You</span>
-                  }
-                    <button type="button" onClick={() => toggleStar(selected.id)}
-
-                  title={starredIds.includes(selected.id) ? "Remove star" : "Star this person"} className={cssClass({ background: "none", border: "none", cursor: "pointer", padding: 4 })}>
-                      <Star size={20} className={cssClass({
-                      color: starredIds.includes(selected.id) ? "#fbbf24" : "#cbd5e1",
-                      fill: starredIds.includes(selected.id) ? "#fbbf24" : "none" })} />
-                    </button>
-                  </div>
-                  <p className={cssClass({ fontSize: 13, color: "#64748b", margin: "4px 0 0" })}>
-                    {selected.jobTitle}
-                  </p>
-                  <div className={cssClass({ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" })}>
-                    <span className={cssClass({ fontSize: 11, fontWeight: 600, padding: "2px 10px",
-                    borderRadius: 999, background: "#dcfce7", color: "#15803d" })}>
-                      {selected.status}
-                    </span>
-                    <span className={cssClass({ fontSize: 11, fontWeight: 600, padding: "2px 10px",
-                    borderRadius: 999, background: "#fff8f0", color: BRAND })}>
-                      {selected.empCode}
-                    </span>
-                    <span className={cssClass({ fontSize: 11, fontWeight: 600, padding: "2px 10px",
-                    borderRadius: 999,
-                    background: `${selected.color}18`, color: selected.color })}>
-                      {selected.departmentName}
-                    </span>
-                  </div>
+  /* ── loading skeleton ─────────────────────────────────────────────────── */
+  if (loading) {
+    return (
+      <div style={{ padding: 24, maxWidth: 900, margin: "0 auto" }}>
+        <Skeleton w={200} h={20} r={8} mb={24} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+          {[1, 2].map((i) => (
+            <div key={i} style={{ background: "#fff", borderRadius: 14, border: "1px solid #e8eef5", padding: 20 }}>
+              <div style={{ display: "flex", gap: 14, marginBottom: 14 }}>
+                <Skeleton w={64} h={64} r="50%" />
+                <div style={{ flex: 1 }}>
+                  <Skeleton w="60%" h={14} mb={8} />
+                  <Skeleton w="40%" h={11} mb={6} />
+                  <Skeleton w="30%" h={11} />
                 </div>
               </div>
-
-              {/* Contact */}
-              <SectionHead title="Contact Details" />
-              <div className={cssClass({ display: "grid", gridTemplateColumns: "140px 1fr",
-              rowGap: 12, columnGap: 12 })}>
-                <InfoRow label="Email" value={
-              <span className={cssClass({ display: "flex", alignItems: "center", gap: 5 })}>
-                    <Mail size={12} className={cssClass({ color: "#94a3b8" })} />{selected.email}
-                  </span>
-              } />
-                <InfoRow label="Mobile" value={
-              <span className={cssClass({ display: "flex", alignItems: "center", gap: 5 })}>
-                    <Phone size={12} className={cssClass({ color: "#94a3b8" })} />{selected.mobile}
-                  </span>
-              } />
-              </div>
-
-              {/* Work Info */}
-              <SectionHead title="Work Information" />
-              <div className={cssClass({ display: "grid", gridTemplateColumns: "140px 1fr",
-              rowGap: 12, columnGap: 12 })}>
-                <InfoRow label="Department" value={
-              <span className={cssClass({ display: "flex", alignItems: "center", gap: 5 })}>
-                    <Briefcase size={12} className={cssClass({ color: "#94a3b8" })} />{selected.departmentName}
-                  </span>
-              } />
-                <InfoRow label="Job Title" value={selected.jobTitle} />
-                <InfoRow label="Reporting To" value={selected.reportingTo} />
-                {selected.location !== "—" &&
-              <InfoRow label="Location" value={
-              <span className={cssClass({ display: "flex", alignItems: "center", gap: 5 })}>
-                      <MapPin size={12} className={cssClass({ color: "#94a3b8" })} />{selected.location}
-                    </span>
-              } />
-              }
-                {selected.joiningDate !== "—" &&
-              <InfoRow label="Joining Date" value={selected.joiningDate} />
-              }
-              </div>
-
-              {/* Personal */}
-              <SectionHead title="Personal Information" />
-              <div className={cssClass({ display: "grid", gridTemplateColumns: "140px 1fr",
-              rowGap: 12, columnGap: 12 })}>
-                {selected.gender !== "—" && <InfoRow label="Gender" value={selected.gender} />}
-                {selected.dob !== "—" && <InfoRow label="Date of Birth" value={selected.dob} />}
-                {selected.bloodGroup !== "—" && <InfoRow label="Blood Group" value={selected.bloodGroup} />}
-              </div>
             </div>
-          }
+          ))}
         </div>
       </div>
-    </div>);
+    );
+  }
 
+  if (error) {
+    return (
+      <div style={{ padding: 40, textAlign: "center", color: "#ef4444", fontSize: 14 }}>{error}</div>
+    );
+  }
+
+  /* ── render ───────────────────────────────────────────────────────────── */
+  return (
+    <div style={{ minHeight: "100vh", background: "#f0f4f8", padding: "20px 24px" }}>
+
+      {/* Page title */}
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#1f2937" }}>My Team</h1>
+        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#94a3b8" }}>
+          Your position, manager, and team at a glance
+        </p>
+      </div>
+
+      {/* ── Top row: My Profile + Manager ─────────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+
+        {/* My Profile */}
+        <div style={{
+          background: "#fff", borderRadius: 14,
+          border: "1px solid #e8eef5",
+          overflow: "hidden",
+        }}>
+          {/* Orange accent bar */}
+          <div style={{ height: 4, background: `linear-gradient(90deg, ${BRAND}, #ffb347)` }} />
+          <div style={{ padding: 20 }}>
+            <SectionLabel>My Profile</SectionLabel>
+            {self ? (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+                  <Avatar name={self.name} color={self.color} size={64} />
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#1f2937" }}>{self.name}</div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>{self.jobTitle}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999,
+                        background: "#dcfce7", color: "#16a34a",
+                      }}>{self.status}</span>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999,
+                        background: "#fff8f0", color: BRAND,
+                      }}>{self.empCode}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <InfoChip icon={Building2}  label="Department"   value={self.departmentName} />
+                  <InfoChip icon={MapPin}     label="Location"     value={self.location} />
+                  <InfoChip icon={Calendar}   label="Joined"       value={fmtDate(self.joiningDate)} />
+                  <InfoChip icon={Mail}       label="Email"        value={self.email} />
+                  <InfoChip icon={Phone}      label="Mobile"       value={self.mobile} />
+                  {self.bloodGroup !== "—" &&
+                    <InfoChip icon={UserCheck} label="Blood Group" value={self.bloodGroup} />
+                  }
+                </div>
+              </>
+            ) : (
+              <div style={{ color: "#94a3b8", fontSize: 13 }}>Profile not available.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Manager + dept stats */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Manager card */}
+          <div style={{
+            background: "#fff", borderRadius: 14,
+            border: "1px solid #e8eef5", padding: 20, flex: 1,
+          }}>
+            <SectionLabel>Reporting Manager</SectionLabel>
+            {manager ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ position: "relative" }}>
+                  <Avatar name={manager.name} color={manager.color} size={56} />
+                  <div style={{
+                    position: "absolute", bottom: -2, right: -2,
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: BRAND, display: "flex", alignItems: "center",
+                    justifyContent: "center", border: "2px solid #fff",
+                  }}>
+                    <Crown size={9} color="#fff" />
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#1f2937" }}>{manager.name}</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{manager.jobTitle}</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{manager.departmentName}</div>
+                  {manager.email !== "—" && (
+                    <a href={`mailto:${manager.email}`} style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      marginTop: 8, fontSize: 12, color: BRAND,
+                      textDecoration: "none", fontWeight: 600,
+                    }}>
+                      <Mail size={12} /> {manager.email}
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                display: "flex", flexDirection: "column", alignItems: "center",
+                justifyContent: "center", padding: "16px 0", color: "#94a3b8",
+              }}>
+                <Crown size={32} strokeWidth={1} style={{ marginBottom: 8, color: "#e2e8f0" }} />
+                <span style={{ fontSize: 13 }}>No manager assigned</span>
+              </div>
+            )}
+          </div>
+
+          {/* Dept & team quick stats */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10,
+          }}>
+            {[
+              {
+                label: "Department",
+                value: self?.departmentName || "—",
+                icon: Building2, color: "#6366f1", bg: "#eef2ff",
+              },
+              {
+                label: "Direct Reports",
+                value: directReports.length,
+                icon: UserCheck, color: "#10b981", bg: "#ecfdf5",
+              },
+              {
+                label: "Team Size",
+                value: peers.length + directReports.length + 1,
+                icon: Users, color: BRAND, bg: "#fff8f0",
+              },
+            ].map(({ label, value, icon: Icon, color, bg }) => (
+              <div key={label} style={{
+                background: "#fff", borderRadius: 12,
+                border: "1px solid #e8eef5", padding: "14px 12px",
+                display: "flex", flexDirection: "column", gap: 8,
+              }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  background: bg, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon size={15} color={color} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color }}>{value}</div>
+                  <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginTop: 2 }}>{label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Direct Reports ──────────────────────────────────────────────────── */}
+      {directReports.length > 0 && (
+        <div style={{
+          background: "#fff", borderRadius: 14,
+          border: "1px solid #e8eef5", padding: 20, marginBottom: 16,
+        }}>
+          <SectionLabel>Direct Reports ({directReports.length})</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+            {directReports.map((p) => (
+              <ColleagueCard key={p.id} person={p} isDirectReport />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Peers (same manager) ────────────────────────────────────────────── */}
+      {peers.length > 0 && (
+        <div style={{
+          background: "#fff", borderRadius: 14,
+          border: "1px solid #e8eef5", padding: 20, marginBottom: 16,
+        }}>
+          <SectionLabel>Teammates — same manager ({peers.length})</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+            {peers.map((p) => (
+              <ColleagueCard key={p.id} person={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Others in dept ──────────────────────────────────────────────────── */}
+      {deptTeam.length > 0 && (
+        <div style={{
+          background: "#fff", borderRadius: 14,
+          border: "1px solid #e8eef5", padding: 20,
+        }}>
+          <SectionLabel>Others in {self?.departmentName || "Department"} ({deptTeam.length})</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10 }}>
+            {deptTeam.map((p) => (
+              <ColleagueCard key={p.id} person={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!self && !loading && (
+        <div style={{
+          background: "#fff", borderRadius: 14, border: "1px solid #e8eef5",
+          padding: 48, textAlign: "center",
+        }}>
+          <Users size={48} strokeWidth={1} style={{ color: "#e2e8f0", marginBottom: 12 }} />
+          <p style={{ fontSize: 14, color: "#94a3b8" }}>No team information available.</p>
+        </div>
+      )}
+    </div>
+  );
 }
