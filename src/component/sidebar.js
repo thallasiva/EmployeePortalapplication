@@ -636,18 +636,6 @@ export const Sidebar = ({ open }) =>
         })}
       </nav>
 
-      {/* ── User footer ───────────────────────────────────────────────────── */}
-      <div className="border-t border-[#f5f5f5] px-2 py-2.5">
-        <button type="button"
-          className={[
-            "flex w-full items-center gap-2.5 rounded px-2 py-2 text-sm font-semibold text-red-500 transition hover:bg-rose-50",
-            open ? "justify-start px-2.5" : "justify-center",
-          ].join(" ")}
-          onClick={handleLogout} title={!open ? "Logout" : undefined}>
-          <LogOut size={17} />
-          {open && <span>Sign out</span>}
-        </button>
-      </div>
     </aside>
   );
 };

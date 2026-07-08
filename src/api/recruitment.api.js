@@ -111,6 +111,15 @@ export const getPipelineReport = (params) =>
 export const quickResumeMatch = (jobReqId, candidateSkills, candidateExperience) =>
   apiClient.post("/recruitment/resume-match/quick", { jobReqId, candidateSkills, candidateExperience }).then(unwrap);
 
+/** Parse a resume file and return extracted candidate fields — no job ID needed */
+export const parseResume = (file) => {
+  const form = new FormData();
+  form.append("resume", file);
+  return apiClient.post("/recruitment/resume-match/parse", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then(unwrap);
+};
+
 export const uploadResumeMatch = (jobReqId, file) => {
   const form = new FormData();
   form.append("jobReqId", String(jobReqId));

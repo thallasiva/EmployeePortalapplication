@@ -1,15 +1,15 @@
 'use strict';
 
 /**
- * Resume Parser Service — powered by OpenAI GPT-4o mini
+ * Resume Parser Service — powered by OpenAI GPT-4o mini (with regex fallback)
  *
  * Flow:
  *  1. Extract raw text from PDF or DOCX (pdf-parse / mammoth)
- *  2. Send text to GPT-4o mini with a structured extraction prompt
- *  3. Return parsed JSON: name, email, phone, skills[], experience (years),
- *     education[], summary
- *
- * Falls back to regex-only extraction if OPENAI_API_KEY is not set.
+ *  2. Try GPT-4o mini extraction if OPENAI_API_KEY is set
+ *  3. If no AI key, fall back to:
+ *     a. Section-based extraction (finds "Skills" heading blocks)
+ *     b. Keyword vocab scan across full text
+ * Returns: { name, email, phone, skills[], experience, education[], summary, parsedBy }
  */
 
 const _pdfParse = require('pdf-parse');
@@ -17,17 +17,17 @@ const pdfParse  = _pdfParse.default || _pdfParse;
 const mammoth   = require('mammoth');
 const OpenAI    = require('openai');
 
-// ── OpenAI client (lazy — only used when key is present) ─────────────────────
+// ── OpenAI client (lazy) ─────────────────────────────────────────────────────
 let _openai = null;
 function getOpenAI() {
   if (_openai) return _openai;
   const key = process.env.OPENAI_API_KEY;
-  if (!key || key === 'your-openai-api-key-here') return null;
+  if (!key) return null;
   _openai = new OpenAI({ apiKey: key });
   return _openai;
 }
 
-// ── Extract raw text from buffer ─────────────────────────────────────────────
+// ── Extract raw text ─────────────────────────────────────────────────────────
 async function extractText(buffer, mimetype, originalname) {
   const ext = (originalname || '').split('.').pop().toLowerCase();
 
@@ -51,9 +51,8 @@ async function extractText(buffer, mimetype, originalname) {
 // ── GPT-4o mini extraction ────────────────────────────────────────────────────
 async function parseWithOpenAI(text) {
   const client = getOpenAI();
-  if (!client) return null; // fall back to regex
+  if (!client) return null;
 
-  // Trim to 6000 chars to stay well within token limits for mini
   const trimmed = text.slice(0, 6000);
 
   const prompt = `You are a resume parser. Extract the following fields from the resume text and return ONLY valid JSON with no markdown or explanation.
@@ -62,7 +61,7 @@ Fields to extract:
 - name: full name of the candidate (string or null)
 - email: email address (string or null)
 - phone: phone number (string or null)
-- skills: array of technical and professional skills mentioned (array of strings)
+- skills: array of ALL technical and professional skills mentioned (array of strings, be thorough)
 - experience: total years of work experience as a number (number or 0 if not found)
 - education: array of objects with { degree, institution, year } (array, empty if none)
 - summary: 1-2 sentence professional summary (string or null)
@@ -80,12 +79,10 @@ Return only the JSON object.`;
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0,
-    max_tokens: 1000,
+    max_tokens: 1200,
   });
 
   const content = response.choices[0]?.message?.content?.trim() || '';
-
-  // Strip markdown code fences if present
   const clean = content.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
 
   try {
@@ -96,7 +93,7 @@ Return only the JSON object.`;
   }
 }
 
-// ── Regex fallbacks (used when OpenAI is unavailable) ────────────────────────
+// ── Regex helpers ─────────────────────────────────────────────────────────────
 function regexEmail(text) {
   const m = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
   return m ? m[0] : null;
@@ -114,7 +111,7 @@ function regexName(text) {
     if (
       words.length >= 2 && words.length <= 4 &&
       words.every(w => /^[A-Za-z.'-]{1,30}$/.test(w)) &&
-      !line.toLowerCase().match(/resume|curriculum|profile|summary/)
+      !line.toLowerCase().match(/resume|curriculum|profile|summary|objective|address|email|phone|mobile/)
     ) return line;
   }
   return null;
@@ -126,6 +123,7 @@ function regexExperience(text) {
     /(\d+)\s*\+?\s*yrs?\s+(?:of\s+)?experience/i,
     /experience\s*(?:of\s*)?(\d+)\s*\+?\s*years?/i,
     /total\s+(?:experience|exp)\s*:?\s*(\d+)/i,
+    /(\d+)\s*years?\s+of\s+(?:professional\s+)?experience/i,
   ];
   for (const pat of patterns) {
     const m = text.match(pat);
@@ -139,28 +137,121 @@ function regexExperience(text) {
   return 0;
 }
 
+// ── Expanded skill vocabulary ─────────────────────────────────────────────────
+// Covers: Web, Backend, DB, Cloud, DevOps, Mobile, Data, ERP, CRM, ITSM, Domain
 const SKILL_VOCAB = [
+  // Web / Frontend
   "React","Redux","Next.js","Vue","Angular","JavaScript","TypeScript","HTML","CSS",
-  "Tailwind","Bootstrap","Node.js","Express","NestJS","Django","Flask","FastAPI",
-  "Spring Boot","Java","Python","PHP","Ruby","Go","Rust","C#",".NET","Laravel",
+  "Tailwind","Bootstrap","SASS","jQuery","Webpack","Vite","Svelte","Gatsby",
+  // Backend
+  "Node.js","Express","NestJS","Django","Flask","FastAPI","Spring","Spring Boot",
+  "Java","Python","PHP","Ruby","Go","Rust","C#",".NET","Laravel","Symfony",
+  "ASP.NET","Golang","Scala","Kotlin","Perl","C++","C",
+  // Database
   "MySQL","PostgreSQL","MongoDB","Redis","SQLite","Oracle","DynamoDB","Firebase",
-  "AWS","Azure","GCP","Docker","Kubernetes","CI/CD","Jenkins","GitHub Actions","Terraform",
-  "REST","GraphQL","Microservices","JWT","Git","GitHub","Jira","Postman",
-  "Jest","Cypress","Selenium","React Native","Flutter","Android","iOS","Swift","Kotlin",
-  "Machine Learning","TensorFlow","PyTorch","Pandas","NumPy","Data Science",
-  "Power BI","Tableau","Kafka","Agile","Scrum",
+  "Cassandra","Elasticsearch","MariaDB","MS SQL","SQL Server","MSSQL","NoSQL",
+  "PL/SQL","T-SQL","Hibernate","JPA","JDBC",
+  // Cloud / Infra
+  "AWS","Azure","GCP","Google Cloud","Docker","Kubernetes","Terraform","Ansible",
+  "CI/CD","Jenkins","GitHub Actions","GitLab CI","CircleCI","Helm","ArgoCD",
+  "Linux","Unix","Bash","Shell scripting","PowerShell","Nginx","Apache",
+  // API / Architecture
+  "REST","GraphQL","Microservices","gRPC","SOAP","JWT","OAuth","OpenAPI","Swagger",
+  "WebSocket","RabbitMQ","Kafka","Redis Pub/Sub","Event-driven",
+  // DevOps / Tools
+  "Git","GitHub","GitLab","Bitbucket","Jira","Confluence","Postman","Insomnia",
+  "SonarQube","Prometheus","Grafana","ELK","Splunk","Datadog","New Relic","Sentry",
+  // Mobile
+  "React Native","Flutter","Android","iOS","Swift","Objective-C","Xamarin","Ionic",
+  // Data / ML
+  "Machine Learning","Deep Learning","TensorFlow","PyTorch","Scikit-learn",
+  "Pandas","NumPy","Matplotlib","Seaborn","Spark","Hadoop","Hive","Airflow",
+  "Data Science","Data Engineering","Power BI","Tableau","Looker","Snowflake",
+  "ETL","Data Warehouse","Data Lake","Business Intelligence","BI","Analytics",
+  "Statistics","NLP","Computer Vision","LLM","OpenAI","ChatGPT",
+  // ERP / CRM / HRMS
+  "SAP","SAP ABAP","SAP SD","SAP MM","SAP FI","SAP CO","SAP HR","SAP HCM",
+  "SAP BW","SAP HANA","SAP S/4HANA","SAP Fiori","SAP SuccessFactors",
+  "Oracle ERP","Oracle Financials","Oracle HCM","PeopleSoft","Workday",
+  "Salesforce","Dynamics 365","Microsoft Dynamics","ServiceNow","Zoho",
+  "HubSpot","Siebel","SAP CRM","HRMS","ERP","CRM",
+  // Testing / QA
+  "Jest","Mocha","Cypress","Selenium","Playwright","Appium","JUnit","TestNG",
+  "Pytest","Cucumber","BDD","TDD","Manual Testing","Automation Testing",
+  "Performance Testing","JMeter","Gatling","LoadRunner",
+  // Project / Methodology
+  "Agile","Scrum","Kanban","Waterfall","SDLC","PMP","Prince2","Lean","Six Sigma",
+  "ITIL","TOGAF",
+  // Domain / Functional
+  "Payroll","HR","Human Resources","Recruitment","Onboarding","Talent Management",
+  "Performance Management","Leave Management","Attendance","Workforce Management",
+  "Finance","Accounting","Taxation","GST","TDS","Audit","Banking","Insurance",
+  "Healthcare","Retail","E-commerce","Logistics","Supply Chain","Procurement",
+  "Marketing","Sales","Customer Support","BPO","KPO",
+  // Soft / Other
+  "Team Leadership","Project Management","Communication","Problem Solving",
+  "Microsoft Office","Excel","Word","PowerPoint","Google Suite","SharePoint",
+  "Networking","Security","Cybersecurity","Penetration Testing","VAPT",
+  "Blockchain","Solidity","Web3","NFT","Smart Contracts",
 ];
+
 const VOCAB_LOWER = SKILL_VOCAB.map(s => s.toLowerCase());
 
-function regexSkills(text) {
+// Scan entire text for skill keywords
+function vocabScan(text) {
   const lower = text.toLowerCase();
   const found = new Set();
   for (let i = 0; i < SKILL_VOCAB.length; i++) {
     const term = VOCAB_LOWER[i];
-    const regex = new RegExp(`(?<![a-z0-9])${term.replace(/[.+]/g, '\\$&')}(?![a-z0-9])`, 'i');
+    const escaped = term.replace(/[.+()[\]]/g, '\\$&');
+    const regex = new RegExp(`(?<![a-z0-9])${escaped}(?![a-z0-9])`, 'i');
     if (regex.test(lower)) found.add(SKILL_VOCAB[i]);
   }
   return [...found];
+}
+
+// Extract a "Skills" section block from the resume text and split into items
+function extractSkillsSection(text) {
+  // Look for headings like: SKILLS, TECHNICAL SKILLS, KEY SKILLS, CORE COMPETENCIES etc.
+  const headingPattern = /(?:^|\n)\s*(?:TECHNICAL\s+)?(?:KEY\s+)?(?:CORE\s+)?(?:PROFESSIONAL\s+)?SKILLS?\s*(?:&\s*(?:COMPETENCIES|EXPERTISE))?\s*[:\-]?\s*\n([\s\S]{10,600}?)(?=\n\s*(?:[A-Z][A-Z\s]{3,}|EDUCATION|EXPERIENCE|PROJECTS?|CERTIF|ACHIEV|INTEREST|LANGUAGE|REFERENCE|$))/im;
+  const m = text.match(headingPattern);
+  if (!m) return [];
+
+  const block = m[1];
+  // Split on common separators: commas, bullets, pipes, newlines, semicolons
+  const raw = block
+    .replace(/[•·▪▸►✓✔\-–—]/g, ',')
+    .replace(/\|/g, ',')
+    .replace(/\n/g, ',')
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s.length >= 2 && s.length <= 50 && /[a-zA-Z]/.test(s));
+
+  // Filter out obvious non-skills (single common words, numbers only)
+  const stopWords = new Set(['and','or','the','with','in','of','for','to','a','an','on','at','by','is','are','was','i','we','my','our','you','your']);
+  return raw.filter(s => {
+    const lower = s.toLowerCase();
+    return !stopWords.has(lower) && !/^\d+$/.test(s);
+  });
+}
+
+function regexSkills(text) {
+  // 1. Try section-based extraction first (richer result)
+  const sectionSkills = extractSkillsSection(text);
+
+  // 2. Vocab scan across entire text
+  const vocabSkills = vocabScan(text);
+
+  // 3. Merge: section skills first (preserves user's wording), then vocab additions
+  const merged = new Set(sectionSkills);
+  for (const s of vocabSkills) {
+    // Add vocab skill only if not already covered (case-insensitive)
+    const lower = s.toLowerCase();
+    const alreadyCovered = [...merged].some(x => x.toLowerCase().includes(lower) || lower.includes(x.toLowerCase()));
+    if (!alreadyCovered) merged.add(s);
+  }
+
+  return [...merged];
 }
 
 // ── Main parse function ───────────────────────────────────────────────────────
@@ -189,7 +280,7 @@ async function parseResume(buffer, mimetype, originalname) {
     console.error('[ResumeParser] OpenAI failed, falling back to regex:', err.message);
   }
 
-  // Regex fallback
+  // Enhanced regex fallback
   return {
     rawText,
     name:            regexName(rawText),

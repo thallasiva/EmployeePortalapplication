@@ -131,6 +131,7 @@ router.put("/onboarding/:id/task",
 router.put("/onboarding/:id/finalize", ADMIN_ONLY, onboardingCtrl.finalize);
 
 // ── Resume Match ─────────────────────────────────────────────────────────────
+router.post("/resume-match/parse",                              ALL_REC, resumeMatchCtrl.parseOnly);
 router.post("/resume-match/quick",                              ALL_REC, resumeMatchCtrl.quickMatch);
 router.post("/resume-match/upload",                             ALL_REC, resumeMatchCtrl.uploadAndMatch);
 router.get( "/resume-match/candidate/:candidateId/job/:jobReqId", ALL_REC, resumeMatchCtrl.getMatch);

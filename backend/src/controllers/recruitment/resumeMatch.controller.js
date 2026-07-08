@@ -25,7 +25,6 @@ const upload = multer({
   },
 }).single('resume');
 
-// Wrap multer in a promise so asyncHandler can catch errors
 function uploadMiddleware(req, res)
 {
   return new Promise((resolve, reject) =>
@@ -33,7 +32,7 @@ function uploadMiddleware(req, res)
   );
 }
 
-/** GET /resume-match/candidate/:candidateId/job/:jobReqId  — fetch stored score */
+/** GET /resume-match/candidate/:candidateId/job/:jobReqId */
 const getMatch = asyncHandler(async (req, res) =>
 {
   const candidateId = Number(req.params.candidateId);
@@ -42,7 +41,7 @@ const getMatch = asyncHandler(async (req, res) =>
   new ApiResponse(200, data || null, data ? "Match found" : "No match computed yet").send(res);
 });
 
-/** POST /resume-match/candidate/:candidateId/job/:jobReqId  — (re)compute score */
+/** POST /resume-match/candidate/:candidateId/job/:jobReqId */
 const computeMatch = asyncHandler(async (req, res) =>
 {
   const candidateId = Number(req.params.candidateId);
@@ -51,7 +50,7 @@ const computeMatch = asyncHandler(async (req, res) =>
   new ApiResponse(200, data, "Match computed").send(res);
 });
 
-/** GET /resume-match/job/:jobReqId  — rank all candidates for a job */
+/** GET /resume-match/job/:jobReqId */
 const listByJob = asyncHandler(async (req, res) =>
 {
   const jobReqId = Number(req.params.jobReqId);
@@ -59,7 +58,7 @@ const listByJob = asyncHandler(async (req, res) =>
   new ApiResponse(200, data, "Matches fetched").send(res);
 });
 
-/** POST /resume-match/quick  — instant score without storing */
+/** POST /resume-match/quick */
 const quickMatch = asyncHandler(async (req, res) =>
 {
   const { jobReqId, candidateSkills, candidateExperience } = req.body;
@@ -77,9 +76,7 @@ const quickMatch = asyncHandler(async (req, res) =>
 
 /**
  * POST /resume-match/upload
- * Body: multipart/form-data — field "resume" (PDF/DOCX) + field "jobReqId"
- * Parses the resume, extracts skills + experience, scores against the job.
- * Does NOT store anything — pure instant check.
+ * Parses resume + scores against a job. Does NOT store anything.
  */
 const uploadAndMatch = asyncHandler(async (req, res) =>
 {
@@ -95,14 +92,12 @@ const uploadAndMatch = asyncHandler(async (req, res) =>
     return res.status(400).json({ success: false, message: "jobReqId is required" });
   }
 
-  // 1. Parse resume
   const parsed = await resumeParserSvc.parseResume(
     req.file.buffer,
     req.file.mimetype,
     req.file.originalname,
   );
 
-  // 2. Score against job
   const score = await resumeMatchSvc.quickMatch({
     jobReqId,
     candidateSkills: parsed.skills.join(", "),
@@ -112,4 +107,27 @@ const uploadAndMatch = asyncHandler(async (req, res) =>
   new ApiResponse(200, { ...score, parsed }, "Resume parsed and matched").send(res);
 });
 
-module.exports = { getMatch, computeMatch, listByJob, quickMatch, uploadAndMatch };
+/**
+ * POST /resume-match/parse
+ * Accepts a resume file (PDF/DOCX), returns extracted candidate fields.
+ * Does NOT require a jobReqId — pure extraction only.
+ */
+const parseOnly = asyncHandler(async (req, res) =>
+{
+  await uploadMiddleware(req, res);
+
+  if (!req.file)
+  {
+    return res.status(400).json({ success: false, message: "Please upload a PDF or DOCX resume file" });
+  }
+
+  const parsed = await resumeParserSvc.parseResume(
+    req.file.buffer,
+    req.file.mimetype,
+    req.file.originalname,
+  );
+
+  new ApiResponse(200, parsed, "Resume parsed successfully").send(res);
+});
+
+module.exports = { getMatch, computeMatch, listByJob, quickMatch, uploadAndMatch, parseOnly };
