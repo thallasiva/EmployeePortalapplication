@@ -4,6 +4,7 @@ const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
 const { issueMfaTempToken } = require('../services/mfa.service');
+const notify = require('./mailNotify.service');
 
 /* ── Profile cache ── */
 const _profileCache  = new Map();
@@ -63,7 +64,7 @@ async function register({ email, password, firstName, lastName, mobile, roleId, 
   return { employeeId: out.employee_id, empCode: out.emp_code };
 }
 
-async function login({ email, password }) {
+async function login({ email, password, ip, userAgent }) {
   const results = await callProcedure('sp_get_user_for_login(?)', [email]);
   const userRow = (results[0] ?? results)[0] ?? null;
 
@@ -86,7 +87,14 @@ async function login({ email, password }) {
   if (!valid) {
     await callProcedure('sp_login_fail(?, ?, ?, @locked, @attempts)', [userRow.user_id, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES]);
     const { locked } = await readOuts('locked');
-    if (locked) throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
+    if (locked) {
+      notify.accountLocked({
+        name:    [userRow.first_name, userRow.last_name].filter(Boolean).join(' '),
+        email:   userRow.email,
+        minutes: LOCKOUT_MINUTES,
+      });
+      throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
+    }
     throw ApiError.unauthorized('Invalid email or password');
   }
 
@@ -94,6 +102,16 @@ async function login({ email, password }) {
     const mfaTempToken = await issueMfaTempToken(userRow.user_id);
     return { mfaRequired: true, mfaTempToken };
   }
+
+  // Send login alert email (fire-and-forget)
+  notify.loginAlert({
+    name:      [userRow.first_name, userRow.last_name].filter(Boolean).join(' '),
+    email:     userRow.email,
+    time:      new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    ip:        ip        || 'Unknown',
+    device:    userAgent || 'Unknown device',
+  });
+
   return issueTokens(userRow);
 }
 
@@ -126,6 +144,15 @@ async function changePassword(userId, currentPassword, newPassword) {
   const newHash = await hashPassword(newPassword);
   await callProcedure('sp_change_password(?, ?)', [userId, newHash]);
   bustProfileCache(userId);
+
+  // Notify employee of password change
+  const userRow = await _getUserById(userId);
+  if (userRow) {
+    notify.passwordChanged({
+      name:  [userRow.first_name, userRow.last_name].filter(Boolean).join(' '),
+      email: userRow.email,
+    });
+  }
 }
 
 async function forgotPassword(email) {
@@ -134,6 +161,12 @@ async function forgotPassword(email) {
   const results = await callProcedure('sp_set_reset_token(?, ?, ?)', [email, token, expiry]);
   const affected = (results[0] ?? results)[0]?.affected ?? 0;
   if (!affected) return { message: 'If that email exists, a reset link has been sent' };
+
+  // Send password reset email (critical — bypass queue)
+  const { email: emailCfg } = require('../config/env');
+  const resetUrl = `${emailCfg.frontendUrl || 'http://localhost:3000'}/reset-password?token=${token}`;
+  notify.forgotPassword({ name: email, email, resetUrl, expiresIn: '1 hour' });
+
   return { message: 'If that email exists, a reset link has been sent', resetToken: token };
 }
 

@@ -151,13 +151,21 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ── Email / SMTP health check ───────────────────────────────────────────────
+app.get('/api/health/email', async (req, res) => {
+  try {
+    const { verifySmtp } = require('./services/email.service');
+    const result = await verifySmtp();
+    res.status(result.ok ? 200 : 503).json(result);
+  } catch (err) {
+    res.status(503).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/api', routes);
+app.use("/api", routes);
 
-// ── 404 handler ───────────────────────────────────────────────────────────────
+// -- 404 handler
 app.use(notFoundHandler);
-
-// ── Centralised error handler ─────────────────────────────────────────────────
-app.use(errorHandler);
 
 module.exports = app;

@@ -1,6 +1,7 @@
 const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
+const notify = require("../mailNotify.service");
 
 class CandidateService extends BaseService {
   constructor() {
@@ -48,7 +49,17 @@ class CandidateService extends BaseService {
         ip,
       ]
     );
-    return (results[0] ?? [])[0];
+    const row = (results[0] ?? [])[0];
+
+    // Acknowledge application receipt (fire-and-forget)
+    if (data.email && data.name) {
+      notify.applicationAcknowledgment({
+        candidateEmail: data.email,
+        candidateName:  data.name,
+        jobTitle:       row?.job_title || row?.position_name || '',
+      });
+    }
+    return row;
   }
 
   async updateStatus(candidateId, status, updatedBy, ip) {
@@ -56,7 +67,20 @@ class CandidateService extends BaseService {
       "sp_rec_update_candidate_status(?, ?, ?, ?)",
       [candidateId, status, updatedBy, ip]
     );
-    return (results[0] ?? [])[0];
+    const row = (results[0] ?? [])[0];
+
+    // Notify candidate on shortlist or rejection (fire-and-forget)
+    if (row && row.email) {
+      const name     = row.name || row.candidate_name || 'Candidate';
+      const jobTitle = row.job_title || row.position_name || '';
+      const s = (status || '').toLowerCase();
+      if (s === 'shortlisted' || s === 'selected') {
+        notify.candidateShortlisted({ candidateEmail: row.email, candidateName: name, jobTitle });
+      } else if (s === 'rejected' || s === 'not selected') {
+        notify.candidateRejected({ candidateEmail: row.email, candidateName: name, jobTitle });
+      }
+    }
+    return row;
   }
 }
 

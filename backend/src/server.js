@@ -217,36 +217,113 @@ async function runAutoMigrations() {
   }
 }
 
-// ── Cron: Earned Leave auto-accrual ─────────────────────────────────────────
-// Runs on 1st of every month at 18:00 (6 PM) server time
-// Credits workingDays/14 earned leave to every active employee
+// ── Cron: Earned Leave + Email Notification cron jobs ───────────────────────
 function startCronJobs() {
   try {
-    const cron = require('node-cron');
+    const cron         = require('node-cron');
     const leaveService = require('./services/leaveRequest.service');
+    const notify       = require('./services/mailNotify.service');
+    const { callProcedure } = require('./config/db');
 
-    // "0 18 1 * *" = minute 0, hour 18, day 1, every month, every weekday
+    // ── Earned leave accrual: 1st of month at 18:00 IST ─────────────────────
     cron.schedule('0 18 1 * *', async () => {
       const now = new Date();
-      // Credit previous month's earned leave
       const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
       const prevYear  = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
       logger.info(`[CRON] Starting earned leave accrual for ${prevMonth}/${prevYear}`);
       try {
         const result = await leaveService.accrueEarnedLeave(prevMonth, prevYear);
-        logger.info(`[CRON] Earned leave accrual done — ${result.accrued} accrued, ${result.skipped} skipped`);
+        logger.info(`[CRON] Earned leave accrual done — ${result.accrued} accrued`);
       } catch (err) {
         logger.error('[CRON] Earned leave accrual failed:', err.message);
       }
     }, { timezone: 'Asia/Kolkata' });
 
-    logger.info('[CRON] Earned leave scheduler registered (1st of month at 18:00 IST)');
+    // ── Missing check-in alert: daily at 11:00 AM IST ────────────────────────
+    cron.schedule('0 11 * * 1-6', async () => {
+      logger.info('[CRON] Running missing check-in scan…');
+      try {
+        const results = await callProcedure('sp_get_missing_checkins()');
+        const rows = results[0] ?? [];
+        if (rows.length) {
+          notify.missingCheckInBulk(rows.map((r) => ({
+            employeeEmail: r.email,
+            employeeName:  r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
+            date:          r.attendance_date || new Date().toISOString().split('T')[0],
+          })));
+          logger.info(`[CRON] Missing check-in alerts queued for ${rows.length} employees`);
+        } else {
+          logger.info('[CRON] No missing check-ins today');
+        }
+      } catch (err) {
+        logger.warn('[CRON] Missing check-in scan failed:', err.message);
+      }
+    }, { timezone: 'Asia/Kolkata' });
+
+    // ── Missing check-out alert: daily at 7:00 PM IST ────────────────────────
+    cron.schedule('0 19 * * 1-6', async () => {
+      logger.info('[CRON] Running missing check-out scan…');
+      try {
+        const results = await callProcedure('sp_get_missing_checkouts()');
+        const rows = results[0] ?? [];
+        if (rows.length) {
+          notify.missingCheckOutBulk(rows.map((r) => ({
+            employeeEmail: r.email,
+            employeeName:  r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
+            date:          r.attendance_date || new Date().toISOString().split('T')[0],
+          })));
+          logger.info(`[CRON] Missing check-out alerts queued for ${rows.length} employees`);
+        } else {
+          logger.info('[CRON] No missing check-outs today');
+        }
+      } catch (err) {
+        logger.warn('[CRON] Missing check-out scan failed:', err.message);
+      }
+    }, { timezone: 'Asia/Kolkata' });
+
+    // ── Document expiry alert: daily at 9:00 AM IST ──────────────────────────
+    // Sends alerts for documents expiring in 30 days and in 7 days
+    cron.schedule('0 9 * * *', async () => {
+      logger.info('[CRON] Running document expiry scan…');
+      for (const days of [30, 7]) {
+        try {
+          const results = await callProcedure('sp_get_expiring_documents(?)', [days]);
+          const rows = results[0] ?? [];
+          if (rows.length) {
+            notify.documentExpiryBulk(rows.map((r) => ({
+              employeeEmail: r.email,
+              employeeName:  r.employee_name || (r.first_name + ' ' + (r.last_name || '')).trim(),
+              documentName:  r.document_name || r.doc_type || 'Document',
+              expiryDate:    r.expiry_date,
+              daysLeft:      days,
+            })));
+            logger.info('[CRON] Document expiry alerts (' + days + 'd) queued for ' + rows.length + ' employees');
+          }
+        } catch (err) {
+          logger.warn('[CRON] Document expiry scan (' + days + 'd) failed:', err.message);
+        }
+      }
+    }, { timezone: 'Asia/Kolkata' });
+
+    logger.info('[CRON] All scheduled jobs registered (IST timezone)');
   } catch (err) {
-    logger.warn('[CRON] node-cron not available — scheduled accrual disabled:', err.message);
+    logger.warn('[CRON] node-cron not available -- scheduled jobs disabled:', err.message);
   }
 }
 
-// ── Production security guardrails ────────────────────────────────────────────
+// -- BullMQ email worker
+function startEmailWorker() {
+  try {
+    const { createWorker }     = require('./services/email/mailQueue');
+    const { processQueuedJob } = require('./services/email.service');
+    createWorker(processQueuedJob);
+    logger.info('[EMAIL] BullMQ worker started -- processing email queue');
+  } catch (err) {
+    logger.warn('[EMAIL] BullMQ worker could not start (Redis may be unavailable):', err.message);
+  }
+}
+
+// -- Production security guardrails
 function enforceSecrets() {
   const WEAK_SECRETS = [
     'dev_secret_change_me',
@@ -260,7 +337,7 @@ function enforceSecrets() {
   if (env === 'production') {
     if (WEAK_SECRETS.includes(jwt.secret)) {
       logger.error('FATAL: JWT_SECRET is set to a default/weak value. Set a strong random secret before running in production.');
-      logger.error('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+      logger.error('Generate one with: node -e "console.log(require(\"crypto\").randomBytes(64).toString(\"hex\"))"');
       process.exit(1);
     }
     if (WEAK_SECRETS.includes(jwt.refreshSecret)) {
@@ -269,11 +346,10 @@ function enforceSecrets() {
     }
     if (!salaryEncryptionKey || salaryEncryptionKey.length < 64 || salaryEncryptionKey === 'replace_with_64_char_hex_string') {
       logger.error('FATAL: SALARY_ENCRYPTION_KEY is missing or is still the placeholder value.');
-      logger.error('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+      logger.error('Generate one with: node -e "console.log(require(\"crypto\").randomBytes(32).toString(\"hex\"))"');
       process.exit(1);
     }
   } else {
-    // Non-production: warn but don't crash
     if (WEAK_SECRETS.includes(jwt.secret)) {
       logger.warn('WARNING: JWT_SECRET is using a weak default. Set a strong value before deploying to production.');
     }
@@ -281,6 +357,25 @@ function enforceSecrets() {
 }
 
 enforceSecrets();
+
+// -- SMTP configuration check
+function checkSmtpConfig() {
+  const { email: emailCfg } = require('./config/env');
+  const missing = [];
+  if (!emailCfg.host) missing.push('SMTP_HOST');
+  if (!emailCfg.user) missing.push('SMTP_USER');
+  if (!emailCfg.pass) missing.push('SMTP_PASS');
+
+  if (missing.length) {
+    logger.warn('------------------------------------------------------------');
+    logger.warn('[EMAIL] SMTP is NOT configured - all emails will be skipped.');
+    logger.warn('[EMAIL] Missing in .env: ' + missing.join(', '));
+    logger.warn('[EMAIL] Set SMTP_HOST, SMTP_USER, SMTP_PASS then restart.');
+    logger.warn('------------------------------------------------------------');
+  } else {
+    logger.info('[EMAIL] SMTP configured -> ' + emailCfg.host + ':' + emailCfg.port + ' (user: ' + emailCfg.user + ')');
+  }
+}
 
 (async () => {
   let dbReady = false;
@@ -299,15 +394,18 @@ enforceSecrets();
   if (dbReady) {
     await runAutoMigrations();
   }
+
+  checkSmtpConfig();
   startCronJobs();
+  startEmailWorker();
 
   const server = await listenWithFallback(port);
 
   const shutdown = (signal) => {
-    logger.info(`${signal} received, shutting down...`);
+    logger.info(signal + ' received, shutting down...');
     server.close(() => process.exit(0));
   };
 
-  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGINT',  () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 })();

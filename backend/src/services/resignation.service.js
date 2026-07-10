@@ -2,6 +2,7 @@ const path = require('path');
 const fs   = require('fs');
 const { callProcedure, readOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const notify   = require('./mailNotify.service');
 
 const NOTICE_DAYS = 90;
 
@@ -45,7 +46,21 @@ async function submitResignation(employeeId, body, file) {
   if (!out[0]?.resignation_id) throw ApiError.badRequest(out[0]?.msg || 'Unable to submit resignation');
 
   const rowResults = await callProcedure('sp_get_resignation_by_id(?)', [out[0].resignation_id]);
-  return (rowResults[0] ?? [])[0] ?? null;
+  const row = (rowResults[0] ?? [])[0] ?? null;
+
+  // Notify manager (fire-and-forget)
+  if (row) {
+    notify.resignationSubmitted({
+      managerEmail:  row.manager_email || row.reporting_to_email || null,
+      managerName:   row.manager_name  || row.reporting_to_name  || 'Manager',
+      employeeName:  row.employee_name || row.emp_name           || `Employee #${employeeId}`,
+      empCode:       row.emp_code      || '',
+      submitDate:    row.submission_date || sub_date,
+      endDate:       row.end_date || end_date,
+      reason,
+    });
+  }
+  return row;
 }
 
 async function withdrawResignation(employeeId, resignationId) {
@@ -108,7 +123,20 @@ async function reviewResignation(adminEmployeeId, resignationId, { status, admin
     adminEmployeeId, resignationId, status, admin_remarks || null,
   ]);
   const results = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
-  return (results[0] ?? [])[0] ?? null;
+  const row = (results[0] ?? [])[0] ?? null;
+
+  // Notify employee (fire-and-forget)
+  if (row) {
+    const empEmail    = row.employee_email || row.alternate_email || null;
+    const empName     = row.employee_name  || row.emp_name        || 'Employee';
+    const reviewerName = row.admin_name    || row.reviewed_by_name || 'HR Admin';
+    if (status === 'accepted') {
+      notify.resignationApproved({ employeeEmail: empEmail, employeeName: empName, lastWorkingDay: row.tentative_lwd || row.end_date, reviewerName });
+    } else {
+      notify.resignationRejected({ employeeEmail: empEmail, employeeName: empName, reviewerName, remarks: admin_remarks });
+    }
+  }
+  return row;
 }
 
 module.exports = {

@@ -1,6 +1,7 @@
 const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
+const notify = require("../mailNotify.service");
 
 class OfferService extends BaseService {
   constructor() {
@@ -53,7 +54,20 @@ class OfferService extends BaseService {
       "sp_rec_release_offer(?, ?, ?)",
       [offerId, releasedBy, ip]
     );
-    return (results[0] ?? [])[0];
+    const row = (results[0] ?? [])[0];
+
+    // Send offer letter email to candidate (fire-and-forget)
+    if (row && (row.candidate_email || row.email)) {
+      notify.offerLetter({
+        candidateEmail:  row.candidate_email || row.email,
+        candidateName:   row.candidate_name  || row.name || 'Candidate',
+        jobTitle:        row.designation     || row.job_title || '',
+        ctc:             row.ctc             || 0,
+        dateOfJoining:   row.date_of_joining || row.joining_date || null,
+        offerCode:       row.offer_code      || row.offer_id,
+      });
+    }
+    return row;
   }
 
   async respond(offerId, response, respondedBy, ip) {
@@ -61,7 +75,20 @@ class OfferService extends BaseService {
       "sp_rec_respond_offer(?, ?, ?, ?)",
       [offerId, response, respondedBy, ip]
     );
-    return (results[0] ?? [])[0];
+    const row = (results[0] ?? [])[0];
+
+    // Notify HR of candidate response (fire-and-forget)
+    if (row && (row.candidate_email || row.email)) {
+      const name     = row.candidate_name || row.name || 'Candidate';
+      const jobTitle = row.designation    || row.job_title || '';
+      const r = (response || '').toLowerCase();
+      if (r === 'accepted') {
+        notify.offerAccepted({ hrEmail: row.hr_email || null, candidateName: name, jobTitle, dateOfJoining: row.date_of_joining || null });
+      } else if (r === 'rejected' || r === 'declined') {
+        notify.offerRejected({ hrEmail: row.hr_email || null, candidateName: name, jobTitle });
+      }
+    }
+    return row;
   }
 }
 

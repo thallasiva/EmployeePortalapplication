@@ -1,6 +1,7 @@
 const BaseService = require('./base.service');
-const { callProcedure } = require('../config/db');
+const { callProcedure, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const notify = require('./mailNotify.service');
 
 class LeaveRequestService extends BaseService {
   constructor() {
@@ -8,6 +9,23 @@ class LeaveRequestService extends BaseService {
       'employee_id', 'leave_type_id', 'from_date', 'from_session', 'to_date', 'to_session',
       'days', 'reason', 'status', 'reviewed_by', 'remarks', 'is_cancel_request',
     ]);
+  }
+
+  /* ── Helper: fetch employee email + manager email in one query ── */
+  async _getEmailPair(employeeId) {
+    const rows = await query(
+      `SELECT
+         e.email                                                          AS emp_email,
+         CONCAT(e.first_name,' ',IFNULL(e.last_name,''))                 AS emp_name,
+         mgr.email                                                        AS mgr_email,
+         CONCAT(mgr.first_name,' ',IFNULL(mgr.last_name,''))             AS mgr_name
+       FROM employees e
+       LEFT JOIN employees mgr ON mgr.employee_id = e.reporting_to
+       WHERE e.employee_id = ?
+       LIMIT 1`,
+      [employeeId]
+    );
+    return rows[0] ?? {};
   }
 
   async list({ employee_id, status, leave_type_id, department_id, reporting_to, limit, offset } = {}) {
@@ -39,7 +57,25 @@ class LeaveRequestService extends BaseService {
     const { readOuts } = require('../config/db');
     const { request_id, status_msg } = await readOuts('request_id', 'status_msg');
     if (!request_id) throw ApiError.badRequest(status_msg || 'Unable to submit leave request');
-    return this.getDetails(request_id);
+
+    const leave = await this.getDetails(request_id);
+
+    // Look up emails directly — sp_get_leave_request does not return them
+    const pair = await this._getEmailPair(data.employee_id);
+    notify.leaveApplied({
+      managerEmail:   pair.mgr_email  || null,
+      managerName:    pair.mgr_name   || 'Manager',
+      employeeName:   pair.emp_name   || leave?.employee_name || `Employee #${data.employee_id}`,
+      empCode:        leave?.emp_code || '',
+      leaveType:      leave?.leave_type_name || '',
+      fromDate:       data.from_date,
+      toDate:         data.to_date,
+      days:           data.days,
+      reason:         data.reason || '',
+      leaveRequestId: request_id,
+    });
+
+    return leave;
   }
 
   async review(id, { decision, reviewed_by, remarks }) {
@@ -49,10 +85,35 @@ class LeaveRequestService extends BaseService {
       if (err && err.sqlState === '45000') throw ApiError.conflict(err.sqlMessage || 'Unable to review leave request');
       throw err;
     }
-    return this.getDetails(id);
+    const leave = await this.getDetails(id);
+
+    // Look up employee email directly
+    if (leave) {
+      const pair = await this._getEmailPair(leave.employee_id);
+      const reviewerRows = await query(
+        `SELECT CONCAT(first_name,' ',IFNULL(last_name,'')) AS name FROM employees WHERE employee_id = ? LIMIT 1`,
+        [reviewed_by]
+      );
+      const base = {
+        employeeEmail: pair.emp_email || null,
+        employeeName:  pair.emp_name  || leave.employee_name || 'Employee',
+        reviewerName:  reviewerRows[0]?.name || leave.reviewer_name || 'Manager',
+        leaveType:     leave.leave_type_name || '',
+        fromDate:      leave.from_date,
+        toDate:        leave.to_date,
+        days:          leave.days,
+        remarks,
+      };
+      if (decision === 'Approved')  notify.leaveApproved(base);
+      else if (decision === 'Rejected') notify.leaveRejected(base);
+    }
+    return leave;
   }
 
   async cancel(id, employeeId) {
+    // Fetch details BEFORE cancel to get employee_id for email lookup
+    const leaveBeforeCancel = await this.getDetails(id);
+
     await callProcedure('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
     const { readOuts } = require('../config/db');
     const { ok, msg: cancelMsg } = await readOuts('ok', 'msg');
@@ -61,6 +122,19 @@ class LeaveRequestService extends BaseService {
       if (msg.includes('not found'))  throw ApiError.notFound(msg);
       if (msg.includes('your own'))   throw ApiError.forbidden(msg);
       throw ApiError.conflict(msg);
+    }
+
+    // Look up manager email directly
+    if (leaveBeforeCancel) {
+      const pair = await this._getEmailPair(leaveBeforeCancel.employee_id || employeeId);
+      notify.leaveCancelled({
+        managerEmail:  pair.mgr_email || null,
+        managerName:   pair.mgr_name  || 'Manager',
+        employeeName:  pair.emp_name  || leaveBeforeCancel.employee_name || 'Employee',
+        leaveType:     leaveBeforeCancel.leave_type_name || '',
+        fromDate:      leaveBeforeCancel.from_date,
+        toDate:        leaveBeforeCancel.to_date,
+      });
     }
     return this.getDetails(id);
   }
@@ -71,7 +145,6 @@ class LeaveRequestService extends BaseService {
     return results[0] ?? results;
   }
 
-  /** Returns ALL active employees x all leave types matrix for a given year */
   async allBalances(year) {
     const targetYear = Number(year) || new Date().getFullYear();
     const results    = await callProcedure('sp_all_leave_balances(?)', [targetYear]);
@@ -103,12 +176,6 @@ class LeaveRequestService extends BaseService {
     return { employees: result, leaveTypes, year: targetYear };
   }
 
-  /**
-   * AUTO EARNED LEAVE ACCRUAL
-   * Formula: floor(workingDays / 14 * 2) / 2  →  nearest 0.5-day increment
-   * Source:  payslips.paid_days for that month (accurate); fallback = count Mon–Fri
-   * Target:  leave_balances row for "Earned Leave" (short_code='EL' or first match)
-   */
   async accrueEarnedLeave(month, year) {
     const m = Number(month);
     const y = Number(year);
@@ -118,7 +185,6 @@ class LeaveRequestService extends BaseService {
     return { accrued: out.accrued ?? 0, skipped: 0, earnedPerEmployee: null, month: m, year: y, leaveTypeId: out.leave_type_id };
   }
 
-  /** Admin: upsert one employee's leave balance row */
   async adjustBalance({ employeeId, leaveTypeId, year, opening_balance, granted, availed }) {
     const targetYear = Number(year) || new Date().getFullYear();
     const ob  = Number(opening_balance) || 0;
@@ -129,7 +195,6 @@ class LeaveRequestService extends BaseService {
     return { employeeId, leaveTypeId, year: targetYear, opening_balance: ob, granted: gr, availed: av, balance: bal };
   }
 
-  /** Admin: seed missing balance rows for all active employees for a given year */
   async initializeBalancesForYear(year) {
     const targetYear = Number(year) || new Date().getFullYear();
     const results    = await callProcedure('sp_init_leave_balances_year(?)', [targetYear]);
@@ -137,7 +202,6 @@ class LeaveRequestService extends BaseService {
     return { year: targetYear, created, skipped: 0 };
   }
 
-  /** Admin: bulk-import leave balances from parsed CSV/Excel rows */
   async importBalances(rows, year) {
     const targetYear = Number(year) || new Date().getFullYear();
     let imported = 0, errors = [];
@@ -160,20 +224,9 @@ class LeaveRequestService extends BaseService {
     return { imported, errors, year: targetYear };
   }
 
-  /**
-   * Admin: Full leave summary ledger for all active employees for a year.
-   * Returns per-employee:
-   *  - Employee details (code, name, status, department, designation, DOJ)
-   *  - Opening balances per leave type
-   *  - Leave eligibility (granted) per leave type
-   *  - Total availed per leave type
-   *  - Monthly availed breakdown (Jan-Dec) per leave type
-   *  - Closing balance per leave type
-   */
   async leaveSummary(year, { department_id, status } = {}) {
     const targetYear = Number(year) || new Date().getFullYear();
 
-    // Single stored procedure call — returns 4 result sets
     const results = await callProcedure(
       'sp_get_leave_summary(?, ?, ?)',
       [targetYear, department_id ?? null, status ?? null]
@@ -221,7 +274,6 @@ class LeaveRequestService extends BaseService {
 
     return { employees: result, leaveTypes, year: targetYear, months: MONTHS };
   }
-
 }
 
 module.exports = new LeaveRequestService();

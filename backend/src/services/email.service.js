@@ -1,56 +1,104 @@
-const nodemailer = require('nodemailer');
-const { email: emailConfig } = require('../config/env');
+'use strict';
 
-let transporter = null;
+const nodemailer  = require('nodemailer');
+const { email: emailCfg } = require('../config/env');
+const { enqueue } = require('./email/mailQueue');
 
-/**
- * Lazily builds (and caches) the nodemailer transporter from SMTP_* env vars.
- * Returns null if SMTP host/user are not configured, so callers can fail
- * gracefully without crashing the request.
- */
+let _transporter = null;
+
+/* -- SMTP Transporter */
+
 function getTransporter() {
-  if (transporter) return transporter;
-  if (!emailConfig.host || !emailConfig.user) return null;
+  if (_transporter) return _transporter;
+  if (!emailCfg.host || !emailCfg.user || !emailCfg.pass) return null;
 
-  transporter = nodemailer.createTransport({
-    host: emailConfig.host,
-    port: emailConfig.port,
-    secure: emailConfig.secure,
-    auth: {
-      user: emailConfig.user,
-      pass: emailConfig.pass,
-    },
+  _transporter = nodemailer.createTransport({
+    host:           emailCfg.host,
+    port:           emailCfg.port,
+    secure:         emailCfg.secure,
+    auth:           { user: emailCfg.user, pass: emailCfg.pass },
+    pool:           true,
+    maxConnections: 5,
+    maxMessages:    100,
   });
 
-  return transporter;
+  return _transporter;
 }
 
-/**
- * Sends an email via the configured SMTP server.
- * @param {{to: string, subject: string, html: string, text?: string}} options
- * @returns {Promise<{sent: boolean, error?: string}>}
- */
-async function sendMail({ to, subject, html, text }) {
+/* -- Core send */
+
+async function _doSend({ to, cc, bcc, subject, html, text, attachments }) {
   const transport = getTransporter();
+
   if (!transport) {
-    return { sent: false, error: 'SMTP is not configured (set SMTP_HOST/SMTP_USER/SMTP_PASS in backend/.env)' };
+    console.warn('[EMAIL] SMTP not configured -- skipped | to=' + to + ' | subject=' + subject);
+    console.warn('[EMAIL] Fix: set SMTP_HOST, SMTP_USER, SMTP_PASS in .env and restart server.');
+    return { sent: false, error: 'SMTP not configured' };
   }
+
   if (!to) {
-    return { sent: false, error: 'Recipient email address is missing' };
+    console.warn('[EMAIL] No recipient -- skipped | subject=' + subject);
+    return { sent: false, error: 'Missing recipient' };
   }
 
   try {
-    await transport.sendMail({
-      from: emailConfig.from,
-      to,
+    const info = await transport.sendMail({
+      from:        emailCfg.from,
+      to:          Array.isArray(to)  ? to.join(', ')  : to,
+      cc:          Array.isArray(cc)  ? cc.join(', ')  : (cc  || undefined),
+      bcc:         Array.isArray(bcc) ? bcc.join(', ') : (bcc || undefined),
       subject,
       html,
-      text: text || html.replace(/<[^>]+>/g, ' '),
+      text:        text || html.replace(/<[^>]+>/g, ' '),
+      attachments: attachments || undefined,
     });
-    return { sent: true };
+    console.info('[EMAIL] Sent | to=' + to + ' | subject=' + subject + ' | id=' + info.messageId);
+    return { sent: true, messageId: info.messageId };
   } catch (err) {
+    console.error('[EMAIL] Failed | to=' + to + ' | subject=' + subject + ' | err=' + err.message);
     return { sent: false, error: err.message };
   }
 }
 
-module.exports = { sendMail, getTransporter };
+/* -- Public API */
+
+async function sendMail(options) {
+  try {
+    const jobId = await enqueue(options);
+    if (jobId) return { queued: true, jobId };
+    return await _doSend(options);
+  } catch (err) {
+    console.error('[EMAIL] sendMail error:', err.message);
+    return { sent: false, error: err.message };
+  }
+}
+
+async function sendMailNow(options) {
+  try {
+    return await _doSend(options);
+  } catch (err) {
+    console.error('[EMAIL] sendMailNow error:', err.message);
+    return { sent: false, error: err.message };
+  }
+}
+
+async function sendBulk(emailList) {
+  return Promise.allSettled(emailList.map((opts) => sendMail(opts)));
+}
+
+async function processQueuedJob(job) {
+  return _doSend(job.data);
+}
+
+async function verifySmtp() {
+  const t = getTransporter();
+  if (!t) return { ok: false, reason: 'SMTP not configured -- set SMTP_HOST, SMTP_USER, SMTP_PASS in .env' };
+  try {
+    await t.verify();
+    return { ok: true, host: emailCfg.host, port: emailCfg.port, user: emailCfg.user };
+  } catch (err) {
+    return { ok: false, reason: err.message };
+  }
+}
+
+module.exports = { sendMail, sendMailNow, sendBulk, processQueuedJob, verifySmtp, getTransporter };

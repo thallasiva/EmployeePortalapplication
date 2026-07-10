@@ -1,6 +1,7 @@
 const BaseService = require('./base.service');
 const { callProcedure, readOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const notify   = require('./mailNotify.service');
 
 const FILLABLE = [
   'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'dob',
@@ -21,13 +22,11 @@ class EmployeeService extends BaseService {
     super('employees', 'employee_id', FILLABLE);
   }
 
-  /** Org chart — all active employees with hierarchy data */
   async orgChart() {
     const results = await callProcedure('sp_get_org_chart()');
     return results[0] ?? results;
   }
 
-  /** Paginated employee list with optional filters */
   async list({ department, status, search, reporting_to, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_employees(?, ?, ?, ?, ?, ?)',
@@ -45,7 +44,6 @@ class EmployeeService extends BaseService {
     return { rows, total: count[0]?.total ?? 0 };
   }
 
-  /** Full employee profile with contact info and bank details */
   async getProfile(employeeId) {
     const results = await callProcedure('sp_get_employee_profile(?)', [employeeId]);
     const rows        = results[0] ?? [];
@@ -55,7 +53,6 @@ class EmployeeService extends BaseService {
     return { ...rows[0], contactInfo: contactRows[0] ?? null, bankDetails: bankRows[0] ?? null };
   }
 
-  /** Creates employee + login via stored procedure */
   async createWithProcedure(data) {
     await callProcedure(
       'sp_create_employee(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @employee_id)',
@@ -78,10 +75,30 @@ class EmployeeService extends BaseService {
       ]
     );
     const out = await readOuts('employee_id');
-    return this.getProfile(out[0].employee_id);
+    const profile = await this.getProfile(out[0].employee_id);
+
+    if (profile && data.email) {
+      notify.employeeCreated({
+        name:        (data.first_name + ' ' + (data.last_name || '')).trim(),
+        email:       data.email,
+        empCode:     profile.emp_code      || '',
+        role:        profile.role_name     || data.emp_job_title || 'Employee',
+        department:  profile.department    || '',
+        joiningDate: data.emp_joining_date || null,
+      });
+      if (data.temp_password) {
+        notify.employeeInvite({
+          name:         (data.first_name + ' ' + (data.last_name || '')).trim(),
+          email:        data.email,
+          tempPassword: data.temp_password,
+          role:         profile.role_name  || data.emp_job_title || 'Employee',
+          department:   profile.department || '',
+        });
+      }
+    }
+    return profile;
   }
 
-  /** Upsert contact information via stored procedure */
   async upsertContactInfo(employeeId, data) {
     const exists = await this.existsById(employeeId);
     if (!exists) throw ApiError.notFound('Employee not found');
@@ -108,7 +125,6 @@ class EmployeeService extends BaseService {
     return (results[0] ?? results)[0] ?? null;
   }
 
-  /** Upsert bank details via stored procedure */
   async upsertBankDetails(employeeId, data) {
     const exists = await this.existsById(employeeId);
     if (!exists) throw ApiError.notFound('Employee not found');
@@ -132,7 +148,6 @@ class EmployeeService extends BaseService {
     return (results[0] ?? results)[0] ?? null;
   }
 
-  /** Team view: manager + all teammates under same manager */
   async myTeam(employeeId) {
     const selfResults = await callProcedure('sp_get_employee_team(?)', [employeeId]);
     const self = (selfResults[0] ?? selfResults)[0] ?? null;
@@ -154,7 +169,6 @@ class EmployeeService extends BaseService {
     };
   }
 
-  /** Employee directory with optional filters */
   async directory({ location, department, holidayCalendar } = {}) {
     const results = await callProcedure(
       'sp_get_employee_directory(?, ?, ?)',
@@ -166,24 +180,21 @@ class EmployeeService extends BaseService {
     );
     return results[0] ?? results;
   }
-  /** Change the role_id on the users row linked to this employee */
+
   async changeRole(employeeId, roleId) {
     const { query } = require('../config/db');
     const rows = await query('SELECT user_id FROM users WHERE employee_id = ? LIMIT 1', [employeeId]);
-    if (!rows || !rows.length) throw require('../utils/ApiError').notFound('No user account linked to this employee');
+    if (!rows || !rows.length) throw ApiError.notFound('No user account linked to this employee');
     await query('UPDATE users SET role_id = ? WHERE employee_id = ?', [roleId, employeeId]);
     return true;
   }
 
-  /** List all available roles */
   async listRoles() {
     const { query } = require('../config/db');
     const rows = await query('SELECT role_id, role_name, description FROM roles ORDER BY role_id');
     return rows;
   }
 
-
-  /** List employees with their current role_id from users table */
   async listEmployeesWithRoles() {
     const { query } = require('../config/db');
     const rows = await query(`
@@ -200,8 +211,6 @@ class EmployeeService extends BaseService {
     `);
     return rows;
   }
-
-
 }
 
 module.exports = new EmployeeService();

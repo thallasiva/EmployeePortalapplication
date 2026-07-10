@@ -1,6 +1,7 @@
 const BaseService = require('./base.service');
 const { callProcedure, readOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const notify   = require('./mailNotify.service');
 
 class HelpdeskTicketService extends BaseService {
   constructor() {
@@ -53,12 +54,35 @@ class HelpdeskTicketService extends BaseService {
 
   async updateStatus(id, status) {
     await callProcedure('sp_update_ticket_status(?, ?)', [id, status]);
-    return this.getDetails(id);
+    const ticket = await this.getDetails(id);
+    // Notify reporter when ticket is resolved
+    if (ticket && status === 'Resolved') {
+      notify.ticketResolved({
+        reporterEmail: ticket.reporter_email || ticket.employee_email || null,
+        reporterName:  ticket.reporter_name  || ticket.employee_name  || 'Employee',
+        ticketId:      ticket.ticket_id,
+        subject:       ticket.subject,
+      });
+    }
+    return ticket;
   }
 
   async assign(id, assignedTo) {
     await callProcedure('sp_assign_ticket(?, ?)', [id, assignedTo]);
-    return this.getDetails(id);
+    const ticket = await this.getDetails(id);
+    // Notify newly assigned agent
+    if (ticket && ticket.agent_email) {
+      notify.ticketCreated({
+        agentEmail:    ticket.agent_email,
+        agentName:     ticket.agent_name    || 'Agent',
+        reporterName:  ticket.reporter_name || ticket.employee_name || 'Employee',
+        ticketId:      ticket.ticket_id,
+        subject:       ticket.subject,
+        priority:      ticket.priority,
+        category:      ticket.category,
+      });
+    }
+    return ticket;
   }
 
   async managerAction(managerId, ticketId, action, forwardedToTeam, comment) {
@@ -109,7 +133,18 @@ class HelpdeskTicketService extends BaseService {
 
   async addComment(ticketId, commentedBy, comment) {
     await callProcedure('sp_add_helpdesk_comment(?, ?, ?)', [ticketId, commentedBy, comment]);
-    return this.getDetails(ticketId);
+    const ticket = await this.getDetails(ticketId);
+    // Notify reporter of new comment (only if comment is from agent/admin)
+    if (ticket && ticket.reporter_email && ticket.assigned_to !== commentedBy) {
+      notify.ticketUpdated({
+        reporterEmail: ticket.reporter_email || ticket.employee_email || null,
+        reporterName:  ticket.reporter_name  || ticket.employee_name  || 'Employee',
+        ticketId:      ticket.ticket_id,
+        subject:       ticket.subject,
+        updateMessage: comment,
+      });
+    }
+    return ticket;
   }
 }
 

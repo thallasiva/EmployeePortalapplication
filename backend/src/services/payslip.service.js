@@ -2,6 +2,7 @@ const BaseService = require('./base.service');
 const { callProcedure, readOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const emailService = require('./email.service');
+const notify = require('./mailNotify.service');
 const { computeTdsSection } = require('../utils/taxCalculator');
 const { rupeesInWords } = require('../utils/numberToWords');
 const { calculateEarningsDeductionsBreakdown } = require('../utils/payslipBreakdown');
@@ -163,33 +164,22 @@ class PayslipService extends BaseService {
         const payslip = await this.generate({ employee_id: emp.employee_id, month, year, payroll_run_id: null });
         generated += 1;
 
-        const html = `
-          <h2>Payslip for ${monthLabel} ${year}</h2>
-          <p>Dear ${emp.employee_name.trim()},</p>
-          <p>Your payslip for <strong>${monthLabel} ${year}</strong> has been generated. Here is a summary:</p>
-          <table cellpadding="6" cellspacing="0" border="1" style="border-collapse:collapse;">
-            <tr><td>Basic</td><td>${formatINR(payslip.basic)}</td></tr>
-            <tr><td>HRA</td><td>${formatINR(payslip.hra)}</td></tr>
-            <tr><td>Allowances</td><td>${formatINR(payslip.allowances)}</td></tr>
-            <tr><td><strong>Gross Earnings</strong></td><td><strong>${formatINR(payslip.gross_earnings)}</strong></td></tr>
-            <tr><td>Deductions</td><td>${formatINR(payslip.deductions)}</td></tr>
-            <tr><td><strong>Net Pay</strong></td><td><strong>${formatINR(payslip.net_pay)}</strong></td></tr>
-            <tr><td>Paid Days</td><td>${payslip.paid_days} / ${payslip.working_days}</td></tr>
-          </table>
-          <p>You can view the full payslip by logging into the HRMS portal.</p>
-        `;
-
-        const mailResult = await emailService.sendMail({
-          to: emp.email,
-          subject: `Payslip for ${monthLabel} ${year}`,
-          html,
+        // Use branded payslip email via mailNotify
+        notify.payslipReleased({
+          employeeEmail: emp.email,
+          employeeName:  emp.employee_name.trim(),
+          empCode:       emp.emp_code || '',
+          month:         monthLabel,
+          year:          Number(year),
+          grossSalary:   payslip.gross_earnings,
+          deductions:    payslip.deductions,
+          netSalary:     payslip.net_pay,
         });
-
-        if (mailResult.sent) emailed += 1;
+        emailed += 1; // count as notified (fire-and-forget)
         genResults.push({
           employee_id: emp.employee_id, emp_code: emp.emp_code,
           employee_name: emp.employee_name.trim(), email: emp.email,
-          payslip_id: payslip.payslip_id, emailed: mailResult.sent, error: mailResult.error,
+          payslip_id: payslip.payslip_id, emailed: true, error: null,
         });
       } catch (err) {
         genResults.push({
