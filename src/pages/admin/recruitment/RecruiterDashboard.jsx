@@ -21,7 +21,7 @@ function RecruiterDashboard() {
   const s = data?.stats || {};
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 60, color: "#6b7280" }}>
+    <div className="flex items-center justify-center gap-2.5 p-[60px] text-gray-500">
       <Loader2 size={20} /> Loading dashboard…
     </div>
   );
@@ -36,7 +36,7 @@ function RecruiterDashboard() {
       </div>
 
       {data?.assignedJobs?.length > 0 && (
-        <Card title="My Assigned Jobs" style={{ marginTop: 16 }}>
+        <Card title="My Assigned Jobs">
           <DataTable
             columns={["Job ID", "Title", "Client", "Status", "My Candidates"]}
             rows={data.assignedJobs.map(j => ({
@@ -51,7 +51,7 @@ function RecruiterDashboard() {
       )}
 
       {data?.upcomingInterviews?.length > 0 && (
-        <Card title="Upcoming Interviews (Next 7 Days)" style={{ marginTop: 16 }}>
+        <Card title="Upcoming Interviews (Next 7 Days)">
           <DataTable
             columns={["ID", "Candidate", "Level", "Date", "Time"]}
             rows={data.upcomingInterviews.map(iv => ({

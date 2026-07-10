@@ -304,7 +304,8 @@ function OrgChart({ nodes, onSelect, highlightIds = new Set() }) {
 
               {/* ── Show/Hide toggle badge (bottom-center) ── */}
               {hasChildrenMap[item.id] &&
-              <g onClick={(e) => { e.stopPropagation(); toggle(item.id); }} style={{ cursor: 'pointer' }}>
+              <g onClick={(e) => { e.stopPropagation(); toggle(item.id); }}   className="cursor-pointer"
+>
                 <circle cx={nx(item.depth) + CHART.NW / 2} cy={ny(item) + CHART.NH + TOGGLE_R + 2}
                   r={TOGGLE_R} fill="#fff" stroke={BRAND} strokeWidth={1.5} />
                 <text x={nx(item.depth) + CHART.NW / 2} y={ny(item) + CHART.NH + TOGGLE_R + 7}

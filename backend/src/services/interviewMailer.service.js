@@ -19,7 +19,8 @@ const { sendMail } = require('./email.service');
  *   recruiterName: string,
  * }} data
  */
-async function sendInterviewInvite(data) {
+async function sendInterviewInvite(data)
+{
   const {
     candidateName, candidateEmail,
     interviewDate, interviewTime, durationMinutes,
@@ -27,7 +28,8 @@ async function sendInterviewInvite(data) {
   } = data;
 
   // Compute end time for display
-  const endTime = (() => {
+  const endTime = (() =>
+  {
     if (!interviewTime || !durationMinutes) return null;
     const [h, m] = interviewTime.split(':').map(Number);
     const total = h * 60 + m + Number(durationMinutes);
@@ -76,7 +78,7 @@ async function sendInterviewInvite(data) {
     </div>
     <div class="body">
       <div class="greeting">Dear <strong>${candidateName}</strong>,</div>
-      <p style="color:#374151;font-size:14px;margin-bottom:20px;">
+      <p class="text-[#374151] text-[14px] mb-5">
         We are pleased to inform you that you have been shortlisted for an interview for the position of
         <strong>${jobTitle}</strong>. Please find the details below.
       </p>
@@ -105,18 +107,23 @@ async function sendInterviewInvite(data) {
       </div>
 
       <a href="${joinUrl}" class="join-btn">Join Teams Meeting</a>
-      <p class="link-fallback">Or copy this link: <a href="${joinUrl}" style="color:#6264a7;">${joinUrl}</a></p>
+     <p class="link-fallback">
+  Or copy this link:
+  <a href="${joinUrl}" className="text-[#6264a7]">
+    ${joinUrl}
+  </a>
+</p>
 
-      <p style="color:#374151;font-size:13px;margin-top:24px;">
-        Please ensure you are available 5 minutes before the scheduled time. If you have any questions,
-        feel free to reach out.
-      </p>
+<p className="text-[#374151] text-[13px] mt-6">
+  Please ensure you are available 5 minutes before the scheduled time. If you have any questions,
+  feel free to reach out.
+</p>
 
-      <p style="color:#374151;font-size:13px;margin-top:16px;">
-        Best regards,<br/>
-        <strong>${recruiterName}</strong><br/>
-        Recruitment Team
-      </p>
+<p className="text-[#374151] text-[13px] mt-4">
+  Best regards,<br/>
+  <strong>${recruiterName}</strong><br/>
+  Recruitment Team
+</p>
     </div>
     <div class="footer">
       This is an automated message from the HR Recruitment System. Please do not reply to this email.

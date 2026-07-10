@@ -210,7 +210,8 @@ export default function LeaveApply() {
                 successToast("Leave request submitted.");
                 setLeaveTypeId(""); setFromDate(""); setToDate("");
                 setFromSession("Full Day"); setToSession("Full Day"); setReason("");
-                refreshAll();
+                // Refresh balances only; setActiveTab("pending") triggers loadPending via useEffect
+                getMyLeaveBalances().then((data) => setBalances(data || [])).catch(() => {});
                 setActiveTab("pending");
             })
             .catch((err) => errorToast(err?.response?.data?.message || "Unable to submit."))

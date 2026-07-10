@@ -5,7 +5,6 @@ import { isAdmin, isReportingManager, logoutUser } from "../data/auth";
 import { API_BASE_URL } from "../api/client";
 import { cssClass } from "../utils/classStyles";
 
-// Strip trailing "/api" to get the server origin for static file URLs
 const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 export const Navbar = ({ toggleSidebar, user }) => {
@@ -57,28 +56,28 @@ export const Navbar = ({ toggleSidebar, user }) => {
               src={photoUrl}
               alt={displayName}
               onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
-              className={cssClass({ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid #fed7aa", flexShrink: 0 })} />
+              className="w-9 h-9 rounded-full object-cover border-2 border-orange-200 flex-shrink-0"
+            />
           ) : null}
 
           {/* Fallback avatar */}
           <div
             aria-hidden
-            className={cssClass({ width: 36, height: 36, borderRadius: "50%", background: "#fff7ed", border: "2px solid #fed7aa", display: photoUrl ? "none" : "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 })}>
-            <User size={19} strokeWidth={1.8} className={cssClass({ color: "#f18200" })} />
+            className={`w-9 h-9 rounded-full bg-orange-50 border-2 border-orange-200 ${photoUrl ? "hidden" : "flex"} items-center justify-center flex-shrink-0`}>
+            <User size={19} strokeWidth={1.8} className="text-[#f18200]" />
           </div>
 
           {/* Divider */}
-          <div style={{ width: 1, height: 28, background: "#e5e7eb", margin: "0 4px" }} />
+          <div className="w-px h-7 bg-gray-200 mx-1" />
 
           {/* Logout button */}
           <button
             type="button"
             onClick={() => setShowLogout(true)}
             title="Sign out"
-            className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-            style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            className="flex items-center gap-1.5 p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
             <LogOut size={18} strokeWidth={1.8} />
-            <span className="hidden sm:inline text-sm font-medium" style={{ color: "inherit" }}>Sign out</span>
+            <span className="hidden sm:inline text-sm font-medium">Sign out</span>
           </button>
         </div>
       </header>
@@ -86,30 +85,26 @@ export const Navbar = ({ toggleSidebar, user }) => {
       {/* Logout confirm modal */}
       {showLogout && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
+          className="fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center"
           onClick={e => { if (e.target === e.currentTarget) setShowLogout(false); }}>
-          <div style={{ background: "#fff", borderRadius: 16, padding: "32px 28px", width: 340, maxWidth: "90vw", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", textAlign: "center" }}>
+          <div className="bg-white rounded-2xl p-8 w-[340px] max-w-[90vw] shadow-2xl text-center">
             {/* Icon */}
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#fee2e2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
-              <LogOut size={26} color="#dc2626" strokeWidth={2} />
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+              <LogOut size={26} className="text-red-600" strokeWidth={2} />
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 8 }}>Sign out?</div>
-            <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.5, marginBottom: 28 }}>
+            <div className="text-lg font-bold text-gray-900 mb-2">Sign out?</div>
+            <div className="text-sm text-gray-500 leading-relaxed mb-7">
               You'll be logged out and returned to the login screen.
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div className="flex gap-2.5">
               <button
                 onClick={() => setShowLogout(false)}
-                style={{ flex: 1, padding: "10px 0", borderRadius: 9, border: "1px solid #e5e7eb", background: "#fff", color: "#374151", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "background 0.15s" }}
-                onMouseEnter={e => e.target.style.background = "#f9fafb"}
-                onMouseLeave={e => e.target.style.background = "#fff"}>
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-50 transition-colors">
                 Cancel
               </button>
               <button
                 onClick={doLogout}
-                style={{ flex: 1, padding: "10px 0", borderRadius: 9, border: "none", background: "#dc2626", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "background 0.15s" }}
-                onMouseEnter={e => e.target.style.background = "#b91c1c"}
-                onMouseLeave={e => e.target.style.background = "#dc2626"}>
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold cursor-pointer hover:bg-red-700 transition-colors border-0">
                 Sign out
               </button>
             </div>

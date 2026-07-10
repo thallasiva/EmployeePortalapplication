@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Loader2, ChevronDown, ChevronUp, Zap, Search as SearchIcon } from "lucide-react";
+import { RefreshCw, Loader2, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { PageHeader, Card, Btn, Select, Field, Input, SearchBar } from "./shared";
 import {
   listJobs, listMatchesByJob, computeResumeMatch,
@@ -7,12 +7,11 @@ import {
 } from "../../../api/recruitment.api";
 import { errorToast } from "../../../utils/ToastControllers";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const REC_STYLE = {
-  "Highly Suitable":    { bg: "#fff7ed", color: "#f18200", icon: "⭐" },
-  "Suitable":           { bg: "#dbeafe", color: "#1e40af", icon: "🔵" },
-  "Partially Suitable": { bg: "#fef3c7", color: "#92400e", icon: "🟡" },
-  "Not Suitable":       { bg: "#fee2e2", color: "#991b1b", icon: "🔴" },
+const REC_CLS = {
+  "Highly Suitable":    { bg:"bg-[#fff7ed]",  text:"text-[#f18200]",  icon:"⭐" },
+  "Suitable":           { bg:"bg-blue-100",   text:"text-blue-800",   icon:"🔵" },
+  "Partially Suitable": { bg:"bg-amber-100",  text:"text-amber-900",  icon:"🟡" },
+  "Not Suitable":       { bg:"bg-red-100",    text:"text-red-900",    icon:"🔴" },
 };
 
 function ScoreCircle({ score, size = 64 }) {
@@ -35,9 +34,9 @@ function ScoreCircle({ score, size = 64 }) {
 }
 
 function RecBadge({ label }) {
-  const s = REC_STYLE[label] || { bg: "#f3f4f6", color: "#374151", icon: "⚪" };
+  const s = REC_CLS[label] || { bg:"bg-gray-100", text:"text-gray-700", icon:"⚪" };
   return (
-    <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 20, background: s.bg, color: s.color }}>
+    <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${s.bg} ${s.text}`}>
       {s.icon} {label}
     </span>
   );
@@ -45,28 +44,26 @@ function RecBadge({ label }) {
 
 function SkillBar({ label, score, color }) {
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 12, color: "#374151", fontWeight: 500 }}>{label}</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color }}>{score}%</span>
+    <div className="mb-2.5">
+      <div className="flex justify-between mb-1">
+        <span className="text-[12px] text-gray-700 font-medium">{label}</span>
+        <span className="text-[12px] font-bold" style={{ color }}>{score}%</span>
       </div>
-      <div style={{ height: 7, borderRadius: 4, background: "#f3f4f6" }}>
-        <div style={{ width: `${score}%`, height: 7, borderRadius: 4, background: color, transition: "width 0.5s ease" }} />
+      <div className="h-[7px] rounded bg-gray-100">
+        <div className="h-[7px] rounded transition-all duration-500" style={{ width: `${score}%`, background: color }} />
       </div>
     </div>
   );
 }
 
 function SkillPills({ skills, matched }) {
-  if (!skills?.length) return <span style={{ fontSize: 12, color: "#9ca3af" }}>None</span>;
+  if (!skills?.length) return <span className="text-[12px] text-gray-400">None</span>;
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+    <div className="flex flex-wrap gap-1">
       {skills.map(s => (
-        <span key={s} style={{
-          fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 20,
-          background: matched ? "#fff7ed" : "#fee2e2",
-          color:      matched ? "#f18200" : "#991b1b",
-        }}>
+        <span key={s} className={`text-[11px] font-semibold px-2 py-[3px] rounded-full ${
+          matched ? "bg-[#fff7ed] text-[#f18200]" : "bg-red-100 text-red-800"
+        }`}>
           {matched ? "✔" : "✖"} {s}
         </span>
       ))}
@@ -74,7 +71,7 @@ function SkillPills({ skills, matched }) {
   );
 }
 
-// ── QUICK MATCH PANEL (Upload Resume) ────────────────────────────────────────
+// ── QUICK MATCH PANEL ─────────────────────────────────────────────────────────
 function QuickMatchPanel({ jobs }) {
   const [jobId, setJobId]       = useState("");
   const [file, setFile]         = useState(null);
@@ -90,24 +87,16 @@ function QuickMatchPanel({ jobs }) {
 
   function handleFile(f) {
     if (!f) return;
-    const ok = /\.(pdf|doc|docx)$/i.test(f.name);
-    if (!ok) { errorToast("Only PDF or DOCX files are supported"); return; }
-    setFile(f);
-    setResult(null);
+    if (!/\.(pdf|doc|docx)$/i.test(f.name)) { errorToast("Only PDF or DOCX files are supported"); return; }
+    setFile(f); setResult(null);
   }
 
   async function handleCheck() {
     if (!jobId || !file) return;
-    setLoading(true);
-    setResult(null);
-    try {
-      const data = await uploadResumeMatch(Number(jobId), file);
-      setResult(data);
-    } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to parse resume"));
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setResult(null);
+    try { setResult(await uploadResumeMatch(Number(jobId), file)); }
+    catch (err) { errorToast(getErrorMessage(err, "Failed to parse resume")); }
+    finally { setLoading(false); }
   }
 
   function handleReset() {
@@ -121,100 +110,82 @@ function QuickMatchPanel({ jobs }) {
   const parsed  = result?.parsed;
 
   return (
-    <Card style={{ marginBottom: 20, padding: 0, overflow: "hidden", border: "2px solid #f18200" }}>
+    <div className="mb-5 rounded-xl overflow-hidden border-2 border-[#f18200] bg-white">
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", background: "linear-gradient(135deg,#fff7ed,#fff)", borderBottom: "1px solid #fed7aa" }}>
+      <div className="flex items-center gap-2.5 px-[18px] py-3 bg-gradient-to-r from-[#fff7ed] to-white border-b border-[#fed7aa]">
         <Zap size={18} color="#f18200" />
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>Resume Match Checker</div>
-          <div style={{ fontSize: 12, color: "#6b7280" }}>Upload a PDF or DOCX resume → system reads skills automatically → instant match score</div>
+          <div className="text-[14px] font-bold text-gray-900">Resume Match Checker</div>
+          <div className="text-[12px] text-gray-500">Upload a PDF or DOCX resume → system reads skills automatically → instant match score</div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: result ? "1fr 1.2fr" : "1fr", gap: 0 }}>
+      <div className={`${result ? "grid" : ""}`} style={result ? { gridTemplateColumns: "1fr 1.2fr" } : {}}>
         {/* Left: inputs */}
-        <div style={{ padding: "18px 20px", borderRight: result ? "1px solid #e5e7eb" : "none" }}>
+        <div className={`px-5 py-[18px] ${result ? "border-r border-gray-200" : ""}`}>
           <Field label="Job Requirement" required>
             <Select value={jobId} onChange={e => { setJobId(e.target.value); setResult(null); }} options={jobOpts} />
           </Field>
 
-          {/* Drop zone */}
           <Field label="Upload Resume (PDF or DOCX)" required>
             <div
               onDragOver={e => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
               onClick={() => fileRef.current?.click()}
-              style={{
-                border: `2px dashed ${dragging ? "#f18200" : file ? "#f18200" : "#d1d5db"}`,
-                borderRadius: 10, padding: "24px 16px", textAlign: "center",
-                cursor: "pointer", background: dragging ? "#fff7ed" : file ? "#fff7ed" : "#fafafa",
-                transition: "all 0.2s",
-              }}
+              className={`border-2 border-dashed rounded-[10px] py-6 px-4 text-center cursor-pointer transition-all ${
+                dragging || file ? "border-[#f18200] bg-[#fff7ed]" : "border-gray-300 bg-gray-50"
+              }`}
             >
-              <input
-                ref={fileRef} type="file" accept=".pdf,.doc,.docx"
-                style={{ display: "none" }}
-                onChange={e => handleFile(e.target.files[0])}
-              />
+              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" className="hidden"
+                onChange={e => handleFile(e.target.files[0])} />
               {file ? (
                 <>
-                  <div style={{ fontSize: 28, marginBottom: 6 }}>📄</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#f18200" }}>{file.name}</div>
-                  <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
-                    {(file.size / 1024).toFixed(0)} KB · Click to change
-                  </div>
+                  <div className="text-[28px] mb-1.5">📄</div>
+                  <div className="text-[13px] font-bold text-[#f18200]">{file.name}</div>
+                  <div className="text-[11px] text-gray-500 mt-0.5">{(file.size / 1024).toFixed(0)} KB · Click to change</div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 28, marginBottom: 6 }}>📂</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
-                    Drop resume here or click to browse
-                  </div>
-                  <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 4 }}>PDF or DOCX · Max 5 MB</div>
+                  <div className="text-[28px] mb-1.5">📂</div>
+                  <div className="text-[13px] font-semibold text-gray-700">Drop resume here or click to browse</div>
+                  <div className="text-[11px] text-gray-400 mt-1">PDF or DOCX · Max 5 MB</div>
                 </>
               )}
             </div>
           </Field>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-            <Btn
-              onClick={handleCheck}
-              disabled={!jobId || !file || loading}
-              icon={loading ? <Loader2 size={15} /> : <Zap size={15} />}
-              style={{ flex: 1, background: "#f18200", color: "#fff", border: "none", justifyContent: "center" }}
-            >
+          <div className="flex gap-2.5 mt-1">
+            <Btn onClick={handleCheck} disabled={!jobId || !file || loading}
+              icon={loading ? <Loader2 size={15} /> : <Zap size={15} />}>
               {loading ? "Analysing Resume…" : "Analyse & Match"}
             </Btn>
-            {(file || result) && (
-              <Btn variant="secondary" onClick={handleReset}>Reset</Btn>
-            )}
+            {(file || result) && <Btn variant="secondary" onClick={handleReset}>Reset</Btn>}
           </div>
         </div>
 
         {/* Right: result */}
         {result && (
-          <div style={{ padding: "18px 20px", background: "#fafafa", overflowY: "auto" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12 }}>
+          <div className="px-5 py-[18px] bg-gray-50 overflow-y-auto">
+            <div className="text-[12px] font-bold text-gray-500 uppercase tracking-[0.04em] mb-3">
               Result — {result.jobTitle}
             </div>
 
-            {/* Extracted candidate info */}
             {parsed && (parsed.name || parsed.email || parsed.phone) && (
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", marginBottom: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 6, textTransform: "uppercase" }}>Extracted from Resume</div>
-                {parsed.name  && <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>👤 {parsed.name}</div>}
-                {parsed.email && <div style={{ fontSize: 12, color: "#6b7280" }}>✉ {parsed.email}</div>}
-                {parsed.phone && <div style={{ fontSize: 12, color: "#6b7280" }}>📞 {parsed.phone}</div>}
-                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
+              <div className="bg-white border border-gray-200 rounded-lg px-3.5 py-2.5 mb-3.5">
+                <div className="text-[11px] font-bold text-gray-500 mb-1.5 uppercase">Extracted from Resume</div>
+                {parsed.name  && <div className="text-[13px] font-bold text-gray-900">👤 {parsed.name}</div>}
+                {parsed.email && <div className="text-[12px] text-gray-500">✉ {parsed.email}</div>}
+                {parsed.phone && <div className="text-[12px] text-gray-500">📞 {parsed.phone}</div>}
+                <div className="text-[12px] text-gray-500 mt-1">
                   🗓 Experience detected: <strong>{result.parsed?.experience || 0} years</strong>
                 </div>
                 {parsed.skills?.length > 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 4 }}>Skills found in resume:</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  <div className="mt-2">
+                    <div className="text-[11px] text-gray-400 mb-1">Skills found in resume:</div>
+                    <div className="flex flex-wrap gap-1">
                       {parsed.skills.map(s => (
-                        <span key={s} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: "#f3f4f6", color: "#374151", fontWeight: 500 }}>{s}</span>
+                        <span key={s} className="text-[11px] px-2 py-[2px] rounded-full bg-gray-100 text-gray-700 font-medium">{s}</span>
                       ))}
                     </div>
                   </div>
@@ -222,46 +193,43 @@ function QuickMatchPanel({ jobs }) {
               </div>
             )}
 
-            {/* Score */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14, padding: "12px 14px", background: "#fff", borderRadius: 10, border: "1px solid #e5e7eb" }}>
+            <div className="flex items-center gap-3.5 mb-3.5 px-3.5 py-3 bg-white rounded-[10px] border border-gray-200">
               <ScoreCircle score={result.matchScore} size={68} />
               <div>
                 <RecBadge label={rec} />
-                <div style={{ fontSize: 11, color: "#6b7280", marginTop: 6 }}>
+                <div className="text-[11px] text-gray-500 mt-1.5">
                   Required: <strong>{result.jobExperienceLevel || "Not specified"}</strong>
                 </div>
               </div>
             </div>
 
-            {/* Bars */}
-            <div style={{ marginBottom: 14 }}>
-              <SkillBar label="Skills (60%)"      score={result.skillScore} color="#7c3aed" />
-              <SkillBar label="Experience (40%)"  score={result.expScore}   color="#0369a1" />
+            <div className="mb-3.5">
+              <SkillBar label="Skills (60%)"     score={result.skillScore} color="#7c3aed" />
+              <SkillBar label="Experience (40%)" score={result.expScore}   color="#0369a1" />
             </div>
 
-            {/* Skill pills */}
             {matched.length > 0 && (
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#f18200", marginBottom: 5 }}>✔ Matched ({matched.length})</div>
+              <div className="mb-2">
+                <div className="text-[11px] font-bold text-[#f18200] mb-1.5">✔ Matched ({matched.length})</div>
                 <SkillPills skills={matched} matched={true} />
               </div>
             )}
             {missing.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", marginBottom: 5 }}>✖ Missing ({missing.length})</div>
+                <div className="text-[11px] font-bold text-red-600 mb-1.5">✖ Missing ({missing.length})</div>
                 <SkillPills skills={missing} matched={false} />
               </div>
             )}
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 
 // ── RANKED LIST ROW ───────────────────────────────────────────────────────────
 function MatchRow({ row, onRecompute, rank }) {
-  const [expanded, setExpanded]   = useState(false);
+  const [expanded, setExpanded]       = useState(false);
   const [recomputing, setRecomputing] = useState(false);
   const matched = JSON.parse(row.matched_skills || "[]");
   const missing = JSON.parse(row.missing_skills || "[]");
@@ -277,55 +245,59 @@ function MatchRow({ row, onRecompute, rank }) {
   return (
     <>
       <tr onClick={() => setExpanded(v => !v)}
-        style={{ cursor: "pointer", background: expanded ? "#f9fafb" : "#fff", borderBottom: "1px solid #f0f0f0" }}>
-        <td style={{ padding: "12px 14px", fontSize: 13, fontWeight: 700, color: "#9ca3af", width: 36 }}>#{rank}</td>
-        <td style={{ padding: "12px 14px" }}>
-          <div style={{ fontWeight: 600, color: "#111827" }}>{row.candidate_name}</div>
-          <div style={{ fontSize: 11, color: "#9ca3af" }}>{row.candidate_code} · {row.candidate_email}</div>
+        className={`cursor-pointer border-b border-gray-100 ${expanded ? "bg-gray-50" : "bg-white"}`}>
+        <td className="px-3.5 py-3 text-[13px] font-bold text-gray-400 w-9">#{rank}</td>
+        <td className="px-3.5 py-3">
+          <div className="font-semibold text-gray-900">{row.candidate_name}</div>
+          <div className="text-[11px] text-gray-400">{row.candidate_code} · {row.candidate_email}</div>
         </td>
-        <td style={{ padding: "12px 14px", textAlign: "center" }}>
-          <ScoreCircle score={row.match_score} size={52} />
+        <td className="px-3.5 py-3 text-center"><ScoreCircle score={row.match_score} size={52} /></td>
+        <td className="px-3.5 py-3"><RecBadge label={row.recommendation} /></td>
+        <td className="px-3.5 py-3">
+          <span className="text-[12px] text-[#f18200] font-semibold">✔ {matched.length}</span>
+          <span className="text-[12px] text-gray-400 mx-1">·</span>
+          <span className="text-[12px] text-red-600 font-semibold">✖ {missing.length}</span>
         </td>
-        <td style={{ padding: "12px 14px" }}>
-          <RecBadge label={row.recommendation} />
-        </td>
-        <td style={{ padding: "12px 14px" }}>
-          <div style={{ fontSize: 12 }}>
-            <span style={{ color: "#f18200", fontWeight: 600 }}>✔ {matched.length}</span>
-            <span style={{ color: "#9ca3af", margin: "0 4px" }}>·</span>
-            <span style={{ color: "#dc2626", fontWeight: 600 }}>✖ {missing.length}</span>
-          </div>
-        </td>
-        <td style={{ padding: "12px 14px", fontSize: 12, color: "#374151" }}>{row.relevant_experience} yrs</td>
-        <td style={{ padding: "12px 14px" }}>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <button onClick={handleRecompute} disabled={recomputing}
-              title="Recompute score"
-              style={{ border: "none", background: "none", cursor: "pointer", color: "#7c3aed", fontWeight: 700, fontSize: 16 }}>
+        <td className="px-3.5 py-3 text-[12px] text-gray-700">{row.relevant_experience} yrs</td>
+        <td className="px-3.5 py-3">
+          <div className="flex gap-1.5 items-center">
+            <button onClick={handleRecompute} disabled={recomputing} title="Recompute score"
+              className="border-0 bg-transparent cursor-pointer text-violet-600 font-bold text-base">
               {recomputing ? "…" : "↻"}
             </button>
-            {expanded ? <ChevronUp size={14} color="#9ca3af" /> : <ChevronDown size={14} color="#9ca3af" />}
+            {expanded ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
           </div>
         </td>
       </tr>
-
       {expanded && (
-        <tr style={{ background: "#f9fafb" }}>
-          <td colSpan={7} style={{ padding: "0 14px 16px 50px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, paddingTop: 12 }}>
-              <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #e5e7eb", padding: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 10, textTransform: "uppercase" }}>Score Breakdown</div>
-                <SkillBar label="Skills (60%)"      score={row.skill_score} color="#7c3aed" />
-                <SkillBar label="Experience (40%)"  score={row.exp_score}   color="#0369a1" />
-                <SkillBar label="Overall"           score={row.match_score} color="#f18200" />
+        <tr className="bg-gray-50">
+          <td colSpan={7} className="px-3.5 pb-4 pl-12">
+            <div className="grid grid-cols-2 gap-3.5 pt-3">
+              <div className="bg-white rounded-[10px] border border-gray-200 p-3.5">
+                <div className="text-[11px] font-bold text-gray-500 mb-2.5 uppercase">Score Breakdown</div>
+                <SkillBar label="Skills (60%)"     score={row.skill_score} color="#7c3aed" />
+                <SkillBar label="Experience (40%)" score={row.exp_score}   color="#0369a1" />
+                <SkillBar label="Overall"          score={row.match_score} color="#f18200" />
               </div>
-              <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #e5e7eb", padding: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 8, textTransform: "uppercase" }}>Skills</div>
-                {matched.length > 0 && <div style={{ marginBottom: 8 }}><div style={{ fontSize: 11, color: "#f18200", fontWeight: 600, marginBottom: 4 }}>Matched</div><SkillPills skills={matched} matched /></div>}
-                {missing.length > 0 && <div><div style={{ fontSize: 11, color: "#dc2626", fontWeight: 600, marginBottom: 4 }}>Missing</div><SkillPills skills={missing} matched={false} /></div>}
+              <div className="bg-white rounded-[10px] border border-gray-200 p-3.5">
+                <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase">Skills</div>
+                {matched.length > 0 && (
+                  <div className="mb-2">
+                    <div className="text-[11px] text-[#f18200] font-semibold mb-1">Matched</div>
+                    <SkillPills skills={matched} matched />
+                  </div>
+                )}
+                {missing.length > 0 && (
+                  <div>
+                    <div className="text-[11px] text-red-600 font-semibold mb-1">Missing</div>
+                    <SkillPills skills={missing} matched={false} />
+                  </div>
+                )}
               </div>
             </div>
-            <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 8 }}>Last computed: {row.computed_at ? new Date(row.computed_at).toLocaleString() : "—"}</div>
+            <div className="text-[10px] text-gray-400 mt-2">
+              Last computed: {row.computed_at ? new Date(row.computed_at).toLocaleString() : "—"}
+            </div>
           </td>
         </tr>
       )}
@@ -333,13 +305,13 @@ function MatchRow({ row, onRecompute, rank }) {
   );
 }
 
-// ── MAIN TAB ──────────────────────────────────────────────────────────────────
+// ── MAIN TAB ─────────────────────────────────────────────────────────────────
 export default function ResumeMatchTab({ role }) {
-  const [jobs, setJobs]             = useState([]);
+  const [jobs, setJobs]               = useState([]);
   const [selectedJob, setSelectedJob] = useState("");
-  const [matches, setMatches]       = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [search, setSearch]         = useState("");
+  const [matches, setMatches]         = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [search, setSearch]           = useState("");
 
   useEffect(() => {
     listJobs({ limit: 200 }).then(r => setJobs(r?.data ?? [])).catch(() => {});
@@ -348,19 +320,13 @@ export default function ResumeMatchTab({ role }) {
   const loadMatches = useCallback(async (jobId) => {
     if (!jobId) return;
     setLoading(true);
-    try {
-      const data = await listMatchesByJob(jobId);
-      setMatches(data ?? []);
-    } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to load matches"));
-    } finally {
-      setLoading(false);
-    }
+    try { setMatches(await listMatchesByJob(jobId) ?? []); }
+    catch (err) { errorToast(getErrorMessage(err, "Failed to load matches")); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
-    if (selectedJob) loadMatches(selectedJob);
-    else setMatches([]);
+    if (selectedJob) loadMatches(selectedJob); else setMatches([]);
   }, [selectedJob, loadMatches]);
 
   async function handleRecompute(candidateId, jobReqId) {
@@ -378,12 +344,12 @@ export default function ResumeMatchTab({ role }) {
     ...jobs.map(j => ({ value: String(j.job_req_id), label: `${j.job_req_code || ""} — ${j.title}` })),
   ];
 
-  const counts = {
-    hs: filtered.filter(m => m.recommendation === "Highly Suitable").length,
-    s:  filtered.filter(m => m.recommendation === "Suitable").length,
-    ps: filtered.filter(m => m.recommendation === "Partially Suitable").length,
-    ns: filtered.filter(m => m.recommendation === "Not Suitable").length,
-  };
+  const REC_STAT = [
+    { label:"Highly Suitable", count:filtered.filter(m=>m.recommendation==="Highly Suitable").length, ...REC_CLS["Highly Suitable"] },
+    { label:"Suitable",        count:filtered.filter(m=>m.recommendation==="Suitable").length,        ...REC_CLS["Suitable"] },
+    { label:"Partial",         count:filtered.filter(m=>m.recommendation==="Partially Suitable").length, ...REC_CLS["Partially Suitable"] },
+    { label:"Not Suitable",    count:filtered.filter(m=>m.recommendation==="Not Suitable").length,    ...REC_CLS["Not Suitable"] },
+  ];
 
   return (
     <div>
@@ -393,16 +359,12 @@ export default function ResumeMatchTab({ role }) {
         subtitle="Instantly check how well a candidate matches a job requirement"
       />
 
-      {/* ── Quick Match Tool ── */}
       <QuickMatchPanel jobs={jobs} />
 
-      {/* ── Ranked Candidates for a Job ── */}
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>
-          📋 All Candidates Ranked by Job
-        </div>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <div style={{ flex: 1, maxWidth: 420 }}>
+      <div className="mb-3">
+        <div className="text-[13px] font-bold text-gray-700 mb-2">📋 All Candidates Ranked by Job</div>
+        <div className="flex gap-3 flex-wrap items-center">
+          <div className="flex-1 max-w-[420px]">
             <Select value={selectedJob} onChange={e => setSelectedJob(e.target.value)} options={jobOpts} />
           </div>
           {selectedJob && (
@@ -415,7 +377,7 @@ export default function ResumeMatchTab({ role }) {
       </div>
 
       {selectedJob && loading && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "32px 20px", color: "#6b7280" }}>
+        <div className="flex items-center gap-2.5 py-8 px-5 text-gray-500">
           <Loader2 size={18} /> Loading ranked candidates…
         </div>
       )}
@@ -423,48 +385,33 @@ export default function ResumeMatchTab({ role }) {
       {selectedJob && !loading && (
         <>
           {filtered.length > 0 && (
-            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              {[
-                { label: "Highly Suitable", count: counts.hs, ...REC_STYLE["Highly Suitable"] },
-                { label: "Suitable",        count: counts.s,  ...REC_STYLE["Suitable"] },
-                { label: "Partial",         count: counts.ps, ...REC_STYLE["Partially Suitable"] },
-                { label: "Not Suitable",    count: counts.ns, ...REC_STYLE["Not Suitable"] },
-              ].map(s => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: s.bg }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: s.color }}>{s.count}</span>
-                  <span style={{ fontSize: 11, color: s.color, fontWeight: 600 }}>{s.label}</span>
+            <div className="flex gap-2 mb-3 flex-wrap">
+              {REC_STAT.map(s => (
+                <div key={s.label} className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${s.bg}`}>
+                  <span className={`text-[14px] font-extrabold ${s.text}`}>{s.count}</span>
+                  <span className={`text-[11px] font-semibold ${s.text}`}>{s.label}</span>
                 </div>
               ))}
             </div>
           )}
-
-          <Card style={{ padding: 0 }}>
+          <Card className="!p-0">
             {filtered.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "40px 20px", color: "#9ca3af" }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280" }}>No scored candidates yet</div>
-                <div style={{ fontSize: 12, marginTop: 4 }}>Scores auto-compute when candidates are added to this job</div>
+              <div className="text-center py-10 text-gray-400">
+                <div className="text-[14px] font-semibold text-gray-500">No scored candidates yet</div>
+                <div className="text-[12px] mt-1">Scores auto-compute when candidates are added to this job</div>
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr style={{ background: "#f9fafb", borderBottom: "2px solid #e5e7eb" }}>
-                    {["Rank", "Candidate", "Score", "Result", "Skills", "Exp", ""].map(h => (
-                      <th key={h} style={{
-                        padding: "10px 14px", fontSize: 11, fontWeight: 700, color: "#6b7280",
-                        textAlign: h === "Score" ? "center" : "left",
-                        textTransform: "uppercase", letterSpacing: "0.04em",
-                      }}>{h}</th>
+                  <tr className="bg-gray-50 border-b-2 border-gray-200">
+                    {["Rank","Candidate","Score","Result","Skills","Exp",""].map((h, i) => (
+                      <th key={h} className={`px-3.5 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-[0.04em] ${i === 2 ? "text-center" : "text-left"}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((row, i) => (
-                    <MatchRow
-                      key={row.match_id}
-                      row={row}
-                      rank={i + 1}
-                      onRecompute={handleRecompute}
-                    />
+                    <MatchRow key={row.match_id} row={row} rank={i + 1} onRecompute={handleRecompute} />
                   ))}
                 </tbody>
               </table>
@@ -474,7 +421,7 @@ export default function ResumeMatchTab({ role }) {
       )}
 
       {!selectedJob && matches.length === 0 && (
-        <div style={{ textAlign: "center", padding: "20px", color: "#9ca3af", fontSize: 13 }}>
+        <div className="text-center py-5 text-gray-400 text-[13px]">
           Select a job above to see all candidates ranked by match score.
         </div>
       )}

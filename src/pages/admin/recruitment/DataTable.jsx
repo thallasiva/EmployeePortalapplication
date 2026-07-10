@@ -19,7 +19,7 @@ function DataTable({ columns, rows })
             <tr key={row["Job ID"] || row.Name || row.Candidate || index} className="border-b-[0.5px] border-gray-100">
               {columns.map((column) =>
               {
-                const value = row[column] || "-";
+                const value = row[column] ?? "-";
                 const isStatus = column.toLowerCase().includes("status") || column === "Job Status";
                 return (
                   <td key={column} className="whitespace-nowrap px-3 py-2 text-xs text-gray-700">

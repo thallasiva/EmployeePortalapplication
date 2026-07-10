@@ -24,7 +24,7 @@ class InterviewService extends BaseService {
 
   async schedule(data, scheduledBy, ip) {
     const results = await callProcedure(
-      "sp_rec_schedule_interview(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @interview_id, @interview_code)",
+      "sp_rec_schedule_interview(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @interview_id, @interview_code)",
       [
         data.candidateId,
         data.jobReqId,
@@ -34,6 +34,7 @@ class InterviewService extends BaseService {
         data.interviewTime || null,
         data.durationMinutes || null,
         data.interviewer || null,
+        data.candidateType || "External",
         data.teamsSubject || null,
         data.teamsParticipants || null,
         data.teamsStart || null,

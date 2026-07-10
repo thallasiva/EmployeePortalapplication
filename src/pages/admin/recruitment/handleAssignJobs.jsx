@@ -209,7 +209,7 @@ function RequirementsTab({ role, recruiterKey })
                         <table className="w-full border-collapse min-w-[1000px]">
                             <thead>
                                 <tr className="bg-gray-50">
-                                    <th className="whitespace-nowrap border-b-[0.5px] border-gray-200 px-3 py-2 text-left text-xs font-bold text-gray-500" style={{ width: "40px" }}>
+                                    <th className="whitespace-nowrap border-b-[0.5px] border-gray-200 px-3 py-2 text-left text-xs font-bold text-gray-500 w-10">
                                         <input
                                             type="checkbox"
                                             checked={

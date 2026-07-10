@@ -60,7 +60,7 @@ async function register({ email, password, firstName, lastName, mobile, roleId, 
      departmentId ?? null, designationId ?? null, passwordHash, roleId ?? 2]
   );
   const out = await readOuts('employee_id', 'emp_code');
-  return { employeeId: out[0].employee_id, empCode: out[0].emp_code };
+  return { employeeId: out.employee_id, empCode: out.emp_code };
 }
 
 async function login({ email, password }) {
@@ -85,8 +85,8 @@ async function login({ email, password }) {
   const valid = await comparePassword(password, userRow.password_hash);
   if (!valid) {
     await callProcedure('sp_login_fail(?, ?, ?, @locked, @attempts)', [userRow.user_id, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES]);
-    const out = await readOuts('locked');
-    if (out[0]?.locked) throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
+    const { locked } = await readOuts('locked');
+    if (locked) throw ApiError.forbidden(`Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`);
     throw ApiError.unauthorized('Invalid email or password');
   }
 

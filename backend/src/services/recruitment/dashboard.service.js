@@ -4,10 +4,11 @@ class DashboardService {
   async adminDashboard() {
     const results = await callProcedure("sp_rec_admin_dashboard()", []);
     return {
-      stats:             (results[0] ?? [])[0] ?? {},
-      candidatePipeline:  results[1] ?? [],
-      recruiterPerf:      results[2] ?? [],
-      recentJobs:         results[3] ?? [],
+      stats:                (results[0] ?? [])[0] ?? {},
+      candidatePipeline:     results[1] ?? [],
+      recruiterPerf:         results[2] ?? [],
+      recentJobs:            results[3] ?? [],
+      shortlistedCandidates: results[4] ?? [],
     };
   }
 

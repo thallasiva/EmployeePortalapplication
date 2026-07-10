@@ -166,6 +166,33 @@ export default function Dashboard() {
 
   const todayLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
 
+  // ── Live timer: ticks every second while checked in, not yet checked out ──
+  const [elapsed, setElapsed] = useState("");
+  useEffect(() => {
+    if (!checkIn || checkOut) { setElapsed(""); return; }
+    function tick() {
+      try {
+        const toSecs = (t) => {
+          if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) {
+            const [h, m, s = 0] = t.split(":").map(Number);
+            return h * 3600 + m * 60 + s;
+          }
+          return new Date(t).getTime() / 1000;
+        };
+        const n = new Date();
+        const nowSecs = n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds();
+        const diff = Math.max(0, nowSecs - toSecs(checkIn));
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
+        setElapsed(`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`);
+      } catch { setElapsed(""); }
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [checkIn, checkOut]);
+
   const fmtTime = (t) => {
     if (!t) return "—";
     try {
@@ -270,54 +297,48 @@ export default function Dashboard() {
             Today's Attendance
           </div>
 
-          {/* Time display */}
-          <div className={cssClass({ display: "flex", justifyContent: "center", gap: 16, marginBottom: 10 })}>
-            <div className={cssClass({ textAlign: "center" })}>
-              <div className={cssClass({ fontSize: 10, opacity: 0.7, marginBottom: 2 })}>CHECK IN</div>
-              <div className={cssClass({ fontSize: 14, fontWeight: 700 })}>
-                {loading ? "…" : fmtTime(checkIn)}
-              </div>
+          {/* Check-in / Check-out time row */}
+          <div className="flex justify-center gap-4 mb-2">
+            <div className="text-center">
+              <div className="text-[10px] opacity-70 mb-0.5 uppercase tracking-widest">Check In</div>
+              <div className="text-sm font-bold">{loading ? "…" : fmtTime(checkIn)}</div>
             </div>
-            <div className={cssClass({ width: 1, background: "rgba(255,255,255,0.3)", alignSelf: "stretch" })} />
-            <div className={cssClass({ textAlign: "center" })}>
-              <div className={cssClass({ fontSize: 10, opacity: 0.7, marginBottom: 2 })}>CHECK OUT</div>
-              <div className={cssClass({ fontSize: 14, fontWeight: 700 })}>
-                {loading ? "…" : fmtTime(checkOut)}
-              </div>
+            <div className="w-px bg-white/30 self-stretch" />
+            <div className="text-center">
+              <div className="text-[10px] opacity-70 mb-0.5 uppercase tracking-widest">Check Out</div>
+              <div className="text-sm font-bold">{loading ? "…" : fmtTime(checkOut)}</div>
             </div>
           </div>
 
+          {/* Live elapsed timer */}
+          {elapsed && (
+            <div className="text-center mb-2">
+              <div className="text-[10px] opacity-60 uppercase tracking-widest mb-0.5">Time Elapsed</div>
+              <div className="text-[22px] font-black tracking-widest text-white tabular-nums">{elapsed}</div>
+            </div>
+          )}
+
           {/* Action buttons */}
-          <div className={cssClass({ display: "flex", gap: 8, justifyContent: "center" })}>
+          <div className="flex gap-2 mt-1">
             <button
               onClick={handleCheckIn}
               disabled={!!checkIn || checkingIn || loading}
-              className={cssClass({
-                flex: 1, height: 34, borderRadius: 8, fontSize: 12, fontWeight: 700,
-                cursor: checkIn || loading ? "not-allowed" : "pointer",
-                background: checkIn ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.95)",
-                color: checkIn ? "rgba(255,255,255,0.4)" : "#f18200",
-                border: "none",
-                transition: "all 0.2s",
-                opacity: checkIn ? 0.5 : 1,
-              })}
+              className={`flex-1 h-8 rounded-lg text-xs font-bold border-0 transition-all ${
+                checkIn ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-white/95 text-[#f18200] cursor-pointer hover:bg-white"
+              }`}
             >
-              {checkingIn ? "…" : checkIn ? "Checked In ✓" : "Check In"}
+              {checkingIn ? "…" : checkIn ? "✓ Checked In" : "Check In"}
             </button>
             <button
               onClick={handleCheckOut}
               disabled={!checkIn || !!checkOut || checkingOut || loading}
-              className={cssClass({
-                flex: 1, height: 34, borderRadius: 8, fontSize: 12, fontWeight: 700,
-                cursor: (!checkIn || checkOut || loading) ? "not-allowed" : "pointer",
-                background: checkOut ? "rgba(255,255,255,0.1)" : (!checkIn ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.95)"),
-                color: checkOut ? "rgba(255,255,255,0.4)" : (!checkIn ? "rgba(255,255,255,0.3)" : "#f18200"),
-                border: "none",
-                transition: "all 0.2s",
-                opacity: (!checkIn || checkOut) ? 0.5 : 1,
-              })}
+              className={`flex-1 h-8 rounded-lg text-xs font-bold border-0 transition-all ${
+                checkOut ? "bg-white/10 text-white/40 cursor-not-allowed"
+                : !checkIn ? "bg-white/10 text-white/30 cursor-not-allowed"
+                : "bg-white/95 text-[#f18200] cursor-pointer hover:bg-white"
+              }`}
             >
-              {checkingOut ? "…" : checkOut ? "Checked Out ✓" : "Check Out"}
+              {checkingOut ? "…" : checkOut ? "✓ Checked Out" : "Check Out"}
             </button>
           </div>
 
@@ -400,39 +421,37 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Work hours */}
-          {workHours && (
-            <div className={cssClass({ background: "#f5f3ff", borderRadius: 8, padding: "8px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between" })}>
-              <span className={cssClass({ fontSize: 12, color: "#7c3aed", fontWeight: 600 })}>Work Duration</span>
-              <span className={cssClass({ fontSize: 16, fontWeight: 800, color: "#6d28d9" })}>{workHours}</span>
+          {/* Work duration / live timer */}
+          {(elapsed || workHours) && (
+            <div className="flex items-center justify-between bg-purple-50 rounded-lg px-3.5 py-2 mb-3.5">
+              <span className="text-xs text-purple-700 font-semibold">
+                {elapsed && !checkOut ? "Time Elapsed" : "Work Duration"}
+              </span>
+              <span className="text-base font-extrabold text-purple-800 tabular-nums">
+                {elapsed && !checkOut ? elapsed : workHours}
+              </span>
             </div>
           )}
 
           {/* Buttons */}
-          <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 })}>
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               onClick={handleCheckIn}
               disabled={!!checkIn || checkingIn || loading}
-              className={cssClass({
-                height: 40, borderRadius: 8, fontSize: 13, fontWeight: 700, border: "none",
-                background: checkIn ? "#f1f5f9" : "#16a34a",
-                color: checkIn ? "#94a3b8" : "#fff",
-                cursor: checkIn ? "not-allowed" : "pointer",
-                transition: "all 0.2s",
-              })}
+              className={`h-10 rounded-lg text-sm font-bold border-0 transition-all ${
+                checkIn ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white cursor-pointer hover:bg-green-700"
+              }`}
             >
               {checkingIn ? "…" : checkIn ? "✓ Checked In" : "Check In"}
             </button>
             <button
               onClick={handleCheckOut}
               disabled={!checkIn || !!checkOut || checkingOut || loading}
-              className={cssClass({
-                height: 40, borderRadius: 8, fontSize: 13, fontWeight: 700, border: "none",
-                background: checkOut ? "#f1f5f9" : (!checkIn ? "#f1f5f9" : "#f18200"),
-                color: checkOut ? "#94a3b8" : (!checkIn ? "#94a3b8" : "#fff"),
-                cursor: (!checkIn || checkOut) ? "not-allowed" : "pointer",
-                transition: "all 0.2s",
-              })}
+              className={`h-10 rounded-lg text-sm font-bold border-0 transition-all ${
+                checkOut ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                : !checkIn ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                : "bg-[#f18200] text-white cursor-pointer hover:bg-orange-600"
+              }`}
             >
               {checkingOut ? "…" : checkOut ? "✓ Checked Out" : "Check Out"}
             </button>

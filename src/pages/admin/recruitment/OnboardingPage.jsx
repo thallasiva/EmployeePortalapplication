@@ -9,7 +9,6 @@ import {
 } from "../../../api/recruitment.api";
 import { successToast, errorToast } from "../../../utils/ToastControllers";
 
-// Task steps and their DB column name mapping
 const FORMALITY_STEPS = [
   { key: "employee_info_submitted", label: "Employee Info Submitted",   boolean: true },
   { key: "photo_uploaded",          label: "Photo Uploaded",            boolean: true },
@@ -29,6 +28,16 @@ const ENUM_OPTS = {
   pf_declaration:       ["Pending","Submitted","Approved"],
 };
 
+const STEP_STATUS_CLS = {
+  Pending:       "bg-red-100 text-red-600",
+  "In Progress": "bg-amber-100 text-amber-600",
+  Completed:     "bg-emerald-100 text-emerald-600",
+  Nominated:     "bg-blue-100 text-blue-700",
+  Confirmed:     "bg-emerald-100 text-emerald-600",
+  Submitted:     "bg-violet-100 text-violet-600",
+  Approved:      "bg-emerald-100 text-emerald-600",
+};
+
 function fmt(v) {
   if (!v && v !== 0) return "—";
   return "₹" + Number(v).toLocaleString("en-IN");
@@ -37,14 +46,11 @@ function fmt(v) {
 function StepBadge({ value, boolean: isBool }) {
   if (isBool) {
     return value
-      ? <span style={{ background:"#d1fae5", color:"#059669", padding:"2px 10px", borderRadius:20, fontSize:11, fontWeight:700 }}>✓ Done</span>
-      : <span style={{ background:"#fee2e2", color:"#dc2626", padding:"2px 10px", borderRadius:20, fontSize:11, fontWeight:700 }}>Pending</span>;
+      ? <span className="bg-emerald-100 text-emerald-600 px-2.5 py-[2px] rounded-full text-[11px] font-bold">✓ Done</span>
+      : <span className="bg-red-100 text-red-600 px-2.5 py-[2px] rounded-full text-[11px] font-bold">Pending</span>;
   }
-  const colors = { Pending:{ bg:"#fee2e2", color:"#dc2626" }, "In Progress":{ bg:"#fef3c7", color:"#d97706" },
-    Completed:{ bg:"#d1fae5", color:"#059669" }, Nominated:{ bg:"#dbeafe", color:"#1d4ed8" },
-    Confirmed:{ bg:"#d1fae5", color:"#059669" }, Submitted:{ bg:"#ede9fe", color:"#7c3aed" }, Approved:{ bg:"#d1fae5", color:"#059669" } };
-  const c = colors[value] || { bg:"#f3f4f6", color:"#6b7280" };
-  return <span style={{ background:c.bg, color:c.color, padding:"2px 10px", borderRadius:20, fontSize:11, fontWeight:700 }}>{value || "Pending"}</span>;
+  const cls = STEP_STATUS_CLS[value] ?? "bg-gray-100 text-gray-500";
+  return <span className={`px-2.5 py-[2px] rounded-full text-[11px] font-bold ${cls}`}>{value || "Pending"}</span>;
 }
 
 export default function OnboardingPage({ role }) {
@@ -57,7 +63,7 @@ export default function OnboardingPage({ role }) {
   const [updating, setUpdating] = useState(false);
 
   const isAdmin = role === 1;
-  const isTL    = role === 4;
+  const isTL    = role === 3 || role === 4;   // Reporting Manager + Recruiter Team Lead
   const canEdit = isAdmin || isTL;
 
   const loadRecords = useCallback(async () => {
@@ -67,9 +73,7 @@ export default function OnboardingPage({ role }) {
       setRecords(data ?? []);
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to load onboarding records"));
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { loadRecords(); }, [loadRecords]);
@@ -81,11 +85,8 @@ export default function OnboardingPage({ role }) {
     try {
       const full = await getOnboarding(row.onboarding_id);
       setDetail(full);
-    } catch {
-      // keep list row data
-    } finally {
-      setDetailLoading(false);
-    }
+    } catch { /* keep list row data */ }
+    finally { setDetailLoading(false); }
   }
 
   async function handleUpdateTask(onboardingId, taskName, taskValue) {
@@ -93,13 +94,10 @@ export default function OnboardingPage({ role }) {
     try {
       const updated = await updateOnboardingTask(onboardingId, taskName, taskValue);
       setDetail(updated);
-      // also update list row
       setRecords(rs => rs.map(r => r.onboarding_id === onboardingId ? { ...r, [taskName]: taskValue } : r));
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to update task"));
-    } finally {
-      setUpdating(false);
-    }
+    } finally { setUpdating(false); }
   }
 
   async function handleFinalize(onboardingId) {
@@ -111,9 +109,7 @@ export default function OnboardingPage({ role }) {
       loadRecords();
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to finalize onboarding"));
-    } finally {
-      setUpdating(false);
-    }
+    } finally { setUpdating(false); }
   }
 
   const visible = records.filter(r => {
@@ -121,7 +117,6 @@ export default function OnboardingPage({ role }) {
     return !q || (r.candidate_name||"").toLowerCase().includes(q) || (r.candidate_code||"").toLowerCase().includes(q);
   });
 
-  // Compute progress for detail
   const completedSteps = detail
     ? FORMALITY_STEPS.filter(s => {
         const v = detail[s.key];
@@ -131,21 +126,22 @@ export default function OnboardingPage({ role }) {
   const totalSteps = FORMALITY_STEPS.length;
 
   const columns = [
-    { header: "ID",              key: "onboarding_id", width: 60 },
-    { header: "Candidate",       key: "candidate_name", render: (v, row) => (
+    { header: "ID",             key: "onboarding_id", width: 60 },
+    { header: "Candidate",      key: "candidate_name", render: (v, row) => (
       <div>
-        <div style={{ fontWeight:600, color:"#111827" }}>{v}</div>
-        <div style={{ fontSize:11, color:"#6b7280" }}>{row.job_title}</div>
+        <div className="font-semibold text-gray-900">{v}</div>
+        <div className="text-[11px] text-gray-500">{row.job_title}</div>
       </div>
     )},
-    { header: "Effective Date",  key: "effective_date", render: v => v?.slice(0,10) || "—" },
-    { header: "Joining Form.",   key: "joining_formalities", render: v => <StepBadge value={v} /> },
-    { header: "PF Declaration",  key: "pf_declaration", render: v => <StepBadge value={v} /> },
-    { header: "HR Verified",     key: "hr_verified", render: v => <StepBadge value={v} boolean /> },
-    { header: "Status",          key: "current_status", render: v => {
-      const c = v === "Completed" ? { bg:"#d1fae5", color:"#059669" } : { bg:"#fef3c7", color:"#d97706" };
-      return <span style={{ background:c.bg, color:c.color, padding:"2px 10px", borderRadius:20, fontSize:11, fontWeight:700 }}>{v}</span>;
-    }},
+    { header: "Effective Date", key: "effective_date", render: v => v?.slice(0,10) || "—" },
+    { header: "Joining Form.",  key: "joining_formalities", render: v => <StepBadge value={v} /> },
+    { header: "PF Declaration", key: "pf_declaration", render: v => <StepBadge value={v} /> },
+    { header: "HR Verified",    key: "hr_verified", render: v => <StepBadge value={v} boolean /> },
+    { header: "Status",         key: "current_status", render: v => (
+      <span className={`px-2.5 py-[2px] rounded-full text-[11px] font-bold ${
+        v === "Completed" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"
+      }`}>{v}</span>
+    )},
     { header: "", key: "onboarding_id", width: 70, render: (_, row) => (
       <Btn size="sm" variant="ghost" icon={<Eye size={13} />}
         onClick={e => { e.stopPropagation(); openDetail(row); }}>View</Btn>
@@ -163,30 +159,28 @@ export default function OnboardingPage({ role }) {
         action={<Btn variant="secondary" icon={<RefreshCw size={14} />} onClick={loadRecords} />}
       />
 
-      <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
+      <div className="flex gap-2.5 mb-5 flex-wrap">
         {[
-          { label:"Total",       count:records.length,                                         color:"#6b7280", bg:"#f3f4f6" },
-          { label:"In Progress", count:records.filter(r=>r.current_status==="In Progress").length, color:"#d97706", bg:"#fef3c7" },
-          { label:"Completed",   count:records.filter(r=>r.current_status==="Completed").length,   color:"#059669", bg:"#d1fae5" },
+          { label:"Total",       count:records.length,                                              colorCls:"text-gray-500",   bgCls:"bg-gray-100" },
+          { label:"In Progress", count:records.filter(r=>r.current_status==="In Progress").length,  colorCls:"text-amber-600",  bgCls:"bg-amber-100" },
+          { label:"Completed",   count:records.filter(r=>r.current_status==="Completed").length,    colorCls:"text-emerald-600",bgCls:"bg-emerald-100" },
         ].map(s => (
-          <div key={s.label} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 14px", borderRadius:20, background:s.bg }}>
-            <span style={{ fontSize:16, fontWeight:700, color:s.color }}>{s.count}</span>
-            <span style={{ fontSize:12, color:s.color, fontWeight:500 }}>{s.label}</span>
+          <div key={s.label} className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full ${s.bgCls}`}>
+            <span className={`text-base font-bold ${s.colorCls}`}>{s.count}</span>
+            <span className={`text-[12px] font-medium ${s.colorCls}`}>{s.label}</span>
           </div>
         ))}
       </div>
 
-      <Card style={{ padding:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", borderBottom:"1px solid #f0f0f0" }}>
+      <Card className="!p-0">
+        <div className="flex items-center gap-3 px-[18px] py-3.5 border-b border-gray-100">
           <SearchBar value={search} onChange={setSearch} placeholder="Search by candidate name or code…" />
-          <div style={{ marginLeft:"auto", fontSize:12, color:"#6b7280" }}>
+          <div className="ml-auto text-[12px] text-gray-500">
             {loading ? "Loading…" : `${visible.length} record${visible.length !== 1 ? "s" : ""}`}
           </div>
         </div>
         {loading
-          ? <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:48, color:"#6b7280" }}>
-              <Loader2 size={20} style={{ animation:"spin 1s linear infinite" }} /> Loading…
-            </div>
+          ? <div className="flex items-center justify-center gap-2.5 py-12 text-gray-500"><Loader2 size={20} /> Loading…</div>
           : <Table columns={columns} data={visible} onRowClick={r => openDetail(r)} />
         }
       </Card>
@@ -195,13 +189,13 @@ export default function OnboardingPage({ role }) {
       <Modal open={!!detail} onClose={() => setDetail(null)}
         title={`Onboarding — ${detail?.candidate_name || ""}`} width={640}
         footer={
-          <div style={{ display:"flex", alignItems:"center", gap:10, width:"100%" }}>
+          <div className="flex items-center gap-2.5 w-full">
             {canEdit && detail?.current_status !== "Completed" && !detail?.finalized_at && (
               <Btn icon={<CheckSquare size={14} />} onClick={() => handleFinalize(detail.onboarding_id)} disabled={updating}>
                 {updating ? "…" : "Finalize Onboarding"}
               </Btn>
             )}
-            <div style={{ flex:1 }} />
+            <div className="flex-1" />
             <Btn variant="secondary" onClick={() => setDetail(null)}>Close</Btn>
           </div>
         }
@@ -209,52 +203,55 @@ export default function OnboardingPage({ role }) {
         {detail && (
           <div>
             {detailLoading && (
-              <div style={{ display:"flex", alignItems:"center", gap:8, color:"#6b7280", fontSize:13, marginBottom:12 }}>
-                <Loader2 size={14} style={{ animation:"spin 1s linear infinite" }} /> Loading details…
+              <div className="flex items-center gap-2 text-gray-500 text-[13px] mb-3">
+                <Loader2 size={14} /> Loading details…
               </div>
             )}
 
             {/* Progress bar */}
-            <div style={{ marginBottom:16 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#6b7280", marginBottom:6 }}>
+            <div className="mb-4">
+              <div className="flex justify-between text-[12px] text-gray-500 mb-1.5">
                 <span>Onboarding Progress</span>
-                <span style={{ fontWeight:700, color: completedSteps === totalSteps ? "#059669" : "#f18200" }}>
+                <span className={`font-bold ${completedSteps === totalSteps ? "text-emerald-600" : "text-[#f18200]"}`}>
                   {completedSteps}/{totalSteps} steps
                 </span>
               </div>
-              <div style={{ height:8, background:"#f3f4f6", borderRadius:8, overflow:"hidden" }}>
-                <div style={{ height:"100%", width:`${(completedSteps/totalSteps)*100}%`, background: completedSteps === totalSteps ? "#059669" : "#f18200", transition:"width 0.4s", borderRadius:8 }} />
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-400 ${completedSteps === totalSteps ? "bg-emerald-500" : "bg-[#f18200]"}`}
+                  style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
+                />
               </div>
             </div>
 
             <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
             {activeTab === 0 && (
-              <div style={{ marginTop:14 }}>
+              <div className="mt-3.5">
                 {FORMALITY_STEPS.map((step, i) => {
                   const value = detail[step.key];
                   const isDone = value === true || value === 1 || value === "Completed" || value === "Confirmed" || value === "Approved";
                   return (
-                    <div key={step.key} style={{
-                      display:"flex", alignItems:"center", justifyContent:"space-between",
-                      padding:"12px 14px", borderRadius:8, marginBottom:8,
-                      background: isDone ? "#f0fdf4" : "#fafafa",
-                      border: `1px solid ${isDone ? "#bbf7d0" : "#e5e7eb"}`,
-                    }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ width:28, height:28, borderRadius:"50%", background: isDone ? "#059669" : "#e5e7eb", color: isDone ? "#fff" : "#9ca3af", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700 }}>
-                          {isDone ? "✓" : i+1}
+                    <div key={step.key}
+                      className={`flex items-center justify-between px-3.5 py-3 rounded-lg mb-2 border ${
+                        isDone ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+                      }`}>
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold ${
+                          isDone ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400"
+                        }`}>
+                          {isDone ? "✓" : i + 1}
                         </div>
-                        <span style={{ fontSize:13, fontWeight:600, color:"#111827" }}>{step.label}</span>
+                        <span className="text-[13px] font-semibold text-gray-900">{step.label}</span>
                       </div>
                       {canEdit && (
                         step.boolean ? (
                           <button
                             onClick={() => handleUpdateTask(detail.onboarding_id, step.key, value ? "false" : "true")}
                             disabled={updating}
-                            style={{ cursor:"pointer", padding:"3px 12px", borderRadius:20, border:"none", fontSize:11, fontWeight:700,
-                              background: (value === true || value === 1) ? "#d1fae5" : "#fee2e2",
-                              color:      (value === true || value === 1) ? "#059669" : "#dc2626" }}
+                            className={`cursor-pointer px-3 py-[3px] rounded-full border-0 text-[11px] font-bold ${
+                              (value === true || value === 1) ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
+                            }`}
                           >
                             {(value === true || value === 1) ? "✓ Done" : "Pending"}
                           </button>
@@ -263,7 +260,8 @@ export default function OnboardingPage({ role }) {
                             value={value || "Pending"}
                             onChange={e => handleUpdateTask(detail.onboarding_id, step.key, e.target.value)}
                             disabled={updating}
-                            style={{ fontSize:12, fontWeight:600, border:"1px solid #e5e7eb", borderRadius:20, padding:"2px 10px", background:"transparent", cursor:"pointer" }}
+                            className="text-[12px] font-semibold border border-gray-200 rounded-full px-2.5 py-[2px] bg-transparent cursor-pointer outline-none"
+                            style={{ fontFamily: "inherit" }}
                           >
                             {(ENUM_OPTS[step.key] || ["Pending","In Progress","Completed"]).map(s => <option key={s}>{s}</option>)}
                           </select>
@@ -273,8 +271,7 @@ export default function OnboardingPage({ role }) {
                     </div>
                   );
                 })}
-
-                <div style={{ marginTop:14 }}>
+                <div className="mt-3.5">
                   <Field label="Effective Date">
                     <Input type="date" value={detail.effective_date?.slice(0,10) || ""}
                       onChange={e => canEdit && handleUpdateTask(detail.onboarding_id, "effective_date", e.target.value)}
@@ -285,30 +282,30 @@ export default function OnboardingPage({ role }) {
             )}
 
             {activeTab === 1 && (
-              <div style={{ marginTop:14 }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 20px", marginBottom:14 }}>
-                  <DetailRow label="Candidate"      value={detail.candidate_name} />
-                  <DetailRow label="Candidate Code" value={detail.candidate_code} />
-                  <DetailRow label="Position"       value={detail.job_title} />
-                  <DetailRow label="Designation"    value={detail.designation} />
+              <div className="mt-3.5">
+                <div className="grid grid-cols-2 gap-x-5 mb-3.5">
+                  <DetailRow label="Candidate"       value={detail.candidate_name} />
+                  <DetailRow label="Candidate Code"  value={detail.candidate_code} />
+                  <DetailRow label="Position"        value={detail.job_title} />
+                  <DetailRow label="Designation"     value={detail.designation} />
                   <DetailRow label="Date of Joining" value={detail.date_of_joining?.slice(0,10) || "—"} />
                   <DetailRow label="Effective Date"  value={detail.effective_date?.slice(0,10) || "—"} />
                 </div>
                 {detail.ctc ? (
-                  <div style={{ padding:"14px", background:"#fff7ed", borderRadius:8, borderLeft:"3px solid #f18200" }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:"#92400e", marginBottom:10 }}>OFFER DETAILS</div>
-                    <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid #f3f4f6" }}>
-                      <span style={{ fontSize:13, color:"#6b7280" }}>Cost to Company</span>
-                      <span style={{ fontSize:13, fontWeight:700, color:"#f18200" }}>{fmt(detail.ctc)}</span>
+                  <div className="px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#f18200]">
+                    <div className="text-[12px] font-bold text-[#92400e] mb-2.5">OFFER DETAILS</div>
+                    <div className="flex justify-between py-1.5 border-b border-gray-100">
+                      <span className="text-[13px] text-gray-500">Cost to Company</span>
+                      <span className="text-[13px] font-bold text-[#f18200]">{fmt(detail.ctc)}</span>
                     </div>
                     {detail.ctc_in_words && (
-                      <div style={{ marginTop:8, fontSize:12, color:"#78350f", fontStyle:"italic" }}>
+                      <div className="mt-2 text-[12px] text-amber-900 italic">
                         <strong>In Words:</strong> {detail.ctc_in_words}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div style={{ textAlign:"center", padding:"30px 0", color:"#9ca3af", fontSize:13 }}>
+                  <div className="text-center py-8 text-gray-400 text-[13px]">
                     No offer data linked to this onboarding record.
                   </div>
                 )}

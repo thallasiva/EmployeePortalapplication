@@ -37,8 +37,7 @@ class LeaveRequestService extends BaseService {
       data.to_date, data.to_session || null, data.days, data.reason || null,
     ]);
     const { readOuts } = require('../config/db');
-    const out = await readOuts('request_id', 'status_msg');
-    const { request_id, status_msg } = out[0];
+    const { request_id, status_msg } = await readOuts('request_id', 'status_msg');
     if (!request_id) throw ApiError.badRequest(status_msg || 'Unable to submit leave request');
     return this.getDetails(request_id);
   }
@@ -56,9 +55,9 @@ class LeaveRequestService extends BaseService {
   async cancel(id, employeeId) {
     await callProcedure('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
     const { readOuts } = require('../config/db');
-    const out = await readOuts('ok', 'msg');
-    if (!out[0]?.ok) {
-      const msg = out[0]?.msg ?? 'Cannot cancel';
+    const { ok, msg: cancelMsg } = await readOuts('ok', 'msg');
+    if (!ok) {
+      const msg = cancelMsg ?? 'Cannot cancel';
       if (msg.includes('not found'))  throw ApiError.notFound(msg);
       if (msg.includes('your own'))   throw ApiError.forbidden(msg);
       throw ApiError.conflict(msg);

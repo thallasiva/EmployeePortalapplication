@@ -22,7 +22,7 @@ let _openai = null;
 function getOpenAI() {
   if (_openai) return _openai;
   const key = process.env.OPENAI_API_KEY;
-  if (!key || key === 'you key') return null;
+  if (!key) return null;
   _openai = new OpenAI({ apiKey: key });
   return _openai;
 }
@@ -137,79 +137,6 @@ function regexExperience(text) {
   return 0;
 }
 
-// ── Expanded skill vocabulary ─────────────────────────────────────────────────
-// Covers: Web, Backend, DB, Cloud, DevOps, Mobile, Data, ERP, CRM, ITSM, Domain
-const SKILL_VOCAB = [
-  // Web / Frontend
-  "React","Redux","Next.js","Vue","Angular","JavaScript","TypeScript","HTML","CSS",
-  "Tailwind","Bootstrap","SASS","jQuery","Webpack","Vite","Svelte","Gatsby",
-  // Backend
-  "Node.js","Express","NestJS","Django","Flask","FastAPI","Spring","Spring Boot",
-  "Java","Python","PHP","Ruby","Go","Rust","C#",".NET","Laravel","Symfony",
-  "ASP.NET","Golang","Scala","Kotlin","Perl","C++","C",
-  // Database
-  "MySQL","PostgreSQL","MongoDB","Redis","SQLite","Oracle","DynamoDB","Firebase",
-  "Cassandra","Elasticsearch","MariaDB","MS SQL","SQL Server","MSSQL","NoSQL",
-  "PL/SQL","T-SQL","Hibernate","JPA","JDBC",
-  // Cloud / Infra
-  "AWS","Azure","GCP","Google Cloud","Docker","Kubernetes","Terraform","Ansible",
-  "CI/CD","Jenkins","GitHub Actions","GitLab CI","CircleCI","Helm","ArgoCD",
-  "Linux","Unix","Bash","Shell scripting","PowerShell","Nginx","Apache",
-  // API / Architecture
-  "REST","GraphQL","Microservices","gRPC","SOAP","JWT","OAuth","OpenAPI","Swagger",
-  "WebSocket","RabbitMQ","Kafka","Redis Pub/Sub","Event-driven",
-  // DevOps / Tools
-  "Git","GitHub","GitLab","Bitbucket","Jira","Confluence","Postman","Insomnia",
-  "SonarQube","Prometheus","Grafana","ELK","Splunk","Datadog","New Relic","Sentry",
-  // Mobile
-  "React Native","Flutter","Android","iOS","Swift","Objective-C","Xamarin","Ionic",
-  // Data / ML
-  "Machine Learning","Deep Learning","TensorFlow","PyTorch","Scikit-learn",
-  "Pandas","NumPy","Matplotlib","Seaborn","Spark","Hadoop","Hive","Airflow",
-  "Data Science","Data Engineering","Power BI","Tableau","Looker","Snowflake",
-  "ETL","Data Warehouse","Data Lake","Business Intelligence","BI","Analytics",
-  "Statistics","NLP","Computer Vision","LLM","OpenAI","ChatGPT",
-  // ERP / CRM / HRMS
-  "SAP","SAP ABAP","SAP SD","SAP MM","SAP FI","SAP CO","SAP HR","SAP HCM",
-  "SAP BW","SAP HANA","SAP S/4HANA","SAP Fiori","SAP SuccessFactors",
-  "Oracle ERP","Oracle Financials","Oracle HCM","PeopleSoft","Workday",
-  "Salesforce","Dynamics 365","Microsoft Dynamics","ServiceNow","Zoho",
-  "HubSpot","Siebel","SAP CRM","HRMS","ERP","CRM",
-  // Testing / QA
-  "Jest","Mocha","Cypress","Selenium","Playwright","Appium","JUnit","TestNG",
-  "Pytest","Cucumber","BDD","TDD","Manual Testing","Automation Testing",
-  "Performance Testing","JMeter","Gatling","LoadRunner",
-  // Project / Methodology
-  "Agile","Scrum","Kanban","Waterfall","SDLC","PMP","Prince2","Lean","Six Sigma",
-  "ITIL","TOGAF",
-  // Domain / Functional
-  "Payroll","HR","Human Resources","Recruitment","Onboarding","Talent Management",
-  "Performance Management","Leave Management","Attendance","Workforce Management",
-  "Finance","Accounting","Taxation","GST","TDS","Audit","Banking","Insurance",
-  "Healthcare","Retail","E-commerce","Logistics","Supply Chain","Procurement",
-  "Marketing","Sales","Customer Support","BPO","KPO",
-  // Soft / Other
-  "Team Leadership","Project Management","Communication","Problem Solving",
-  "Microsoft Office","Excel","Word","PowerPoint","Google Suite","SharePoint",
-  "Networking","Security","Cybersecurity","Penetration Testing","VAPT",
-  "Blockchain","Solidity","Web3","NFT","Smart Contracts",
-];
-
-const VOCAB_LOWER = SKILL_VOCAB.map(s => s.toLowerCase());
-
-// Scan entire text for skill keywords
-function vocabScan(text) {
-  const lower = text.toLowerCase();
-  const found = new Set();
-  for (let i = 0; i < SKILL_VOCAB.length; i++) {
-    const term = VOCAB_LOWER[i];
-    const escaped = term.replace(/[.+()[\]]/g, '\\$&');
-    const regex = new RegExp(`(?<![a-z0-9])${escaped}(?![a-z0-9])`, 'i');
-    if (regex.test(lower)) found.add(SKILL_VOCAB[i]);
-  }
-  return [...found];
-}
-
 // Extract a "Skills" section block from the resume text and split into items
 function extractSkillsSection(text) {
   // Look for headings like: SKILLS, TECHNICAL SKILLS, KEY SKILLS, CORE COMPETENCIES etc.
@@ -236,22 +163,7 @@ function extractSkillsSection(text) {
 }
 
 function regexSkills(text) {
-  // 1. Try section-based extraction first (richer result)
-  const sectionSkills = extractSkillsSection(text);
-
-  // 2. Vocab scan across entire text
-  const vocabSkills = vocabScan(text);
-
-  // 3. Merge: section skills first (preserves user's wording), then vocab additions
-  const merged = new Set(sectionSkills);
-  for (const s of vocabSkills) {
-    // Add vocab skill only if not already covered (case-insensitive)
-    const lower = s.toLowerCase();
-    const alreadyCovered = [...merged].some(x => x.toLowerCase().includes(lower) || lower.includes(x.toLowerCase()));
-    if (!alreadyCovered) merged.add(s);
-  }
-
-  return [...merged];
+  return extractSkillsSection(text);
 }
 
 // ── Main parse function ───────────────────────────────────────────────────────

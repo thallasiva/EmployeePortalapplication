@@ -11,36 +11,61 @@ import {
 } from "../../../api/recruitment.api";
 import { errorToast, successToast } from "../../../utils/ToastControllers";
 
+// ── Period filter helpers ────────────────────────────────────────────
+const PERIODS = [
+  { key: "all",   label: "All Time" },
+  { key: "week",  label: "This Week" },
+  { key: "month", label: "This Month" },
+  { key: "year",  label: "This Year" },
+];
+
+function periodStart(key) {
+  const now = new Date();
+  if (key === "week") {
+    const d = new Date(now);
+    d.setDate(d.getDate() - d.getDay()); // Sunday start
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  if (key === "month") {
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  if (key === "year") {
+    return new Date(now.getFullYear(), 0, 1);
+  }
+  return null;
+}
+
 export default function JobsPage({ role }) {
   const navigate = useNavigate();
 
-  const [jobs, setJobs] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [recruiters, setRecruiters] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [jobs, setJobs]               = useState([]);
+  const [totalCount, setTotalCount]   = useState(0);
+  const [recruiters, setRecruiters]   = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [search, setSearch]           = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [detailJob, setDetailJob] = useState(null);
-  const [assignOpen, setAssignOpen] = useState(null);
-  const [assignIds, setAssignIds] = useState([]);
+  const [period, setPeriod]           = useState("all");
+  const [detailJob, setDetailJob]     = useState(null);
+  const [assignOpen, setAssignOpen]   = useState(null);
+  const [assignIds, setAssignIds]     = useState([]);
   const [originalIds, setOriginalIds] = useState([]);
-  const [assigning, setAssigning] = useState(false);
+  const [assigning, setAssigning]     = useState(false);
   const [loadingAssign, setLoadingAssign] = useState(false);
 
-  const isAdmin = role === 1;
-  const isTL = role === 4;
+  const isAdmin  = role === 1;
+  const isTL     = role === 4;
   const canCreate = isAdmin || isTL;
   const canAssign = isAdmin || isTL;
   const canClose  = isAdmin || isTL;
 
-  // ── Fetch jobs ──────────────────────────────────────────────────────
   const loadJobs = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
       if (filterStatus) params.assignmentStatus = filterStatus;
       if (search)       params.search = search;
-      const { data, meta } = await listJobs({ ...params, limit: 100 });
+      const { data, meta } = await listJobs({ ...params, limit: 200 });
       setJobs(data ?? []);
       setTotalCount(meta?.total ?? (data?.length ?? 0));
     } catch (err) {
@@ -52,14 +77,10 @@ export default function JobsPage({ role }) {
 
   useEffect(() => { loadJobs(); }, [loadJobs]);
 
-  // ── Fetch recruiters (for assign modal) ────────────────────────────
   useEffect(() => {
-    listRecruiters()
-      .then(rows => setRecruiters(rows ?? []))
-      .catch(() => {});
+    listRecruiters().then(rows => setRecruiters(rows ?? [])).catch(() => {});
   }, []);
 
-  // ── Open assign modal, pre-load current recruiter IDs ─────────────
   async function openAssign(row) {
     setAssignOpen(row);
     setLoadingAssign(true);
@@ -69,21 +90,18 @@ export default function JobsPage({ role }) {
       setAssignIds(ids);
       setOriginalIds(ids);
     } catch {
-      setAssignIds([]);
-      setOriginalIds([]);
+      setAssignIds([]); setOriginalIds([]);
     } finally {
       setLoadingAssign(false);
     }
   }
 
-  // ── Assign recruiters ──────────────────────────────────────────────
   async function handleAssign() {
     setAssigning(true);
     try {
       await apiAssignRecruiters(assignOpen.job_req_id, assignIds);
       successToast("Recruiters assigned successfully");
-      setAssignOpen(null);
-      setAssignIds([]);
+      setAssignOpen(null); setAssignIds([]);
       loadJobs();
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to assign recruiters"));
@@ -92,7 +110,6 @@ export default function JobsPage({ role }) {
     }
   }
 
-  // ── Close job request ─────────────────────────────────────────────
   async function handleClose(job) {
     if (!window.confirm(`Close "${job.title}"? This will move it from Open to Closed.`)) return;
     try {
@@ -105,38 +122,47 @@ export default function JobsPage({ role }) {
     }
   }
 
-  // ── Filter locally for immediate feel ─────────────────────────────
+  // Local filter: search + status + period
+  const start = periodStart(period);
   const visibleJobs = jobs.filter(j => {
     const q = search.toLowerCase();
     const matchQ = !q || (j.title || "").toLowerCase().includes(q)
       || (j.client || "").toLowerCase().includes(q)
       || (j.job_req_code || "").toLowerCase().includes(q);
     const matchS = !filterStatus || j.assignment_status === filterStatus;
-    return matchQ && matchS;
+    const matchP = !start || new Date(j.created_at) >= start;
+    return matchQ && matchS && matchP;
+  });
+
+  // Period counts for badges
+  const periodCounts = {};
+  PERIODS.forEach(p => {
+    const s = periodStart(p.key);
+    periodCounts[p.key] = jobs.filter(j => !s || new Date(j.created_at) >= s).length;
   });
 
   const columns = [
-    { header: "Job ID", key: "job_req_code", width: 90 },
+    { header: "Job ID",   key: "job_req_code", width: 90 },
     { header: "Position", key: "title", render: (v, row) => (
       <div>
-        <div style={{ fontWeight: 600, color: "#111827" }}>{v}</div>
-        <div style={{ fontSize: 11, color: "#6b7280" }}>{row.client}</div>
+        <div className="font-semibold text-gray-900">{v}</div>
+        <div className="text-[11px] text-gray-500">{row.client}</div>
       </div>
     )},
     { header: "Type",          key: "position_type" },
     { header: "Business Unit", key: "business_unit" },
     { header: "Bill / Pay",    key: "bill_rate", render: (v, row) =>
       `${row.bill_currency || "$"}${v} / ${row.pay_currency || "$"}${row.pay_rate}` },
-    { header: "Vacancies",     key: "vacancies" },
-    { header: "Job Status",    key: "job_status",        render: v => <StatusBadge status={v} /> },
-    { header: "Assignment",    key: "assignment_status", render: v => <StatusBadge status={v} /> },
-    { header: "Candidates",    key: "total_candidates" },
-    { header: "Assigned To",   key: "assigned_recruiters", render: v =>
-      v ? <span style={{ fontSize: 12, color: "#374151" }}>{v}</span>
-        : <span style={{ color: "#9ca3af", fontSize: 12 }}>Unassigned</span>
+    { header: "Vacancies",  key: "vacancies" },
+    { header: "Job Status", key: "job_status",        render: v => <StatusBadge status={v} /> },
+    { header: "Assignment", key: "assignment_status", render: v => <StatusBadge status={v} /> },
+    { header: "Candidates", key: "total_candidates" },
+    { header: "Assigned To", key: "assigned_recruiters", render: v =>
+      v ? <span className="text-xs text-gray-700">{v}</span>
+        : <span className="text-xs text-gray-400">Unassigned</span>
     },
     { header: "", key: "job_req_id", width: 130, render: (_, row) => (
-      <div style={{ display: "flex", gap: 6 }}>
+      <div className="flex gap-1.5">
         <Btn size="sm" variant="ghost" icon={<Eye size={14} />}
           onClick={e => { e.stopPropagation(); setDetailJob(row); }}>View</Btn>
         {canAssign && (
@@ -151,9 +177,7 @@ export default function JobsPage({ role }) {
     )},
   ];
 
-  // Summary counts
-  const openJobs       = jobs.filter(j => j.assignment_status === "Open");
-  const totalOpen      = openJobs.length;
+  const totalOpen      = jobs.filter(j => j.assignment_status === "Open").length;
   const totalCompleted = jobs.filter(j => j.assignment_status === "Completed").length;
 
   return (
@@ -163,44 +187,66 @@ export default function JobsPage({ role }) {
         title={role === 5 ? "My Jobs" : "Job Requests"}
         subtitle="Manage open positions and recruiter assignments"
         action={canCreate ? (
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="flex gap-2">
             <Btn variant="secondary" icon={<RefreshCw size={14} />} onClick={loadJobs} />
             <Btn icon={<Plus size={16} />} onClick={() => navigate("create-new")}>New Job Request</Btn>
           </div>
         ) : null}
       />
 
-      {/* Stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-4 gap-3.5 mb-5">
         {[
-          { label: "Total Jobs",     value: totalCount,    color: "#1a2535" },
-          { label: "Open",           value: totalOpen,     color: "#059669" },
-          { label: "Completed",      value: totalCompleted,color: "#7c3aed" },
-          { label: "Total Openings", value: totalCount,     color: "#f18200" },
+          { label: "Total Jobs",     value: totalCount,     color: "text-[#1a2535]" },
+          { label: "Open",           value: totalOpen,      color: "text-green-600" },
+          { label: "Completed",      value: totalCompleted, color: "text-purple-600" },
+          { label: "Total Openings", value: totalCount,     color: "text-[#f18200]" },
         ].map(s => (
           <Card key={s.label} style={{ padding: "14px 18px" }}>
-            <div style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>{s.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: s.color }}>{s.value}</div>
+            <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wide mb-1.5">{s.label}</div>
+            <div className={`text-[26px] font-bold ${s.color}`}>{s.value}</div>
           </Card>
         ))}
       </div>
 
       <Card style={{ padding: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderBottom: "1px solid #f0f0f0", flexWrap: "wrap" }}>
+        {/* ── Period tabs ── */}
+        <div className="flex items-center gap-1 px-4 pt-3.5 border-b border-gray-100">
+          {PERIODS.map(p => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors cursor-pointer bg-transparent ${
+                period === p.key
+                  ? "border-[#f18200] text-[#f18200]"
+                  : "border-transparent text-gray-400 hover:text-gray-700"
+              }`}>
+              {p.label}
+              <span className={`text-[10px] font-bold px-1.5 py-px rounded-full ${
+                period === p.key ? "bg-[#f18200] text-white" : "bg-gray-100 text-gray-500"
+              }`}>
+                {periodCounts[p.key]}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* ── Toolbar ── */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 flex-wrap">
           <SearchBar value={search} onChange={setSearch} placeholder="Search by title, client, ID..." />
           <Select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
             options={[{ value: "", label: "All Statuses" }, ...ASSIGNMENT_STATUSES.map(s => ({ value: s, label: s }))]}
           />
-          <div style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
+          <div className="ml-auto text-xs text-gray-500">
             {loading ? "Loading…" : `${visibleJobs.length} job${visibleJobs.length !== 1 ? "s" : ""}`}
           </div>
         </div>
 
         {loading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: 48, color: "#6b7280" }}>
-            <Loader2 size={20} className="animate-spin" style={{ animation: "spin 1s linear infinite" }} /> Loading jobs…
+          <div className="flex items-center justify-center gap-2.5 py-12 text-gray-500">
+            <Loader2 size={20} className="animate-spin" /> Loading jobs…
           </div>
         ) : (
           <Table columns={columns} data={visibleJobs} onRowClick={row => setDetailJob(row)} />
@@ -211,24 +257,24 @@ export default function JobsPage({ role }) {
       <Modal open={!!detailJob} onClose={() => setDetailJob(null)}
         title={detailJob?.title || "Job Details"} width={640}
         footer={
-          <div style={{ display:"flex", gap:8, width:"100%" }}>
+          <div className="flex gap-2 w-full">
             {canClose && detailJob?.assignment_status === "Open" && (
               <Btn variant="danger" icon={<XCircle size={14} />} onClick={() => handleClose(detailJob)}>
                 Close Job Request
               </Btn>
             )}
-            <div style={{ flex:1 }} />
+            <div className="flex-1" />
             <Btn variant="secondary" onClick={() => setDetailJob(null)}>Dismiss</Btn>
           </div>
         }>
         {detailJob && (
           <div>
-            <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+            <div className="flex gap-2.5 mb-4 flex-wrap">
               <StatusBadge status={detailJob.job_status} />
               <StatusBadge status={detailJob.assignment_status} />
-              <span style={{ fontSize: 12, background: "#f3f4f6", padding: "2px 9px", borderRadius: 12, color: "#374151", fontWeight: 500 }}>{detailJob.position_type}</span>
+              <span className="text-xs bg-gray-100 px-2.5 py-0.5 rounded-xl text-gray-700 font-medium">{detailJob.position_type}</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
+            <div className="grid grid-cols-2 gap-x-5">
               <DetailRow label="Job ID"         value={detailJob.job_req_code} />
               <DetailRow label="Client"         value={detailJob.client} />
               <DetailRow label="Business Unit"  value={detailJob.business_unit} />
@@ -237,31 +283,31 @@ export default function JobsPage({ role }) {
               <DetailRow label="Pay Rate"       value={`${detailJob.pay_currency || "$"}${detailJob.pay_rate}/hr`} />
               <DetailRow label="Vacancies"      value={detailJob.vacancies} />
               <DetailRow label="Candidates"     value={detailJob.total_candidates} />
-              {detailJob.city    && <DetailRow label="City"             value={detailJob.city} />}
-              {detailJob.country && <DetailRow label="Country"          value={detailJob.country} />}
+              {detailJob.city    && <DetailRow label="City"       value={detailJob.city} />}
+              {detailJob.country && <DetailRow label="Country"    value={detailJob.country} />}
               {detailJob.experience_level && <DetailRow label="Experience" value={detailJob.experience_level} />}
-              <DetailRow label="Created"        value={detailJob.created_at?.slice(0, 10)} />
+              <DetailRow label="Created" value={detailJob.created_at?.slice(0, 10)} />
             </div>
             {detailJob.skill_set && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", marginBottom: 8 }}>SKILLS REQUIRED</div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <div className="mt-3">
+                <div className="text-xs font-semibold text-gray-500 mb-2">SKILLS REQUIRED</div>
+                <div className="flex gap-1.5 flex-wrap">
                   {detailJob.skill_set.split(",").map(s => s.trim()).filter(Boolean).map(s => (
-                    <span key={s} style={{ background: "#f3f4f6", padding: "3px 10px", borderRadius: 20, fontSize: 12, color: "#374151" }}>{s}</span>
+                    <span key={s} className="bg-gray-100 px-2.5 py-0.5 rounded-full text-xs text-gray-700">{s}</span>
                   ))}
                 </div>
               </div>
             )}
             {detailJob.description && (
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", marginBottom: 6 }}>JOB DESCRIPTION</div>
-                <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, margin: 0 }}>{detailJob.description}</p>
+              <div className="mt-3.5">
+                <div className="text-xs font-semibold text-gray-500 mb-1.5">JOB DESCRIPTION</div>
+                <p className="text-sm text-gray-700 leading-relaxed m-0">{detailJob.description}</p>
               </div>
             )}
             {detailJob.assigned_recruiters && (
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", marginBottom: 6 }}>ASSIGNED RECRUITERS</div>
-                <p style={{ fontSize: 13, color: "#374151", margin: 0 }}>{detailJob.assigned_recruiters}</p>
+              <div className="mt-3.5">
+                <div className="text-xs font-semibold text-gray-500 mb-1.5">ASSIGNED RECRUITERS</div>
+                <p className="text-sm text-gray-700 m-0">{detailJob.assigned_recruiters}</p>
               </div>
             )}
           </div>
@@ -282,49 +328,39 @@ export default function JobsPage({ role }) {
         }>
         {assignOpen && (
           <div>
-            <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 16 }}>
+            <p className="text-sm text-gray-500 mb-4">
               Select recruiters for <strong>{assignOpen.client}</strong> — <strong>{assignOpen.title}</strong>.
             </p>
             {loadingAssign ? (
-              <div style={{ display:"flex", justifyContent:"center", padding:24, color:"#6b7280" }}>
-                <Loader2 size={18} style={{ animation:"spin 1s linear infinite" }} />
+              <div className="flex justify-center py-6 text-gray-500">
+                <Loader2 size={18} className="animate-spin" />
               </div>
             ) : (
               <>
                 {recruiters.length === 0 && (
-                  <p style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", padding: 16 }}>No recruiters found</p>
+                  <p className="text-sm text-gray-400 text-center py-4">No recruiters found</p>
                 )}
                 {recruiters.map(r => {
-                  const empId = r.employee_id;
-                  const name = `${r.first_name || ""} ${r.last_name || ""}`.trim();
-                  const isChecked = assignIds.includes(empId);
+                  const empId    = r.employee_id;
+                  const name     = `${r.first_name || ""} ${r.last_name || ""}`.trim();
+                  const isChecked  = assignIds.includes(empId);
                   const isOriginal = originalIds.includes(empId);
-                  const isLocked = false; // Both Admin and HR Manager can freely check/uncheck
                   return (
-                    <label key={empId} style={{
-                      display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-                      borderRadius: 8, marginBottom: 8, cursor: isLocked ? "default" : "pointer",
-                      border: isChecked ? "1px solid #f18200" : "1px solid #e5e7eb",
-                      background: isChecked ? "#fff7ed" : "#fff",
-                      opacity: isLocked ? 0.85 : 1,
-                    }}>
+                    <label key={empId} className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-2 cursor-pointer border transition-colors ${
+                      isChecked ? "border-[#f18200] bg-amber-50" : "border-gray-200 bg-white"
+                    }`}>
                       <input type="checkbox"
                         checked={isChecked}
-                        disabled={isLocked}
-                        onChange={e => {
-                          if (isLocked) return;
-                          setAssignIds(ids => e.target.checked ? [...ids, empId] : ids.filter(i => i !== empId));
-                        }}
-                        style={{ accentColor: "#f18200" }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>{name}</div>
-                        <div style={{ fontSize: 11, color: "#6b7280" }}>{r.email}</div>
+                        onChange={e => setAssignIds(ids => e.target.checked ? [...ids, empId] : ids.filter(i => i !== empId))}
+                        className="accent-[#f18200]" />
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm text-gray-900">{name}</div>
+                        <div className="text-[11px] text-gray-500">{r.email}</div>
                       </div>
-                      {isOriginal && isLocked && (
-                        <span style={{ fontSize: 10, color: "#059669", fontWeight: 600, background: "#d1fae5", padding: "2px 7px", borderRadius: 20 }}>Assigned</span>
-                      )}
-                      {isOriginal && !isLocked && (
-                        <span style={{ fontSize: 10, color: isChecked ? "#b45309" : "#6b7280", fontWeight: 600, background: isChecked ? "#fef3c7" : "#f3f4f6", padding: "2px 7px", borderRadius: 20 }}>
+                      {isOriginal && (
+                        <span className={`text-[10px] font-semibold px-1.5 py-px rounded-full ${
+                          isChecked ? "bg-yellow-100 text-amber-700" : "bg-gray-100 text-gray-500"
+                        }`}>
                           {isChecked ? "Assigned" : "Removed"}
                         </span>
                       )}

@@ -520,24 +520,11 @@ export const Sidebar = ({ open }) =>
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
         open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3",
       ].join(" ")}>
-        {/* Brand mark — always visible */}
-        {/* <div style={{
-          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-          background: "linear-gradient(135deg, #f18200 0%, #e06800 100%)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 8px rgba(241,130,0,0.35)",
-        }}>
-          <span style={{ color: "#fff", fontWeight: 900, fontSize: 15, letterSpacing: "-0.5px" }}>N</span>
-        </div> */}
+       
         {/* Company name — only when sidebar is open */}
         {open && (
           <div>
-            {/* <div style={{ fontSize: 15, fontWeight: 800, color: "#1a2535", lineHeight: 1.1, letterSpacing: "-0.3px" }}>
-              NAT IT
-            </div>
-            <div style={{ fontSize: 9, fontWeight: 600, color: "#f18200", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              HR Portal
-            </div> */}
+           
             <img src="https://content.jdmagicbox.com/v2/comp/hyderabad/h4/040pxx40.xx40.181024201042.n3h4/catalogue/nat-it-services-pvt-ltd-gachibowli-hyderabad-corporate-companies-ouis92lxo2.jpg?imwidth=463.3333333333333" alt="logo" />
           </div>
         )}
@@ -571,8 +558,7 @@ export const Sidebar = ({ open }) =>
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span style={{ background: item.badgeColor || "#ef4444" }}
-                        className="shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white">
+                      <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
                         {item.badge}
                       </span>
                     )}
@@ -600,8 +586,7 @@ export const Sidebar = ({ open }) =>
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span style={{ background: item.badgeColor || "#ef4444" }}
-                        className="shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white">
+                      <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
                         {item.badge}
                       </span>
                     )}
