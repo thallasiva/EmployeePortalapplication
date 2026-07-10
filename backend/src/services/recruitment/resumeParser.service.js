@@ -21,6 +21,10 @@ const OpenAI    = require('openai');
 let _openai = null;
 function getOpenAI() {
   if (_openai) return _openai;
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  _openai = new OpenAI({ apiKey: key });
+  return _openai;
 }
 
 // ── Extract raw text ─────────────────────────────────────────────────────────
