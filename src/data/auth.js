@@ -56,6 +56,11 @@ export function isRecruiterLead(user) {
   return resolveRoleForUser(user) === ROLE_RECRUITER_LEAD;
 }
 
+export function canViewTeamOverview(user) {
+  const role = resolveRoleForUser(user);
+  return role === ROLE_REPORTING_MANAGER || role === ROLE_RECRUITER_LEAD;
+}
+
 export function isRecruiter(user) {
   return resolveRoleForUser(user) === ROLE_RECRUITER;
 }

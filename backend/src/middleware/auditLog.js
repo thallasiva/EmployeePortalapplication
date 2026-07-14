@@ -10,7 +10,7 @@
  * Logging is best-effort — a DB write failure never blocks the request.
  */
 
-const { query } = require('../config/db');
+const { callProcedure } = require('../config/db');
 
 /**
  * @param {string} action  e.g. 'READ_SALARY', 'CREATE_SALARY', 'UPDATE_SALARY', 'DELETE_SALARY'
@@ -38,10 +38,8 @@ async function _writeLog(req, res, action, getEmployeeId) {
   const userAgent  = (req.headers['user-agent'] || '').slice(0, 255);
   const status     = res.statusCode >= 400 ? (res.statusCode === 403 ? 'DENIED' : 'ERROR') : 'OK';
 
-  await query(
-    `INSERT INTO salary_audit_log
-       (user_id, employee_id, action, resource, ip_address, user_agent, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  await callProcedure(
+    'sp_insert_salary_audit_log(?, ?, ?, ?, ?, ?, ?)',
     [userId, employeeId || null, action, resource.slice(0, 100), ip, userAgent, status]
   );
 }

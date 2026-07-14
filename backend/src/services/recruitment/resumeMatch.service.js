@@ -10,7 +10,7 @@
  * "ReactJS" matches "React", etc.
  */
 
-const { callProcedure, query } = require("../../config/db");
+const { callProcedure } = require("../../config/db");
 
 // ── Skill alias map (lower-case) ────────────────────────────────────────────
 const ALIAS_MAP = {
@@ -139,19 +139,13 @@ function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobE
  */
 async function computeAndStore(candidateId, jobReqId) {
   // Fetch candidate
-  const [candRows] = await query(
-    "SELECT skill_set, relevant_experience FROM rec_candidates WHERE candidate_id = ?",
-    [candidateId]
-  );
-  const cand = Array.isArray(candRows) ? candRows[0] : candRows;
+  const candResults = await callProcedure("sp_rec_get_candidate_match_inputs(?)", [candidateId]);
+  const cand = (candResults[0] ?? [])[0];
   if (!cand) throw new Error(`Candidate ${candidateId} not found`);
 
   // Fetch job
-  const [jobRows] = await query(
-    "SELECT skill_set, experience_level FROM rec_job_requests WHERE job_req_id = ?",
-    [jobReqId]
-  );
-  const job = Array.isArray(jobRows) ? jobRows[0] : jobRows;
+  const jobResults = await callProcedure("sp_rec_get_job_match_inputs(?)", [jobReqId]);
+  const job = (jobResults[0] ?? [])[0];
   if (!job) throw new Error(`Job ${jobReqId} not found`);
 
   const result = computeScore({
@@ -216,11 +210,8 @@ function autoComputeAsync(candidateId, jobReqId) {
  * Used by the recruiter "Quick Check" tool.
  */
 async function quickMatch({ jobReqId, candidateSkills, candidateExperience }) {
-  const [jobRows] = await query(
-    "SELECT title, skill_set, experience_level FROM rec_job_requests WHERE job_req_id = ?",
-    [jobReqId]
-  );
-  const job = Array.isArray(jobRows) ? jobRows[0] : jobRows;
+  const jobResults = await callProcedure("sp_rec_get_job_match_inputs(?)", [jobReqId]);
+  const job = (jobResults[0] ?? [])[0];
   if (!job) throw new Error(`Job ${jobReqId} not found`);
 
   const result = computeScore({

@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, query } = require('../config/db');
+const { callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
 
@@ -13,19 +13,8 @@ class LeaveRequestService extends BaseService {
 
   /* ── Helper: fetch employee email + manager email in one query ── */
   async _getEmailPair(employeeId) {
-    const rows = await query(
-      `SELECT
-         e.email                                                          AS emp_email,
-         CONCAT(e.first_name,' ',IFNULL(e.last_name,''))                 AS emp_name,
-         mgr.email                                                        AS mgr_email,
-         CONCAT(mgr.first_name,' ',IFNULL(mgr.last_name,''))             AS mgr_name
-       FROM employees e
-       LEFT JOIN employees mgr ON mgr.employee_id = e.reporting_to
-       WHERE e.employee_id = ?
-       LIMIT 1`,
-      [employeeId]
-    );
-    return rows[0] ?? {};
+    const results = await callProcedure('sp_get_leave_email_pair(?)', [employeeId]);
+    return (results[0] ?? [])[0] ?? {};
   }
 
   async list({ employee_id, status, leave_type_id, department_id, reporting_to, limit, offset } = {}) {
@@ -90,14 +79,12 @@ class LeaveRequestService extends BaseService {
     // Look up employee email directly
     if (leave) {
       const pair = await this._getEmailPair(leave.employee_id);
-      const reviewerRows = await query(
-        `SELECT CONCAT(first_name,' ',IFNULL(last_name,'')) AS name FROM employees WHERE employee_id = ? LIMIT 1`,
-        [reviewed_by]
-      );
+      const reviewerResults = await callProcedure('sp_get_employee_display_name(?)', [reviewed_by]);
+      const reviewer = (reviewerResults[0] ?? [])[0];
       const base = {
         employeeEmail: pair.emp_email || null,
         employeeName:  pair.emp_name  || leave.employee_name || 'Employee',
-        reviewerName:  reviewerRows[0]?.name || leave.reviewer_name || 'Manager',
+        reviewerName:  reviewer?.name || leave.reviewer_name || 'Manager',
         leaveType:     leave.leave_type_name || '',
         fromDate:      leave.from_date,
         toDate:        leave.to_date,

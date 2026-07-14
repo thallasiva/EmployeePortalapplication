@@ -2,6 +2,7 @@ const orgHierarchyService = require('../services/orgHierarchy.service');
 const ApiResponse = require('../utils/ApiResponse');
 const ApiError    = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
+const workflowDelegateService = require('../services/workflowDelegate.service');
 
 const getDashboardStats = asyncHandler(async (req, res) => {
   const stats = await orgHierarchyService.getDashboardStats();
@@ -88,8 +89,7 @@ const listDelegations = asyncHandler(async (req, res) => {
 });
 
 const cancelDelegation = asyncHandler(async (req, res) => {
-  const { query } = require('../config/db');
-  await query(`UPDATE workflow_delegates SET status = 'Cancelled' WHERE id = ?`, [req.params.id]);
+  await workflowDelegateService.cancel(req.params.id);
   new ApiResponse(200, { cancelled: true }, 'Delegation cancelled').send(res);
 });
 

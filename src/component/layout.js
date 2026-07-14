@@ -3,7 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import { Sidebar } from "./sidebar";
 import { Navbar } from "./navbar";
-import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
+import { getStoredUser, isEmployee, canViewTeamOverview } from "../data/auth";
 import { useIdleLogout } from "../hooks/useIdleLogout";
 
 export default function Layout() {
@@ -18,7 +18,7 @@ export default function Layout() {
     return <Navigate to="/login" />;
   }
 
-  const employeeLayout = isEmployee(user) || isReportingManager(user);
+  const employeeLayout = isEmployee(user) || canViewTeamOverview(user);
 
   return (
     <div className="flex min-h-screen bg-slate-100 font-sans">

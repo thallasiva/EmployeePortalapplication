@@ -1,4 +1,4 @@
-const { callProcedure, query } = require('../../config/db');
+const { callProcedure } = require('../../config/db');
 const BaseService = require('../base.service');
 const ApiError = require('../../utils/ApiError');
 const notify = require('../mailNotify.service');
@@ -68,10 +68,7 @@ class InterviewService extends BaseService {
   }
 
   async setJoinUrl(interviewId, joinUrl) {
-    await query(
-      'UPDATE rec_interviews SET teams_join_url = ? WHERE interview_id = ?',
-      [joinUrl, interviewId]
-    );
+    await callProcedure('sp_rec_set_interview_join_url(?, ?)', [interviewId, joinUrl]);
   }
 
   async cancel(interviewId, cancelledBy, ip) {

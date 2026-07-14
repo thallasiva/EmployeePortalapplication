@@ -15,8 +15,7 @@ const resumeMatchCtrl = require("./resumeMatch.controller");
 // Validators
 const V = require("./recruitment.validator");
 
-// Direct DB query helper for recruiter lookup
-const { query } = require("../../config/db");
+const { callProcedure } = require("../../config/db");
 
 // All routes require authentication
 router.use(authenticate);
@@ -31,14 +30,8 @@ const ADMIN_ONLY = authorizeRoles("Admin");
 // ── Recruiters lookup (for dropdowns) ───────────────────────────────
 router.get("/recruiters", ADMIN_TL, async (req, res, next) => {
   try {
-    const rows = await query(
-      `SELECT e.employee_id, e.first_name, e.last_name,
-              CONCAT(e.first_name,' ',e.last_name) AS name, u.email
-       FROM   users u
-       JOIN   employees e ON e.employee_id = u.employee_id
-       WHERE  u.role_id = 5 AND u.status = 'Active' AND e.employee_status = 'Active'
-       ORDER  BY e.first_name`
-    );
+    const results = await callProcedure("sp_rec_list_active_recruiters()");
+    const rows = results[0] ?? [];
     res.json({ success: true, data: rows });
   } catch (err) { next(err); }
 });

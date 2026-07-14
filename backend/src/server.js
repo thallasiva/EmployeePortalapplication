@@ -1,6 +1,6 @@
 const app = require('./app');
 const { port, env, jwt, salaryEncryptionKey } = require('./config/env');
-const { testConnection, query } = require('./config/db');
+const { testConnection } = require('./config/db');
 const logger = require('./utils/logger');
 
 function getPreferredPort(startPort) {

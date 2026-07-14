@@ -182,34 +182,23 @@ class EmployeeService extends BaseService {
   }
 
   async changeRole(employeeId, roleId) {
-    const { query } = require('../config/db');
-    const rows = await query('SELECT user_id FROM users WHERE employee_id = ? LIMIT 1', [employeeId]);
-    if (!rows || !rows.length) throw ApiError.notFound('No user account linked to this employee');
-    await query('UPDATE users SET role_id = ? WHERE employee_id = ?', [roleId, employeeId]);
+    try {
+      await callProcedure('sp_change_employee_role(?, ?)', [employeeId, roleId]);
+    } catch (err) {
+      if (err && err.sqlState === '45000') throw ApiError.notFound(err.sqlMessage || 'No user account linked to this employee');
+      throw err;
+    }
     return true;
   }
 
   async listRoles() {
-    const { query } = require('../config/db');
-    const rows = await query('SELECT role_id, role_name, description FROM roles ORDER BY role_id');
-    return rows;
+    const results = await callProcedure('sp_list_roles_basic()');
+    return results[0] ?? [];
   }
 
   async listEmployeesWithRoles() {
-    const { query } = require('../config/db');
-    const rows = await query(`
-      SELECT
-        e.employee_id, e.emp_code, e.first_name, e.last_name, e.email,
-        e.emp_job_title, ds.designation_name,
-        u.role_id, r.role_name
-      FROM employees e
-      LEFT JOIN users u         ON u.employee_id  = e.employee_id
-      LEFT JOIN roles r         ON r.role_id       = u.role_id
-      LEFT JOIN designations ds ON ds.designation_id = e.designation_id
-      WHERE e.employee_status = 'Active'
-      ORDER BY e.first_name, e.last_name
-    `);
-    return rows;
+    const results = await callProcedure('sp_list_employees_with_roles()');
+    return results[0] ?? [];
   }
 }
 

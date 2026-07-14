@@ -10,7 +10,7 @@ import {
 
 import LazyPage from "./routes/LazyPage";
 import PerformanceDemoRoute from "./routes/PerformanceDemoRoute";
-import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager, isRecruitmentRole } from "./data/auth";
+import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager, isRecruitmentRole, canViewTeamOverview } from "./data/auth";
 
 const Layout = lazy(() => import("./component/layout"));
 const AdminRoutes = lazy(() => import("./routes/AdminRoutes"));
@@ -77,7 +77,7 @@ const AppRoutes = () =>
       <Route
         path="/manager/*"
         element={
-          isReportingManager(user) ? (
+          canViewTeamOverview(user) ? (
             <Layout />
           ) : (
             <Navigate to={getHomePath(user)} replace />

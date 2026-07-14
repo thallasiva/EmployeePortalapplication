@@ -24,15 +24,17 @@ router.get('/extra-work/my', c.myExtraWork);
 router.post('/extra-work', c.createExtraWork);
 
 // ─── Manager ─────────────────────────────────────────────────────────────────
-router.get('/manager/full-dashboard', authorizeRoles('Reporting Manager', 'Admin'), c.managerFullDashboard);
-router.get('/manager/team', authorizeRoles('Reporting Manager', 'Admin'), c.managerTimesheets);
-router.get('/manager/dashboard-counts', authorizeRoles('Reporting Manager', 'Admin'), c.managerDashboardCounts);
-router.post('/manager/:timesheetId/review', authorizeRoles('Reporting Manager', 'Admin'), c.reviewTimesheet);
-router.get('/manager/extra-work', authorizeRoles('Reporting Manager', 'Admin'), c.managerExtraWork);
-router.post('/manager/extra-work/:extraWorkId/review', authorizeRoles('Reporting Manager', 'Admin'), c.reviewExtraWork);
+const TEAM_OVERVIEW_ROLES = ['Reporting Manager', 'Recruiter Team Lead', 'HR Manager', 'Admin'];
+
+router.get('/manager/full-dashboard', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.managerFullDashboard);
+router.get('/manager/team', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.managerTimesheets);
+router.get('/manager/dashboard-counts', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.managerDashboardCounts);
+router.post('/manager/:timesheetId/review', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.reviewTimesheet);
+router.get('/manager/extra-work', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.managerExtraWork);
+router.post('/manager/extra-work/:extraWorkId/review', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.reviewExtraWork);
 
 // Manager/Admin: view any timesheet detail
-router.get('/:timesheetId', authorizeRoles('Reporting Manager', 'Admin'), c.getTimesheetDetail);
+router.get('/:timesheetId', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.getTimesheetDetail);
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 router.get('/admin/all', authorizeRoles('Admin'), c.adminTimesheets);

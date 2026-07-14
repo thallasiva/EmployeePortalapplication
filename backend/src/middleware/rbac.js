@@ -1,6 +1,6 @@
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
-const { query } = require('../config/db');
+const { callProcedure } = require('../config/db');
 
 /**
  * Fine-grained permission check backed by the `permissions` /
@@ -18,15 +18,10 @@ function requirePermission(module, action) {
       return next();
     }
 
-    const rows = await query(
-      `SELECT rp.allowed
-         FROM role_permissions rp
-         JOIN permissions p ON p.permission_id = rp.permission_id
-        WHERE rp.role_id = ? AND p.module = ? AND p.action = ?`,
-      [req.user.roleId, module, action]
-    );
+    const results = await callProcedure('sp_check_role_permission(?, ?, ?)', [req.user.roleId, module, action]);
+    const row = (results[0] ?? [])[0];
 
-    if (!rows.length || !rows[0].allowed) {
+    if (!row?.allowed) {
       throw ApiError.forbidden(`You do not have '${action}' access to '${module}'`);
     }
 
@@ -45,15 +40,10 @@ async function hasPermission(user, module, action) {
   if (!user) return false;
   if (user.roleId === 1) return true;
 
-  const rows = await query(
-    `SELECT rp.allowed
-       FROM role_permissions rp
-       JOIN permissions p ON p.permission_id = rp.permission_id
-      WHERE rp.role_id = ? AND p.module = ? AND p.action = ?`,
-    [user.roleId, module, action]
-  );
+  const results = await callProcedure('sp_check_role_permission(?, ?, ?)', [user.roleId, module, action]);
+  const row = (results[0] ?? [])[0];
 
-  return Boolean(rows.length && rows[0].allowed);
+  return Boolean(row?.allowed);
 }
 
 module.exports = { requirePermission, hasPermission };

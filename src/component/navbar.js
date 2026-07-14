@@ -1,7 +1,7 @@
 import { Menu, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isAdmin, isReportingManager, logoutUser } from "../data/auth";
+import { isAdmin, isRecruiter, isRecruiterLead, isReportingManager, logoutUser } from "../data/auth";
 import { API_BASE_URL } from "../api/client";
 import { cssClass } from "../utils/classStyles";
 
@@ -16,6 +16,10 @@ export const Navbar = ({ toggleSidebar, user }) => {
     ? "Administrator"
     : isReportingManager(user)
     ? "Reporting Manager"
+    : isRecruiterLead(user)
+    ? "HR Manager"
+    : isRecruiter(user)
+    ? "Recruiter"
     : "Employee";
 
   const rawPhoto = user?.profilePhoto || null;

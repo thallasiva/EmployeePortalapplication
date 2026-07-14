@@ -2,7 +2,6 @@ const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
-const { query } = require("../../config/db");
 
 class JobRequestService extends BaseService {
   constructor() {
@@ -94,13 +93,11 @@ class JobRequestService extends BaseService {
     if (Array.isArray(recruiterIds) && recruiterIds.length) {
       try {
         const job = await this.getById(jobReqId);
-        const placeholders = recruiterIds.map(() => '?').join(',');
-        const recruiters = await query(
-          `SELECT e.email, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS name
-             FROM employees e
-            WHERE e.employee_id IN (${placeholders}) AND e.employee_status = 'Active'`,
-          recruiterIds
+        const recruiterResults = await callProcedure(
+          "sp_rec_get_recruiter_notification_targets(?)",
+          [JSON.stringify(recruiterIds)]
         );
+        const recruiters = recruiterResults[0] ?? [];
         notify.recruiterAssigned(
           recruiters.map((r) => ({
             email:     r.email,

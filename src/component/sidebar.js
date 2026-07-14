@@ -37,7 +37,7 @@ import
   UserSearch,
   ShieldCheck,
 } from "lucide-react";
-import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, ROLE_ADMIN, logoutUser } from "../data/auth";
+import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
 
 const BRAND_NAME = "NAT IT";
@@ -453,7 +453,9 @@ export const Sidebar = ({ open }) =>
   // Replace the plain "Hiring" entry in employeeItems with the role-expanded one for recruiters
   // For recruiter roles: Recruitment goes first, then remaining employee items
   const employeeItemsWithoutHiring = employeeItems.filter(item => item.label !== "Hiring");
-  const employeeItemsForRecruiters = [hiringEntry, ...employeeItemsWithoutHiring];
+  const employeeItemsForRecruiters = canViewTeamOverview(user)
+    ? [teamOverviewItem, hiringEntry, ...employeeItemsWithoutHiring]
+    : [hiringEntry, ...employeeItemsWithoutHiring];
 
   const items = isAdmin(user)
     ? adminItems
