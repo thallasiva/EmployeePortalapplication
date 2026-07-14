@@ -7,9 +7,10 @@ const { getPagination, buildMeta } = require('../utils/pagination');
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status, leave_type_id, department_id } = req.query;
-  // Reporting Managers only see leave requests from employees who report to them.
-  // Admins (and anyone else with leave:view) see everything.
-  const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
+  // Reporting Manager (role 3) and Recruiter Team Lead (role 4) see only their direct reports.
+  // Admins see everything.
+  const isTeamManager = req.user.roleId === 3 || req.user.roleId === 4 || req.user.roleName === 'Reporting Manager';
+  const reporting_to = isTeamManager ? req.user.employeeId : undefined;
   const { rows, total } = await leaveRequestService.list({
     employee_id, status, leave_type_id, department_id, reporting_to, limit, offset,
   });

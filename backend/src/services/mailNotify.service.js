@@ -532,3 +532,34 @@ exports.recruiterAssigned = (recruiters) => {
     console.info(`[mailNotify] Recruiter assignment emails sent: ${jobs.length}`);
   });
 };
+
+/* ══════════════════════════════════════════════════════════════════════
+   RECRUITER MANAGER (TEAM LEAD) NOTIFICATIONS
+══════════════════════════════════════════════════════════════════════ */
+
+/** Notify TL when a job is assigned to one of their recruiters */
+exports.tlJobAssigned = ({ tlEmail, tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet }) => {
+  if (!tlEmail) return;
+  fire(async () => {
+    const tpl = T.tlJobAssigned({ tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet });
+    await sendMail({ to: tlEmail, ...tpl, template: 'recruitment/tl-job-assigned', priority: 'high' });
+  });
+};
+
+/** Notify TL when a candidate is shortlisted or rejected by their team */
+exports.tlCandidateUpdate = ({ tlEmail, tlName, recruiterName, candidateName, jobTitle, status }) => {
+  if (!tlEmail) return;
+  fire(async () => {
+    const tpl = T.tlCandidateUpdate({ tlName, recruiterName, candidateName, jobTitle, status });
+    await sendMail({ to: tlEmail, ...tpl, template: 'recruitment/tl-candidate-update', priority: 'medium' });
+  });
+};
+
+/** Notify TL when an offer is released, accepted, or rejected */
+exports.tlOfferUpdate = ({ tlEmail, tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining }) => {
+  if (!tlEmail) return;
+  fire(async () => {
+    const tpl = T.tlOfferUpdate({ tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining });
+    await sendMail({ to: tlEmail, ...tpl, template: 'recruitment/tl-offer-update', priority: 'high' });
+  });
+};

@@ -1,4 +1,4 @@
-const { callProcedure } = require("../../config/db");
+const { callProcedure, query } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
@@ -6,6 +6,21 @@ const notify = require("../mailNotify.service");
 class OfferService extends BaseService {
   constructor() {
     super("rec_offers", "offer_id");
+  }
+
+  /** Fetch TL email via candidate's recruiter reporting_to */
+  async _getRecruiterTL(recruiterId) {
+    if (!recruiterId) return {};
+    const rows = await query(
+      `SELECT tl.email AS tl_email,
+              CONCAT(tl.first_name, ' ', IFNULL(tl.last_name, '')) AS tl_name,
+              CONCAT(r.first_name,  ' ', IFNULL(r.last_name,  '')) AS recruiter_name
+         FROM employees r
+         LEFT JOIN employees tl ON tl.employee_id = r.reporting_to
+        WHERE r.employee_id = ? LIMIT 1`,
+      [recruiterId]
+    );
+    return rows[0] ?? {};
   }
 
   async list({ status, search, limit = 20, offset = 0 } = {}) {
@@ -56,16 +71,35 @@ class OfferService extends BaseService {
     );
     const row = (results[0] ?? [])[0];
 
-    // Send offer letter email to candidate (fire-and-forget)
-    if (row && (row.candidate_email || row.email)) {
-      notify.offerLetter({
-        candidateEmail:  row.candidate_email || row.email,
-        candidateName:   row.candidate_name  || row.name || 'Candidate',
-        jobTitle:        row.designation     || row.job_title || '',
-        ctc:             row.ctc             || 0,
-        dateOfJoining:   row.date_of_joining || row.joining_date || null,
-        offerCode:       row.offer_code      || row.offer_id,
-      });
+    if (row) {
+      const candidateEmail = row.candidate_email || row.email;
+      const candidateName  = row.candidate_name  || row.name || 'Candidate';
+      const jobTitle       = row.designation     || row.job_title || '';
+      const ctc            = row.ctc             || 0;
+      const dateOfJoining  = row.date_of_joining || row.joining_date || null;
+      const offerCode      = row.offer_code      || row.offer_id;
+
+      // Notify candidate
+      if (candidateEmail) {
+        notify.offerLetter({ candidateEmail, candidateName, jobTitle, ctc, dateOfJoining, offerCode });
+      }
+
+      // Notify TL that offer was released for their team's candidate
+      const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
+      this._getRecruiterTL(recruiterId).then((tl) => {
+        if (tl.tl_email) {
+          notify.tlOfferUpdate({
+            tlEmail:       tl.tl_email,
+            tlName:        tl.tl_name        || 'Team Lead',
+            recruiterName: tl.recruiter_name  || 'Recruiter',
+            candidateName,
+            jobTitle,
+            event:         'Released',
+            ctc,
+            dateOfJoining,
+          });
+        }
+      }).catch(() => {});
     }
     return row;
   }
@@ -77,15 +111,37 @@ class OfferService extends BaseService {
     );
     const row = (results[0] ?? [])[0];
 
-    // Notify HR of candidate response (fire-and-forget)
-    if (row && (row.candidate_email || row.email)) {
-      const name     = row.candidate_name || row.name || 'Candidate';
-      const jobTitle = row.designation    || row.job_title || '';
-      const r = (response || '').toLowerCase();
-      if (r === 'accepted') {
-        notify.offerAccepted({ hrEmail: row.hr_email || null, candidateName: name, jobTitle, dateOfJoining: row.date_of_joining || null });
-      } else if (r === 'rejected' || r === 'declined') {
-        notify.offerRejected({ hrEmail: row.hr_email || null, candidateName: name, jobTitle });
+    if (row) {
+      const candidateName = row.candidate_name || row.name || 'Candidate';
+      const jobTitle      = row.designation    || row.job_title || '';
+      const r             = (response || '').toLowerCase();
+      const isAccepted    = r === 'accepted';
+      const isRejected    = r === 'rejected' || r === 'declined';
+
+      // Notify HR
+      if (isAccepted) {
+        notify.offerAccepted({ hrEmail: row.hr_email || null, candidateName, jobTitle, dateOfJoining: row.date_of_joining || null });
+      } else if (isRejected) {
+        notify.offerRejected({ hrEmail: row.hr_email || null, candidateName, jobTitle });
+      }
+
+      // Notify TL of candidate's decision
+      if (isAccepted || isRejected) {
+        const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
+        this._getRecruiterTL(recruiterId).then((tl) => {
+          if (tl.tl_email) {
+            notify.tlOfferUpdate({
+              tlEmail:       tl.tl_email,
+              tlName:        tl.tl_name        || 'Team Lead',
+              recruiterName: tl.recruiter_name  || 'Recruiter',
+              candidateName,
+              jobTitle,
+              event:         isAccepted ? 'Accepted' : 'Rejected',
+              ctc:           row.ctc            || null,
+              dateOfJoining: row.date_of_joining || null,
+            });
+          }
+        }).catch(() => {});
       }
     }
     return row;

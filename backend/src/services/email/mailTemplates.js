@@ -664,3 +664,62 @@ exports.recruiterAssigned = ({ recruiterName, jobTitle, jobCode, client, vacanci
   }),
   text: `Hi ${recruiterName}, a new job "${jobTitle}" has been assigned to you. Vacancies: ${vacancies || 1}. Skills: ${skillSet || '-'}. Login to view details.`,
 });
+
+/* ── Recruiter Manager (Team Lead) Templates ─────────────────────────── */
+
+exports.tlJobAssigned = ({ tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet }) => ({
+  subject: `[${co()}] Team Update — ${esc(recruiterName)} assigned to ${esc(jobTitle)}`,
+  html: layout({
+    title: 'Team Job Assignment',
+    color: '#1E3A5F',
+    body: `<p>Hi <strong>${esc(tlName)}</strong>,</p>
+<p>A new job has been assigned to your team member <strong>${esc(recruiterName)}</strong>. Here are the details:</p>
+<div class="info-box">
+  ${infoRow('Job Title', jobTitle)}
+  ${infoRow('Job Code', jobCode || '-')}
+  ${infoRow('Client / Department', client || '-')}
+  ${infoRow('Vacancies', String(vacancies || 1))}
+  ${infoRow('Skills Required', skillSet || '-')}
+  ${infoRow('Assigned To', recruiterName)}
+</div>
+<a href="${esc(feUrl() + '/recruitment')}" class="btn">View in HRMS</a>`,
+  }),
+  text: `Hi ${tlName}, job "${jobTitle}" has been assigned to your team member ${recruiterName}. Vacancies: ${vacancies || 1}.`,
+});
+
+exports.tlCandidateUpdate = ({ tlName, recruiterName, candidateName, jobTitle, status }) => ({
+  subject: `[${co()}] Candidate ${esc(status)} — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({
+    title: `Candidate ${esc(status)}`,
+    color: status === 'Shortlisted' ? '#16a34a' : '#dc2626',
+    body: `<p>Hi <strong>${esc(tlName)}</strong>,</p>
+<p>Your team member <strong>${esc(recruiterName)}</strong> has updated a candidate status:</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Job Title', jobTitle)}
+  ${infoRow('New Status', status)}
+  ${infoRow('Updated By', recruiterName)}
+</div>
+<a href="${esc(feUrl() + '/recruitment')}" class="btn">View Candidate</a>`,
+  }),
+  text: `Hi ${tlName}, ${recruiterName} marked ${candidateName} as ${status} for ${jobTitle}.`,
+});
+
+exports.tlOfferUpdate = ({ tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining }) => ({
+  subject: `[${co()}] Offer ${esc(event)} — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({
+    title: `Offer ${esc(event)}`,
+    color: event === 'Accepted' ? '#16a34a' : event === 'Released' ? '#1E3A5F' : '#dc2626',
+    body: `<p>Hi <strong>${esc(tlName)}</strong>,</p>
+<p>An offer for a candidate sourced by your team has been <strong>${esc(event)}</strong>.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Job Title', jobTitle)}
+  ${infoRow('Offer Status', event)}
+  ${ctc ? infoRow('CTC', 'INR ' + Number(ctc).toLocaleString('en-IN')) : ''}
+  ${dateOfJoining ? infoRow('Date of Joining', dateOfJoining) : ''}
+</div>
+<a href="${esc(feUrl() + '/recruitment')}" class="btn">View Offer</a>`,
+  }),
+  text: `Hi ${tlName}, offer for ${candidateName} (${jobTitle}) has been ${event}. CTC: ${ctc || '-'}.`,
+});

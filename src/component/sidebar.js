@@ -273,11 +273,22 @@ export const Sidebar = ({ open }) =>
     },
   ];
 
-  const teamOverviewItem = {
-    label: "Team Overview",
-    icon: <Users size={20} strokeWidth={1.75} />,
-    navigationLink: "/manager",
-  };
+  // Team Overview — Reporting Manager goes to /manager, Recruiter TL goes to their own pages
+  const teamOverviewItem = isRecruiterLead(user)
+    ? {
+        label: "Team Management",
+        icon: <Users size={20} strokeWidth={1.75} />,
+        children: [
+          { label: "Team Overview",  navigationLink: "/recruiter/team/overview" },
+          { label: "Leave Requests", navigationLink: "/recruiter/team/leave" },
+          { label: "Attendance",     navigationLink: "/recruiter/team/attendance" },
+        ],
+      }
+    : {
+        label: "Team Overview",
+        icon: <Users size={20} strokeWidth={1.75} />,
+        navigationLink: "/manager",
+      };
 
   // Hiring sidebar for Recruiter Team Lead (HR Manager) — no Offers/Onboarding/Reports
   const hiringItemTL = {

@@ -1,4 +1,4 @@
-const { callProcedure } = require("../../config/db");
+const { callProcedure, query } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
@@ -6,6 +6,21 @@ const notify = require("../mailNotify.service");
 class CandidateService extends BaseService {
   constructor() {
     super("rec_candidates", "candidate_id");
+  }
+
+  /** Fetch the recruiter's Team Lead email + name via reporting_to */
+  async _getRecruiterTL(recruiterId) {
+    if (!recruiterId) return {};
+    const rows = await query(
+      `SELECT tl.email AS tl_email,
+              CONCAT(tl.first_name, ' ', IFNULL(tl.last_name, '')) AS tl_name,
+              CONCAT(r.first_name,  ' ', IFNULL(r.last_name,  '')) AS recruiter_name
+         FROM employees r
+         LEFT JOIN employees tl ON tl.employee_id = r.reporting_to
+        WHERE r.employee_id = ? LIMIT 1`,
+      [recruiterId]
+    );
+    return rows[0] ?? {};
   }
 
   async list({ jobReqId, status, recruiterId, search, roleId, recEmpId, limit = 20, offset = 0 } = {}) {
@@ -69,15 +84,32 @@ class CandidateService extends BaseService {
     );
     const row = (results[0] ?? [])[0];
 
-    // Notify candidate on shortlist or rejection (fire-and-forget)
     if (row && row.email) {
-      const name     = row.name || row.candidate_name || 'Candidate';
-      const jobTitle = row.job_title || row.position_name || '';
-      const s = (status || '').toLowerCase();
-      if (s === 'shortlisted' || s === 'selected') {
-        notify.candidateShortlisted({ candidateEmail: row.email, candidateName: name, jobTitle });
-      } else if (s === 'rejected' || s === 'not selected') {
-        notify.candidateRejected({ candidateEmail: row.email, candidateName: name, jobTitle });
+      const name      = row.name || row.candidate_name || 'Candidate';
+      const jobTitle  = row.job_title || row.position_name || '';
+      const s         = (status || '').toLowerCase();
+      const isShort   = s === 'shortlisted' || s === 'selected';
+      const isReject  = s === 'rejected' || s === 'not selected';
+
+      // Notify candidate
+      if (isShort) notify.candidateShortlisted({ candidateEmail: row.email, candidateName: name, jobTitle });
+      else if (isReject) notify.candidateRejected({ candidateEmail: row.email, candidateName: name, jobTitle });
+
+      // Notify Recruiter Manager (TL) about team activity
+      if (isShort || isReject) {
+        const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
+        this._getRecruiterTL(recruiterId).then((tl) => {
+          if (tl.tl_email) {
+            notify.tlCandidateUpdate({
+              tlEmail:       tl.tl_email,
+              tlName:        tl.tl_name       || 'Team Lead',
+              recruiterName: tl.recruiter_name || 'Recruiter',
+              candidateName: name,
+              jobTitle,
+              status: isShort ? 'Shortlisted' : 'Rejected',
+            });
+          }
+        }).catch(() => {});
       }
     }
     return row;
