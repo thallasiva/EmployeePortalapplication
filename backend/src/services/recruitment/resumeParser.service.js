@@ -1,16 +1,6 @@
 'use strict';
 
-/**
- * Resume Parser Service — powered by OpenAI GPT-4o mini (with regex fallback)
- *
- * Flow:
- *  1. Extract raw text from PDF or DOCX (pdf-parse / mammoth)
- *  2. Try GPT-4o mini extraction if OPENAI_API_KEY is set
- *  3. If no AI key, fall back to:
- *     a. Section-based extraction (finds "Skills" heading blocks)
- *     b. Keyword vocab scan across full text
- * Returns: { name, email, phone, skills[], experience, education[], summary, parsedBy }
- */
+
 
 const _pdfParse = require('pdf-parse');
 const pdfParse  = _pdfParse.default || _pdfParse;

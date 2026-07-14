@@ -40,6 +40,21 @@ module.exports = {
     user: required('SMTP_USER', ''),
     pass: required('SMTP_PASS', ''),
     from: required('SMTP_FROM', 'HRMS <no-reply@hrms.local>'),
+    adminAlert: required('EMAIL_ADMIN_ALERT', ''),
+    companyName: required('COMPANY_NAME', 'HRMS'),
+    frontendUrl: required('FRONTEND_URL', 'http://localhost:3000'),
+  },
+
+  redis: {
+    host: required('REDIS_HOST', '127.0.0.1'),
+    port: Number(required('REDIS_PORT', 6379)),
+    password: required('REDIS_PASSWORD', '') || undefined,
+  },
+
+  queue: {
+    concurrency:  Number(required('EMAIL_QUEUE_CONCURRENCY', 5)),
+    maxRetries:   Number(required('EMAIL_QUEUE_MAX_RETRIES', 3)),
+    retryDelayMs: Number(required('EMAIL_QUEUE_RETRY_DELAY_MS', 5000)),
   },
 
   // 32-byte hex key for AES-256-GCM salary encryption
