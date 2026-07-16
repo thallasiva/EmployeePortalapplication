@@ -63,7 +63,8 @@ export default function OnboardingPage({ role }) {
   const [updating, setUpdating] = useState(false);
 
   const isAdmin = role === 1;
-  const isTL    = role === 3 || role === 4;   // Reporting Manager + Recruiter Team Lead
+  const isTL    = role === 3;   // Reporting Manager only
+  // HR Manager (role 4) is shortlist-only, no onboarding edit
   const canEdit = isAdmin || isTL;
 
   const loadRecords = useCallback(async () => {

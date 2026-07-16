@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Eye, CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
+import { Plus, Eye, CheckCircle, XCircle, Loader2, RefreshCw, Link, Copy, Send, FileDown } from "lucide-react";
 import {
   PageHeader, Card, Btn, Field, Input,
   Table, Modal, SlideOver, SearchBar,
@@ -7,28 +7,57 @@ import {
 } from "./shared";
 import {
   listOffers, createOffer, releaseOffer, respondOffer,
-  listCandidates, listJobs, getErrorMessage,
+  listCandidates, listJobs, getErrorMessage, downloadOfferDocx,
 } from "../../../api/recruitment.api";
+import { getJoiningByOffer, resendJoiningInvitation } from "../../../api/joining.api";
 import { successToast, errorToast } from "../../../utils/ToastControllers";
 
 const BLANK_OFFER = {
   candidateId: "", jobReqId: "", designation: "",
-  dateOfJoining: "", basic: "",
+  dateOfJoining: "", ctcInput: "",
 };
 
-function computeCTC(basic) {
-  basic = Number(basic) || 0;
-  const hra = Math.round(basic * 0.4);
-  const telephoneAllowance = 12000;
-  const gross = basic + hra + telephoneAllowance;
-  const specialAllowance = Math.round(gross * 0.144);
-  const grossSalary = gross + specialAllowance;
-  const pfContribution = Math.round(basic * 0.12);
-  const statutoryBonus = 46250;
-  const gratuity = Math.round(basic * 4.81 / 100);
-  const esi = 0;
-  const ctc = grossSalary + pfContribution + statutoryBonus + gratuity;
-  return { hra, telephoneAllowance, specialAllowance, grossSalary, pfContribution, statutoryBonus, gratuity, esi, ctc };
+/**
+ * CTC Structure (matches Word document / image):
+ * Input: monthly CTC (e.g. 38000).  All stored values are ANNUAL (×12).
+ *   basic_m          = ctc_monthly * 0.50
+ *   hra_m            = basic_m * 0.40
+ *   telephone        = 1 500 / month  = 18 000 / year
+ *   leaveTravel      = 3 333 / month  = 39 996 / year
+ *   pf_m             = min(basic_m * 0.12, 1 800)   [EPFO cap at basic 15 000]
+ *   statutoryBonus_m = 1 400 if basic_m <= 21 000 else 0
+ *   gross_m          = ctc_monthly - pf_m - sb_m
+ *   spl_m            = gross_m - (basic_m + hra_m + 1500 + 3333)
+ *   gratuity         = 0, esi = 0
+ */
+function computeFromCTC(ctcMonthly) {
+  ctcMonthly = Number(ctcMonthly) || 0;
+  if (!ctcMonthly) return {};
+
+  const basic_m   = Math.round(ctcMonthly * 0.5);
+  const hra_m     = Math.round(basic_m * 0.4);
+  const tel_m     = 1500;
+  const lta_m     = 3333;
+  const pf_m      = Math.min(Math.round(basic_m * 0.12), 1800);
+  const sb_m      = basic_m <= 21000 ? 1400 : 0;
+  const gross_m   = ctcMonthly - pf_m - sb_m;
+  const spl_m     = gross_m - (basic_m + hra_m + tel_m + lta_m);
+
+  // All values stored as ANNUAL
+  return {
+    basic:              basic_m * 12,
+    hra:                hra_m   * 12,
+    telephoneAllowance: tel_m   * 12,
+    leaveTravel:        lta_m   * 12,
+    specialAllowance:   spl_m   * 12,
+    grossSalary:        gross_m * 12,
+    pfContribution:     pf_m    * 12,
+    statutoryBonus:     sb_m    * 12,
+    gratuity:           0,
+    esi:                0,
+    ctc:                ctcMonthly * 12,
+    ctcMonthly,
+  };
 }
 
 function numToWords(n) {
@@ -49,8 +78,17 @@ function numToWords(n) {
 }
 
 function fmt(v) {
-  if (!v && v !== 0) return "—";
-  return "₹" + Number(v).toLocaleString("en-IN");
+  if (v === null || v === undefined || v === "") return "—";
+  const n = Number(v);
+  if (isNaN(n)) return "—";
+  if (n === 0) return "—";
+  return "Rs." + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+}
+
+function fmtM(annualVal) {
+  const m = Math.round((Number(annualVal) || 0) / 12);
+  if (m === 0) return "—";
+  return "Rs." + m.toLocaleString("en-IN", { minimumFractionDigits: 2 });
 }
 
 const OFFER_CLS = {
@@ -60,11 +98,12 @@ const OFFER_CLS = {
   Rejected: "bg-red-100 text-red-600",
 };
 
-function CtcRow({ label, value, highlight }) {
+function CtcTableRow({ label, monthly, annual, highlight }) {
   return (
-    <div className="flex justify-between py-1.5 border-b border-gray-100">
-      <span className="text-[13px] text-gray-500">{label}</span>
-      <span className={`text-[13px] ${highlight ? "font-bold text-[#f18200]" : "font-medium text-gray-900"}`}>{value}</span>
+    <div className={`grid grid-cols-3 px-4 py-2.5 border-b border-gray-100 ${highlight ? "bg-orange-50" : ""}`}>
+      <span className={`text-[13px] ${highlight ? "text-gray-900 font-bold" : "text-gray-600"}`}>{label}</span>
+      <span className={`text-[13px] text-right pr-4 ${highlight ? "text-[#f18200] font-bold" : "text-gray-800"}`}>{monthly}</span>
+      <span className={`text-[13px] text-right ${highlight ? "text-[#f18200] font-bold" : "text-gray-800"}`}>{annual}</span>
     </div>
   );
 }
@@ -78,10 +117,12 @@ export default function OffersPage({ role }) {
   const [filterStatus, setFilterStatus] = useState("");
   const [offerOpen, setOfferOpen]   = useState(false);
   const [detail, setDetail]         = useState(null);
+  const [joiningInv, setJoiningInv] = useState(null);
   const [form, setForm]             = useState(BLANK_OFFER);
   const [computed, setComputed]     = useState({});
   const [saving, setSaving]         = useState(false);
   const [acting, setActing]         = useState(false);
+  const [resending, setResending]   = useState(false);
 
   const tableRef = useRef(null);
   const isAdmin   = role === 1;
@@ -110,27 +151,52 @@ export default function OffersPage({ role }) {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    const next = { ...form, [name]: value };
-    if (name === "basic") setComputed(computeCTC(value));
+    let next = { ...form, [name]: value };
+
+    // Auto-populate jobReqId + designation when candidate is selected
+    if (name === "candidateId" && value) {
+      const cand = candidates.find(c => String(c.candidate_id) === String(value));
+      if (cand) {
+        next.jobReqId     = cand.job_req_id    ? String(cand.job_req_id) : next.jobReqId;
+        next.designation  = cand.job_title     ? cand.job_title          : next.designation;
+      }
+    }
+
+    // Auto-fill designation from selected job title if blank
+    if (name === "jobReqId" && value && !form.designation) {
+      const job = jobs.find(j => String(j.job_req_id) === String(value));
+      if (job) next.designation = job.title;
+    }
+
+    if (name === "ctcInput") setComputed(computeFromCTC(value));
     setForm(next);
   }
 
   async function handleCreate(e) {
     e.preventDefault();
-    if (!form.candidateId || !form.jobReqId || !form.designation || !form.basic) {
-      errorToast("Please fill all required fields"); return;
+    if (!form.candidateId || !form.jobReqId || !form.designation || !form.ctcInput || !form.dateOfJoining) {
+      errorToast("Please fill all required fields including Date of Joining"); return;
     }
     setSaving(true);
     try {
       const c = computed;
       await createOffer({
-        candidateId: Number(form.candidateId), jobReqId: Number(form.jobReqId),
-        designation: form.designation, dateOfJoining: form.dateOfJoining || null,
-        basic: Number(form.basic), hra: c.hra ?? 0,
-        telephoneAllowance: c.telephoneAllowance ?? 0, specialAllowance: c.specialAllowance ?? 0,
-        grossSalary: c.grossSalary ?? 0, pfContribution: c.pfContribution ?? 0,
-        statutoryBonus: c.statutoryBonus ?? 0, gratuity: c.gratuity ?? 0, esi: 0,
-        ctc: c.ctc ?? 0, ctcInWords: numToWords(c.ctc ?? 0),
+        candidateId:        Number(form.candidateId),
+        jobReqId:           Number(form.jobReqId),
+        designation:        form.designation,
+        dateOfJoining:      form.dateOfJoining,
+        basic:              c.basic              ?? 0,
+        hra:                c.hra                ?? 0,
+        telephoneAllowance: c.telephoneAllowance ?? 0,
+        leaveTravel:        c.leaveTravel        ?? 0,
+        specialAllowance:   c.specialAllowance   ?? 0,
+        grossSalary:        c.grossSalary        ?? 0,
+        pfContribution:     c.pfContribution     ?? 0,
+        statutoryBonus:     c.statutoryBonus     ?? 0,
+        gratuity:           0,
+        esi:                0,
+        ctc:                c.ctc                ?? 0,
+        ctcInWords:         numToWords(c.ctc     ?? 0),
       });
       successToast("Offer created");
       setOfferOpen(false); setForm(BLANK_OFFER); setComputed({});
@@ -140,13 +206,40 @@ export default function OffersPage({ role }) {
     } finally { setSaving(false); }
   }
 
+  async function openDetail(row) {
+    setDetail(row);
+    setJoiningInv(null);
+    if (row.status === "Released" || row.status === "Accepted") {
+      getJoiningByOffer(row.offer_id).then(inv => setJoiningInv(inv || null)).catch(() => {});
+    }
+  }
+
   async function handleRelease(offerId) {
     setActing(true);
     try {
       const updated = await releaseOffer(offerId);
-      successToast("Offer released"); setDetail(updated); loadOffers();
+      successToast("Offer released");
+      setDetail(updated);
+      getJoiningByOffer(offerId).then(inv => setJoiningInv(inv || null)).catch(() => {});
+      loadOffers();
     } catch (err) { errorToast(getErrorMessage(err, "Failed to release offer")); }
     finally { setActing(false); }
+  }
+
+  async function handleResend() {
+    if (!joiningInv) return;
+    setResending(true);
+    try {
+      await resendJoiningInvitation(joiningInv.id);
+      successToast("Joining invitation resent");
+    } catch { errorToast("Failed to resend invitation"); }
+    finally { setResending(false); }
+  }
+
+  function copyJoiningLink() {
+    if (!joiningInv?.token) return;
+    const url = `${window.location.origin}/joining/${joiningInv.token}`;
+    navigator.clipboard.writeText(url).then(() => successToast("Link copied!")).catch(() => errorToast("Copy failed"));
   }
 
   async function handleRespond(offerId, response) {
@@ -173,14 +266,14 @@ export default function OffersPage({ role }) {
       </div>
     )},
     { header: "Position", key: "job_title" },
-    { header: "CTC",      key: "ctc", render: v => fmt(v) },
+    { header: "CTC / Month", key: "ctc", render: v => fmtM(v) },
     { header: "Joining",  key: "date_of_joining", render: v => v?.slice(0,10) || "—" },
     { header: "Status",   key: "status", render: v => (
       <span className={`px-2.5 py-[2px] rounded-full text-[11px] font-semibold ${OFFER_CLS[v] ?? "bg-gray-100 text-gray-500"}`}>{v}</span>
     )},
     { header: "", key: "offer_id", width: 60, render: (_, row) => (
       <Btn size="sm" variant="ghost" icon={<Eye size={13} />}
-        onClick={e => { e.stopPropagation(); setDetail(row); }}>View</Btn>
+        onClick={e => { e.stopPropagation(); openDetail(row); }}>View</Btn>
     )},
   ];
 
@@ -191,6 +284,41 @@ export default function OffersPage({ role }) {
     { label:"Accepted", val:"Accepted", count:offers.filter(o=>o.status==="Accepted").length, colorCls:"text-emerald-600",bgCls:"bg-emerald-100",activeBorder:"border-emerald-600" },
     { label:"Rejected", val:"Rejected", count:offers.filter(o=>o.status==="Rejected").length, colorCls:"text-red-600",   bgCls:"bg-red-100",    activeBorder:"border-red-600" },
   ];
+
+  /* ── CTC preview during creation ── */
+  const showCtc = !!(form.ctcInput && computed.ctc);
+  const c = computed;
+
+  /* ── CTC detail display (view modal) ── */
+  function CtcDetailBreakdown({ d }) {
+    return (
+      <div className="mt-3.5 px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#f18200]">
+        <div className="grid grid-cols-3 pb-1.5 mb-1 border-b-2 border-[#f18200]">
+          <span className="text-[11px] font-bold text-[#92400e] uppercase">Components</span>
+          <span className="text-[11px] font-bold text-[#92400e] uppercase text-right">Monthly</span>
+          <span className="text-[11px] font-bold text-[#92400e] uppercase text-right">Annual</span>
+        </div>
+        <CtcTableRow label="Basic"                                    monthly={fmtM(d.basic)}               annual={fmt(d.basic)} />
+        <CtcTableRow label="HRA"                                      monthly={fmtM(d.hra)}                 annual={fmt(d.hra)} />
+        <CtcTableRow label="Telephone/Internet Expenses"              monthly={fmtM(d.telephone_allowance)} annual={fmt(d.telephone_allowance)} />
+        <CtcTableRow label="Leave Travel Allowance"                   monthly={fmtM(d.leave_travel)}        annual={fmt(d.leave_travel)} />
+        <CtcTableRow label="Spl. Allowance"                           monthly={fmtM(d.special_allowance)}   annual={fmt(d.special_allowance)} />
+        <CtcTableRow label="Gross Salary"                             monthly={fmtM(d.gross_salary)}        annual={fmt(d.gross_salary)} highlight />
+        <CtcTableRow label="Company's PF Contribution"                monthly={fmtM(d.pf_contribution)}     annual={fmt(d.pf_contribution)} />
+        <CtcTableRow label="Statutory Bonus"                          monthly={fmtM(d.statutory_bonus)}     annual={fmt(d.statutory_bonus)} />
+        <CtcTableRow label="Gratuity"                                 monthly={fmtM(d.gratuity)}            annual={fmt(d.gratuity)} />
+        <CtcTableRow label="ESI"                                      monthly={fmtM(d.esi)}                 annual={fmt(d.esi)} />
+        <CtcTableRow label="Variable Pay"                             monthly=""                            annual="" />
+        <CtcTableRow label="Insurance premiums (GMC, GPA and Term life)" monthly=""                        annual="" />
+        <CtcTableRow label="Cost To Company"                          monthly={fmtM(d.ctc)}                 annual={fmt(d.ctc)} highlight />
+        {d.ctc_in_words && (
+          <div className="mt-2.5 text-[12px] text-amber-900 italic">
+            <strong>In Words:</strong> {d.ctc_in_words}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -240,15 +368,15 @@ export default function OffersPage({ role }) {
           </div>
           {loading
             ? <div className="flex items-center justify-center gap-2.5 py-12 text-gray-500"><Loader2 size={20} /> Loading offers…</div>
-            : <Table columns={columns} data={visible} onRowClick={r => setDetail(r)} />
+            : <Table columns={columns} data={visible} onRowClick={r => openDetail(r)} />
           }
         </Card>
       </div>
 
       {/* ── Create Offer SlideOver ── */}
       <SlideOver open={offerOpen}
-        onClose={() => { setOfferOpen(false); setForm(BLANK_OFFER); setComputed({}); }}
-        title="Release Offer Letter" width={560}
+        onClose={() => { setOfferOpen(false); setForm({ ...BLANK_OFFER }); setComputed({}); }}
+        title="Release Offer Letter" width={580}
         footer={
           <>
             <Btn variant="secondary" onClick={() => setOfferOpen(false)}>Cancel</Btn>
@@ -257,129 +385,197 @@ export default function OffersPage({ role }) {
         }
       >
         <form onSubmit={handleCreate}>
+          {/* Candidate — auto-populates job + designation */}
+          <Field label="Candidate" required>
+            <select name="candidateId" value={form.candidateId} onChange={handleChange}
+              className="w-full text-[13px] px-2.5 py-2 border border-gray-200 rounded-lg text-gray-700 outline-none bg-white"
+              style={{ fontFamily: "inherit" }}>
+              <option value="">Select shortlisted candidate</option>
+              {candidates.map(c => (
+                <option key={c.candidate_id} value={c.candidate_id}>
+                  {c.name}{c.job_title ? ` — ${c.job_title}` : ""}
+                </option>
+              ))}
+            </select>
+          </Field>
+
           <TwoColGrid>
-            <Field label="Candidate" required>
-              <select name="candidateId" value={form.candidateId} onChange={handleChange}
-                className="w-full text-[13px] px-2.5 py-2 border border-gray-200 rounded-lg text-gray-700 outline-none bg-white"
-                style={{ fontFamily: "inherit" }}>
-                <option value="">Select shortlisted candidate</option>
-                {candidates.map(c => <option key={c.candidate_id} value={c.candidate_id}>{c.name}</option>)}
-              </select>
-            </Field>
             <Field label="Job Position" required>
               <select name="jobReqId" value={form.jobReqId} onChange={handleChange}
                 className="w-full text-[13px] px-2.5 py-2 border border-gray-200 rounded-lg text-gray-700 outline-none bg-white"
                 style={{ fontFamily: "inherit" }}>
-                <option value="">Select job</option>
-                {jobs.map(j => <option key={j.job_req_id} value={j.job_req_id}>{j.title}</option>)}
+                <option value="">Select job position</option>
+                {jobs.map(j => (
+                  <option key={j.job_req_id} value={j.job_req_id}>{j.title}</option>
+                ))}
               </select>
             </Field>
             <Field label="Designation" required>
-              <Input name="designation" value={form.designation} onChange={handleChange} placeholder="e.g. Senior Java Developer" />
-            </Field>
-            <Field label="Date of Joining">
-              <Input name="dateOfJoining" type="date" value={form.dateOfJoining} onChange={handleChange} />
+              <Input name="designation" value={form.designation} onChange={handleChange}
+                placeholder="e.g. Senior Developer" readOnly={!!form.candidateId} />
             </Field>
           </TwoColGrid>
 
-          <div className="px-3.5 py-3.5 bg-gray-50 rounded-lg mb-3.5">
-            <div className="text-[12px] font-bold text-gray-500 mb-2.5">CTC BREAKDOWN (Auto-Computed)</div>
-            <Field label="Basic Salary (Annual ₹)" required>
-              <Input name="basic" type="number" value={form.basic} onChange={handleChange} placeholder="Enter basic salary" />
+          <TwoColGrid>
+            <Field label="Date of Joining" required>
+              <Input type="date" name="dateOfJoining" value={form.dateOfJoining} onChange={handleChange} />
             </Field>
-            {form.basic && computed.ctc ? (
-              <>
-                <CtcRow label="HRA (40%)"                 value={fmt(computed.hra)} />
-                <CtcRow label="Telephone Allowance"        value={fmt(computed.telephoneAllowance)} />
-                <CtcRow label="Special Allowance (~14.4%)" value={fmt(computed.specialAllowance)} />
-                <CtcRow label="Gross Salary"               value={fmt(computed.grossSalary)} />
-                <div className="h-2" />
-                <CtcRow label="PF Contribution (12%)"      value={fmt(computed.pfContribution)} />
-                <CtcRow label="Statutory Bonus"            value={fmt(computed.statutoryBonus)} />
-                <CtcRow label="Gratuity (4.81%)"           value={fmt(computed.gratuity)} />
-                <CtcRow label="ESI"                        value="Nil" />
-                <CtcRow label="Cost to Company (CTC)"      value={fmt(computed.ctc)} highlight />
-                <div className="mt-2 text-[12px] text-amber-900 italic">
-                  In Words: {numToWords(computed.ctc)}
-                </div>
-              </>
-            ) : null}
-          </div>
+            <Field label="CTC (Monthly)" required>
+              <Input
+                type="number" name="ctcInput" value={form.ctcInput} onChange={handleChange}
+                placeholder="e.g. 38000" min={0}
+              />
+              {form.ctcInput && <p className="text-[11px] text-indigo-600 mt-0.5">Annual: Rs. {((Number(form.ctcInput)||0)*12).toLocaleString("en-IN")}</p>}
+            </Field>
+          </TwoColGrid>
+
+          {/* CTC Preview Table */}
+          {computed.ctc > 0 && (
+            <div className="mt-4 border border-gray-200 rounded-xl overflow-hidden">
+              <div className="bg-[#1e3a5f] px-4 py-2.5 grid grid-cols-3">
+                <span className="text-white text-[12px] font-semibold">Component</span>
+                <span className="text-white text-[12px] font-semibold text-right pr-4">Monthly</span>
+                <span className="text-white text-[12px] font-semibold text-right">Annual</span>
+              </div>
+              {[
+                { label: "Basic Salary",         m: computed.basic,              a: computed.basic },
+                { label: "HRA",                  m: computed.hra,                a: computed.hra },
+                { label: "Telephone Allowance",  m: computed.telephoneAllowance, a: computed.telephoneAllowance },
+                { label: "Leave Travel",         m: computed.leaveTravel,        a: computed.leaveTravel },
+                { label: "Special Allowance",    m: computed.specialAllowance,   a: computed.specialAllowance },
+                { label: "Gross Salary",         m: computed.grossSalary,        a: computed.grossSalary, highlight: true },
+                { label: "PF Contribution",      m: computed.pfContribution,     a: computed.pfContribution },
+                { label: "Statutory Bonus",      m: computed.statutoryBonus,     a: computed.statutoryBonus },
+                { label: "Gratuity",             m: 0,                           a: 0 },
+                { label: "ESI",                  m: 0,                           a: 0 },
+                { label: "Total CTC",            m: computed.ctc,                a: computed.ctc, highlight: true },
+              ].map(row => (
+                <CtcTableRow
+                  key={row.label}
+                  label={row.label}
+                  monthly={fmt(Math.round((Number(row.m)||0)/12))}
+                  annual={fmt(Number(row.a)||0)}
+                  highlight={row.highlight}
+                />
+              ))}
+            </div>
+          )}
         </form>
       </SlideOver>
 
-      {/* ── Offer Detail Modal ── */}
-      <Modal open={!!detail} onClose={() => setDetail(null)} title="Offer Letter Details" width={640}
-        footer={
-          <div className="flex items-center gap-2.5 w-full">
-            {detail?.status === "Draft" && canCreate && (
-              <Btn icon={<CheckCircle size={14} />} onClick={() => handleRelease(detail.offer_id)} disabled={acting}>
-                {acting ? "…" : "Release Offer"}
-              </Btn>
-            )}
-            {detail?.status === "Released" && canCreate && (
-              <>
-                <Btn icon={<CheckCircle size={14} />} onClick={() => handleRespond(detail.offer_id, "Accepted")} disabled={acting}>
-                  {acting ? "…" : "Mark Accepted"}
-                </Btn>
-                <Btn variant="danger" icon={<XCircle size={14} />} onClick={() => handleRespond(detail.offer_id, "Rejected")} disabled={acting}>
-                  {acting ? "…" : "Mark Rejected"}
-                </Btn>
-              </>
-            )}
-            <div className="flex-1" />
-            <Btn variant="secondary" onClick={() => setDetail(null)}>Close</Btn>
-          </div>
-        }
-      >
-        {detail && (() => {
-          const sc = OFFER_CLS[detail.status] ?? "bg-gray-100 text-gray-500";
-          return (
-            <div>
-              <div className="px-4 py-3.5 bg-gray-50 rounded-[10px] mb-4 flex items-center gap-3.5">
-                <div className="flex-1">
-                  <div className="text-[17px] font-bold text-gray-900">{detail.candidate_name}</div>
-                  <div className="text-[13px] text-gray-500">{detail.designation} — {detail.job_title}</div>
-                  <div className="mt-1.5">
-                    <span className={`px-2.5 py-[2px] rounded-full text-[11px] font-bold ${sc}`}>{detail.status}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[11px] text-gray-500">Offer ID</div>
-                  <div className="text-[15px] font-bold text-[#f18200]">{detail.offer_code}</div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-5">
-                <DetailRow label="Date of Joining"  value={detail.date_of_joining?.slice(0,10) || "—"} />
-                <DetailRow label="Released At"      value={detail.released_at?.slice(0,10) || "—"} />
-                <DetailRow label="Responded At"     value={detail.responded_at?.slice(0,10) || "—"} />
-                <DetailRow label="Created By"       value={detail.created_by_name || "—"} />
-              </div>
-
-              <div className="mt-3.5 px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#f18200]">
-                <div className="text-[12px] font-bold text-[#92400e] mb-2.5">CTC BREAKDOWN</div>
-                <CtcRow label="Basic Salary"         value={fmt(detail.basic)} />
-                <CtcRow label="HRA"                  value={fmt(detail.hra)} />
-                <CtcRow label="Telephone Allowance"  value={fmt(detail.telephone_allowance)} />
-                <CtcRow label="Special Allowance"    value={fmt(detail.special_allowance)} />
-                <CtcRow label="Gross Salary"         value={fmt(detail.gross_salary)} />
-                <div className="h-2" />
-                <CtcRow label="PF Contribution"      value={fmt(detail.pf_contribution)} />
-                <CtcRow label="Statutory Bonus"      value={fmt(detail.statutory_bonus)} />
-                <CtcRow label="Gratuity"             value={fmt(detail.gratuity)} />
-                <CtcRow label="ESI"                  value="Nil" />
-                <CtcRow label="Cost to Company"      value={fmt(detail.ctc)} highlight />
-                {detail.ctc_in_words && (
-                  <div className="mt-2.5 text-[12px] text-amber-900 italic">
-                    <strong>In Words:</strong> {detail.ctc_in_words}
-                  </div>
-                )}
-              </div>
+      {/* Detail SlideOver */}
+      {detail && (
+        <SlideOver
+          open={!!detail}
+          onClose={() => { setDetail(null); setJoiningInv(null); }}
+          title="Offer Details"
+          width={580}
+          footer={
+            <div className="flex gap-2 flex-wrap">
+              {detail.status === "Draft" && (
+                <Btn
+                  icon={acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                  disabled={acting}
+                  onClick={() => handleRelease(detail.offer_id)}
+                >Release Offer</Btn>
+              )}
+              {(detail.status === "Released" || detail.status === "Accepted") && (
+                <Btn
+                  variant="secondary"
+                  icon={<FileDown size={14} />}
+                  onClick={() => downloadOfferDocx(detail.offer_id, `Offer_Letter_${detail.offer_code || detail.offer_id}.docx`)}
+                >Download Word</Btn>
+              )}
+              {detail.status === "Released" && (
+                <>
+                  <Btn
+                    icon={acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                    disabled={acting}
+                    onClick={() => handleRespond(detail.offer_id, "Accepted")}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >Accept</Btn>
+                  <Btn
+                    variant="danger"
+                    icon={acting ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                    disabled={acting}
+                    onClick={() => handleRespond(detail.offer_id, "Rejected")}
+                  >Reject</Btn>
+                </>
+              )}
+              <Btn variant="secondary" onClick={() => { setDetail(null); setJoiningInv(null); }}>Close</Btn>
             </div>
-          );
-        })()}
-      </Modal>
+          }
+        >
+          <div className="space-y-1 mb-5">
+            <DetailRow label="Offer Code"      value={detail.offer_code || "n/a"} />
+            <DetailRow label="Candidate"       value={detail.candidate_name || "n/a"} />
+            <DetailRow label="Designation"     value={detail.designation || "n/a"} />
+            <DetailRow label="Date of Joining" value={detail.date_of_joining ? detail.date_of_joining.slice(0,10) : "n/a"} />
+            <DetailRow label="Status" value={
+              <span className={`px-2.5 py-[2px] rounded-full text-[11px] font-semibold ${OFFER_CLS[detail.status] ?? "bg-gray-100 text-gray-500"}`}>
+                {detail.status}
+              </span>
+            } />
+          </div>
+
+          <div className="border border-gray-200 rounded-xl overflow-hidden mb-5">
+            <div className="bg-[#1e3a5f] px-4 py-2.5 grid grid-cols-3">
+              <span className="text-white text-[12px] font-semibold">Component</span>
+              <span className="text-white text-[12px] font-semibold text-right pr-4">Monthly</span>
+              <span className="text-white text-[12px] font-semibold text-right">Annual</span>
+            </div>
+            {[
+              { label: "Basic Salary",        v: detail.basic },
+              { label: "HRA",                 v: detail.hra },
+              { label: "Telephone Allowance", v: detail.telephone_allowance },
+              { label: "Leave Travel",        v: detail.leave_travel },
+              { label: "Special Allowance",   v: detail.special_allowance },
+              { label: "Gross Salary",        v: detail.gross_salary, highlight: true },
+              { label: "PF Contribution",     v: detail.pf_contribution },
+              { label: "Statutory Bonus",     v: detail.statutory_bonus },
+              { label: "Gratuity",            v: detail.gratuity },
+              { label: "ESI",                 v: detail.esi },
+              { label: "Total CTC",           v: detail.ctc, highlight: true },
+            ].map(row => (
+              <CtcTableRow
+                key={row.label}
+                label={row.label}
+                monthly={fmtM(row.v)}
+                annual={fmt(Number(row.v)||0)}
+                highlight={row.highlight}
+              />
+            ))}
+          </div>
+
+          {(detail.status === "Released" || detail.status === "Accepted") && (
+            <div className="bg-indigo-50 rounded-xl p-4">
+              <p className="text-[13px] font-semibold text-indigo-700 mb-2">Joining Invitation</p>
+              {joiningInv ? (
+                <div className="space-y-2">
+                  <p className="text-[12px] text-gray-600">
+                    Invitation sent. Token: <span className="font-mono text-gray-800">{joiningInv.token?.slice(0,12)}...</span>
+                  </p>
+                  <div className="flex gap-2">
+                    <Btn
+                      size="sm" variant="secondary"
+                      icon={resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                      disabled={resending}
+                      onClick={handleResend}
+                    >Resend</Btn>
+                    <Btn
+                      size="sm" variant="secondary"
+                      icon={<Copy size={12} />}
+                      onClick={copyJoiningLink}
+                    >Copy Link</Btn>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[12px] text-gray-500">No joining invitation sent yet.</p>
+              )}
+            </div>
+          )}
+        </SlideOver>
+      )}
     </div>
   );
 }

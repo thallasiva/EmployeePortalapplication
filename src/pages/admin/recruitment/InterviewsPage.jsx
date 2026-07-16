@@ -454,8 +454,8 @@ export default function InterviewsPage({ role }) {
               value={form.candidateType}
               onChange={handleChange}
               options={[
-                { value: "External", label: "External — Outside Hire" },
-                { value: "Internal", label: "Internal — Existing Employee" },
+                { value: "External", label: "External" },
+                { value: "Internal", label: "Internal" },
               ]}
             />
           </Field>

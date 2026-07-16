@@ -20,7 +20,8 @@ const RecruiterRoutes = lazy(() => import("./routes/RecruiterRoutes"));
 const Login = lazy(() => import("./pages/Login"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Register = lazy(() => import("./pages/Register"));
-const PayslipPrintView = lazy(() => import("./pages/payslip/PayslipPrintView"));
+const PayslipPrintView   = lazy(() => import("./pages/payslip/PayslipPrintView"));
+const JoiningFormalities = lazy(() => import("./pages/joining/JoiningFormalities"));
 
 const AppRoutes = () =>
 {
@@ -58,6 +59,9 @@ const AppRoutes = () =>
         path="/payslip/:id/print"
         element={user ? <LazyPage label="Loading payslip..."><PayslipPrintView /></LazyPage> : <Navigate to="/login" replace />}
       />
+
+      {/* PUBLIC — Joining Formalities (no auth needed, token-secured) */}
+      <Route path="/joining/:token" element={<LazyPage label="Loading..."><JoiningFormalities /></LazyPage>} />
 
       <Route path="/performance-showcase" element={<PerformanceDemoRoute />} />
 
@@ -115,9 +119,11 @@ const AppRoutes = () =>
           )
         }
       >
-        <Route path="*" element={<LazyPage label="Loading recruitment module..."><RecruiterRoutes /></LazyPage>} />
+        <Route path="*" element={<LazyPage label="Loading recruiter module..."><RecruiterRoutes /></LazyPage>} />
       </Route>
 
+      {/* FALLBACK */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

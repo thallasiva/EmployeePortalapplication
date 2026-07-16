@@ -36,6 +36,7 @@ import
   Award,
   UserSearch,
   ShieldCheck,
+  FileCheck,
 } from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
@@ -198,6 +199,11 @@ export const Sidebar = ({ open }) =>
       icon: <UserRoundPlus size={20} />,
       navigationLink: "/dashboard/onboarding",
     },
+    {
+      label: "Joining Formalities",
+      icon: <FileCheck size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/joining-verification",
+    },
     // ── Recruitment ────────────────────────────────────────
     {
       label: "Recruitment",
@@ -205,6 +211,17 @@ export const Sidebar = ({ open }) =>
       navigationLink: "/dashboard/recruitment",
       badge: "New",
       badgeColor: "#f18200",
+    },
+    {
+      label: "Team Management",
+      icon: <Users size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Team Overview",      navigationLink: "/manager" },
+        { label: "Leave Requests",     navigationLink: "/manager/team/leave" },
+        { label: "Attendance",         navigationLink: "/manager/team/attendance" },
+        { label: "Regularizations",    navigationLink: "/manager/team/regularizations" },
+        { label: "Resignations",       navigationLink: "/manager/team/resignations" },
+      ],
     },
     {
       label: "Appraisal",
@@ -273,15 +290,18 @@ export const Sidebar = ({ open }) =>
     },
   ];
 
-  // Team Overview — Reporting Manager goes to /manager, Recruiter TL goes to their own pages
+  // Team Overview — Reporting Manager goes to /manager, Recruiter TL / HR Manager uses same /manager/* routes
   const teamOverviewItem = isRecruiterLead(user)
     ? {
         label: "Team Management",
         icon: <Users size={20} strokeWidth={1.75} />,
         children: [
-          { label: "Team Overview",  navigationLink: "/recruiter/team/overview" },
-          { label: "Leave Requests", navigationLink: "/recruiter/team/leave" },
-          { label: "Attendance",     navigationLink: "/recruiter/team/attendance" },
+          { label: "Team Overview",   navigationLink: "/manager" },
+          { label: "Leave Requests",  navigationLink: "/manager/team/leave" },
+          { label: "Attendance",      navigationLink: "/manager/team/attendance" },
+          { label: "Regularizations", navigationLink: "/manager/team/regularizations" },
+          { label: "Resignations",    navigationLink: "/manager/team/resignations" },
+          { label: "Appraisal",       navigationLink: "/manager/team/appraisal" },
         ],
       }
     : {
@@ -464,8 +484,9 @@ export const Sidebar = ({ open }) =>
   // Replace the plain "Hiring" entry in employeeItems with the role-expanded one for recruiters
   // For recruiter roles: Recruitment goes first, then remaining employee items
   const employeeItemsWithoutHiring = employeeItems.filter(item => item.label !== "Hiring");
+  // Recruitment (hiringEntry) first, then Team Management, then remaining employee items
   const employeeItemsForRecruiters = canViewTeamOverview(user)
-    ? [teamOverviewItem, hiringEntry, ...employeeItemsWithoutHiring]
+    ? [hiringEntry, teamOverviewItem, ...employeeItemsWithoutHiring]
     : [hiringEntry, ...employeeItemsWithoutHiring];
 
   const items = isAdmin(user)

@@ -1,14 +1,17 @@
+'use strict';
+
 const { callProcedure, query } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
+const joiningSvc = require("../joining.service");
+const { generateOfferLetterPdf } = require("../../utils/offerLetterPdf");
 
 class OfferService extends BaseService {
   constructor() {
     super("rec_offers", "offer_id");
   }
 
-  /** Fetch TL email via candidate's recruiter reporting_to */
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
     const rows = await query(
@@ -40,7 +43,7 @@ class OfferService extends BaseService {
 
   async create(data, createdBy, ip) {
     const results = await callProcedure(
-      "sp_rec_create_offer(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @offer_id, @offer_code)",
+      "sp_rec_create_offer(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @offer_id, @offer_code)",
       [
         data.candidateId,
         data.jobReqId,
@@ -49,6 +52,7 @@ class OfferService extends BaseService {
         data.basic || 0,
         data.hra || 0,
         data.telephoneAllowance || 0,
+        data.leaveTravel || 0,
         data.specialAllowance || 0,
         data.grossSalary || 0,
         data.pfContribution || 0,
@@ -72,34 +76,88 @@ class OfferService extends BaseService {
     const row = (results[0] ?? [])[0];
 
     if (row) {
-      const candidateEmail = row.candidate_email || row.email;
-      const candidateName  = row.candidate_name  || row.name || 'Candidate';
-      const jobTitle       = row.designation     || row.job_title || '';
-      const ctc            = row.ctc             || 0;
-      const dateOfJoining  = row.date_of_joining || row.joining_date || null;
-      const offerCode      = row.offer_code      || row.offer_id;
+      const candidateEmail   = row.candidate_email || row.email || null;
+      const candidateName    = row.candidate_name  || row.name  || 'Candidate';
+      const jobTitle         = row.designation     || row.job_title || '';
+      const ctc              = row.ctc             || 0;
+      const dateOfJoining    = row.date_of_joining || row.joining_date || null;
+      const ctcData = {
+        offerCode:          row.offer_code          || null,
+        ctc,
+        ctcInWords:         row.ctc_in_words        || null,
+        dateOfJoining,
+        basic:              row.basic               || 0,
+        hra:                row.hra                 || 0,
+        telephoneAllowance: row.telephone_allowance || 0,
+        leaveTravel:        row.leave_travel        || 0,
+        specialAllowance:   row.special_allowance   || 0,
+        grossSalary:        row.gross_salary        || 0,
+        pfContribution:     row.pf_contribution     || 0,
+        statutoryBonus:     row.statutory_bonus     || 0,
+        gratuity:           row.gratuity            || 0,
+        esi:                row.esi                 || 0,
+      };
 
-      // Notify candidate
-      if (candidateEmail) {
-        notify.offerLetter({ candidateEmail, candidateName, jobTitle, ctc, dateOfJoining, offerCode });
-      }
-
-      // Notify TL that offer was released for their team's candidate
       const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
       this._getRecruiterTL(recruiterId).then((tl) => {
         if (tl.tl_email) {
-          notify.tlOfferUpdate({
-            tlEmail:       tl.tl_email,
-            tlName:        tl.tl_name        || 'Team Lead',
-            recruiterName: tl.recruiter_name  || 'Recruiter',
-            candidateName,
-            jobTitle,
-            event:         'Released',
-            ctc,
-            dateOfJoining,
+          notify.offerReleasedToHR({
+            hrEmail: tl.tl_email,
+            hrName:  tl.tl_name || 'HR Manager',
+            candidateName, jobTitle, ctc, dateOfJoining,
           });
         }
       }).catch(() => {});
+
+      console.info('[offer] release: candidateEmail=', candidateEmail, 'candidateName=', candidateName);
+      if (candidateEmail) {
+        const candidateId = row.candidate_id || null;
+        Promise.resolve().then(async () => {
+          let pdfBuffer = null;
+          try {
+            pdfBuffer = await generateOfferLetterPdf({ candidateName, jobTitle, ...ctcData });
+            console.info('[offer] PDF generated, size=', pdfBuffer.length);
+          } catch (pdfErr) {
+            console.error('[offer] PDF generation failed:', pdfErr.message);
+          }
+
+          let invitation = null;
+          try {
+            invitation = await joiningSvc.createInvitation({
+              candidateId, offerId, candidateName, candidateEmail, jobTitle,
+            });
+            console.info('[offer] invitation token=', invitation?.token);
+          } catch (invErr) {
+            console.warn('[offer] createInvitation failed:', invErr.message, '-- trying getByOffer fallback');
+            try {
+              invitation = await joiningSvc.getByOffer(offerId);
+              console.info('[offer] fallback invitation token=', invitation?.token);
+            } catch (fbErr) {
+              console.error('[offer] getByOffer fallback also failed:', fbErr.message);
+            }
+          }
+
+          if (!invitation?.token) {
+            console.error('[offer] No invitation token available -- email not sent');
+            return;
+          }
+
+          const joiningUrl = (process.env.FRONTEND_URL || 'http://localhost:3000')
+            + '/joining/' + invitation.token;
+
+          notify.joiningInvitation({
+            candidateName, candidateEmail, jobTitle, joiningUrl,
+            expiresAt: invitation.expires_at,
+            pdfBuffer,
+            pdfFilename: 'Offer_Letter_' + (ctcData.offerCode || offerId) + '.pdf',
+            ...ctcData,
+          });
+          console.info('[offer] joiningInvitation email sent to:', candidateEmail,
+            '| PDF attached:', !!pdfBuffer);
+        });
+      } else {
+        console.warn('[offer] release: no candidateEmail -- row keys:', Object.keys(row || {}));
+      }
     }
     return row;
   }
@@ -114,31 +172,27 @@ class OfferService extends BaseService {
     if (row) {
       const candidateName = row.candidate_name || row.name || 'Candidate';
       const jobTitle      = row.designation    || row.job_title || '';
+      const dateOfJoining = row.date_of_joining || null;
       const r             = (response || '').toLowerCase();
-      const isAccepted    = r === 'accepted';
-      const isRejected    = r === 'rejected' || r === 'declined';
+      const isAccepted = r === 'accepted';
+      const isRejected = r === 'rejected' || r === 'declined';
 
-      // Notify HR
       if (isAccepted) {
-        notify.offerAccepted({ hrEmail: row.hr_email || null, candidateName, jobTitle, dateOfJoining: row.date_of_joining || null });
-      } else if (isRejected) {
-        notify.offerRejected({ hrEmail: row.hr_email || null, candidateName, jobTitle });
+        notify.offerAcceptedAdmin({ candidateName, jobTitle, dateOfJoining });
       }
 
-      // Notify TL of candidate's decision
       if (isAccepted || isRejected) {
         const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
         this._getRecruiterTL(recruiterId).then((tl) => {
           if (tl.tl_email) {
             notify.tlOfferUpdate({
               tlEmail:       tl.tl_email,
-              tlName:        tl.tl_name        || 'Team Lead',
-              recruiterName: tl.recruiter_name  || 'Recruiter',
-              candidateName,
-              jobTitle,
+              tlName:        tl.tl_name       || 'HR Manager',
+              recruiterName: tl.recruiter_name || 'Recruiter',
+              candidateName, jobTitle,
               event:         isAccepted ? 'Accepted' : 'Rejected',
-              ctc:           row.ctc            || null,
-              dateOfJoining: row.date_of_joining || null,
+              ctc:           row.ctc || null,
+              dateOfJoining,
             });
           }
         }).catch(() => {});

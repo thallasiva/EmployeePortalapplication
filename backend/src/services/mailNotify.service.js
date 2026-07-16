@@ -534,32 +534,138 @@ exports.recruiterAssigned = (recruiters) => {
 };
 
 /* ══════════════════════════════════════════════════════════════════════
-   RECRUITER MANAGER (TEAM LEAD) NOTIFICATIONS
+   RECRUITMENT FLOW NOTIFICATIONS (Steps 2 – 10)
 ══════════════════════════════════════════════════════════════════════ */
 
-/** Notify TL when a job is assigned to one of their recruiters */
-exports.tlJobAssigned = ({ tlEmail, tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet }) => {
-  if (!tlEmail) return;
+/** Step 2 — Notify HR Manager when recruiter submits a candidate */
+exports.candidateSubmittedToHR = ({ hrEmail, hrName, recruiterName, candidateName, jobTitle, candidateCode }) => {
+  if (!hrEmail) return;
   fire(async () => {
-    const tpl = T.tlJobAssigned({ tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet });
-    await sendMail({ to: tlEmail, ...tpl, template: 'recruitment/tl-job-assigned', priority: 'high' });
+    const tpl = T.candidateSubmittedToHR({ hrName, recruiterName, candidateName, jobTitle, candidateCode });
+    await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/candidate-submitted-hr', priority: 'high' });
   });
 };
 
-/** Notify TL when a candidate is shortlisted or rejected by their team */
-exports.tlCandidateUpdate = ({ tlEmail, tlName, recruiterName, candidateName, jobTitle, status }) => {
-  if (!tlEmail) return;
+/** Steps 3 & 6 — Notify Recruiter when HR changes candidate status */
+exports.candidateStatusToRecruiter = ({ recruiterEmail, recruiterName, candidateName, jobTitle, status }) => {
+  if (!recruiterEmail) return;
   fire(async () => {
-    const tpl = T.tlCandidateUpdate({ tlName, recruiterName, candidateName, jobTitle, status });
-    await sendMail({ to: tlEmail, ...tpl, template: 'recruitment/tl-candidate-update', priority: 'medium' });
+    const tpl = T.candidateStatusToRecruiter({ recruiterName, candidateName, jobTitle, status });
+    await sendMail({ to: recruiterEmail, ...tpl, template: 'recruitment/candidate-status-recruiter', priority: 'high' });
   });
 };
 
-/** Notify TL when an offer is released, accepted, or rejected */
-exports.tlOfferUpdate = ({ tlEmail, tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining }) => {
-  if (!tlEmail) return;
+/** Steps 4 & 7 — Notify Candidate when interview is scheduled */
+exports.interviewScheduledCandidate = ({ candidateEmail, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer }) => {
+  if (!candidateEmail) return;
   fire(async () => {
-    const tpl = T.tlOfferUpdate({ tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining });
-    await sendMail({ to: tlEmail, ...tpl, template: 'recruitment/tl-offer-update', priority: 'high' });
+    const tpl = T.interviewScheduledCandidate({ candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer });
+    await sendMailNow({ to: candidateEmail, ...tpl, template: 'recruitment/interview-scheduled-candidate', priority: 'high' });
+  });
+};
+
+/** Steps 4 & 7 — Notify HR Manager when interview is scheduled */
+exports.interviewScheduledHR = ({ hrEmail, hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName }) => {
+  if (!hrEmail) return;
+  fire(async () => {
+    const tpl = T.interviewScheduledHR({ hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName });
+    await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/interview-scheduled-hr', priority: 'high' });
+  });
+};
+
+/** Step 5 — Notify HR Manager when interview feedback is submitted */
+exports.interviewFeedbackToHR = ({ hrEmail, hrName, candidateName, jobTitle, level, feedbackStatus, feedbackComments, interviewerName }) => {
+  if (!hrEmail) return;
+  fire(async () => {
+    const tpl = T.interviewFeedbackToHR({ hrName, candidateName, jobTitle, level, feedbackStatus, feedbackComments, interviewerName });
+    await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/interview-feedback-hr', priority: 'high' });
+  });
+};
+
+/** Step 8 — Notify Admin when candidate is marked Selected */
+exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) => {
+  const to = adminEmail();
+  if (!to) return;
+  fire(async () => {
+    const tpl = T.candidateSelectedAdmin({ candidateName, jobTitle, recruiterName });
+    await sendMail({ to, ...tpl, template: 'recruitment/candidate-selected-admin', priority: 'high' });
+  });
+};
+
+/** Step 9 — Notify HR Manager when offer is released */
+exports.offerReleasedToHR = ({ hrEmail, hrName, candidateName, jobTitle, ctc, dateOfJoining }) => {
+  if (!hrEmail) return;
+  fire(async () => {
+    const tpl = T.offerReleasedToHR({ hrName, candidateName, jobTitle, ctc, dateOfJoining });
+    await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/offer-released-hr', priority: 'high' });
+  });
+};
+
+/** Step 10 — Notify Admin when candidate accepts offer */
+exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => {
+  const to = adminEmail();
+  if (!to) return;
+  fire(async () => {
+    const tpl = T.offerAcceptedAdmin({ candidateName, jobTitle, dateOfJoining });
+    await sendMail({ to, ...tpl, template: 'recruitment/offer-accepted-admin', priority: 'high' });
+  });
+};
+
+/* ======================================================================
+   JOINING FORMALITIES NOTIFICATIONS
+====================================================================== */
+
+exports.joiningInvitation = ({
+  candidateName, candidateEmail, jobTitle, joiningUrl, expiresAt,
+  ctc, ctcInWords, dateOfJoining, offerCode,
+  basic, hra, telephoneAllowance, specialAllowance, grossSalary,
+  pfContribution, statutoryBonus, gratuity, esi,
+  pdfBuffer, pdfFilename,
+}) => {
+  if (!candidateEmail) return;
+  fire(async () => {
+    const tpl = T.joiningInvitation({
+      candidateName, jobTitle, joiningUrl, expiresAt,
+      ctc, ctcInWords, dateOfJoining, offerCode,
+      basic, hra, telephoneAllowance, specialAllowance, grossSalary,
+      pfContribution, statutoryBonus, gratuity, esi,
+    });
+    const attachments = pdfBuffer
+      ? [{ filename: pdfFilename || 'Offer_Letter.pdf', content: pdfBuffer, contentType: 'application/pdf' }]
+      : [];
+    await sendMailNow({ to: candidateEmail, ...tpl, attachments, template: 'joining/invitation', priority: 'critical' });
+  });
+};
+
+exports.joiningSubmitted = ({ candidateName, candidateEmail, jobTitle }) => {
+  const hrEmail = adminEmail();
+  if (!hrEmail) return;
+  fire(async () => {
+    const tpl = T.joiningSubmittedHR({ candidateName, candidateEmail, jobTitle });
+    await sendMail({ to: hrEmail, ...tpl, template: 'joining/submitted-hr', priority: 'high' });
+  });
+};
+
+exports.joiningApproved = ({ candidateName, candidateEmail, jobTitle }) => {
+  if (!candidateEmail) return;
+  fire(async () => {
+    const tpl = T.joiningApproved({ candidateName, jobTitle });
+    await sendMailNow({ to: candidateEmail, ...tpl, template: 'joining/approved', priority: 'critical' });
+  });
+};
+
+exports.joiningChangesRequested = ({ candidateName, candidateEmail, jobTitle, remarks, changesFields }) => {
+  if (!candidateEmail) return;
+  fire(async () => {
+    const tpl = T.joiningChangesRequested({ candidateName, jobTitle, remarks, changesFields });
+    await sendMailNow({ to: candidateEmail, ...tpl, template: 'joining/changes-requested', priority: 'critical' });
+  });
+};
+
+exports.joiningRejected = ({ candidateName, candidateEmail, jobTitle, remarks }) => {
+  if (!candidateEmail) return;
+  fire(async () => {
+    const tpl = T.joiningRejected({ candidateName, jobTitle, remarks });
+    await sendMailNow({ to: candidateEmail, ...tpl, template: 'joining/rejected', priority: 'critical' });
   });
 };

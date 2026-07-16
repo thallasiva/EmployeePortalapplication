@@ -43,5 +43,6 @@ router.use('/reports', require('./report.routes'));
 router.use('/dashboard', require('./dashboard.routes'));
 
 router.use('/recruitment', require('../controllers/recruitment/recruitment.routes'));
+router.use('/joining',    require('./joining.routes'));
 
 module.exports = router;

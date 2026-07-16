@@ -705,6 +705,173 @@ exports.tlCandidateUpdate = ({ tlName, recruiterName, candidateName, jobTitle, s
   text: `Hi ${tlName}, ${recruiterName} marked ${candidateName} as ${status} for ${jobTitle}.`,
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   RECRUITMENT FLOW NOTIFICATION TEMPLATES (Steps 2 – 10)
+══════════════════════════════════════════════════════════════════════ */
+
+/** Step 2 — HR Manager: new candidate submitted by recruiter */
+exports.candidateSubmittedToHR = ({ hrName, recruiterName, candidateName, jobTitle, candidateCode }) => ({
+  subject: `[${co()}] New Candidate Submitted for Review — ${esc(jobTitle)}`,
+  html: layout({
+    title: 'New Candidate Submitted for Review',
+    color: '#1E3A5F',
+    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
+<p>Your recruiter <strong>${esc(recruiterName)}</strong> has submitted a new candidate for the following position:</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${candidateCode ? infoRow('Reference', candidateCode) : ''}
+  ${infoRow('Position', jobTitle)}
+  ${infoRow('Submitted By', recruiterName)}
+</div>
+<p>Please review the candidate profile and take appropriate action.</p>
+<a href="${feUrl()}/recruitment/candidates" class="btn">Review Candidate</a>`,
+  }),
+  text: `Hi ${hrName}, ${recruiterName} submitted ${candidateName} for ${jobTitle}. Please review.`,
+});
+
+/** Steps 3 & 6 — Recruiter: candidate status changed by HR */
+exports.candidateStatusToRecruiter = ({ recruiterName, candidateName, jobTitle, status }) => ({
+  subject: `[${co()}] Candidate Status Updated — ${esc(candidateName)}`,
+  html: layout({
+    title: 'Candidate Status Updated',
+    color: '#1E3A5F',
+    body: `<p>Hi <strong>${esc(recruiterName)}</strong>,</p>
+<p>The status of your candidate has been updated by HR.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+  ${infoRow('New Status', status)}
+</div>
+<a href="${feUrl()}/recruitment/candidates" class="btn">View Candidate</a>`,
+  }),
+  text: `Hi ${recruiterName}, ${candidateName}'s status was updated to "${status}" for ${jobTitle}.`,
+});
+
+/** Steps 4 & 7 — Candidate: interview scheduled */
+exports.interviewScheduledCandidate = ({ candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer }) => ({
+  subject: `Interview Scheduled — ${esc(jobTitle)} at ${co()}`,
+  html: layout({
+    title: 'Your Interview Has Been Scheduled',
+    color: '#1E3A5F',
+    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
+<p>Your interview for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong> has been scheduled.</p>
+<div class="info-box">
+  ${infoRow('Position', jobTitle)}
+  ${level ? infoRow('Round', level) : ''}
+  ${infoRow('Date', interviewDate ? fmtDate(interviewDate) : '—')}
+  ${interviewTime ? infoRow('Time', interviewTime) : ''}
+  ${interviewType ? infoRow('Mode', interviewType) : ''}
+  ${interviewer ? infoRow('Interviewer', interviewer) : ''}
+</div>
+<p>Please ensure you are available at the scheduled time. Best of luck!</p>`,
+  }),
+  text: `Dear ${candidateName}, your interview for ${jobTitle} at ${co()} is on ${interviewDate ? fmtDate(interviewDate) : '—'}${interviewTime ? ' at ' + interviewTime : ''}. Interviewer: ${interviewer || '—'}.`,
+});
+
+/** Steps 4 & 7 — HR Manager: interview scheduled notification */
+exports.interviewScheduledHR = ({ hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName }) => ({
+  subject: `[${co()}] Interview Scheduled — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({
+    title: 'Interview Scheduled',
+    color: '#1E3A5F',
+    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
+<p>An interview has been scheduled for a candidate on your team's pipeline.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+  ${level ? infoRow('Round', level) : ''}
+  ${infoRow('Date', interviewDate ? fmtDate(interviewDate) : '—')}
+  ${interviewTime ? infoRow('Time', interviewTime) : ''}
+  ${interviewType ? infoRow('Mode', interviewType) : ''}
+  ${interviewer ? infoRow('Interviewer', interviewer) : ''}
+  ${scheduledByName ? infoRow('Scheduled By', scheduledByName) : ''}
+</div>
+<a href="${feUrl()}/recruitment/interviews" class="btn">View Interview</a>`,
+  }),
+  text: `Hi ${hrName}, interview for ${candidateName} (${jobTitle}) on ${interviewDate ? fmtDate(interviewDate) : '—'}${interviewTime ? ' at ' + interviewTime : ''}.`,
+});
+
+/** Step 5 — HR Manager: interview feedback submitted */
+exports.interviewFeedbackToHR = ({ hrName, candidateName, jobTitle, level, feedbackStatus, feedbackComments, interviewerName }) => ({
+  subject: `[${co()}] Interview Feedback Received — ${esc(candidateName)}`,
+  html: layout({
+    title: 'Interview Feedback Submitted',
+    color: '#1E3A5F',
+    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
+<p>Interview feedback has been submitted for a candidate in your pipeline.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+  ${level ? infoRow('Round', level) : ''}
+  ${interviewerName ? infoRow('Interviewer', interviewerName) : ''}
+  ${feedbackStatus ? infoRow('Outcome', feedbackStatus) : ''}
+  ${feedbackComments ? infoRow('Comments', feedbackComments) : ''}
+</div>
+<a href="${feUrl()}/recruitment/interviews" class="btn">View Details</a>`,
+  }),
+  text: `Hi ${hrName}, feedback received for ${candidateName} (${jobTitle}). Outcome: ${feedbackStatus || '—'}.`,
+});
+
+/** Step 8 — Admin: candidate marked Selected */
+exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) => ({
+  subject: `[${co()}] Candidate Selected — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({
+    title: 'Candidate Selected — Offer Pending',
+    color: '#16A34A',
+    body: `<p>Hi Admin,</p>
+<p>A candidate has been marked as <span class="badge green">Selected</span> and is ready for an offer letter.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+  ${recruiterName ? infoRow('Sourced By', recruiterName) : ''}
+  ${infoRow('Next Step', 'Please prepare and release an offer letter')}
+</div>
+<a href="${feUrl()}/recruitment/offers" class="btn">Create Offer</a>`,
+  }),
+  text: `${candidateName} has been selected for ${jobTitle} (sourced by ${recruiterName || '—'}). Please release an offer.`,
+});
+
+/** Step 9 — HR Manager: offer released */
+exports.offerReleasedToHR = ({ hrName, candidateName, jobTitle, ctc, dateOfJoining }) => ({
+  subject: `[${co()}] Offer Released — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({
+    title: 'Offer Released',
+    color: '#16A34A',
+    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
+<p>An offer letter has been released to the following candidate.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+  ${ctc ? infoRow('CTC', fmtINR(ctc)) : ''}
+  ${dateOfJoining ? infoRow('Expected Joining', fmtDate(dateOfJoining)) : ''}
+  ${infoRow('Status', 'Offer Sent — Awaiting Acceptance')}
+</div>
+<a href="${feUrl()}/recruitment/offers" class="btn">View Offer</a>`,
+  }),
+  text: `Hi ${hrName}, offer released to ${candidateName} for ${jobTitle}${ctc ? ' (CTC: ' + fmtINR(ctc) + ')' : ''}. Awaiting acceptance.`,
+});
+
+/** Step 10 — Admin: offer accepted */
+exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => ({
+  subject: `[${co()}] Offer Accepted — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({
+    title: 'Offer Accepted ✓',
+    color: '#16A34A',
+    body: `<p>Hi Admin,</p>
+<p><strong>${esc(candidateName)}</strong> has <span class="badge green">Accepted</span> the offer for <strong>${esc(jobTitle)}</strong>.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+  ${dateOfJoining ? infoRow('Expected Joining', fmtDate(dateOfJoining)) : ''}
+  ${infoRow('Next Step', 'Initiate employee onboarding')}
+</div>
+<a href="${feUrl()}/recruitment/candidates" class="btn">View in HRMS</a>`,
+  }),
+  text: `${candidateName} has accepted the offer for ${jobTitle}.${dateOfJoining ? ' Expected joining: ' + fmtDate(dateOfJoining) : ''}`,
+});
+
+/* ── Recruiter Manager (Team Lead) Templates ──────────────────────────────────────── */
+
 exports.tlOfferUpdate = ({ tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining }) => ({
   subject: `[${co()}] Offer ${esc(event)} — ${esc(candidateName)} for ${esc(jobTitle)}`,
   html: layout({
@@ -722,4 +889,158 @@ exports.tlOfferUpdate = ({ tlName, recruiterName, candidateName, jobTitle, event
 <a href="${esc(feUrl() + '/recruitment')}" class="btn">View Offer</a>`,
   }),
   text: `Hi ${tlName}, offer for ${candidateName} (${jobTitle}) has been ${event}. CTC: ${ctc || '-'}.`,
+});
+
+/* ── Joining Formalities Templates ─────────────────────────────────────────── */
+
+exports.joiningInvitation = ({
+  candidateName, jobTitle, joiningUrl, expiresAt,
+  ctc, ctcInWords, dateOfJoining, offerCode,
+  basic = 0, hra = 0, telephoneAllowance = 0, specialAllowance = 0, grossSalary = 0,
+  pfContribution = 0, statutoryBonus = 0, gratuity = 0, esi = 0,
+}) => {
+  /* All stored values are ANNUAL. Monthly = value / 12 */
+  const ann = (v) => Number(v) || 0;
+  const mon = (v) => Math.round((Number(v) || 0) / 12);
+  const ctcAnnual = ann(ctc);
+  const ctcLabel  = ctcAnnual ? fmtINR(ctcAnnual) + ' per annum' : '';
+
+  /* CTC table row builders */
+  const tblRow = (label, annVal) => {
+    if (!annVal) return '';
+    return `<tr>
+      <td style="padding:6px 12px;border:1px solid #E5E7EB;font-size:12px;color:#374151">${esc(label)}</td>
+      <td style="padding:6px 12px;border:1px solid #E5E7EB;font-size:12px;text-align:right;color:#111827">${fmtINR(mon(annVal))}</td>
+      <td style="padding:6px 12px;border:1px solid #E5E7EB;font-size:12px;text-align:right;color:#111827">${fmtINR(ann(annVal))}</td>
+    </tr>`;
+  };
+  const boldRow = (label, annVal) =>
+    `<tr style="background:#EFF6FF;font-weight:700">
+      <td style="padding:6px 12px;border:1px solid #BFDBFE;font-size:12px;color:#1E3A5F">${esc(label)}</td>
+      <td style="padding:6px 12px;border:1px solid #BFDBFE;font-size:12px;text-align:right;color:#1E3A5F">${fmtINR(mon(annVal))}</td>
+      <td style="padding:6px 12px;border:1px solid #BFDBFE;font-size:12px;text-align:right;color:#1E3A5F">${fmtINR(ann(annVal))}</td>
+    </tr>`;
+
+  const ctcTable = `
+<table style="width:100%;border-collapse:collapse;margin:12px 0">
+  <thead>
+    <tr style="background:#1E3A5F">
+      <th style="padding:8px 12px;text-align:left;color:#fff;font-size:12px;border:1px solid #1E3A5F">COMPONENTS</th>
+      <th style="padding:8px 12px;text-align:right;color:#fff;font-size:12px;border:1px solid #1E3A5F">MONTHLY</th>
+      <th style="padding:8px 12px;text-align:right;color:#fff;font-size:12px;border:1px solid #1E3A5F">YEARLY</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${tblRow('Basic', basic)}
+    ${tblRow('HRA', hra)}
+    ${tblRow('Telephone / Internet Expenses', telephoneAllowance)}
+    ${tblRow('Spl. Allowance', specialAllowance)}
+    ${boldRow('Gross Salary', grossSalary)}
+    ${tblRow("Company's PF Contribution", pfContribution)}
+    ${Number(statutoryBonus) ? tblRow('Statutory Bonus', statutoryBonus) : ''}
+    ${Number(gratuity)       ? tblRow('Gratuity', gratuity) : ''}
+    ${Number(esi)            ? tblRow('ESI (Employer Share)', esi) : ''}
+    ${boldRow('Cost To Company (CTC)', ctcAnnual)}
+  </tbody>
+</table>`;
+
+  const body = `
+<p style="margin:0 0 12px">Dear <strong>${esc(candidateName)}</strong>,</p>
+<p style="margin:0 0 14px;color:#374151">
+  We are pleased to offer you the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong>.
+  Your complete Offer Letter with all terms, conditions and CTC breakdown is <strong>attached as a PDF</strong>.
+</p>
+
+<div class="info-box">
+  ${offerCode ? infoRow('Offer Reference', offerCode) : ''}
+  ${dateOfJoining ? infoRow('Date of Joining', fmtDate(dateOfJoining)) : ''}
+</div>
+
+<p style="margin:20px 0 8px;font-weight:700;font-size:13px;color:#1E3A5F">COMPLETE YOUR JOINING FORMALITIES</p>
+<p style="margin:0 0 12px;font-size:13px;color:#374151">
+  Please submit your joining formalities online before your date of joining:
+</p>
+
+<div style="text-align:center;margin:24px 0 20px">
+  <a href="${esc(joiningUrl)}"
+     style="display:inline-block;background:#16A34A;color:#fff;text-decoration:none;
+            padding:14px 40px;border-radius:6px;font-size:15px;font-weight:700;letter-spacing:.3px">
+    &#10003;&nbsp;&nbsp;Complete Joining Formalities
+  </a>
+  <p style="margin:10px 0 0;font-size:11px;color:#9CA3AF">
+    Link valid until <strong>${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}</strong>.
+    Do not share this link with anyone.
+  </p>
+</div>
+
+<p style="font-size:12px;color:#6B7280;border-top:1px solid #E5E7EB;padding-top:12px;margin-top:8px">
+  The Offer Letter PDF is attached. Please sign and return a copy on your date of joining.
+</p>`;
+
+  return {
+    subject: `Offer Letter &mdash; ${jobTitle} at ${emailCfg.companyName || 'HRMS'}`,
+    html: layout({ title: 'Congratulations! Your Offer Letter', color: '#1E3A5F', body }),
+    text: `Congratulations ${candidateName}!\n\nOffer for ${jobTitle} at ${emailCfg.companyName || 'HRMS'}.\nCTC: ${ctcLabel}\nDate of Joining: ${dateOfJoining ? new Date(dateOfJoining).toDateString() : 'As agreed'}\n\nComplete joining formalities at: ${joiningUrl}\nLink valid until: ${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}\n\nOffer Letter PDF is attached.`,
+  };
+};
+
+exports.joiningSubmittedHR = ({ candidateName, candidateEmail, jobTitle }) => ({
+  subject: `[${co()}] Joining Formalities Submitted — ${esc(candidateName)}`,
+  html: layout({
+    title: 'Joining Formalities Submitted for Review',
+    color: '#1E3A5F',
+    body: `<p>Hi HR Team,</p>
+<p><strong>${esc(candidateName)}</strong> has submitted their joining formalities for review.</p>
+<div class="info-box">
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Email', candidateEmail)}
+  ${infoRow('Position', jobTitle)}
+  ${infoRow('Status', 'Pending Verification')}
+</div>
+<a href="${esc(feUrl() + '/dashboard/joining-verification')}" class="btn">Review Formalities</a>`,
+  }),
+  text: `${candidateName} has submitted joining formalities. Login to review.`,
+});
+
+exports.joiningApproved = ({ candidateName, jobTitle }) => ({
+  subject: `[${co()}] Joining Formalities Approved — Welcome Aboard!`,
+  html: layout({
+    title: 'Joining Formalities Approved',
+    color: '#16a34a',
+    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
+<p>Your joining formalities for <strong>${esc(jobTitle)}</strong> have been reviewed and <strong>approved</strong>.</p>
+<p>Your employee account will be activated shortly. You will receive login credentials from HR to access the employee portal.</p>
+<p>Welcome to the team! We look forward to working with you.</p>
+<p style="color:#888;font-size:12px">If you have questions, please contact HR.</p>`,
+  }),
+  text: `Hi ${candidateName}, your joining formalities have been approved. Welcome aboard!`,
+});
+
+exports.joiningChangesRequested = ({ candidateName, jobTitle, remarks, joiningUrl }) => ({
+  subject: `[${co()}] Action Required — Update Your Joining Formalities`,
+  html: layout({
+    title: 'Updates Required for Joining Formalities',
+    color: '#d97706',
+    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
+<p>HR has reviewed your joining formalities for <strong>${esc(jobTitle)}</strong> and requires the following updates:</p>
+<div class="info-box" style="border-left:4px solid #d97706">
+  <p style="margin:0;color:#374151">${esc(remarks || 'Please review and update the highlighted fields.')}</p>
+</div>
+<p>Please click the link below to update and resubmit your formalities:</p>
+<a href="${esc(joiningUrl)}" class="btn">Update Formalities</a>`,
+  }),
+  text: `Hi ${candidateName}, HR has requested changes to your joining formalities. Please update at: ${joiningUrl}`,
+});
+
+exports.joiningRejected = ({ candidateName, jobTitle, remarks }) => ({
+  subject: `[${co()}] Joining Formalities — Important Update`,
+  html: layout({
+    title: 'Joining Formalities Status Update',
+    color: '#dc2626',
+    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
+<p>We regret to inform you that your joining formalities for <strong>${esc(jobTitle)}</strong> could not be processed.</p>
+${remarks ? `<div class="info-box"><p style="margin:0;color:#374151">${esc(remarks)}</p></div>` : ''}
+<p>Please contact HR for further information.</p>`,
+  }),
+  text: `Hi ${candidateName}, there is an important update regarding your joining formalities for ${jobTitle}. Please contact HR.`,
 });

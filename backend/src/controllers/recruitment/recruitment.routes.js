@@ -107,6 +107,7 @@ router.route("/offers/:id")
 
 router.put("/offers/:id/release", ADMIN_ONLY, offerCtrl.release);
 router.put("/offers/:id/respond", ADMIN_ONLY, V.validateOfferResponse, offerCtrl.respond);
+router.get("/offers/:id/download-docx", ADMIN_ONLY, offerCtrl.downloadDocx);
 
 // ── Onboarding ───────────────────────────────────────────────────────
 router.route("/onboarding")

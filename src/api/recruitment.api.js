@@ -78,6 +78,16 @@ export const releaseOffer = (id) =>
 export const respondOffer = (id, response) =>
   apiClient.put(`/recruitment/offers/${id}/respond`, { response }).then(unwrap);
 
+export const downloadOfferDocx = async (id, filename) => {
+  const res = await apiClient.get(`/recruitment/offers/${id}/download-docx`, { responseType: 'blob' });
+  const url = URL.createObjectURL(new Blob([res.data], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  }));
+  const a = document.createElement('a');
+  a.href = url; a.download = filename || `Offer_Letter_${id}.docx`; a.click();
+  URL.revokeObjectURL(url);
+};
+
 // ─────────────────────────────────────────────────────────────────────
 // ONBOARDING
 // ─────────────────────────────────────────────────────────────────────

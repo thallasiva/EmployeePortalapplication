@@ -609,7 +609,7 @@ function InterviewHistory({ candidateId, role, candidateStatus, onMoveToNextRoun
   const [loading, setLoading] = useState(false);
   const [cs, setCs]           = useState({});
   const canComment  = role === 4;
-  const canMoveNext = (role === 1 || role === 4 || role === 5) && !NO_NEXT_STATUSES.includes(candidateStatus);
+  const canMoveNext = (role === 1 || role === 3 || role === 5) && !NO_NEXT_STATUSES.includes(candidateStatus);
 
   useEffect(() => {
     if (!candidateId) return;
@@ -762,7 +762,8 @@ export default function CandidatesPage({ role }) {
   const tableRef = useRef(null);
 
   const isAdmin     = role === 1;
-  const isTL        = role === 3 || role === 4;   // Reporting Manager + Recruiter Team Lead
+  const isTL        = role === 3;                 // Reporting Manager only — can push to next round
+  const isHRMgr     = role === 4;                 // HR Manager — shortlist only, no interviews/offers
   const isRecruiter = role === 5;
 
   useEffect(() => {
@@ -890,13 +891,7 @@ export default function CandidatesPage({ role }) {
             Shortlist
           </button>
         )}
-        {/* Admin only: release offer directly from list */}
-        {row.status === "Shortlisted" && isAdmin && (
-          <button onClick={e => { e.stopPropagation(); updateStatus(row.candidate_id, "Offer Released"); }}
-            className="text-[11px] font-bold px-2.5 py-1 bg-emerald-600 text-white border-0 rounded-md cursor-pointer whitespace-nowrap">
-            Release Offer
-          </button>
-        )}
+        {/* Release Offer removed from candidate list — handled via Offers tab */}
         {/* Reporting Manager: Next Round inline — only when last interview = Selected and not terminal */}
         {isTL && row.last_interview_feedback === "Selected" && !NO_NEXT_STATUSES.includes(row.status) && (
           <button onClick={e => { e.stopPropagation(); updateStatus(row.candidate_id, "Schedule Interview"); }}
@@ -990,9 +985,17 @@ export default function CandidatesPage({ role }) {
       <Modal open={!!detail} onClose={() => setDetail(null)} title="Candidate Profile" width={680}
         footer={
           <div className="flex items-center gap-2.5 w-full">
-            {!isRecruiter && (
+            {/* Status dropdown: only Recruiter (5) and Reporting Manager (3) can change status via dropdown */}
+            {isRecruiter && (
               <div className="flex-1">
-                <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)} options={STATUS_OPTS.map(s => ({ value: s, label: s }))} />
+                <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)}
+                  options={["Work in Progress","Schedule Interview","Shortlisted"].map(s => ({ value: s, label: s }))} />
+              </div>
+            )}
+            {isTL && (
+              <div className="flex-1">
+                <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)}
+                  options={STATUS_OPTS.map(s => ({ value: s, label: s }))} />
               </div>
             )}
             {isRecruiter && detail?.status === "Schedule Interview" && (

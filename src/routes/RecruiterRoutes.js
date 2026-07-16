@@ -22,16 +22,18 @@ const RecruiterRoutes = () => {
   return (
     <Routes>
       <Route index element={<Navigate to="recruitment?page=dashboard" replace />} />
-      <Route path="recruitment"            element={<Page><Recruitment /></Page>} />
+      <Route path="recruitment"        element={<Page><Recruitment /></Page>} />
       <Route path="recruitment/create-new" element={<Page><CreateJobPage /></Page>} />
-      {/* Team management routes — Recruiter Team Lead only */}
+
+      {/* Team Lead only — team management */}
       {isTL && (
         <>
-          <Route path="team/overview"    element={<Page><RecruiterTeamOverview /></Page>} />
-          <Route path="team/leave"       element={<Page><RecruiterTeamLeave /></Page>} />
-          <Route path="team/attendance"  element={<Page><RecruiterTeamAttendance /></Page>} />
+          <Route path="team"            element={<Page><RecruiterTeamOverview /></Page>} />
+          <Route path="team/leave"      element={<Page><RecruiterTeamLeave /></Page>} />
+          <Route path="team/attendance" element={<Page><RecruiterTeamAttendance /></Page>} />
         </>
       )}
+
       <Route path="*" element={<Navigate to="recruitment?page=dashboard" replace />} />
     </Routes>
   );

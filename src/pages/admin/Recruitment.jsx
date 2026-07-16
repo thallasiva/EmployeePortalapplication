@@ -42,12 +42,11 @@ const TABS = {
     { key: "offers",    label: "Offers",      icon: FileCheck },
     { key: "onboarding",label: "Onboarding",  icon: CheckSquare },
   ],
-  // HR Manager / Recruiter Team Lead — pipeline management (no Offers/Onboarding)
+  // HR Manager (role 4) — shortlist only: no Interviews, Offers or Onboarding tabs
   4: [
     { key: "dashboard", label: "Dashboard",  icon: LayoutDashboard },
     { key: "jobs",      label: "Jobs",        icon: Briefcase },
     { key: "candidates",label: "Candidates",  icon: Users },
-    { key: "interviews",label: "Interviews",  icon: CalendarCheck },
   ],
   // Recruiter — own tasks only
   5: [

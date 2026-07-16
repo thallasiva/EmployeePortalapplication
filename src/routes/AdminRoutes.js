@@ -40,7 +40,8 @@ const AdminPayrollSetup = lazy(() => import("../pages/admin/AdminPayrollSetup"))
 const AdminWorkflowDelegation = lazy(() => import("../pages/admin/AdminWorkflowDelegation"));
 const Recruitment = lazy(() => import("../pages/admin/Recruitment"));
 const CreateJobPage = lazy(() => import("../pages/admin/recruitment/CreateJobPage"));
-const RoleManagement = lazy(() => import("../pages/admin/RoleManagement"));
+const RoleManagement      = lazy(() => import("../pages/admin/RoleManagement"));
+const JoiningVerification = lazy(() => import("../pages/admin/JoiningVerification"));
 
 const Page = LazyPage;
 
@@ -87,7 +88,9 @@ const AdminRoutes = () =>
       <Route path="workflow-delegation" element={<Page><AdminWorkflowDelegation /></Page>} />
       <Route path="recruitment" element={<Page><Recruitment /></Page>} />
       <Route path="recruitment/create-new" element={<Page><CreateJobPage /></Page>} />
-      <Route path="role-management" element={<Page><RoleManagement /></Page>} />
+      <Route path="role-management"       element={<Page><RoleManagement /></Page>} />
+      <Route path="joining-verification"  element={<Page><JoiningVerification /></Page>} />
+      <Route path="*" element={<Navigate to="" replace />} />
     </Routes>
   );
 };

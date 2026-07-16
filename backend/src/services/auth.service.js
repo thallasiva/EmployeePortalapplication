@@ -103,15 +103,6 @@ async function login({ email, password, ip, userAgent }) {
     return { mfaRequired: true, mfaTempToken };
   }
 
-  // Send login alert email (fire-and-forget)
-  notify.loginAlert({
-    name:      [userRow.first_name, userRow.last_name].filter(Boolean).join(' '),
-    email:     userRow.email,
-    time:      new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
-    ip:        ip        || 'Unknown',
-    device:    userAgent || 'Unknown device',
-  });
-
   return issueTokens(userRow);
 }
 

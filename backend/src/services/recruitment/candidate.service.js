@@ -23,6 +23,22 @@ class CandidateService extends BaseService {
     return rows[0] ?? {};
   }
 
+  /** Fetch recruiter's own email + TL email in one parallel call */
+  async _getRecruiterContacts(recruiterId) {
+    if (!recruiterId) return {};
+    const [recRows, tl] = await Promise.all([
+      callProcedure('sp_rec_get_recruiter_notification_targets(?)', [JSON.stringify([recruiterId])])
+        .then((r) => (r[0] ?? [])[0] ?? {}),
+      this._getRecruiterTL(recruiterId),
+    ]);
+    return {
+      recruiterEmail: recRows.email || '',
+      recruiterName:  recRows.name  || '',
+      tlEmail:        tl.tl_email       || '',
+      tlName:         tl.tl_name        || '',
+    };
+  }
+
   async list({ jobReqId, status, recruiterId, search, roleId, recEmpId, limit = 20, offset = 0 } = {}) {
     const results = await callProcedure(
       "sp_rec_list_candidates(?, ?, ?, ?, ?, ?, ?, ?)",
@@ -66,44 +82,73 @@ class CandidateService extends BaseService {
     );
     const row = (results[0] ?? [])[0];
 
-    // Acknowledge application receipt (fire-and-forget)
-    if (data.email && data.name) {
-      notify.applicationAcknowledgment({
-        candidateEmail: data.email,
-        candidateName:  data.name,
-        jobTitle:       row?.job_title || row?.position_name || '',
-      });
+    // Step 2: Notify HR Manager (TL) when recruiter submits a new candidate
+    if (row && data.recruiterId) {
+      const candidateName = row.name || data.name || 'Candidate';
+      const jobTitle      = row.job_title || '';
+      const candidateCode = row.candidate_code || '';
+      this._getRecruiterTL(data.recruiterId).then((tl) => {
+        if (tl.tl_email) {
+          notify.candidateSubmittedToHR({
+            hrEmail:       tl.tl_email,
+            hrName:        tl.tl_name        || 'HR Manager',
+            recruiterName: tl.recruiter_name  || 'Recruiter',
+            candidateName,
+            jobTitle,
+            candidateCode,
+          });
+        }
+      }).catch(() => {});
     }
+
     return row;
   }
 
   async updateStatus(candidateId, status, updatedBy, ip) {
-    const results = await callProcedure(
+    // Run the update (returns minimal: candidate_id, candidate_code, name, status only)
+    await callProcedure(
       "sp_rec_update_candidate_status(?, ?, ?, ?)",
       [candidateId, status, updatedBy, ip]
     );
-    const row = (results[0] ?? [])[0];
 
-    if (row && row.email) {
-      const name      = row.name || row.candidate_name || 'Candidate';
-      const jobTitle  = row.job_title || row.position_name || '';
-      const s         = (status || '').toLowerCase();
-      const isShort   = s === 'shortlisted' || s === 'selected';
-      const isReject  = s === 'rejected' || s === 'not selected';
+    // Fetch full candidate so we have email, job_title, recruiter_id for notifications
+    const fullResults = await callProcedure('sp_rec_get_candidate(?)', [candidateId]);
+    const row = (fullResults[0] ?? [])[0];
 
-      // Notify candidate
-      if (isShort) notify.candidateShortlisted({ candidateEmail: row.email, candidateName: name, jobTitle });
-      else if (isReject) notify.candidateRejected({ candidateEmail: row.email, candidateName: name, jobTitle });
+    if (row) {
+      const name        = row.name || 'Candidate';
+      const jobTitle    = row.job_title || '';
+      const email       = row.email || '';
+      const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
+      const s           = (status || '').toLowerCase();
+      const isShort     = s === 'shortlisted' || s === 'selected';
+      const isReject    = s === 'rejected' || s === 'not selected';
 
-      // Notify Recruiter Manager (TL) about team activity
-      if (isShort || isReject) {
-        const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
-        this._getRecruiterTL(recruiterId).then((tl) => {
-          if (tl.tl_email) {
+      // Notify candidate on shortlist / rejection
+      if (email) {
+        if (isShort)   notify.candidateShortlisted({ candidateEmail: email, candidateName: name, jobTitle });
+        else if (isReject) notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
+      }
+
+      // Steps 3 & 6: Notify Recruiter of status change; also TL on shortlist/rejection
+      if (recruiterId) {
+        this._getRecruiterContacts(recruiterId).then(({ recruiterEmail, recruiterName, tlEmail, tlName }) => {
+          // Notify recruiter of every status change
+          if (recruiterEmail) {
+            notify.candidateStatusToRecruiter({
+              recruiterEmail,
+              recruiterName: recruiterName || 'Recruiter',
+              candidateName: name,
+              jobTitle,
+              status,
+            });
+          }
+          // Notify TL on shortlist / rejection
+          if (tlEmail && (isShort || isReject)) {
             notify.tlCandidateUpdate({
-              tlEmail:       tl.tl_email,
-              tlName:        tl.tl_name       || 'Team Lead',
-              recruiterName: tl.recruiter_name || 'Recruiter',
+              tlEmail,
+              tlName:        tlName         || 'Team Lead',
+              recruiterName: recruiterName  || 'Recruiter',
               candidateName: name,
               jobTitle,
               status: isShort ? 'Shortlisted' : 'Rejected',
@@ -111,7 +156,17 @@ class CandidateService extends BaseService {
           }
         }).catch(() => {});
       }
+
+      // Step 8: Notify Admin when candidate is Selected
+      if (s === 'selected') {
+        notify.candidateSelectedAdmin({
+          candidateName: name,
+          jobTitle,
+          recruiterName: row.recruiter_name || 'Recruiter',
+        });
+      }
     }
+
     return row;
   }
 }

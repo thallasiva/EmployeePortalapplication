@@ -7,9 +7,9 @@ const { getPagination, buildMeta } = require('../utils/pagination');
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status, leave_type_id, department_id } = req.query;
-  // Reporting Manager (role 3) and Recruiter Team Lead (role 4) see only their direct reports.
-  // Admins see everything.
-  const isTeamManager = req.user.roleId === 3 || req.user.roleId === 4 || req.user.roleName === 'Reporting Manager';
+  // Reporting Manager (role 3) sees only their direct reports.
+  // Admin (role 1) and HR Manager / Recruiter Lead (role 4) see all leave requests.
+  const isTeamManager = req.user.roleId === 3 || req.user.roleName === 'Reporting Manager';
   const reporting_to = isTeamManager ? req.user.employeeId : undefined;
   const { rows, total } = await leaveRequestService.list({
     employee_id, status, leave_type_id, department_id, reporting_to, limit, offset,
@@ -100,6 +100,6 @@ const accrueEarnedLeave = asyncHandler(async (req, res) => {
 
 module.exports = {
   list, myRequests, getOne, apply, review, cancel,
-  balances, allBalances, adjustBalance, initializeYear, leaveSummary,
-  accrueEarnedLeave,
+  balances, allBalances, adjustBalance,
+  initializeYear, leaveSummary, accrueEarnedLeave,
 };

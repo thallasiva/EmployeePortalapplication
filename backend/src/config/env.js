@@ -41,8 +41,14 @@ module.exports = {
     pass: required('SMTP_PASS', ''),
     from: required('SMTP_FROM', 'HRMS <no-reply@hrms.local>'),
     adminAlert: required('EMAIL_ADMIN_ALERT', ''),
-    companyName: required('COMPANY_NAME', 'HRMS'),
-    frontendUrl: required('FRONTEND_URL', 'http://localhost:3000'),
+    companyName:    required('COMPANY_NAME', 'HRMS'),
+    companyAddress: required('COMPANY_ADDRESS', ''),
+    companyPhone:   required('COMPANY_PHONE', ''),
+    companyCIN:     required('COMPANY_CIN', ''),
+    companyEmail:   required('COMPANY_EMAIL', ''),
+    companyReportTo:required('COMPANY_REPORT_TO', ''),
+    logoPath:       required('COMPANY_LOGO_PATH', ''),
+    frontendUrl:    required('FRONTEND_URL', 'http://localhost:3000'),
   },
 
   redis: {

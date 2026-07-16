@@ -162,6 +162,79 @@ app.get('/api/health/email', async (req, res) => {
   }
 });
 
+// ── Test email send (dev/debug only) ───────────────────────────────────────
+// ── Test email send (dev/debug only) ───────────────────────────────────────
+app.post('/api/health/email/send-test', async (req, res) => {
+  try {
+    const { sendMailNow } = require('./services/email.service');
+    const to = req.body.to || 'test@example.com';
+    const result = await sendMailNow({
+      to,
+      subject: 'HRMS Test Email',
+      html: '<p>This is a test email from your HRMS system. SMTP delivery confirmed.</p>',
+      text:  'This is a test email from your HRMS system. SMTP is working correctly.',
+    });
+    res.status(result.sent ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ sent: false, error: err.message });
+  }
+});
+
+// ── GET test email (browser-friendly, dev/debug only) ─────────────────────
+app.get('/api/health/email/send-test', async (req, res) => {
+  try {
+    const { sendMailNow } = require('./services/email.service');
+    const to = req.query.to || 'pavan@yopmail.com';
+    const result = await sendMailNow({
+      to,
+      subject: 'HRMS Test Email',
+      html: '<p>This is a test email from your HRMS system. SMTP delivery confirmed.</p>',
+      text:  'HRMS test email -- SMTP delivery confirmed.',
+    });
+    res.status(result.sent ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ sent: false, error: err.message });
+  }
+});
+
+// ── GET test: PDF generation + email attachment (dev/debug only) ───────────
+app.get('/api/health/email/send-pdf-test', async (req, res) => {
+  try {
+    const { sendMailNow } = require('./services/email.service');
+    const { generateOfferLetterPdf } = require('./utils/offerLetterPdf');
+    const to = req.query.to || 'pavan@yopmail.com';
+
+    const pdfBuffer = await generateOfferLetterPdf({
+      candidateName: 'Test Candidate',
+      jobTitle: 'Software Engineer',
+      offerCode: 'TEST/001',
+      dateOfJoining: new Date().toISOString(),
+      ctc: 3245438,
+      ctcInWords: 'Thirty Two Lakh Forty Five Thousand Four Hundred Thirty Eight Rupees Only',
+      basic: 1800000, hra: 720000, telephoneAllowance: 36000,
+      specialAllowance: 165438, grossSalary: 2721438,
+      pfContribution: 216000, statutoryBonus: 46250,
+      gratuity: 86580, esi: 0,
+    });
+
+    const result = await sendMailNow({
+      to,
+      subject: 'HRMS -- Offer Letter PDF Test',
+      html: '<p>Test email with PDF attachment. If you see this email with an attached PDF, the system is working correctly.</p>',
+      text: 'Test email with PDF attachment.',
+      attachments: [{ filename: 'Offer_Letter_TEST.pdf', content: pdfBuffer, contentType: 'application/pdf' }],
+    });
+
+    res.status(result.sent ? 200 : 500).json({
+      ...result,
+      pdfSize: pdfBuffer.length,
+      attachmentIncluded: true,
+    });
+  } catch (err) {
+    res.status(500).json({ sent: false, error: err.message, stack: err.stack?.split('\n').slice(0,5) });
+  }
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api", routes);
 
