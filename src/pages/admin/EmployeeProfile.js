@@ -110,7 +110,7 @@ export default function EmployeeProfile() {
           placeholder="Search employees…"
           value={search}
           onChange={(e) => setSearch(e.target.value)} />
-        
+
       </div>
 
       {loading ?

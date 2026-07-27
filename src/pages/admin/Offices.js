@@ -1,17 +1,17 @@
 import React from 'react';
 import { avatarDataUri } from '../../lib/placeholders';
 
-const Offices = ({employees}) =>
+const Offices = ({ employees }) =>
 {
-    return (
-        <div>
+  return (
+    <div>
             <div className="space-y-6">
-                {/* Create Office */}
+                {}
                 <div className="bg-white p-5 rounded-xl shadow flex gap-4 items-center">
                     <input
-                        placeholder="Office Name"
-                        className="flex-1 border rounded px-3 py-2"
-                    />
+            placeholder="Office Name"
+            className="flex-1 border rounded px-3 py-2" />
+
                     <button className="bg-orange-500 text-white px-5 py-2 rounded-lg">
                         Create Office
                     </button>
@@ -20,7 +20,7 @@ const Offices = ({employees}) =>
                     </button>
                 </div>
 
-                {/* Office Details */}
+                {}
                 <div className="bg-white rounded-xl shadow p-5">
                     <div className="flex justify-between items-center mb-4">
                         <div>
@@ -30,20 +30,20 @@ const Offices = ({employees}) =>
                         <button className="text-brand">✏️</button>
                     </div>
 
-                    {/* Members */}
+                    {}
                     <div className="flex items-center justify-between border rounded p-3 mb-4">
                         <div className="flex items-center gap-3">
                             <span className="text-sm">Members</span>
                             <div className="flex -space-x-2">
-                                {[1, 2, 3, 4, 5].map(i => (
-                                    <img key={i} src={avatarDataUri(i)} className="w-8 h-8 rounded-full border" alt="" />
-                                ))}
+                                {[1, 2, 3, 4, 5].map((i) =>
+                <img key={i} src={avatarDataUri(i)} className="w-8 h-8 rounded-full border" alt="" />
+                )}
                             </div>
                         </div>
                         <button className="bg-gray-200 px-2 py-1 rounded">^</button>
                     </div>
 
-                    {/* Table */}
+                    {}
                     <table className="w-full text-sm">
                         <thead className="bg-gray-100">
                             <tr>
@@ -56,8 +56,8 @@ const Offices = ({employees}) =>
                             </tr>
                         </thead>
                         <tbody>
-                            {employees.map((emp, i) => (
-                                <tr key={i} className="border-t">
+                            {employees.map((emp, i) =>
+              <tr key={i} className="border-t">
                                     <td className="p-3 flex items-center gap-2">
                                         <img src={avatarDataUri(i + 1)} className="w-8 h-8 rounded-full" alt="" />
                                         {emp.name}
@@ -77,13 +77,13 @@ const Offices = ({employees}) =>
                                         </select>
                                     </td>
                                 </tr>
-                            ))}
+              )}
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    )
-}
+        </div>);
 
-export default Offices
+};
+
+export default Offices;

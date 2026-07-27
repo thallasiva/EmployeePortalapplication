@@ -2,32 +2,32 @@
 
 const { sendMail } = require('./email.service');
 
-/**
- * Sends a Teams interview invitation email to the candidate.
- *
- * @param {{
- *   candidateName: string,
- *   candidateEmail: string,
- *   interviewDate: string,      // "2025-08-01"
- *   interviewTime: string,      // "10:00"
- *   durationMinutes: number,
- *   level: string,              // "Round 1"
- *   interviewType: string,      // "Teams"
- *   interviewer: string,
- *   jobTitle: string,
- *   joinUrl: string,
- *   recruiterName: string,
- * }} data
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function sendInterviewInvite(data)
 {
   const {
     candidateName, candidateEmail,
     interviewDate, interviewTime, durationMinutes,
-    level, interviewer, jobTitle, joinUrl, recruiterName,
+    level, interviewer, jobTitle, joinUrl, recruiterName
   } = data;
 
-  // Compute end time for display
+
   const endTime = (() =>
   {
     if (!interviewTime || !durationMinutes) return null;
@@ -37,12 +37,12 @@ async function sendInterviewInvite(data)
   })();
 
   const formattedDate = new Date(interviewDate).toLocaleDateString('en-IN', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  const durationLabel = durationMinutes < 60
-    ? `${durationMinutes} minutes`
-    : `${durationMinutes / 60} hour${durationMinutes > 60 ? 's' : ''}`;
+  const durationLabel = durationMinutes < 60 ?
+  `${durationMinutes} minutes` :
+  `${durationMinutes / 60} hour${durationMinutes > 60 ? 's' : ''}`;
 
   const subject = `Interview Invitation — ${level} | ${jobTitle}`;
 

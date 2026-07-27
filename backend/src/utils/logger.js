@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+
 const { env } = require('../config/env');
 
 const logger = {
@@ -7,7 +7,7 @@ const logger = {
   error: (...args) => console.error(`[ERROR]`, ...args),
   debug: (...args) => {
     if (env !== 'production') console.debug(`[DEBUG]`, ...args);
-  },
+  }
 };
 
 module.exports = logger;

@@ -5,13 +5,13 @@ export default function Leave()
   const [open, setOpen] = useState(false);
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
         <span className="text-gray-500">Home / Leave</span>
         <h2 className="font-semibold">Leave</h2>
       </div>
 
-      {/* Top Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl shadow">
           <h3 className="font-semibold" onClick={() => setOpen(true)}>Focus Technologies</h3>
@@ -25,7 +25,7 @@ export default function Leave()
           <div>
 
 
-          {open && (
+          {open &&
             <div className="fixed inset-0 flex items-center justify-center bg-black/50">
               <div className="bg-white w-[400px] rounded-lg p-5 shadow-lg">
 
@@ -46,11 +46,11 @@ export default function Leave()
 
               </div>
             </div>
-          )}
+            }
         </div>
         </div>
 
-        
+
 
         <div className="bg-white p-5 rounded-xl shadow flex items-center gap-3">
           <img className="w-12 h-12 rounded-full" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' rx='20' fill='%23f18200'/%3E%3Ctext x='20' y='24' text-anchor='middle' fill='white' font-size='14'%3EU%3C/text%3E%3C/svg%3E" alt="Jenni Sims" />
@@ -63,7 +63,7 @@ export default function Leave()
         </div>
       </div>
 
-      {/* Apply Leave */}
+      {}
       <div className="bg-white p-6 rounded-xl shadow">
         <h3 className="font-semibold mb-4">Apply Leaves</h3>
 
@@ -117,7 +117,7 @@ export default function Leave()
         </div>
       </div>
 
-      {/* Leave Summary */}
+      {}
       <div className="bg-white p-5 rounded-xl shadow">
         <h3 className="font-semibold mb-3">Leave Details</h3>
         <table className="w-full text-sm">
@@ -146,7 +146,7 @@ export default function Leave()
         </table>
       </div>
 
-      {/* Leave History */}
+      {}
       <div className="bg-white p-5 rounded-xl shadow">
         <h3 className="font-semibold mb-3">Leave History</h3>
         <table className="w-full text-sm">
@@ -164,8 +164,8 @@ export default function Leave()
             </tr>
           </thead>
           <tbody>
-            {[1, 2, 3].map((i) => (
-              <tr key={i} className="border-t">
+            {[1, 2, 3].map((i) =>
+            <tr key={i} className="border-t">
                 <td className="p-2">Sean Black</td>
                 <td className="p-2">Parental Leave</td>
                 <td className="p-2">05 Dec 2019</td>
@@ -176,10 +176,10 @@ export default function Leave()
                 <td className="p-2"><span className="text-brand border border-brand px-2 rounded">Approved</span></td>
                 <td className="p-2"><button className="text-red-500 border px-2 rounded">Delete</button></td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-    </div>
-  );
+    </div>);
+
 }

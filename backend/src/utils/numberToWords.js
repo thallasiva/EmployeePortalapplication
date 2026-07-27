@@ -1,7 +1,7 @@
 const ONES = [
-  '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
-  'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen',
-];
+'', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
 const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
 
 function twoDigits(n) {
@@ -20,11 +20,11 @@ function threeDigits(n) {
   return parts.join(' ');
 }
 
-/**
- * Converts a non-negative number into the Indian numbering system
- * (Crore / Lakh / Thousand) words, e.g. 132820 -> "One Lakh Thirty Two
- * Thousand Eight Hundred Twenty".
- */
+
+
+
+
+
 function numberToWordsIndian(value) {
   let num = Math.round(Math.abs(Number(value) || 0));
   if (num === 0) return 'Zero';
@@ -45,10 +45,10 @@ function numberToWordsIndian(value) {
   return parts.join(' ');
 }
 
-/**
- * Formats an amount as "Rupees <words> Only" for the payslip's
- * net-pay-in-words line.
- */
+
+
+
+
 function rupeesInWords(value) {
   return `Rupees ${numberToWordsIndian(value)} Only`;
 }

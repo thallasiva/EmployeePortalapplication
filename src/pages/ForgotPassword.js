@@ -24,8 +24,8 @@ const ForgotPassword = () => {
     try {
       const result = await forgotPassword(email.trim());
       successToast(result?.message || "If that email exists, a reset link has been sent");
-      // In dev mode the API returns the reset token directly so the flow can
-      // be completed without an email service.
+
+
       if (result?.resetToken) {
         setToken(result.resetToken);
       }
@@ -74,8 +74,8 @@ const ForgotPassword = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-md p-8 md:p-10">
-        {step === 1 ? (
-          <form onSubmit={handleRequestReset}>
+        {step === 1 ?
+        <form onSubmit={handleRequestReset}>
             <h2 className="text-xl font-semibold text-center text-slate-800">Forgot password</h2>
             <p className="text-center text-sm text-slate-500 mb-8 mt-1">
               Enter your account email and we&apos;ll send you a reset link
@@ -84,24 +84,24 @@ const ForgotPassword = () => {
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
-                type="email"
-                className="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-              />
+              type="email"
+              className="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com" />
+
             </div>
 
             <button
-              type="submit"
-              className="w-full btn-primary py-2.5 text-base disabled:opacity-60"
-              disabled={submitting}
-            >
+            type="submit"
+            className="w-full btn-primary py-2.5 text-base disabled:opacity-60"
+            disabled={submitting}>
+
               {submitting ? "Sending..." : "Send reset link"}
             </button>
-          </form>
-        ) : (
-          <form onSubmit={handleResetPassword}>
+          </form> :
+
+        <form onSubmit={handleResetPassword}>
             <h2 className="text-xl font-semibold text-center text-slate-800">Reset password</h2>
             <p className="text-center text-sm text-slate-500 mb-8 mt-1">
               Enter the reset token from your email and choose a new password
@@ -110,41 +110,41 @@ const ForgotPassword = () => {
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Reset token</label>
               <input
-                type="text"
-                className="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder="Paste the reset token"
-              />
+              type="text"
+              className="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Paste the reset token" />
+
             </div>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
               <PasswordInput
-                inputClassName="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              inputClassName="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)} />
+
             </div>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
               <PasswordInput
-                inputClassName="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              inputClassName="w-full border rounded-lg px-4 py-2 text-base input-focus-brand"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)} />
+
             </div>
 
             <button
-              type="submit"
-              className="w-full btn-primary py-2.5 text-base disabled:opacity-60"
-              disabled={submitting}
-            >
+            type="submit"
+            className="w-full btn-primary py-2.5 text-base disabled:opacity-60"
+            disabled={submitting}>
+
               {submitting ? "Resetting..." : "Reset password"}
             </button>
           </form>
-        )}
+        }
 
         <p className="text-center text-sm text-gray-500 mt-6">
           <button type="button" className="link-brand font-medium" onClick={() => navigate("/login")}>
@@ -152,8 +152,8 @@ const ForgotPassword = () => {
           </button>
         </p>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ForgotPassword;

@@ -75,7 +75,7 @@ export default function TeamAvailabilityCalendar({
             onClick={() => shiftMonth(-1)}
             className="p-1 rounded hover:bg-gray-100"
             aria-label="Previous month">
-            
+
             <ChevronLeft size={18} />
           </button>
           <button
@@ -83,7 +83,7 @@ export default function TeamAvailabilityCalendar({
             onClick={() => shiftMonth(1)}
             className="p-1 rounded hover:bg-gray-100"
             aria-label="Next month">
-            
+
             <ChevronRight size={18} />
           </button>
         </div>
@@ -118,12 +118,12 @@ export default function TeamAvailabilityCalendar({
           "Full team available" :
           `${cell.count} employee${cell.count > 1 ? "s" : ""} on leave`
           }>
-          
+
               {cell.day}
               <span
             className={joinClasses("admin-cal-dot", cssClass(
               { background: AVAILABILITY_DOT[cell.status] }))} />
-          
+
               {cell.count > 0 &&
           <span className="team-avail-cal__count">{cell.count}</span>
           }
@@ -157,7 +157,7 @@ export default function TeamAvailabilityCalendar({
         <LeaveEmployeeDetailTable
           rows={selectedDayInfo.employees}
           emptyMessage="Full team available on this date. No approved leave." />
-        
+
       </div>
     </div>);
 

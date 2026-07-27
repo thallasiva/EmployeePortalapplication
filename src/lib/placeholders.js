@@ -1,4 +1,4 @@
-/** Local placeholders — no external HTTP requests */
+
 
 const svgAvatar = (letter = "U", color = "#f18200", size = 40) => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${size / 2}" fill="${color}"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="system-ui,sans-serif" font-size="${Math.round(size * 0.35)}" font-weight="600">${letter}</text></svg>`;

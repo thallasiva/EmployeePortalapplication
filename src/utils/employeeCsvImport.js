@@ -1,6 +1,6 @@
 import { EMPLOYEE_FIELD_MAP, parseBooleanFlag } from "./employeeFieldMap";
 
-/** Triggers a browser download of the employee CSV import template. */
+
 export function downloadEmployeeCsvTemplate(filename = "employee_import_template.csv") {
   const a = document.createElement("a");
   a.href = "/templates/employee_import_template.csv";
@@ -53,13 +53,13 @@ export function parseEmployeeCsv(text) {
   return rows;
 }
 
-/**
- * Maps a parsed CSV row (using the HR employee data template headers) into
- * the shape expected by the Employee API: a flat `employee` object plus
- * nested `contactInfo` / `bankDetails` objects. `managerEmployeeNumber`
- * carries the raw "Manager Employee Number" value so the caller can resolve
- * it to a `reporting_to` employee_id by looking up emp_code.
- */
+
+
+
+
+
+
+
 export function mapCsvRowToEmployee(row) {
   const employee = {};
   const contactInfo = {};
@@ -94,7 +94,7 @@ export function mapCsvRowToEmployee(row) {
     }
   }
 
-  // "Employee Name" -> first_name / last_name
+
   const fullName = (row.employee_name || "").trim();
   if (fullName) {
     const parts = fullName.split(/\s+/);
@@ -102,7 +102,7 @@ export function mapCsvRowToEmployee(row) {
     employee.last_name = parts.slice(1).join(" ");
   }
 
-  // Fallbacks for legacy/loose CSV headers
+
   employee.first_name = employee.first_name || row.first_name || row.firstname || "";
   employee.last_name = employee.last_name || row.last_name || row.lastname || "";
   employee.email = employee.email || row.email || "";
@@ -110,9 +110,9 @@ export function mapCsvRowToEmployee(row) {
   employee.emp_job_title = row.emp_job_title || row.job_title || "Employee";
   employee.department_id = row.department_id || row.department || "";
   employee.employee_type = row.employee_type || row.employment_type || "Full-Time";
-  employee.employee_status = employee.has_left_organization
-    ? "Inactive"
-    : row.employee_status || row.status || "Active";
+  employee.employee_status = employee.has_left_organization ?
+  "Inactive" :
+  row.employee_status || row.status || "Active";
   employee.ctc = row.ctc || row.salary || row.annual_salary || "";
   employee.benefits_plan = row.benefits_plan || row.benefits || "standard";
   employee.assigned_member = row.assigned_member || row.assigned_to || "";

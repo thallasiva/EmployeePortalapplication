@@ -18,19 +18,19 @@ module.exports = {
     user: required('DB_USER', 'root'),
     password: required('DB_PASSWORD', ''),
     database: required('DB_NAME', 'hrms_db'),
-    connectionLimit: Number(required('DB_CONNECTION_LIMIT', 10)),
+    connectionLimit: Number(required('DB_CONNECTION_LIMIT', 10))
   },
 
   jwt: {
     secret: required('JWT_SECRET', 'dev_secret_change_me'),
     expiresIn: required('JWT_EXPIRES_IN', '1d'),
     refreshSecret: required('JWT_REFRESH_SECRET', 'dev_refresh_secret_change_me'),
-    refreshExpiresIn: required('JWT_REFRESH_EXPIRES_IN', '7d'),
+    refreshExpiresIn: required('JWT_REFRESH_EXPIRES_IN', '7d')
   },
 
   upload: {
     dir: required('UPLOAD_DIR', 'uploads'),
-    maxMb: Number(required('MAX_UPLOAD_MB', 10)),
+    maxMb: Number(required('MAX_UPLOAD_MB', 10))
   },
 
   email: {
@@ -41,38 +41,38 @@ module.exports = {
     pass: required('SMTP_PASS', ''),
     from: required('SMTP_FROM', 'HRMS <no-reply@hrms.local>'),
     adminAlert: required('EMAIL_ADMIN_ALERT', ''),
-    companyName:    required('COMPANY_NAME', 'HRMS'),
+    companyName: required('COMPANY_NAME', 'HRMS'),
     companyAddress: required('COMPANY_ADDRESS', ''),
-    companyPhone:   required('COMPANY_PHONE', ''),
-    companyCIN:     required('COMPANY_CIN', ''),
-    companyEmail:   required('COMPANY_EMAIL', ''),
-    companyReportTo:required('COMPANY_REPORT_TO', ''),
-    hrManagerName:  required('HR_MANAGER_NAME', ''),
-    logoPath:       required('COMPANY_LOGO_PATH', ''),
-    backendUrl:     required('BACKEND_URL', 'http://localhost:5000'),
-    frontendUrl:    required('FRONTEND_URL', 'http://localhost:3000'),
+    companyPhone: required('COMPANY_PHONE', ''),
+    companyCIN: required('COMPANY_CIN', ''),
+    companyEmail: required('COMPANY_EMAIL', ''),
+    companyReportTo: required('COMPANY_REPORT_TO', ''),
+    hrManagerName: required('HR_MANAGER_NAME', ''),
+    logoPath: required('COMPANY_LOGO_PATH', ''),
+    backendUrl: required('BACKEND_URL', 'http://localhost:5000'),
+    frontendUrl: required('FRONTEND_URL', 'http://localhost:3000')
   },
 
   redis: {
     host: required('REDIS_HOST', '127.0.0.1'),
     port: Number(required('REDIS_PORT', 6379)),
-    password: required('REDIS_PASSWORD', '') || undefined,
+    password: required('REDIS_PASSWORD', '') || undefined
   },
 
   queue: {
-    concurrency:  Number(required('EMAIL_QUEUE_CONCURRENCY', 5)),
-    maxRetries:   Number(required('EMAIL_QUEUE_MAX_RETRIES', 3)),
-    retryDelayMs: Number(required('EMAIL_QUEUE_RETRY_DELAY_MS', 5000)),
+    concurrency: Number(required('EMAIL_QUEUE_CONCURRENCY', 5)),
+    maxRetries: Number(required('EMAIL_QUEUE_MAX_RETRIES', 3)),
+    retryDelayMs: Number(required('EMAIL_QUEUE_RETRY_DELAY_MS', 5000))
   },
 
-  // 32-byte hex key for AES-256-GCM salary encryption
+
   salaryEncryptionKey: required('SALARY_ENCRYPTION_KEY', ''),
 
-  // Microsoft Graph / Teams integration
+
   azure: {
-    tenantId:        required('AZURE_TENANT_ID', ''),
-    clientId:        required('AZURE_CLIENT_ID', ''),
-    clientSecret:    required('AZURE_CLIENT_SECRET', ''),
-    organizerUserId: required('TEAMS_ORGANIZER_USER_ID', ''),
-  },
+    tenantId: required('AZURE_TENANT_ID', ''),
+    clientId: required('AZURE_CLIENT_ID', ''),
+    clientSecret: required('AZURE_CLIENT_SECRET', ''),
+    organizerUserId: required('TEAMS_ORGANIZER_USER_ID', '')
+  }
 };

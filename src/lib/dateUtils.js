@@ -1,5 +1,5 @@
-/** Fiscal year starts in April (common for IN payroll). */
-export const FISCAL_YEAR_START_MONTH = 3; // April (0-indexed)
+
+export const FISCAL_YEAR_START_MONTH = 3;
 
 export function getCurrentFiscalYearStart() {
   const now = new Date();
@@ -29,33 +29,33 @@ export function getFiscalYearRangeLabel(startYear) {
 export function getFiscalMonthColumns(fiscalYearStart) {
   const start = Number(fiscalYearStart);
   const monthNames = [
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-    "Jan",
-    "Feb",
-    "Mar",
-  ];
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+  "Jan",
+  "Feb",
+  "Mar"];
+
   const keys = [
-    "apr",
-    "may",
-    "jun",
-    "jul",
-    "aug",
-    "sep",
-    "oct",
-    "nov",
-    "dec",
-    "jan",
-    "feb",
-    "mar",
-  ];
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+  "jan",
+  "feb",
+  "mar"];
+
 
   return monthNames.map((name, index) => {
     const year = index < 9 ? start : start + 1;
@@ -66,7 +66,7 @@ export function getFiscalMonthColumns(fiscalYearStart) {
 export function formatMonthYear(date = new Date()) {
   return date.toLocaleDateString("en-GB", {
     month: "short",
-    year: "numeric",
+    year: "numeric"
   });
 }
 
@@ -109,7 +109,7 @@ export function getUserInitials(name) {
   return name.slice(0, 2).toUpperCase();
 }
 
-/** Build ISO holiday dates for a calendar year from month-day pairs. */
+
 export function holidaysForYear(year, monthDayList) {
   return monthDayList.map(({ month, day }) => {
     const m = String(month).padStart(2, "0");

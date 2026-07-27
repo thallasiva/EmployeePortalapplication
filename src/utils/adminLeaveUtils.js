@@ -1,7 +1,7 @@
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+"January", "February", "March", "April", "May", "June",
+"July", "August", "September", "October", "November", "December"];
+
 
 const MONTH_LOOKUP = MONTH_NAMES.reduce((acc, name, index) => {
   acc[name.toLowerCase()] = index;
@@ -9,7 +9,7 @@ const MONTH_LOOKUP = MONTH_NAMES.reduce((acc, name, index) => {
   return acc;
 }, {});
 
-/** Parse "28 May 2026" reliably across browsers */
+
 export function parseLeaveDate(dateStr) {
   if (!dateStr) return new Date(NaN);
   const trimmed = String(dateStr).trim();
@@ -57,7 +57,7 @@ export function getApprovedLeavesOnDate(requests, year, month, day) {
   );
 }
 
-/** Build per-day team availability from approved leave requests */
+
 export function buildLeaveCalendarDays(requests, year, month, totalEmployees = 24) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = {};
@@ -68,7 +68,7 @@ export function buildLeaveCalendarDays(requests, year, month, totalEmployees = 2
     days[d] = {
       status: availabilityFromCount(count, totalEmployees),
       count,
-      employees: onLeave.map((r) => ({ ...r, status: r.status ?? "Approved" })),
+      employees: onLeave.map((r) => ({ ...r, status: r.status ?? "Approved" }))
     };
   }
   return days;
@@ -90,7 +90,7 @@ export function buildMonthCalendarCells(year, month, calendarDays) {
       day: d,
       status: info.status,
       count: info.count,
-      employees: info.employees,
+      employees: info.employees
     });
   }
 
@@ -120,6 +120,6 @@ export function isSameMonthDay(year, month, day, date) {
   return (
     date.getFullYear() === year &&
     date.getMonth() === month &&
-    date.getDate() === day
-  );
+    date.getDate() === day);
+
 }

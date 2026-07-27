@@ -13,7 +13,7 @@ import DetailsScreen from "./EmployeeDetailsProfile";
 import { EmployeeDocument } from "./EmployeeDocument";
 import PayrollReports from "./PayrollReports";
 import ReviewForm from "./ReviewForm";
-// import SettingsForm from "./SettingsForm";
+
 import TimeOff from "./TimeOff";
 import "./adminProfile.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 
@@ -27,7 +27,7 @@ const TABS = [
 
 
 
-// Nat Soft company address
+
 const NAT_SOFT = {
   name: "Nat Soft",
   address: "Plot No. 42, Tech Park Road, Madhapur",
@@ -59,7 +59,7 @@ export default function Profile() {
       }
     }
     load();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const me = profile?.me || storedUser || {};
   const emp = profile?.emp || {};
@@ -80,25 +80,25 @@ export default function Profile() {
       case "payroll":return <PayrollReports />;
       case "timeoff":return <TimeOff />;
       case "reviews":return <ReviewForm />;
-      // case "settings":   return <SettingsForm />;
+
       default:return null;
     }
   };
 
   return (
     <div className="admin-profile">
-      {/* Breadcrumb */}
+      {}
       <div>
         <p className="admin-profile__breadcrumb">Home / Profile</p>
         <h1 className="admin-profile__page-title">My Profile</h1>
       </div>
 
-      {/* ── HERO CARD ── */}
+      {}
       <section className="admin-profile__hero">
 
-        {/* Cover banner — brand orange gradient */}
+        {}
         <div className="admin-profile__cover">
-          {/* Decorative circles */}
+          {}
           <div className={cssClass({
             position: "absolute", right: -40, top: -40,
             width: 220, height: 220, borderRadius: "50%",
@@ -115,7 +115,7 @@ export default function Profile() {
             background: "rgba(255,255,255,.05)"
           })} />
 
-          {/* Company name in cover */}
+          {}
           <div className={cssClass({
             position: "absolute", bottom: 16, right: 20,
             display: "flex", alignItems: "center", gap: 8
@@ -133,7 +133,7 @@ export default function Profile() {
           <button type="button" className="admin-profile__cover-btn">Edit Cover</button>
         </div>
 
-        {/* Identity row */}
+        {}
         <div className="admin-profile__body">
           <div className="admin-profile__identity">
             {loading ?
@@ -155,7 +155,7 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Status badges */}
+          {}
           <div className="admin-profile__badges">
             <span className={cssClass({
               display: "inline-flex", alignItems: "center", gap: 5,
@@ -175,7 +175,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* ── HEAD OFFICE ADDRESS CARD ── */}
+        {}
         <div className={cssClass({ padding: "0 1.5rem 1.5rem" })}>
           <div className={cssClass({
             display: "grid", gridTemplateColumns: "1fr auto",
@@ -185,9 +185,9 @@ export default function Profile() {
             padding: "18px 22px",
             boxShadow: "0 2px 12px rgba(241,130,0,.08)"
           })}>
-            {/* Left — office details */}
+            {}
             <div className={cssClass({ display: "flex", gap: 16, alignItems: "flex-start" })}>
-              {/* Icon block */}
+              {}
               <div className={cssClass({
                 width: 48, height: 48, borderRadius: 12, flexShrink: 0,
                 background: "linear-gradient(135deg,#f18200,#fb923c)",
@@ -198,13 +198,13 @@ export default function Profile() {
               </div>
 
               <div>
-                {/* Office label */}
+                {}
                 <div className={cssClass({ fontSize: 10, fontWeight: 800, color: "#f18200",
                   textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 3 })}>
                   Head Office
                 </div>
 
-                {/* Company name */}
+                {}
                 <div className={cssClass({
                   fontSize: 18, fontWeight: 900, color: "#111827",
                   fontFamily: "'Plus Jakarta Sans','Inter',sans-serif",
@@ -213,7 +213,7 @@ export default function Profile() {
                   {NAT_SOFT.name}
                 </div>
 
-                {/* Address */}
+                {}
                 <div className={cssClass({ display: "flex", alignItems: "flex-start", gap: 5, marginTop: 8 })}>
                   <MapPin size={13} color="#f18200" className={cssClass({ marginTop: 2, flexShrink: 0 })} />
                   <div>
@@ -228,7 +228,7 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Right — contact info */}
+            {}
             <div className={cssClass({
               display: "flex", flexDirection: "column", gap: 8,
               paddingLeft: 22, borderLeft: "1px solid #fed7aa",
@@ -269,7 +269,7 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* ── TABS ── */}
+      {}
       <nav className="admin-profile__tabs-wrap" aria-label="Profile sections">
         <div className="admin-profile__tabs">
           {TABS.map((tab) => {

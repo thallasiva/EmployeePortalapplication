@@ -3,57 +3,57 @@ import React, { useEffect, useState } from "react";
 const ScheduleInterview = ({ candidate, onSave }) =>
 {
 
-    const [form, setForm] = useState({
-        candidate: candidate?.Name || "",
-        requirement: candidate?.["Job ID"] || "",
-        interviewer: "",
-        level: "",
-        date: "",
-        time: "",
-        duration: "60 Minutes",
-        meetingLink: "",
-        notes: ""
-    });
-    useEffect(() =>
+  const [form, setForm] = useState({
+    candidate: candidate?.Name || "",
+    requirement: candidate?.["Job ID"] || "",
+    interviewer: "",
+    level: "",
+    date: "",
+    time: "",
+    duration: "60 Minutes",
+    meetingLink: "",
+    notes: ""
+  });
+  useEffect(() =>
+  {
+
+    if (candidate)
     {
 
-        if (candidate)
-        {
+      setForm((prev) => ({
 
-            setForm(prev => ({
+        ...prev,
 
-                ...prev,
+        candidate: candidate.Name,
 
-                candidate: candidate.Name,
+        requirement: candidate["Job ID"]
 
-                requirement: candidate["Job ID"]
+      }));
 
-            }));
+    }
 
-        }
+  }, [candidate]);
 
-    }, [candidate]);
-
-    return (
-        <div className="min-h-screen bg-gray-100 p-6">
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
             <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-sm p-8">
 
-                {/* Header */}
+                {}
                 <h1 className="text-4xl font-bold text-gray-900">
                     Schedule Interview
                 </h1>
 
-                {/* Two Columns */}
+                {}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
 
-                    {/* Left Card */}
+                    {}
                     <div className="border rounded-2xl p-8">
 
                         <h2 className="text-2xl font-semibold mb-8">
                             Interview Details
                         </h2>
 
-                        {/* Candidate */}
+                        {}
                         <div className="mb-6">
                             <label className="block font-medium mb-2">
                                 Candidate <span className="text-red-500">*</span>
@@ -64,7 +64,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             </select>
                         </div>
 
-                        {/* Requirement */}
+                        {}
 
                         <div className="mb-6">
                             <label className="block font-medium mb-2">
@@ -76,7 +76,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             </select>
                         </div>
 
-                        {/* Interview */}
+                        {}
 
                         <div className="mb-6">
                             <label className="block font-medium mb-2">
@@ -90,7 +90,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             </select>
                         </div>
 
-                        {/* Interviewer */}
+                        {}
 
                         <div className="mb-6">
                             <label className="block font-medium mb-2">
@@ -102,7 +102,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             </select>
                         </div>
 
-                        {/* Interview Type */}
+                        {}
 
                         <div>
 
@@ -116,19 +116,19 @@ const ScheduleInterview = ({ candidate, onSave }) =>
 
                                 <label className="flex items-center gap-3">
                                     <input
-                                        type="radio"
-                                        name="type"
-                                        className="w-5 h-5 text-blue-600"
-                                    />
+                    type="radio"
+                    name="type"
+                    className="w-5 h-5 text-blue-600" />
+
                                     Microsoft Teams
                                 </label>
 
                                 <label className="flex items-center gap-3">
                                     <input
-                                        type="radio"
-                                        name="type"
-                                        className="w-5 h-5 text-blue-600"
-                                    />
+                    type="radio"
+                    name="type"
+                    className="w-5 h-5 text-blue-600" />
+
                                     Phone Call
                                 </label>
 
@@ -139,7 +139,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
 
                     </div>
 
-                    {/* Right Card */}
+                    {}
 
                     <div className="border rounded-2xl p-8">
 
@@ -147,7 +147,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             Date & Time
                         </h2>
 
-                        {/* Date Time */}
+                        {}
 
                         <div className="grid grid-cols-2 gap-6">
 
@@ -157,9 +157,9 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                                 </label>
 
                                 <input
-                                    type="date"
-                                    className="w-full border rounded-lg h-12 px-4"
-                                />
+                  type="date"
+                  className="w-full border rounded-lg h-12 px-4" />
+
                             </div>
 
                             <div>
@@ -168,14 +168,14 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                                 </label>
 
                                 <input
-                                    type="time"
-                                    className="w-full border rounded-lg h-12 px-4"
-                                />
+                  type="time"
+                  className="w-full border rounded-lg h-12 px-4" />
+
                             </div>
 
                         </div>
 
-                        {/* Duration */}
+                        {}
 
                         <div className="grid grid-cols-2 gap-6 mt-6">
 
@@ -203,7 +203,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
 
                         </div>
 
-                        {/* Meeting Link */}
+                        {}
 
                         <div className="mt-6">
 
@@ -212,14 +212,14 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             </label>
 
                             <input
-                                type="text"
-                                placeholder="https://meet.google.com/abc-defg-hij"
-                                className="w-full border rounded-lg h-12 px-4"
-                            />
+                type="text"
+                placeholder="https://meet.google.com/abc-defg-hij"
+                className="w-full border rounded-lg h-12 px-4" />
+
 
                         </div>
 
-                        {/* Notes */}
+                        {}
 
                         <div className="mt-6">
 
@@ -228,14 +228,14 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             </label>
 
                             <textarea
-                                rows={7}
-                                placeholder="Add notes (optional)"
-                                className="w-full border rounded-lg p-4 resize-none"
-                            ></textarea>
+                rows={7}
+                placeholder="Add notes (optional)"
+                className="w-full border rounded-lg p-4 resize-none">
+              </textarea>
 
                         </div>
 
-                        {/* Buttons */}
+                        {}
 
                         <div className="flex justify-end gap-4 mt-8">
 
@@ -254,8 +254,8 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                 </div>
 
             </div>
-        </div>
-    );
+        </div>);
+
 };
 
 export default ScheduleInterview;

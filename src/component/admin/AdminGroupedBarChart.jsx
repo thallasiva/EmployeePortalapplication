@@ -29,11 +29,11 @@ function buildYTicks(yMax) {
   return ticks;
 }
 
-/**
- * Grouped bar chart for admin dashboards.
- * data: [{ label, sick, earned, ... }] or custom keys via series prop
- * series: [{ key, name, color }]
- */
+
+
+
+
+
 export default function AdminGroupedBarChart({
   title,
   subtitle,
@@ -72,7 +72,7 @@ export default function AdminGroupedBarChart({
             <div
               className={joinClasses("admin-chart__bars-area", cssClass(
                 { height, position: "relative" }))}>
-              
+
               {yTicks.slice(1, -1).map((tick) =>
               <div
                 key={tick}
@@ -88,7 +88,7 @@ export default function AdminGroupedBarChart({
                   { height: "100%" }))}
                 onMouseEnter={() => setHovered(idx)}
                 onMouseLeave={() => setHovered(null)}>
-                
+
                   {hovered === idx &&
                 <div className="admin-chart__tooltip">
                       <div className="admin-chart__tooltip-title">{row.label}</div>
@@ -97,7 +97,7 @@ export default function AdminGroupedBarChart({
                           <span
                       className={joinClasses("admin-chart__swatch", cssClass(
                         { background: s.color }))} />
-                    
+
                           {s.name}: {row[s.key] ?? 0}
                         </div>
                   )}

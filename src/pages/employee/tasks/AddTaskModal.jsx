@@ -42,7 +42,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="add-task-title">
-        
+
         <div className="tasks-modal__header">
           <h2 id="add-task-title" className="tasks-modal__title">
             Add Task
@@ -52,7 +52,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
             className="tasks-modal__close"
             onClick={onClose}
             aria-label="Close">
-            
+
             <X size={20} />
           </button>
         </div>
@@ -68,7 +68,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
               placeholder="e.g. Collect documents"
               value={taskName}
               onChange={(e) => setTaskName(e.target.value)} />
-            
+
           </div>
 
           <div className="tasks-form-row">
@@ -85,7 +85,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
               className="tasks-form-input"
               value={checklist}
               onChange={(e) => setChecklist(e.target.value)}>
-              
+
               <option>All</option>
               <option>Onboarding</option>
               <option>Offboarding</option>
@@ -102,7 +102,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
                   name="priority"
                   checked={priority === p.id}
                   onChange={() => setPriority(p.id)} />
-                
+
                   <span
                   className={joinClasses("tasks-priority-dot", cssClass(
                     {
@@ -110,7 +110,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
                       background:
                       priority === p.id ? p.color : "transparent"
                     }))} />
-                
+
                   {p.label}
                 </label>
               )}
@@ -126,7 +126,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
                 placeholder="Enter Date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)} />
-              
+
               <Calendar size={16} className="tasks-form-input-icon" />
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
               placeholder="Search"
               value={tags}
               onChange={(e) => setTags(e.target.value)} />
-            
+
           </div>
 
           <div className="tasks-form-row">
@@ -158,7 +158,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)} />
-            
+
           </div>
 
           <div className="tasks-form-row">
@@ -179,7 +179,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
             className={`tasks-btn-save ${canSave ? "tasks-btn-save--enabled" : ""}`}
             disabled={!canSave}
             onClick={handleSave}>
-            
+
             Save Changes
           </button>
         </div>

@@ -6,13 +6,13 @@ const FY_MONTH_LABELS = ["APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV",
 
 const num = (value) => Number(value || 0).toLocaleString("en-IN");
 
-/**
- * Renders the printable payslip sheet markup (header, employee/bank info,
- * earnings/deductions, net pay, TDS Details, Chapter VI-A, Income Tax
- * Deduction grid and Tax Paid Details). Shared between the on-screen
- * PayslipPrintView and the off-screen renderer used for PDF export, so the
- * downloaded PDF always matches the on-screen template.
- */
+
+
+
+
+
+
+
 export default function PayslipSheet({ data }) {
   if (!data) return null;
 
@@ -21,7 +21,7 @@ export default function PayslipSheet({ data }) {
 
   return (
     <div className="payslip-print-sheet">
-      {/* Header */}
+      {}
       <div className="payslip-print-header">
         <div>
           <h1>{company.company_name}</h1>
@@ -34,7 +34,7 @@ export default function PayslipSheet({ data }) {
         Payslip for the month of {month_name} - {year}
       </div>
 
-      {/* Employee info */}
+      {}
       <table className="payslip-print-table">
         <tbody>
           <tr>
@@ -76,7 +76,7 @@ export default function PayslipSheet({ data }) {
         </tbody>
       </table>
 
-      {/* Earnings / Deductions */}
+      {}
       <div className="payslip-print-columns">
         <table className="payslip-print-table">
           <thead>
@@ -138,13 +138,13 @@ export default function PayslipSheet({ data }) {
         </table>
       </div>
 
-      {/* Net pay */}
+      {}
       <div className="payslip-print-netpay">
         <p className="netpay-line">Net Pay for the month : {formatINR(data.net_pay)}</p>
         <p className="netpay-words">({data.net_pay_words})</p>
       </div>
 
-      {/* Employer Statutory Contributions (CTC components) */}
+      {}
       {(data.eps || data.epf || data.edli || data.esi_employer) &&
       <>
           <div className="payslip-print-section-title">Employer Statutory Contributions (CTC)</div>
@@ -190,7 +190,7 @@ export default function PayslipSheet({ data }) {
         </>
       }
 
-      {/* TDS Details */}
+      {}
       <div className="payslip-print-section-title">TDS Details</div>
       <table className="payslip-print-table">
         <thead>
@@ -213,7 +213,7 @@ export default function PayslipSheet({ data }) {
         </tbody>
       </table>
 
-      {/* Chapter VI-A */}
+      {}
       <div className="payslip-print-section-title">Deduction Under Chapter VI-A</div>
       <table className="payslip-print-table">
         <thead>
@@ -239,7 +239,7 @@ export default function PayslipSheet({ data }) {
         </tbody>
       </table>
 
-      {/* Income Tax Deduction */}
+      {}
       <div className="payslip-print-section-title">Income Tax Deduction</div>
       <div className="payslip-print-taxgrid">
         <div><span>Gross Salary</span><span>{num(incomeTax.grossSalary)}</span></div>
@@ -254,7 +254,7 @@ export default function PayslipSheet({ data }) {
         <div><span>Monthly Projected Tax</span><span>{num(incomeTax.monthlyProjectedTax)}</span></div>
       </div>
 
-      {/* Tax Paid Details */}
+      {}
       <div className="payslip-print-section-title">Tax Paid Details</div>
       <table className="payslip-print-monthgrid">
         <thead>

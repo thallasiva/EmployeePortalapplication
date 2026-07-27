@@ -4,15 +4,15 @@ import { Lock } from "lucide-react";
 import { getAppraisalCycle } from "../../api/appraisal.api";
 
 const BASE_TABS = [
-  { label: "Team Overview", to: "/manager" },
-  { label: "Team Attendance", to: "/manager/team/attendance" },
-  { label: "Leave Requests", to: "/manager/team/leave" },
-  { label: "Regularization", to: "/manager/team/regularizations" },
-  { label: "Timesheets", to: "/manager/timesheets" },
-  // { label: "Helpdesk", to: "/manager/helpdesk" },
-  { label: "Resignations", to: "/manager/team/resignations" },
-  { label: "Performance Appraisal", to: "/manager/team/performance", appraisalGated: true },
-];
+{ label: "Team Overview", to: "/manager" },
+{ label: "Team Attendance", to: "/manager/team/attendance" },
+{ label: "Leave Requests", to: "/manager/team/leave" },
+{ label: "Regularization", to: "/manager/team/regularizations" },
+{ label: "Timesheets", to: "/manager/timesheets" },
+
+{ label: "Resignations", to: "/manager/team/resignations" },
+{ label: "Performance Appraisal", to: "/manager/team/performance", appraisalGated: true }];
+
 
 const isTabActive = (pathname, to) =>
 {
@@ -30,9 +30,9 @@ const ManagerTabs = () =>
 
   useEffect(() =>
   {
-    getAppraisalCycle()
-      .then(c => setAppraisalActive(c?.status === "active"))
-      .catch(() => { });
+    getAppraisalCycle().
+    then((c) => setAppraisalActive(c?.status === "active")).
+    catch(() => {});
   }, []);
 
   return (
@@ -47,20 +47,20 @@ const ManagerTabs = () =>
             type="button"
             onClick={() => !locked && navigate(tab.to)}
             title={locked ? "Admin must roll out the appraisal cycle first" : undefined}
-            className={`inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${locked
-                ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
-                : active
-                  ? "bg-brand text-white border-brand"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand"
-              }`}
-          >
+            className={`inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${locked ?
+            "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed" :
+            active ?
+            "bg-brand text-white border-brand" :
+            "bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand"}`
+            }>
+
             {locked && <Lock size={12} className="shrink-0" />}
             {tab.label}
-          </button>
-        );
+          </button>);
+
       })}
-    </div>
-  );
+    </div>);
+
 };
 
 export default ManagerTabs;

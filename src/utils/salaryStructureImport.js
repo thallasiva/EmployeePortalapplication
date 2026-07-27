@@ -1,21 +1,21 @@
-/**
- * Lightweight CSV parser + mapper for the "Import Salary Structures" feature
- * on the Admin Payslips page.
- *
- * Expected CSV columns (header row required, case-insensitive, order-independent):
- *   - Employee Code / Emp Code / emp_code            (required, must match an existing employee)
- *   - Basic / basic                                  (optional, numeric)
- *   - HRA / hra                                       (optional, numeric)
- *   - Conveyance / conveyance                         (optional, numeric)
- *   - Medical Allowance / medical_allowance           (optional, numeric)
- *   - Special Allowance / special_allowance           (optional, numeric)
- *   - PF Employee / pf_employee                       (optional, numeric)
- *   - PF Employer / pf_employer                       (optional, numeric)
- *   - Professional Tax / professional_tax             (optional, numeric)
- *   - Income Tax / income_tax                         (optional, numeric)
- *   - CTC / ctc                                       (optional, numeric)
- *   - Effective From / effective_from                 (required, e.g. 2026-04-01 or 01/04/2026)
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const HEADER_ALIASES = {
   emp_code: ["employee code", "emp code", "emp_code", "employee_code", "code"],
@@ -29,13 +29,13 @@ const HEADER_ALIASES = {
   professional_tax: ["professional tax", "professional_tax", "prof tax"],
   income_tax: ["income tax", "income_tax", "tds"],
   ctc: ["ctc", "annual ctc"],
-  effective_from: ["effective from", "effective_from", "effective date", "from date"],
+  effective_from: ["effective from", "effective_from", "effective date", "from date"]
 };
 
 const NUMERIC_FIELDS = [
-  "basic", "hra", "conveyance", "medical_allowance", "special_allowance",
-  "pf_employee", "pf_employer", "professional_tax", "income_tax", "ctc",
-];
+"basic", "hra", "conveyance", "medical_allowance", "special_allowance",
+"pf_employee", "pf_employer", "professional_tax", "income_tax", "ctc"];
+
 
 function splitCsvLine(line) {
   const cells = [];
@@ -68,7 +68,7 @@ function splitCsvLine(line) {
   return cells.map((c) => c.trim());
 }
 
-/** Normalizes common date formats to YYYY-MM-DD. Returns null if unparseable. */
+
 function normalizeDate(value) {
   if (!value) return null;
   const trimmed = String(value).trim();
@@ -102,16 +102,16 @@ function toNumber(value) {
   return Number.isNaN(num) ? undefined : num;
 }
 
-/**
- * Parses CSV text into an array of salary structure objects ready for the
- * `importSalaryStructures` API call. Throws an Error with a user-friendly
- * message if the file has no usable rows.
- */
+
+
+
+
+
 export function parseSalaryStructureCsv(text) {
-  const lines = String(text)
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
+  const lines = String(text).
+  split(/\r?\n/).
+  map((l) => l.trim()).
+  filter((l) => l.length > 0);
 
   if (lines.length < 2) {
     throw new Error("The file must contain a header row and at least one row.");
@@ -138,7 +138,7 @@ export function parseSalaryStructureCsv(text) {
     const cells = splitCsvLine(lines[i]);
     const empCode = cells[columnIndex.emp_code]?.trim();
     const rawDate = cells[columnIndex.effective_from]?.trim();
-    if (!empCode && !rawDate) continue; // skip blank rows
+    if (!empCode && !rawDate) continue;
 
     const effectiveFrom = normalizeDate(rawDate);
     if (!empCode || !effectiveFrom) {
@@ -164,18 +164,18 @@ export function parseSalaryStructureCsv(text) {
   return { items, errors };
 }
 
-/** Builds a downloadable CSV template for the salary structure import. */
+
 export function buildSalaryStructureCsvTemplate() {
   const headers = [
-    "Employee Code", "Basic", "HRA", "Conveyance", "Medical Allowance",
-    "Special Allowance", "PF Employee", "PF Employer", "Professional Tax",
-    "Income Tax", "CTC", "Effective From",
-  ];
+  "Employee Code", "Basic", "HRA", "Conveyance", "Medical Allowance",
+  "Special Allowance", "PF Employee", "PF Employer", "Professional Tax",
+  "Income Tax", "CTC", "Effective From"];
+
   const sample = ["EMP00003", "25000", "10000", "1600", "1250", "5000", "1800", "1800", "200", "0", "60000", "2026-04-01"];
   return [headers.join(","), sample.join(",")].join("\r\n");
 }
 
-/** Triggers a browser download of the salary structure CSV template. */
+
 export function downloadSalaryStructureCsvTemplate(filename = "salary_structure_import_template.csv") {
   const a = document.createElement("a");
   a.href = "/templates/salary_structure_import_template.csv";

@@ -2,17 +2,17 @@ const { callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { computeStructure } = require('../utils/formulaEngine');
 
-function rows(r, idx = 0) { return r[idx] ?? []; }
-function row(r, idx = 0)  { return (r[idx] ?? [])[0] ?? null; }
+function rows(r, idx = 0) {return r[idx] ?? [];}
+function row(r, idx = 0) {return (r[idx] ?? [])[0] ?? null;}
 
 class SalaryComponentService {
 
-  // ── Component Master ────────────────────────────────────────
+
 
   async listComponents(activeOnly = null) {
     const res = await callProcedure('sp_list_salary_components(?)', [
-      activeOnly != null ? (activeOnly ? 1 : 0) : null
-    ]);
+    activeOnly != null ? activeOnly ? 1 : 0 : null]
+    );
     return rows(res);
   }
 
@@ -26,25 +26,25 @@ class SalaryComponentService {
     const res = await callProcedure(
       'sp_upsert_salary_component(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [
-        id || null,
-        data.component_name,
-        data.component_code?.toUpperCase(),
-        data.category,
-        data.calc_type,
-        data.percentage_value != null ? Number(data.percentage_value) : null,
-        data.percentage_of || null,
-        data.formula_expr  || null,
-        data.frequency     || 'Monthly',
-        data.is_taxable        ? 1 : 0,
-        data.pf_applicable     ? 1 : 0,
-        data.esi_applicable    ? 1 : 0,
-        data.gratuity_applicable ? 1 : 0,
-        data.show_offer_letter !== false ? 1 : 0,
-        data.show_ctc_breakup  !== false ? 1 : 0,
-        data.show_payslip      !== false ? 1 : 0,
-        Number(data.sort_order) || 100,
-        data.description || null,
-      ]
+      id || null,
+      data.component_name,
+      data.component_code?.toUpperCase(),
+      data.category,
+      data.calc_type,
+      data.percentage_value != null ? Number(data.percentage_value) : null,
+      data.percentage_of || null,
+      data.formula_expr || null,
+      data.frequency || 'Monthly',
+      data.is_taxable ? 1 : 0,
+      data.pf_applicable ? 1 : 0,
+      data.esi_applicable ? 1 : 0,
+      data.gratuity_applicable ? 1 : 0,
+      data.show_offer_letter !== false ? 1 : 0,
+      data.show_ctc_breakup !== false ? 1 : 0,
+      data.show_payslip !== false ? 1 : 0,
+      Number(data.sort_order) || 100,
+      data.description || null]
+
     );
     const { component_id } = row(res) ?? {};
     return this.getComponent(component_id || id);
@@ -55,7 +55,7 @@ class SalaryComponentService {
     return this.getComponent(id);
   }
 
-  // ── Salary Structures ───────────────────────────────────────
+
 
   async listStructures() {
     return rows(await callProcedure('sp_list_salary_structures()'));
@@ -63,7 +63,7 @@ class SalaryComponentService {
 
   async getStructure(id) {
     const res = await callProcedure('sp_get_salary_structure(?)', [id]);
-    const meta  = row(res, 0);
+    const meta = row(res, 0);
     if (!meta) throw ApiError.notFound('Salary structure not found');
     const lines = rows(res, 1);
     return { ...meta, lines };
@@ -77,21 +77,21 @@ class SalaryComponentService {
     const { structure_id } = row(res) ?? {};
     const sid = structure_id || id;
 
-    // Save lines
+
     if (Array.isArray(data.lines)) {
       for (const line of data.lines) {
         await callProcedure(
           'sp_save_structure_lines(?,?,?,?,?,?,?,?)',
           [
-            sid,
-            line.component_id,
-            line.calc_type_override  || null,
-            line.percentage_override != null ? Number(line.percentage_override) : null,
-            line.percentage_of_override || null,
-            line.formula_override    || null,
-            line.fixed_amount != null ? Number(line.fixed_amount) : null,
-            Number(line.sort_order) || 100,
-          ]
+          sid,
+          line.component_id,
+          line.calc_type_override || null,
+          line.percentage_override != null ? Number(line.percentage_override) : null,
+          line.percentage_of_override || null,
+          line.formula_override || null,
+          line.fixed_amount != null ? Number(line.fixed_amount) : null,
+          Number(line.sort_order) || 100]
+
         );
       }
     }
@@ -102,7 +102,7 @@ class SalaryComponentService {
     await callProcedure('sp_remove_structure_line(?,?)', [structureId, componentId]);
   }
 
-  // ── Formula preview / CTC compute ──────────────────────────
+
 
   async computeCTC(structureId, ctcAnnual, overrides = {}) {
     const structure = await this.getStructure(structureId);

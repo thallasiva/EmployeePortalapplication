@@ -2,40 +2,40 @@ const { callProcedure } = require('../config/db');
 
 class OrgHierarchyService {
 
-  /* ─────────────────── Dashboard Stats ─────────────────── */
+
   async getDashboardStats() {
     const results = await callProcedure('sp_org_dashboard_stats()');
-    const totalEmp  = Number((results[0] ?? [])[0]?.cnt)  || 0;
-    const noMgr     = Number((results[1] ?? [])[0]?.cnt)  || 0;
-    const totalMgrs = Number((results[2] ?? [])[0]?.cnt)  || 0;
-    const delegated = Number((results[3] ?? [])[0]?.cnt)  || 0;
+    const totalEmp = Number((results[0] ?? [])[0]?.cnt) || 0;
+    const noMgr = Number((results[1] ?? [])[0]?.cnt) || 0;
+    const totalMgrs = Number((results[2] ?? [])[0]?.cnt) || 0;
+    const delegated = Number((results[3] ?? [])[0]?.cnt) || 0;
     return {
-      total_employees:     totalEmp,
-      without_manager:     noMgr,
-      total_managers:      totalMgrs,
-      managers_no_team:    Math.max(0, totalEmp - totalMgrs - noMgr),
-      delegated_workflows: delegated,
+      total_employees: totalEmp,
+      without_manager: noMgr,
+      total_managers: totalMgrs,
+      managers_no_team: Math.max(0, totalEmp - totalMgrs - noMgr),
+      delegated_workflows: delegated
     };
   }
 
-  /* ─────────────────── Seniority rank helper ─────────────────── */
+
   _rankDesig(name = '') {
     const n = name.toLowerCase();
     if (/ceo|chief executive|president|founder|managing director/.test(n)) return 6;
-    if (/cto|cfo|coo|cpo|chief/.test(n))      return 5;
-    if (/vp|vice president|director/.test(n))  return 4;
-    if (/head|manager|lead/.test(n))           return 3;
+    if (/cto|cfo|coo|cpo|chief/.test(n)) return 5;
+    if (/vp|vice president|director/.test(n)) return 4;
+    if (/head|manager|lead/.test(n)) return 3;
     if (/senior|sr\.|principal|specialist/.test(n)) return 2;
     return 1;
   }
 
-  /* ─────────────────── Auto-seed reporting_to ─────────────────── */
+
   async _autoSeedHierarchyIfNeeded() {
     const results = await callProcedure('sp_get_auto_seed_employees()');
     const emps = results[0] ?? [];
     if (emps.length < 2) return;
 
-    emps.forEach(e => { e._rank = this._rankDesig(e.designation_name); });
+    emps.forEach((e) => {e._rank = this._rankDesig(e.designation_name);});
     const sorted = [...emps].sort((a, b) => b._rank - a._rank || a.employee_id - b.employee_id);
     const ceo = sorted[0];
 
@@ -43,12 +43,12 @@ class OrgHierarchyService {
 
     for (const emp of sorted) {
       if (emp.employee_id === ceo.employee_id) continue;
-      const higher = sorted.filter(e => e._rank > emp._rank && e.employee_id !== emp.employee_id);
+      const higher = sorted.filter((e) => e._rank > emp._rank && e.employee_id !== emp.employee_id);
       let manager;
       if (higher.length) {
-        const minRank  = Math.min(...higher.map(e => e._rank));
-        const direct   = higher.filter(e => e._rank === minRank);
-        const sameDept = direct.filter(e => e.department_id === emp.department_id);
+        const minRank = Math.min(...higher.map((e) => e._rank));
+        const direct = higher.filter((e) => e._rank === minRank);
+        const sameDept = direct.filter((e) => e.department_id === emp.department_id);
         manager = sameDept[0] || direct[0];
       } else {
         manager = ceo;
@@ -57,34 +57,34 @@ class OrgHierarchyService {
     }
   }
 
-  /* ─────────────────── Full Org Tree ─────────────────── */
+
   async getHierarchyTree({ department_id, status } = {}) {
     const results = await callProcedure('sp_get_org_tree_data(?, ?)', [department_id ?? null, status ?? null]);
-    const rows      = results[0] ?? [];
+    const rows = results[0] ?? [];
     const delegRows = results[1] ?? [];
     const countRows = results[2] ?? [];
 
     const delegateMap = {};
-    delegRows.forEach(d => { delegateMap[d.employee_id] = d.delegate_name; });
+    delegRows.forEach((d) => {delegateMap[d.employee_id] = d.delegate_name;});
     const countMap = {};
-    countRows.forEach(r => { countMap[r.reporting_to] = r.cnt; });
+    countRows.forEach((r) => {countMap[r.reporting_to] = r.cnt;});
 
     const nodeMap = {};
-    rows.forEach(r => {
+    rows.forEach((r) => {
       nodeMap[r.employee_id] = {
-        id:            r.employee_id,
-        emp_code:      r.emp_code,
-        name:          r.full_name,
-        designation:   r.designation_name || '—',
-        department:    r.department_name  || '—',
+        id: r.employee_id,
+        emp_code: r.emp_code,
+        name: r.full_name,
+        designation: r.designation_name || '—',
+        department: r.department_name || '—',
         department_id: r.department_id,
-        email:         r.email,
-        status:        r.employee_status,
-        reporting_to:  r.reporting_to,
-        joining_date:  r.emp_joining_date,
-        direct_count:  countMap[r.employee_id] || 0,
+        email: r.email,
+        status: r.employee_status,
+        reporting_to: r.reporting_to,
+        joining_date: r.emp_joining_date,
+        direct_count: countMap[r.employee_id] || 0,
         delegate_name: delegateMap[r.employee_id] || null,
-        children:      [],
+        children: []
       };
     });
 
@@ -100,9 +100,9 @@ class OrgHierarchyService {
     };
 
     const roots = [];
-    rows.forEach(r => {
+    rows.forEach((r) => {
       const node = nodeMap[r.employee_id];
-      const mgr  = r.reporting_to;
+      const mgr = r.reporting_to;
       if (mgr && nodeMap[mgr] && !hasCycle(mgr)) {
         nodeMap[mgr].children.push(node);
       } else {
@@ -113,44 +113,44 @@ class OrgHierarchyService {
     return roots;
   }
 
-  /* ─────────────────── Unassigned Employees ─────────────────── */
+
   async getUnassigned() {
     const results = await callProcedure('sp_get_unassigned_employees()');
     return results[0] ?? [];
   }
 
-  /* ─────────────────── Managers List ─────────────────── */
+
   async getManagers() {
     const results = await callProcedure('sp_get_managers_list()');
     return results[0] ?? [];
   }
 
-  /* ─────────────────── Manager Details ─────────────────── */
+
   async getManagerDetails(managerId) {
     const results = await callProcedure('sp_get_manager_details(?)', [managerId]);
-    const mgr              = (results[0] ?? [])[0] ?? null;
+    const mgr = (results[0] ?? [])[0] ?? null;
     if (!mgr) return null;
-    const directReports   = results[1] ?? [];
+    const directReports = results[1] ?? [];
     const indirectReports = results[2] ?? [];
     return {
       ...mgr,
-      direct_reports:   directReports,
+      direct_reports: directReports,
       indirect_reports: indirectReports,
-      total_team:       directReports.length + indirectReports.length,
+      total_team: directReports.length + indirectReports.length
     };
   }
 
-  /* ─────────────────── Employee Search ─────────────────── */
+
   async searchEmployee(q, { department_id, designation_id, status } = {}) {
     const like = `%${q}%`;
     const results = await callProcedure('sp_search_employees_org(?, ?, ?, ?)', [
-      like, department_id ?? null, designation_id ?? null, status ?? null,
-    ]);
-    const rows   = results[0] ?? [];
+    like, department_id ?? null, designation_id ?? null, status ?? null]
+    );
+    const rows = results[0] ?? [];
     const allEmp = results[1] ?? [];
     const empMap = {};
-    allEmp.forEach(r => { empMap[r.employee_id] = r; });
-    return rows.map(r => ({ ...r, hierarchy_path: this._buildPath(r.employee_id, empMap) }));
+    allEmp.forEach((r) => {empMap[r.employee_id] = r;});
+    return rows.map((r) => ({ ...r, hierarchy_path: this._buildPath(r.employee_id, empMap) }));
   }
 
   _buildPath(employeeId, empMap, depth = 0) {
@@ -161,63 +161,63 @@ class OrgHierarchyService {
     return [...parent, { id: emp.employee_id, name: emp.full_name }];
   }
 
-  /* ─────────────────── Assign Reporting Manager ─────────────────── */
+
   async assignManager(employeeId, newManagerId, changedBy, reason = null) {
     await callProcedure('sp_assign_manager(?, ?, ?, ?)', [employeeId, newManagerId, changedBy, reason]);
     return { updated: true };
   }
 
-  /* ─────────────────── Bulk Assign ─────────────────── */
+
   async bulkAssign(employeeIds, newManagerId, changedBy, reason = null) {
     let count = 0;
     for (const empId of employeeIds) {
       try {
         await callProcedure('sp_bulk_assign_manager(?, ?, ?, ?)', [empId, newManagerId, changedBy, reason]);
         count++;
-      } catch (_) { /* skip missing employees */ }
+      } catch (_) {}
     }
     return { transferred: count };
   }
 
-  /* ─────────────────── Manager Transfer (all team) ─────────────────── */
+
   async transferManager(oldManagerId, newManagerId, changedBy, reason = null) {
     const results = await callProcedure('sp_transfer_manager_team(?, ?, ?, ?)', [
-      oldManagerId, newManagerId, changedBy, reason,
-    ]);
+    oldManagerId, newManagerId, changedBy, reason]
+    );
     const transferred = (results[0] ?? [])[0]?.transferred ?? 0;
     return { transferred };
   }
 
-  /* ─────────────────── Create Delegation ─────────────────── */
+
   async createDelegation({ employee_id, delegate_employee_id, module, from_date, to_date, reason, created_by }) {
-    // Cancel overlapping, then insert new delegation and log to reporting_history
+
     const results = await callProcedure('sp_create_org_delegation(?, ?, ?, ?, ?, ?, ?, @id)', [
-      employee_id, delegate_employee_id, module || 'all', from_date, to_date, reason || null, created_by,
-    ]);
-    // Also log delegation to reporting_history
+    employee_id, delegate_employee_id, module || 'all', from_date, to_date, reason || null, created_by]
+    );
+
     await callProcedure('sp_log_reporting_history(?, ?, ?, ?, ?, ?)', [
-      employee_id, employee_id, delegate_employee_id, created_by,
-      reason || `Delegated to ${module || 'all'} until ${to_date}`, 'delegation',
-    ]);
+    employee_id, employee_id, delegate_employee_id, created_by,
+    reason || `Delegated to ${module || 'all'} until ${to_date}`, 'delegation']
+    );
     const row = (results[0] ?? [])[0] ?? null;
     return { id: row?.id };
   }
 
-  /* ─────────────────── List Delegations ─────────────────── */
+
   async listDelegations({ status, employee_id } = {}) {
     const results = await callProcedure('sp_list_org_delegations(?, ?)', [status ?? null, employee_id ?? null]);
     return results[0] ?? [];
   }
 
-  /* ─────────────────── Audit / Reporting History ─────────────────── */
+
   async getHistory({ employee_id, manager_id, change_type, limit = 50, offset = 0 } = {}) {
     const results = await callProcedure('sp_get_org_history(?, ?, ?, ?, ?)', [
-      employee_id  ?? null,
-      manager_id   ?? null,
-      change_type  ?? null,
-      Number(limit),
-      Number(offset),
-    ]);
+    employee_id ?? null,
+    manager_id ?? null,
+    change_type ?? null,
+    Number(limit),
+    Number(offset)]
+    );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
 }

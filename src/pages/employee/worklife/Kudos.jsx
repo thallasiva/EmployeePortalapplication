@@ -3,35 +3,35 @@ import { Award, ThumbsUp, Send } from "lucide-react";
 import { getUserInitials } from "../../../lib/dateUtils";
 
 const recentKudos = [
-    {
-        id: 1,
-        name: "Alex Kumar",
-        initials: "AK",
-        message: "Great teamwork and excellent support on the project!",
-        time: "2 hours ago",
-    },
-    {
-        id: 2,
-        name: "Priya Sharma",
-        initials: "PS",
-        message: "Thank you for helping complete the release on time.",
-        time: "1 day ago",
-    },
-    {
-        id: 3,
-        name: "Rahul Mehta",
-        initials: "RM",
-        message: "Outstanding presentation to the client team.",
-        time: "3 days ago",
-    },
-];
+{
+  id: 1,
+  name: "Alex Kumar",
+  initials: "AK",
+  message: "Great teamwork and excellent support on the project!",
+  time: "2 hours ago"
+},
+{
+  id: 2,
+  name: "Priya Sharma",
+  initials: "PS",
+  message: "Thank you for helping complete the release on time.",
+  time: "1 day ago"
+},
+{
+  id: 3,
+  name: "Rahul Mehta",
+  initials: "RM",
+  message: "Outstanding presentation to the client team.",
+  time: "3 days ago"
+}];
+
 
 const Kudos = () =>
 {
-    return (
-        <div className="space-y-6">
+  return (
+    <div className="space-y-6">
 
-            {/* HEADER */}
+            {}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -50,7 +50,7 @@ const Kudos = () =>
                 </button>
             </div>
 
-            {/* STATS */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
                 <div className="bg-white rounded-2xl shadow p-5">
@@ -103,7 +103,7 @@ const Kudos = () =>
 
             </div>
 
-            {/* RECENT KUDOS */}
+            {}
             <div className="bg-white rounded-2xl shadow p-6">
 
                 <h2 className="text-xl font-semibold mb-5">
@@ -112,11 +112,11 @@ const Kudos = () =>
 
                 <div className="space-y-4">
 
-                    {recentKudos.map((item) => (
-                        <div
-                            key={item.id}
-                            className="border rounded-xl p-4 flex items-start justify-between"
-                        >
+                    {recentKudos.map((item) =>
+          <div
+            key={item.id}
+            className="border rounded-xl p-4 flex items-start justify-between">
+
                             <div className="flex gap-4">
 
                                 <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand">
@@ -143,14 +143,14 @@ const Kudos = () =>
 
                             <Award className="text-yellow-500" />
                         </div>
-                    ))}
+          )}
 
                 </div>
 
             </div>
 
-        </div>
-    );
+        </div>);
+
 };
 
 export default Kudos;

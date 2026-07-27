@@ -5,7 +5,7 @@ import {
 "lucide-react";
 import apiClient from "../../../api/client";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 import { cssClass, joinClasses } from "../../../utils/classStyles";
 function pad(n) {return String(n).padStart(2, "0");}
 
@@ -43,7 +43,7 @@ async function triggerDownload(url, params = {}) {
   URL.revokeObjectURL(a.href);
 }
 
-// ─── MonthYearPicker ──────────────────────────────────────────────────────────
+
 
 function MonthYearPicker({ month, year, onMonth, onYear }) {
   const selectStyle = {
@@ -62,7 +62,7 @@ function MonthYearPicker({ month, year, onMonth, onYear }) {
 
 }
 
-// ─── ReportCard ───────────────────────────────────────────────────────────────
+
 
 function ReportCard({ icon: Icon, iconBg, iconColor, title, description, children, onDownload, loading }) {
   return (
@@ -99,7 +99,7 @@ function ReportCard({ icon: Icon, iconBg, iconColor, title, description, childre
 
         onMouseEnter={(e) => {if (!loading) e.currentTarget.style.opacity = "0.85";}}
         onMouseLeave={(e) => {e.currentTarget.style.opacity = "1";}} className={cssClass({ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "9px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", background: loading ? "#f1f5f9" : iconBg, color: loading ? "#94a3b8" : iconColor, border: `1px solid ${loading ? "#e2e8f0" : iconColor + "55"}`, transition: "all 0.15s", marginTop: 4 })}>
-        
+
         {loading ?
         <><Loader2 size={15} className={cssClass({ animation: "spin 1s linear infinite" })} /> Generating…</> :
         <><Download size={15} /> Download</>
@@ -109,13 +109,13 @@ function ReportCard({ icon: Icon, iconBg, iconColor, title, description, childre
 
 }
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
+
 
 export default function DownloadReports() {
   const def = currentMonthYear();
   const [loading, setLoading] = useState({});
 
-  // Per-report params
+
   const [lbDate, setLbDate] = useState(new Date().toISOString().slice(0, 10));
   const [lsFrom, setLsFrom] = useState(`${def.year}-01-01`);
   const [lsTo, setLsTo] = useState(`${def.year}-12-31`);
@@ -154,23 +154,23 @@ export default function DownloadReports() {
 
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 18 })}>
 
-        {/* 1. EMP Data */}
+        {}
         <ReportCard
           icon={Users} iconBg="#eff6ff" iconColor="#2563eb"
           title="Employee Master Data"
           description="Full employee directory with all HR fields (55 columns)"
           loading={loading.emp}
           onDownload={() => dl("emp", "/reports/download/emp-data")} />
-        
 
-        {/* 2. Leave Balance As On A Day */}
+
+        {}
         <ReportCard
           icon={Calendar} iconBg="#f0fdf4" iconColor="#16a34a"
           title="Leave Balance As On A Day"
           description="Current leave balances (Comp Off, EL, Paternity, RH, SL) per employee"
           loading={loading.lb}
           onDownload={() => dl("lb", "/reports/download/leave-balance", { date: lbDate })}>
-          
+
           <div>
             <label className={cssClass(labelStyle)}>As On Date</label>
             <input type="date" value={lbDate} onChange={(e) => setLbDate(e.target.value)}
@@ -178,14 +178,14 @@ export default function DownloadReports() {
           </div>
         </ReportCard>
 
-        {/* 3. Leave Summary */}
+        {}
         <ReportCard
           icon={ClipboardList} iconBg="#fdf4ff" iconColor="#9333ea"
           title="Leave Summary Report"
           description="Opening balance, eligibility, availed & closing per employee for a date range"
           loading={loading.ls}
           onDownload={() => dl("ls", "/reports/download/leave-summary", { from: lsFrom, to: lsTo })}>
-          
+
           <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 })}>
             <div>
               <label className={cssClass(labelStyle)}>From Date</label>
@@ -198,25 +198,25 @@ export default function DownloadReports() {
           </div>
         </ReportCard>
 
-        {/* 4. PF Monthly Statement */}
+        {}
         <ReportCard
           icon={FileSpreadsheet} iconBg="#fff7ed" iconColor="#ea580c"
           title="PF Monthly Statement"
           description="Employee & employer PF / EPS / EDLI contributions with UAN and PF numbers"
           loading={loading.pf}
           onDownload={() => dl("pf", "/reports/download/pf-statement", { month: pfMonth, year: pfYear })}>
-          
+
           <MonthYearPicker month={pfMonth} year={pfYear} onMonth={setPfMonth} onYear={setPfYear} />
         </ReportCard>
 
-        {/* 5. Profession Tax */}
+        {}
         <ReportCard
           icon={Receipt} iconBg="#fff1f2" iconColor="#e11d48"
           title="Profession Tax Statement"
           description="Monthly PT statement with slab-wise summary and employee-wise PT amount"
           loading={loading.pt}
           onDownload={() => dl("pt", "/reports/download/profession-tax", { month: ptMonth, year: ptYear, state: ptState })}>
-          
+
           <MonthYearPicker month={ptMonth} year={ptYear} onMonth={setPtMonth} onYear={setPtYear} />
           <div className={cssClass({ marginTop: 4 })}>
             <label className={cssClass(labelStyle)}>State</label>
@@ -228,14 +228,14 @@ export default function DownloadReports() {
           </div>
         </ReportCard>
 
-        {/* 6. ECR File */}
+        {}
         <ReportCard
           icon={FileText} iconBg="#f0f9ff" iconColor="#0284c7"
           title="ECR File (EPFO)"
           description="Electronic Challan-cum-Return text file for EPFO portal upload"
           loading={loading.ecr}
           onDownload={() => dl("ecr", "/reports/download/ecr-file", { month: ecrMonth, year: ecrYear, estb_code: ecrCode || undefined })}>
-          
+
           <MonthYearPicker month={ecrMonth} year={ecrYear} onMonth={setEcrMonth} onYear={setEcrYear} />
           <div className={cssClass({ marginTop: 4 })}>
             <label className={cssClass(labelStyle)}>Establishment Code (optional)</label>

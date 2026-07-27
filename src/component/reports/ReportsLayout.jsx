@@ -31,7 +31,7 @@ export default function ReportsLayout() {
             className={({ isActive }) =>
             `reports-header-tabs__link${isActive ? " active" : ""}`
             }>
-            
+
               {item.label}
             </NavLink>
           )}
@@ -65,7 +65,7 @@ export function ReportPageHeader({ title }) {
     <div className="report-header">
       <div>
         <h1 className="report-header__title">{title}</h1>
-        
+
       </div>
       <button type="button" className="report-header__export">
         Export
@@ -80,7 +80,7 @@ export function ReportAvatar({ name, size = "md" }) {
     <span
       className={joinClasses(`report-avatar report-avatar--${size}`, cssClass(
         { backgroundColor: getAvatarColor(name) }))}>
-      
+
       {getInitials(name)}
     </span>);
 

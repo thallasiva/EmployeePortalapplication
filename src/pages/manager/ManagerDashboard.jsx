@@ -9,7 +9,7 @@ import { getManagerFullDashboard } from "../../api/timesheet.api";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 import { cssClass, joinClasses } from "../../utils/classStyles";function getInitials(name) {
   return (name || "?").
   split(" ").
@@ -47,7 +47,7 @@ const ACTIVITY_ICON = {
   leave: <FileCheck size={14} className="text-violet-500" />
 };
 
-// ─── KPI Card ─────────────────────────────────────────────────────────────────
+
 function KpiCard({ icon: Icon, value, label, iconBg, iconColor, to }) {
   const inner =
   <div className="admin-dash-card flex items-center gap-4 h-full">
@@ -63,7 +63,7 @@ function KpiCard({ icon: Icon, value, label, iconBg, iconColor, to }) {
   return to ? <Link to={to}>{inner}</Link> : inner;
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+
 const ManagerDashboard = () => {
   const user = getLoggedInUser();
   const [data, setData] = useState(null);
@@ -100,7 +100,7 @@ const ManagerDashboard = () => {
         </div>
       }
 
-      {/* ── KPI Grid ── */}
+      {}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         <KpiCard icon={Users} value={v("totalTeam")} label="Team Size" iconBg="bg-blue-50" iconColor="text-blue-600" />
         <KpiCard icon={CheckCircle2} value={v("presentToday")} label="Present Today" iconBg="bg-emerald-50" iconColor="text-emerald-600" />
@@ -111,10 +111,10 @@ const ManagerDashboard = () => {
         <KpiCard icon={FileX} value={v("rejectedTimesheets")} label="Rejected Timesheets" iconBg="bg-red-50" iconColor="text-red-600" to="/manager/timesheets" />
       </div>
 
-      {/* ── Team Table + Recent Activity ── */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* Team attendance table */}
+        {}
         <div className="lg:col-span-2 admin-dash-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">
@@ -186,7 +186,7 @@ const ManagerDashboard = () => {
           }
         </div>
 
-        {/* Recent Activity feed */}
+        {}
         <div className="admin-dash-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">Recent Team Activities</h2>

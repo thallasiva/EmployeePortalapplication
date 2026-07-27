@@ -9,63 +9,63 @@ const { calculateEarningsDeductionsBreakdown } = require('../utils/payslipBreakd
 const { encryptSalaryFields, applyVisibility } = require('../utils/encryption');
 const salaryAssignmentSvc = require('./salaryAssignment.service');
 
-/**
- * Returns true if the employee is eligible for gratuity.
- * Rule: >= 4 years + 240 days of continuous service (Indian labour law).
- * @param {string|Date} joiningDate  emp_joining_date from DB
- * @param {number}      month        payslip month (1–12)
- * @param {number}      year         payslip year
- */
+
+
+
+
+
+
+
 function isGratuityEligible(joiningDate, month, year) {
   if (!joiningDate) return false;
-  const joined  = new Date(joiningDate);
-  // Use first day of the payslip month as reference
+  const joined = new Date(joiningDate);
+
   const refDate = new Date(year, month - 1, 1);
   const msInDay = 86400000;
   const daysDiff = Math.floor((refDate - joined) / msInDay);
-  // 4 years 240 days ≈ 4 * 365 + 240 = 1700 days
+
   return daysDiff >= 1700;
 }
 
-/**
- * Build payslip earnings/deductions arrays from a computeStructure() result.
- * Statutory deductions (PF, ESI, PT) that aren't already in the structure are
- * appended; INCOME TAX row is added with amount=0 (filled later by computeTdsSection).
- */
+
+
+
+
+
 function buildFromStructure(components, ctx, gratuityEligible = true) {
-  const earnings = components
-    .filter(c => c.category === 'Earning' && c.show_on_payslip !== 0 && !c._deferred)
-    .map(c => {
-      // Zero gratuity if employee is not yet eligible (< 4 yrs 240 days)
-      const isGratuity = /gratuity/i.test(c.component_name || '') || c.component_code === 'GRATUITY';
-      const amount = (!gratuityEligible && isGratuity) ? 0 : (c.monthly_amount || 0);
-      return { label: (c.component_name || c.component_code).toUpperCase(), amount };
-    })
-    .filter(c => c.amount > 0);
+  const earnings = components.
+  filter((c) => c.category === 'Earning' && c.show_on_payslip !== 0 && !c._deferred).
+  map((c) => {
 
-  const structDeductions = components
-    .filter(c => c.category === 'Deduction' && c.show_on_payslip !== 0 && !c._deferred)
-    .map(c => ({ label: (c.component_name || c.component_code).toUpperCase(), amount: c.monthly_amount || 0 }))
-    .filter(c => c.amount > 0);
+    const isGratuity = /gratuity/i.test(c.component_name || '') || c.component_code === 'GRATUITY';
+    const amount = !gratuityEligible && isGratuity ? 0 : c.monthly_amount || 0;
+    return { label: (c.component_name || c.component_code).toUpperCase(), amount };
+  }).
+  filter((c) => c.amount > 0);
 
-  const basicMonthly   = ctx.BASIC || 0;
-  const totalEarnings  = earnings.reduce((s, e) => s + e.amount, 0);
+  const structDeductions = components.
+  filter((c) => c.category === 'Deduction' && c.show_on_payslip !== 0 && !c._deferred).
+  map((c) => ({ label: (c.component_name || c.component_code).toUpperCase(), amount: c.monthly_amount || 0 })).
+  filter((c) => c.amount > 0);
 
-  // Statutory calculations
-  const pfWage         = Math.min(basicMonthly, 15000);
-  const pf             = Math.round(pfWage * 0.12);
-  const eps            = Math.round(pfWage * 0.0833);
-  const epf            = Math.round(pfWage * 0.0367);
-  const employerPf     = eps + epf;
-  const edli           = Math.min(Math.round(pfWage * 0.005), 75);
-  const esiApplicable  = totalEarnings <= 21000;
-  const esiEmployee    = esiApplicable ? Math.round(totalEarnings * 0.0075) : 0;
-  const esiEmployer    = esiApplicable ? Math.round(totalEarnings * 0.0325) : 0;
+  const basicMonthly = ctx.BASIC || 0;
+  const totalEarnings = earnings.reduce((s, e) => s + e.amount, 0);
+
+
+  const pfWage = Math.min(basicMonthly, 15000);
+  const pf = Math.round(pfWage * 0.12);
+  const eps = Math.round(pfWage * 0.0833);
+  const epf = Math.round(pfWage * 0.0367);
+  const employerPf = eps + epf;
+  const edli = Math.min(Math.round(pfWage * 0.005), 75);
+  const esiApplicable = totalEarnings <= 21000;
+  const esiEmployee = esiApplicable ? Math.round(totalEarnings * 0.0075) : 0;
+  const esiEmployer = esiApplicable ? Math.round(totalEarnings * 0.0325) : 0;
   const professionalTax = totalEarnings <= 15000 ? 0 : totalEarnings <= 20000 ? 150 : 200;
 
-  // Merge structure deductions with statutory; avoid duplicates
+
   const deductions = [...structDeductions];
-  const hasLabel = (lbl) => deductions.some(d => d.label === lbl || d.label.replace(/\s+/g,'') === lbl.replace(/\s+/g,''));
+  const hasLabel = (lbl) => deductions.some((d) => d.label === lbl || d.label.replace(/\s+/g, '') === lbl.replace(/\s+/g, ''));
 
   if (!hasLabel('PF') && !hasLabel('EMP PF') && !hasLabel('EMPPF')) {
     deductions.push({ label: 'PF', amount: pf });
@@ -77,42 +77,42 @@ function buildFromStructure(components, ctx, gratuityEligible = true) {
     deductions.push({ label: 'PROF TAX', amount: professionalTax });
   }
   if (!hasLabel('INCOME TAX') && !hasLabel('INCOMETAX') && !hasLabel('TDS')) {
-    deductions.push({ label: 'INCOME TAX', amount: 0 }); // filled by computeTdsSection
+    deductions.push({ label: 'INCOME TAX', amount: 0 });
   }
 
   return { earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax, pf };
 }
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
+'January', 'February', 'March', 'April', 'May', 'June',
+'July', 'August', 'September', 'October', 'November', 'December'];
+
 
 const formatINR = (value) => `Rs. ${Number(value || 0).toLocaleString('en-IN')}`;
 
 class PayslipService extends BaseService {
   constructor() {
     super('payslips', 'payslip_id', [
-      'payroll_run_id', 'employee_id', 'month', 'year', 'basic', 'hra', 'allowances',
-      'gross_earnings', 'ctc', 'deductions', 'net_pay', 'working_days', 'paid_days', 'lop_days', 'status',
-    ]);
+    'payroll_run_id', 'employee_id', 'month', 'year', 'basic', 'hra', 'allowances',
+    'gross_earnings', 'ctc', 'deductions', 'net_pay', 'working_days', 'paid_days', 'lop_days', 'status']
+    );
   }
 
   async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser } = {}) {
     const results = await callProcedure(
       'sp_list_payslips(?, ?, ?, ?, ?, ?, ?, ?)',
       [
-        employee_id    ?? null,
-        month          ?? null,
-        year           ?? null,
-        status         ?? null,
-        department_id  ?? null,
-        payroll_run_id ?? null,
-        limit != null ? Number(limit)       : null,
-        limit != null ? Number(offset || 0) : null,
-      ]
+      employee_id ?? null,
+      month ?? null,
+      year ?? null,
+      status ?? null,
+      department_id ?? null,
+      payroll_run_id ?? null,
+      limit != null ? Number(limit) : null,
+      limit != null ? Number(offset || 0) : null]
+
     );
-    const rows  = results[0] ?? [];
+    const rows = results[0] ?? [];
     const total = (results[1] ?? [])[0]?.total ?? 0;
 
     const normalised = rows.map((r) => {
@@ -139,28 +139,28 @@ class PayslipService extends BaseService {
     const row = (results[0] ?? [])[0] ?? null;
     if (!row) return null;
 
-    // ── Try dynamic salary structure breakdown ────────────────────────────────
+
     let earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax;
 
-    // Gratuity eligibility: >= 4 years 240 days of service
+
     const gratuityEligible = isGratuityEligible(row.emp_joining_date, row.month, row.year);
 
     try {
       const structured = await salaryAssignmentSvc.computePayslipBreakdown(row.emp_id);
       if (structured && structured.components?.length) {
         ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
-          buildFromStructure(structured.components, structured.ctx, gratuityEligible));
+        buildFromStructure(structured.components, structured.ctx, gratuityEligible));
       }
-    } catch { /* fall through to hardcoded */ }
+    } catch {}
 
-    // ── Fallback: hardcoded percentage-based breakdown ────────────────────────
+
     if (!earnings) {
       const basic = Number(row.basic) || 0;
       ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
-        calculateEarningsDeductionsBreakdown(basic));
-      // Zero gratuity in fallback path too if not eligible
+      calculateEarningsDeductionsBreakdown(basic));
+
       if (!gratuityEligible) {
-        const gIdx = earnings.findIndex(e => /gratuity/i.test(e.label));
+        const gIdx = earnings.findIndex((e) => /gratuity/i.test(e.label));
         if (gIdx !== -1) earnings[gIdx].amount = 0;
       }
     }
@@ -169,7 +169,7 @@ class PayslipService extends BaseService {
     const professionTaxMonthly = deductions.find((d) => /prof/i.test(d.label))?.amount || 0;
 
     const tds = computeTdsSection({
-      earnings, pfMonthly, professionTaxMonthly, month: row.month, year: row.year,
+      earnings, pfMonthly, professionTaxMonthly, month: row.month, year: row.year
     });
 
     const incomeTaxDeduction = deductions.find((d) => /income.?tax|tds/i.test(d.label));
@@ -194,17 +194,17 @@ class PayslipService extends BaseService {
         designation_name: row.designation_name || '-',
         department_name: row.department_name || '-',
         location: row.location || '-',
-        pf_number: row.pf_number || '-',
+        pf_number: row.pf_number || '-'
       },
       bank: {
         bank_name: row.bank_name || '-',
         account_number: row.account_number || '-',
         pan_number: row.pan_number || '-',
-        uan_number: row.uan_number || '-',
+        uan_number: row.uan_number || '-'
       },
       company: {
         company_name: row.company_name || 'NAT IT Services',
-        address: row.company_address || '',
+        address: row.company_address || ''
       },
       earnings,
       deductions,
@@ -213,19 +213,19 @@ class PayslipService extends BaseService {
       net_pay: netSalary,
       net_pay_words: rupeesInWords(netSalary),
       ctc: Number(row.ctc) > 0 ? Number(row.ctc) : totalEarnings + employerPf + edli + esiEmployer,
-      eps, epf, edli, esi_employer: esiEmployer, tds,
+      eps, epf, edli, esi_employer: esiEmployer, tds
     };
   }
 
   async generate({ employee_id, month, year, payroll_run_id }) {
     await callProcedure('sp_generate_payslip(?, ?, ?, ?, @payslip_id)', [
-      employee_id, month, year, payroll_run_id || null,
-    ]);
+    employee_id, month, year, payroll_run_id || null]
+    );
     const out = await readOuts('payslip_id');
     const payslipId = out[0].payslip_id;
     if (!payslipId) throw ApiError.internal('Failed to generate payslip');
 
-    // Fetch raw payslip and encrypt salary fields
+
     const rawResults = await callProcedure('sp_get_payslip_raw(?)', [payslipId]);
     const rawRow = (rawResults[0] ?? [])[0] ?? null;
     if (rawRow) {
@@ -259,28 +259,28 @@ class PayslipService extends BaseService {
         const payslip = await this.generate({ employee_id: emp.employee_id, month, year, payroll_run_id: null });
         generated += 1;
 
-        // Use branded payslip email via mailNotify
+
         notify.payslipReleased({
           employeeEmail: emp.email,
-          employeeName:  emp.employee_name.trim(),
-          empCode:       emp.emp_code || '',
-          month:         monthLabel,
-          year:          Number(year),
-          grossSalary:   payslip.gross_earnings,
-          deductions:    payslip.deductions,
-          netSalary:     payslip.net_pay,
+          employeeName: emp.employee_name.trim(),
+          empCode: emp.emp_code || '',
+          month: monthLabel,
+          year: Number(year),
+          grossSalary: payslip.gross_earnings,
+          deductions: payslip.deductions,
+          netSalary: payslip.net_pay
         });
-        emailed += 1; // count as notified (fire-and-forget)
+        emailed += 1;
         genResults.push({
           employee_id: emp.employee_id, emp_code: emp.emp_code,
           employee_name: emp.employee_name.trim(), email: emp.email,
-          payslip_id: payslip.payslip_id, emailed: true, error: null,
+          payslip_id: payslip.payslip_id, emailed: true, error: null
         });
       } catch (err) {
         genResults.push({
           employee_id: emp.employee_id, emp_code: emp.emp_code,
           employee_name: emp.employee_name.trim(), email: emp.email,
-          emailed: false, error: err.message,
+          emailed: false, error: err.message
         });
       }
     }

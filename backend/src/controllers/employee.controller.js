@@ -44,8 +44,8 @@ const create = asyncHandler(async (req, res) => {
   let employee = await employeeService.createWithProcedure(payload);
   const employeeId = employee.employee_id;
 
-  // sp_create_employee only covers the core fields; persist the extended
-  // statutory/identity fields via a follow-up update against FILLABLE.
+
+
   await employeeService.update(employeeId, payload);
 
   if (contactInfo && Object.keys(contactInfo).length) {
@@ -129,5 +129,5 @@ module.exports = {
   myTeam,
   changeRole,
   listRoles,
-  listWithRoles,
+  listWithRoles
 };

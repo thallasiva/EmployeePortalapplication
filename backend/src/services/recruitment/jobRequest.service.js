@@ -27,27 +27,27 @@ class JobRequestService extends BaseService {
     const results = await callProcedure(
       "sp_rec_create_job_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @job_req_id, @job_req_code)",
       [
-        data.title,
-        data.client,
-        data.companyDept,
-        data.billRate,
-        data.billCurrency || "$",
-        data.payRate,
-        data.payCurrency || "$",
-        data.positionType,
-        data.vacancies,
-        data.city || null,
-        data.country,
-        data.experienceLevel,
-        data.jobStatus || "Active",
-        data.businessUnit,
-        data.assignmentStatus || "Open",
-        data.opportunityPhone || null,
-        data.skillSet,
-        data.description,
-        createdBy,
-        ip,
-      ]
+      data.title,
+      data.client,
+      data.companyDept,
+      data.billRate,
+      data.billCurrency || "$",
+      data.payRate,
+      data.payCurrency || "$",
+      data.positionType,
+      data.vacancies,
+      data.city || null,
+      data.country,
+      data.experienceLevel,
+      data.jobStatus || "Active",
+      data.businessUnit,
+      data.assignmentStatus || "Open",
+      data.opportunityPhone || null,
+      data.skillSet,
+      data.description,
+      createdBy,
+      ip]
+
     );
     return (results[0] ?? [])[0];
   }
@@ -56,33 +56,33 @@ class JobRequestService extends BaseService {
     const results = await callProcedure(
       "sp_rec_update_job_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
-        jobReqId,
-        data.title || null,
-        data.client || null,
-        data.companyDept || null,
-        data.billRate || null,
-        data.billCurrency || null,
-        data.payRate || null,
-        data.payCurrency || null,
-        data.positionType || null,
-        data.vacancies || null,
-        data.city || null,
-        data.country || null,
-        data.experienceLevel || null,
-        data.jobStatus || null,
-        data.businessUnit || null,
-        data.assignmentStatus || null,
-        data.opportunityPhone || null,
-        data.skillSet || null,
-        data.description || null,
-        updatedBy,
-        ip,
-      ]
+      jobReqId,
+      data.title || null,
+      data.client || null,
+      data.companyDept || null,
+      data.billRate || null,
+      data.billCurrency || null,
+      data.payRate || null,
+      data.payCurrency || null,
+      data.positionType || null,
+      data.vacancies || null,
+      data.city || null,
+      data.country || null,
+      data.experienceLevel || null,
+      data.jobStatus || null,
+      data.businessUnit || null,
+      data.assignmentStatus || null,
+      data.opportunityPhone || null,
+      data.skillSet || null,
+      data.description || null,
+      updatedBy,
+      ip]
+
     );
     return (results[0] ?? [])[0];
   }
 
-  /** Fetch TL email for a given recruiter employee_id */
+
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
     const { query } = require('../../config/db');
@@ -105,7 +105,7 @@ class JobRequestService extends BaseService {
     );
     const result = (results[0] ?? [])[0];
 
-    // Notify each assigned recruiter + their TL (fire-and-forget)
+
     if (Array.isArray(recruiterIds) && recruiterIds.length) {
       try {
         const job = await this.getById(jobReqId);
@@ -115,29 +115,29 @@ class JobRequestService extends BaseService {
         );
         const recruiters = recruiterResults[0] ?? [];
         const jobInfo = {
-          jobTitle:  job.title        || '',
-          jobCode:   job.job_req_code || '',
-          client:    job.client       || '',
-          vacancies: job.vacancies    || 1,
-          skillSet:  job.skill_set    || job.skillSet || '',
+          jobTitle: job.title || '',
+          jobCode: job.job_req_code || '',
+          client: job.client || '',
+          vacancies: job.vacancies || 1,
+          skillSet: job.skill_set || job.skillSet || ''
         };
 
-        // Email every recruiter
+
         notify.recruiterAssigned(
           recruiters.map((r) => ({ email: r.email, name: r.name, ...jobInfo }))
         );
 
-        // Email the TL for each recruiter (deduplicated by tl_email)
+
         const tlSeen = new Set();
         for (const r of recruiters) {
           const tl = await this._getRecruiterTL(r.employee_id || r.recruiter_id || null);
           if (tl.tl_email && !tlSeen.has(tl.tl_email)) {
             tlSeen.add(tl.tl_email);
             notify.tlJobAssigned({
-              tlEmail:       tl.tl_email,
-              tlName:        tl.tl_name        || 'Team Lead',
-              recruiterName: tl.recruiter_name  || r.name || 'Recruiter',
-              ...jobInfo,
+              tlEmail: tl.tl_email,
+              tlName: tl.tl_name || 'Team Lead',
+              recruiterName: tl.recruiter_name || r.name || 'Recruiter',
+              ...jobInfo
             });
           }
         }

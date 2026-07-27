@@ -13,7 +13,7 @@ const EmailReports = () =>
                                 <th class="py-3">Team Member</th>
                                 <th class="py-3">Email</th>
                                 <th class="py-3 ">Persional Images</th>
-                                
+
                             </tr>
                         </thead>
 

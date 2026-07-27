@@ -1,12 +1,12 @@
-/**
- * useLocalStorage — useState that persists to localStorage
- * ─────────────────────────────────────────────────────────
- * Usage:
- *   const [theme, setTheme] = useLocalStorage("theme", "light");
- *
- * Risk note: never store JWTs or sensitive data here — localStorage
- * is accessible to any JS on the page (XSS). Use httpOnly cookies for tokens.
- */
+
+
+
+
+
+
+
+
+
 import { useCallback, useState } from "react";
 
 export function useLocalStorage(key, initialValue) {

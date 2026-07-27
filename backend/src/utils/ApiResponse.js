@@ -1,6 +1,6 @@
-/**
- * Standard success response envelope.
- */
+
+
+
 class ApiResponse {
   constructor(statusCode, data = null, message = 'Success', meta = undefined) {
     this.success = statusCode < 400;

@@ -7,19 +7,19 @@ class DesignationService extends BaseService {
     super('designations', 'designation_id', ['designation_name', 'department_id']);
   }
 
-  /* ── List — optional department filter ──────────────────────────────────── */
+
   async findAll({ department_id } = {}) {
     const results = await callProcedure('sp_list_designations(?)', [department_id ?? null]);
     return results[0] ?? [];
   }
 
-  /* ── Get by PK ───────────────────────────────────────────────────────────── */
+
   async findById(id) {
     const results = await callProcedure('sp_get_designation(?)', [id]);
     return (results[0] ?? [])[0] ?? null;
   }
 
-  /* ── Create ──────────────────────────────────────────────────────────────── */
+
   async create(data) {
     if (!data.designation_name) throw ApiError.badRequest('designation_name is required');
     const results = await callProcedure(
@@ -29,7 +29,7 @@ class DesignationService extends BaseService {
     return (results[0] ?? [])[0] ?? null;
   }
 
-  /* ── Update ──────────────────────────────────────────────────────────────── */
+
   async update(id, data) {
     const results = await callProcedure(
       'sp_update_designation(?, ?, ?)',
@@ -38,13 +38,13 @@ class DesignationService extends BaseService {
     return (results[0] ?? [])[0] ?? null;
   }
 
-  /* ── Delete ──────────────────────────────────────────────────────────────── */
+
   async remove(id) {
     const results = await callProcedure('sp_delete_designation(?)', [id]);
     return ((results[0] ?? [])[0]?.affected ?? 0) > 0;
   }
 
-  /* ── Exists check (used by callers like team.service) ─────────────────── */
+
   async existsById(id) {
     const row = await this.findById(id);
     return !!row;

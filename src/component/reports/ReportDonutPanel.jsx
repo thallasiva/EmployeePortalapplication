@@ -34,7 +34,7 @@ export default function ReportDonutPanel({
           centerValue={centerValue ?? `${segments[1]?.value ?? 30}%`}
           size={150}
           strokeWidth={24} />
-        
+
         <div className="report-legend">
           {segments.map((seg) =>
           <div key={seg.name} className="report-legend__item">

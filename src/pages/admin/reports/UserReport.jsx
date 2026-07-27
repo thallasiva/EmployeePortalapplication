@@ -51,7 +51,7 @@ export default function UserReport() {
     <div className="report-page">
       <ReportPageHeader title="User Report" />
 
-      {/* Stats */}
+      {}
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
         { label: "Total Users", value: employees.length, barWidth: "100%", barColor: "#f18200" },
@@ -80,13 +80,13 @@ export default function UserReport() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="text-sm outline-none w-40" />
-            
+
           </div>
           <select
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
             className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
-            
+
             {departments.map((d) => <option key={d}>{d}</option>)}
           </select>
         </div>

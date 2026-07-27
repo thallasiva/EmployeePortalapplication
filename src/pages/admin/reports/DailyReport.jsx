@@ -35,7 +35,7 @@ export default function DailyReport() {
             absent={DAILY_LINE.absent}
             labels={DAILY_LINE.labels}
             absentColor="#ef4444" />
-          
+
         </div>
       </div>
 

@@ -43,7 +43,7 @@ const reviewReport = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Review report fetched').send(res);
 });
 
-// ─── Download handlers ────────────────────────────────────────────────────────
+
 
 async function sendWorkbook(res, wb, filename) {
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -104,5 +104,5 @@ module.exports = {
   downloadLeaveSummary,
   downloadPfStatement,
   downloadProfessionTax,
-  downloadEcrFile,
+  downloadEcrFile
 };

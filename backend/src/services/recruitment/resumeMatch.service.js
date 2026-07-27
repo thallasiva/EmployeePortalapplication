@@ -1,68 +1,68 @@
 'use strict';
 
-/**
- * Resume Match Service
- * Pure keyword-based scoring engine — no external AI dependencies.
- *
- * Weights:  Skills 60%  |  Experience 40%
- *
- * Skill aliases: normalises common equivalents so "JS" matches "JavaScript",
- * "ReactJS" matches "React", etc.
- */
+
+
+
+
+
+
+
+
+
 
 const { callProcedure } = require("../../config/db");
 
-// ── Skill alias map (lower-case) ────────────────────────────────────────────
+
 const ALIAS_MAP = {
-  "js":              ["javascript"],
-  "javascript":      ["js"],
-  "ts":              ["typescript"],
-  "typescript":      ["ts"],
-  "react":           ["reactjs", "react.js"],
-  "reactjs":         ["react", "react.js"],
-  "react.js":        ["react", "reactjs"],
-  "node":            ["node.js", "nodejs"],
-  "node.js":         ["node", "nodejs"],
-  "nodejs":          ["node", "node.js"],
-  "vue":             ["vuejs", "vue.js"],
-  "vuejs":           ["vue", "vue.js"],
-  "angular":         ["angularjs", "angular.js"],
-  "angularjs":       ["angular"],
-  "angular.js":      ["angular"],
-  "next":            ["next.js", "nextjs"],
-  "next.js":         ["next", "nextjs"],
-  "nextjs":          ["next", "next.js"],
-  "mongo":           ["mongodb"],
-  "mongodb":         ["mongo"],
-  "postgres":        ["postgresql"],
-  "postgresql":      ["postgres"],
-  "mysql":           ["my sql", "my-sql"],
-  "my sql":          ["mysql"],
-  "my-sql":          ["mysql"],
-  "mssql":           ["sql server", "microsoft sql server", "ms sql"],
-  "sql server":      ["mssql", "ms sql"],
-  "spring":          ["spring boot", "spring framework"],
-  "spring boot":     ["spring", "springboot"],
-  "springboot":      ["spring boot", "spring"],
-  "dotnet":          [".net", "dot net"],
-  ".net":            ["dotnet", "dot net"],
-  "expressjs":       ["express", "express.js"],
-  "express":         ["expressjs", "express.js"],
-  "express.js":      ["express", "expressjs"],
-  "aws":             ["amazon web services", "amazon aws"],
-  "gcp":             ["google cloud", "google cloud platform"],
-  "k8s":             ["kubernetes"],
-  "kubernetes":      ["k8s"],
-  "docker":          ["docker container", "docker compose"],
-  "java":            ["java se", "java ee"],
-  "python":          ["python3", "python 3"],
-  "rest":            ["rest api", "restful", "restful api", "rest apis"],
-  "rest api":        ["rest", "restful", "restful api", "rest apis"],
-  "restful":         ["rest", "rest api"],
-  "graphql":         ["graph ql"],
-  "jwt":             ["json web token"],
-  "oauth":           ["oauth2", "oauth 2.0"],
-  "oauth2":          ["oauth", "oauth 2.0"],
+  "js": ["javascript"],
+  "javascript": ["js"],
+  "ts": ["typescript"],
+  "typescript": ["ts"],
+  "react": ["reactjs", "react.js"],
+  "reactjs": ["react", "react.js"],
+  "react.js": ["react", "reactjs"],
+  "node": ["node.js", "nodejs"],
+  "node.js": ["node", "nodejs"],
+  "nodejs": ["node", "node.js"],
+  "vue": ["vuejs", "vue.js"],
+  "vuejs": ["vue", "vue.js"],
+  "angular": ["angularjs", "angular.js"],
+  "angularjs": ["angular"],
+  "angular.js": ["angular"],
+  "next": ["next.js", "nextjs"],
+  "next.js": ["next", "nextjs"],
+  "nextjs": ["next", "next.js"],
+  "mongo": ["mongodb"],
+  "mongodb": ["mongo"],
+  "postgres": ["postgresql"],
+  "postgresql": ["postgres"],
+  "mysql": ["my sql", "my-sql"],
+  "my sql": ["mysql"],
+  "my-sql": ["mysql"],
+  "mssql": ["sql server", "microsoft sql server", "ms sql"],
+  "sql server": ["mssql", "ms sql"],
+  "spring": ["spring boot", "spring framework"],
+  "spring boot": ["spring", "springboot"],
+  "springboot": ["spring boot", "spring"],
+  "dotnet": [".net", "dot net"],
+  ".net": ["dotnet", "dot net"],
+  "expressjs": ["express", "express.js"],
+  "express": ["expressjs", "express.js"],
+  "express.js": ["express", "expressjs"],
+  "aws": ["amazon web services", "amazon aws"],
+  "gcp": ["google cloud", "google cloud platform"],
+  "k8s": ["kubernetes"],
+  "kubernetes": ["k8s"],
+  "docker": ["docker container", "docker compose"],
+  "java": ["java se", "java ee"],
+  "python": ["python3", "python 3"],
+  "rest": ["rest api", "restful", "restful api", "rest apis"],
+  "rest api": ["rest", "restful", "restful api", "rest apis"],
+  "restful": ["rest", "rest api"],
+  "graphql": ["graph ql"],
+  "jwt": ["json web token"],
+  "oauth": ["oauth2", "oauth 2.0"],
+  "oauth2": ["oauth", "oauth 2.0"]
 };
 
 function normalise(str) {
@@ -71,80 +71,80 @@ function normalise(str) {
 
 function parseSkills(skillSetStr) {
   if (!skillSetStr) return [];
-  return skillSetStr
-    .split(/[,;|\/\n]/)
-    .map(s => normalise(s))
-    .filter(Boolean);
+  return skillSetStr.
+  split(/[,;|\/\n]/).
+  map((s) => normalise(s)).
+  filter(Boolean);
 }
 
 function skillMatches(required, candidateSkills, resumeText = '') {
   const reqNorm = normalise(required);
 
-  // 1. Exact match in candidate skills array
+
   if (candidateSkills.includes(reqNorm)) return true;
 
-  // 2. Alias exact match
-  const aliases = ALIAS_MAP[reqNorm] || [];
-  if (aliases.some(a => candidateSkills.includes(a))) return true;
 
-  // 3. Word-prefix match: "java" matches "java 8", "angular" matches "angular 20"
-  //    Required words must be a leading subset of a candidate skill's words
+  const aliases = ALIAS_MAP[reqNorm] || [];
+  if (aliases.some((a) => candidateSkills.includes(a))) return true;
+
+
+
   const reqWords = reqNorm.split(' ');
   const prefixMatch = (target) => {
     const tWords = target.split(' ');
     return reqWords.length <= tWords.length &&
-      reqWords.every((w, i) => tWords[i] === w);
+    reqWords.every((w, i) => tWords[i] === w);
   };
   if (candidateSkills.some(prefixMatch)) return true;
 
-  // 4. Alias prefix match
-  if (aliases.some(alias => candidateSkills.some(cs => {
+
+  if (aliases.some((alias) => candidateSkills.some((cs) => {
     const aWords = alias.split(' ');
     const cWords = cs.split(' ');
     return aWords.length <= cWords.length && aWords.every((w, i) => cWords[i] === w);
   }))) return true;
 
-  // 5. Resume full-text fallback — if required skill (or alias) appears anywhere in raw text
-  //    Useful when AI/regex extraction missed it but skill is clearly in the resume
+
+
   if (resumeText) {
     const rt = normalise(resumeText);
-    // Use word-boundary check: " java " to avoid "javascript" matching "java"
+
     const wordIn = (term) => {
       const t = normalise(term);
       return rt === t || rt.startsWith(t + ' ') || rt.endsWith(' ' + t) ||
-        rt.includes(' ' + t + ' ') || rt.includes(' ' + t + ',') ||
-        rt.includes('\n' + t) || rt.includes(t + '\n');
+      rt.includes(' ' + t + ' ') || rt.includes(' ' + t + ',') ||
+      rt.includes('\n' + t) || rt.includes(t + '\n');
     };
     if (wordIn(reqNorm)) return true;
-    if (aliases.some(a => wordIn(a))) return true;
+    if (aliases.some((a) => wordIn(a))) return true;
   }
 
   return false;
 }
 
-/**
- * Parse the minimum years from a job experience_level string.
- * "2-4 Years" → 2,  "3+ Years" → 3,  "5 years" → 5,  "Senior" → 3 (fallback)
- */
+
+
+
+
 function parseMinExperience(expLevel) {
   if (!expLevel) return 0;
   const match = String(expLevel).match(/(\d+)/);
   return match ? Number(match[1]) : 0;
 }
 
-// ── Core scoring logic ───────────────────────────────────────────────────────
-function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobExperienceLevel, resumeText = '' }) {
-  const jobSkills       = parseSkills(jobSkillSet);
-  const candSkills      = parseSkills(candidateSkillSet);
-  const candExp         = Number(relevantExperience) || 0;
-  const reqExp          = parseMinExperience(jobExperienceLevel);
 
-  // ── Skills (60%) ──────────────────────────────────────────────────────────
-  const matched  = [];
-  const missing  = [];
+function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobExperienceLevel, resumeText = '' }) {
+  const jobSkills = parseSkills(jobSkillSet);
+  const candSkills = parseSkills(candidateSkillSet);
+  const candExp = Number(relevantExperience) || 0;
+  const reqExp = parseMinExperience(jobExperienceLevel);
+
+
+  const matched = [];
+  const missing = [];
 
   if (jobSkills.length === 0) {
-    // No required skills defined — give full skill score
+
   } else {
     for (const skill of jobSkills) {
       if (skillMatches(skill, candSkills, resumeText)) {
@@ -155,76 +155,76 @@ function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobE
     }
   }
 
-  const skillScore = jobSkills.length > 0
-    ? Math.round((matched.length / jobSkills.length) * 100)
-    : 100;
+  const skillScore = jobSkills.length > 0 ?
+  Math.round(matched.length / jobSkills.length * 100) :
+  100;
 
-  // ── Experience (40%) ──────────────────────────────────────────────────────
+
   let expScore;
   if (reqExp === 0) {
     expScore = 100;
   } else if (candExp >= reqExp) {
     expScore = 100;
   } else {
-    expScore = Math.round((candExp / reqExp) * 100);
+    expScore = Math.round(candExp / reqExp * 100);
   }
 
-  // ── Weighted total ────────────────────────────────────────────────────────
+
   const total = Math.round(skillScore * 0.6 + expScore * 0.4);
 
-  // ── Recommendation ────────────────────────────────────────────────────────
+
   let recommendation;
-  if (total >= 80)      recommendation = "Highly Suitable";
-  else if (total >= 65) recommendation = "Suitable";
-  else if (total >= 45) recommendation = "Partially Suitable";
-  else                  recommendation = "Not Suitable";
+  if (total >= 80) recommendation = "Highly Suitable";else
+  if (total >= 65) recommendation = "Suitable";else
+  if (total >= 45) recommendation = "Partially Suitable";else
+  recommendation = "Not Suitable";
 
   return {
-    matchScore:  total,
+    matchScore: total,
     skillScore,
     expScore,
     matched,
     missing,
-    recommendation,
+    recommendation
   };
 }
 
-// ── Service methods ──────────────────────────────────────────────────────────
 
-/**
- * Fetch candidate + job from DB, compute score, upsert result.
- */
+
+
+
+
 async function computeAndStore(candidateId, jobReqId) {
-  // Fetch candidate
+
   const candResults = await callProcedure("sp_rec_get_candidate_match_inputs(?)", [candidateId]);
   const cand = (candResults[0] ?? [])[0];
   if (!cand) throw new Error(`Candidate ${candidateId} not found`);
 
-  // Fetch job
+
   const jobResults = await callProcedure("sp_rec_get_job_match_inputs(?)", [jobReqId]);
   const job = (jobResults[0] ?? [])[0];
   if (!job) throw new Error(`Job ${jobReqId} not found`);
 
   const result = computeScore({
-    candidateSkillSet:  cand.skill_set,
+    candidateSkillSet: cand.skill_set,
     relevantExperience: cand.relevant_experience,
-    jobSkillSet:        job.skill_set,
-    jobExperienceLevel: job.experience_level,
+    jobSkillSet: job.skill_set,
+    jobExperienceLevel: job.experience_level
   });
 
-  // Upsert into DB
+
   const rows = await callProcedure(
     "sp_rec_upsert_match(?, ?, ?, ?, ?, ?, ?, ?)",
     [
-      candidateId,
-      jobReqId,
-      result.matchScore,
-      result.skillScore,
-      result.expScore,
-      JSON.stringify(result.matched),
-      JSON.stringify(result.missing),
-      result.recommendation,
-    ]
+    candidateId,
+    jobReqId,
+    result.matchScore,
+    result.skillScore,
+    result.expScore,
+    JSON.stringify(result.matched),
+    JSON.stringify(result.missing),
+    result.recommendation]
+
   );
 
   return (rows[0] ?? [])[0];
@@ -246,10 +246,10 @@ async function listByJob(jobReqId) {
   return rows[0] ?? [];
 }
 
-/**
- * Auto-compute match for a newly added candidate against their job.
- * Non-blocking — errors are only logged.
- */
+
+
+
+
 function autoComputeAsync(candidateId, jobReqId) {
   if (!candidateId || !jobReqId) return;
   setImmediate(async () => {
@@ -262,21 +262,21 @@ function autoComputeAsync(candidateId, jobReqId) {
   });
 }
 
-/**
- * Quick match — compute score from raw inputs without storing anything.
- * Used by the recruiter "Quick Check" tool.
- */
+
+
+
+
 async function quickMatch({ jobReqId, candidateSkills, candidateExperience, resumeText = '' }) {
   const jobResults = await callProcedure("sp_rec_get_job_match_inputs(?)", [jobReqId]);
   const job = (jobResults[0] ?? [])[0];
   if (!job) throw new Error(`Job ${jobReqId} not found`);
 
   const result = computeScore({
-    candidateSkillSet:  candidateSkills,
+    candidateSkillSet: candidateSkills,
     relevantExperience: candidateExperience,
-    jobSkillSet:        job.skill_set,
+    jobSkillSet: job.skill_set,
     jobExperienceLevel: job.experience_level,
-    resumeText,
+    resumeText
   });
 
   return { ...result, jobTitle: job.title, jobExperienceLevel: job.experience_level };

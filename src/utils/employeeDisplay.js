@@ -4,13 +4,13 @@ const DEPT_BADGE = {
   Engineering: "emp-card__dept--engineering",
   "Human Resources": "emp-card__dept--hr",
   Finance: "emp-card__dept--finance",
-  Design: "emp-card__dept--design",
+  Design: "emp-card__dept--design"
 };
 
 export function getDepartmentName(employeeOrId) {
-  // Prefer the live department_name returned by the API (joined from the
-  // departments table). Fall back to the static lookup / "General" only
-  // when the API hasn't provided one (e.g. legacy/mock data).
+
+
+
   if (employeeOrId && typeof employeeOrId === "object") {
     if (employeeOrId.department_name) return employeeOrId.department_name;
     const dept = getDepartments().find((d) => d.department_id === Number(employeeOrId.department_id));
@@ -26,13 +26,13 @@ export function getEmployeeDisplayName(emp) {
 
 export function getEmployeeInitials(emp) {
   const name = getEmployeeDisplayName(emp);
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  return name.
+  split(" ").
+  filter(Boolean).
+  map((p) => p[0]).
+  join("").
+  slice(0, 2).
+  toUpperCase();
 }
 
 export function getDeptBadgeClass(departmentName) {

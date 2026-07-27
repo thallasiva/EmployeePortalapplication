@@ -37,7 +37,7 @@ export default function ReportStackedBarChart({ data }) {
               <div
                 className={joinClasses("report-stacked-bars", cssClass(
                   { height: `${total / yMax * 100}%` }))}>
-                
+
                 {LEAVE_SERIES.map((s) =>
                 <div
                   key={s.key}

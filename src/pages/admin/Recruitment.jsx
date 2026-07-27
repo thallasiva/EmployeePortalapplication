@@ -1,10 +1,10 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import
-{
+import {
+
   LayoutDashboard, Briefcase, Users, CalendarCheck,
-  FileCheck, UserPlus, BarChart3, CheckSquare, Zap,
-} from "lucide-react";
+  FileCheck, UserPlus, BarChart3, CheckSquare, Zap } from
+"lucide-react";
 
 import { getStoredUser } from "../../data/auth";
 import { roleInfo, getRecruiterKey } from "./recruitment/data";
@@ -23,56 +23,56 @@ import ReportsTab from "./recruitment/ReportsTab";
 import EmployeesTab from "./recruitment/EmployeesTab";
 
 const TABS = {
-  // Admin — full access
+
   1: [
-    { key: "dashboard", label: "Dashboard",  icon: LayoutDashboard },
-    { key: "jobs",      label: "Jobs",        icon: Briefcase },
-    { key: "candidates",label: "Candidates",  icon: Users },
-    { key: "interviews",label: "Interviews",  icon: CalendarCheck },
-    { key: "offers",    label: "Offers",      icon: FileCheck },
-    { key: "onboarding",label: "Onboarding",  icon: CheckSquare },
-    { key: "reports",   label: "Reports",     icon: BarChart3 },
-  ],
-  // Reporting Manager — pipeline oversight (same scope as TL)
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "jobs", label: "Jobs", icon: Briefcase },
+  { key: "candidates", label: "Candidates", icon: Users },
+  { key: "interviews", label: "Interviews", icon: CalendarCheck },
+  { key: "offers", label: "Offers", icon: FileCheck },
+  { key: "onboarding", label: "Onboarding", icon: CheckSquare },
+  { key: "reports", label: "Reports", icon: BarChart3 }],
+
+
   3: [
-    { key: "dashboard", label: "Dashboard",  icon: LayoutDashboard },
-    { key: "jobs",      label: "Jobs",        icon: Briefcase },
-    { key: "candidates",label: "Candidates",  icon: Users },
-    { key: "interviews",label: "Interviews",  icon: CalendarCheck },
-    { key: "offers",    label: "Offers",      icon: FileCheck },
-    { key: "onboarding",label: "Onboarding",  icon: CheckSquare },
-  ],
-  // HR Manager (role 4) — shortlist only: no Interviews, Offers or Onboarding tabs
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "jobs", label: "Jobs", icon: Briefcase },
+  { key: "candidates", label: "Candidates", icon: Users },
+  { key: "interviews", label: "Interviews", icon: CalendarCheck },
+  { key: "offers", label: "Offers", icon: FileCheck },
+  { key: "onboarding", label: "Onboarding", icon: CheckSquare }],
+
+
   4: [
-    { key: "dashboard", label: "Dashboard",  icon: LayoutDashboard },
-    { key: "jobs",      label: "Jobs",        icon: Briefcase },
-    { key: "candidates",label: "Candidates",  icon: Users },
-  ],
-  // Recruiter — own tasks only
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "jobs", label: "Jobs", icon: Briefcase },
+  { key: "candidates", label: "Candidates", icon: Users }],
+
+
   5: [
-    { key: "dashboard", label: "My Dashboard", icon: LayoutDashboard },
-    { key: "jobs",      label: "My Jobs",       icon: Briefcase },
-    { key: "candidates",label: "Candidates",    icon: Users },
-    { key: "interviews",label: "Interviews",    icon: CalendarCheck },
-  ],
+  { key: "dashboard", label: "My Dashboard", icon: LayoutDashboard },
+  { key: "jobs", label: "My Jobs", icon: Briefcase },
+  { key: "candidates", label: "Candidates", icon: Users },
+  { key: "interviews", label: "Interviews", icon: CalendarCheck }]
+
 };
 
 function RenderPage({ page, roleId })
 {
-  switch (page)
-  {
+  switch (page) {
+
     case "dashboard":
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 3 || roleId === 4) return <ManagerDashboard />;
       return <RecruiterDashboard />;
-    case "jobs": return <JobsPage role={roleId} />;
-    case "candidates": return <CandidatesPage role={roleId} />;
-    case "interviews": return <InterviewsPage role={roleId} />;
-    case "resume-match": return <ResumeMatchTab role={roleId} />;
-    case "offers": return <OffersPage role={roleId} />;
-    case "onboarding": return <OnboardingPage role={roleId} />;
-    case "employees": return <EmployeesTab />;
-    case "reports": return <ReportsTab />;
+    case "jobs":return <JobsPage role={roleId} />;
+    case "candidates":return <CandidatesPage role={roleId} />;
+    case "interviews":return <InterviewsPage role={roleId} />;
+    case "resume-match":return <ResumeMatchTab role={roleId} />;
+    case "offers":return <OffersPage role={roleId} />;
+    case "onboarding":return <OnboardingPage role={roleId} />;
+    case "employees":return <EmployeesTab />;
+    case "reports":return <ReportsTab />;
     default:
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 3 || roleId === 4) return <ManagerDashboard />;
@@ -109,8 +109,17 @@ const Recruitment = () =>
         overflow-x-auto
         mb-[24px]
         shadow-[0_1px_4px_rgba(0,0,0,0.06)]
-      "
-      >
+      ">
+
+
+
+
+
+
+
+
+
+
         {tabs.map((tab) =>
         {
           const Icon = tab.icon;
@@ -127,10 +136,9 @@ const Recruitment = () =>
               px-[16px]
               py-[12px]
               text-[13px]
-              ${selected
-                  ? "font-[700] text-[#f18200] border-b-[2px] border-[#f18200]"
-                  : "font-[500] text-[#6b7280] border-b-[2px] border-transparent"
-                }
+              ${selected ?
+              "font-[700] text-[#f18200] border-b-[2px] border-[#f18200]" :
+              "font-[500] text-[#6b7280] border-b-[2px] border-transparent"}
               bg-transparent
               border-x-0
               border-t-0
@@ -138,25 +146,26 @@ const Recruitment = () =>
               whitespace-nowrap
               transition-[color,border-color]
               duration-[150ms]
-            `}
-            >
+            `
+              }>
+
               <Icon size={15} />
               {tab.label}
-            </button>
-          );
+            </button>);
+
         })}
       </nav>
 
       <div className="px-[4px]">
         <RenderPage
           page={activePage}
-          roleId={roleId}
-        />
+          roleId={roleId} />
+
       </div>
 
-    </div>
+    </div>);
 
-  );
+
 };
 
 export default Recruitment;

@@ -15,9 +15,11 @@ import ErrorBoundary from "../../component/ErrorBoundary";
 const LazyInsightsPanel = lazy(() => import("./LazyInsightsPanel"));
 const ThemeContext = React.createContext(null);
 
-function ThemeProvider({ children }) {
+function ThemeProvider({ children })
+{
   const [theme, setTheme] = useState("light");
-  const toggleTheme = useCallback(() => {
+  const toggleTheme = useCallback(() =>
+  {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   }, []);
 
@@ -26,18 +28,22 @@ function ThemeProvider({ children }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-function useTheme() {
+function useTheme()
+{
   const context = useContext(ThemeContext);
-  if (!context) {
+  if (!context)
+  {
     throw new Error("useTheme must be used within ThemeProvider");
   }
   return context;
 }
 
-function useDebounce(value, delay) {
+function useDebounce(value, delay)
+{
   const [debouncedValue, setDebouncedValue] = useState(value);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const timer = window.setTimeout(() => setDebouncedValue(value), delay);
     return () => window.clearTimeout(timer);
   }, [value, delay]);
@@ -45,13 +51,16 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-function useThrottle(value, delay) {
+function useThrottle(value, delay)
+{
   const [throttledValue, setThrottledValue] = useState(value);
   const lastRun = useRef(0);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const now = Date.now();
-    if (now - lastRun.current >= delay) {
+    if (now - lastRun.current >= delay)
+    {
       lastRun.current = now;
       setThrottledValue(value);
     }
@@ -60,24 +69,30 @@ function useThrottle(value, delay) {
   return throttledValue;
 }
 
-function calculatePrimes(limit) {
+function calculatePrimes(limit)
+{
   const primes = [];
-  for (let number = 2; number <= limit; number += 1) {
+  for (let number = 2; number <= limit; number += 1)
+  {
     let isPrime = true;
-    for (let factor = 2; factor * factor <= number; factor += 1) {
-      if (number % factor === 0) {
+    for (let factor = 2; factor * factor <= number; factor += 1)
+    {
+      if (number % factor === 0)
+      {
         isPrime = false;
         break;
       }
     }
-    if (isPrime) {
+    if (isPrime)
+    {
       primes.push(number);
     }
   }
   return primes;
 }
 
-const MemoizedSummaryCard = memo(function MemoizedSummaryCard({ title, description, value }) {
+const MemoizedSummaryCard = memo(function MemoizedSummaryCard({ title, description, value })
+{
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <p className="text-sm font-semibold text-slate-700">{title}</p>
@@ -87,7 +102,8 @@ const MemoizedSummaryCard = memo(function MemoizedSummaryCard({ title, descripti
   );
 });
 
-function PrimeDemo() {
+function PrimeDemo()
+{
   const [limit, setLimit] = useState(180);
   const primes = useMemo(() => calculatePrimes(limit), [limit]);
 
@@ -118,7 +134,8 @@ function PrimeDemo() {
   );
 }
 
-function MemoizedListDemo() {
+function MemoizedListDemo()
+{
   const [selectedItem, setSelectedItem] = useState("Alpha");
   const handleSelect = useCallback((value) => setSelectedItem(value), []);
 
@@ -158,13 +175,15 @@ function MemoizedListDemo() {
   );
 }
 
-function SearchAndThrottleDemo() {
+function SearchAndThrottleDemo()
+{
   const [query, setQuery] = useState("");
   const [count, setCount] = useState(0);
   const debouncedQuery = useDebounce(query, 400);
   const throttledCount = useThrottle(count, 700);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     setCount((prev) => prev + 1);
   }, [debouncedQuery]);
 
@@ -198,7 +217,8 @@ function SearchAndThrottleDemo() {
   );
 }
 
-function VirtualListDemo() {
+function VirtualListDemo()
+{
   const items = useMemo(
     () => Array.from({ length: 5000 }, (_, index) => `Row ${index + 1}`),
     []
@@ -240,8 +260,10 @@ function VirtualListDemo() {
   );
 }
 
-function ErrorDemo({ shouldThrow }) {
-  if (shouldThrow) {
+function ErrorDemo({ shouldThrow })
+{
+  if (shouldThrow)
+  {
     throw new Error("This demo intentionally triggered an error");
   }
 
@@ -252,7 +274,8 @@ function ErrorDemo({ shouldThrow }) {
   );
 }
 
-function PerformanceShowcaseContent() {
+function PerformanceShowcaseContent()
+{
   const { theme, toggleTheme } = useTheme();
   const [shouldThrow, setShouldThrow] = useState(false);
 
@@ -286,8 +309,10 @@ function PerformanceShowcaseContent() {
 
         <Profiler
           id="showcase-grid"
-          onRender={(id, phase, actualDuration) => {
-            if (process.env.NODE_ENV !== "production") {
+          onRender={(id, phase, actualDuration) =>
+          {
+            if (process.env.NODE_ENV !== "production")
+            {
               console.info(`[Profiler] ${id} ${phase} in ${actualDuration.toFixed(2)}ms`);
             }
           }}
@@ -349,7 +374,8 @@ function PerformanceShowcaseContent() {
   );
 }
 
-export default function ReactPerformanceShowcase() {
+export default function ReactPerformanceShowcase()
+{
   return (
     <ThemeProvider>
       <PerformanceShowcaseContent />

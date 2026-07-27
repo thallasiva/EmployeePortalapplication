@@ -4,25 +4,25 @@ import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
 import { getShiftForUser } from "../../../data/auth";
 
 const SHIFTS = [
-  {
-    id: "general",
-    name: "General Shift",
-    time: "09:00 AM – 06:00 PM",
-    break: "1h lunch",
-  },
-  {
-    id: "mid",
-    name: "Mid Shift",
-    time: "01:00 PM – 10:00 PM",
-    break: "1h dinner break",
-  },
-  {
-    id: "night",
-    name: "Night Shift",
-    time: "10:00 PM – 07:00 AM",
-    break: "1h break",
-  },
-];
+{
+  id: "general",
+  name: "General Shift",
+  time: "09:00 AM – 06:00 PM",
+  break: "1h lunch"
+},
+{
+  id: "mid",
+  name: "Mid Shift",
+  time: "01:00 PM – 10:00 PM",
+  break: "1h dinner break"
+},
+{
+  id: "night",
+  name: "Night Shift",
+  time: "10:00 PM – 07:00 AM",
+  break: "1h break"
+}];
+
 
 function getWeekStart(date) {
   const d = new Date(date);
@@ -47,19 +47,19 @@ function buildWeekRoster(weekStart, userShift) {
       month: date.toLocaleDateString("en-GB", { month: "short" }),
       isWeekend,
       isToday: toISODateString(new Date()) === toISODateString(date),
-      shift: isWeekend
-        ? { name: "Week Off", time: "—", break: "—" }
-        : userShift,
+      shift: isWeekend ?
+      { name: "Week Off", time: "—", break: "—" } :
+      userShift
     };
   });
 }
 
 const teamRoster = [
-  { name: "Alex Kumar", shift: "General Shift", dept: "Engineering" },
-  { name: "Priya Sharma", shift: "General Shift", dept: "HR" },
-  { name: "Rahul Mehta", shift: "Flexible Shift", dept: "Support" },
-  { name: "Neha Reddy", shift: "General Shift", dept: "Finance" },
-];
+{ name: "Alex Kumar", shift: "General Shift", dept: "Engineering" },
+{ name: "Priya Sharma", shift: "General Shift", dept: "HR" },
+{ name: "Rahul Mehta", shift: "Flexible Shift", dept: "Support" },
+{ name: "Neha Reddy", shift: "General Shift", dept: "Finance" }];
+
 
 export default function ShiftRoster() {
   const user = getLoggedInUser();
@@ -68,7 +68,7 @@ export default function ShiftRoster() {
   const userShift = useMemo(() => {
     const shiftId = getShiftForUser(user);
     return SHIFTS.find((s) => s.id === shiftId) || SHIFTS[0];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const week = useMemo(
@@ -86,7 +86,7 @@ export default function ShiftRoster() {
 
   const todayEntry = week.find((d) => d.isToday);
   const currentShift =
-    todayEntry && !todayEntry.isWeekend ? todayEntry.shift : userShift;
+  todayEntry && !todayEntry.isWeekend ? todayEntry.shift : userShift;
 
   return (
     <div className="space-y-6">
@@ -105,8 +105,8 @@ export default function ShiftRoster() {
             type="button"
             onClick={() => goWeek(-1)}
             className="p-2 rounded-md hover:bg-slate-100 text-slate-600"
-            aria-label="Previous week"
-          >
+            aria-label="Previous week">
+
             <ChevronLeft size={20} />
           </button>
           <span className="px-3 text-sm font-semibold text-slate-800 min-w-[10rem] text-center">
@@ -116,15 +116,15 @@ export default function ShiftRoster() {
             type="button"
             onClick={() => goWeek(1)}
             className="p-2 rounded-md hover:bg-slate-100 text-slate-600"
-            aria-label="Next week"
-          >
+            aria-label="Next week">
+
             <ChevronRight size={20} />
           </button>
           <button
             type="button"
             onClick={() => setWeekStart(getWeekStart(new Date()))}
-            className="ml-1 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-50 rounded-md"
-          >
+            className="ml-1 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-50 rounded-md">
+
             Today
           </button>
         </div>
@@ -137,39 +137,39 @@ export default function ShiftRoster() {
             Your shift this week
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-            {week.map((day) => (
-              <div
-                key={day.iso}
-                className={`rounded-xl border p-3 ${
-                  day.isToday
-                    ? "border-brand bg-brand-50 ring-2 ring-brand/30"
-                    : day.isWeekend
-                    ? "border-gray-100 bg-slate-50"
-                    : "border-gray-200 bg-white"
-                }`}
-              >
+            {week.map((day) =>
+            <div
+              key={day.iso}
+              className={`rounded-xl border p-3 ${
+              day.isToday ?
+              "border-brand bg-brand-50 ring-2 ring-brand/30" :
+              day.isWeekend ?
+              "border-gray-100 bg-slate-50" :
+              "border-gray-200 bg-white"}`
+              }>
+
                 <p className="text-xs font-medium text-slate-500">{day.shortDay}</p>
                 <p className="text-xl font-bold text-slate-900 mt-0.5">
                   {day.dateNum}
                 </p>
                 <p className="text-[11px] text-slate-400">{day.month}</p>
                 <p
-                  className={`mt-2 text-xs font-semibold ${
-                    day.isWeekend ? "text-slate-500" : "text-brand"
-                  }`}
-                >
+                className={`mt-2 text-xs font-semibold ${
+                day.isWeekend ? "text-slate-500" : "text-brand"}`
+                }>
+
                   {day.shift.name}
                 </p>
                 <p className="text-[11px] text-slate-500 mt-1 leading-snug">
                   {day.shift.time}
                 </p>
-                {day.isToday && (
-                  <span className="inline-block mt-2 text-[10px] font-bold text-brand uppercase">
+                {day.isToday &&
+              <span className="inline-block mt-2 text-[10px] font-bold text-brand uppercase">
                     Today
                   </span>
-                )}
+              }
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -183,19 +183,19 @@ export default function ShiftRoster() {
             <p className="text-xs opacity-75 mt-2">Break: {currentShift.break}</p>
           </div>
           <ul className="mt-4 space-y-2">
-            {SHIFTS.map((s) => (
-              <li
-                key={s.id}
-                className={`text-sm px-3 py-2 rounded-lg border ${
-                  s.name === currentShift.name
-                    ? "border-brand bg-brand-50 text-brand-800 font-medium"
-                    : "border-gray-100 text-slate-600"
-                }`}
-              >
+            {SHIFTS.map((s) =>
+            <li
+              key={s.id}
+              className={`text-sm px-3 py-2 rounded-lg border ${
+              s.name === currentShift.name ?
+              "border-brand bg-brand-50 text-brand-800 font-medium" :
+              "border-gray-100 text-slate-600"}`
+              }>
+
                 <span className="font-semibold">{s.name}</span>
                 <span className="block text-xs text-slate-500">{s.time}</span>
               </li>
-            ))}
+            )}
           </ul>
         </div>
       </div>
@@ -215,11 +215,11 @@ export default function ShiftRoster() {
               </tr>
             </thead>
             <tbody>
-              {teamRoster.map((row) => (
-                <tr
-                  key={row.name}
-                  className="border-t border-gray-100 hover:bg-slate-50/80"
-                >
+              {teamRoster.map((row) =>
+              <tr
+                key={row.name}
+                className="border-t border-gray-100 hover:bg-slate-50/80">
+
                   <td className="px-5 py-3 font-medium text-slate-800">
                     {row.name}
                   </td>
@@ -230,11 +230,11 @@ export default function ShiftRoster() {
                     </span>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

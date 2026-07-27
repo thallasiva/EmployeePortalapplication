@@ -9,8 +9,8 @@ export default function AddDocumentScreen()
   const enableModel = () => {
     setShowModal(true);
     console.log(showModal);
-    
-  }
+
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -18,14 +18,14 @@ export default function AddDocumentScreen()
       <div className="bg-[#f4f5f7] mb-2">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
 
-          {/* Header */}
+          {}
           <div className="px-5 py-4 border-b border-gray-200">
             <h2 className="text-[22px] font-semibold text-[#1f2a44]">
               Payroll Details
             </h2>
           </div>
 
-          {/* Row 1 */}
+          {}
           <div className="px-2 py-2">
             <div className="border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-between hover:shadow-sm transition">
               <span className="text-[15px] font-medium text-black">
@@ -38,7 +38,7 @@ export default function AddDocumentScreen()
             </div>
           </div>
 
-          {/* Row 2 */}
+          {}
           <div className="px-2 py-2">
             <div className="border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-between hover:shadow-sm transition">
               <span className="text-[15px] font-medium text-black">
@@ -51,7 +51,7 @@ export default function AddDocumentScreen()
             </div>
           </div>
 
-          {/* Row 3 */}
+          {}
           <div className="px-2 py-2">
             <div className="border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-between hover:shadow-sm transition">
               <span className="text-[15px] font-medium text-black">
@@ -66,9 +66,9 @@ export default function AddDocumentScreen()
 
         </div>
       </div>
-      {/* Cards Section */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Basic Information */}
+        {}
         <div className="bg-white rounded-xl shadow-md border">
           <div className="flex items-center justify-between px-5 py-4 border-b">
             <h2 className="text-lg font-semibold text-gray-800">
@@ -78,8 +78,8 @@ export default function AddDocumentScreen()
             <div className="flex gap-2">
               <button
                 onClick={enableModel}
-                className="w-9 h-9 rounded-md border flex items-center justify-center text-brand hover:bg-brand-50"
-              >
+                className="w-9 h-9 rounded-md border flex items-center justify-center text-brand hover:bg-brand-50">
+
                 <Plus size={18} />
               </button>
 
@@ -109,18 +109,18 @@ export default function AddDocumentScreen()
           </div>
         </div>
 
-        {/* Document Card */}
+        {}
         <div className="bg-white rounded-xl shadow-md border">
           <div className="px-5 py-4 border-b">
             <h2 className="text-lg font-semibold text-gray-800">P45</h2>
           </div>
 
           <div className="p-5 space-y-4">
-            {documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="border rounded-lg px-4 py-3 flex items-center justify-between"
-              >
+            {documents.map((doc) =>
+            <div
+              key={doc.id}
+              className="border rounded-lg px-4 py-3 flex items-center justify-between">
+
                 <div className="flex items-center gap-3">
                   <span className="text-red-500 text-lg">📄</span>
                   <span className="text-sm font-medium text-gray-700">
@@ -132,11 +132,11 @@ export default function AddDocumentScreen()
                   <Pencil size={16} />
                 </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
-        {/* Salary Card */}
+        {}
         <div className="bg-white rounded-xl shadow-md border">
           <div className="px-5 py-4 border-b">
             <h2 className="text-lg font-semibold text-gray-800">P45</h2>
@@ -156,11 +156,11 @@ export default function AddDocumentScreen()
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <AddDocuments setShowModal={setShowModal} showModal={showModal} />
-      )}
+      {}
+      {showModal &&
+      <AddDocuments setShowModal={setShowModal} showModal={showModal} />
+      }
 
-    </div>
-  );
+    </div>);
+
 }

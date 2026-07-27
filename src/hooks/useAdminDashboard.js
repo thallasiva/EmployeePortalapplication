@@ -10,20 +10,20 @@ function todayIso() {
 
 const EMPTY_LIST = { data: [], meta: { total: 0 } };
 
-/**
- * Fetches live admin dashboard metrics from the backend
- * (`/api/dashboard/*`, `/api/leave-requests`, `/api/attendance`) and shapes
- * them to match the structure previously produced by
- * `getAdminDashboardMetrics()` (static mock data).
- *
- * Each of the underlying requests is fetched independently via
- * `Promise.allSettled` so that a single failing call (e.g. recent
- * activities) doesn't blow away the rest of the live data and silently
- * fall back to the static mock numbers. Only falls back to the static
- * mock metrics entirely if EVERY request fails (e.g. the backend isn't
- * reachable at all), so the page keeps working even if the backend isn't
- * running yet.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export function useAdminDashboard() {
   const [metrics, setMetrics] = useState(null);
   const [activities, setActivities] = useState([]);
@@ -36,14 +36,14 @@ export function useAdminDashboard() {
 
     async function load() {
       const [statsR, attendanceR, pendingR, onLeaveR, lateR, absentR, recentR] = await Promise.allSettled([
-        getDashboardStats(),
-        getAttendanceDashboard(date),
-        listLeaveRequests({ status: "Pending", limit: 5 }),
-        listAttendance({ from_date: date, to_date: date, status: "leave", limit: 50 }),
-        listAttendance({ from_date: date, to_date: date, status: "late", limit: 50 }),
-        listAttendance({ from_date: date, to_date: date, status: "absent", limit: 50 }),
-        getRecentActivities(6),
-      ]);
+      getDashboardStats(),
+      getAttendanceDashboard(date),
+      listLeaveRequests({ status: "Pending", limit: 5 }),
+      listAttendance({ from_date: date, to_date: date, status: "leave", limit: 50 }),
+      listAttendance({ from_date: date, to_date: date, status: "late", limit: 50 }),
+      listAttendance({ from_date: date, to_date: date, status: "absent", limit: 50 }),
+      getRecentActivities(6)]
+      );
 
       if (cancelled) return;
 
@@ -51,12 +51,12 @@ export function useAdminDashboard() {
       const failures = results.filter((r) => r.status === "rejected");
 
       failures.forEach((f) => {
-        // eslint-disable-next-line no-console
+
         console.error("[useAdminDashboard] a dashboard request failed:", f.reason);
       });
 
-      // Only bail out to the static mock data if literally every request
-      // failed (almost certainly means the backend is unreachable).
+
+
       if (failures.length === results.length) {
         setError(failures[0]?.reason || new Error("Failed to load dashboard data"));
         setMetrics(getAdminDashboardMetrics());
@@ -77,9 +77,9 @@ export function useAdminDashboard() {
       const absentToday = Number(attendance?.absent_today) || 0;
       const lateToday = Number(attendance?.late_today) || 0;
       const checkedIn = Number(attendance?.checked_in_today) || 0;
-      const attendanceRate = totalEmployees
-        ? Math.round((presentToday / totalEmployees) * 100)
-        : 0;
+      const attendanceRate = totalEmployees ?
+      Math.round(presentToday / totalEmployees * 100) :
+      0;
 
       setMetrics({
         totalEmployees,
@@ -93,7 +93,7 @@ export function useAdminDashboard() {
           type: "Leave",
           from: r.attendance_date,
           to: r.attendance_date,
-          days: 1,
+          days: 1
         })),
         pendingList: pending.data.map((r) => ({
           id: r.leave_request_id,
@@ -102,7 +102,7 @@ export function useAdminDashboard() {
           from: r.from_date,
           to: r.to_date,
           days: r.days,
-          reason: r.reason,
+          reason: r.reason
         })),
         approvedCount: undefined,
         rejectedCount: undefined,
@@ -115,24 +115,24 @@ export function useAdminDashboard() {
           id: r.attendance_id,
           name: r.employee_name,
           checkIn: r.check_in,
-          lateBy: r.late_by_minutes ? `${r.late_by_minutes}m late` : "",
+          lateBy: r.late_by_minutes ? `${r.late_by_minutes}m late` : ""
         })),
         absentEmployees: absent.data.map((r) => ({
           id: r.attendance_id,
           name: r.employee_name,
-          department: r.department_name,
+          department: r.department_name
         })),
         presentEmployees: [],
         openTickets: Number(stats?.open_tickets_count) || 0,
         openJobs: Number(stats?.open_jobs_count) || 0,
-        salariesCount: Number(stats?.salaries_count) || 0,
+        salariesCount: Number(stats?.salaries_count) || 0
       });
 
       setActivities(
         (recent || []).map((a) => ({
           id: a.id,
           text: `${a.performed_by_name || "System"} ${a.action?.toLowerCase() || "updated"} ${a.entity}${a.entity_id ? ` #${a.entity_id}` : ""}`,
-          time: a.created_at,
+          time: a.created_at
         }))
       );
 

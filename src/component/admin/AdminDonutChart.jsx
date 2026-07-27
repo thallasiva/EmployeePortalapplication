@@ -71,7 +71,7 @@ export default function AdminDonutChart({
               fill="none"
               stroke="#f3f4f6"
               strokeWidth={strokeWidth} />
-            
+
             {arcs.map((arc) =>
             arc.value > 0 ?
             <path
@@ -98,7 +98,7 @@ export default function AdminDonutChart({
                 <span
                 className={joinClasses("admin-chart__swatch", cssClass(
                   { background: seg.color, width: 10, height: 10 }))} />
-              
+
                 {seg.label}
               </span>
               <span className="admin-donut__legend-value">

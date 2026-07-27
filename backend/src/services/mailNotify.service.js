@@ -1,40 +1,40 @@
 'use strict';
 
-/**
- * HRMS Mail Notification Service
- *
- * Central hub for all email notifications.
- * Every function is fire-and-forget — never throws, never blocks requests.
- *
- * Usage:
- *   const notify = require('./mailNotify.service');
- *   notify.leaveApplied({ employeeEmail, managerEmail, ... });  // non-blocking
- */
+
+
+
+
+
+
+
+
+
+
 
 const { sendMail, sendMailNow, sendBulk } = require('./email.service');
 const T = require('./email/mailTemplates');
 const { email: emailCfg } = require('../config/env');
 
-/* ── helpers ──────────────────────────────────────────────────────────────── */
 
-/**
- * Fire-and-forget wrapper — swallows all errors so callers are never affected.
- */
+
+
+
+
 function fire(fn) {
   Promise.resolve().then(fn).catch((err) => {
     console.error('[mailNotify] Uncaught error (non-fatal):', err.message);
   });
 }
 
-function adminEmail() { return emailCfg.adminAlert || null; }
+function adminEmail() {return emailCfg.adminAlert || null;}
 
-/* ══════════════════════════════════════════════════════════════════════
-   AUTH NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Sent when a new employee account is created.
- */
+
+
+
+
+
+
 exports.employeeInvite = ({ name, email, tempPassword, role, department }) => {
   if (!email) return;
   fire(async () => {
@@ -43,9 +43,9 @@ exports.employeeInvite = ({ name, email, tempPassword, role, department }) => {
   });
 };
 
-/**
- * Sent after a failed login causes account lockout.
- */
+
+
+
 exports.accountLocked = ({ name, email, minutes }) => {
   if (!email) return;
   fire(async () => {
@@ -54,9 +54,9 @@ exports.accountLocked = ({ name, email, minutes }) => {
   });
 };
 
-/**
- * Sent on successful password change.
- */
+
+
+
 exports.passwordChanged = ({ name, email }) => {
   if (!email) return;
   fire(async () => {
@@ -65,9 +65,9 @@ exports.passwordChanged = ({ name, email }) => {
   });
 };
 
-/**
- * Sent on password reset request.
- */
+
+
+
 exports.forgotPassword = ({ name, email, resetUrl, expiresIn }) => {
   if (!email) return;
   fire(async () => {
@@ -76,9 +76,9 @@ exports.forgotPassword = ({ name, email, resetUrl, expiresIn }) => {
   });
 };
 
-/**
- * Sent on login from a new IP/device.
- */
+
+
+
 exports.loginAlert = ({ name, email, ip, device, time }) => {
   if (!email) return;
   fire(async () => {
@@ -87,13 +87,13 @@ exports.loginAlert = ({ name, email, ip, device, time }) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   EMPLOYEE NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Sent when a new employee profile is created.
- */
+
+
+
+
+
+
 exports.employeeCreated = ({ name, email, empCode, role, department, joiningDate }) => {
   if (!email) return;
   fire(async () => {
@@ -102,9 +102,9 @@ exports.employeeCreated = ({ name, email, empCode, role, department, joiningDate
   });
 };
 
-/**
- * Sent when an employee account is deactivated.
- */
+
+
+
 exports.employeeDeactivated = ({ name, email, reason }) => {
   if (!email) return;
   fire(async () => {
@@ -113,14 +113,14 @@ exports.employeeDeactivated = ({ name, email, reason }) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   LEAVE NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Notify manager when employee applies for leave.
- * @param {{ managerEmail, managerName, employeeName, empCode, leaveType, fromDate, toDate, days, reason, leaveRequestId }} data
- */
+
+
+
+
+
+
+
 exports.leaveApplied = (data) => {
   if (!data.managerEmail) return;
   const { leaveRequestId } = data;
@@ -129,15 +129,15 @@ exports.leaveApplied = (data) => {
     const tpl = T.leaveApplied({
       ...data,
       approveUrl: `${feUrl}/manager/leaves?action=approve&id=${leaveRequestId}`,
-      rejectUrl:  `${feUrl}/manager/leaves?action=reject&id=${leaveRequestId}`,
+      rejectUrl: `${feUrl}/manager/leaves?action=reject&id=${leaveRequestId}`
     });
     await sendMail({ to: data.managerEmail, ...tpl, template: 'leave/applied', priority: 'high' });
   });
 };
 
-/**
- * Notify employee when leave is approved.
- */
+
+
+
 exports.leaveApproved = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -146,9 +146,9 @@ exports.leaveApproved = (data) => {
   });
 };
 
-/**
- * Notify employee when leave is rejected.
- */
+
+
+
 exports.leaveRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -157,9 +157,9 @@ exports.leaveRejected = (data) => {
   });
 };
 
-/**
- * Notify manager when employee cancels leave.
- */
+
+
+
 exports.leaveCancelled = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -168,47 +168,47 @@ exports.leaveCancelled = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   ATTENDANCE NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Sent via cron to employees who haven't checked in.
- * @param {Array<{name, email}>} employees
- * @param {string} date
- */
+
+
+
+
+
+
+
+
 exports.missingCheckInBulk = (employees, date) => {
   fire(async () => {
-    const jobs = employees
-      .filter((e) => e.email)
-      .map((e) => {
-        const tpl = T.missingCheckIn({ name: e.name || e.first_name, date });
-        return { to: e.email, ...tpl, template: 'attendance/missing-checkin', priority: 'medium' };
-      });
+    const jobs = employees.
+    filter((e) => e.email).
+    map((e) => {
+      const tpl = T.missingCheckIn({ name: e.name || e.first_name, date });
+      return { to: e.email, ...tpl, template: 'attendance/missing-checkin', priority: 'medium' };
+    });
     if (jobs.length) await sendBulk(jobs);
     console.info(`[mailNotify] Missing check-in alerts queued: ${jobs.length}`);
   });
 };
 
-/**
- * Sent via cron to employees who haven't checked out.
- */
+
+
+
 exports.missingCheckOutBulk = (employees, date) => {
   fire(async () => {
-    const jobs = employees
-      .filter((e) => e.email)
-      .map((e) => {
-        const tpl = T.missingCheckOut({ name: e.name || e.first_name, date });
-        return { to: e.email, ...tpl, template: 'attendance/missing-checkout', priority: 'medium' };
-      });
+    const jobs = employees.
+    filter((e) => e.email).
+    map((e) => {
+      const tpl = T.missingCheckOut({ name: e.name || e.first_name, date });
+      return { to: e.email, ...tpl, template: 'attendance/missing-checkout', priority: 'medium' };
+    });
     if (jobs.length) await sendBulk(jobs);
     console.info(`[mailNotify] Missing check-out alerts queued: ${jobs.length}`);
   });
 };
 
-/**
- * Notify manager of attendance regularization request.
- */
+
+
+
 exports.attendanceRegularizationRequest = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -217,9 +217,9 @@ exports.attendanceRegularizationRequest = (data) => {
   });
 };
 
-/**
- * Notify employee that attendance was regularized (approved).
- */
+
+
+
 exports.attendanceRegularized = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -228,9 +228,9 @@ exports.attendanceRegularized = (data) => {
   });
 };
 
-/**
- * Notify employee that attendance regularization was rejected.
- */
+
+
+
 exports.attendanceRegularizationRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -239,40 +239,40 @@ exports.attendanceRegularizationRejected = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   PAYROLL NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Send payslip notification to a single employee.
- */
+
+
+
+
+
+
 exports.payslipReleased = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
     const tpl = T.payslipReleased({
       ...data,
-      payslipUrl: `${emailCfg.frontendUrl || 'http://localhost:3000'}/payslips`,
+      payslipUrl: `${emailCfg.frontendUrl || 'http://localhost:3000'}/payslips`
     });
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'payroll/payslip', priority: 'medium' });
   });
 };
 
-/**
- * Bulk payslip release — batches 50 at a time with 1s delay.
- * @param {Array} payslips — array of payslip data objects with employeeEmail
- */
+
+
+
+
 exports.payslipReleasedBulk = (payslips) => {
   fire(async () => {
     const BATCH = 50;
     const feUrl = emailCfg.frontendUrl || 'http://localhost:3000';
     for (let i = 0; i < payslips.length; i += BATCH) {
       const batch = payslips.slice(i, i + BATCH);
-      const jobs  = batch
-        .filter((p) => p.employeeEmail)
-        .map((p) => {
-          const tpl = T.payslipReleased({ ...p, payslipUrl: `${feUrl}/payslips` });
-          return { to: p.employeeEmail, ...tpl, template: 'payroll/payslip', priority: 'medium' };
-        });
+      const jobs = batch.
+      filter((p) => p.employeeEmail).
+      map((p) => {
+        const tpl = T.payslipReleased({ ...p, payslipUrl: `${feUrl}/payslips` });
+        return { to: p.employeeEmail, ...tpl, template: 'payroll/payslip', priority: 'medium' };
+      });
       if (jobs.length) await sendBulk(jobs);
       if (i + BATCH < payslips.length) await new Promise((r) => setTimeout(r, 1000));
     }
@@ -280,9 +280,9 @@ exports.payslipReleasedBulk = (payslips) => {
   });
 };
 
-/**
- * Salary revision notification.
- */
+
+
+
 exports.salaryRevised = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -291,13 +291,13 @@ exports.salaryRevised = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   RECRUITMENT NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Auto-acknowledge candidate application.
- */
+
+
+
+
+
+
 exports.applicationAcknowledgment = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -306,9 +306,9 @@ exports.applicationAcknowledgment = (data) => {
   });
 };
 
-/**
- * Candidate shortlisted notification.
- */
+
+
+
 exports.candidateShortlisted = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -317,9 +317,9 @@ exports.candidateShortlisted = (data) => {
   });
 };
 
-/**
- * Candidate rejected notification.
- */
+
+
+
 exports.candidateRejected = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -328,9 +328,9 @@ exports.candidateRejected = (data) => {
   });
 };
 
-/**
- * Offer letter sent.
- */
+
+
+
 exports.offerLetter = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -339,9 +339,9 @@ exports.offerLetter = (data) => {
   });
 };
 
-/**
- * Notify recruiter that offer was accepted.
- */
+
+
+
 exports.offerAccepted = (data) => {
   if (!data.recruiterEmail) return;
   fire(async () => {
@@ -350,9 +350,9 @@ exports.offerAccepted = (data) => {
   });
 };
 
-/**
- * Notify recruiter that offer was declined.
- */
+
+
+
 exports.offerRejected = (data) => {
   if (!data.recruiterEmail) return;
   fire(async () => {
@@ -361,13 +361,13 @@ exports.offerRejected = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   RESIGNATION NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Notify manager of submitted resignation.
- */
+
+
+
+
+
+
 exports.resignationSubmitted = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -376,9 +376,9 @@ exports.resignationSubmitted = (data) => {
   });
 };
 
-/**
- * Notify employee their resignation was accepted.
- */
+
+
+
 exports.resignationApproved = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -387,9 +387,9 @@ exports.resignationApproved = (data) => {
   });
 };
 
-/**
- * Notify employee their resignation was not accepted.
- */
+
+
+
 exports.resignationRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -398,13 +398,13 @@ exports.resignationRejected = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   HELPDESK NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Notify agent of new ticket.
- */
+
+
+
+
+
+
 exports.ticketCreated = (data) => {
   if (!data.agentEmail) return;
   fire(async () => {
@@ -413,9 +413,9 @@ exports.ticketCreated = (data) => {
   });
 };
 
-/**
- * Notify reporter that ticket is resolved.
- */
+
+
+
 exports.ticketResolved = (data) => {
   if (!data.reporterEmail) return;
   fire(async () => {
@@ -424,9 +424,9 @@ exports.ticketResolved = (data) => {
   });
 };
 
-/**
- * Notify reporter of ticket update.
- */
+
+
+
 exports.ticketUpdated = (data) => {
   if (!data.reporterEmail) return;
   fire(async () => {
@@ -435,9 +435,9 @@ exports.ticketUpdated = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   TIMESHEET NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.timesheetSubmitted = (data) => {
   if (!data.managerEmail) return;
@@ -465,45 +465,45 @@ exports.timesheetRejected = (data) => {
 
 exports.timesheetReminderBulk = (employees, weekLabel) => {
   fire(async () => {
-    const jobs = employees
-      .filter((e) => e.email)
-      .map((e) => {
-        const tpl = T.timesheetReminder({ employeeName: e.name || e.first_name, weekLabel });
-        return { to: e.email, ...tpl, template: 'timesheet/reminder', priority: 'low' };
-      });
+    const jobs = employees.
+    filter((e) => e.email).
+    map((e) => {
+      const tpl = T.timesheetReminder({ employeeName: e.name || e.first_name, weekLabel });
+      return { to: e.email, ...tpl, template: 'timesheet/reminder', priority: 'low' };
+    });
     if (jobs.length) await sendBulk(jobs);
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   DOCUMENT EXPIRY NOTIFICATIONS
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Bulk document expiry reminders.
- * @param {Array<{ employeeEmail, employeeName, documentType, expiryDate, daysLeft }>} docs
- */
+
+
+
+
+
+
+
 exports.documentExpiryBulk = (docs) => {
   fire(async () => {
-    const jobs = docs
-      .filter((d) => d.employeeEmail)
-      .map((d) => {
-        const tpl = T.documentExpiry(d);
-        return {
-          to:       d.employeeEmail,
-          ...tpl,
-          template: 'documents/expiry',
-          priority: d.daysLeft <= 7 ? 'high' : 'medium',
-        };
-      });
+    const jobs = docs.
+    filter((d) => d.employeeEmail).
+    map((d) => {
+      const tpl = T.documentExpiry(d);
+      return {
+        to: d.employeeEmail,
+        ...tpl,
+        template: 'documents/expiry',
+        priority: d.daysLeft <= 7 ? 'high' : 'medium'
+      };
+    });
     if (jobs.length) await sendBulk(jobs);
     console.info(`[mailNotify] Document expiry alerts queued: ${jobs.length}`);
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   ADMIN ALERT
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.emailDeliveryFailed = (data) => {
   const to = adminEmail();
@@ -514,41 +514,41 @@ exports.emailDeliveryFailed = (data) => {
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   RECRUITER ASSIGNMENT
-══════════════════════════════════════════════════════════════════════ */
 
-/**
- * Notify one or more recruiters that a job has been assigned to them.
- * @param {Array} recruiters  — [{ email, name, jobTitle, jobCode, client, vacancies, skillSet }]
- */
+
+
+
+
+
+
+
 exports.recruiterAssigned = (recruiters) => {
   if (!Array.isArray(recruiters) || !recruiters.length) return;
   fire(async () => {
-    const jobs = recruiters
-      .filter((r) => r.email)
-      .map((r) => {
-        const tpl = T.recruiterAssigned({
-          recruiterName: r.name     || 'Recruiter',
-          jobTitle:      r.jobTitle || '',
-          jobCode:       r.jobCode  || '',
-          client:        r.client   || '',
-          vacancies:     r.vacancies,
-          skillSet:      r.skillSet || '',
-          loginUrl:      null,
-        });
-        return { to: r.email, ...tpl, template: 'recruitment/recruiter-assigned', priority: 'high' };
+    const jobs = recruiters.
+    filter((r) => r.email).
+    map((r) => {
+      const tpl = T.recruiterAssigned({
+        recruiterName: r.name || 'Recruiter',
+        jobTitle: r.jobTitle || '',
+        jobCode: r.jobCode || '',
+        client: r.client || '',
+        vacancies: r.vacancies,
+        skillSet: r.skillSet || '',
+        loginUrl: null
       });
+      return { to: r.email, ...tpl, template: 'recruitment/recruiter-assigned', priority: 'high' };
+    });
     if (jobs.length) await sendBulk(jobs);
     console.info(`[mailNotify] Recruiter assignment emails sent: ${jobs.length}`);
   });
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   RECRUITMENT FLOW NOTIFICATIONS (Steps 2 – 10)
-══════════════════════════════════════════════════════════════════════ */
 
-/** Step 2 — Notify HR Manager when recruiter submits a candidate */
+
+
+
+
 exports.candidateSubmittedToHR = ({ hrEmail, hrName, recruiterName, candidateName, jobTitle, candidateCode }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -557,7 +557,7 @@ exports.candidateSubmittedToHR = ({ hrEmail, hrName, recruiterName, candidateNam
   });
 };
 
-/** Steps 3 & 6 — Notify Recruiter when HR changes candidate status */
+
 exports.candidateStatusToRecruiter = ({ recruiterEmail, recruiterName, candidateName, jobTitle, status }) => {
   if (!recruiterEmail) return;
   fire(async () => {
@@ -566,7 +566,7 @@ exports.candidateStatusToRecruiter = ({ recruiterEmail, recruiterName, candidate
   });
 };
 
-/** Steps 4 & 7 — Notify Candidate when interview is scheduled */
+
 exports.interviewScheduledCandidate = ({ candidateEmail, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer }) => {
   if (!candidateEmail) return;
   fire(async () => {
@@ -575,7 +575,7 @@ exports.interviewScheduledCandidate = ({ candidateEmail, candidateName, jobTitle
   });
 };
 
-/** Steps 4 & 7 — Notify HR Manager when interview is scheduled */
+
 exports.interviewScheduledHR = ({ hrEmail, hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -584,7 +584,7 @@ exports.interviewScheduledHR = ({ hrEmail, hrName, candidateName, jobTitle, leve
   });
 };
 
-/** Step 5 — Notify HR Manager when interview feedback is submitted */
+
 exports.interviewFeedbackToHR = ({ hrEmail, hrName, candidateName, jobTitle, level, feedbackStatus, feedbackComments, interviewerName }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -593,7 +593,7 @@ exports.interviewFeedbackToHR = ({ hrEmail, hrName, candidateName, jobTitle, lev
   });
 };
 
-/** Step 8 — Notify Admin when candidate is marked Selected */
+
 exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) => {
   const to = adminEmail();
   if (!to) return;
@@ -603,7 +603,7 @@ exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) =>
   });
 };
 
-/** Step 9 — Notify HR Manager when offer is released */
+
 exports.offerReleasedToHR = ({ hrEmail, hrName, candidateName, jobTitle, ctc, dateOfJoining }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -612,7 +612,7 @@ exports.offerReleasedToHR = ({ hrEmail, hrName, candidateName, jobTitle, ctc, da
   });
 };
 
-/** Step 10 — Notify Admin when candidate accepts offer */
+
 exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => {
   const to = adminEmail();
   if (!to) return;
@@ -622,16 +622,16 @@ exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => {
   });
 };
 
-/* ======================================================================
-   JOINING FORMALITIES NOTIFICATIONS
-====================================================================== */
+
+
+
 
 exports.joiningInvitation = ({
   candidateName, candidateEmail, jobTitle, joiningUrl, expiresAt,
   ctc, ctcInWords, dateOfJoining, offerCode,
   basic, hra, telephoneAllowance, specialAllowance, grossSalary,
   pfContribution, statutoryBonus, gratuity, esi,
-  pdfBuffer, pdfFilename,
+  pdfBuffer, pdfFilename
 }) => {
   if (!candidateEmail) return;
   fire(async () => {
@@ -639,11 +639,11 @@ exports.joiningInvitation = ({
       candidateName, jobTitle, joiningUrl, expiresAt,
       ctc, ctcInWords, dateOfJoining, offerCode,
       basic, hra, telephoneAllowance, specialAllowance, grossSalary,
-      pfContribution, statutoryBonus, gratuity, esi,
+      pfContribution, statutoryBonus, gratuity, esi
     });
-    const attachments = pdfBuffer
-      ? [{ filename: pdfFilename || 'Offer_Letter.pdf', content: pdfBuffer, contentType: 'application/pdf' }]
-      : [];
+    const attachments = pdfBuffer ?
+    [{ filename: pdfFilename || 'Offer_Letter.pdf', content: pdfBuffer, contentType: 'application/pdf' }] :
+    [];
     await sendMailNow({ to: candidateEmail, ...tpl, attachments, template: 'joining/invitation', priority: 'critical' });
   });
 };

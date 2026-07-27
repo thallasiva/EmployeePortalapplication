@@ -2,7 +2,7 @@ const svc = require('../services/appraisal.service');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 
-/* ── Cycle ──────────────────────────────────────────────────────────────── */
+
 const getCycle = asyncHandler(async (req, res) => {
   const cycle = await svc.getActiveCycle();
   new ApiResponse(200, cycle, 'Cycle fetched').send(res);
@@ -36,13 +36,13 @@ const disableCycle = asyncHandler(async (req, res) => {
   new ApiResponse(200, cycle, 'Cycle disabled').send(res);
 });
 
-// Legacy toggle kept for backward compat
+
 const toggleCycle = asyncHandler(async (req, res) => {
   const cycle = await svc.toggleCycle(req.user.employeeId);
   new ApiResponse(200, cycle, 'Cycle updated').send(res);
 });
 
-/* ── Employee ────────────────────────────────────────────────────────────── */
+
 const getMyAppraisal = asyncHandler(async (req, res) => {
   const data = await svc.getMyAppraisal(req.user.employeeId);
   new ApiResponse(200, data, 'Appraisal fetched').send(res);
@@ -52,7 +52,7 @@ const saveMyAppraisal = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Appraisal saved').send(res);
 });
 
-/* ── Manager ─────────────────────────────────────────────────────────────── */
+
 const getTeamAppraisals = asyncHandler(async (req, res) => {
   const data = await svc.getTeamAppraisals(req.user.employeeId);
   new ApiResponse(200, data, 'Team appraisals fetched').send(res);
@@ -62,13 +62,13 @@ const saveManagerRating = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Manager ratings saved').send(res);
 });
 
-/* ── Admin ───────────────────────────────────────────────────────────────── */
+
 const getAllAppraisals = asyncHandler(async (req, res) => {
-  // Support ?cycle_id=X query param; falls back to active cycle
+
   const cycleId = req.query.cycle_id ? Number(req.query.cycle_id) : null;
-  const data = cycleId
-    ? await svc.getAllAppraisals(cycleId, req.query)
-    : await svc.getAllAppraisals(req.query);
+  const data = cycleId ?
+  await svc.getAllAppraisals(cycleId, req.query) :
+  await svc.getAllAppraisals(req.query);
   new ApiResponse(200, data, 'All appraisals fetched').send(res);
 });
 const updateStatus = asyncHandler(async (req, res) => {
@@ -76,9 +76,9 @@ const updateStatus = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Status updated').send(res);
 });
 
-/* ── Enrollment ──────────────────────────────────────────────────────────── */
+
 const getEnrollments = asyncHandler(async (req, res) => {
-  // Support ?cycle_id=X; otherwise use active cycle
+
   let cycleId = req.query.cycle_id ? Number(req.query.cycle_id) : null;
   if (!cycleId) {
     const cycle = await svc.getActiveCycle();
@@ -115,5 +115,5 @@ module.exports = {
   getMyAppraisal, saveMyAppraisal,
   getTeamAppraisals, saveManagerRating,
   getAllAppraisals, updateStatus,
-  getEnrollments, enrollEmployees, unenrollEmployee,
+  getEnrollments, enrollEmployees, unenrollEmployee
 };

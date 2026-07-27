@@ -6,23 +6,23 @@ const { encryptSalaryFields, applyVisibility } = require('../utils/encryption');
 class SalaryStructureService extends BaseService {
   constructor() {
     super('salary_structures', 'id', [
-      'employee_id', 'basic', 'hra', 'conveyance', 'medical_allowance', 'special_allowance',
-      'pf_employee', 'pf_employer', 'professional_tax', 'income_tax', 'ctc', 'effective_from',
-    ]);
+    'employee_id', 'basic', 'hra', 'conveyance', 'medical_allowance', 'special_allowance',
+    'pf_employee', 'pf_employer', 'professional_tax', 'income_tax', 'ctc', 'effective_from']
+    );
   }
 
   async list({ employee_id, limit, offset, reqUser } = {}) {
     const results = await callProcedure(
       'sp_list_salary_structures(?, ?, ?)',
       [
-        employee_id ?? null,
-        limit != null ? Number(limit)       : null,
-        limit != null ? Number(offset || 0) : null,
-      ]
+      employee_id ?? null,
+      limit != null ? Number(limit) : null,
+      limit != null ? Number(offset || 0) : null]
+
     );
-    const rows    = results[0] ?? [];
-    const total   = (results[1] ?? [])[0]?.total ?? 0;
-    const visible = rows.map(r => applyVisibility(r, reqUser, r.employee_id));
+    const rows = results[0] ?? [];
+    const total = (results[1] ?? [])[0]?.total ?? 0;
+    const visible = rows.map((r) => applyVisibility(r, reqUser, r.employee_id));
     return { rows: visible, total };
   }
 
@@ -38,7 +38,7 @@ class SalaryStructureService extends BaseService {
     return applyVisibility(row, reqUser, ownerId ?? row?.employee_id);
   }
 
-  /** Override: encrypt salary data on INSERT, then NULL out plaintext columns */
+
   async create(data) {
     const salaryEncrypted = encryptSalaryFields(data);
     const row = await super.create(data);
@@ -48,7 +48,7 @@ class SalaryStructureService extends BaseService {
     return row;
   }
 
-  /** Override: encrypt salary data on UPDATE, then NULL out plaintext columns */
+
   async update(id, data) {
     const row = await super.update(id, data);
     const rawResults = await callProcedure('sp_get_salary_structure_raw(?)', [id]);
@@ -56,7 +56,7 @@ class SalaryStructureService extends BaseService {
     if (full) {
       const { decryptSalaryRow } = require('../utils/encryption');
       const existing = decryptSalaryRow(full);
-      const merged   = { ...existing, ...data };
+      const merged = { ...existing, ...data };
       const salaryEncrypted = encryptSalaryFields(merged);
       if (salaryEncrypted) {
         await callProcedure('sp_update_salary_encrypted(?, ?)', [id, salaryEncrypted]);
@@ -72,15 +72,15 @@ class SalaryStructureService extends BaseService {
 
     for (const row of rows) {
       const empCode = String(row.emp_code || row.employee_code || '').trim();
-      if (!empCode) { result.skipped.push({ reason: 'Missing emp_code' }); continue; }
+      if (!empCode) {result.skipped.push({ reason: 'Missing emp_code' });continue;}
 
       const empResults = await callProcedure('sp_find_employee_by_empcode(?)', [empCode]);
-      const employee   = (empResults[0] ?? [])[0] ?? null;
-      if (!employee) { result.skipped.push({ emp_code: empCode, reason: 'Employee not found' }); continue; }
-      if (!row.effective_from) { result.skipped.push({ emp_code: empCode, reason: 'Missing effective_from' }); continue; }
+      const employee = (empResults[0] ?? [])[0] ?? null;
+      if (!employee) {result.skipped.push({ emp_code: empCode, reason: 'Employee not found' });continue;}
+      if (!row.effective_from) {result.skipped.push({ emp_code: empCode, reason: 'Missing effective_from' });continue;}
 
-      const payload  = this._pick({ ...row, employee_id: employee.employee_id });
-      const findRes  = await callProcedure('sp_find_salary_structure(?, ?)', [employee.employee_id, payload.effective_from]);
+      const payload = this._pick({ ...row, employee_id: employee.employee_id });
+      const findRes = await callProcedure('sp_find_salary_structure(?, ?)', [employee.employee_id, payload.effective_from]);
       const existing = (findRes[0] ?? [])[0] ?? null;
 
       if (existing) {

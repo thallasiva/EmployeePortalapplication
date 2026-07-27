@@ -39,7 +39,7 @@ function getDurationLabel(ms) {
   return parts.join(" ");
 }
 
-// ── SVG Line chart ────────────────────────────────────────────────────────────
+
 function RevisionLineChart({ rows }) {
   if (!rows || rows.length < 1) return null;
 
@@ -61,7 +61,7 @@ function RevisionLineChart({ rows }) {
     return v >= 100000 ? `${(v / 100000).toFixed(2)}L` : `${(v / 1000).toFixed(0)}k`;
   };
 
-  // Y-axis ticks
+
   const yTicks = 4;
   const yTickVals = Array.from({ length: yTicks + 1 }, (_, i) => min + i / yTicks * (max - min));
 
@@ -74,7 +74,7 @@ function RevisionLineChart({ rows }) {
         </linearGradient>
       </defs>
 
-      {/* Y-axis ticks */}
+      {}
       {yTickVals.map((v, i) =>
       <g key={i}>
           <line x1={PAD.left} y1={toY(v)} x2={PAD.left + inner.w} y2={toY(v)} stroke="#f1f5f9" strokeWidth={1} />
@@ -82,13 +82,13 @@ function RevisionLineChart({ rows }) {
         </g>
       )}
 
-      {/* Area fill */}
+      {}
       <polygon points={fillPoints} fill="url(#lineGrad)" />
 
-      {/* Line */}
+      {}
       <polyline points={points} fill="none" stroke="#f97316" strokeWidth={2.5} strokeLinejoin="round" />
 
-      {/* Dots + X labels */}
+      {}
       {rows.map((r, i) => {
         const x = toX(i);
         const y = toY(Number(r.newCTC) || 0);
@@ -105,7 +105,7 @@ function RevisionLineChart({ rows }) {
 
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+
 export default function SalaryRevision() {
   const [loading, setLoading] = useState(true);
   const [structure, setStructure] = useState(null);
@@ -119,7 +119,7 @@ export default function SalaryRevision() {
     ).then(async ([s, u]) => {
       setStructure(s);
       setUser(u);
-      // Try to get all salary structures for this employee (revision history)
+
       if (u?.employee_id) {
         const all = await listSalaryStructures({ employee_id: u.employee_id, limit: 50 }).catch(() => []);
         setAll(Array.isArray(all) ? all.sort((a, b) => new Date(b.effective_date || b.effective_from) - new Date(a.effective_date || a.effective_from)) : []);
@@ -135,10 +135,10 @@ export default function SalaryRevision() {
   const currentCTC = breakdown ? (breakdown.totalEarnings + breakdown.pf) * 12 : 0;
   const effectiveDate = structure?.effective_from || structure?.effective_date || null;
 
-  // Build revision rows from all structures
+
   const revisionRows = useMemo(() => {
     if (!allStructures.length && structure) {
-      // Only current structure available — show single row
+
       const ctc = breakdown ? (breakdown.totalEarnings + breakdown.pf) * 12 : 0;
       return [{ effectiveDate, newCTC: ctc, prevCTC: 0, payoutMonth: effectiveDate, duration: 0, diffAmt: ctc, diffPct: null }];
     }
@@ -158,7 +158,7 @@ export default function SalaryRevision() {
     });
   }, [allStructures, structure, breakdown, effectiveDate]);
 
-  // Duration since last revision
+
   const lastRevision = revisionRows[0];
   const durationSince = lastRevision?.effectiveDate ?
   getDurationLabel(Date.now() - new Date(lastRevision.effectiveDate).getTime()) :
@@ -180,7 +180,7 @@ export default function SalaryRevision() {
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
 
-      {/* Top summary */}
+      {}
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20, maxWidth: 640 })}>
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px" })}>
           <div className={cssClass({ fontSize: 11, color: "#94a3b8", marginBottom: 4 })}>Duration since last revision</div>
@@ -202,7 +202,7 @@ export default function SalaryRevision() {
         </div>
       </div>
 
-      {/* Timeline chart */}
+      {}
       <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", marginBottom: 20 })}>
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 })}>
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>CTC Revision Timeline</span>
@@ -213,7 +213,7 @@ export default function SalaryRevision() {
         <RevisionLineChart rows={[...revisionRows].reverse()} />
       </div>
 
-      {/* CTC Revision Details table */}
+      {}
       <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" })}>
         <div className={cssClass({ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc" })}>
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>CTC Revision Details</span>

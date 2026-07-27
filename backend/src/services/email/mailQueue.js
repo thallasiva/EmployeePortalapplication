@@ -1,9 +1,9 @@
 'use strict';
 
-/**
- * BullMQ email queue + Redis connection.
- * Gracefully disabled if Redis is not configured / reachable.
- */
+
+
+
+
 
 const cfg = require('../../config/env');
 
@@ -12,19 +12,19 @@ try {
   ({ Queue, Worker } = require('bullmq'));
   IORedis = require('ioredis');
 } catch {
-  // packages not available — queue will be disabled
+
 }
 
 const QUEUE_NAME = 'hrms-email-queue';
 
 let _connection = null;
-let _queue      = null;
+let _queue = null;
 let _queueReady = false;
 
-/**
- * Creates (and caches) the Redis connection.
- * Returns null if Redis env vars are missing or packages not installed.
- */
+
+
+
+
 function getConnection() {
   if (_connection) return _connection;
   if (!IORedis) return null;
@@ -37,21 +37,21 @@ function getConnection() {
     port,
     password: password || undefined,
     maxRetriesPerRequest: null,
-    enableReadyCheck:     false,
-    lazyConnect:          true,
+    enableReadyCheck: false,
+    lazyConnect: true
   });
 
   _connection.on('error', (err) => {
-    // Log but never crash the process
+
     console.warn('[MailQueue] Redis error (emails will fall back to direct send):', err.message);
   });
 
   return _connection;
 }
 
-/**
- * Returns the BullMQ Queue instance, or null if not available.
- */
+
+
+
 function getQueue() {
   if (_queue) return _queue;
   const conn = getConnection();
@@ -60,11 +60,11 @@ function getQueue() {
   _queue = new Queue(QUEUE_NAME, {
     connection: conn,
     defaultJobOptions: {
-      attempts:        cfg.queue.maxRetries || 3,
-      backoff:         { type: 'exponential', delay: cfg.queue.retryDelayMs || 5000 },
-      removeOnComplete: { age: 7 * 24 * 3600 },  // keep 7 days
-      removeOnFail:     { age: 30 * 24 * 3600 }, // keep 30 days
-    },
+      attempts: cfg.queue.maxRetries || 3,
+      backoff: { type: 'exponential', delay: cfg.queue.retryDelayMs || 5000 },
+      removeOnComplete: { age: 7 * 24 * 3600 },
+      removeOnFail: { age: 30 * 24 * 3600 }
+    }
   });
 
   _queue.on('error', (err) => {
@@ -75,17 +75,17 @@ function getQueue() {
   return _queue;
 }
 
-/**
- * Adds an email job to the queue.
- * Priority: critical=1, high=2, medium=5, low=10, bulk=20
- * Returns the job id, or null if queue is unavailable.
- */
+
+
+
+
+
 async function enqueue(jobData) {
   const q = getQueue();
   if (!q) return null;
 
   const priorityMap = { critical: 1, high: 2, medium: 5, low: 10, bulk: 20 };
-  const priority    = priorityMap[jobData.priority] || 5;
+  const priority = priorityMap[jobData.priority] || 5;
 
   try {
     const job = await q.add('send-email', jobData, { priority });
@@ -96,10 +96,10 @@ async function enqueue(jobData) {
   }
 }
 
-/**
- * Creates a BullMQ Worker that processes queued email jobs.
- * Call this once at server startup.
- */
+
+
+
+
 function createWorker(processorFn) {
   const conn = getConnection();
   if (!conn || !Worker) {
@@ -108,8 +108,8 @@ function createWorker(processorFn) {
   }
 
   const worker = new Worker(QUEUE_NAME, processorFn, {
-    connection:  conn,
-    concurrency: cfg.queue.concurrency || 5,
+    connection: conn,
+    concurrency: cfg.queue.concurrency || 5
   });
 
   worker.on('completed', (job) => {

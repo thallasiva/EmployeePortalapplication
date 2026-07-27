@@ -1,51 +1,51 @@
 'use strict';
 
-/**
- * HRMS Email Templates — Premium Design
- * All inline styles — works across all email clients including Outlook.
- * Logo: set COMPANY_LOGO_PATH in .env (file path or https:// URL).
- */
 
-const fs   = require('fs');
+
+
+
+
+
+const fs = require('fs');
 const path = require('path');
 const { email: emailCfg } = require('../../config/env');
 
-/* ── Helpers ─────────────────────────────────────────────────────────────── */
-const esc     = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-const fmtDT   = (d) => {
-  if (!d) return '—';
-  try { return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}); }
-  catch { return String(d); }
-};
-const fmtINR  = (n) => n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '₹0';
-const co      = (override) => esc(override || emailCfg.companyName || 'NAT IT Services Pvt Ltd');
-const feUrl   = () => emailCfg.frontendUrl || 'http://localhost:3000';
 
-/* ── Brand colors ─────────────────────────────────────────────────────────── */
-const ORANGE  = '#f18200';
-const NAVY    = '#1e3a5f';
-const CREAM   = '#FFF8F0';
+const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const fmtDT = (d) => {
+  if (!d) return '—';
+  try {return new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });}
+  catch {return String(d);}
+};
+const fmtINR = (n) => n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '₹0';
+const co = (override) => esc(override || emailCfg.companyName || 'NAT IT Services Pvt Ltd');
+const feUrl = () => emailCfg.frontendUrl || 'http://localhost:3000';
+
+
+const ORANGE = '#f18200';
+const NAVY = '#1e3a5f';
+const CREAM = '#FFF8F0';
 const CREAM_B = '#FFD9A8';
 
-/* ── Logo loader (cached) ─────────────────────────────────────────────────── */
-// Email clients block base64 data URIs. Serve logo as a URL from the backend.
-// Priority: 1) COMPANY_LOGO_PATH env (if https:// URL) → 2) backend /public/logo.png → 3) no logo
+
+
+
 const DEFAULT_LOGO_PATH = path.resolve(__dirname, '../../../../src/assets/logo.png');
 let _logoCache = null;
-// Reset cache if called after server restart (module is freshly required)
-function resetLogoCache() { _logoCache = null; }
+
+function resetLogoCache() {_logoCache = null;}
 function getLogoTag() {
   if (_logoCache !== null) return _logoCache;
 
-  // 1. Explicit URL set in env
+
   const envLogo = (emailCfg.logoPath || '').trim();
   if (/^https?:\/\//i.test(envLogo)) {
     _logoCache = `<img src="${esc(envLogo)}" alt="${co()}" style="height:48px;max-width:160px;object-fit:contain;display:block">`;
     return _logoCache;
   }
 
-  // 2. Serve from backend static route (works on local network)
+
   const backendUrl = (emailCfg.backendUrl || 'http://localhost:5000').replace(/\/$/, '');
   const logoFileExists = fs.existsSync(DEFAULT_LOGO_PATH);
   if (logoFileExists) {
@@ -53,14 +53,14 @@ function getLogoTag() {
     return _logoCache;
   }
 
-  // 3. Fallback — no logo
+
   _logoCache = '';
   return '';
 }
 
-/* ── UI Primitives ────────────────────────────────────────────────────────── */
 
-/** Info table row — orange label + value */
+
+
 function infoRow(label, value) {
   return `<tr>
     <td style="padding:9px 16px;font-size:12px;font-weight:700;color:${ORANGE};white-space:nowrap;border-bottom:1px solid #FFE8CC;letter-spacing:0.2px;width:38%;vertical-align:top">${esc(label)} :</td>
@@ -68,12 +68,12 @@ function infoRow(label, value) {
   </tr>`;
 }
 
-/** Wrap rows in a cream info table */
+
 function infoTable(rows) {
   return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${CREAM};border:1px solid ${CREAM_B};border-left:4px solid ${ORANGE};border-radius:8px;overflow:hidden;margin:18px 0">${rows}</table>`;
 }
 
-/** Remarks box */
+
 function remarksBox(label, text) {
   const empty = !text || text.trim() === '' || /^-+NA-+$/i.test(text.trim());
   return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB">
@@ -82,33 +82,33 @@ function remarksBox(label, text) {
 </table>`;
 }
 
-/** Badge helpers */
+
 function badge(text, color, bg) {
   return `<span style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${bg};color:${color}">${text}</span>`;
 }
 const badgeGreen = (t) => badge(t, '#15803D', '#DCFCE7');
-const badgeRed   = (t) => badge(t, '#B91C1C', '#FEE2E2');
-const badgeBlue  = (t) => badge(t, '#1E40AF', '#DBEAFE');
+const badgeRed = (t) => badge(t, '#B91C1C', '#FEE2E2');
+const badgeBlue = (t) => badge(t, '#1E40AF', '#DBEAFE');
 const badgeAmber = (t) => badge(t, '#92400E', '#FEF3C7');
 
-/** CTA button */
+
 function btn(text, url, bg = ORANGE) {
   return `<div style="text-align:center;margin:24px 0 8px">
   <a href="${esc(url)}" style="display:inline-block;padding:13px 36px;background:${bg};border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.3px">${text}</a>
 </div>`;
 }
 
-/** Divider */
+
 const divider = `<div style="border:none;border-top:1px solid #E5E7EB;margin:20px 0"></div>`;
 
-/* ── Attendance date table ────────────────────────────────────────────────── */
+
 function attTable(rows) {
   if (!rows || !rows.length) return '';
-  const trs = rows.map(r => `
+  const trs = rows.map((r) => `
     <tr style="border-bottom:1px solid #E5E7EB">
       <td style="padding:8px 10px;font-size:12px;color:#374151">${esc(fmtDate(r.date))}</td>
-      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.actualFIT   ? fmtDT(r.actualFIT)   : '—')}</td>
-      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.actualLOT   ? fmtDT(r.actualLOT)   : '—')}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.actualFIT ? fmtDT(r.actualFIT) : '—')}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.actualLOT ? fmtDT(r.actualLOT) : '—')}</td>
       <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.proposedFIT ? fmtDT(r.proposedFIT) : '—')}</td>
       <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.proposedLOT ? fmtDT(r.proposedLOT) : '—')}</td>
       <td style="padding:8px 10px;font-size:12px;color:#374151">${esc(r.reason || '—')}</td>
@@ -133,11 +133,11 @@ function attTable(rows) {
 </table>`;
 }
 
-/* ── Base layout ─────────────────────────────────────────────────────────── */
+
 function layout({ title, subtitle, body, accent = ORANGE, companyName = '' }) {
   const logo = getLogoTag();
-  const addr = [emailCfg.companyAddress, emailCfg.companyPhone, emailCfg.companyEmail]
-    .filter(Boolean).map(esc).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
+  const addr = [emailCfg.companyAddress, emailCfg.companyPhone, emailCfg.companyEmail].
+  filter(Boolean).map(esc).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -191,14 +191,14 @@ function layout({ title, subtitle, body, accent = ORANGE, companyName = '' }) {
 </body></html>`;
 }
 
-/* ── Greeting / Lead paragraph helpers ───────────────────────────────────── */
+
 const greeting = (name) => `<p style="font-size:15px;font-weight:600;color:#1F2937;margin:0 0 12px">Dear ${esc(name)},</p>`;
-const lead     = (html) => `<p style="color:#4B5563;font-size:14px;margin:0 0 18px;line-height:1.7">${html}</p>`;
+const lead = (html) => `<p style="color:#4B5563;font-size:14px;margin:0 0 18px;line-height:1.7">${html}</p>`;
 
 
-/* ══════════════════════════════════════════════════════════════════════
-   AUTH
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.employeeInvite = ({ name, email, tempPassword, role, department, companyName = '' }) => ({
   subject: `You're invited to join ${co(companyName)}`,
@@ -215,9 +215,9 @@ ${infoTable(`
 `)}
 <p style="color:#6B7280;font-size:13px;margin:0 0 20px">Please log in and change your password immediately from your profile settings.</p>
 ${btn('Login to HR Portal', `${feUrl()}/login`)}
-<p style="font-size:12px;color:#9CA3AF;margin:12px 0 0;text-align:center">If you were not expecting this email, please contact your HR administrator.</p>`,
+<p style="font-size:12px;color:#9CA3AF;margin:12px 0 0;text-align:center">If you were not expecting this email, please contact your HR administrator.</p>`
   }),
-  text: `Dear ${name}, your ${co(companyName)} account has been created.\nEmail: ${email}\nLogin: ${feUrl()}/login`,
+  text: `Dear ${name}, your ${co(companyName)} account has been created.\nEmail: ${email}\nLogin: ${feUrl()}/login`
 });
 
 exports.loginAlert = ({ name, ip, device, time, companyName = '' }) => ({
@@ -232,9 +232,9 @@ ${infoTable(`
   ${infoRow('IP Address', ip || 'Unknown')}
   ${infoRow('Device / Browser', device || 'Unknown')}
 `)}
-<p style="color:#B91C1C;font-size:13px;margin:0">If you did <strong>not</strong> log in, please <a href="${feUrl()}/change-password" style="color:${ORANGE}">change your password immediately</a> and contact IT support.</p>`,
+<p style="color:#B91C1C;font-size:13px;margin:0">If you did <strong>not</strong> log in, please <a href="${feUrl()}/change-password" style="color:${ORANGE}">change your password immediately</a> and contact IT support.</p>`
   }),
-  text: `New login detected on your ${co(companyName)} account. IP: ${ip}, Time: ${time}.`,
+  text: `New login detected on your ${co(companyName)} account. IP: ${ip}, Time: ${time}.`
 });
 
 exports.accountLocked = ({ name, minutes, companyName = '' }) => ({
@@ -250,9 +250,9 @@ ${infoTable(`
   ${infoRow('Reason', 'Too many failed login attempts')}
 `)}
 <p style="font-size:14px;color:#4B5563;margin:0">Your account will unlock automatically after the lockout period. If you did not attempt to log in, contact IT support immediately.</p>
-${btn('Reset Password', `${feUrl()}/forgot-password`, '#DC2626')}`,
+${btn('Reset Password', `${feUrl()}/forgot-password`, '#DC2626')}`
   }),
-  text: `Your ${co(companyName)} account is locked for ${minutes || 15} minutes.`,
+  text: `Your ${co(companyName)} account is locked for ${minutes || 15} minutes.`
 });
 
 exports.passwordChanged = ({ name, companyName = '' }) => ({
@@ -262,9 +262,9 @@ exports.passwordChanged = ({ name, companyName = '' }) => ({
     body: `
 ${greeting(name)}
 <p style="font-size:14px;color:#4B5563;margin:0 0 14px">Your HR Portal account password was successfully changed.</p>
-<p style="font-size:13px;color:#B91C1C;margin:0">If you did not make this change, please <a href="${feUrl()}/forgot-password" style="color:${ORANGE}">reset your password</a> immediately and contact IT support.</p>`,
+<p style="font-size:13px;color:#B91C1C;margin:0">If you did not make this change, please <a href="${feUrl()}/forgot-password" style="color:${ORANGE}">reset your password</a> immediately and contact IT support.</p>`
   }),
-  text: `Your ${co(companyName)} password was changed.`,
+  text: `Your ${co(companyName)} password was changed.`
 });
 
 exports.forgotPassword = ({ name, resetUrl, expiresIn, companyName = '' }) => ({
@@ -275,14 +275,14 @@ exports.forgotPassword = ({ name, resetUrl, expiresIn, companyName = '' }) => ({
 ${greeting(name)}
 ${lead('We received a request to reset your HR Portal password. Click the button below to set a new password.')}
 ${btn('Reset My Password', esc(resetUrl))}
-<p style="font-size:12px;color:#9CA3AF;text-align:center;margin:0">This link expires in <strong>${esc(expiresIn || '1 hour')}</strong>. If you did not request a reset, you can safely ignore this email.</p>`,
+<p style="font-size:12px;color:#9CA3AF;text-align:center;margin:0">This link expires in <strong>${esc(expiresIn || '1 hour')}</strong>. If you did not request a reset, you can safely ignore this email.</p>`
   }),
-  text: `Reset your ${co(companyName)} password: ${resetUrl}`,
+  text: `Reset your ${co(companyName)} password: ${resetUrl}`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   EMPLOYEE
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.employeeCreated = ({ name, empCode, role, department, joiningDate, companyName = '' }) => ({
   subject: `Your ${co(companyName)} profile has been created`,
@@ -297,9 +297,9 @@ ${infoTable(`
   ${department ? infoRow('Department', department) : ''}
   ${joiningDate ? infoRow('Date of Joining', fmtDate(joiningDate)) : ''}
 `)}
-${btn('Access HR Portal', `${feUrl()}/login`)}`,
+${btn('Access HR Portal', `${feUrl()}/login`)}`
   }),
-  text: `Your ${co(companyName)} profile has been created. Emp Code: ${empCode}.`,
+  text: `Your ${co(companyName)} profile has been created. Emp Code: ${empCode}.`
 });
 
 exports.employeeDeactivated = ({ name, reason, companyName = '' }) => ({
@@ -311,14 +311,14 @@ exports.employeeDeactivated = ({ name, reason, companyName = '' }) => ({
 ${greeting(name)}
 <p style="font-size:14px;color:#4B5563;margin:0 0 16px">Your HR Portal account has been deactivated.</p>
 ${reason ? infoTable(infoRow('Reason', reason)) : ''}
-<p style="font-size:14px;color:#4B5563;margin:12px 0 0">For any queries, please contact your HR department.</p>`,
+<p style="font-size:14px;color:#4B5563;margin:12px 0 0">For any queries, please contact your HR department.</p>`
   }),
-  text: `Your ${co(companyName)} account has been deactivated.`,
+  text: `Your ${co(companyName)} account has been deactivated.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   LEAVE
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.leaveApplied = ({ managerName, employeeName, empCode, leaveType, fromDate, toDate, days, reason, balance, fromSession, toSession, approveUrl, rejectUrl, companyName = '' }) => ({
   subject: `[Action Required] Leave request from ${employeeName}`,
@@ -333,7 +333,7 @@ ${infoTable(`
   ${infoRow('Employee', `${employeeName}${empCode ? '  [' + empCode + ']' : ''}`)}
   ${infoRow('Leave Type', leaveType)}
   ${infoRow('From Date', fmtDate(fromDate) + (fromSession ? '  (' + fromSession + ')' : ''))}
-  ${infoRow('To Date',   fmtDate(toDate)   + (toSession   ? '  (' + toSession   + ')' : ''))}
+  ${infoRow('To Date', fmtDate(toDate) + (toSession ? '  (' + toSession + ')' : ''))}
   ${infoRow('Number of Days', String(days))}
   ${balance != null ? infoRow('Leave Balance', balance + ' day(s)') : ''}
   ${reason ? infoRow('Reason', reason) : ''}
@@ -344,13 +344,13 @@ ${infoTable(`
   <tr>
     <td style="text-align:center">
       <a href="${esc(approveUrl || feUrl() + '/manager/leaves')}" style="display:inline-block;padding:13px 30px;background:#16a34a;border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;margin-right:10px">&#10003;&nbsp; Approve</a>
-      <a href="${esc(rejectUrl  || feUrl() + '/manager/leaves')}" style="display:inline-block;padding:13px 30px;background:#DC2626;border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;margin-left:10px">&#10007;&nbsp; Reject</a>
+      <a href="${esc(rejectUrl || feUrl() + '/manager/leaves')}" style="display:inline-block;padding:13px 30px;background:#DC2626;border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;margin-left:10px">&#10007;&nbsp; Reject</a>
     </td>
   </tr>
 </table>
-<p style="text-align:center;font-size:12px;color:#9CA3AF;margin:0">Or review directly in <a href="${feUrl()}/manager/leaves" style="color:${ORANGE};text-decoration:none;font-weight:600">HRMS Leave Dashboard</a></p>`,
+<p style="text-align:center;font-size:12px;color:#9CA3AF;margin:0">Or review directly in <a href="${feUrl()}/manager/leaves" style="color:${ORANGE};text-decoration:none;font-weight:600">HRMS Leave Dashboard</a></p>`
   }),
-  text: `Leave request from ${employeeName} (${empCode}): ${leaveType} from ${fmtDate(fromDate)} to ${fmtDate(toDate)} (${days} days). Reason: ${reason || '—'}.`,
+  text: `Leave request from ${employeeName} (${empCode}): ${leaveType} from ${fmtDate(fromDate)} to ${fmtDate(toDate)} (${days} days). Reason: ${reason || '—'}.`
 });
 
 exports.leaveApproved = ({ employeeName, empCode, leaveType, fromDate, toDate, days, balance, reviewerName, remarks, companyName = '' }) => ({
@@ -371,9 +371,9 @@ ${infoTable(`
   ${infoRow('Approved By', reviewerName)}
 `)}
 ${remarks ? remarksBox('Manager Remarks', remarks) : ''}
-${btn('View My Leaves', `${feUrl()}/leaves`)}`,
+${btn('View My Leaves', `${feUrl()}/leaves`)}`
   }),
-  text: `Your ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}, ${days} days) has been approved by ${reviewerName}.`,
+  text: `Your ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}, ${days} days) has been approved by ${reviewerName}.`
 });
 
 exports.leaveRejected = ({ employeeName, empCode, leaveType, fromDate, toDate, fromSession, toSession, days, reviewerName, remarks, companyName = '' }) => ({
@@ -388,14 +388,14 @@ ${lead(`Your leave application has been ${badgeRed('✗ Rejected')}. Please cont
 ${infoTable(`
   ${infoRow('Leave Type', leaveType)}
   ${infoRow('From Date', fmtDate(fromDate) + (fromSession ? '  (' + fromSession + ')' : ''))}
-  ${infoRow('To Date',   fmtDate(toDate)   + (toSession   ? '  (' + toSession   + ')' : ''))}
+  ${infoRow('To Date', fmtDate(toDate) + (toSession ? '  (' + toSession + ')' : ''))}
   ${infoRow('Duration', days + ' day(s)')}
   ${infoRow('Reviewed By', reviewerName)}
 `)}
 ${remarks ? remarksBox('Manager Remarks', remarks) : ''}
-${btn('Apply for Another Leave', `${feUrl()}/leaves`)}`,
+${btn('Apply for Another Leave', `${feUrl()}/leaves`)}`
   }),
-  text: `Your ${leaveType} leave request (${fmtDate(fromDate)} – ${fmtDate(toDate)}) has been rejected by ${reviewerName}. Reason: ${remarks || '—'}.`,
+  text: `Your ${leaveType} leave request (${fmtDate(fromDate)} – ${fmtDate(toDate)}) has been rejected by ${reviewerName}. Reason: ${remarks || '—'}.`
 });
 
 exports.leaveCancelled = ({ managerName, employeeName, leaveType, fromDate, toDate, companyName = '' }) => ({
@@ -410,14 +410,14 @@ ${infoTable(`
   ${infoRow('Leave Type', leaveType)}
   ${infoRow('From', fmtDate(fromDate))}
   ${infoRow('To', fmtDate(toDate))}
-`)}`,
+`)}`
   }),
-  text: `${employeeName} cancelled their ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}).`,
+  text: `${employeeName} cancelled their ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}).`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   ATTENDANCE
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.missingCheckIn = ({ name, date, companyName = '' }) => ({
   subject: `Reminder: Check-In Not Recorded — ${esc(date)}`,
@@ -426,9 +426,9 @@ exports.missingCheckIn = ({ name, date, companyName = '' }) => ({
     body: `
 ${greeting(name)}
 ${lead(`Our records show that your <strong>check-in</strong> for today (<strong>${esc(date)}</strong>) has not been recorded. If you are working today, please mark your attendance immediately.`)}
-${btn('Mark Attendance', `${feUrl()}/attendance`)}`,
+${btn('Mark Attendance', `${feUrl()}/attendance`)}`
   }),
-  text: `Reminder: No check-in recorded for ${name} on ${date}.`,
+  text: `Reminder: No check-in recorded for ${name} on ${date}.`
 });
 
 exports.missingCheckOut = ({ name, date, companyName = '' }) => ({
@@ -438,9 +438,9 @@ exports.missingCheckOut = ({ name, date, companyName = '' }) => ({
     body: `
 ${greeting(name)}
 ${lead(`Your <strong>check-out</strong> for today (<strong>${esc(date)}</strong>) has not been recorded. Please mark your check-out as soon as possible.`)}
-${btn('Mark Check-Out', `${feUrl()}/attendance`)}`,
+${btn('Mark Check-Out', `${feUrl()}/attendance`)}`
   }),
-  text: `Reminder: No check-out recorded for ${name} on ${date}.`,
+  text: `Reminder: No check-out recorded for ${name} on ${date}.`
 });
 
 exports.attendanceRegularizationRequest = ({ managerName, employeeName, empCode, dates, date, reason, remarks, companyName = '' }) => {
@@ -455,9 +455,9 @@ ${greeting(managerName)}
 ${lead(`<strong>${esc(employeeName)}</strong>${empCode ? ` <span style="color:#9CA3AF">[${esc(empCode)}]</span>` : ''} has applied for attendance regularization for the following date(s). Please log in to the HR Portal to review and take action.`)}
 ${attTable(rows)}
 ${remarksBox('Employee Remarks', remarks || '')}
-${btn('Review in HR Portal', `${feUrl()}/manager/attendance`)}`,
+${btn('Review in HR Portal', `${feUrl()}/manager/attendance`)}`
     }),
-    text: `${employeeName}${empCode ? ' [' + empCode + ']' : ''} has applied for attendance regularization for ${rows.length} date(s).`,
+    text: `${employeeName}${empCode ? ' [' + empCode + ']' : ''} has applied for attendance regularization for ${rows.length} date(s).`
   };
 };
 
@@ -474,9 +474,9 @@ ${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
 ${lead(`Your attendance regularization request has been ${badgeGreen('✓ Approved')} for the following date(s):`)}
 ${attTable(rows)}
 ${remarksBox('Manager Remarks', managerRemarks || '')}
-${btn('View Attendance', `${feUrl()}/attendance`)}`,
+${btn('View Attendance', `${feUrl()}/attendance`)}`
     }),
-    text: `Your attendance regularization for ${rows.length} date(s) has been approved.`,
+    text: `Your attendance regularization for ${rows.length} date(s) has been approved.`
   };
 };
 
@@ -493,15 +493,15 @@ ${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
 ${lead(`Your attendance regularization request has been ${badgeRed('✗ Rejected')} for the following date(s):`)}
 ${attTable(rows)}
 ${remarksBox('Manager Remarks', managerRemarks || '')}
-${btn('View Attendance', `${feUrl()}/attendance`)}`,
+${btn('View Attendance', `${feUrl()}/attendance`)}`
     }),
-    text: `Your attendance regularization for ${rows.length} date(s) has been rejected.`,
+    text: `Your attendance regularization for ${rows.length} date(s) has been rejected.`
   };
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   PAYROLL
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.payslipReleased = ({ employeeName, empCode, month, year, grossSalary, deductions, netSalary, payslipUrl, companyName = '' }) => ({
   subject: `Your Payslip for ${esc(month)} ${esc(String(year))} is Ready`,
@@ -519,9 +519,9 @@ ${infoTable(`
   ${infoRow('Total Deductions', fmtINR(deductions))}
   ${infoRow('Net Pay', fmtINR(netSalary))}
 `)}
-${btn('View &amp; Download Payslip', esc(payslipUrl || `${feUrl()}/payslips`), '#065F46')}`,
+${btn('View &amp; Download Payslip', esc(payslipUrl || `${feUrl()}/payslips`), '#065F46')}`
   }),
-  text: `Your payslip for ${month} ${year} is ready. Net Pay: ${fmtINR(netSalary)}.`,
+  text: `Your payslip for ${month} ${year} is ready. Net Pay: ${fmtINR(netSalary)}.`
 });
 
 exports.salaryRevised = ({ employeeName, effectiveDate, newCTC, revisedBy, companyName = '' }) => ({
@@ -536,14 +536,14 @@ ${infoTable(`
   ${infoRow('Revised CTC', fmtINR(newCTC))}
   ${infoRow('Revised By', revisedBy || 'HR')}
 `)}
-${btn('View Payslips', `${feUrl()}/payslips`, '#065F46')}`,
+${btn('View Payslips', `${feUrl()}/payslips`, '#065F46')}`
   }),
-  text: `Your salary has been revised effective ${fmtDate(effectiveDate)}. New CTC: ${fmtINR(newCTC)}.`,
+  text: `Your salary has been revised effective ${fmtDate(effectiveDate)}. New CTC: ${fmtINR(newCTC)}.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   RECRUITMENT
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.applicationAcknowledgment = ({ candidateName, jobTitle, applicationCode, companyName = '' }) => ({
   subject: `Application Received — ${esc(jobTitle)} at ${co(companyName)}`,
@@ -558,9 +558,9 @@ ${infoTable(`
   ${infoRow('Position', jobTitle)}
   ${infoRow('Company', co(companyName))}
 `)}
-<p style="color:#6B7280;font-size:13px;margin:0">Our recruitment team will review your application and reach out if your profile matches our requirements. We appreciate your interest.</p>`,
+<p style="color:#6B7280;font-size:13px;margin:0">Our recruitment team will review your application and reach out if your profile matches our requirements. We appreciate your interest.</p>`
   }),
-  text: `Thank you for applying for ${jobTitle} at ${co(companyName)}. We will be in touch.`,
+  text: `Thank you for applying for ${jobTitle} at ${co(companyName)}. We will be in touch.`
 });
 
 exports.candidateShortlisted = ({ candidateName, jobTitle, companyName = '' }) => ({
@@ -573,9 +573,9 @@ exports.candidateShortlisted = ({ candidateName, jobTitle, companyName = '' }) =
 ${greeting(candidateName)}
 ${lead(`Congratulations! After reviewing your profile, you have been ${badgeGreen('Shortlisted')} for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong>.`)}
 <p style="font-size:14px;color:#4B5563;margin:0 0 12px">Our recruitment team will reach out to you shortly to schedule the next steps. Please keep your phone and email accessible.</p>
-<p style="color:#6B7280;font-size:13px;margin:0">Thank you for your interest in joining our team!</p>`,
+<p style="color:#6B7280;font-size:13px;margin:0">Thank you for your interest in joining our team!</p>`
   }),
-  text: `Congratulations ${candidateName}! You have been shortlisted for ${jobTitle} at ${co(companyName)}.`,
+  text: `Congratulations ${candidateName}! You have been shortlisted for ${jobTitle} at ${co(companyName)}.`
 });
 
 exports.candidateRejected = ({ candidateName, jobTitle, companyName = '' }) => ({
@@ -587,9 +587,9 @@ exports.candidateRejected = ({ candidateName, jobTitle, companyName = '' }) => (
 ${greeting(candidateName)}
 ${lead(`Thank you for your interest in the <strong>${esc(jobTitle)}</strong> position at <strong>${co(companyName)}</strong> and for the time you invested in the application process.`)}
 <p style="font-size:14px;color:#4B5563;margin:0 0 12px">After careful review, we have decided to move forward with other candidates whose experience more closely matches our current requirements.</p>
-<p style="font-size:13px;color:#6B7280;margin:0">We will keep your profile on record and encourage you to apply for future openings that align with your skills. We wish you the very best in your career journey.</p>`,
+<p style="font-size:13px;color:#6B7280;margin:0">We will keep your profile on record and encourage you to apply for future openings that align with your skills. We wish you the very best in your career journey.</p>`
   }),
-  text: `Thank you for applying for ${jobTitle} at ${co(companyName)}. We have moved forward with other candidates.`,
+  text: `Thank you for applying for ${jobTitle} at ${co(companyName)}. We have moved forward with other candidates.`
 });
 
 exports.offerLetter = ({ candidateName, jobTitle, ctc, joiningDate, offerUrl, companyName = '' }) => ({
@@ -606,9 +606,9 @@ ${infoTable(`
   ${ctc ? infoRow('Cost to Company (CTC)', fmtINR(ctc) + ' per annum') : ''}
 `)}
 <p style="font-size:14px;color:#4B5563;margin:0 0 4px">Please review your offer letter carefully and confirm your acceptance at the earliest.</p>
-${btn('View &amp; Accept Offer', esc(offerUrl || feUrl()))}`,
+${btn('View &amp; Accept Offer', esc(offerUrl || feUrl()))}`
   }),
-  text: `Congratulations! You've been offered the position of ${jobTitle} at ${co(companyName)}.`,
+  text: `Congratulations! You've been offered the position of ${jobTitle} at ${co(companyName)}.`
 });
 
 exports.offerAccepted = ({ recruiterName, candidateName, jobTitle, joiningDate, companyName = '' }) => ({
@@ -624,9 +624,9 @@ ${infoTable(`
   ${infoRow('Position', jobTitle)}
   ${joiningDate ? infoRow('Expected Joining', fmtDate(joiningDate)) : ''}
 `)}
-${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`,
+${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`
   }),
-  text: `${candidateName} has accepted the offer for ${jobTitle}.`,
+  text: `${candidateName} has accepted the offer for ${jobTitle}.`
 });
 
 exports.offerRejected = ({ recruiterName, candidateName, jobTitle, companyName = '' }) => ({
@@ -641,14 +641,14 @@ ${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
 `)}
-${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`,
+${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`
   }),
-  text: `${candidateName} has declined the offer for ${jobTitle}.`,
+  text: `${candidateName} has declined the offer for ${jobTitle}.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   RESIGNATION
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.resignationSubmitted = ({ managerName, employeeName, empCode, submitDate, endDate, reason, companyName = '' }) => ({
   subject: `[Action Required] Resignation Received — ${esc(employeeName)}`,
@@ -665,9 +665,9 @@ ${infoTable(`
   ${infoRow('Requested Last Working Day', fmtDate(endDate))}
   ${reason ? infoRow('Reason', reason) : ''}
 `)}
-${btn('Review Resignation', `${feUrl()}/manager/resignations`, '#9333EA')}`,
+${btn('Review Resignation', `${feUrl()}/manager/resignations`, '#9333EA')}`
   }),
-  text: `${employeeName} has submitted a resignation. Last working day requested: ${fmtDate(endDate)}.`,
+  text: `${employeeName} has submitted a resignation. Last working day requested: ${fmtDate(endDate)}.`
 });
 
 exports.resignationApproved = ({ employeeName, lastWorkingDay, reviewerName, companyName = '' }) => ({
@@ -681,9 +681,9 @@ ${infoTable(`
   ${infoRow('Last Working Day', fmtDate(lastWorkingDay))}
   ${infoRow('Accepted By', reviewerName)}
 `)}
-<p style="font-size:13px;color:#6B7280;margin:12px 0 0">The HR team will reach out to you regarding exit formalities, full &amp; final settlement, and your experience letter.</p>`,
+<p style="font-size:13px;color:#6B7280;margin:12px 0 0">The HR team will reach out to you regarding exit formalities, full &amp; final settlement, and your experience letter.</p>`
   }),
-  text: `Your resignation has been accepted. Last working day: ${fmtDate(lastWorkingDay)}.`,
+  text: `Your resignation has been accepted. Last working day: ${fmtDate(lastWorkingDay)}.`
 });
 
 exports.resignationRejected = ({ employeeName, reviewerName, remarks, companyName = '' }) => ({
@@ -694,14 +694,14 @@ exports.resignationRejected = ({ employeeName, reviewerName, remarks, companyNam
 ${greeting(employeeName)}
 ${lead('Your resignation request has not been accepted at this time.')}
 ${remarks ? remarksBox('Reason', remarks) : ''}
-<p style="font-size:14px;color:#4B5563;margin:0">For further discussion, please reach out to <strong>${esc(reviewerName)}</strong> or your HR team directly.</p>`,
+<p style="font-size:14px;color:#4B5563;margin:0">For further discussion, please reach out to <strong>${esc(reviewerName)}</strong> or your HR team directly.</p>`
   }),
-  text: `Your resignation request was not accepted. Reason: ${remarks || 'Contact HR for details'}.`,
+  text: `Your resignation request was not accepted. Reason: ${remarks || 'Contact HR for details'}.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   HELPDESK
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.ticketCreated = ({ agentName, reporterName, ticketId, subject: ticketSubject, priority, category, companyName = '' }) => ({
   subject: `[#${ticketId}] New Helpdesk Ticket: ${esc(ticketSubject)}`,
@@ -718,9 +718,9 @@ ${infoTable(`
   ${category ? infoRow('Category', category) : ''}
   ${infoRow('Priority', priority || 'Normal')}
 `)}
-${btn('View &amp; Respond to Ticket', `${feUrl()}/helpdesk/${ticketId}`)}`,
+${btn('View &amp; Respond to Ticket', `${feUrl()}/helpdesk/${ticketId}`)}`
   }),
-  text: `New ticket #${ticketId}: "${ticketSubject}" raised by ${reporterName}.`,
+  text: `New ticket #${ticketId}: "${ticketSubject}" raised by ${reporterName}.`
 });
 
 exports.ticketResolved = ({ reporterName, ticketId, subject: ticketSubject, companyName = '' }) => ({
@@ -735,9 +735,9 @@ ${infoTable(`
   ${infoRow('Ticket ID', '#' + ticketId)}
   ${infoRow('Subject', ticketSubject)}
 `)}
-<p style="color:#6B7280;font-size:13px;margin:0">If you have further questions or the issue persists, please raise a new ticket.</p>`,
+<p style="color:#6B7280;font-size:13px;margin:0">If you have further questions or the issue persists, please raise a new ticket.</p>`
   }),
-  text: `Your ticket #${ticketId} (${ticketSubject}) has been resolved.`,
+  text: `Your ticket #${ticketId} (${ticketSubject}) has been resolved.`
 });
 
 exports.ticketUpdated = ({ reporterName, ticketId, subject: ticketSubject, updateMessage, companyName = '' }) => ({
@@ -752,14 +752,14 @@ ${infoTable(`
   ${infoRow('Subject', ticketSubject)}
 `)}
 ${updateMessage ? remarksBox('Update', updateMessage) : ''}
-${btn('View Ticket', `${feUrl()}/helpdesk/${ticketId}`)}`,
+${btn('View Ticket', `${feUrl()}/helpdesk/${ticketId}`)}`
   }),
-  text: `Update on ticket #${ticketId}: ${updateMessage}`,
+  text: `Update on ticket #${ticketId}: ${updateMessage}`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   TIMESHEET
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.timesheetSubmitted = ({ managerName, employeeName, weekLabel, totalHours, companyName = '' }) => ({
   subject: `[Action Required] Timesheet Submitted — ${esc(employeeName)}`,
@@ -773,9 +773,9 @@ ${infoTable(`
   ${totalHours ? infoRow('Total Hours', totalHours + ' hrs') : ''}
   ${infoRow('Employee', employeeName)}
 `)}
-${btn('Review Timesheet', `${feUrl()}/manager/timesheets`)}`,
+${btn('Review Timesheet', `${feUrl()}/manager/timesheets`)}`
   }),
-  text: `${employeeName} has submitted a timesheet for ${weekLabel} (${totalHours} hrs).`,
+  text: `${employeeName} has submitted a timesheet for ${weekLabel} (${totalHours} hrs).`
 });
 
 exports.timesheetApproved = ({ employeeName, weekLabel, companyName = '' }) => ({
@@ -786,9 +786,9 @@ exports.timesheetApproved = ({ employeeName, weekLabel, companyName = '' }) => (
     body: `
 ${greeting(employeeName)}
 ${lead(`Your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''} has been ${badgeGreen('✓ Approved')}.`)}
-${btn('View Timesheets', `${feUrl()}/tasks`)}`,
+${btn('View Timesheets', `${feUrl()}/tasks`)}`
   }),
-  text: `Your timesheet for ${weekLabel} has been approved.`,
+  text: `Your timesheet for ${weekLabel} has been approved.`
 });
 
 exports.timesheetRejected = ({ employeeName, weekLabel, remarks, companyName = '' }) => ({
@@ -800,9 +800,9 @@ exports.timesheetRejected = ({ employeeName, weekLabel, remarks, companyName = '
 ${greeting(employeeName)}
 ${lead(`Your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''} has been ${badgeRed('Returned for Revision')}.`)}
 ${remarks ? remarksBox('Manager Remarks', remarks) : ''}
-${btn('Update Timesheet', `${feUrl()}/tasks`)}`,
+${btn('Update Timesheet', `${feUrl()}/tasks`)}`
   }),
-  text: `Your timesheet for ${weekLabel} has been returned for revision. Remarks: ${remarks}`,
+  text: `Your timesheet for ${weekLabel} has been returned for revision. Remarks: ${remarks}`
 });
 
 exports.timesheetReminder = ({ employeeName, weekLabel, companyName = '' }) => ({
@@ -812,14 +812,14 @@ exports.timesheetReminder = ({ employeeName, weekLabel, companyName = '' }) => (
     body: `
 ${greeting(employeeName)}
 ${lead(`This is a friendly reminder to submit your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''} at the earliest.`)}
-${btn('Submit Timesheet', `${feUrl()}/tasks`)}`,
+${btn('Submit Timesheet', `${feUrl()}/tasks`)}`
   }),
-  text: `Reminder: Please submit your timesheet for ${weekLabel}.`,
+  text: `Reminder: Please submit your timesheet for ${weekLabel}.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   DOCUMENT EXPIRY
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.documentExpiry = ({ employeeName, documentType, expiryDate, daysLeft, companyName = '' }) => ({
   subject: `${daysLeft <= 7 ? 'URGENT: ' : ''}${esc(documentType)} Expires in ${daysLeft} Day(s)`,
@@ -834,14 +834,14 @@ ${infoTable(`
   ${infoRow('Expiry Date', fmtDate(expiryDate))}
   ${infoRow('Days Remaining', daysLeft + ' day(s)')}
 `)}
-${btn('Upload Renewed Document', `${feUrl()}/documents`)}`,
+${btn('Upload Renewed Document', `${feUrl()}/documents`)}`
   }),
-  text: `${documentType} expires on ${fmtDate(expiryDate)} (${daysLeft} days left). Please renew.`,
+  text: `${documentType} expires on ${fmtDate(expiryDate)} (${daysLeft} days left). Please renew.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   ADMIN ALERT
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.emailDeliveryFailed = ({ to, template, error, attempts, companyName = '' }) => ({
   subject: `[HRMS Alert] Email Delivery Failed — ${esc(template)}`,
@@ -857,14 +857,14 @@ ${infoTable(`
   ${infoRow('Attempts Made', String(attempts))}
   ${infoRow('Time', new Date().toLocaleString('en-IN'))}
 `)}
-<p style="font-size:13px;color:#6B7280;margin:0">Please check SMTP configuration and retry manually if required.</p>`,
+<p style="font-size:13px;color:#6B7280;margin:0">Please check SMTP configuration and retry manually if required.</p>`
   }),
-  text: `Email delivery failed. Recipient: ${to}, Template: ${template}, Error: ${error}`,
+  text: `Email delivery failed. Recipient: ${to}, Template: ${template}, Error: ${error}`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   RECRUITER / TL TEMPLATES
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.recruiterAssigned = ({ recruiterName, jobTitle, jobCode, client, vacancies, skillSet, loginUrl, companyName = '' }) => ({
   subject: `[${co(companyName)}] New Job Assigned — ${esc(jobTitle)}`,
@@ -881,9 +881,9 @@ ${infoTable(`
   ${infoRow('Vacancies', String(vacancies || 1))}
   ${skillSet ? infoRow('Skills Required', skillSet) : ''}
 `)}
-${btn('View Job &amp; Upload Candidates', esc(loginUrl || `${feUrl()}/recruitment`))}`,
+${btn('View Job &amp; Upload Candidates', esc(loginUrl || `${feUrl()}/recruitment`))}`
   }),
-  text: `Hi ${recruiterName}, job "${jobTitle}" assigned. Vacancies: ${vacancies || 1}. Skills: ${skillSet || '—'}.`,
+  text: `Hi ${recruiterName}, job "${jobTitle}" assigned. Vacancies: ${vacancies || 1}. Skills: ${skillSet || '—'}.`
 });
 
 exports.tlJobAssigned = ({ tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet, companyName = '' }) => ({
@@ -901,9 +901,9 @@ ${infoTable(`
   ${skillSet ? infoRow('Skills Required', skillSet) : ''}
   ${infoRow('Assigned To', recruiterName)}
 `)}
-${btn('View in HRMS', `${feUrl()}/recruitment`)}`,
+${btn('View in HRMS', `${feUrl()}/recruitment`)}`
   }),
-  text: `Hi ${tlName}, job "${jobTitle}" assigned to ${recruiterName}. Vacancies: ${vacancies || 1}.`,
+  text: `Hi ${tlName}, job "${jobTitle}" assigned to ${recruiterName}. Vacancies: ${vacancies || 1}.`
 });
 
 exports.tlCandidateUpdate = ({ tlName, recruiterName, candidateName, jobTitle, status, companyName = '' }) => ({
@@ -919,9 +919,9 @@ ${infoTable(`
   ${infoRow('New Status', status)}
   ${infoRow('Updated By', recruiterName)}
 `)}
-${btn('View Candidate', `${feUrl()}/recruitment`)}`,
+${btn('View Candidate', `${feUrl()}/recruitment`)}`
   }),
-  text: `Hi ${tlName}, ${recruiterName} marked ${candidateName} as ${status} for ${jobTitle}.`,
+  text: `Hi ${tlName}, ${recruiterName} marked ${candidateName} as ${status} for ${jobTitle}.`
 });
 
 exports.tlOfferUpdate = ({ tlName, candidateName, jobTitle, event, ctc, dateOfJoining, companyName = '' }) => ({
@@ -938,14 +938,14 @@ ${infoTable(`
   ${ctc ? infoRow('CTC', 'INR ' + Number(ctc).toLocaleString('en-IN')) : ''}
   ${dateOfJoining ? infoRow('Date of Joining', fmtDate(dateOfJoining)) : ''}
 `)}
-${btn('View Offer', `${feUrl()}/recruitment`)}`,
+${btn('View Offer', `${feUrl()}/recruitment`)}`
   }),
-  text: `Hi ${tlName}, offer for ${candidateName} (${jobTitle}) has been ${event}.`,
+  text: `Hi ${tlName}, offer for ${candidateName} (${jobTitle}) has been ${event}.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   RECRUITMENT FLOW (Steps 2–10)
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.candidateSubmittedToHR = ({ hrName, recruiterName, candidateName, jobTitle, candidateCode, companyName = '' }) => ({
   subject: `[${co(companyName)}] New Candidate for Review — ${esc(jobTitle)}`,
@@ -960,9 +960,9 @@ ${infoTable(`
   ${infoRow('Position', jobTitle)}
   ${infoRow('Submitted By', recruiterName)}
 `)}
-${btn('Review Candidate', `${feUrl()}/recruitment/candidates`)}`,
+${btn('Review Candidate', `${feUrl()}/recruitment/candidates`)}`
   }),
-  text: `Hi ${hrName}, ${recruiterName} submitted ${candidateName} for ${jobTitle}.`,
+  text: `Hi ${hrName}, ${recruiterName} submitted ${candidateName} for ${jobTitle}.`
 });
 
 exports.candidateStatusToRecruiter = ({ recruiterName, candidateName, jobTitle, status, companyName = '' }) => ({
@@ -977,9 +977,9 @@ ${infoTable(`
   ${infoRow('Position', jobTitle)}
   ${infoRow('New Status', status)}
 `)}
-${btn('View Candidate', `${feUrl()}/recruitment/candidates`)}`,
+${btn('View Candidate', `${feUrl()}/recruitment/candidates`)}`
   }),
-  text: `${candidateName} status updated to "${status}" for ${jobTitle}.`,
+  text: `${candidateName} status updated to "${status}" for ${jobTitle}.`
 });
 
 exports.interviewScheduledCandidate = ({ candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, companyName = '' }) => ({
@@ -998,9 +998,9 @@ ${infoTable(`
   ${interviewType ? infoRow('Mode', interviewType) : ''}
   ${interviewer ? infoRow('Interviewer', interviewer) : ''}
 `)}
-<p style="color:#6B7280;font-size:13px;margin:0">Best of luck! Please be on time and carry relevant documents.</p>`,
+<p style="color:#6B7280;font-size:13px;margin:0">Best of luck! Please be on time and carry relevant documents.</p>`
   }),
-  text: `Dear ${candidateName}, your interview for ${jobTitle} is on ${fmtDate(interviewDate)}${interviewTime ? ' at ' + interviewTime : ''}.`,
+  text: `Dear ${candidateName}, your interview for ${jobTitle} is on ${fmtDate(interviewDate)}${interviewTime ? ' at ' + interviewTime : ''}.`
 });
 
 exports.interviewScheduledHR = ({ hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName, companyName = '' }) => ({
@@ -1020,9 +1020,9 @@ ${infoTable(`
   ${interviewer ? infoRow('Interviewer', interviewer) : ''}
   ${scheduledByName ? infoRow('Scheduled By', scheduledByName) : ''}
 `)}
-${btn('View Interview', `${feUrl()}/recruitment/interviews`)}`,
+${btn('View Interview', `${feUrl()}/recruitment/interviews`)}`
   }),
-  text: `Interview for ${candidateName} (${jobTitle}) on ${fmtDate(interviewDate)}.`,
+  text: `Interview for ${candidateName} (${jobTitle}) on ${fmtDate(interviewDate)}.`
 });
 
 exports.interviewFeedbackToHR = ({ hrName, candidateName, jobTitle, level, interviewerName, feedbackStatus, feedbackComments, companyName = '' }) => ({
@@ -1040,9 +1040,9 @@ ${infoTable(`
   ${feedbackStatus ? infoRow('Outcome', feedbackStatus) : ''}
 `)}
 ${feedbackComments ? remarksBox('Comments', feedbackComments) : ''}
-${btn('View Details', `${feUrl()}/recruitment/interviews`)}`,
+${btn('View Details', `${feUrl()}/recruitment/interviews`)}`
   }),
-  text: `Feedback received for ${candidateName} (${jobTitle}). Outcome: ${feedbackStatus || '—'}.`,
+  text: `Feedback received for ${candidateName} (${jobTitle}). Outcome: ${feedbackStatus || '—'}.`
 });
 
 exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName, companyName = '' }) => ({
@@ -1059,9 +1059,9 @@ ${infoTable(`
   ${recruiterName ? infoRow('Sourced By', recruiterName) : ''}
   ${infoRow('Next Step', 'Prepare and release the offer letter')}
 `)}
-${btn('Create Offer', `${feUrl()}/recruitment/offers`)}`,
+${btn('Create Offer', `${feUrl()}/recruitment/offers`)}`
   }),
-  text: `${candidateName} selected for ${jobTitle}. Please release an offer.`,
+  text: `${candidateName} selected for ${jobTitle}. Please release an offer.`
 });
 
 exports.offerReleasedToHR = ({ hrName, candidateName, jobTitle, ctc, dateOfJoining, companyName = '' }) => ({
@@ -1078,9 +1078,9 @@ ${infoTable(`
   ${dateOfJoining ? infoRow('Expected Joining', fmtDate(dateOfJoining)) : ''}
   ${infoRow('Status', 'Offer Sent — Awaiting Acceptance')}
 `)}
-${btn('View Offer', `${feUrl()}/recruitment/offers`)}`,
+${btn('View Offer', `${feUrl()}/recruitment/offers`)}`
   }),
-  text: `Offer released to ${candidateName} for ${jobTitle}. Awaiting acceptance.`,
+  text: `Offer released to ${candidateName} for ${jobTitle}. Awaiting acceptance.`
 });
 
 exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining, companyName = '' }) => ({
@@ -1097,14 +1097,14 @@ ${infoTable(`
   ${dateOfJoining ? infoRow('Expected Joining', fmtDate(dateOfJoining)) : ''}
   ${infoRow('Next Step', 'Initiate employee onboarding')}
 `)}
-${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`,
+${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`
   }),
-  text: `${candidateName} accepted the offer for ${jobTitle}.`,
+  text: `${candidateName} accepted the offer for ${jobTitle}.`
 });
 
-/* ══════════════════════════════════════════════════════════════════════
-   JOINING FORMALITIES
-══════════════════════════════════════════════════════════════════════ */
+
+
+
 
 exports.joiningInvitation = ({ candidateName, jobTitle, joiningUrl, expiresAt, ctc, dateOfJoining, offerCode, basic, hra, telephoneAllowance, leaveTravel, specialAllowance, grossSalary, pfContribution, statutoryBonus, gratuity, esi, companyName = '' }) => {
   const ann = (v) => Number(v) || 0;
@@ -1140,8 +1140,8 @@ exports.joiningInvitation = ({ candidateName, jobTitle, joiningUrl, expiresAt, c
     ${ctcTotal('Gross Salary', grossSalary)}
     ${ctcRow("Company's PF Contribution", pfContribution)}
     ${ann(statutoryBonus) ? ctcRow('Statutory Bonus', statutoryBonus) : ''}
-    ${ann(gratuity)       ? ctcRow('Gratuity', gratuity) : ''}
-    ${ann(esi)            ? ctcRow('ESI (Employer Share)', esi) : ''}
+    ${ann(gratuity) ? ctcRow('Gratuity', gratuity) : ''}
+    ${ann(esi) ? ctcRow('ESI (Employer Share)', esi) : ''}
     ${ctcTotal('Cost To Company (CTC)', ctcAnnual)}
   </tbody>
 </table>`;
@@ -1149,13 +1149,6 @@ exports.joiningInvitation = ({ candidateName, jobTitle, joiningUrl, expiresAt, c
   const body = `
 ${greeting(candidateName)}
 ${lead(`We are delighted to offer you the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong>. Your complete Offer Letter with all terms, conditions and CTC breakdown is <strong>attached as a PDF</strong>.`)}
-${infoTable(`
-  ${offerCode ? infoRow('Offer Reference', offerCode) : ''}
-  ${dateOfJoining ? infoRow('Date of Joining', fmtDate(dateOfJoining)) : ''}
-  ${ctcAnnual ? infoRow('Cost To Company', fmtINR(ctcAnnual) + ' per annum') : ''}
-`)}
-<p style="font-size:13px;font-weight:700;color:${ORANGE};margin:20px 0 8px;letter-spacing:0.5px;text-transform:uppercase">CTC Structure</p>
-${ctcTable}
 ${divider}
 <p style="font-size:13px;font-weight:700;color:${ORANGE};margin:0 0 8px;letter-spacing:0.5px;text-transform:uppercase">Complete Your Joining Formalities</p>
 <p style="font-size:13px;color:#4B5563;margin:0 0 16px">Please submit your joining formalities online before your date of joining using the secure link below.</p>
@@ -1166,7 +1159,7 @@ ${btn('&#10003;&nbsp; Complete Joining Formalities', esc(joiningUrl))}
   return {
     subject: `Offer Letter — ${jobTitle} at ${emailCfg.companyName || 'HRMS'}`,
     html: layout({ companyName, title: 'Congratulations! Your Offer Letter', subtitle: `Position: ${esc(jobTitle)}`, body }),
-    text: `Congratulations ${candidateName}!\nOffer for ${jobTitle} at ${emailCfg.companyName || 'HRMS'}.\nComplete joining formalities at: ${joiningUrl}\nLink valid until: ${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}`,
+    text: `Congratulations ${candidateName}!\nOffer for ${jobTitle} at ${emailCfg.companyName || 'HRMS'}.\nComplete joining formalities at: ${joiningUrl}\nLink valid until: ${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}`
   };
 };
 
@@ -1183,9 +1176,9 @@ ${infoTable(`
   ${infoRow('Position', jobTitle)}
   ${infoRow('Status', 'Pending Verification')}
 `)}
-${btn('Review Formalities', `${feUrl()}/dashboard/joining-verification`)}`,
+${btn('Review Formalities', `${feUrl()}/dashboard/joining-verification`)}`
   }),
-  text: `${candidateName} submitted joining formalities. Login to review.`,
+  text: `${candidateName} submitted joining formalities. Login to review.`
 });
 
 exports.joiningApproved = ({ candidateName, jobTitle, companyName = '' }) => ({
@@ -1197,9 +1190,9 @@ exports.joiningApproved = ({ candidateName, jobTitle, companyName = '' }) => ({
 ${greeting(candidateName)}
 ${lead(`Your joining formalities for <strong>${esc(jobTitle)}</strong> have been reviewed and ${badgeGreen('✓ Approved')}.`)}
 <p style="font-size:14px;color:#4B5563;margin:0 0 12px">Your employee account will be activated shortly. You will receive login credentials from HR to access the employee portal.</p>
-<p style="font-size:13px;color:#6B7280;margin:0">Welcome to the team! We look forward to working with you. If you have any questions before your start date, please contact HR.</p>`,
+<p style="font-size:13px;color:#6B7280;margin:0">Welcome to the team! We look forward to working with you. If you have any questions before your start date, please contact HR.</p>`
   }),
-  text: `Hi ${candidateName}, your joining formalities have been approved. Welcome aboard!`,
+  text: `Hi ${candidateName}, your joining formalities have been approved. Welcome aboard!`
 });
 
 exports.joiningChangesRequested = ({ candidateName, jobTitle, remarks, joiningUrl, companyName = '' }) => ({
@@ -1210,9 +1203,9 @@ exports.joiningChangesRequested = ({ candidateName, jobTitle, remarks, joiningUr
 ${greeting(candidateName)}
 ${lead(`HR has reviewed your joining formalities for <strong>${esc(jobTitle)}</strong> and has requested some updates before they can be approved.`)}
 ${remarksBox('HR Remarks', remarks || 'Please review and update the highlighted fields.')}
-${btn('Update Formalities', esc(joiningUrl))}`,
+${btn('Update Formalities', esc(joiningUrl))}`
   }),
-  text: `Hi ${candidateName}, HR has requested changes to your joining formalities. Update at: ${joiningUrl}`,
+  text: `Hi ${candidateName}, HR has requested changes to your joining formalities. Update at: ${joiningUrl}`
 });
 
 exports.joiningRejected = ({ candidateName, jobTitle, remarks, companyName = '' }) => ({
@@ -1224,7 +1217,7 @@ exports.joiningRejected = ({ candidateName, jobTitle, remarks, companyName = '' 
 ${greeting(candidateName)}
 ${lead(`We regret to inform you that your joining formalities for <strong>${esc(jobTitle)}</strong> could not be processed at this time.`)}
 ${remarks ? remarksBox('HR Remarks', remarks) : ''}
-<p style="font-size:14px;color:#4B5563;margin:0">Please contact HR directly for further information and next steps.</p>`,
+<p style="font-size:14px;color:#4B5563;margin:0">Please contact HR directly for further information and next steps.</p>`
   }),
-  text: `Hi ${candidateName}, your joining formalities for ${jobTitle} require attention. Please contact HR.`,
+  text: `Hi ${candidateName}, your joining formalities for ${jobTitle} require attention. Please contact HR.`
 });

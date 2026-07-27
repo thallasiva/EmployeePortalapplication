@@ -105,7 +105,7 @@ export default function AttendanceReport() {
             present={chart.present}
             absent={chart.absent}
             labels={chart.labels} />
-          
+
         </div>
       </div>
 
@@ -131,7 +131,7 @@ export default function AttendanceReport() {
               className="report-filter-select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}>
-              
+
               {STATUS_FILTER_OPTIONS.map((opt) =>
               <option key={opt.value || "all"} value={opt.value}>
                   {opt.label}
@@ -144,7 +144,7 @@ export default function AttendanceReport() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)} />
-            
+
           </div>
         </div>
         <div className={cssClass({ overflowX: "auto" })}>
@@ -207,7 +207,7 @@ export default function AttendanceReport() {
                     className="report-regularize-btn"
                     onClick={() => handleRegularize(row.id)}
                     disabled={regularizedIds.has(row.id)}>
-                    
+
                         {regularizedIds.has(row.id) ? "Regularized" : "Regularizations"}
                       </button> :
 

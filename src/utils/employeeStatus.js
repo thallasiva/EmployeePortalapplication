@@ -1,15 +1,15 @@
-import { cssClass, joinClasses } from "./classStyles"; /**
- * Canonical employee status resolution.
- *
- * Priority:
- *  1. serving_notice (computed by backend from resignations table) → "Notice Period"
- *  2. employee_status field value
- *  3. Fallback → "Active"
- */
+import { cssClass, joinClasses } from "./classStyles";
+
+
+
+
+
+
+
 export function getEmployeeStatus(employee) {
   if (!employee) return { label: "Unknown", bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0" };
 
-  // serving_notice is a computed boolean from the resignations table
+
   if (employee.serving_notice) {
     return { label: "Notice Period", bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" };
   }
@@ -30,10 +30,10 @@ export function getEmployeeStatus(employee) {
   }
 }
 
-/**
- * React component — renders a status badge inline.
- * Usage: <EmployeeStatusBadge employee={emp} />
- */
+
+
+
+
 export function EmployeeStatusBadge({ employee, style = {} }) {
   const { label, bg, color, border } = getEmployeeStatus(employee);
   return (

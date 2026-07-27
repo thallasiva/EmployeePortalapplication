@@ -1,7 +1,7 @@
-/**
- * Standard application error. Thrown anywhere in controllers/services and
- * caught by the global error handler middleware.
- */
+
+
+
+
 class ApiError extends Error {
   constructor(statusCode, message, details = null) {
     super(message);

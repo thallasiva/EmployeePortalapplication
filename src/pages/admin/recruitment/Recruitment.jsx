@@ -51,7 +51,7 @@ export default function Recruitment()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header with gradient background */}
+      {}
       <div className={`bg-gradient-to-r ${getRoleStyles()} px-6 py-8 text-white shadow-lg`}>
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -75,9 +75,9 @@ export default function Recruitment()
         </div>
       </div>
 
-      {/* Main content area */}
+      {}
       <div className="mx-auto max-w-7xl px-6 py-8">
-        {/* Tab Navigation */}
+        {}
         <nav className="mb-6 flex gap-2 overflow-x-auto rounded-xl bg-white p-1.5 shadow-sm">
           {tabs.map((tab) =>
           {
@@ -93,24 +93,24 @@ export default function Recruitment()
                 className={`
                   inline-flex whitespace-nowrap items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium
                   transition-all duration-200 flex-shrink-0
-                  ${selected
-                    ? role.id === 1
-                      ? "bg-slate-100 text-slate-700 shadow-md"
-                      : role.id === 4
-                        ? "bg-violet-100 text-violet-700 shadow-md"
-                        : "bg-orange-100 text-orange-700 shadow-md"
-                    : "text-gray-600 hover:bg-gray-50"
-                  }
-                `}
-              >
+                  ${selected ?
+                role.id === 1 ?
+                "bg-slate-100 text-slate-700 shadow-md" :
+                role.id === 4 ?
+                "bg-violet-100 text-violet-700 shadow-md" :
+                "bg-orange-100 text-orange-700 shadow-md" :
+                "text-gray-600 hover:bg-gray-50"}
+                `
+                }>
+
                 <Icon size={16} />
                 {tab.label}
-              </button>
-            );
+              </button>);
+
           })}
         </nav>
 
-        {/* Content Area with Card Background */}
+        {}
         <div className="rounded-xl bg-white p-6 shadow-lg">
           {active === "dashboard" && role.id === 1 && <AdminDashboard />}
           {active === "dashboard" && role.id === 4 && <ManagerDashboard />}
@@ -121,21 +121,21 @@ export default function Recruitment()
             recruiterKey={recruiterKey}
             selectedCandidate={selectedCandidate}
             setSelectedCandidate={setSelectedCandidate}
-            setActive={setActive}
-          />}
+            setActive={setActive} />
+          }
           {active === "interviews" && <InterviewsTab
             role={role}
             recruiterKey={recruiterKey}
             selectedCandidate={selectedCandidate}
             handleScheduleInterview={handleScheduleInterview}
-            interviews={interviews}
-          />}
+            interviews={interviews} />
+          }
           {active === "offers" && role.id === 4 && <OffersTab />}
           {active === "onboarding" && role.id === 4 && <OnboardingTab />}
           {active === "employees" && role.id === 4 && <EmployeesTab />}
           {active === "reports" && role.id === 1 && <ReportsTab />}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

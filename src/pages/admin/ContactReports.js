@@ -25,7 +25,7 @@ const ContactReports = () => {
                                     <span class="font-medium text-gray-800">Danny Ward</span>
                                 </td>
 
-                            
+
 
                                 <td class="text-brand cursor-pointer">
                                     [email protected]
@@ -74,7 +74,7 @@ const ContactReports = () => {
                                  <td class="text-center">0982123232</td>
                             </tr>
 
-                            
+
 
                         </tbody>
                     </table>

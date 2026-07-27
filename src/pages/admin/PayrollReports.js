@@ -27,7 +27,7 @@ const PayrollReports = () => {
     ).then(([empRes, salRes]) => {
       const emps = empRes.data || [];
       setEmployees(emps);
-      // Build employee_id → latest salary structure map
+
       const map = {};
       (salRes.data || []).forEach((s) => {
         if (!map[s.employee_id] || new Date(s.effective_date) > new Date(map[s.employee_id].effective_date)) {
@@ -70,7 +70,7 @@ const PayrollReports = () => {
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
+      {}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="font-semibold text-gray-800">Employee Payroll</h2>

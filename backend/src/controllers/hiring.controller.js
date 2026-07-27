@@ -6,7 +6,7 @@ const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPagination, buildMeta } = require('../utils/pagination');
 
-// --- Jobs ---
+
 
 const listJobs = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
@@ -40,7 +40,7 @@ const removeJob = asyncHandler(async (req, res) => {
   new ApiResponse(200, null, 'Job deleted').send(res);
 });
 
-// --- Job applications ---
+
 
 const listApplications = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
@@ -65,7 +65,7 @@ const updateApplicationStatus = asyncHandler(async (req, res) => {
   new ApiResponse(200, record, 'Application status updated').send(res);
 });
 
-// --- Referrals ---
+
 
 const listReferrals = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
@@ -110,5 +110,5 @@ module.exports = {
   myReferrals,
   getReferral,
   createReferral,
-  updateReferralStatus,
+  updateReferralStatus
 };

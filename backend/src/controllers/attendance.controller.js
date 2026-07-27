@@ -10,7 +10,7 @@ const list = asyncHandler(async (req, res) => {
   const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
 
   const { rows, total } = await attendanceService.list({
-    employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset,
+    employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset
   });
 
   new ApiResponse(200, rows, 'Attendance records fetched', buildMeta({ page, limit, total })).send(res);
@@ -56,7 +56,7 @@ const teamLeaveCalendar = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Team leave calendar fetched').send(res);
 });
 
-// --- Regularization requests ---
+
 
 const listRegularizations = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
@@ -75,7 +75,7 @@ const reviewRegularization = asyncHandler(async (req, res) => {
   const record = await regularizationService.review(req.params.id, {
     decision: req.body.decision,
     reviewed_by: req.user.employeeId,
-    remarks: req.body.remarks,
+    remarks: req.body.remarks
   });
   new ApiResponse(200, record, `Regularization request ${req.body.decision.toLowerCase()}`).send(res);
 });
@@ -90,5 +90,5 @@ module.exports = {
   teamLeaveCalendar,
   listRegularizations,
   createRegularization,
-  reviewRegularization,
+  reviewRegularization
 };

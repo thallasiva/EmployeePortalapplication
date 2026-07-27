@@ -26,7 +26,7 @@ export default function AdminHorizontalBarChart({ title, subtitle, items = [] })
                   width: `${item.value / max * 100}%`,
                   background: item.color
                 }))} />
-            
+
             </div>
             <span className="admin-hbar-value">{item.value}</span>
           </div>

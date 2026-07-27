@@ -88,7 +88,7 @@ export default function AdminChatbot() {
             onClick={() => setOpen(false)}
             className="p-1 hover:bg-white/20 rounded"
             aria-label="Close chat">
-            
+
               <X size={18} />
             </button>
           </div>
@@ -99,7 +99,7 @@ export default function AdminChatbot() {
             key={`${msg.role}-${i}`}
             className={joinClasses(`admin-chatbot-msg admin-chatbot-msg--${msg.role}`, cssClass(
               { whiteSpace: "pre-line" }))}>
-            
+
                 {msg.text}
               </div>
           )}
@@ -112,7 +112,7 @@ export default function AdminChatbot() {
             type="button"
             className="admin-chatbot-chip"
             onClick={() => send(s)}>
-            
+
                 {s}
               </button>
           )}
@@ -124,13 +124,13 @@ export default function AdminChatbot() {
             e.preventDefault();
             send(input);
           }}>
-          
+
             <input
             className="admin-chatbot-input"
             placeholder="Ask about leave, attendance..."
             value={input}
             onChange={(e) => setInput(e.target.value)} />
-          
+
             <button type="submit" className="admin-chatbot-send" aria-label="Send">
               <Send size={16} />
             </button>
@@ -143,7 +143,7 @@ export default function AdminChatbot() {
         className="admin-chatbot-fab"
         onClick={() => setOpen((o) => !o)}
         aria-label="Open admin assistant">
-        
+
         <MessageCircle size={26} />
       </button>
     </>);

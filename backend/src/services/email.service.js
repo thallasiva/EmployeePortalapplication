@@ -1,31 +1,31 @@
 'use strict';
 
-const nodemailer  = require('nodemailer');
+const nodemailer = require('nodemailer');
 const { email: emailCfg } = require('../config/env');
 const { enqueue } = require('./email/mailQueue');
 
 let _transporter = null;
 
-/* -- SMTP Transporter */
+
 
 function getTransporter() {
   if (_transporter) return _transporter;
   if (!emailCfg.host || !emailCfg.user || !emailCfg.pass) return null;
 
   _transporter = nodemailer.createTransport({
-    host:           emailCfg.host,
-    port:           emailCfg.port,
-    secure:         emailCfg.secure,
-    auth:           { user: emailCfg.user, pass: emailCfg.pass },
-    pool:           true,
+    host: emailCfg.host,
+    port: emailCfg.port,
+    secure: emailCfg.secure,
+    auth: { user: emailCfg.user, pass: emailCfg.pass },
+    pool: true,
     maxConnections: 5,
-    maxMessages:    100,
+    maxMessages: 100
   });
 
   return _transporter;
 }
 
-/* -- Core send */
+
 
 async function _doSend({ to, cc, bcc, subject, html, text, attachments }) {
   const transport = getTransporter();
@@ -43,14 +43,14 @@ async function _doSend({ to, cc, bcc, subject, html, text, attachments }) {
 
   try {
     const info = await transport.sendMail({
-      from:        emailCfg.from,
-      to:          Array.isArray(to)  ? to.join(', ')  : to,
-      cc:          Array.isArray(cc)  ? cc.join(', ')  : (cc  || undefined),
-      bcc:         Array.isArray(bcc) ? bcc.join(', ') : (bcc || undefined),
+      from: emailCfg.from,
+      to: Array.isArray(to) ? to.join(', ') : to,
+      cc: Array.isArray(cc) ? cc.join(', ') : cc || undefined,
+      bcc: Array.isArray(bcc) ? bcc.join(', ') : bcc || undefined,
       subject,
       html,
-      text:        text || html.replace(/<[^>]+>/g, ' '),
-      attachments: attachments || undefined,
+      text: text || html.replace(/<[^>]+>/g, ' '),
+      attachments: attachments || undefined
     });
     console.info('[EMAIL] Sent | to=' + to + ' | subject=' + subject + ' | id=' + info.messageId);
     return { sent: true, messageId: info.messageId };
@@ -60,7 +60,7 @@ async function _doSend({ to, cc, bcc, subject, html, text, attachments }) {
   }
 }
 
-/* -- Public API */
+
 
 async function sendMail(options) {
   try {

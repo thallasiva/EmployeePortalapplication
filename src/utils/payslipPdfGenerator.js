@@ -4,7 +4,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import PayslipSheet from "../pages/payslip/PayslipSheet";
 
-const SHEET_WIDTH_PX = 820; // matches .payslip-print-sheet max-width
+const SHEET_WIDTH_PX = 820;
 
 function waitForPaint() {
   return new Promise((resolve) => {
@@ -12,12 +12,12 @@ function waitForPaint() {
   });
 }
 
-/**
- * Renders the payslip template (the same PayslipSheet used by the on-screen
- * print view) off-screen, captures it as an image, and saves it as a
- * downloadable multi-page A4 PDF. Keeps the downloaded PDF visually
- * identical to the on-screen / print layout.
- */
+
+
+
+
+
+
 export async function downloadPayslipPdf(data) {
   if (!data) throw new Error("No payslip data to export.");
 
@@ -45,7 +45,7 @@ export async function downloadPayslipPdf(data) {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
-      windowWidth: SHEET_WIDTH_PX,
+      windowWidth: SHEET_WIDTH_PX
     });
 
     const imgData = canvas.toDataURL("image/png");
@@ -55,7 +55,7 @@ export async function downloadPayslipPdf(data) {
     const pageHeight = pdf.internal.pageSize.getHeight();
 
     const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
 
     let heightLeft = imgHeight;
     let position = 0;

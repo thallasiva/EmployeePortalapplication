@@ -3,7 +3,7 @@ const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 
-// ─── Employee Tasks ──────────────────────────────────────────────────────────
+
 
 const createTask = asyncHandler(async (req, res) => {
   const task = await ts.createTask({ ...req.body, employee_id: req.user.employeeId });
@@ -25,7 +25,7 @@ const deleteTask = asyncHandler(async (req, res) => {
   new ApiResponse(200, null, 'Task deleted').send(res);
 });
 
-// ─── Employee Timesheets ─────────────────────────────────────────────────────
+
 
 const getMyTimesheets = asyncHandler(async (req, res) => {
   const rows = await ts.getMyTimesheets(req.user.employeeId);
@@ -56,7 +56,7 @@ const getDashboardCounts = asyncHandler(async (req, res) => {
   new ApiResponse(200, counts, 'Dashboard counts fetched').send(res);
 });
 
-// ─── Extra Work ──────────────────────────────────────────────────────────────
+
 
 const createExtraWork = asyncHandler(async (req, res) => {
   const req_ = { ...req.body, employee_id: req.user.employeeId };
@@ -69,7 +69,7 @@ const myExtraWork = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Extra work requests fetched').send(res);
 });
 
-// ─── Manager ─────────────────────────────────────────────────────────────────
+
 
 const managerTimesheets = asyncHandler(async (req, res) => {
   const rows = await ts.listManagerTimesheets(req.user.employeeId, req.query);
@@ -80,7 +80,7 @@ const reviewTimesheet = asyncHandler(async (req, res) => {
   const result = await ts.reviewTimesheet(req.params.timesheetId, {
     decision: req.body.decision,
     reviewed_by: req.user.employeeId,
-    comments: req.body.comments,
+    comments: req.body.comments
   });
   new ApiResponse(200, result, `Timesheet ${req.body.decision}`).send(res);
 });
@@ -94,7 +94,7 @@ const reviewExtraWork = asyncHandler(async (req, res) => {
   const result = await ts.reviewExtraWork(req.params.extraWorkId, {
     decision: req.body.decision,
     reviewed_by: req.user.employeeId,
-    manager_notes: req.body.manager_notes,
+    manager_notes: req.body.manager_notes
   });
   new ApiResponse(200, result, `Extra work request ${req.body.decision}`).send(res);
 });
@@ -109,7 +109,7 @@ const managerFullDashboard = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Manager dashboard fetched').send(res);
 });
 
-// ─── Admin ───────────────────────────────────────────────────────────────────
+
 
 const adminTimesheets = asyncHandler(async (req, res) => {
   const rows = await ts.listAllTimesheets(req.query);
@@ -127,5 +127,5 @@ module.exports = {
   createExtraWork, myExtraWork,
   managerTimesheets, reviewTimesheet, managerExtraWork, reviewExtraWork,
   managerDashboardCounts, managerFullDashboard,
-  adminTimesheets, adminDashboardCounts,
+  adminTimesheets, adminDashboardCounts
 };

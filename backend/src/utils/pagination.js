@@ -1,6 +1,6 @@
-/**
- * Normalizes `page` / `limit` query params into SQL LIMIT/OFFSET values.
- */
+
+
+
 function getPagination(query, defaultLimit = 20, maxLimit = 100) {
   let page = Number(query.page) || 1;
   let limit = Number(query.limit) || defaultLimit;
@@ -18,7 +18,7 @@ function buildMeta({ page, limit, total }) {
     page,
     limit,
     total,
-    totalPages: limit > 0 ? Math.ceil(total / limit) : 0,
+    totalPages: limit > 0 ? Math.ceil(total / limit) : 0
   };
 }
 

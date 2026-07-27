@@ -3,9 +3,9 @@ import { FlaskConical } from "lucide-react";
 import { fmtINR } from "./salaryHelpers";
 
 const CAT_STYLE = {
-  "Earning":               "border-green-200 bg-green-50 text-green-800",
-  "Deduction":             "border-red-200 bg-red-50 text-red-800",
-  "Employer Contribution": "border-blue-200 bg-blue-50 text-blue-800",
+  "Earning": "border-green-200 bg-green-50 text-green-800",
+  "Deduction": "border-red-200 bg-red-50 text-red-800",
+  "Employer Contribution": "border-blue-200 bg-blue-50 text-blue-800"
 };
 
 export default function FormulaBuilderTab({ lines }) {
@@ -17,8 +17,8 @@ export default function FormulaBuilderTab({ lines }) {
         <FlaskConical size={36} className="mb-3 text-gray-300" />
         <p className="text-sm">No components in this structure yet.</p>
         <p className="text-xs text-gray-300 mt-1">Add components via the Fixed Pay or other tabs.</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -32,45 +32,45 @@ export default function FormulaBuilderTab({ lines }) {
         const ct = l.effective_calc_type || l.calc_type;
 
         const expr =
-          ct === "Percentage"
-            ? `${l.component_code}  =  ${l.effective_pct ?? l.percentage_value ?? "?"}%  ×  ${l.effective_pct_of || l.percentage_of || "?"}`
-            : ct === "Fixed Amount"
-            ? `${l.component_code}  =  ${fmtINR(l.fixed_amount)}  (Fixed)`
-            : ct === "Formula"
-            ? `${l.component_code}  =  ${l.effective_formula || l.formula_expr || "—"}`
-            : `${l.component_code}  =  —`;
+        ct === "Percentage" ?
+        `${l.component_code}  =  ${l.effective_pct ?? l.percentage_value ?? "?"}%  ×  ${l.effective_pct_of || l.percentage_of || "?"}` :
+        ct === "Fixed Amount" ?
+        `${l.component_code}  =  ${fmtINR(l.fixed_amount)}  (Fixed)` :
+        ct === "Formula" ?
+        `${l.component_code}  =  ${l.effective_formula || l.formula_expr || "—"}` :
+        `${l.component_code}  =  —`;
 
         const catStyle = CAT_STYLE[l.category] || "border-gray-200 bg-gray-50 text-gray-700";
 
         return (
           <div
             key={l.component_id}
-            className={`flex items-center gap-3 border rounded-xl px-4 py-3 ${catStyle}`}
-          >
-            {/* Code badge */}
+            className={`flex items-center gap-3 border rounded-xl px-4 py-3 ${catStyle}`}>
+
+            {}
             <code className="text-[11px] font-mono font-bold bg-white/70 border border-current/20 px-2 py-1 rounded min-w-[56px] text-center shrink-0">
               {l.component_code}
             </code>
 
-            {/* Formula */}
+            {}
             <code className="text-xs font-mono flex-1 text-gray-700 break-all">{expr}</code>
 
-            {/* Category pill */}
+            {}
             <span className="text-[10px] font-medium shrink-0 opacity-70">{l.frequency}</span>
-          </div>
-        );
+          </div>);
+
       })}
 
-      {/* Legend */}
+      {}
       <div className="mt-6 border-t border-gray-100 pt-4 text-[11px] text-gray-400 space-y-1">
         <p className="font-medium mb-2">Available tokens</p>
         <div className="flex flex-wrap gap-2">
-          {["CTC_MONTHLY", "CTC_ANNUAL", "BASIC", "HRA", "GROSS", "SPL", "TEL", "LTA", "EMP_PF"].map(t => (
-            <code key={t} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono">{t}</code>
-          ))}
+          {["CTC_MONTHLY", "CTC_ANNUAL", "BASIC", "HRA", "GROSS", "SPL", "TEL", "LTA", "EMP_PF"].map((t) =>
+          <code key={t} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono">{t}</code>
+          )}
         </div>
         <p className="mt-2">Functions: <code className="bg-gray-100 px-1 rounded">MIN(a,b)  MAX(a,b)  ROUND(x)  IF(cond,a,b)  ABS(x)</code></p>
       </div>
-    </div>
-  );
+    </div>);
+
 }

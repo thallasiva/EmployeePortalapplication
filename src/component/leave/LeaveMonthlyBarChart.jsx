@@ -46,7 +46,7 @@ export default function LeaveMonthlyBarChart({ chart, year }) {
                     className="leave-grouped-chart__month-group"
                     onMouseEnter={() => setHoveredIndex(index)}
                     onMouseLeave={() => setHoveredIndex(null)}>
-                    
+
                     {showTip &&
                     <div className="leave-grouped-chart__tooltip">
                         <div className="leave-grouped-chart__tooltip-title">
@@ -55,7 +55,7 @@ export default function LeaveMonthlyBarChart({ chart, year }) {
                         <div className="leave-grouped-chart__tooltip-row">
                           <span
                           className="leave-grouped-chart__legend-swatch leave-grouped-chart__legend-swatch--balance" />
-                        
+
                           Balance: {balance[index]}
                         </div>
                         {tip &&
@@ -69,11 +69,11 @@ export default function LeaveMonthlyBarChart({ chart, year }) {
                     <div
                       className={joinClasses("leave-grouped-chart__bar leave-grouped-chart__bar--balance", cssClass(
                         { height: barHeight(balance[index]) }))} />
-                    
+
                     <div
                       className={joinClasses("leave-grouped-chart__bar leave-grouped-chart__bar--consumed", cssClass(
                         { height: barHeight(consumed[index]) }))} />
-                    
+
                   </div>);
 
               })}

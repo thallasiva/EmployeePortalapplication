@@ -41,12 +41,12 @@ function listenWithFallback(startPort) {
   });
 }
 
-// ── Auto-migrations ──────────────────────────────────────────────────────────
-// Safely adds missing columns on every startup (idempotent).
-// Uses information_schema so it never errors if the column already exists.
+
+
+
 async function runAutoMigrations() {
   try {
-    // ── Migration 030: holidays.shift + holidays.location ────────────────────
+
     const shiftExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'holidays' AND COLUMN_NAME = 'shift'`
@@ -61,7 +61,7 @@ async function runAutoMigrations() {
       logger.info('[MIGRATION] holidays.shift + holidays.location columns added');
     }
 
-    // ── Migration 031: reporting_history table ────────────────────────────────
+
     const rhExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reporting_history'`
@@ -86,7 +86,7 @@ async function runAutoMigrations() {
       logger.info('[MIGRATION] reporting_history table created');
     }
 
-    // ── Migration 032a: create workflow_delegates if missing ─────────────────
+
     const wdTableExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'workflow_delegates'`
@@ -110,7 +110,7 @@ async function runAutoMigrations() {
       logger.info('[MIGRATION] workflow_delegates table created');
     }
 
-    // ── Migration 032b: workflow_delegates.reason column ─────────────────────
+
     const wdReasonExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'workflow_delegates' AND COLUMN_NAME = 'reason'`
@@ -120,9 +120,9 @@ async function runAutoMigrations() {
       logger.info('[MIGRATION] workflow_delegates.reason column added');
     }
 
-    // ── Migration 033: seed org hierarchy ONLY if nobody has reporting_to set ──
-    // This runs once on a fresh DB. After that, manual assignments in the UI
-    // are preserved — we no longer overwrite on every restart.
+
+
+
     {
       const assigned = await query(
         `SELECT COUNT(*) AS cnt FROM employees WHERE reporting_to IS NOT NULL AND employee_status = 'Active'`
@@ -145,34 +145,34 @@ async function runAutoMigrations() {
           function rankDesig(name = '') {
             const n = (name || '').toLowerCase();
             if (/ceo|chief executive|president|founder|managing director/.test(n)) return 6;
-            if (/cto|cfo|coo|cpo|chief/.test(n))   return 5;
+            if (/cto|cfo|coo|cpo|chief/.test(n)) return 5;
             if (/vp|vice president|director/.test(n)) return 4;
-            if (/head|manager|lead/.test(n))          return 3;
+            if (/head|manager|lead/.test(n)) return 3;
             if (/senior|sr\.|principal|specialist/.test(n)) return 2;
             return 1;
           }
 
-          emps.forEach(e => { e._rank = rankDesig(e.designation_name); });
+          emps.forEach((e) => {e._rank = rankDesig(e.designation_name);});
           const sorted = [...emps].sort((a, b) => b._rank - a._rank || a.employee_id - b.employee_id);
           const ceo = sorted[0];
 
-          // CEO has no manager
+
           await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [ceo.employee_id]);
 
           for (const emp of sorted) {
             if (emp.employee_id === ceo.employee_id) continue;
-            const higher = sorted.filter(e => e._rank > emp._rank && e.employee_id !== emp.employee_id);
+            const higher = sorted.filter((e) => e._rank > emp._rank && e.employee_id !== emp.employee_id);
             let manager;
             if (higher.length) {
-              const minRank  = Math.min(...higher.map(e => e._rank));
-              const direct   = higher.filter(e => e._rank === minRank);
-              const sameDept = direct.filter(e => e.department_id === emp.department_id);
+              const minRank = Math.min(...higher.map((e) => e._rank));
+              const direct = higher.filter((e) => e._rank === minRank);
+              const sameDept = direct.filter((e) => e.department_id === emp.department_id);
               manager = sameDept[0] || direct[0];
             } else {
               manager = ceo;
             }
             await query(`UPDATE employees SET reporting_to = ? WHERE employee_id = ?`,
-              [manager.employee_id, emp.employee_id]);
+            [manager.employee_id, emp.employee_id]);
             logger.info(`[MIGRATION] ${emp.full_name} → ${manager.full_name}`);
           }
 
@@ -183,22 +183,22 @@ async function runAutoMigrations() {
       }
     }
 
-    // ── Migration 034: ensure Admin user's employee is always the org root ───
-    // Runs every startup but only touches reporting_to for the admin employee
-    // and anyone else stuck with NULL reporting_to who isn't the admin.
+
+
+
     {
-      // Find the employee linked to the Admin role (role_id = 1)
+
       const adminRows = await query(
         `SELECT u.employee_id FROM users u WHERE u.role_id = 1 AND u.employee_id IS NOT NULL LIMIT 1`
       );
       if (adminRows.length && adminRows[0].employee_id) {
         const adminEmpId = adminRows[0].employee_id;
 
-        // Admin employee must have reporting_to = NULL (they're the root)
+
         await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [adminEmpId]);
 
-        // Any OTHER active employee with reporting_to = NULL (orphaned roots)
-        // should report to the admin employee
+
+
         await query(
           `UPDATE employees
               SET reporting_to = ?
@@ -217,19 +217,19 @@ async function runAutoMigrations() {
   }
 }
 
-// ── Cron: Earned Leave + Email Notification cron jobs ───────────────────────
+
 function startCronJobs() {
   try {
-    const cron         = require('node-cron');
+    const cron = require('node-cron');
     const leaveService = require('./services/leaveRequest.service');
-    const notify       = require('./services/mailNotify.service');
+    const notify = require('./services/mailNotify.service');
     const { callProcedure } = require('./config/db');
 
-    // ── Earned leave accrual: 1st of month at 18:00 IST ─────────────────────
+
     cron.schedule('0 18 1 * *', async () => {
       const now = new Date();
       const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
-      const prevYear  = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+      const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
       logger.info(`[CRON] Starting earned leave accrual for ${prevMonth}/${prevYear}`);
       try {
         const result = await leaveService.accrueEarnedLeave(prevMonth, prevYear);
@@ -239,7 +239,7 @@ function startCronJobs() {
       }
     }, { timezone: 'Asia/Kolkata' });
 
-    // ── Missing check-in alert: daily at 11:00 AM IST ────────────────────────
+
     cron.schedule('0 11 * * 1-6', async () => {
       logger.info('[CRON] Running missing check-in scan…');
       try {
@@ -248,8 +248,8 @@ function startCronJobs() {
         if (rows.length) {
           notify.missingCheckInBulk(rows.map((r) => ({
             employeeEmail: r.email,
-            employeeName:  r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
-            date:          r.attendance_date || new Date().toISOString().split('T')[0],
+            employeeName: r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
+            date: r.attendance_date || new Date().toISOString().split('T')[0]
           })));
           logger.info(`[CRON] Missing check-in alerts queued for ${rows.length} employees`);
         } else {
@@ -260,7 +260,7 @@ function startCronJobs() {
       }
     }, { timezone: 'Asia/Kolkata' });
 
-    // ── Missing check-out alert: daily at 7:00 PM IST ────────────────────────
+
     cron.schedule('0 19 * * 1-6', async () => {
       logger.info('[CRON] Running missing check-out scan…');
       try {
@@ -269,8 +269,8 @@ function startCronJobs() {
         if (rows.length) {
           notify.missingCheckOutBulk(rows.map((r) => ({
             employeeEmail: r.email,
-            employeeName:  r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
-            date:          r.attendance_date || new Date().toISOString().split('T')[0],
+            employeeName: r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
+            date: r.attendance_date || new Date().toISOString().split('T')[0]
           })));
           logger.info(`[CRON] Missing check-out alerts queued for ${rows.length} employees`);
         } else {
@@ -281,8 +281,8 @@ function startCronJobs() {
       }
     }, { timezone: 'Asia/Kolkata' });
 
-    // ── Document expiry alert: daily at 9:00 AM IST ──────────────────────────
-    // Sends alerts for documents expiring in 30 days and in 7 days
+
+
     cron.schedule('0 9 * * *', async () => {
       logger.info('[CRON] Running document expiry scan…');
       for (const days of [30, 7]) {
@@ -292,10 +292,10 @@ function startCronJobs() {
           if (rows.length) {
             notify.documentExpiryBulk(rows.map((r) => ({
               employeeEmail: r.email,
-              employeeName:  r.employee_name || (r.first_name + ' ' + (r.last_name || '')).trim(),
-              documentName:  r.document_name || r.doc_type || 'Document',
-              expiryDate:    r.expiry_date,
-              daysLeft:      days,
+              employeeName: r.employee_name || (r.first_name + ' ' + (r.last_name || '')).trim(),
+              documentName: r.document_name || r.doc_type || 'Document',
+              expiryDate: r.expiry_date,
+              daysLeft: days
             })));
             logger.info('[CRON] Document expiry alerts (' + days + 'd) queued for ' + rows.length + ' employees');
           }
@@ -311,10 +311,10 @@ function startCronJobs() {
   }
 }
 
-// -- BullMQ email worker
+
 function startEmailWorker() {
   try {
-    const { createWorker }     = require('./services/email/mailQueue');
+    const { createWorker } = require('./services/email/mailQueue');
     const { processQueuedJob } = require('./services/email.service');
     createWorker(processQueuedJob);
     logger.info('[EMAIL] BullMQ worker started -- processing email queue');
@@ -323,16 +323,16 @@ function startEmailWorker() {
   }
 }
 
-// -- Production security guardrails
+
 function enforceSecrets() {
   const WEAK_SECRETS = [
-    'dev_secret_change_me',
-    'dev_refresh_secret_change_me',
-    'secret',
-    'changeme',
-    'password',
-    '',
-  ];
+  'dev_secret_change_me',
+  'dev_refresh_secret_change_me',
+  'secret',
+  'changeme',
+  'password',
+  ''];
+
 
   if (env === 'production') {
     if (WEAK_SECRETS.includes(jwt.secret)) {
@@ -358,7 +358,7 @@ function enforceSecrets() {
 
 enforceSecrets();
 
-// -- SMTP configuration check
+
 function checkSmtpConfig() {
   const { email: emailCfg } = require('./config/env');
   const missing = [];
@@ -406,6 +406,6 @@ function checkSmtpConfig() {
     server.close(() => process.exit(0));
   };
 
-  process.on('SIGINT',  () => shutdown('SIGINT'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 })();

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-/** Returns [x, y] on a unit circle for a given fraction (0-1), starting at 12 o'clock, going clockwise. */import { cssClass, joinClasses } from "../../utils/classStyles";
+import { cssClass, joinClasses } from "../../utils/classStyles";
 function getCoordinatesForPercent(percent) {
   const angle = 2 * Math.PI * (percent - 0.25);
   return [Math.cos(angle), Math.sin(angle)];
@@ -8,17 +8,17 @@ function getCoordinatesForPercent(percent) {
 
 export const formatINR = (value) => `₹${Math.round(Number(value) || 0).toLocaleString("en-IN")}`;
 
-/**
- * Self-contained interactive pie/donut chart built with plain SVG (no chart library required).
- * Hovering (or focusing, for keyboard users) a slice or legend row highlights it and shows
- * its label, value and share of the total — both in the center label and via native tooltips.
- *
- * @param {{label: string, value: number, color: string}[]} data
- * @param {number} [size] - chart diameter in px
- * @param {boolean} [donut] - render as a donut (true) or a full pie (false)
- * @param {(value: number) => string} [valueFormatter]
- * @param {string} [title]
- */
+
+
+
+
+
+
+
+
+
+
+
 export default function InteractivePieChart({ data, size = 180, donut = true, valueFormatter = formatINR, title, legendBelow = false }) {
   const [activeIndex, setActiveIndex] = useState(null);
   const r = size / 2;
@@ -55,7 +55,7 @@ export default function InteractivePieChart({ data, size = 180, donut = true, va
             opacity={activeIndex == null || activeIndex === singleIndex ? 1 : 0.45}
             onMouseEnter={() => setActiveIndex(singleIndex)}
             onMouseLeave={() => setActiveIndex(null)}>
-            
+
               <title>{`${nonZero[0].label}: ${valueFormatter(nonZero[0].value)} (100%)`}</title>
             </circle> :
 
@@ -84,7 +84,7 @@ export default function InteractivePieChart({ data, size = 180, donut = true, va
                 onBlur={() => setActiveIndex(null)}
                 tabIndex={0} className={cssClass(
                   { cursor: "pointer", outline: "none" })}>
-                
+
                   <title>{`${slice.label}: ${valueFormatter(slice.value)} (${Math.round(slice.percent * 100)}%)`}</title>
                 </path>);
 
@@ -93,7 +93,7 @@ export default function InteractivePieChart({ data, size = 180, donut = true, va
           {donut && <circle cx={r} cy={r} r={innerRadius} fill="white" />}
         </svg>
 
-        {/* Center label: shows totals by default, hovered slice details on hover */}
+        {}
         {donut &&
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center px-3">
             {active ?
@@ -112,7 +112,7 @@ export default function InteractivePieChart({ data, size = 180, donut = true, va
         }
       </div>
 
-      {/* Legend */}
+      {}
       <div className="flex-1 w-full space-y-2">
         {slices.map((slice, i) =>
         <div
@@ -122,7 +122,7 @@ export default function InteractivePieChart({ data, size = 180, donut = true, va
           }
           onMouseEnter={() => setActiveIndex(i)}
           onMouseLeave={() => setActiveIndex(null)}>
-          
+
             <span className="flex items-center gap-2 text-gray-600">
               <span className={joinClasses("h-2.5 w-2.5 shrink-0 rounded-full", cssClass({ backgroundColor: slice.color }))} />
               {slice.label}

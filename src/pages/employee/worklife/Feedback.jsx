@@ -1,33 +1,33 @@
-// Feedback.jsx
+
 
 import React, { useState } from "react";
-import
-{
-    MessageSquare,
-    Star,
-    Send,
-} from "lucide-react";
+import {
+
+  MessageSquare,
+  Star,
+  Send } from
+"lucide-react";
 import RequestFeedbackModal from "./RequestFeedbackModal";
 
 const Feedback = () =>
 {
-    const [openModal, setOpenModal] =
-        useState(false);
-    return (
-        <div className="space-y-6 ">
+  const [openModal, setOpenModal] =
+  useState(false);
+  return (
+    <div className="space-y-6 ">
 
-            {/* HEADER */}
-            {/* RIGHT BUTTONS */}
+            {}
+            {}
             <div className="flex items-center w-full">
 
-                    {/* RIGHT SIDE BUTTONS */}
+                    {}
                 <div className="flex items-center gap-5 pr-2 ml-auto">
 
                     <button
-                        onClick={() =>
-                            setOpenModal(true)
-                        }
-                        className="
+            onClick={() =>
+            setOpenModal(true)
+            }
+            className="
                 bg-[#3f5bd8]
                 hover:bg-[#334cc2]
                 text-white
@@ -37,16 +37,26 @@ const Feedback = () =>
                 py-3
                 rounded-lg
                 shadow-sm
-            "
-                    >
+            ">
+
+
+
+
+
+
+
+
+
+
+
                         Request Feedback
                     </button>
 
                     <button
-                        onClick={() =>
-                            setOpenModal(true)
-                        }
-                        className="
+            onClick={() =>
+            setOpenModal(true)
+            }
+            className="
                 bg-[#3f5bd8]
                 hover:bg-[#334cc2]
                 text-white
@@ -56,8 +66,18 @@ const Feedback = () =>
                 py-3
                 rounded-lg
                 shadow-sm
-            "
-                    >
+            ">
+
+
+
+
+
+
+
+
+
+
+
                         Give Feedback
                     </button>
 
@@ -66,15 +86,15 @@ const Feedback = () =>
             </div>
             <div className="flex items-center justify-between">
 
-                {/* TOP SECTION */}
+                {}
 
                 <div className="flex items-center justify-between border-b border-gray-300 pb-0">
 
-                    {/* LEFT TABS */}
+                    {}
                     <div className="flex items-center">
 
                         <button
-                            className="
+              className="
                 px-6
                 py-4
                 text-[#3f5bd8]
@@ -82,44 +102,70 @@ const Feedback = () =>
                 border-[#3f5bd8]
                 text-[17px]
                 font-medium
-            "
-                        >
+            ">
+
+
+
+
+
+
+
+
+
                             Received
                         </button>
 
                         <button
-                            className="
+              className="
                 px-6
                 py-4
                 text-gray-700
                 text-[17px]
                 font-medium
-            "
-                        >
+            ">
+
+
+
+
+
+
+
                             Given
                         </button>
 
                         <button
-                            className="
+              className="
                 px-6
                 py-4
                 text-gray-700
                 text-[17px]
                 font-medium
-            "
-                        >
+            ">
+
+
+
+
+
+
+
                             Pending Requests
                         </button>
 
                         <button
-                            className="
+              className="
                 px-6
                 py-4
                 text-gray-700
                 text-[17px]
                 font-medium
-            "
-                        >
+            ">
+
+
+
+
+
+
+
                             Drafts
                         </button>
 
@@ -129,40 +175,40 @@ const Feedback = () =>
 
                 </div>
 
-                {/* <div className="flex justify-end gap-3">
+                {
 
-                    <button
-                        className="bg-brand hover:bg-brand-600 text-white px-5 py-2 rounded-lg flex items-center gap-2"
-                        onClick={() =>
-                            setOpenModal(true)
-                        }
-                    >
-                        <Send size={18} />
-                        Request Feedback
-                    </button>
 
-                    <button
-                        className="bg-brand hover:bg-brand-600 text-white px-5 py-2 rounded-lg flex items-center gap-2"
-                        onClick={() =>
-                            setOpenModal(true)
-                        }
-                    >
-                        Give Feedback
-                    </button>
 
-                </div> */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
 
 
                 <RequestFeedbackModal
-                    open={openModal}
-                    onClose={() =>
-                        setOpenModal(false)
-                    }
-                />
+          open={openModal}
+          onClose={() =>
+          setOpenModal(false)
+          } />
+
 
             </div>
 
-            {/* OVERVIEW */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
                 <div className="bg-white rounded-2xl shadow p-5">
@@ -215,7 +261,7 @@ const Feedback = () =>
 
             </div>
 
-            {/* FEEDBACK LIST */}
+            {}
             <div className="bg-white rounded-2xl shadow p-6">
 
                 <h2 className="text-xl font-semibold mb-5">
@@ -224,11 +270,11 @@ const Feedback = () =>
 
                 <div className="space-y-4">
 
-                    {[1, 2, 3].map((item) => (
-                        <div
-                            key={item}
-                            className="border rounded-xl p-4"
-                        >
+                    {[1, 2, 3].map((item) =>
+          <div
+            key={item}
+            className="border rounded-xl p-4">
+
                             <div className="flex items-center justify-between">
 
                                 <div className="flex gap-4">
@@ -261,14 +307,14 @@ const Feedback = () =>
 
                             </div>
                         </div>
-                    ))}
+          )}
 
                 </div>
 
             </div>
 
-        </div>
-    );
+        </div>);
+
 };
 
 export default Feedback;

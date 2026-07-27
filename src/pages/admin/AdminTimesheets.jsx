@@ -4,30 +4,30 @@ import { getAllTimesheets, getAdminDashboardCounts, getAnyTimesheetDetail } from
 import "./adminDashboard.css";
 
 const STATUS_STYLE = {
-  draft:    "bg-gray-100 text-gray-600 border-gray-300",
-  pending:  "bg-amber-50 text-amber-700 border-amber-300",
+  draft: "bg-gray-100 text-gray-600 border-gray-300",
+  pending: "bg-amber-50 text-amber-700 border-amber-300",
   approved: "bg-emerald-50 text-emerald-700 border-emerald-300",
-  rejected: "bg-red-50 text-red-600 border-red-300",
+  rejected: "bg-red-50 text-red-600 border-red-300"
 };
 
 function StatusBadge({ status }) {
   return (
     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border capitalize ${STATUS_STYLE[status] || ""}`}>
       {status}
-    </span>
-  );
+    </span>);
+
 }
 
-// ─── Detail Modal ─────────────────────────────────────────────────────────────
+
 function TimesheetDetailModal({ timesheetId, onClose }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAnyTimesheetDetail(timesheetId)
-      .then(setDetail)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    getAnyTimesheetDetail(timesheetId).
+    then(setDetail).
+    catch(() => {}).
+    finally(() => setLoading(false));
   }, [timesheetId]);
 
   return (
@@ -38,32 +38,32 @@ function TimesheetDetailModal({ timesheetId, onClose }) {
           <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
         </div>
 
-        {loading ? (
-          <div className="p-8 text-center text-gray-400">Loading…</div>
-        ) : !detail ? (
-          <div className="p-8 text-center text-red-500">Failed to load</div>
-        ) : (
-          <div className="p-6 space-y-5">
-            {/* Meta */}
+        {loading ?
+        <div className="p-8 text-center text-gray-400">Loading…</div> :
+        !detail ?
+        <div className="p-8 text-center text-red-500">Failed to load</div> :
+
+        <div className="p-6 space-y-5">
+            {}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               {[
-                ["Employee", detail.employee_name],
-                ["Week", `${detail.week_start} → ${detail.week_end}`],
-                ["Total Hours", `${parseFloat(detail.total_hours || 0).toFixed(1)}h`],
-                ["Status", <StatusBadge key="s" status={detail.status} />],
-                ["Submitted", detail.submitted_at ? new Date(detail.submitted_at).toLocaleDateString("en-GB") : "—"],
-                ["Reviewed By", detail.reviewer_name || "—"],
-                ["Reviewed At", detail.reviewed_at ? new Date(detail.reviewed_at).toLocaleDateString("en-GB") : "—"],
-                ["Comments", detail.comments || "—"],
-              ].map(([label, value]) => (
-                <div key={label} className="bg-gray-50 rounded-xl p-3">
+            ["Employee", detail.employee_name],
+            ["Week", `${detail.week_start} → ${detail.week_end}`],
+            ["Total Hours", `${parseFloat(detail.total_hours || 0).toFixed(1)}h`],
+            ["Status", <StatusBadge key="s" status={detail.status} />],
+            ["Submitted", detail.submitted_at ? new Date(detail.submitted_at).toLocaleDateString("en-GB") : "—"],
+            ["Reviewed By", detail.reviewer_name || "—"],
+            ["Reviewed At", detail.reviewed_at ? new Date(detail.reviewed_at).toLocaleDateString("en-GB") : "—"],
+            ["Comments", detail.comments || "—"]].
+            map(([label, value]) =>
+            <div key={label} className="bg-gray-50 rounded-xl p-3">
                   <p className="text-xs text-gray-400 mb-0.5">{label}</p>
                   <p className="font-semibold text-gray-800 text-sm">{value}</p>
                 </div>
-              ))}
+            )}
             </div>
 
-            {/* Entries */}
+            {}
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Work Log Entries</h3>
               <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -82,11 +82,11 @@ function TimesheetDetailModal({ timesheetId, onClose }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {(detail.entries || []).length === 0 ? (
-                      <tr><td colSpan={9} className="px-4 py-6 text-center text-gray-400">No entries</td></tr>
-                    ) : (
-                      (detail.entries || []).map(e => (
-                        <tr key={e.entry_id} className="hover:bg-gray-50">
+                    {(detail.entries || []).length === 0 ?
+                  <tr><td colSpan={9} className="px-4 py-6 text-center text-gray-400">No entries</td></tr> :
+
+                  (detail.entries || []).map((e) =>
+                  <tr key={e.entry_id} className="hover:bg-gray-50">
                           <td className="px-4 py-2">{e.project_name}</td>
                           <td className="px-4 py-2">{e.task_name}</td>
                           <td className="px-4 py-2 text-gray-500 text-xs">{e.activity_desc || "—"}</td>
@@ -99,20 +99,20 @@ function TimesheetDetailModal({ timesheetId, onClose }) {
                             {detail.submitted_at ? new Date(detail.submitted_at).toLocaleDateString("en-GB") : "—"}
                           </td>
                         </tr>
-                      ))
-                    )}
+                  )
+                  }
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+
 export default function AdminTimesheets() {
   const [timesheets, setTimesheets] = useState([]);
   const [counts, setCounts] = useState(null);
@@ -127,14 +127,14 @@ export default function AdminTimesheets() {
       const params = filter !== "all" ? { status: filter } : {};
       setTimesheets(await getAllTimesheets(params));
       setCounts(await getAdminDashboardCounts());
-    } catch {} finally { setLoading(false); }
+    } catch {} finally {setLoading(false);}
   }, [filter]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {load();}, [load]);
 
-  const filtered = search
-    ? timesheets.filter(t => t.employee_name?.toLowerCase().includes(search.toLowerCase()) || t.emp_code?.includes(search))
-    : timesheets;
+  const filtered = search ?
+  timesheets.filter((t) => t.employee_name?.toLowerCase().includes(search.toLowerCase()) || t.emp_code?.includes(search)) :
+  timesheets;
 
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(filtered);
 
@@ -142,50 +142,50 @@ export default function AdminTimesheets() {
 
   return (
     <div className="admin-dash space-y-4">
-      {/* Page header */}
+      {}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Timesheets</h1>
         <p className="text-gray-500 mt-1">All employee weekly timesheet submissions</p>
       </div>
 
-      {/* KPI cards */}
-      {counts && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      {}
+      {counts &&
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "Total Employees", value: counts.totalEmployees, color: "text-brand" },
-            { label: "Total Managers", value: counts.totalManagers, color: "text-indigo-600" },
-            { label: "Pending", value: counts.pendingTimesheets, color: "text-amber-600" },
-            { label: "Approved", value: counts.approvedTimesheets, color: "text-emerald-600" },
-            { label: "Rejected", value: counts.rejectedTimesheets, color: "text-red-500" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="admin-dash-card py-4 text-center">
+        { label: "Total Employees", value: counts.totalEmployees, color: "text-brand" },
+        { label: "Total Managers", value: counts.totalManagers, color: "text-indigo-600" },
+        { label: "Pending", value: counts.pendingTimesheets, color: "text-amber-600" },
+        { label: "Approved", value: counts.approvedTimesheets, color: "text-emerald-600" },
+        { label: "Rejected", value: counts.rejectedTimesheets, color: "text-red-500" }].
+        map(({ label, value, color }) =>
+        <div key={label} className="admin-dash-card py-4 text-center">
               <p className={`text-2xl font-bold ${color}`}>{value ?? 0}</p>
               <p className="text-xs text-gray-500 mt-1">{label}</p>
             </div>
-          ))}
+        )}
         </div>
-      )}
+      }
 
-      {/* Controls */}
+      {}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex gap-2 flex-wrap">
-          {FILTER_OPTIONS.map(f => (
-            <button key={f} type="button" onClick={() => setFilter(f)}
-              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors capitalize ${
-                filter === f ? "bg-brand text-white border-brand" : "bg-white text-gray-600 border-gray-200 hover:border-brand"
-              }`}>{f === "all" ? "All" : f}</button>
-          ))}
+          {FILTER_OPTIONS.map((f) =>
+          <button key={f} type="button" onClick={() => setFilter(f)}
+          className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors capitalize ${
+          filter === f ? "bg-brand text-white border-brand" : "bg-white text-gray-600 border-gray-200 hover:border-brand"}`
+          }>{f === "all" ? "All" : f}</button>
+          )}
         </div>
         <input
           type="text"
           placeholder="Search employee…"
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 w-full sm:w-56 focus:border-brand focus:outline-none shadow-sm"
           value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+          onChange={(e) => setSearch(e.target.value)} />
+
       </div>
 
-      {/* Table */}
+      {}
       <div className="admin-dash-card !p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="admin-att-table w-full">
@@ -201,12 +201,12 @@ export default function AdminTimesheets() {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">Loading…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">No timesheets found</td></tr>
-              ) : paged.map(ts => (
-                <tr key={ts.timesheet_id}>
+              {loading ?
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">Loading…</td></tr> :
+              filtered.length === 0 ?
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">No timesheets found</td></tr> :
+              paged.map((ts) =>
+              <tr key={ts.timesheet_id}>
                   <td>
                     <div>
                       <p className="font-medium text-gray-900">{ts.employee_name}</p>
@@ -224,12 +224,12 @@ export default function AdminTimesheets() {
                   <td className="text-center text-xs text-gray-500">{ts.reviewer_name || "—"}</td>
                   <td className="text-center">
                     <button type="button" onClick={() => setViewId(ts.timesheet_id)}
-                      className="text-xs font-semibold text-brand hover:underline px-3 py-1 rounded-lg border border-brand/30 hover:bg-brand/5">
+                  className="text-xs font-semibold text-brand hover:underline px-3 py-1 rounded-lg border border-brand/30 hover:bg-brand/5">
                       View
                     </button>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -237,6 +237,6 @@ export default function AdminTimesheets() {
       </div>
 
       {viewId && <TimesheetDetailModal timesheetId={viewId} onClose={() => setViewId(null)} />}
-    </div>
-  );
+    </div>);
+
 }

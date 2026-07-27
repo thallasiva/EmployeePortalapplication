@@ -11,22 +11,22 @@ const register = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const result = await authService.login({
     ...req.body,
-    ip:        req.ip || req.headers['x-forwarded-for'] || 'Unknown',
-    userAgent: req.headers['user-agent'] || 'Unknown device',
+    ip: req.ip || req.headers['x-forwarded-for'] || 'Unknown',
+    userAgent: req.headers['user-agent'] || 'Unknown device'
   });
 
   if (result.mfaRequired) {
-    // Password correct but MFA needed — return temp token, not full JWT
+
     return new ApiResponse(200, { mfaRequired: true, mfaTempToken: result.mfaTempToken }, 'MFA verification required').send(res);
   }
 
-  // Full login — set httpOnly cookies AND return tokens in body
+
   setTokenCookies(res, result.accessToken, result.refreshToken);
   new ApiResponse(200, result, 'Login successful').send(res);
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  // Accept refresh token from cookie first, then body (backward compat)
+
   const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
   const result = await authService.refresh(refreshToken);
   setTokenCookies(res, result.accessToken, result.refreshToken);

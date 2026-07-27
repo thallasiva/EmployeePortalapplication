@@ -4,7 +4,7 @@ import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
 import { PATH_ADMIN_HOME } from "./paths";
 import LazyPage from "./LazyPage";
 
-// ── Lazy imports ─────────────────────────────────────────────────────────────
+
 const EmployeeDashboard = lazy(() => import("../pages/employee/Dashboard/EmployeeDashboard"));
 const AttendanceInfo = lazy(() => import("../pages/employee/attendance/AttendanceInfo"));
 const MyRegularizations = lazy(() => import("../pages/employee/attendance/MyRegularizations"));
@@ -42,10 +42,10 @@ const Page = LazyPage;
 const EmployeeRoutes = () =>
 {
   const user = getStoredUser();
-  // if (!isEmployee(user) && !isReportingManager(user))
-  // {
-  //   return <Navigate to={PATH_ADMIN_HOME} replace />;
-  // }
+
+
+
+
   if (!user)
   {
     return <Navigate to="/login" replace />;
@@ -89,8 +89,8 @@ const EmployeeRoutes = () =>
       <Route path="resignation" element={<Page><Resignation /></Page>} />
       <Route path="appraisal" element={<Page><SelfAppraisal /></Page>} />
 
-    </Routes>
-  );
+    </Routes>);
+
 };
 
 export default EmployeeRoutes;

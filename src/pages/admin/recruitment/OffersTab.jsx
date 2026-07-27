@@ -16,14 +16,14 @@ function OffersTab()
         </div>
       </Card>
       <Card title="Offer & Onboarding">
-        <DataTable columns={["Candidate", "Date of Joining", "CTC Amount", "Basic", "HRA", "Telephone/Internet Allowance", "Special Allowance", "Gross Salary", "PF Contribution", "Statutory Bonus", "Gratuity", "ESI", "Cost to Company", "CTC Amount in Words", "Designation", "Status"]} rows={OFFER_ROWS}  />
-        {/*  */}
+        <DataTable columns={["Candidate", "Date of Joining", "CTC Amount", "Basic", "HRA", "Telephone/Internet Allowance", "Special Allowance", "Gross Salary", "PF Contribution", "Statutory Bonus", "Gratuity", "ESI", "Cost to Company", "CTC Amount in Words", "Designation", "Status"]} rows={OFFER_ROWS} />
+        {}
       </Card>
       <Card title="Finalizing Onboarding">
         <DataTable columns={["Candidate", "Current Status of Employee", "Effective Date", "Onboard", "Review Forms Submitted"]} rows={ONBOARDING_ROWS} />
       </Card>
-    </>
-  );
+    </>);
+
 }
 
 export default OffersTab;

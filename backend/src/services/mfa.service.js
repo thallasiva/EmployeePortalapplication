@@ -5,11 +5,11 @@ const { callProcedure, readOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { generateMfaSetup, verifyTotp, generateBackupCodes, consumeBackupCode } = require('../utils/mfa');
 
-// ── Temp token helpers ────────────────────────────────────────────────────────
+
 
 async function issueMfaTempToken(userId) {
-  const raw       = crypto.randomBytes(32).toString('hex');
-  const hash      = crypto.createHash('sha256').update(raw).digest('hex');
+  const raw = crypto.randomBytes(32).toString('hex');
+  const hash = crypto.createHash('sha256').update(raw).digest('hex');
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
   await callProcedure('sp_issue_mfa_temp_token_hash(?, ?, ?)', [userId, hash, expiresAt]);
   return raw;
@@ -25,7 +25,7 @@ async function consumeMfaTempToken(rawToken) {
   return userId;
 }
 
-// ── Setup ─────────────────────────────────────────────────────────────────────
+
 
 async function setupMfa(userId) {
   const results = await callProcedure('sp_get_user_mfa(?)', [userId]);

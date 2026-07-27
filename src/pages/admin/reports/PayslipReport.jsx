@@ -49,7 +49,7 @@ export default function PayslipReport() {
     );
   }, [payslips, search]);
 
-  // Stats
+
   const totalPayslips = payslips.length;
   const paidCount = payslips.filter((p) => p.status === "paid").length;
   const pendingCount = payslips.filter((p) => p.status !== "paid").length;
@@ -61,7 +61,7 @@ export default function PayslipReport() {
     <div className="report-page">
       <ReportPageHeader title="Payslip Report" />
 
-      {/* Stats */}
+      {}
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
         { label: "Total Payslips", value: totalPayslips, barWidth: "100%", barColor: "#f18200" },
@@ -79,7 +79,7 @@ export default function PayslipReport() {
         )}
       </div>
 
-      {/* Filters */}
+      {}
       <div className="report-table-section">
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <h3 className="font-semibold text-gray-800 text-sm flex-1">Payslips</h3>
@@ -92,14 +92,14 @@ export default function PayslipReport() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="text-sm outline-none w-40" />
-            
+
           </div>
 
           <select
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
             className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
-            
+
             {MONTHS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
 
@@ -107,7 +107,7 @@ export default function PayslipReport() {
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
             className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
-            
+
             {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>

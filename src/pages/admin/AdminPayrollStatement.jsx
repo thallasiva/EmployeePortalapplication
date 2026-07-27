@@ -1,7 +1,7 @@
-/**
- * AdminPayrollStatement — Verify section
- * Tabs: Quick Salary Statement | Payroll Statement | CTC Payslip | Payroll Differences
- */
+
+
+
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listPayslips } from "../../api/payroll.api";import { cssClass, joinClasses } from "../../utils/classStyles";
@@ -28,14 +28,14 @@ function MonthBar({ month, year, onChange }) {
         value={month}
         onChange={(e) => onChange(Number(e.target.value), year)} className={cssClass(
           { padding: "6px 12px", borderRadius: 6, border: "1px solid #ddd", fontSize: 14 })}>
-        
+
         {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
       </select>
       <select
         value={year}
         onChange={(e) => onChange(month, Number(e.target.value))} className={cssClass(
           { padding: "6px 12px", borderRadius: 6, border: "1px solid #ddd", fontSize: 14 })}>
-        
+
         {years.map((y) => <option key={y} value={y}>{y}</option>)}
       </select>
     </div>);
@@ -79,7 +79,7 @@ function Table({ cols, rows, emptyMsg = "No data" }) {
 
 }
 
-/* ── QUICK SALARY STATEMENT ─────────────────────────────────── */
+
 function QuickStatement({ payslips }) {
   const cols = [
   { key: "sno", label: "S.No", render: (_, i) => i + 1 },
@@ -109,7 +109,7 @@ function QuickStatement({ payslips }) {
 
 }
 
-/* ── PAYROLL STATEMENT ──────────────────────────────────────── */
+
 function PayrollStatement({ payslips }) {
   const cols = [
   { key: "emp_code", label: "Emp Code" },
@@ -134,7 +134,7 @@ function PayrollStatement({ payslips }) {
   return <Table cols={cols} rows={payslips} emptyMsg="No payslips for this month" />;
 }
 
-/* ── CTC PAYSLIP ─────────────────────────────────────────────── */
+
 function CTCPayslip({ payslips }) {
   const cols = [
   { key: "emp_code", label: "Emp Code" },
@@ -156,7 +156,7 @@ function CTCPayslip({ payslips }) {
   return <Table cols={cols} rows={payslips} emptyMsg="No payslips for this month" />;
 }
 
-/* ── PAYROLL DIFFERENCES ─────────────────────────────────────── */
+
 function PayrollDiff({ month, year }) {
   const [prevSlips, setPrevSlips] = useState([]);
   const [currSlips, setCurrSlips] = useState([]);
@@ -205,7 +205,7 @@ function PayrollDiff({ month, year }) {
   return <Table cols={cols} rows={rows} emptyMsg="No data for this month" />;
 }
 
-/* ── MAIN ────────────────────────────────────────────────────── */
+
 export default function AdminPayrollStatement() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "quick";
@@ -231,7 +231,7 @@ export default function AdminPayrollStatement() {
 
   return (
     <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
-      {/* Header */}
+      {}
       <div className={cssClass({ marginBottom: 24 })}>
         <h2 className={cssClass({ margin: 0, fontSize: 20, fontWeight: 700, color: "#1a1a1a" })}>Payroll Reports</h2>
         <p className={cssClass({ margin: "4px 0 0", color: "#888", fontSize: 13 })}>
@@ -239,7 +239,7 @@ export default function AdminPayrollStatement() {
         </p>
       </div>
 
-      {/* Tabs */}
+      {}
       <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #eee", marginBottom: 24 })}>
         {TABS.map((t) =>
         <button
@@ -256,12 +256,12 @@ export default function AdminPayrollStatement() {
         )}
       </div>
 
-      {/* Month picker (hidden for diff which manages its own) */}
+      {}
       {tab !== "diff" &&
       <MonthBar month={month} year={year} onChange={(m, y) => {setMonth(m);setYear(y);}} />
       }
 
-      {/* Content */}
+      {}
       <div className={cssClass({ background: "#fff", borderRadius: 10, border: "1px solid #eee", padding: 20, boxShadow: "0 1px 4px #0000000a" })}>
         {loading && tab !== "diff" ?
         <div className={cssClass({ padding: 60, textAlign: "center", color: "#aaa" })}>Loading…</div> :

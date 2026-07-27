@@ -1,7 +1,7 @@
-/**
- * AdminPayrollYTD — Published Info section
- * Tabs: YTD Summary | PF YTD Statement | Reimbursement Statement
- */
+
+
+
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listPayslips } from "../../api/payroll.api";
@@ -53,18 +53,18 @@ function Table({ cols, rows, emptyMsg = "No data" }) {
 
 }
 
-/* ── YTD SUMMARY ─────────────────────────────────────────────── */
+
 function YTDSummary({ year }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    // Fetch all payslips for the year
+
     listPayslips({ year, limit: 2000 }).
     then((r) => {
       const slips = r.data || [];
-      // Group by employee
+
       const map = {};
       slips.forEach((s) => {
         if (!map[s.employee_id]) {
@@ -113,7 +113,7 @@ function YTDSummary({ year }) {
 
 }
 
-/* ── PF YTD STATEMENT ────────────────────────────────────────── */
+
 function PFYTDStatement({ year }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ function PFYTDStatement({ year }) {
       slips.forEach((s) => {
         const b = Math.min(Number(s.basic || 0), 15000);
         const pfEmp = +(b * 0.12).toFixed(2);
-        const pfEr = +(b * 0.0367).toFixed(2); // EPF employer (8.33% to pension + 3.67% to EPF)
+        const pfEr = +(b * 0.0367).toFixed(2);
         const eps = +(b * 0.0833).toFixed(2);
         if (!map[s.employee_id]) {
           const emp = empMap[s.employee_id] || {};
@@ -183,9 +183,9 @@ function PFYTDStatement({ year }) {
 
 }
 
-/* ── REIMBURSEMENT STATEMENT ─────────────────────────────────── */
+
 function ReimbStatement({ month, year }) {
-  // Reimbursements are part of allowances in payslips
+
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -194,7 +194,7 @@ function ReimbStatement({ month, year }) {
     listPayslips({ month, year, limit: 500 }).
     then((r) => {
       const slips = r.data || [];
-      // Show employees with allowances (which include reimbursements)
+
       setRows(slips.filter((s) => Number(s.allowances || 0) > 0));
     }).
     finally(() => setLoading(false));
@@ -218,7 +218,7 @@ function ReimbStatement({ month, year }) {
   return <Table cols={cols} rows={rows} emptyMsg="No reimbursement records for this month" />;
 }
 
-/* ── MAIN ────────────────────────────────────────────────────── */
+
 export default function AdminPayrollYTD() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "ytd";
@@ -242,7 +242,7 @@ export default function AdminPayrollYTD() {
         </p>
       </div>
 
-      {/* Tabs */}
+      {}
       <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #eee", marginBottom: 24 })}>
         {TABS.map((t) =>
         <button key={t.key} onClick={() => setTab(t.key)} className={cssClass(
@@ -257,7 +257,7 @@ export default function AdminPayrollYTD() {
         )}
       </div>
 
-      {/* Year selector for YTD/PF, Month+Year for Reimb */}
+      {}
       <div className={cssClass({ display: "flex", gap: 10, alignItems: "center", marginBottom: 20 })}>
         {tab === "reimb" &&
         <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className={cssClass(

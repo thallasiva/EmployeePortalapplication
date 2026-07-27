@@ -29,7 +29,7 @@ export default function LeaveReport() {
   { label: "Rejected", value: rejected, color: "#ef4444", trend: "Rejected" }];
 
 
-  // Build monthly chart data
+
   const chartData = useMemo(() => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return months.map((label, i) => {

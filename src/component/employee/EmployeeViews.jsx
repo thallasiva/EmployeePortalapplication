@@ -24,12 +24,12 @@ export default function EmployeeGridCard({ employee })
       className={joinClasses("emp-card", cssClass(
 
         { cursor: "pointer" }))} onClick={() => navigate(`/dashboard/employee/${employee.employee_id}`)}>
-      
+
       <img
         className="emp-card__avatar"
         src={avatarDataUri(employee.employee_id, 72)}
         alt={name} />
-      
+
       <h3 className="emp-card__name">{name}</h3>
       <p className="emp-card__title">{employee.emp_job_title}</p>
       <p className="emp-card__id">{formatEmployeeId(employee)}</p>
@@ -120,7 +120,7 @@ export function EmployeeListTable({ employees })
             key={p.employee_id}
             onClick={() => navigate(`/dashboard/employee/${p.employee_id}`)} className={cssClass(
               { cursor: "pointer" })}>
-            
+
               <td className="emp-table__id">{formatEmployeeId(p)}</td>
               <td className="emp-table__sticky-col">
                 <div className="emp-table__name-cell">

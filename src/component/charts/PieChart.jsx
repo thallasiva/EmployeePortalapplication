@@ -1,12 +1,12 @@
 import React from "react";
 
-/**
- * Lightweight dependency-free donut/pie chart built with plain SVG.
- *
- * @param {string} title
- * @param {{label: string, value: number, color: string}[]} data
- * @param {string} [centerLabel]
- */import { cssClass, joinClasses } from "../../utils/classStyles";
+
+
+
+
+
+
+import { cssClass, joinClasses } from "../../utils/classStyles";
 const PieChart = ({ title, data, centerLabel }) => {
   const sum = data.reduce((acc, d) => acc + d.value, 0);
   const radius = 40;
@@ -28,7 +28,7 @@ const PieChart = ({ title, data, centerLabel }) => {
               fill="none"
               stroke="#f1f5f9"
               strokeWidth="14" />
-            
+
             {sum > 0 &&
             data.map((d) => {
               if (!d.value) return null;
@@ -65,12 +65,12 @@ const PieChart = ({ title, data, centerLabel }) => {
           <li
             key={d.label}
             className="flex items-center justify-between text-sm gap-2">
-            
+
               <span className="flex items-center gap-2 text-gray-600 truncate">
                 <span
                 className={joinClasses("w-2.5 h-2.5 rounded-full shrink-0", cssClass(
                   { background: d.color }))} />
-              
+
                 {d.label}
               </span>
               <span className="font-semibold text-gray-800">{d.value}</span>

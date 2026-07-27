@@ -1,23 +1,23 @@
-const asyncHandler   = require("express-async-handler");
-const candidateSvc   = require("../../services/recruitment/candidate.service");
+const asyncHandler = require("express-async-handler");
+const candidateSvc = require("../../services/recruitment/candidate.service");
 const resumeMatchSvc = require("../../services/recruitment/resumeMatch.service");
 const resumeParserSvc = require("../../services/recruitment/resumeParser.service");
 const { callProcedure } = require("../../config/db");
 const { getPagination, buildMeta } = require("../../utils/pagination");
-const ApiResponse    = require("../../utils/ApiResponse");
+const ApiResponse = require("../../utils/ApiResponse");
 
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const user = req.user;
   const { rows, total } = await candidateSvc.list({
-    jobReqId:    req.query.jobReqId ? Number(req.query.jobReqId) : undefined,
-    status:      req.query.status,
+    jobReqId: req.query.jobReqId ? Number(req.query.jobReqId) : undefined,
+    status: req.query.status,
     recruiterId: req.query.recruiterId ? Number(req.query.recruiterId) : undefined,
-    search:      req.query.search,
-    roleId:      user.roleId,
-    recEmpId:    user.employeeId,
+    search: req.query.search,
+    roleId: user.roleId,
+    recEmpId: user.employeeId,
     limit,
-    offset,
+    offset
   });
   new ApiResponse(200, rows, "Candidates fetched", buildMeta({ page, limit, total })).send(res);
 });
@@ -30,23 +30,23 @@ const getOne = asyncHandler(async (req, res) => {
 const create = asyncHandler(async (req, res) => {
   const body = { ...req.body };
 
-  // Auto-assign recruiter if not provided
+
   if (!body.recruiterId) body.recruiterId = req.user.employeeId;
 
-  // ── Extract parsed-resume enrichment fields from body ──────────────
-  // The frontend sends these after a resume is parsed via /resume-match/parse.
-  // They are optional — if absent, only the standard candidate row is saved.
-  const parsedSkills       = Array.isArray(body.parsed_skills)         ? body.parsed_skills         : null;
-  const parsedEducation    = Array.isArray(body.parsed_education)       ? body.parsed_education       : null;
-  const parsedWorkExp      = Array.isArray(body.parsed_work_experience) ? body.parsed_work_experience : null;
-  const resumeHash         = body.resume_hash         || null;
-  const linkedinUrl        = body.linkedin_url        || null;
-  const githubUrl          = body.github_url          || null;
-  const noticePeriodDays   = body.notice_period_days  != null ? Number(body.notice_period_days) : null;
-  const companies          = Array.isArray(body.companies) ? body.companies : null;
+
+
+
+  const parsedSkills = Array.isArray(body.parsed_skills) ? body.parsed_skills : null;
+  const parsedEducation = Array.isArray(body.parsed_education) ? body.parsed_education : null;
+  const parsedWorkExp = Array.isArray(body.parsed_work_experience) ? body.parsed_work_experience : null;
+  const resumeHash = body.resume_hash || null;
+  const linkedinUrl = body.linkedin_url || null;
+  const githubUrl = body.github_url || null;
+  const noticePeriodDays = body.notice_period_days != null ? Number(body.notice_period_days) : null;
+  const companies = Array.isArray(body.companies) ? body.companies : null;
   const currentDesignation = body.current_designation || null;
 
-  // Remove enrichment keys from main body so candidateSvc.create doesn't choke
+
   delete body.parsed_skills;
   delete body.parsed_education;
   delete body.parsed_work_experience;
@@ -57,48 +57,48 @@ const create = asyncHandler(async (req, res) => {
   delete body.companies;
   delete body.current_designation;
 
-  // ── Duplicate detection (warn, do not block) ───────────────────────
+
   let duplicates = [];
   if (body.email || resumeHash) {
     duplicates = await resumeParserSvc.checkDuplicate(body.email, resumeHash);
   }
 
-  // ── Create candidate ───────────────────────────────────────────────
+
   const data = await candidateSvc.create(body, req.user.userId, req.ip);
 
   const candidateId = data?.candidate_id;
-  const jobReqId    = data?.job_req_id;
+  const jobReqId = data?.job_req_id;
 
-  // ── Background tasks (non-blocking) ───────────────────────────────
+
   setImmediate(async () => {
     try {
-      // 1. Compute resume match score
+
       if (candidateId && jobReqId) {
-        await resumeMatchSvc.computeAndStore(candidateId, jobReqId).catch(err =>
-          console.error(`[Candidate] Match score failed for ${candidateId}:`, err.message)
+        await resumeMatchSvc.computeAndStore(candidateId, jobReqId).catch((err) =>
+        console.error(`[Candidate] Match score failed for ${candidateId}:`, err.message)
         );
       }
 
-      // 2. Persist parsed resume data if provided
+
       if (candidateId && (parsedSkills || parsedEducation || parsedWorkExp)) {
         const fakeParseResult = {
-          skills:          parsedSkills      || [],
-          education:       parsedEducation   || [],
-          work_experience: parsedWorkExp     || [],
-          companies:       companies         || [],
+          skills: parsedSkills || [],
+          education: parsedEducation || [],
+          work_experience: parsedWorkExp || [],
+          companies: companies || [],
           resumeHash,
-          linkedin_url:    linkedinUrl,
-          github_url:      githubUrl,
+          linkedin_url: linkedinUrl,
+          github_url: githubUrl,
           notice_period_days: noticePeriodDays,
-          current_role:    currentDesignation,
-          parsedBy:        'openai',
-          rawText:         '',
+          current_role: currentDesignation,
+          parsedBy: 'openai',
+          rawText: ''
         };
 
         await resumeParserSvc.persistParsedResume(candidateId, fakeParseResult, {
           originalname: body.resume_path ? body.resume_path.split('/').pop() : 'resume',
-          size:         0,
-          mimetype:     '',
+          size: 0,
+          mimetype: ''
         });
       }
     } catch (err) {
@@ -106,13 +106,13 @@ const create = asyncHandler(async (req, res) => {
     }
   });
 
-  // ── Respond immediately ────────────────────────────────────────────
+
   new ApiResponse(201, {
     ...data,
-    duplicates: duplicates.length ? duplicates : undefined,
-  }, duplicates.length
-    ? `Candidate created. Warning: ${duplicates.length} possible duplicate(s) found.`
-    : "Candidate created"
+    duplicates: duplicates.length ? duplicates : undefined
+  }, duplicates.length ?
+  `Candidate created. Warning: ${duplicates.length} possible duplicate(s) found.` :
+  "Candidate created"
   ).send(res);
 });
 
@@ -122,28 +122,28 @@ const updateStatus = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, "Candidate status updated").send(res);
 });
 
-// ── GET /candidates/:id/skills ──────────────────────────────────────
+
 const getSkills = asyncHandler(async (req, res) => {
   const rows = await callProcedure('sp_rec_get_candidate_skills(?)', [Number(req.params.id)]);
   new ApiResponse(200, rows[0] ?? [], "Skills fetched").send(res);
 });
 
-// ── GET /candidates/:id/education ──────────────────────────────────
+
 const getEducation = asyncHandler(async (req, res) => {
   const rows = await callProcedure('sp_rec_get_candidate_education(?)', [Number(req.params.id)]);
   new ApiResponse(200, rows[0] ?? [], "Education fetched").send(res);
 });
 
-// ── GET /candidates/:id/experience ─────────────────────────────────
+
 const getExperience = asyncHandler(async (req, res) => {
   const rows = await callProcedure('sp_rec_get_candidate_experience(?)', [Number(req.params.id)]);
   new ApiResponse(200, rows[0] ?? [], "Experience fetched").send(res);
 });
 
-// ── GET /parser-logs?candidateId=&limit= ───────────────────────────
+
 const getParserLogs = asyncHandler(async (req, res) => {
   const candidateId = req.query.candidateId ? Number(req.query.candidateId) : null;
-  const limit       = req.query.limit       ? Number(req.query.limit)       : 50;
+  const limit = req.query.limit ? Number(req.query.limit) : 50;
   const rows = await callProcedure('sp_rec_get_parser_logs(?, ?)', [candidateId, limit]);
   new ApiResponse(200, rows[0] ?? [], "Parser logs fetched").send(res);
 });

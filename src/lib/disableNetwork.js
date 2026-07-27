@@ -1,7 +1,7 @@
-/**
- * Blocks outbound fetch/XHR to external URLs in the browser.
- * API layer uses static mocks only — this catches any leftover calls.
- */
+
+
+
+
 
 const isExternal = (url) => {
   if (!url || typeof url !== "string") return false;

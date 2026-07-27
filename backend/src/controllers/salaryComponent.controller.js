@@ -2,7 +2,7 @@ const svc = require('../services/salaryComponent.service');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 
-// ── Component Master ─────────────────────────────────────────
+
 
 const listComponents = asyncHandler(async (req, res) => {
   const activeOnly = req.query.active === 'true' ? true : req.query.active === 'false' ? false : null;
@@ -26,7 +26,7 @@ const toggleComponent = asyncHandler(async (req, res) => {
   new ApiResponse(200, await svc.toggleComponent(req.params.id, active), 'Component updated').send(res);
 });
 
-// ── Structures ───────────────────────────────────────────────
+
 
 const listStructures = asyncHandler(async (req, res) => {
   new ApiResponse(200, await svc.listStructures(), 'Structures fetched').send(res);
@@ -47,7 +47,7 @@ const removeStructureLine = asyncHandler(async (req, res) => {
   new ApiResponse(200, null, 'Component removed from structure').send(res);
 });
 
-// ── CTC Compute ──────────────────────────────────────────────
+
 
 const computeCTC = asyncHandler(async (req, res) => {
   const { structure_id, ctc_annual, overrides } = req.body;
@@ -58,5 +58,5 @@ const computeCTC = asyncHandler(async (req, res) => {
 module.exports = {
   listComponents, getComponent, createComponent, updateComponent, toggleComponent,
   listStructures, getStructure, upsertStructure, removeStructureLine,
-  computeCTC,
+  computeCTC
 };

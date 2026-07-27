@@ -25,10 +25,10 @@ const getOne = asyncHandler(async (req, res) => {
   new ApiResponse(200, record, 'Document fetched').send(res);
 });
 
-/**
- * Expects the file to be uploaded via multipart/form-data under the field
- * name "file" (see middleware/upload.js), plus metadata fields in the body.
- */
+
+
+
+
 const upload = asyncHandler(async (req, res) => {
   if (!req.file) throw ApiError.badRequest('A file is required');
 
@@ -42,7 +42,7 @@ const upload = asyncHandler(async (req, res) => {
     file_url: `/uploads/${req.file.filename}`,
     visibility: req.body.visibility || 'all',
     employee_id: req.body.employee_id || null,
-    uploaded_by: req.user.employeeId,
+    uploaded_by: req.user.employeeId
   });
 
   new ApiResponse(201, record, 'Document uploaded').send(res);

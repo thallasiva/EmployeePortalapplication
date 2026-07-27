@@ -27,26 +27,26 @@ function getFieldValue(employee, field) {
   }
 }
 
-/** Builds CSV text (with header row) for the full employee list/template. */
+
 export function buildEmployeeCsv(employees) {
   const headers = [
-    ...EMPLOYEE_FIELD_MAP.map((f) => f.header),
-    ...EXPORT_EXTRA_COLUMNS.map((c) => c.header),
-  ];
+  ...EMPLOYEE_FIELD_MAP.map((f) => f.header),
+  ...EXPORT_EXTRA_COLUMNS.map((c) => c.header)];
+
   const lines = [headers.map(csvEscape).join(",")];
 
   for (const emp of employees) {
     const row = [
-      ...EMPLOYEE_FIELD_MAP.map((f) => csvEscape(getFieldValue(emp, f))),
-      ...EXPORT_EXTRA_COLUMNS.map((c) => csvEscape(c.get(emp))),
-    ];
+    ...EMPLOYEE_FIELD_MAP.map((f) => csvEscape(getFieldValue(emp, f))),
+    ...EXPORT_EXTRA_COLUMNS.map((c) => csvEscape(c.get(emp)))];
+
     lines.push(row.join(","));
   }
 
   return lines.join("\r\n");
 }
 
-/** Triggers a browser download of the full employee list as a CSV file. */
+
 export function downloadEmployeeCsv(employees, filename = "employees.csv") {
   const csv = buildEmployeeCsv(employees);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

@@ -10,11 +10,11 @@ class PayrollRunService extends BaseService {
     const results = await callProcedure(
       'sp_list_payroll_runs(?, ?, ?, ?)',
       [
-        year   ?? null,
-        status ?? null,
-        limit != null ? Number(limit)       : null,
-        limit != null ? Number(offset || 0) : null,
-      ]
+      year ?? null,
+      status ?? null,
+      limit != null ? Number(limit) : null,
+      limit != null ? Number(offset || 0) : null]
+
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
@@ -25,10 +25,10 @@ class PayrollRunService extends BaseService {
     return { ...results[0][0], payslips: results[1] ?? [] };
   }
 
-  /**
-   * Runs payroll for all active employees for the given month/year via
-   * sp_run_payroll (which loops sp_generate_payslip per employee).
-   */
+
+
+
+
   async run({ month, year, processed_by }) {
     await callProcedure('sp_run_payroll(?, ?, ?, @payroll_run_id)', [month, year, processed_by || null]);
     const out = await readOuts('payroll_run_id');

@@ -20,7 +20,7 @@ export default function InterviewFeedback() {
       justifyContent: "space-between",
       marginBottom: 18
     })}>
-    
+
       <span className={cssClass({ width: 180, fontWeight: 500 })}>{label}</span>
 
       <div className={cssClass({ display: "flex", gap: 4 })}>
@@ -52,7 +52,7 @@ export default function InterviewFeedback() {
         minHeight: "100vh",
         padding: 30
       })}>
-      
+
       <h2 className={cssClass({ marginBottom: 20 })}>Interview Feedback</h2>
 
       <div className={cssClass(
@@ -61,8 +61,8 @@ export default function InterviewFeedback() {
           gridTemplateColumns: "250px 1fr",
           gap: 20
         })}>
-        
-        {/* Left Panel */}
+
+        {}
 
         <div className={cssClass(
           {
@@ -71,7 +71,7 @@ export default function InterviewFeedback() {
             padding: 20,
             boxShadow: "0 2px 8px rgba(0,0,0,.08)"
           })}>
-          
+
           <img
             src="https://i.pravatar.cc/100"
             alt="" className={cssClass(
@@ -80,7 +80,7 @@ export default function InterviewFeedback() {
                 height: 90,
                 borderRadius: "50%"
               })} />
-          
+
 
           <h3>John Doe</h3>
 
@@ -95,7 +95,7 @@ export default function InterviewFeedback() {
           </p>
         </div>
 
-        {/* Right Panel */}
+        {}
 
         <div className={cssClass(
           {
@@ -104,38 +104,38 @@ export default function InterviewFeedback() {
             padding: 25,
             boxShadow: "0 2px 8px rgba(0,0,0,.08)"
           })}>
-          
+
           <h3 className={cssClass({ marginBottom: 20 })}>Feedback</h3>
 
           <Rating
             label="Technical Skills"
             value={ratings.technical}
             field="technical" />
-          
+
 
           <Rating
             label="Communication"
             value={ratings.communication}
             field="communication" />
-          
+
 
           <Rating
             label="Problem Solving"
             value={ratings.problem}
             field="problem" />
-          
+
 
           <Rating
             label="Behavior"
             value={ratings.behavior}
             field="behavior" />
-          
+
 
           <Rating
             label="Overall Rating"
             value={ratings.overall}
             field="overall" />
-          
+
 
           <div className={cssClass({ marginTop: 30 })}>
             <label>
@@ -152,7 +152,7 @@ export default function InterviewFeedback() {
                   borderRadius: 8,
                   border: "1px solid #ddd"
                 })} />
-            
+
           </div>
 
           <div className={cssClass({ marginTop: 25 })}>
@@ -166,7 +166,7 @@ export default function InterviewFeedback() {
                 gap: 30,
                 marginTop: 10
               })}>
-              
+
               {["Selected", "Hold", "Rejected"].map((item) =>
               <label key={item}>
                   <input
@@ -191,7 +191,7 @@ export default function InterviewFeedback() {
               cursor: "pointer",
               fontWeight: 600
             })}>
-            
+
             Submit Feedback
           </button>
         </div>

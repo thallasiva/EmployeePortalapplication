@@ -34,7 +34,7 @@ export default function ProofInvestment() {
   const [proofs, setProofs] = useState([]);
   const [declaredItems, setDeclaredItems] = useState([]);
 
-  // Upload form state
+
   const [investType, setInvestType] = useState(INVEST_TYPES[0]);
   const [declaredAmt, setDeclaredAmt] = useState("");
   const [actualAmt, setActualAmt] = useState("");
@@ -59,7 +59,7 @@ export default function ProofInvestment() {
 
   useEffect(() => {load();}, [load]);
 
-  // Prefill declared amount when invest type changes
+
   useEffect(() => {
     const match = declaredItems.find((i) =>
     i.sub_label?.toLowerCase().includes(investType.toLowerCase()) ||
@@ -107,7 +107,7 @@ export default function ProofInvestment() {
 
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
-      {/* Header */}
+      {}
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 })}>
         <div>
           <h1 className={cssClass({ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 })}>Proof of Investment</h1>
@@ -121,7 +121,7 @@ export default function ProofInvestment() {
         </button>
       </div>
 
-      {/* Declaration status alert */}
+      {}
       {declaration &&
       <div className={cssClass({ marginBottom: 16, padding: "10px 16px", borderRadius: 8, fontSize: 13,
         background: declaration.status === "approved" ? "#dcfce7" : declaration.status === "rejected" ? "#fee2e2" : "#fef9c3",
@@ -136,7 +136,7 @@ export default function ProofInvestment() {
         </div>
       }
 
-      {/* Stats */}
+      {}
       {proofs.length > 0 &&
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 })}>
           {[
@@ -155,7 +155,7 @@ export default function ProofInvestment() {
       }
 
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 20, alignItems: "start" })}>
-        {/* Upload form */}
+        {}
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" })}>
           <div className={cssClass({ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc",
             display: "flex", alignItems: "center", gap: 8 })}>
@@ -220,7 +220,7 @@ export default function ProofInvestment() {
           </div>
         </div>
 
-        {/* Proofs list */}
+        {}
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" })}>
           <div className={cssClass({ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc",
             display: "flex", justifyContent: "space-between", alignItems: "center" })}>
@@ -250,7 +250,7 @@ export default function ProofInvestment() {
                           ⚠ Shortfall: {fmt(p.declared_amount - p.actual_amount)}
                         </p>
                   }
-                      {/* Admin remarks on rejection */}
+                      {}
                       {p.status === "rejected" && p.admin_remarks &&
                   <div className={cssClass({ marginTop: 6, padding: "6px 10px", background: "#fee2e2", borderRadius: 6, fontSize: 12, color: "#dc2626" })}>
                           <strong>Rejected:</strong> {p.admin_remarks}
@@ -282,7 +282,7 @@ export default function ProofInvestment() {
             </div>
           }
 
-          {/* Summary footer */}
+          {}
           {proofs.length > 0 &&
           <div className={cssClass({ padding: "12px 18px", background: "#f8fafc", borderTop: "1px solid #e8edf2" })}>
               <div className={cssClass({ display: "flex", justifyContent: "space-between", marginBottom: 4 })}>

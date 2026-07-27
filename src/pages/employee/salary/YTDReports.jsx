@@ -10,21 +10,21 @@ import {
 "../../../lib/dateUtils";
 import InteractivePieChart, { formatINR } from "../../../component/charts/InteractivePieChart";
 
-/* ─── helpers ─────────────────────────────────────────────────────────────── */
 
-// Table values: Indian format with 2 decimals, no ₹
+
+
 import { cssClass, joinClasses } from "../../../utils/classStyles";const tblFmt = (n) => {
   const num = Number(n) || 0;
   return num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-// Summary KPI: ₹ prefix
+
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const FISCAL_ORDER = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2]; // Apr=3…Mar=2
+const FISCAL_ORDER = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2];
 
-/* ─── Mini bar chart (inline SVG) ─────────────────────────────────────────── */
+
 function BarChart({ data }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   const W = 520,H = 160,barW = 30,gap = (W - data.length * barW) / (data.length + 1);
@@ -57,7 +57,7 @@ function BarChart({ data }) {
 
 }
 
-/* ─── Collapsible section row ─────────────────────────────────────────────── */
+
 function SectionHeader({ label, expanded, onToggle, colCount }) {
   return (
     <tr onClick={onToggle} className={cssClass({ background: "#fff", cursor: "pointer", userSelect: "none" })}>
@@ -71,7 +71,7 @@ function SectionHeader({ label, expanded, onToggle, colCount }) {
 
 }
 
-/* ─── Main component ──────────────────────────────────────────────────────── */
+
 export default function YTDReports() {
   const [fiscalYearStart, setFiscalYearStart] = useState(String(getCurrentFiscalYearStart()));
   const [payslips, setPayslips] = useState([]);
@@ -94,7 +94,7 @@ export default function YTDReports() {
   const fiscalMonths = getFiscalMonthColumns(fiscalYearStart);
   const fyLabel = getFiscalYearRangeLabel(fiscalYearStart);
 
-  /* Build month-by-month data */
+
   const monthData = useMemo(() => {
     const fiscalYear = Number(fiscalYearStart);
     return FISCAL_ORDER.map((mIdx) => {
@@ -149,7 +149,7 @@ export default function YTDReports() {
 
   const totalDeductions = totals.pf + totals.profTax + totals.incomeTax;
 
-  /* Chart data */
+
   const pieData = [
   { label: "Basic", value: totals.basic, color: "#f18200" },
   { label: "HRA", value: totals.hra, color: "#fb923c" },
@@ -160,11 +160,11 @@ export default function YTDReports() {
 
   const barData = monthData.map((m) => ({ label: m.label, value: m.netPay }));
 
-  const colCount = fiscalMonths.length + 2; // Item + Total + months
+  const colCount = fiscalMonths.length + 2;
 
   if (loading) return <div className={cssClass({ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 14 })}>Loading YTD data…</div>;
 
-  /* ── Table row helper ─────────────────────────────────────────────────────── */
+
   const DataRow = ({ label, dataKey, values, totalVal, bold, highlight }) =>
   <tr className={cssClass({
     background: highlight ? "#e8f4fa" : bold ? "#f1f5f9" : "#fff",
@@ -194,10 +194,10 @@ export default function YTDReports() {
     </tr>;
 
 
-  /* ── Render ──────────────────────────────────────────────────────────────── */
+
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
-      {/* Header */}
+      {}
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 })}>
         <h1 className={cssClass({ fontSize: 20, fontWeight: 700, color: "#1e293b", margin: 0 })}>YTD Report</h1>
         <div className={cssClass({ display: "flex", gap: 10, alignItems: "center" })}>
@@ -208,9 +208,9 @@ export default function YTDReports() {
         </div>
       </div>
 
-      {/* ── YTD Summary Table ─────────────────────────────────────────────────── */}
+      {}
       <div className={cssClass({ background: "#fff", border: "1px solid #d5dbe3", borderRadius: 10, marginBottom: 24, overflow: "hidden" })}>
-        {/* Table title bar */}
+        {}
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #e2e8f0", background: "#fff" })}>
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>YTD Summary</span>
           <span className={cssClass({ fontSize: 12, color: "#64748b" })}>{fyLabel}</span>
@@ -228,7 +228,7 @@ export default function YTDReports() {
               </tr>
             </thead>
             <tbody>
-              {/* ── Income ── */}
+              {}
               <SectionHeader label="Income" expanded={expanded.income} onToggle={() => toggle("income")} colCount={colCount} />
               {expanded.income &&
               <>
@@ -241,14 +241,14 @@ export default function YTDReports() {
                 </>
               }
 
-              {/* ── Deduction ── */}
+              {}
               <SectionHeader label="Deduction" expanded={expanded.deduction} onToggle={() => toggle("deduction")} colCount={colCount} />
               {expanded.deduction &&
               <>
                   <DataRow label="PF" dataKey="pf" totalVal={totals.pf} />
                   <DataRow label="Prof Tax" dataKey="profTax" totalVal={totals.profTax} />
                   <DataRow label="Income Tax" dataKey="incomeTax" totalVal={totals.incomeTax} />
-                  {/* Total Deductions row */}
+                  {}
                   <tr className={cssClass({ background: "#f1f5f9", borderBottom: "1px solid #e2e8f0" })}>
                     <td className={cssClass({ padding: "8px 14px 8px 24px", fontWeight: 700, color: "#1e293b", position: "sticky", left: 0, background: "#f1f5f9", borderRight: "1px solid #e2e8f0" })}>Total Deductions</td>
                     <td className={cssClass({ padding: "8px 14px", textAlign: "right", fontWeight: 700, color: "#1e293b", position: "sticky", left: 150, background: "#f1f5f9", borderRight: "1px solid #e2e8f0" })}>{tblFmt(totalDeductions)}</td>
@@ -261,7 +261,7 @@ export default function YTDReports() {
                 </>
               }
 
-              {/* ── Days ── */}
+              {}
               <SectionHeader label="Days" expanded={expanded.days} onToggle={() => toggle("days")} colCount={colCount} />
               {expanded.days &&
               <>
@@ -270,7 +270,7 @@ export default function YTDReports() {
                 </>
               }
 
-              {/* ── (Blanks) ── */}
+              {}
               <SectionHeader label="(Blanks)" expanded={expanded.blanks} onToggle={() => toggle("blanks")} colCount={colCount} />
               {expanded.blanks &&
               <DataRow label="Net Pay" dataKey="netPay" totalVal={totals.netPay} bold highlight />
@@ -280,7 +280,7 @@ export default function YTDReports() {
         </div>
       </div>
 
-      {/* ── Charts (below table) ──────────────────────────────────────────────── */}
+      {}
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 })}>
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 })}>
           <p className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 16px" })}>Earnings Breakdown</p>

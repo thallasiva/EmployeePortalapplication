@@ -164,7 +164,7 @@ export default function Company() {
       </div>
 
       <div className="px-6 flex gap-6 items-start">
-        {/* LEFT SIDEBAR */}
+        {}
         <div className="w-72 shrink-0 space-y-4">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className={joinClasses("h-24 w-full", cssClass({ background: company.banner }))} />
@@ -253,7 +253,7 @@ export default function Company() {
           }
         </div>
 
-        {/* RIGHT CONTENT — Overview only */}
+        {}
         <div className="flex-1 min-w-0">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="flex border-b border-slate-200">

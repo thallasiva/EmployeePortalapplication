@@ -77,7 +77,7 @@ export default function Hiring() {
           ))}
         </nav>
 
-        
+
       </header>
 
       {headerTab === "jobs" && (

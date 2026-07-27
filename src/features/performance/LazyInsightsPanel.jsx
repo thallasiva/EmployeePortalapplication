@@ -11,9 +11,9 @@ const LazyInsightsPanel = () => (
     </div>
 
     <ul className="space-y-2 text-sm text-slate-700">
-      <li>• Code splitting keeps the initial bundle smaller.</li>
-      <li>• Suspense shows a friendly fallback during loading.</li>
-      <li>• Large route modules load only when needed.</li>
+      <li>Code splitting keeps the initial bundle smaller.</li>
+      <li>Suspense shows a friendly fallback during loading.</li>
+      <li>Large route modules load only when needed.</li>
     </ul>
   </div>
 );
