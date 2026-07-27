@@ -40,8 +40,10 @@ import
 } from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
+import natLogo from "../assets/logo.png";
 
 const BRAND_NAME = "NAT IT";
+const BRAND_LOGO = natLogo;
 
 const isPathActive = (pathname, link, search = "") =>
 {
@@ -189,8 +191,11 @@ export const Sidebar = ({ open }) =>
       label: "Payroll Setup",
       icon: <Layers size={20} />,
       children: [
-        { label: "Salary Components", navigationLink: "/dashboard/payroll/setup?tab=components" },
-        { label: "Payroll Settings", navigationLink: "/dashboard/payroll/setup?tab=settings" },
+        { label: "Salary Components",   navigationLink: "/dashboard/salary-components" },
+        { label: "Salary Structures",   navigationLink: "/dashboard/salary-structures" },
+        { label: "Salary Assignment",   navigationLink: "/dashboard/salary-assignment" },
+        { label: "Salary Templates",    navigationLink: "/dashboard/salary-templates" },
+        { label: "Payroll Settings",    navigationLink: "/dashboard/payroll/setup?tab=settings" },
       ],
     },
     // ── People Ops ─────────────────────────────────────────
@@ -211,17 +216,6 @@ export const Sidebar = ({ open }) =>
       navigationLink: "/dashboard/recruitment",
       badge: "New",
       badgeColor: "#f18200",
-    },
-    {
-      label: "Team Management",
-      icon: <Users size={20} strokeWidth={1.75} />,
-      children: [
-        { label: "Team Overview",      navigationLink: "/manager" },
-        { label: "Leave Requests",     navigationLink: "/manager/team/leave" },
-        { label: "Attendance",         navigationLink: "/manager/team/attendance" },
-        { label: "Regularizations",    navigationLink: "/manager/team/regularizations" },
-        { label: "Resignations",       navigationLink: "/manager/team/resignations" },
-      ],
     },
     {
       label: "Appraisal",
@@ -554,14 +548,11 @@ export const Sidebar = ({ open }) =>
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
         open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3",
       ].join(" ")}>
-       
-        {/* Company name — only when sidebar is open */}
-        {open && (
-          <div>
-           
-            <img src="https://content.jdmagicbox.com/v2/comp/hyderabad/h4/040pxx40.xx40.181024201042.n3h4/catalogue/nat-it-services-pvt-ltd-gachibowli-hyderabad-corporate-companies-ouis92lxo2.jpg?imwidth=463.3333333333333" alt="logo" />
-          </div>
-        )}
+        <img
+          src={BRAND_LOGO}
+          alt={`${BRAND_NAME} logo`}
+          className={open ? "h-9 w-auto object-contain" : "h-8 w-8 object-contain"}
+        />
       </div>
 
       {/* ── Nav ───────────────────────────────────────────────────────────── */}

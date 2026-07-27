@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
  * Renders masked (dots) by default; click the eye icon to reveal.
  * Accepts the same props as a normal <input> (value, onChange, onBlur, name, className, ...).
  */
-const PasswordInput = ({ className = "", inputClassName, ...props }) => {
+const PasswordInput = ({ className = "", inputClassName, inputStyle, ...props }) => {
   const [visible, setVisible] = useState(false);
 
   return (
@@ -15,6 +15,7 @@ const PasswordInput = ({ className = "", inputClassName, ...props }) => {
         {...props}
         type={visible ? "text" : "password"}
         className={`${inputClassName || ""} pr-10`}
+        style={inputStyle}
       />
       <button
         type="button"

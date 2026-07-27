@@ -218,13 +218,24 @@ exports.attendanceRegularizationRequest = (data) => {
 };
 
 /**
- * Notify employee that attendance was regularized.
+ * Notify employee that attendance was regularized (approved).
  */
 exports.attendanceRegularized = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
     const tpl = T.attendanceRegularized(data);
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'attendance/regularized', priority: 'high' });
+  });
+};
+
+/**
+ * Notify employee that attendance regularization was rejected.
+ */
+exports.attendanceRegularizationRejected = (data) => {
+  if (!data.employeeEmail) return;
+  fire(async () => {
+    const tpl = T.attendanceRegularizationRejected(data);
+    await sendMail({ to: data.employeeEmail, ...tpl, template: 'attendance/reg-rejected', priority: 'high' });
   });
 };
 

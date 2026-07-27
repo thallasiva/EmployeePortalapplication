@@ -484,7 +484,9 @@ export default function HelpdeskAdmin()
   const [statusF, setStatusF] = useState("");
   const [teamF, setTeamF] = useState(isAdminUser ? "Admin Team" : "");
   const [page, setPage] = useState(1);
-  const LIMIT = 20;
+  const PAGE_SIZES = [20, 50, 100, 200, 500];
+  const [limit, setLimit] = React.useState(20);
+  const LIMIT = limit;
 
   const load = useCallback(async () =>
   {
@@ -503,7 +505,7 @@ export default function HelpdeskAdmin()
       setTotal(data?.total || 0);
     } catch {setTickets([]);setTotal(0);} finally
     {setLoading(false);}
-  }, [isAdminUser, page, search, statusF, teamF]);
+  }, [isAdminUser, page, search, statusF, teamF, limit]);
 
   useEffect(() => {load();}, [load]);
 

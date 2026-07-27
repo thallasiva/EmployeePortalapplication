@@ -16,6 +16,24 @@ const fs          = require('fs');
 const { email: emailCfg } = require('../config/env');
 
 /* ------------------------------------------------------------------ */
+/*  Font resolution — try Verdana (Windows), fall back to Helvetica   */
+/* ------------------------------------------------------------------ */
+const FONT_PATHS = {
+  regular:     'C:\\Windows\\Fonts\\verdana.ttf',
+  bold:        'C:\\Windows\\Fonts\\verdanab.ttf',
+  italic:      'C:\\Windows\\Fonts\\verdanai.ttf',
+  boldItalic:  'C:\\Windows\\Fonts\\verdanaz.ttf',
+};
+const USE_VERDANA = fs.existsSync(FONT_PATHS.regular);
+
+const FONT = {
+  regular:    USE_VERDANA ? 'VerdanaRegular'    : 'Helvetica',
+  bold:       USE_VERDANA ? 'VerdanaBold'       : 'Helvetica-Bold',
+  italic:     USE_VERDANA ? 'VerdanaItalic'     : 'Helvetica-Oblique',
+  boldItalic: USE_VERDANA ? 'VerdanaBoldItalic' : 'Helvetica-BoldOblique',
+};
+
+/* ------------------------------------------------------------------ */
 /*  Formatters                                                          */
 /* ------------------------------------------------------------------ */
 function fmtINR(n) {
@@ -110,6 +128,14 @@ function generateOfferLetterPdf(opts) {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: MARGIN, size: 'A4', autoFirstPage: false,
       info: { Title: 'Offer Letter', Author: C.name } });
+
+    /* Register Verdana fonts if available */
+    if (USE_VERDANA) {
+      doc.registerFont('VerdanaRegular',    FONT_PATHS.regular);
+      doc.registerFont('VerdanaBold',       FONT_PATHS.bold);
+      doc.registerFont('VerdanaItalic',     FONT_PATHS.italic);
+      doc.registerFont('VerdanaBoldItalic', FONT_PATHS.boldItalic);
+    }
     const chunks = [];
     doc.on('data', c => chunks.push(c));
     doc.on('end',  () => resolve(Buffer.concat(chunks)));
@@ -146,9 +172,9 @@ function generateOfferLetterPdf(opts) {
     }
 
     function _textHeader(hx, hy) {
-      doc.font('Helvetica-Bold').fontSize(16).fillColor(COL_NAVY)
+      doc.font(FONT.bold).fontSize(16).fillColor(COL_NAVY)
          .text(C.name, hx, hy + 10, { width: BW, align: 'center' });
-      doc.font('Helvetica').fontSize(8).fillColor(COL_GREY)
+      doc.font(FONT.regular).fontSize(8).fillColor(COL_GREY)
          .text(C.address + (C.phone ? '  Ph: ' + C.phone : ''),
                hx, hy + 30, { width: BW, align: 'center' });
     }
@@ -158,11 +184,11 @@ function generateOfferLetterPdf(opts) {
       const fy = PH - MARGIN - FTR_H + 6;
       doc.moveTo(MARGIN, fy - 4).lineTo(MARGIN + BW, fy - 4)
          .strokeColor('#cccccc').lineWidth(0.5).stroke();
-      doc.font('Helvetica-Bold').fontSize(8).fillColor(COL_NAVY)
+      doc.font(FONT.bold).fontSize(8).fillColor(COL_NAVY)
          .text(C.name, MARGIN, fy, { width: BW, align: 'center' });
       const footerLine2 = C.address + (C.phone ? '  PH:' + C.phone : '') +
                           (C.cin ? '  CIN: ' + C.cin : '');
-      doc.font('Helvetica').fontSize(7).fillColor(COL_GREY)
+      doc.font(FONT.regular).fontSize(7).fillColor(COL_GREY)
          .text(footerLine2, MARGIN, fy + 12, { width: BW, align: 'center' });
     }
 
@@ -176,43 +202,43 @@ function generateOfferLetterPdf(opts) {
 
     /* ---- text helpers ---- */
     function text(str, opts2) {
-      doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2, ...opts2 });
+      doc.font(FONT.regular).fontSize(10).fillColor(COL_MID)
+         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2, align: 'justify', ...opts2 });
     }
     function boldText(str, opts2) {
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
+      doc.font(FONT.bold).fontSize(10).fillColor(COL_DARK)
          .text(str, MARGIN, doc.y, { width: BW, lineGap: 2, ...opts2 });
     }
     function heading(str) {
       ensureSpace(40);
       doc.moveDown(0.4);
-      doc.font('Helvetica-Bold').fontSize(12).fillColor(COL_NAVY)
+      doc.font(FONT.bold).fontSize(12).fillColor(COL_NAVY)
          .text(str, MARGIN, doc.y, { width: BW });
       doc.moveDown(0.2);
     }
     function clauseTitle(str) {
       ensureSpace(45);
-      doc.moveDown(0.5);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
+      doc.moveDown(0.9);   /* space above each numbered clause */
+      doc.font(FONT.bold).fontSize(10).fillColor(COL_DARK)
          .text(str, MARGIN, doc.y, { width: BW });
     }
     function clauseBody(str) {
-      doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2 });
+      doc.font(FONT.regular).fontSize(10).fillColor(COL_MID)
+         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2, align: 'justify' });
     }
     function subHeading(str) {
       ensureSpace(30);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
+      doc.font(FONT.bold).fontSize(10).fillColor(COL_DARK)
          .text(str, MARGIN + 20, doc.y, { width: BW - 20 });
     }
     function subBody(str) {
       ensureSpace(25);
-      doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-         .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 2 });
+      doc.font(FONT.regular).fontSize(10).fillColor(COL_MID)
+         .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 2, align: 'justify' });
     }
     function noteBody(str) {
       ensureSpace(25);
-      doc.font('Helvetica-Oblique').fontSize(9.5).fillColor(COL_GREY)
+      doc.font(FONT.italic).fontSize(9.5).fillColor(COL_GREY)
          .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 2 });
     }
     function hr() {
@@ -231,7 +257,7 @@ function generateOfferLetterPdf(opts) {
     /* --- Ref + Date --- */
     const refCode = offerCode || (C.name.replace(/\s+/g,'').slice(0,3).toUpperCase() + '/HR/' + new Date().getFullYear() + '/001');
     const issueDate = fmtDateSlash(new Date());
-    doc.font('Helvetica').fontSize(10).fillColor(COL_DARK)
+    doc.font(FONT.regular).fontSize(10).fillColor(COL_DARK)
        .text(refCode, MARGIN, doc.y, { continued: true, width: BW })
        .text('Dt: ' + issueDate, { align: 'right' });
     doc.moveDown(1);
@@ -240,10 +266,10 @@ function generateOfferLetterPdf(opts) {
     boldText(candidateName);
     doc.moveDown(0.8);
 
-    /* --- "Offer Letter" title --- */
-    doc.font('Helvetica-Bold').fontSize(14).fillColor(COL_DARK)
-       .text('Offer Letter', MARGIN, doc.y, { width: BW });
-    doc.moveDown(0.8);
+    /* --- "Offer Letter" title — centered --- */
+    doc.font(FONT.bold).fontSize(16).fillColor(COL_DARK)
+       .text('Offer Letter', MARGIN, doc.y, { width: BW, align: 'center' });
+    doc.moveDown(1.0);
 
     /* --- Salutation + opening para --- */
     text('Dear ' + candidateName + ',');
@@ -470,7 +496,7 @@ function generateOfferLetterPdf(opts) {
     ensureSpace(100);
     doc.moveDown(1.0);
     hr();
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(COL_DARK)
+    doc.font(FONT.bold).fontSize(11).fillColor(COL_DARK)
        .text('Acceptance', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.4);
     text(
@@ -488,7 +514,7 @@ function generateOfferLetterPdf(opts) {
     ensureSpace(80);
     doc.moveDown(1.2);
     hr();
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(COL_DARK)
+    doc.font(FONT.bold).fontSize(11).fillColor(COL_DARK)
        .text('Report to', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.2);
     text(C.name + '.');
@@ -499,7 +525,7 @@ function generateOfferLetterPdf(opts) {
     ============================================================ */
     newPage();
 
-    doc.font('Helvetica-Bold').fontSize(14).fillColor(COL_NAVY)
+    doc.font(FONT.bold).fontSize(14).fillColor(COL_NAVY)
        .text('ANNEXURE I', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.6);
 
@@ -516,7 +542,7 @@ function generateOfferLetterPdf(opts) {
     ensureSpace(40);
     const a1Hy = doc.y;
     doc.rect(A1_X, a1Hy, A1_W, 36).fillColor(COL_NAVY).fill();
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(COL_WHITE)
+    doc.font(FONT.bold).fontSize(9).fillColor(COL_WHITE)
        .text(tblHdrText, A1_X + 6, a1Hy + 6, { width: A1_W - 12, lineGap: 2 });
     doc.y = a1Hy + 38;
 
@@ -526,9 +552,9 @@ function generateOfferLetterPdf(opts) {
     doc.rect(A1_X, a1Sh, A1_COL, 20).fillColor('#e8edf5').fill();
     doc.rect(A1_X + A1_COL, a1Sh, A1_W - A1_COL, 20).fillColor('#e8edf5').fill();
     doc.rect(A1_X, a1Sh, A1_W, 20).strokeColor('#b0b8c8').lineWidth(0.5).stroke();
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(COL_DARK)
+    doc.font(FONT.bold).fontSize(9).fillColor(COL_DARK)
        .text('S.No', A1_X + 6, a1Sh + 5, { width: A1_COL - 8, lineBreak: false });
-    doc.font('Helvetica-Bold').fontSize(9).fillColor(COL_DARK)
+    doc.font(FONT.bold).fontSize(9).fillColor(COL_DARK)
        .text('Particulars', A1_X + A1_COL + 6, a1Sh + 5, { width: A1_W - A1_COL - 10, lineBreak: false });
     doc.y = a1Sh + 22;
 
@@ -555,23 +581,23 @@ function generateOfferLetterPdf(opts) {
         doc.rect(A1_X, ry, A1_W, rowH).fillColor('#f5f7fa').fill();
       }
       doc.rect(A1_X, ry, A1_W, rowH).strokeColor('#d0d8e8').lineWidth(0.5).stroke();
-      doc.font('Helvetica').fontSize(9).fillColor(COL_DARK)
+      doc.font(FONT.regular).fontSize(9).fillColor(COL_DARK)
          .text(String(idx + 1), A1_X + 16, ry + 6, { width: A1_COL - 20, lineBreak: false });
-      doc.font('Helvetica').fontSize(9).fillColor(COL_MID)
+      doc.font(FONT.regular).fontSize(9).fillColor(COL_MID)
          .text(item, A1_X + A1_COL + 6, ry + 6, { width: A1_W - A1_COL - 12, lineGap: 2 });
       doc.y = ry + rowH + 2;
     });
 
     ensureSpace(50);
     doc.moveDown(0.6);
-    doc.font('Helvetica-Bold').fontSize(9).fillColor('#cc0000')
+    doc.font(FONT.bold).fontSize(9).fillColor('#cc0000')
        .text(
          '* Please note that all of the above documents are mandatory and you will not be allowed to join without them. ' +
          'Also you should bring all originals documents for verification on the Date Of Joining.',
          MARGIN, doc.y, { width: BW }
        );
     doc.moveDown(0.3);
-    doc.font('Helvetica').fontSize(9).fillColor(COL_GREY)
+    doc.font(FONT.regular).fontSize(9).fillColor(COL_GREY)
        .text('Please contact us via ' + C.email + ' for any queries regarding your employment offer.',
          MARGIN, doc.y, { width: BW });
 
@@ -581,10 +607,10 @@ function generateOfferLetterPdf(opts) {
     newPage();
 
     /* COMPENSATION heading */
-    doc.font('Helvetica-Bold').fontSize(13).fillColor(COL_NAVY)
+    doc.font(FONT.bold).fontSize(13).fillColor(COL_NAVY)
        .text('COMPENSATION', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.4);
-    doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
+    doc.font(FONT.regular).fontSize(10).fillColor(COL_MID)
        .text(
          'Your annual compensation (Cost To Company) will be ' +
          'Rs ' + Number(ctcNum).toLocaleString('en-IN') + '/- ' +
@@ -593,13 +619,13 @@ function generateOfferLetterPdf(opts) {
          'Any employee violating this policy will be considered to have committed a breach of ' +
          'confidentiality and will be subject to disciplinary action, up to and possibly including ' +
          'termination of employment.',
-         MARGIN, doc.y, { width: BW, lineGap: 2 }
+         MARGIN, doc.y, { width: BW, lineGap: 2, align: 'justify' }
        );
 
     doc.moveDown(1.0);
 
     /* ANNEXURE II heading */
-    doc.font('Helvetica-Bold').fontSize(13).fillColor(COL_NAVY)
+    doc.font(FONT.bold).fontSize(13).fillColor(COL_NAVY)
        .text('ANNEXURE II', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.5);
 
@@ -617,7 +643,7 @@ function generateOfferLetterPdf(opts) {
     ensureSpace(T_RH + 6);
     const ttY = doc.y;
     doc.rect(T_X, ttY, T_W, T_RH).fillColor(COL_NAVY).fill();
-    doc.font('Helvetica-Bold').fontSize(11).fillColor(COL_WHITE)
+    doc.font(FONT.bold).fontSize(11).fillColor(COL_WHITE)
        .text('CTC STRUCTURE', T_X, ttY + 6, { width: T_W, align: 'center' });
     doc.y = ttY + T_RH + 2;
 
@@ -625,11 +651,11 @@ function generateOfferLetterPdf(opts) {
     ensureSpace(T_RH + 4);
     const thY = doc.y;
     doc.rect(T_X, thY, T_W, T_RH).fillColor('#2c5282').fill();
-    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COL_WHITE)
+    doc.font(FONT.bold).fontSize(9.5).fillColor(COL_WHITE)
        .text('COMPONENTS', T_X + 8, thY + 7, { width: T_W0, lineBreak: false });
-    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COL_WHITE)
+    doc.font(FONT.bold).fontSize(9.5).fillColor(COL_WHITE)
        .text('MONTHLY', T_C1, thY + 7, { width: T_W1, align: 'right', lineBreak: false });
-    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COL_WHITE)
+    doc.font(FONT.bold).fontSize(9.5).fillColor(COL_WHITE)
        .text('YEARLY', T_C2, thY + 7, { width: T_W2, align: 'right', lineBreak: false });
     doc.y = thY + T_RH + 2;
 
@@ -642,7 +668,7 @@ function generateOfferLetterPdf(opts) {
       doc.rect(T_X, ry, T_W, T_RH).fillColor(bgColor).fill();
       doc.rect(T_X, ry, T_W, T_RH).strokeColor('#c8d4e8').lineWidth(0.5).stroke();
 
-      const fn = isBold ? 'Helvetica-Bold' : 'Helvetica';
+      const fn = isBold ? FONT.bold : FONT.regular;
       const fc = isBold ? COL_NAVY : COL_DARK;
 
       doc.font(fn).fontSize(10).fillColor(fc)
@@ -669,9 +695,9 @@ function generateOfferLetterPdf(opts) {
     /* Signature */
     ensureSpace(60);
     doc.moveDown(2.0);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
+    doc.font(FONT.bold).fontSize(10).fillColor(COL_DARK)
        .text('HR Manager', MARGIN, doc.y, { width: BW });
-    doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
+    doc.font(FONT.regular).fontSize(10).fillColor(COL_MID)
        .text(C.name, MARGIN, doc.y, { width: BW });
 
     doc.end();

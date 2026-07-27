@@ -309,7 +309,6 @@ function AddCandidateWizard({ open, onClose, jobs, recruiters, isRecruiter, onSu
         step === 1 ? (
           <>
             <Btn variant="secondary" onClick={handleClose}>Cancel</Btn>
-            <Btn variant="secondary" onClick={() => setStep(2)}>Enter Manually</Btn>
             <Btn onClick={handleParse} disabled={!file || parsing || preScoring}>
               {preScoring
                 ? <><Loader2 size={14} className="animate-spin" /> Analysing…</>
@@ -334,7 +333,7 @@ function AddCandidateWizard({ open, onClose, jobs, recruiters, isRecruiter, onSu
       {step === 1 && (
         <div>
           <div className="mb-4 px-3.5 py-2.5 bg-amber-50 rounded-lg border-l-[3px] border-l-[#f18200] text-sm text-amber-800">
-            Select the job position, then upload a resume to auto-extract candidate details. Or click <strong>Enter Manually</strong> to skip.
+            Select the job position, then upload a resume to auto-extract candidate details.
           </div>
 
           <Field label="Job / Position" required>
@@ -636,6 +635,36 @@ function InterviewHistory({ candidateId, role, candidateStatus, onMoveToNextRoun
   }
 
   if (loading) return <div className="mt-4 text-sm text-gray-400">Loading interview history...</div>;
+
+  // ── Round pipeline tracker ──────────────────────────────────────────
+  const PIPELINE_STEPS = ["Round 1", "Round 2", "Round 3", "HR", "Shortlisted"];
+
+  function stepState(label) {
+    if (label === "Shortlisted") {
+      const isShortlisted = candidateStatus === "Shortlisted" || candidateStatus === "Offer Released"
+        || candidateStatus === "Offer Accepted" || candidateStatus === "Joining Formalities" || candidateStatus === "Onboarded";
+      return isShortlisted ? "done" : "pending";
+    }
+    const iv = ivs.find(r => r.level === label || (label === "HR" && r.level === "HR"));
+    if (!iv) return "pending";
+    if (iv.feedback_status === "Selected") return "done";
+    if (iv.feedback_status === "Not Selected") return "failed";
+    if (iv.status === "Scheduled") return "active";
+    return "pending";
+  }
+
+  function stepLabel(label) {
+    if (label === "Shortlisted") return label;
+    const iv = ivs.find(r => r.level === label || (label === "HR" && r.level === "HR"));
+    if (!iv) return label;
+    if (iv.feedback_status === "Selected")     return label + " ✓";
+    if (iv.feedback_status === "Not Selected") return label + " ✗";
+    if (iv.status === "Scheduled")             return label + " ●";
+    return label;
+  }
+
+  const pipelineVisible = ivs.length > 0;
+
   if (!ivs.length) return null;
 
   const TYPE_ICON = { "Video Call": "Video", "Phone": "Phone", "In-Person": "Office", "Teams": "Teams" };
@@ -656,6 +685,51 @@ function InterviewHistory({ candidateId, role, candidateStatus, onMoveToNextRoun
 
   return (
     <div className="mt-5">
+      {/* ── Round Pipeline Tracker ── */}
+      {pipelineVisible && (
+        <div className="mb-4 px-4 py-3.5 bg-gray-50 rounded-xl border border-gray-200">
+          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.06em] mb-3">Interview Pipeline</div>
+          <div className="flex items-center gap-0">
+            {PIPELINE_STEPS.map((label, i) => {
+              const state = stepState(label);
+              const dotCls =
+                state === "done"    ? "bg-green-500 border-green-500 text-white" :
+                state === "failed"  ? "bg-red-500 border-red-500 text-white" :
+                state === "active"  ? "bg-[#f18200] border-[#f18200] text-white" :
+                                      "bg-white border-gray-300 text-gray-400";
+              const lineCls =
+                stepState(PIPELINE_STEPS[i + 1]) === "pending" && state !== "done" && state !== "failed"
+                  ? "bg-gray-200" : "bg-green-400";
+              const textCls =
+                state === "done"   ? "text-green-600 font-bold" :
+                state === "failed" ? "text-red-500 font-bold" :
+                state === "active" ? "text-[#f18200] font-bold" :
+                                     "text-gray-400";
+              return (
+                <React.Fragment key={label}>
+                  <div className="flex flex-col items-center" style={{ minWidth: 56 }}>
+                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${dotCls}`}>
+                      {state === "done"   ? "✓" :
+                       state === "failed" ? "✗" :
+                       state === "active" ? "●" : i + 1}
+                    </div>
+                    <span className={`text-[10px] mt-1.5 text-center leading-tight ${textCls}`} style={{ maxWidth: 52 }}>
+                      {label === "HR" ? "HR Round" : label}
+                    </span>
+                    {state === "active" && (
+                      <span className="text-[9px] text-[#f18200] font-semibold mt-0.5">Scheduled</span>
+                    )}
+                  </div>
+                  {i < PIPELINE_STEPS.length - 1 && (
+                    <div className={`h-0.5 flex-1 mx-1 mb-4 ${state === "done" ? "bg-green-400" : "bg-gray-200"}`} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 mb-3.5">
         <div className="w-[3px] h-4 bg-[#f18200] rounded-sm" />
         <span className="text-[11px] font-bold text-gray-700 uppercase tracking-[0.06em]">Interview History</span>
@@ -884,8 +958,8 @@ export default function CandidatesPage({ role }) {
             Schedule
           </button>
         )}
-        {/* Recruiter: shortlist directly from list */}
-        {row.status === "Schedule Interview" && isRecruiter && (
+        {/* HR Manager: shortlist directly from list after interview */}
+        {row.status === "Schedule Interview" && isHRMgr && (
           <button onClick={e => { e.stopPropagation(); updateStatus(row.candidate_id, "Shortlisted"); }}
             className="text-[11px] font-bold px-2.5 py-1 bg-blue-600 text-white border-0 rounded-md cursor-pointer whitespace-nowrap">
             Shortlist
@@ -985,14 +1059,42 @@ export default function CandidatesPage({ role }) {
       <Modal open={!!detail} onClose={() => setDetail(null)} title="Candidate Profile" width={680}
         footer={
           <div className="flex items-center gap-2.5 w-full">
-            {/* Status dropdown: only Recruiter (5) and Reporting Manager (3) can change status via dropdown */}
+            {/* Status dropdown — role-gated */}
             {isRecruiter && (
+              // Recruiter: create candidates, upload resume, schedule interviews
               <div className="flex-1">
                 <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)}
-                  options={["Work in Progress","Schedule Interview","Shortlisted"].map(s => ({ value: s, label: s }))} />
+                  options={["Work in Progress","Schedule Interview"].map(s => ({ value: s, label: s }))} />
               </div>
             )}
+            {isHRMgr && (
+              // HR Manager: shortlist → offer pipeline only (joining/onboarding is admin)
+              <>
+                <div className="flex-1">
+                  <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)}
+                    options={["Shortlisted"].map(s => ({ value: s, label: s }))} />
+                </div>
+                <Btn icon={<Calendar size={15} />}
+                  onClick={() => updateStatus(detail.candidate_id, "Schedule Interview")}
+                  style={{ background: "#1e3a5f", color: "#fff", border: "none" }}>
+                  Next Round
+                </Btn>
+                <Btn
+                  onClick={() => updateStatus(detail.candidate_id, "Offer Rejected")}
+                  style={{ background: "#dc2626", color: "#fff", border: "none" }}>
+                  Reject
+                </Btn>
+              </>
+            )}
             {isTL && (
+              // Reporting Manager: interview pipeline only
+              <div className="flex-1">
+                <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)}
+                  options={["Work in Progress","Schedule Interview"].map(s => ({ value: s, label: s }))} />
+              </div>
+            )}
+            {isAdmin && (
+              // Admin: full access to all statuses
               <div className="flex-1">
                 <Select value={detail?.status || ""} onChange={e => updateStatus(detail.candidate_id, e.target.value)}
                   options={STATUS_OPTS.map(s => ({ value: s, label: s }))} />

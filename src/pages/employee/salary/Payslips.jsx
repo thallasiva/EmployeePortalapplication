@@ -1,16 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import {
-
   getMyPayslips,
   getPayslipFull,
   generateMyPayslip,
   getMySalaryStructure } from
 "../../../api/payroll.api";
+import { getMyProfile } from "../../../api/employee.api";
 import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
 import { downloadPayslipPdf } from "../../../utils/payslipPdfGenerator";
 import { errorToast } from "../../../utils/ToastControllers";
-import { getCurrentUser } from "../../../api/auth.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { getCurrentUser } from "../../../api/auth.api";
+import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 const MONTH_NAMES = [
 "January", "February", "March", "April", "May", "June",
@@ -24,20 +25,19 @@ function fmtAmt(n)
 }
 
 // ── Employee details side panel ───────────────────────────────────────────────
-function EmployeePanel({ user, payslip, structure, month, year, onHide })
+function EmployeePanel({ user, payslip, structure, empProfile, bankDetails, month, year, onHide })
 {
-  const empNo = payslip?.emp_code || user?.emp_code || user?.employee_code || "—";
-  const empName = [
-  payslip?.first_name || user?.first_name || "",
-  payslip?.last_name || user?.last_name || ""].
-  join(" ").trim() || user?.name || "—";
-  const bank = payslip?.bank_name || structure?.bank_name || user?.bank_name || "—";
-  const bankAcc = payslip?.bank_account_number || structure?.bank_account_number || user?.bank_account_number || "—";
-  const rawDate = payslip?.emp_joining_date || user?.emp_joining_date || user?.joining_date || structure?.joining_date;
+  const empNo = empProfile?.emp_code || payslip?.emp_code || user?.empCode || "—";
+  const empName = empProfile
+    ? [empProfile.first_name, empProfile.last_name].filter(Boolean).join(" ")
+    : (user?.name || "—");
+  const bank    = bankDetails?.bank_name      || empProfile?.bank_name      || "—";
+  const bankAcc = bankDetails?.account_number || empProfile?.account_number || "—";
+  const rawDate = empProfile?.emp_joining_date || empProfile?.joining_date;
   const joinDate = rawDate ?
-  new Date(rawDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) :
-  "—";
-  const pfNo = payslip?.pf_number || structure?.pf_number || user?.pf_number || user?.pf_no || "—";
+    new Date(rawDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) :
+    "—";
+  const pfNo = empProfile?.pf_number || bankDetails?.pf_number || "—";
   const netPay = Number(payslip?.net_salary ?? payslip?.net_pay ?? 0);
   const monthLabel = month ? `${MONTH_NAMES[Number(month) - 1]} ${year}` : "—";
 
@@ -262,6 +262,8 @@ export default function Payslips()
   const [structure, setStructure] = useState(null);
   const [myPayslips, setMyPayslips] = useState([]);
   const [user, setUser] = useState(null);
+  const [empProfile, setEmpProfile] = useState(null);
+  const [bankDetails, setBankDetails] = useState(null);
   const [showInfo, setShowInfo] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -269,14 +271,28 @@ export default function Payslips()
   useEffect(() =>
   {
     Promise.all([
-    getMySalaryStructure().catch(() => null),
-    getMyPayslips({ limit: 36 }).then((r) => r?.data || r || []).catch(() => []),
-    getCurrentUser().catch(() => null)]
-    ).then(([s, p, u]) =>
+      getMySalaryStructure().catch(() => null),
+      getMyPayslips({ limit: 36 }).then((r) => r?.data || r || []).catch(() => []),
+      getCurrentUser().catch(() => null),
+      getMyProfile().catch(() => null),
+    ]).then(([s, p, u, profile]) =>
     {
       setStructure(s);
       setMyPayslips(Array.isArray(p) ? p : []);
       setUser(u);
+      setEmpProfile(profile);
+      // bank details are nested under profile.bankDetails (result set 3 of sp_get_employee_profile)
+      if (profile?.bankDetails) {
+        setBankDetails(profile.bankDetails);
+      }
+      // If no salary structure assigned yet, build a synthetic one from employee's base_salary / ctc
+      if (!s && profile) {
+        const basicMonthly = Number(profile.base_salary) || 0;
+        const ctcAnnual    = Number(profile.ctc)         || 0;
+        if (basicMonthly > 0 || ctcAnnual > 0) {
+          setStructure({ basic: basicMonthly, ctc: ctcAnnual > 0 ? Math.round(ctcAnnual / 12) : undefined });
+        }
+      }
     }).finally(() => setLoading(false));
   }, []);
 
@@ -396,10 +412,10 @@ export default function Payslips()
       <div className={cssClass({ display: "flex", gap: 16, alignItems: "flex-start" })}>
         <div className={cssClass({ flex: 1, background: "#fff", border: "1px solid #ffe0b2", borderRadius: 8, padding: 20 })}>
           {activeTab === "payslip" &&
-          <PayslipTab payslip={currentPayslip} structure={structure} />
+          <PayslipTab payslip={currentPayslip} structure={structure} empProfile={empProfile} />
           }
           {activeTab === "ctc" &&
-          <CtcPayslipTab payslip={currentPayslip} structure={structure} />
+          <CtcPayslipTab payslip={currentPayslip} structure={structure} empProfile={empProfile} />
           }
           {activeTab === "reimb" && <ReimbPayslipTab />}
         </div>
@@ -421,10 +437,11 @@ export default function Payslips()
           user={user}
           payslip={currentPayslip}
           structure={structure}
+          empProfile={empProfile}
+          bankDetails={bankDetails}
           month={selectedMonth}
           year={selectedYear}
           onHide={() => setShowInfo(false)} />
-
         }
       </div>
 

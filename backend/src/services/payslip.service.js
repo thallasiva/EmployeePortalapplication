@@ -7,6 +7,81 @@ const { computeTdsSection } = require('../utils/taxCalculator');
 const { rupeesInWords } = require('../utils/numberToWords');
 const { calculateEarningsDeductionsBreakdown } = require('../utils/payslipBreakdown');
 const { encryptSalaryFields, applyVisibility } = require('../utils/encryption');
+const salaryAssignmentSvc = require('./salaryAssignment.service');
+
+/**
+ * Returns true if the employee is eligible for gratuity.
+ * Rule: >= 4 years + 240 days of continuous service (Indian labour law).
+ * @param {string|Date} joiningDate  emp_joining_date from DB
+ * @param {number}      month        payslip month (1–12)
+ * @param {number}      year         payslip year
+ */
+function isGratuityEligible(joiningDate, month, year) {
+  if (!joiningDate) return false;
+  const joined  = new Date(joiningDate);
+  // Use first day of the payslip month as reference
+  const refDate = new Date(year, month - 1, 1);
+  const msInDay = 86400000;
+  const daysDiff = Math.floor((refDate - joined) / msInDay);
+  // 4 years 240 days ≈ 4 * 365 + 240 = 1700 days
+  return daysDiff >= 1700;
+}
+
+/**
+ * Build payslip earnings/deductions arrays from a computeStructure() result.
+ * Statutory deductions (PF, ESI, PT) that aren't already in the structure are
+ * appended; INCOME TAX row is added with amount=0 (filled later by computeTdsSection).
+ */
+function buildFromStructure(components, ctx, gratuityEligible = true) {
+  const earnings = components
+    .filter(c => c.category === 'Earning' && c.show_on_payslip !== 0 && !c._deferred)
+    .map(c => {
+      // Zero gratuity if employee is not yet eligible (< 4 yrs 240 days)
+      const isGratuity = /gratuity/i.test(c.component_name || '') || c.component_code === 'GRATUITY';
+      const amount = (!gratuityEligible && isGratuity) ? 0 : (c.monthly_amount || 0);
+      return { label: (c.component_name || c.component_code).toUpperCase(), amount };
+    })
+    .filter(c => c.amount > 0);
+
+  const structDeductions = components
+    .filter(c => c.category === 'Deduction' && c.show_on_payslip !== 0 && !c._deferred)
+    .map(c => ({ label: (c.component_name || c.component_code).toUpperCase(), amount: c.monthly_amount || 0 }))
+    .filter(c => c.amount > 0);
+
+  const basicMonthly   = ctx.BASIC || 0;
+  const totalEarnings  = earnings.reduce((s, e) => s + e.amount, 0);
+
+  // Statutory calculations
+  const pfWage         = Math.min(basicMonthly, 15000);
+  const pf             = Math.round(pfWage * 0.12);
+  const eps            = Math.round(pfWage * 0.0833);
+  const epf            = Math.round(pfWage * 0.0367);
+  const employerPf     = eps + epf;
+  const edli           = Math.min(Math.round(pfWage * 0.005), 75);
+  const esiApplicable  = totalEarnings <= 21000;
+  const esiEmployee    = esiApplicable ? Math.round(totalEarnings * 0.0075) : 0;
+  const esiEmployer    = esiApplicable ? Math.round(totalEarnings * 0.0325) : 0;
+  const professionalTax = totalEarnings <= 15000 ? 0 : totalEarnings <= 20000 ? 150 : 200;
+
+  // Merge structure deductions with statutory; avoid duplicates
+  const deductions = [...structDeductions];
+  const hasLabel = (lbl) => deductions.some(d => d.label === lbl || d.label.replace(/\s+/g,'') === lbl.replace(/\s+/g,''));
+
+  if (!hasLabel('PF') && !hasLabel('EMP PF') && !hasLabel('EMPPF')) {
+    deductions.push({ label: 'PF', amount: pf });
+  }
+  if (!hasLabel('ESI') && esiEmployee > 0) {
+    deductions.push({ label: 'ESI', amount: esiEmployee });
+  }
+  if (!hasLabel('PROF TAX') && !hasLabel('PROFTAX') && !hasLabel('PROFESSIONAL TAX')) {
+    deductions.push({ label: 'PROF TAX', amount: professionalTax });
+  }
+  if (!hasLabel('INCOME TAX') && !hasLabel('INCOMETAX') && !hasLabel('TDS')) {
+    deductions.push({ label: 'INCOME TAX', amount: 0 }); // filled by computeTdsSection
+  }
+
+  return { earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax, pf };
+}
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -64,20 +139,40 @@ class PayslipService extends BaseService {
     const row = (results[0] ?? [])[0] ?? null;
     if (!row) return null;
 
-    const basic = Number(row.basic) || 0;
-    const {
-      earnings, deductions, totalEarnings,
-      eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax,
-    } = calculateEarningsDeductionsBreakdown(basic);
+    // ── Try dynamic salary structure breakdown ────────────────────────────────
+    let earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax;
 
-    const pfMonthly = deductions.find((d) => d.label === 'PF')?.amount || 0;
-    const professionTaxMonthly = deductions.find((d) => d.label === 'PROF TAX')?.amount || 0;
+    // Gratuity eligibility: >= 4 years 240 days of service
+    const gratuityEligible = isGratuityEligible(row.emp_joining_date, row.month, row.year);
+
+    try {
+      const structured = await salaryAssignmentSvc.computePayslipBreakdown(row.emp_id);
+      if (structured && structured.components?.length) {
+        ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
+          buildFromStructure(structured.components, structured.ctx, gratuityEligible));
+      }
+    } catch { /* fall through to hardcoded */ }
+
+    // ── Fallback: hardcoded percentage-based breakdown ────────────────────────
+    if (!earnings) {
+      const basic = Number(row.basic) || 0;
+      ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
+        calculateEarningsDeductionsBreakdown(basic));
+      // Zero gratuity in fallback path too if not eligible
+      if (!gratuityEligible) {
+        const gIdx = earnings.findIndex(e => /gratuity/i.test(e.label));
+        if (gIdx !== -1) earnings[gIdx].amount = 0;
+      }
+    }
+
+    const pfMonthly = deductions.find((d) => d.label === 'PF' || d.label === 'EMP PF')?.amount || 0;
+    const professionTaxMonthly = deductions.find((d) => /prof/i.test(d.label))?.amount || 0;
 
     const tds = computeTdsSection({
       earnings, pfMonthly, professionTaxMonthly, month: row.month, year: row.year,
     });
 
-    const incomeTaxDeduction = deductions.find((d) => d.label === 'INCOME TAX');
+    const incomeTaxDeduction = deductions.find((d) => /income.?tax|tds/i.test(d.label));
     if (incomeTaxDeduction) incomeTaxDeduction.amount = tds.incomeTax.monthlyProjectedTax;
 
     const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);

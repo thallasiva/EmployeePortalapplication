@@ -123,11 +123,9 @@ class InterviewService extends BaseService {
       const interviewer = row.interviewer       || '';
       const candidateId = row.candidate_id     || null;
 
-      // Notify candidate on shortlist / rejection
+      // Notify candidate on rejection only
       if (email) {
-        if (shortlisted) {
-          notify.candidateShortlisted({ candidateEmail: email, candidateName: name, jobTitle });
-        } else if (feedbackStatus && feedbackStatus.toLowerCase().includes('reject')) {
+        if (feedbackStatus && feedbackStatus.toLowerCase().includes('reject')) {
           notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
         }
       }
@@ -152,6 +150,14 @@ class InterviewService extends BaseService {
     }
 
     return row;
+  }
+
+  async submitRecruiterFeedback(interviewId, { feedbackStatus, feedbackComments }, submittedBy, ip) {
+    const results = await callProcedure(
+      'sp_rec_submit_recruiter_feedback(?, ?, ?, ?, ?)',
+      [interviewId, feedbackStatus, feedbackComments || null, submittedBy, ip]
+    );
+    return (results[0] ?? [])[0];
   }
 
   async setJoinUrl(interviewId, joinUrl) {

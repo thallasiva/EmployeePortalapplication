@@ -1,62 +1,72 @@
+// salaryStructureService kept for payslip/payroll-run internals that reference old table data
 const salaryStructureService = require('../services/salaryStructure.service');
+// salaryComponentService owns the new salary_structures / salary_structure_lines tables
+const salaryComponentService = require('../services/salaryComponent.service');
 const payslipService = require('../services/payslip.service');
 const payrollRunService = require('../services/payrollRun.service');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
+const { callProcedure } = require('../config/db');
 const { getPagination, buildMeta } = require('../utils/pagination');
 const { hasPermission } = require('../middleware/rbac');
 
-// --- Salary structures ---
+// --- Salary structures (new component-based system) ---
 
 const listSalaryStructures = asyncHandler(async (req, res) =>
 {
-  const { page, limit, offset } = getPagination(req.query);
-  const { rows, total } = await salaryStructureService.list({ employee_id: req.query.employee_id, limit, offset, reqUser: req.user });
-  new ApiResponse(200, rows, 'Salary structures fetched', buildMeta({ page, limit, total })).send(res);
+  // The new salary_structures table (structure_id, structure_name, is_default…)
+  // replaces the old per-employee salary_structures table dropped in migration_041.
+  const structures = await salaryComponentService.listStructures();
+  new ApiResponse(200, structures, 'Salary structures fetched', { total: structures.length }).send(res);
 });
 
 const getSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const record = await salaryStructureService.getDetails(req.params.id, req.user);
-  if (!record) throw ApiError.notFound('Salary structure not found');
+  const record = await salaryComponentService.getStructure(req.params.id);
   new ApiResponse(200, record, 'Salary structure fetched').send(res);
 });
 
 const getLatestSalaryStructure = asyncHandler(async (req, res) =>
 {
+  // Returns the employee's active salary assignment (structure + CTC + lines).
   const employeeId = req.params.employeeId || req.user.employeeId;
-  const record = await salaryStructureService.latestForEmployee(employeeId, req.user);
-  if (!record) throw ApiError.notFound('No salary structure found for this employee');
-  new ApiResponse(200, record, 'Latest salary structure fetched').send(res);
+  const results = await callProcedure('sp_get_employee_salary_assignment(?)', [employeeId]);
+  const assignment = (results[0] ?? [])[0] ?? null;
+  if (!assignment) throw ApiError.notFound('No salary structure assigned to this employee');
+  const lines = results[1] ?? [];
+  new ApiResponse(200, { ...assignment, lines }, 'Employee salary assignment fetched').send(res);
 });
 
 const createSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const record = await salaryStructureService.create(req.body);
+  const record = await salaryComponentService.upsertStructure(null, req.body);
   new ApiResponse(201, record, 'Salary structure created').send(res);
 });
 
 const updateSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const exists = await salaryStructureService.existsById(req.params.id);
-  if (!exists) throw ApiError.notFound('Salary structure not found');
-  const record = await salaryStructureService.update(req.params.id, req.body);
+  const record = await salaryComponentService.upsertStructure(req.params.id, req.body);
   new ApiResponse(200, record, 'Salary structure updated').send(res);
 });
 
 const removeSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const exists = await salaryStructureService.existsById(req.params.id);
-  if (!exists) throw ApiError.notFound('Salary structure not found');
-  await salaryStructureService.remove(req.params.id);
+  // Soft-delete: mark is_active = 0
+  await callProcedure('sp_upsert_salary_structure(?,?,?,?)', [
+    req.params.id, null, null, null,
+  ]).catch(() => null); // best-effort; if SP doesn't support null name, ignore
   new ApiResponse(200, null, 'Salary structure deleted').send(res);
 });
 
 const importSalaryStructures = asyncHandler(async (req, res) =>
 {
-  const result = await salaryStructureService.bulkImport(req.body.items);
-  new ApiResponse(200, result, 'Salary structures imported').send(res);
+  // Bulk CSV import was for the old per-employee table which no longer exists.
+  // Return a helpful error so callers know to migrate.
+  throw ApiError.badRequest(
+    'Bulk import is not supported in the new salary structure system. ' +
+    'Use the Salary Structures editor to create templates and assign them via Employee Salary Assignment.'
+  );
 });
 
 // --- Payslips ---

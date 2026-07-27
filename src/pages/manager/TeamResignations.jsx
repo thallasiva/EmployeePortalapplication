@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import {
   LogOut, CheckCircle2, XCircle, Clock, Search,
   ChevronDown, Paperclip, User, AlertTriangle } from
@@ -324,6 +325,7 @@ export default function TeamResignations() {
     r.department_name?.toLowerCase().includes(q);
     return matchStatus && matchSearch;
   });
+  const { paged: pagedRes, page: resPage, setPage: setResPage, totalPages: resTotalPages, from: resFrom, to: resTo, total: resTotal, pageSize: resPageSize, setPageSize: setResPageSize } = usePagination(visible);
 
   const pending = rows.filter((r) => r.status === "pending").length;
 
@@ -389,9 +391,10 @@ export default function TeamResignations() {
         </div> :
 
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 12 })}>
-          {visible.map((r) =>
+          {pagedRes.map((r) =>
         <ResignRow key={r.resignation_id} row={r} onReview={setReviewing} />
         )}
+          <Pagination page={resPage} setPage={setResPage} totalPages={resTotalPages} from={resFrom} to={resTo} total={resTotal} pageSize={resPageSize} setPageSize={setResPageSize} />
         </div>
       }
 

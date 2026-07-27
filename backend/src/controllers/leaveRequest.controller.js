@@ -7,12 +7,22 @@ const { getPagination, buildMeta } = require('../utils/pagination');
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status, leave_type_id, department_id } = req.query;
-  // Reporting Manager (role 3) sees only their direct reports.
-  // Admin (role 1) and HR Manager / Recruiter Lead (role 4) see all leave requests.
-  const isTeamManager = req.user.roleId === 3 || req.user.roleName === 'Reporting Manager';
-  const reporting_to = isTeamManager ? req.user.employeeId : undefined;
+  // Reporting Manager (role 3) and HR Manager / Recruiter TL (role 4) see only their direct reports.
+  // Admin (role 1) sees all leave requests.
+  const isHRManager =
+    req.user.roleId === 4 ||
+    req.user.roleName === 'HR Manager' ||
+    req.user.roleName === 'Recruiter Team Lead';
+  const isReportingManager =
+    req.user.roleId === 3 || req.user.roleName === 'Reporting Manager';
+  const isTeamManager = isHRManager || isReportingManager;
+
+  // HR Manager sees all recruiters (role_id=5) regardless of reporting_to setting
+  const reporting_to  = isTeamManager ? req.user.employeeId : undefined;
+  const team_role_id  = isHRManager   ? 5                   : undefined;
+
   const { rows, total } = await leaveRequestService.list({
-    employee_id, status, leave_type_id, department_id, reporting_to, limit, offset,
+    employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset,
   });
   new ApiResponse(200, rows, 'Leave requests fetched', buildMeta({ page, limit, total })).send(res);
 });

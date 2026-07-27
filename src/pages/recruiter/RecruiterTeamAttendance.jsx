@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import { listAttendance } from "../../api/attendance.api";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
@@ -35,6 +36,7 @@ const RecruiterTeamAttendance = () => {
   const present  = records.filter((r) => (r.status || "").toLowerCase() === "present").length;
   const absent   = records.filter((r) => (r.status || "").toLowerCase() === "absent").length;
   const late     = records.filter((r) => (r.status || "").toLowerCase() === "late").length;
+  const { paged: pagedAtt, page: attPage, setPage: setAttPage, totalPages: attTotalPages, from: attFrom, to: attTo, total: attTotal, pageSize: attPageSize, setPageSize: setAttPageSize } = usePagination(records);
 
   return (
     <div className="admin-dash space-y-4">
@@ -74,6 +76,7 @@ const RecruiterTeamAttendance = () => {
           ) : records.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-10">No attendance records for {date}.</p>
           ) : (
+            <>
             <table className="admin-att-table w-full">
               <thead>
                 <tr>
@@ -87,7 +90,7 @@ const RecruiterTeamAttendance = () => {
                 </tr>
               </thead>
               <tbody>
-                {records.map((m, i) => {
+                {pagedAtt.map((m, i) => {
                   const st = (m.status || "").toLowerCase();
                   return (
                     <tr key={m.attendance_id || i}>
@@ -117,6 +120,8 @@ const RecruiterTeamAttendance = () => {
                 })}
               </tbody>
             </table>
+            <Pagination page={attPage} setPage={setAttPage} totalPages={attTotalPages} from={attFrom} to={attTo} total={attTotal} pageSize={attPageSize} setPageSize={setAttPageSize} />
+            </>
           )}
         </div>
       </div>

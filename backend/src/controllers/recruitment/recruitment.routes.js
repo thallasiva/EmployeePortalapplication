@@ -78,6 +78,14 @@ router.put("/candidates/:id/status",
   candidateCtrl.updateStatus
 );
 
+// Parsed resume sub-resources
+router.get("/candidates/:id/skills",     ALL_REC, candidateCtrl.getSkills);
+router.get("/candidates/:id/education",  ALL_REC, candidateCtrl.getEducation);
+router.get("/candidates/:id/experience", ALL_REC, candidateCtrl.getExperience);
+
+// Parser logs (HR Manager / Admin only)
+router.get("/parser-logs", ADMIN_TL, candidateCtrl.getParserLogs);
+
 // ── Interviews ───────────────────────────────────────────────────────
 router.route("/interviews")
   .get(ALL_REC, interviewCtrl.list)
@@ -90,6 +98,11 @@ router.put("/interviews/:id/feedback",
   ADMIN_TL,                                                             // HR Manager / TL submits feedback
   V.validateFeedback,
   interviewCtrl.submitFeedback
+);
+
+router.put("/interviews/:id/recruiter-feedback",
+  ALL_REC,                                                              // Recruiter submits their own feedback
+  interviewCtrl.submitRecruiterFeedback
 );
 
 router.put("/interviews/:id/cancel",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import ManagerTabs from "./ManagerTabs";
 import
   {
@@ -235,6 +236,7 @@ export default function ManagerTimesheets()
   const [counts, setCounts] = useState(null);
   const [activePanel, setActivePanel] = useState("timesheets");
   const [err, setErr] = useState("");
+  const { paged: pagedTs, page: tsPage, setPage: setTsPage, totalPages: tsTotalPages, from: tsFrom, to: tsTo, total: tsTotal, pageSize: tsPageSize, setPageSize: setTsPageSize } = usePagination(timesheets);
 
   const load = useCallback(async () =>
   {
@@ -311,7 +313,7 @@ export default function ManagerTimesheets()
                     <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading…</td></tr>
                   ) : timesheets.length === 0 ? (
                     <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No timesheets found</td></tr>
-                  ) : timesheets.map(ts => (
+                  ) : pagedTs.map(ts => (
                     <tr key={ts.timesheet_id}>
                       <td>
                         <div>
@@ -338,6 +340,7 @@ export default function ManagerTimesheets()
                 </tbody>
               </table>
             </div>
+            <Pagination page={tsPage} setPage={setTsPage} totalPages={tsTotalPages} from={tsFrom} to={tsTo} total={tsTotal} pageSize={tsPageSize} setPageSize={setTsPageSize} />
           </div>
         </>
       )}

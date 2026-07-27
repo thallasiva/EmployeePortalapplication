@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, Download, Pencil, Plus, Search } from "lucide-react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import AddSalaryModal from "./AddSalaryModal";
 import { listEmployees } from "../../api/employee.api";
 import {
@@ -28,7 +29,6 @@ const SORT_OPTIONS = [
   { value: "joining-desc", label: "Joining Date (Newest)" },
 ];
 
-const ROWS_PER_PAGE_OPTIONS = [10, 25, 50];
 
 const getFullName = (emp) =>
   `${emp.first_name || ""} ${emp.last_name || emp.lasst_name || ""}`.trim();
@@ -56,7 +56,6 @@ const PayRollForm = () => {
 
   const [search, setSearch]               = useState("");
   const [sortBy, setSortBy]               = useState("name-asc");
-  const [rowsPerPage, setRowsPerPage]     = useState(10);
   const [exportOpen, setExportOpen]       = useState(false);
 
   // For "Generate Slip" — pick month/year first
@@ -120,7 +119,7 @@ const PayRollForm = () => {
     return sorted;
   }, [enriched, search, sortBy]);
 
-  const visible = filtered.slice(0, rowsPerPage);
+  const { paged: visible, page: pfPage, setPage: setPfPage, totalPages: pfTotalPages, from: pfFrom, to: pfTo, total: pfTotal, pageSize: pfPageSize, setPageSize: setPfPageSize } = usePagination(filtered);
 
   // ── Save salary structure via API ─────────────────────────────────────────
   const handleSaveSalary = async (employeeId, basic, breakdown) => {
@@ -326,18 +325,8 @@ const PayRollForm = () => {
           )}
         </div>
 
-        <p className="mt-3 text-xs text-gray-400">Showing {visible.length} of {filtered.length} employees</p>
       </div>
-
-      {/* Pagination */}
-      <div className="mt-4 flex justify-end">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Rows per page</span>
-          <select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))} className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-600">
-            {ROWS_PER_PAGE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </div>
-      </div>
+      <Pagination page={pfPage} setPage={setPfPage} totalPages={pfTotalPages} from={pfFrom} to={pfTo} total={pfTotal} pageSize={pfPageSize} setPageSize={setPfPageSize} />
 
       {/* Generate Slip — month/year picker + confirm */}
       {slipEmployee && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Eye, CheckCircle, XCircle, Loader2, RefreshCw, Link, Copy, Send, FileDown } from "lucide-react";
+import { Plus, Eye, CheckCircle, XCircle, Loader2, RefreshCw, Link, Copy, Send, FileDown, UserCheck } from "lucide-react";
 import {
   PageHeader, Card, Btn, Field, Input,
   Table, Modal, SlideOver, SearchBar,
@@ -8,6 +8,7 @@ import {
 import {
   listOffers, createOffer, releaseOffer, respondOffer,
   listCandidates, listJobs, getErrorMessage, downloadOfferDocx,
+  createOnboarding,
 } from "../../../api/recruitment.api";
 import { getJoiningByOffer, resendJoiningInvitation } from "../../../api/joining.api";
 import { successToast, errorToast } from "../../../utils/ToastControllers";
@@ -15,6 +16,7 @@ import { successToast, errorToast } from "../../../utils/ToastControllers";
 const BLANK_OFFER = {
   candidateId: "", jobReqId: "", designation: "",
   dateOfJoining: "", ctcInput: "",
+  variablePct: "", joiningBonus: "",
 };
 
 /**
@@ -42,6 +44,7 @@ function computeFromCTC(ctcMonthly) {
   const sb_m      = basic_m <= 21000 ? 1400 : 0;
   const gross_m   = ctcMonthly - pf_m - sb_m;
   const spl_m     = gross_m - (basic_m + hra_m + tel_m + lta_m);
+  const grat_m    = Math.round(basic_m * 0.0481); // Gratuity = 4.81% of basic
 
   // All values stored as ANNUAL
   return {
@@ -53,7 +56,7 @@ function computeFromCTC(ctcMonthly) {
     grossSalary:        gross_m * 12,
     pfContribution:     pf_m    * 12,
     statutoryBonus:     sb_m    * 12,
-    gratuity:           0,
+    gratuity:           grat_m  * 12,
     esi:                0,
     ctc:                ctcMonthly * 12,
     ctcMonthly,
@@ -108,6 +111,197 @@ function CtcTableRow({ label, monthly, annual, highlight }) {
   );
 }
 
+
+/** Pre-release review panel — shown inside the SlideOver at step='review' */
+function OfferReleaseReview({ form, computed, candidates, checks }) {
+  const ctcAnn    = Number(form.ctcInput) * 12;
+  const varPct    = Number(form.variablePct)  || 0;
+  const varAnn    = Math.round(ctcAnn * varPct / 100);
+  const joinBonus = Number(form.joiningBonus) || 0;
+  const totalCTC  = (computed.ctc || 0) + varAnn + joinBonus;
+  const candName  = (candidates.find(x => String(x.candidate_id) === String(form.candidateId)) || {}).name || '—';
+
+  const fixedRows = computed._components
+    ? computed._components.filter(cp => cp.category === 'Earning' && cp.show_ctc_breakup !== false)
+        .map(cp => ({ label: cp.component_name, ann: cp.annual_amount }))
+    : [
+        { label: 'Basic Salary',                  ann: computed.basic              || 0 },
+        { label: 'HRA',                           ann: computed.hra                || 0 },
+        { label: 'Telephone / Internet Expenses', ann: computed.telephoneAllowance || 0 },
+        { label: 'Leave Travel Allowance',        ann: computed.leaveTravel        || 0 },
+        { label: 'Special Allowance',             ann: computed.specialAllowance   || 0 },
+      ];
+
+  const empRows = computed._components
+    ? computed._components.filter(cp => cp.category === 'Employer Contribution' && cp.show_ctc_breakup !== false)
+        .map(cp => ({ label: cp.component_name, ann: cp.annual_amount }))
+    : [
+        { label: "Company's PF Contribution", ann: computed.pfContribution || 0 },
+        { label: 'Statutory Bonus',            ann: computed.statutoryBonus || 0 },
+        { label: 'Gratuity',                   ann: computed.gratuity       || 0 },
+        { label: 'ESI',                        ann: computed.esi            || 0 },
+      ];
+
+  const failCount = checks.filter(ck => ck.status === 'fail').length;
+  const warnCount = checks.filter(ck => ck.status === 'warn').length;
+
+  return (
+    <div className="space-y-3 pb-2">
+
+      {/* Offer Summary Banner */}
+      <div className="bg-[#1e3a5f] rounded-xl px-4 py-3.5">
+        <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-2.5">Offer Summary</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+          {[
+            ['Candidate',       candName],
+            ['Designation',     form.designation || '—'],
+            ['Date of Joining', form.dateOfJoining || '—'],
+            ['Annual CTC',      ctcAnn > 0 ? 'Rs.' + ctcAnn.toLocaleString('en-IN') : '—'],
+          ].map(([lbl, val]) => (
+            <div key={lbl}>
+              <p className="text-[10px] text-blue-300 uppercase tracking-wider">{lbl}</p>
+              <p className="text-[13px] font-semibold text-white">{val}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Fixed Pay */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 mb-1 pl-1">&#9679; Fixed Pay (Earnings)</p>
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-indigo-700 px-4 py-1.5 grid grid-cols-3">
+            <span className="text-[11px] font-semibold text-white">Component</span>
+            <span className="text-[10px] text-indigo-200 text-right pr-4">Monthly</span>
+            <span className="text-[10px] text-indigo-200 text-right">Annual</span>
+          </div>
+          {fixedRows.map((row, i) => (
+            <div key={i} className="grid grid-cols-3 px-4 py-2 border-b border-gray-50 hover:bg-gray-50">
+              <span className="text-[12px] text-gray-600">{row.label}</span>
+              <span className="text-[12px] text-gray-800 text-right pr-4">{fmtM(row.ann)}</span>
+              <span className="text-[12px] text-gray-800 text-right">{fmt(row.ann)}</span>
+            </div>
+          ))}
+          <div className="grid grid-cols-3 px-4 py-2.5 bg-indigo-50 border-t border-indigo-200">
+            <span className="text-[12px] font-bold text-indigo-900">Gross Salary</span>
+            <span className="text-[12px] font-bold text-indigo-900 text-right pr-4">{fmtM(computed.grossSalary || 0)}</span>
+            <span className="text-[12px] font-bold text-indigo-900 text-right">{fmt(computed.grossSalary || 0)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Employer Contributions */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1 pl-1">&#9679; Employer Contributions</p>
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-emerald-700 px-4 py-1.5 grid grid-cols-3">
+            <span className="text-[11px] font-semibold text-white">Component</span>
+            <span className="text-[10px] text-emerald-200 text-right pr-4">Monthly</span>
+            <span className="text-[10px] text-emerald-200 text-right">Annual</span>
+          </div>
+          {empRows.map((row, i) => (
+            <div key={i} className="grid grid-cols-3 px-4 py-2 border-b border-gray-50 hover:bg-gray-50">
+              <span className="text-[12px] text-gray-600">{row.label}</span>
+              <span className="text-[12px] text-gray-800 text-right pr-4">{fmtM(row.ann)}</span>
+              <span className="text-[12px] text-gray-800 text-right">{fmt(row.ann)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Variable Pay + One-time side by side */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 mb-1 pl-1">&#9679; Variable Pay</p>
+          <div className={`px-3 py-3 rounded-xl border h-[84px] flex flex-col justify-center \${varPct > 0 ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+            {varPct > 0 ? (
+              <>
+                <p className="text-[11px] text-amber-800 font-semibold">{varPct}% of Annual CTC</p>
+                <p className="text-[15px] font-bold text-amber-900 mt-0.5">Rs.{varAnn.toLocaleString('en-IN')}</p>
+                <p className="text-[10px] text-amber-600">per year</p>
+              </>
+            ) : (
+              <p className="text-[12px] text-gray-400">Not applicable (0%)</p>
+            )}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700 mb-1 pl-1">&#9679; One-time Payments</p>
+          <div className={`px-3 py-3 rounded-xl border h-[84px] flex flex-col justify-center \${joinBonus > 0 ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
+            {joinBonus > 0 ? (
+              <>
+                <p className="text-[11px] text-purple-800 font-semibold">Joining Bonus</p>
+                <p className="text-[15px] font-bold text-purple-900 mt-0.5">Rs.{joinBonus.toLocaleString('en-IN')}</p>
+                <p className="text-[10px] text-purple-600">one-time payment</p>
+              </>
+            ) : (
+              <p className="text-[12px] text-gray-400">No joining bonus</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* CTC Summary */}
+      <div className="bg-[#1e3a5f] rounded-xl px-4 py-3">
+        <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-2">CTC Summary</p>
+        <div className="space-y-1">
+          <div className="flex justify-between text-[12px] text-blue-200">
+            <span>Fixed CTC</span>
+            <span className="font-mono">Rs.{(computed.ctc || 0).toLocaleString('en-IN')}</span>
+          </div>
+          {varAnn > 0 && (
+            <div className="flex justify-between text-[12px] text-amber-300">
+              <span>+ Variable Pay</span>
+              <span className="font-mono">Rs.{varAnn.toLocaleString('en-IN')}</span>
+            </div>
+          )}
+          {joinBonus > 0 && (
+            <div className="flex justify-between text-[12px] text-purple-300">
+              <span>+ Joining Bonus (one-time)</span>
+              <span className="font-mono">Rs.{joinBonus.toLocaleString('en-IN')}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-[15px] font-bold text-yellow-300 border-t border-blue-600 pt-2 mt-1">
+            <span>= TOTAL CTC</span>
+            <span className="font-mono">Rs.{totalCTC.toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Validation Checklist */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-600">Validation Checks</p>
+          <div className="flex gap-2.5 text-[11px] font-semibold">
+            <span className="text-emerald-600">{checks.filter(ck => ck.status === 'ok').length} &#10003; Passed</span>
+            {warnCount > 0 && <span className="text-amber-500">{warnCount} &#9888; Warning</span>}
+            {failCount > 0 && <span className="text-red-600">{failCount} &#10007; Failed</span>}
+          </div>
+        </div>
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          {checks.map(ck => (
+            <div key={ck.id}
+              className={`flex items-center justify-between px-3 py-2 border-b border-gray-50 last:border-0 text-[12px] ${ck.status === 'fail' ? 'bg-red-50' : ck.status === 'warn' ? 'bg-amber-50' : ''}`}>
+              <div className="flex items-center gap-2">
+                <span className={ck.status === 'ok' ? 'text-emerald-500 font-bold' : ck.status === 'warn' ? 'text-amber-500 font-bold' : 'text-red-500 font-bold'}>
+                  {ck.status === 'ok' ? '✓' : ck.status === 'warn' ? '⚠' : '✗'}
+                </span>
+                <span className="text-gray-700">{ck.label}</span>
+              </div>
+              {ck.value ? <span className="text-[11px] text-gray-500 font-mono ml-2 shrink-0">{ck.value}</span> : null}
+            </div>
+          ))}
+        </div>
+        {failCount > 0 && (
+          <p className="mt-1.5 text-[11px] text-red-600 font-semibold">
+            &#10007; {failCount} check{failCount > 1 ? 's' : ''} failed — go back and fix before releasing.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function OffersPage({ role }) {
   const [offers, setOffers]         = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -123,6 +317,11 @@ export default function OffersPage({ role }) {
   const [saving, setSaving]         = useState(false);
   const [acting, setActing]         = useState(false);
   const [resending, setResending]   = useState(false);
+  const [step, setStep]             = useState('form'); // 'form' | 'review'
+  const [checks, setChecks]         = useState([]);
+  const [onboardModal, setOnboardModal] = useState(false);
+  const [onboardEffDate, setOnboardEffDate] = useState("");
+  const [onboarding, setOnboarding] = useState(false);
 
   const tableRef = useRef(null);
   const isAdmin   = role === 1;
@@ -153,12 +352,18 @@ export default function OffersPage({ role }) {
     const { name, value } = e.target;
     let next = { ...form, [name]: value };
 
-    // Auto-populate jobReqId + designation when candidate is selected
+    // Auto-populate jobReqId + designation + CTC when candidate is selected
     if (name === "candidateId" && value) {
       const cand = candidates.find(c => String(c.candidate_id) === String(value));
       if (cand) {
-        next.jobReqId     = cand.job_req_id    ? String(cand.job_req_id) : next.jobReqId;
-        next.designation  = cand.job_title     ? cand.job_title          : next.designation;
+        next.jobReqId    = cand.job_req_id ? String(cand.job_req_id) : next.jobReqId;
+        next.designation = cand.job_title  ? cand.job_title          : next.designation;
+        // Auto-populate expected CTC (stored annual → convert to monthly for ctcInput)
+        if (cand.expected_ctc && Number(cand.expected_ctc) > 0) {
+          const monthly = Math.round(Number(cand.expected_ctc) / 12);
+          next.ctcInput = String(monthly);
+          setComputed(computeFromCTC(monthly));
+        }
       }
     }
 
@@ -172,10 +377,45 @@ export default function OffersPage({ role }) {
     setForm(next);
   }
 
+  function buildChecks(f, c) {
+    const ctcAnn    = Number(f.ctcInput) * 12;
+    const varPct    = Number(f.variablePct)  || 0;
+    const varAnn    = Math.round(ctcAnn * varPct / 100);
+    const joinBonus = Number(f.joiningBonus) || 0;
+    const today     = new Date(); today.setHours(0, 0, 0, 0);
+    const doj       = f.dateOfJoining ? new Date(f.dateOfJoining) : null;
+    const isFutureDOJ = doj ? doj >= today : false;
+    const candName  = (candidates.find(x => String(x.candidate_id) === String(f.candidateId)) || {}).name || '';
+    const fmtAnn    = v => Number(v) > 0 ? `Rs.${Number(v).toLocaleString('en-IN')}` : '—';
+    return [
+      { id: 'candidate', group: 'Required Fields',        label: 'Candidate selected',            status: f.candidateId    ? 'ok' : 'fail', value: candName },
+      { id: 'job',       group: 'Required Fields',        label: 'Job position selected',          status: f.jobReqId       ? 'ok' : 'fail', value: '' },
+      { id: 'desig',     group: 'Required Fields',        label: 'Designation filled',             status: f.designation    ? 'ok' : 'fail', value: f.designation },
+      { id: 'doj',       group: 'Required Fields',        label: 'Date of Joining set',            status: f.dateOfJoining  ? 'ok' : 'fail', value: f.dateOfJoining || '' },
+      { id: 'doj_f',     group: 'Required Fields',        label: 'Joining date ≥ today',          status: isFutureDOJ      ? 'ok' : 'warn', value: '' },
+      { id: 'ctc',       group: 'Required Fields',        label: 'Annual CTC > 0',                 status: ctcAnn > 0       ? 'ok' : 'fail', value: ctcAnn > 0 ? `Rs.${ctcAnn.toLocaleString('en-IN')}` : '' },
+      { id: 'basic',     group: 'Fixed Pay',              label: 'Basic Salary computed',           status: (c.basic || 0)   > 0 ? 'ok' : 'fail', value: fmtAnn(c.basic || 0) },
+      { id: 'hra',       group: 'Fixed Pay',              label: 'HRA computed',                    status: (c.hra   || 0)   > 0 ? 'ok' : 'fail', value: fmtAnn(c.hra   || 0) },
+      { id: 'gross',     group: 'Fixed Pay',              label: 'Gross Salary > 0',                status: (c.grossSalary || 0) > 0 ? 'ok' : 'fail', value: fmtAnn(c.grossSalary || 0) },
+      { id: 'gross_lt',  group: 'Fixed Pay',              label: 'Gross < Annual CTC',              status: (c.grossSalary || 0) < ctcAnn ? 'ok' : 'fail', value: '' },
+      { id: 'var',       group: 'Variable Pay',           label: varPct > 0 ? `Variable Pay @ ${varPct}% of CTC` : 'Variable Pay (not set)', status: varPct > 40 ? 'warn' : 'ok', value: varPct > 0 ? fmtAnn(varAnn) : 'Not applicable' },
+      { id: 'pf',        group: 'Employer Contributions', label: 'PF Contribution',                 status: (c.pfContribution || 0) > 0 ? 'ok' : 'warn', value: fmtAnn(c.pfContribution || 0) },
+      { id: 'sb',        group: 'Employer Contributions', label: 'Statutory Bonus',                 status: 'ok', value: (c.statutoryBonus || 0) > 0 ? fmtAnn(c.statutoryBonus) : 'Not applicable (Basic > ₹21,000/mo)' },
+      { id: 'grat',      group: 'Employer Contributions', label: 'Gratuity',                        status: 'ok', value: fmtAnn(c.gratuity       || 0) },
+      { id: 'bonus',     group: 'One-time Payments',      label: 'Joining Bonus',                   status: joinBonus > ctcAnn ? 'warn' : 'ok', value: joinBonus > 0 ? fmtAnn(joinBonus) : 'Not entered' },
+    ];
+  }
+
   async function handleCreate(e) {
     e.preventDefault();
     if (!form.candidateId || !form.jobReqId || !form.designation || !form.ctcInput || !form.dateOfJoining) {
       errorToast("Please fill all required fields including Date of Joining"); return;
+    }
+    if (step === 'form') {
+      if (!computed.ctc) { errorToast("Enter CTC (Monthly) — breakdown not ready yet"); return; }
+      setChecks(buildChecks(form, computed));
+      setStep('review');
+      return;
     }
     setSaving(true);
     try {
@@ -193,13 +433,13 @@ export default function OffersPage({ role }) {
         grossSalary:        c.grossSalary        ?? 0,
         pfContribution:     c.pfContribution     ?? 0,
         statutoryBonus:     c.statutoryBonus     ?? 0,
-        gratuity:           0,
+        gratuity:           c.gratuity          ?? 0,
         esi:                0,
         ctc:                c.ctc                ?? 0,
         ctcInWords:         numToWords(c.ctc     ?? 0),
       });
       successToast("Offer created");
-      setOfferOpen(false); setForm(BLANK_OFFER); setComputed({});
+      setOfferOpen(false); setStep('form'); setForm(BLANK_OFFER); setComputed({}); setChecks([]);
       loadOffers();
     } catch (err) {
       errorToast(getErrorMessage(err, "Failed to create offer"));
@@ -249,6 +489,25 @@ export default function OffersPage({ role }) {
       successToast(`Offer ${response.toLowerCase()}`); setDetail(updated); loadOffers();
     } catch (err) { errorToast(getErrorMessage(err, "Failed to update offer")); }
     finally { setActing(false); }
+  }
+
+  async function handleStartOnboarding() {
+    if (!onboardEffDate) { errorToast("Please select an effective date"); return; }
+    setOnboarding(true);
+    try {
+      await createOnboarding({
+        candidateId:   detail.candidate_id,
+        offerId:       detail.offer_id,
+        effectiveDate: onboardEffDate,
+      });
+      successToast(`Onboarding started for ${detail.candidate_name}`);
+      setOnboardModal(false);
+      setOnboardEffDate("");
+      setDetail(null);
+      loadOffers();
+    } catch (err) {
+      errorToast(getErrorMessage(err, "Failed to start onboarding"));
+    } finally { setOnboarding(false); }
   }
 
   const visible = offers.filter(o => {
@@ -375,16 +634,26 @@ export default function OffersPage({ role }) {
 
       {/* ── Create Offer SlideOver ── */}
       <SlideOver open={offerOpen}
-        onClose={() => { setOfferOpen(false); setForm({ ...BLANK_OFFER }); setComputed({}); }}
-        title="Release Offer Letter" width={580}
+        onClose={() => { setOfferOpen(false); setStep('form'); setForm({ ...BLANK_OFFER }); setComputed({}); setChecks([]); }}
+        title={step === 'form' ? "Release Offer Letter" : "Pre-Release Validation"} width={580}
         footer={
-          <>
-            <Btn variant="secondary" onClick={() => setOfferOpen(false)}>Cancel</Btn>
-            <Btn onClick={handleCreate} disabled={saving}>{saving ? "Saving…" : "Create Offer"}</Btn>
-          </>
+          step === 'form' ? (
+            <>
+              <Btn variant="secondary" onClick={() => setOfferOpen(false)}>Cancel</Btn>
+              <Btn onClick={handleCreate}>Review &amp; Release →</Btn>
+            </>
+          ) : (
+            <>
+              <Btn variant="secondary" onClick={() => setStep('form')}>← Back to Form</Btn>
+              <Btn onClick={handleCreate}
+                disabled={saving || checks.some(ck => ck.status === 'fail')}>
+                {saving ? "Saving…" : checks.some(ck => ck.status === 'fail') ? "Fix issues above" : "✓ Confirm & Create Offer"}
+              </Btn>
+            </>
+          )
         }
       >
-        <form onSubmit={handleCreate}>
+        <form onSubmit={handleCreate} className={step !== 'form' ? 'hidden' : ''}>
           {/* Candidate — auto-populates job + designation */}
           <Field label="Candidate" required>
             <select name="candidateId" value={form.candidateId} onChange={handleChange}
@@ -425,9 +694,50 @@ export default function OffersPage({ role }) {
                 type="number" name="ctcInput" value={form.ctcInput} onChange={handleChange}
                 placeholder="e.g. 38000" min={0}
               />
-              {form.ctcInput && <p className="text-[11px] text-indigo-600 mt-0.5">Annual: Rs. {((Number(form.ctcInput)||0)*12).toLocaleString("en-IN")}</p>}
+              {form.ctcInput && (
+                <p className="text-[11px] text-indigo-600 mt-0.5">
+                  Annual: Rs. {((Number(form.ctcInput)||0)*12).toLocaleString("en-IN")}
+                </p>
+              )}
+              {(() => {
+                const cand = candidates.find(c => String(c.candidate_id) === String(form.candidateId));
+                return cand?.expected_ctc > 0 ? (
+                  <p className="text-[11px] text-amber-600 mt-0.5">
+                    Candidate expected: Rs. {Number(cand.expected_ctc).toLocaleString("en-IN")} / yr
+                    &nbsp;(₹{Math.round(Number(cand.expected_ctc)/12).toLocaleString("en-IN")} /mo)
+                  </p>
+                ) : null;
+              })()}
             </Field>
           </TwoColGrid>
+
+          {/* Variable Pay & Joining Bonus — shown once CTC is entered */}
+          {computed.ctc > 0 && (
+            <TwoColGrid>
+              <Field label="Variable Pay %">
+                <Input
+                  type="number" name="variablePct" value={form.variablePct} onChange={handleChange}
+                  placeholder="e.g. 10" min={0} max={100}
+                />
+                {Number(form.variablePct) > 0 && (
+                  <p className="text-[11px] text-indigo-600 mt-0.5">
+                    Annual: Rs. {Math.round((Number(form.ctcInput)||0)*12*(Number(form.variablePct)||0)/100).toLocaleString("en-IN")}
+                  </p>
+                )}
+              </Field>
+              <Field label="Joining Bonus (Rs.)">
+                <Input
+                  type="number" name="joiningBonus" value={form.joiningBonus} onChange={handleChange}
+                  placeholder="e.g. 50000" min={0}
+                />
+                {Number(form.joiningBonus) > 0 && (
+                  <p className="text-[11px] text-indigo-600 mt-0.5">
+                    One-time: Rs. {(Number(form.joiningBonus)||0).toLocaleString("en-IN")}
+                  </p>
+                )}
+              </Field>
+            </TwoColGrid>
+          )}
 
           {/* CTC Preview Table */}
           {computed.ctc > 0 && (
@@ -446,7 +756,7 @@ export default function OffersPage({ role }) {
                 { label: "Gross Salary",         m: computed.grossSalary,        a: computed.grossSalary, highlight: true },
                 { label: "PF Contribution",      m: computed.pfContribution,     a: computed.pfContribution },
                 { label: "Statutory Bonus",      m: computed.statutoryBonus,     a: computed.statutoryBonus },
-                { label: "Gratuity",             m: 0,                           a: 0 },
+                { label: "Gratuity",             m: computed.gratuity,           a: computed.gratuity },
                 { label: "ESI",                  m: 0,                           a: 0 },
                 { label: "Total CTC",            m: computed.ctc,                a: computed.ctc, highlight: true },
               ].map(row => (
@@ -461,6 +771,16 @@ export default function OffersPage({ role }) {
             </div>
           )}
         </form>
+
+        {/* Pre-Release Validation Review */}
+        {step === 'review' && (
+          <OfferReleaseReview
+            form={form}
+            computed={computed}
+            candidates={candidates}
+            checks={checks}
+          />
+        )}
       </SlideOver>
 
       {/* Detail SlideOver */}
@@ -485,6 +805,12 @@ export default function OffersPage({ role }) {
                   icon={<FileDown size={14} />}
                   onClick={() => downloadOfferDocx(detail.offer_id, `Offer_Letter_${detail.offer_code || detail.offer_id}.docx`)}
                 >Download Word</Btn>
+              )}
+              {detail.status === "Accepted" && isAdmin && (
+                <Btn
+                  icon={<UserCheck size={14} />}
+                  onClick={() => { setOnboardEffDate(detail.date_of_joining?.slice(0,10) || ""); setOnboardModal(true); }}
+                >Start Onboarding</Btn>
               )}
               {detail.status === "Released" && (
                 <>
@@ -576,6 +902,41 @@ export default function OffersPage({ role }) {
           )}
         </SlideOver>
       )}
+
+      {/* ── Start Onboarding Modal ── */}
+      <Modal
+        open={onboardModal}
+        onClose={() => { setOnboardModal(false); setOnboardEffDate(""); }}
+        title="Start Onboarding"
+        width={400}
+        footer={
+          <>
+            <Btn variant="secondary" onClick={() => { setOnboardModal(false); setOnboardEffDate(""); }}>Cancel</Btn>
+            <Btn
+              icon={onboarding ? <Loader2 size={14} className="animate-spin" /> : <UserCheck size={14} />}
+              disabled={onboarding || !onboardEffDate}
+              onClick={handleStartOnboarding}
+            >
+              {onboarding ? "Starting…" : "Confirm"}
+            </Btn>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-[13px] text-gray-600">
+            Starting onboarding for <span className="font-semibold text-gray-900">{detail?.candidate_name}</span>.
+            This will move the candidate to <span className="font-semibold text-amber-700">Joining Formalities</span> status
+            and create an onboarding checklist.
+          </p>
+          <Field label="Effective Date (Date of Joining)" required>
+            <Input
+              type="date"
+              value={onboardEffDate}
+              onChange={e => setOnboardEffDate(e.target.value)}
+            />
+          </Field>
+        </div>
+      </Modal>
     </div>
   );
 }

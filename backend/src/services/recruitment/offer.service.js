@@ -5,7 +5,41 @@ const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
 const joiningSvc = require("../joining.service");
-const { generateOfferLetterPdf } = require("../../utils/offerLetterPdf");
+const { generateOfferLetterPdf }  = require("../../utils/offerLetterPdf");
+const { generateOfferLetterDocx } = require("../../utils/offerLetterDocx");
+const libre = require("libreoffice-convert");
+
+/**
+ * Permanently suppress the Windows ENOTEMPTY crash from libreoffice-convert's
+ * tmp cleanup. The conversion itself succeeds — this only fires during cleanup
+ * after our callback has already resolved. All other uncaught exceptions are
+ * re-thrown normally so Node's default handler can process them.
+ */
+process.on('uncaughtException', (err) => {
+  if (
+    err && err.code === 'ENOTEMPTY' && err.syscall === 'rmdir' &&
+    typeof err.path === 'string' && err.path.includes('libreofficeConvert_')
+  ) {
+    console.info('[offer] Suppressed libreoffice-convert Windows tmp-cleanup error (known bug)');
+    return; // swallow — PDF was already delivered to caller
+  }
+  // Re-throw everything else so the process exits normally on real errors
+  throw err;
+});
+
+function docxToPdf(docxBuffer) {
+  return new Promise((resolve) => {
+    libre.convert(docxBuffer, '.pdf', undefined, (err, result) => {
+      if (err) {
+        console.warn('[offer] LibreOffice convert failed:', err.message, '— falling back to pdfkit');
+        resolve(null);
+      } else {
+        console.info('[offer] LibreOffice PDF ready, size=', result?.length);
+        resolve(result);
+      }
+    });
+  });
+}
 
 class OfferService extends BaseService {
   constructor() {
@@ -49,16 +83,16 @@ class OfferService extends BaseService {
         data.jobReqId,
         data.designation,
         data.dateOfJoining || null,
-        data.basic || 0,
-        data.hra || 0,
-        data.telephoneAllowance || 0,
-        data.leaveTravel || 0,
-        data.specialAllowance || 0,
-        data.grossSalary || 0,
-        data.pfContribution || 0,
-        data.statutoryBonus || 0,
-        data.gratuity || 0,
-        data.esi || 0,
+        data.basic          ?? 0,
+        data.hra            ?? 0,
+        data.telephoneAllowance ?? 0,
+        data.leaveTravel    ?? 0,
+        data.specialAllowance ?? 0,
+        data.grossSalary    ?? 0,
+        data.pfContribution ?? 0,
+        data.statutoryBonus ?? 0,
+        data.gratuity       ?? 0,
+        data.esi            ?? 0,
         data.ctc,
         data.ctcInWords || null,
         createdBy,
@@ -115,8 +149,39 @@ class OfferService extends BaseService {
         Promise.resolve().then(async () => {
           let pdfBuffer = null;
           try {
-            pdfBuffer = await generateOfferLetterPdf({ candidateName, jobTitle, ...ctcData });
-            console.info('[offer] PDF generated, size=', pdfBuffer.length);
+            // Generate filled Word template then convert to PDF
+            const docxBuf = generateOfferLetterDocx({
+              offerCode:          ctcData.offerCode          || '',
+              offerDate:          row.created_at             || new Date(),
+              candidateName,
+              designation:        jobTitle,
+              dateOfJoining:      ctcData.dateOfJoining      || '',
+              ctc:                ctcData.ctc                || 0,
+              ctcInWords:         ctcData.ctcInWords         || '',
+              companyName:        process.env.COMPANY_NAME   || 'NAT IT Services Pvt Ltd',
+              companyEmail:       process.env.COMPANY_EMAIL  || 'hr@natit.in',
+              reportTo:           process.env.COMPANY_NAME   || 'NAT IT Services Pvt Ltd',
+              basic:              ctcData.basic              || 0,
+              hra:                ctcData.hra                || 0,
+              telephoneAllowance: ctcData.telephoneAllowance || 0,
+              leaveTravel:        ctcData.leaveTravel        || 0,
+              specialAllowance:   ctcData.specialAllowance   || 0,
+              grossSalary:        ctcData.grossSalary        || 0,
+              pfContribution:     ctcData.pfContribution     || 0,
+              statutoryBonus:     ctcData.statutoryBonus     || 0,
+              gratuity:           ctcData.gratuity           || 0,
+              esi:                ctcData.esi                || 0,
+            });
+            pdfBuffer = await docxToPdf(docxBuf);
+            // Fallback to pdfkit if LibreOffice unavailable
+            if (!pdfBuffer) {
+              pdfBuffer = await generateOfferLetterPdf({
+                candidateName, jobTitle,
+                hrManagerName: process.env.HR_MANAGER_NAME || '',
+                ...ctcData,
+              });
+            }
+            console.info('[offer] offer letter PDF ready, size=', pdfBuffer?.length);
           } catch (pdfErr) {
             console.error('[offer] PDF generation failed:', pdfErr.message);
           }

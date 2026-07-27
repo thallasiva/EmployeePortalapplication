@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import { Check, X } from "lucide-react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
 import { successToast, errorToast } from "../../utils/ToastControllers";
@@ -36,10 +37,11 @@ function mapRequest(row) {
 const TeamLeaveRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { paged: pagedReqs, page: reqPage, setPage: setReqPage, totalPages: reqTotalPages, from: reqFrom, to: reqTo, total: reqTotal, pageSize: reqPageSize, setPageSize: setReqPageSize } = usePagination(requests);
 
   const loadRequests = () => {
     setLoading(true);
-    return listLeaveRequests({ limit: 200 })
+    return listLeaveRequests({})
       .then((res) => {
         const data = Array.isArray(res) ? res : (res?.data ?? []);
         setRequests(data.map(mapRequest));
@@ -91,7 +93,7 @@ const TeamLeaveRequests = () => {
             No leave requests from your team yet.
           </p>
         ) : (
-          requests.map((r) => (
+          pagedReqs.map((r) => (
             <div
               key={r.id}
               className="admin-dash-card flex flex-wrap items-center justify-between gap-4"
@@ -133,6 +135,7 @@ const TeamLeaveRequests = () => {
           ))
         )}
       </div>
+      <Pagination page={reqPage} setPage={setReqPage} totalPages={reqTotalPages} from={reqFrom} to={reqTo} total={reqTotal} pageSize={reqPageSize} setPageSize={setReqPageSize} />
     </div>
   );
 };

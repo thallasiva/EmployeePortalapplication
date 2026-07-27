@@ -7,6 +7,10 @@ const BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 export const verifyJoiningToken = (token) =>
   axios.get(`${BASE}/joining/verify`, { params: { token } }).then((r) => r.data.data);
 
+/** Load all previously-saved formality fields (for reopen after changes_requested). */
+export const getJoiningForm = (token) =>
+  axios.get(`${BASE}/joining/form`, { params: { token } }).then((r) => r.data.data);
+
 export const saveJoiningFormalities = (payload) =>
   axios.post(`${BASE}/joining/save`, payload).then((r) => r.data.data);
 

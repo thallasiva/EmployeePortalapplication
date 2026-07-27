@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Pagination, { usePagination } from "../../../components/Pagination";
 import { CalendarDays, ChevronDown, Clock } from "lucide-react";
 import { listLeaveTypes } from "../../../api/leaveType.api";
 import {
@@ -135,6 +136,7 @@ export default function LeaveApply() {
     const [historyRequests,  setHistoryRequests]  = useState([]);
     const [loadingList,      setLoadingList]      = useState(false);
     const [cancellingId,     setCancellingId]     = useState(null);
+    const { paged: pagedHistory, page: histPage, setPage: setHistPage, totalPages: histTotalPages, from: histFrom, to: histTo, total: histTotal, pageSize: histPageSize, setPageSize: setHistPageSize } = usePagination(historyRequests);
 
 
     /* ── initial load ─────────────────────────────────────────────────────── */
@@ -506,9 +508,12 @@ export default function LeaveApply() {
                                 <p className="text-[#94a3b8] text-[15px]">No leave history found</p>
                             </div>
                         ) : (
-                            historyRequests.map((row) => (
+                            <>
+                            {pagedHistory.map((row) => (
                                 <RequestCard key={row.leave_request_id} row={row} onCancel={() => {}} />
-                            ))
+                            ))}
+                            <Pagination page={histPage} setPage={setHistPage} totalPages={histTotalPages} from={histFrom} to={histTo} total={histTotal} pageSize={histPageSize} setPageSize={setHistPageSize} />
+                            </>
                         )}
                     </div>
                 )}

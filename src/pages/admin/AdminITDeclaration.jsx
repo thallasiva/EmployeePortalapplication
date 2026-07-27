@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import {
   FileText, CheckCircle2, Lock, ChevronDown, ChevronUp,
   RefreshCw, Download, Users } from
@@ -273,6 +274,7 @@ export default function AdminITDeclaration() {
     }
     return list;
   }, [data.declarations, filter, search]);
+  const { paged: pagedIT, page: itPage, setPage: setItPage, totalPages: itTotalPages, from: itFrom, to: itTo, total: itTotal, pageSize: itPageSize, setPageSize: setItPageSize } = usePagination(visible);
 
   const stats = useMemo(() => {
     const list = data.declarations || [];
@@ -441,9 +443,10 @@ export default function AdminITDeclaration() {
                     </tr>
                   </thead>
                   <tbody>
-                    {visible.map((row) => <EmpRow key={row.employee_id} row={row} onRefresh={load} />)}
+                    {pagedIT.map((row) => <EmpRow key={row.employee_id} row={row} onRefresh={load} />)}
                   </tbody>
                 </table>
+                <Pagination page={itPage} setPage={setItPage} totalPages={itTotalPages} from={itFrom} to={itTo} total={itTotal} pageSize={itPageSize} setPageSize={setItPageSize} />
               </div>
           }
           </div>

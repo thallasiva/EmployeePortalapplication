@@ -1,782 +1,1016 @@
 'use strict';
 
 /**
- * All HRMS email HTML templates.
- * Each function returns { subject, html, text }.
- * Production-safe: all values are escaped before insertion.
+ * HRMS Email Templates — Premium Design
+ * All inline styles — works across all email clients including Outlook.
+ * Logo: set COMPANY_LOGO_PATH in .env (file path or https:// URL).
  */
 
+const fs   = require('fs');
+const path = require('path');
 const { email: emailCfg } = require('../../config/env');
 
-const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+const esc     = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const fmtDT   = (d) => {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}); }
+  catch { return String(d); }
+};
 const fmtINR  = (n) => n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '₹0';
-const co      = () => esc(emailCfg.companyName || 'HRMS');
+const co      = (override) => esc(override || emailCfg.companyName || 'NAT IT Services Pvt Ltd');
 const feUrl   = () => emailCfg.frontendUrl || 'http://localhost:3000';
 
-/* ── Base layout ──────────────────────────────────────────────────────────── */
-function layout({ title, body, color = '#1E3A5F' }) {
-  return `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title>
-<style>
-  body{margin:0;padding:0;background:#f4f6fb;font-family:'Segoe UI',Arial,sans-serif}
-  .wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08)}
-  .hdr{background:${color};padding:28px 36px;color:#fff}
-  .hdr h1{margin:0;font-size:20px;font-weight:700}
-  .hdr p{margin:4px 0 0;font-size:13px;opacity:.85}
-  .bdy{padding:28px 36px;color:#333;line-height:1.65;font-size:14px}
-  .btn{display:inline-block;background:#E07000;color:#fff!important;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:14px;font-weight:700;margin:20px 0}
-  .info-box{background:#f0f4ff;border-left:4px solid ${color};padding:14px 18px;border-radius:4px;margin:16px 0;font-size:13px}
-  .info-row{padding:5px 0;border-bottom:1px solid #e5e7eb}
-  .info-row:last-child{border-bottom:none}
-  .label{font-weight:600;color:#555;display:inline-block;min-width:140px}
-  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
-  .green{background:#dcfce7;color:#166534}.red{background:#fee2e2;color:#991b1b}
-  .blue{background:#dbeafe;color:#1e40af}.orange{background:#fff7ed;color:#9a3412}
-  .ftr{background:#f4f6fb;text-align:center;padding:18px 36px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb}
-</style></head>
-<body><div class="wrap">
-  <div class="hdr"><h1>${esc(title)}</h1><p>${co()} Automated Notification</p></div>
-  <div class="bdy">${body}</div>
-  <div class="ftr">© ${new Date().getFullYear()} ${co()} &nbsp;|&nbsp; This is an automated message — please do not reply.</div>
-</div></body></html>`;
+/* ── Brand colors ─────────────────────────────────────────────────────────── */
+const ORANGE  = '#f18200';
+const NAVY    = '#1e3a5f';
+const CREAM   = '#FFF8F0';
+const CREAM_B = '#FFD9A8';
+
+/* ── Logo loader (cached) ─────────────────────────────────────────────────── */
+// Email clients block base64 data URIs. Serve logo as a URL from the backend.
+// Priority: 1) COMPANY_LOGO_PATH env (if https:// URL) → 2) backend /public/logo.png → 3) no logo
+const DEFAULT_LOGO_PATH = path.resolve(__dirname, '../../../../src/assets/logo.png');
+let _logoCache = null;
+// Reset cache if called after server restart (module is freshly required)
+function resetLogoCache() { _logoCache = null; }
+function getLogoTag() {
+  if (_logoCache !== null) return _logoCache;
+
+  // 1. Explicit URL set in env
+  const envLogo = (emailCfg.logoPath || '').trim();
+  if (/^https?:\/\//i.test(envLogo)) {
+    _logoCache = `<img src="${esc(envLogo)}" alt="${co()}" style="height:48px;max-width:160px;object-fit:contain;display:block">`;
+    return _logoCache;
+  }
+
+  // 2. Serve from backend static route (works on local network)
+  const backendUrl = (emailCfg.backendUrl || 'http://localhost:5000').replace(/\/$/, '');
+  const logoFileExists = fs.existsSync(DEFAULT_LOGO_PATH);
+  if (logoFileExists) {
+    _logoCache = `<img src="${backendUrl}/public/logo.png" alt="${co()}" style="height:48px;max-width:160px;object-fit:contain;display:block">`;
+    return _logoCache;
+  }
+
+  // 3. Fallback — no logo
+  _logoCache = '';
+  return '';
 }
 
+/* ── UI Primitives ────────────────────────────────────────────────────────── */
+
+/** Info table row — orange label + value */
 function infoRow(label, value) {
-  return `<div class="info-row"><span class="label">${esc(label)}:</span> ${esc(value)}</div>`;
+  return `<tr>
+    <td style="padding:9px 16px;font-size:12px;font-weight:700;color:${ORANGE};white-space:nowrap;border-bottom:1px solid #FFE8CC;letter-spacing:0.2px;width:38%;vertical-align:top">${esc(label)} :</td>
+    <td style="padding:9px 16px;font-size:13px;font-weight:500;color:#111827;border-bottom:1px solid #FFE8CC;word-break:break-word;vertical-align:top">${esc(String(value ?? '—'))}</td>
+  </tr>`;
 }
+
+/** Wrap rows in a cream info table */
+function infoTable(rows) {
+  return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${CREAM};border:1px solid ${CREAM_B};border-left:4px solid ${ORANGE};border-radius:8px;overflow:hidden;margin:18px 0">${rows}</table>`;
+}
+
+/** Remarks box */
+function remarksBox(label, text) {
+  const empty = !text || text.trim() === '' || /^-+NA-+$/i.test(text.trim());
+  return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB">
+  <tr><td style="background:#F3F4F6;padding:8px 14px;font-size:11px;font-weight:700;color:#6B7280;letter-spacing:0.5px;text-transform:uppercase;border-bottom:1px solid #E5E7EB">${esc(label)}</td></tr>
+  <tr><td style="padding:12px 14px;font-size:13px;color:${empty ? '#9CA3AF' : '#374151'};font-style:${empty ? 'italic' : 'normal'};white-space:pre-wrap;word-break:break-word">${empty ? 'No remarks provided.' : esc(text)}</td></tr>
+</table>`;
+}
+
+/** Badge helpers */
+function badge(text, color, bg) {
+  return `<span style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;background:${bg};color:${color}">${text}</span>`;
+}
+const badgeGreen = (t) => badge(t, '#15803D', '#DCFCE7');
+const badgeRed   = (t) => badge(t, '#B91C1C', '#FEE2E2');
+const badgeBlue  = (t) => badge(t, '#1E40AF', '#DBEAFE');
+const badgeAmber = (t) => badge(t, '#92400E', '#FEF3C7');
+
+/** CTA button */
+function btn(text, url, bg = ORANGE) {
+  return `<div style="text-align:center;margin:24px 0 8px">
+  <a href="${esc(url)}" style="display:inline-block;padding:13px 36px;background:${bg};border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.3px">${text}</a>
+</div>`;
+}
+
+/** Divider */
+const divider = `<div style="border:none;border-top:1px solid #E5E7EB;margin:20px 0"></div>`;
+
+/* ── Attendance date table ────────────────────────────────────────────────── */
+function attTable(rows) {
+  if (!rows || !rows.length) return '';
+  const trs = rows.map(r => `
+    <tr style="border-bottom:1px solid #E5E7EB">
+      <td style="padding:8px 10px;font-size:12px;color:#374151">${esc(fmtDate(r.date))}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.actualFIT   ? fmtDT(r.actualFIT)   : '—')}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.actualLOT   ? fmtDT(r.actualLOT)   : '—')}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.proposedFIT ? fmtDT(r.proposedFIT) : '—')}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#374151;font-family:monospace;text-align:center">${esc(r.proposedLOT ? fmtDT(r.proposedLOT) : '—')}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#374151">${esc(r.reason || '—')}</td>
+    </tr>`).join('');
+  return `
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;font-size:12px;margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB">
+  <thead>
+    <tr style="background:${ORANGE}">
+      <th style="padding:9px 10px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.3px" rowspan="2">Date</th>
+      <th style="padding:9px 10px;text-align:center;color:#fff;font-size:10px;font-weight:600;border-left:1px solid rgba(255,255,255,0.25)" colspan="2">Actual</th>
+      <th style="padding:9px 10px;text-align:center;color:#fff;font-size:10px;font-weight:600;border-left:1px solid rgba(255,255,255,0.25)" colspan="2">Proposed</th>
+      <th style="padding:9px 10px;text-align:left;color:#fff;font-size:11px;font-weight:700;border-left:1px solid rgba(255,255,255,0.25)" rowspan="2">Reason</th>
+    </tr>
+    <tr style="background:#c96d00">
+      <th style="padding:7px 10px;text-align:center;color:#fff;font-size:10px;border-left:1px solid rgba(255,255,255,0.25)">First IN</th>
+      <th style="padding:7px 10px;text-align:center;color:#fff;font-size:10px;border-left:1px solid rgba(255,255,255,0.15)">Last OUT</th>
+      <th style="padding:7px 10px;text-align:center;color:#fff;font-size:10px;border-left:1px solid rgba(255,255,255,0.25)">First IN</th>
+      <th style="padding:7px 10px;text-align:center;color:#fff;font-size:10px;border-left:1px solid rgba(255,255,255,0.15)">Last OUT</th>
+    </tr>
+  </thead>
+  <tbody>${trs}</tbody>
+</table>`;
+}
+
+/* ── Base layout ─────────────────────────────────────────────────────────── */
+function layout({ title, subtitle, body, accent = ORANGE, companyName = '' }) {
+  const logo = getLogoTag();
+  const addr = [emailCfg.companyAddress, emailCfg.companyPhone, emailCfg.companyEmail]
+    .filter(Boolean).map(esc).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)}</title>
+</head>
+<body style="margin:0;padding:0;background:#EEF2F7;font-family:'Segoe UI',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EEF2F7;padding:28px 16px 40px">
+  <tr><td align="center">
+  <table width="620" cellpadding="0" cellspacing="0" border="0" style="max-width:620px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)">
+
+    <!-- TOP STRIP -->
+    <tr><td style="height:4px;background:linear-gradient(90deg,${accent},${accent}99)"></td></tr>
+
+    <!-- HEADER -->
+    <tr>
+      <td style="background:${accent};padding:22px 28px">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            ${logo ? `<td style="width:64px;vertical-align:middle;padding-right:16px">${logo}</td>` : ''}
+            <td style="vertical-align:middle">
+              <div style="font-size:19px;font-weight:700;color:#ffffff;line-height:1.25;letter-spacing:-0.2px">${esc(title)}</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px">${subtitle ? esc(subtitle) : co(companyName) + ' &mdash; HR Portal Notification'}</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- BODY -->
+    <tr>
+      <td style="padding:28px 32px;color:#374151;font-size:14px;line-height:1.75">
+        ${body}
+      </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+      <td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:18px 32px;text-align:center">
+        <div style="font-size:12px;font-weight:700;color:#64748B;margin-bottom:4px">${co(companyName)}</div>
+        ${addr ? `<div style="font-size:11px;color:#94A3B8;margin-bottom:5px">${addr}</div>` : ''}
+        <div style="font-size:11px;color:#CBD5E1">&copy; ${new Date().getFullYear()} ${co(companyName)} &nbsp;&mdash;&nbsp; This is an automated message &mdash; please <strong style="color:#94A3B8">do not reply</strong>.</div>
+      </td>
+    </tr>
+
+  </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
+/* ── Greeting / Lead paragraph helpers ───────────────────────────────────── */
+const greeting = (name) => `<p style="font-size:15px;font-weight:600;color:#1F2937;margin:0 0 12px">Dear ${esc(name)},</p>`;
+const lead     = (html) => `<p style="color:#4B5563;font-size:14px;margin:0 0 18px;line-height:1.7">${html}</p>`;
+
 
 /* ══════════════════════════════════════════════════════════════════════
-   AUTH TEMPLATES
+   AUTH
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.employeeInvite = ({ name, email, tempPassword, role, department }) => ({
-  subject: `You're invited to join ${co()} HRMS`,
-  html: layout({
-    title: `Welcome to ${co()} HRMS`,
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>You have been added to <strong>${co()}</strong> HRMS. Your account is now ready.</p>
-<div class="info-box">
-  ${infoRow('Email', email)}
+exports.employeeInvite = ({ name, email, tempPassword, role, department, companyName = '' }) => ({
+  subject: `You're invited to join ${co(companyName)}`,
+  html: layout({ companyName,
+    title: `Welcome to ${co(companyName)}`,
+    body: `
+${greeting(name)}
+${lead(`Your employee account has been created on the <strong>${co(companyName)}</strong> HR Portal. You can now log in and manage your profile, leaves, payslips and more.`)}
+${infoTable(`
+  ${infoRow('Email / Username', email)}
   ${infoRow('Temporary Password', tempPassword || '(Set via invitation link)')}
   ${infoRow('Role', role || 'Employee')}
-  ${infoRow('Department', department || '—')}
-</div>
-<p>Please log in and change your password immediately.</p>
-<a href="${feUrl()}/login" class="btn">Login to HRMS</a>
-<p style="font-size:12px;color:#888">If you did not expect this email, contact your HR administrator.</p>`,
+  ${department ? infoRow('Department', department) : ''}
+`)}
+<p style="color:#6B7280;font-size:13px;margin:0 0 20px">Please log in and change your password immediately from your profile settings.</p>
+${btn('Login to HR Portal', `${feUrl()}/login`)}
+<p style="font-size:12px;color:#9CA3AF;margin:12px 0 0;text-align:center">If you were not expecting this email, please contact your HR administrator.</p>`,
   }),
-  text: `Dear ${name}, you have been added to ${co()} HRMS.\nEmail: ${email}\nLogin: ${feUrl()}/login`,
+  text: `Dear ${name}, your ${co(companyName)} account has been created.\nEmail: ${email}\nLogin: ${feUrl()}/login`,
 });
 
-exports.loginAlert = ({ name, ip, device, time }) => ({
-  subject: `New login to your ${co()} account`,
-  html: layout({
+exports.loginAlert = ({ name, ip, device, time, companyName = '' }) => ({
+  subject: `New login to your ${co(companyName)} account`,
+  html: layout({ companyName,
     title: 'New Login Detected',
-    color: '#1565C0',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>A new login was detected on your HRMS account.</p>
-<div class="info-box">
+    body: `
+${greeting(name)}
+${lead('A new login was detected on your HR Portal account. If this was you, no action is needed.')}
+${infoTable(`
   ${infoRow('Time', time || new Date().toLocaleString('en-IN'))}
   ${infoRow('IP Address', ip || 'Unknown')}
-  ${infoRow('Device', device || 'Unknown')}
-</div>
-<p>If this was not you, please <a href="${feUrl()}/change-password">change your password immediately</a> and contact IT support.</p>`,
+  ${infoRow('Device / Browser', device || 'Unknown')}
+`)}
+<p style="color:#B91C1C;font-size:13px;margin:0">If you did <strong>not</strong> log in, please <a href="${feUrl()}/change-password" style="color:${ORANGE}">change your password immediately</a> and contact IT support.</p>`,
   }),
-  text: `New login detected on your ${co()} account. IP: ${ip}, Time: ${time}.`,
+  text: `New login detected on your ${co(companyName)} account. IP: ${ip}, Time: ${time}.`,
 });
 
-exports.accountLocked = ({ name, minutes }) => ({
-  subject: `Your ${co()} account has been locked`,
-  html: layout({
-    title: 'Account Locked',
-    color: '#991B1B',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>Your HRMS account has been <strong>temporarily locked</strong> due to multiple failed login attempts.</p>
-<div class="info-box">
+exports.accountLocked = ({ name, minutes, companyName = '' }) => ({
+  subject: `Your ${co(companyName)} account has been temporarily locked`,
+  html: layout({ companyName,
+    title: 'Account Temporarily Locked',
+    accent: '#DC2626',
+    body: `
+${greeting(name)}
+${lead(`Your HRMS account has been ${badgeRed('Locked')} due to multiple failed login attempts.`)}
+${infoTable(`
   ${infoRow('Locked For', `${minutes || 15} minutes`)}
   ${infoRow('Reason', 'Too many failed login attempts')}
-</div>
-<p>Your account will unlock automatically. If you did not attempt to log in, contact IT support immediately.</p>
-<a href="${feUrl()}/forgot-password" class="btn">Reset Password</a>`,
+`)}
+<p style="font-size:14px;color:#4B5563;margin:0">Your account will unlock automatically after the lockout period. If you did not attempt to log in, contact IT support immediately.</p>
+${btn('Reset Password', `${feUrl()}/forgot-password`, '#DC2626')}`,
   }),
-  text: `Your ${co()} account has been locked for ${minutes || 15} minutes due to failed login attempts.`,
+  text: `Your ${co(companyName)} account is locked for ${minutes || 15} minutes.`,
 });
 
-exports.passwordChanged = ({ name }) => ({
-  subject: `Your ${co()} password was changed`,
-  html: layout({
-    title: 'Password Changed Successfully',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>Your HRMS account password was successfully changed.</p>
-<p>If you did not make this change, please <a href="${feUrl()}/forgot-password">reset your password</a> immediately and contact your IT administrator.</p>`,
+exports.passwordChanged = ({ name, companyName = '' }) => ({
+  subject: `Your ${co(companyName)} password was changed`,
+  html: layout({ companyName,
+    title: 'Password Changed',
+    body: `
+${greeting(name)}
+<p style="font-size:14px;color:#4B5563;margin:0 0 14px">Your HR Portal account password was successfully changed.</p>
+<p style="font-size:13px;color:#B91C1C;margin:0">If you did not make this change, please <a href="${feUrl()}/forgot-password" style="color:${ORANGE}">reset your password</a> immediately and contact IT support.</p>`,
   }),
-  text: `Your ${co()} HRMS password was changed. If this was not you, reset it immediately.`,
+  text: `Your ${co(companyName)} password was changed.`,
 });
 
-exports.forgotPassword = ({ name, resetUrl, expiresIn }) => ({
-  subject: `Reset your ${co()} password`,
-  html: layout({
+exports.forgotPassword = ({ name, resetUrl, expiresIn, companyName = '' }) => ({
+  subject: `Reset your ${co(companyName)} password`,
+  html: layout({ companyName,
     title: 'Password Reset Request',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>We received a request to reset your HRMS password.</p>
-<a href="${esc(resetUrl)}" class="btn">Reset Password</a>
-<p style="font-size:12px;color:#888">This link expires in <strong>${esc(expiresIn || '1 hour')}</strong>. If you did not request a reset, ignore this email.</p>`,
+    body: `
+${greeting(name)}
+${lead('We received a request to reset your HR Portal password. Click the button below to set a new password.')}
+${btn('Reset My Password', esc(resetUrl))}
+<p style="font-size:12px;color:#9CA3AF;text-align:center;margin:0">This link expires in <strong>${esc(expiresIn || '1 hour')}</strong>. If you did not request a reset, you can safely ignore this email.</p>`,
   }),
-  text: `Reset your ${co()} password: ${resetUrl}`,
+  text: `Reset your ${co(companyName)} password: ${resetUrl}`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   EMPLOYEE TEMPLATES
+   EMPLOYEE
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.employeeCreated = ({ name, empCode, role, department, joiningDate }) => ({
-  subject: `Your ${co()} HRMS profile has been created`,
-  html: layout({
-    title: 'Welcome to the Team!',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>Your employee profile has been created in <strong>${co()}</strong> HRMS.</p>
-<div class="info-box">
+exports.employeeCreated = ({ name, empCode, role, department, joiningDate, companyName = '' }) => ({
+  subject: `Your ${co(companyName)} profile has been created`,
+  html: layout({ companyName,
+    title: 'Employee Profile Created',
+    body: `
+${greeting(name)}
+${lead(`Welcome to <strong>${co(companyName)}</strong>! Your employee profile has been created in the HRMS portal.`)}
+${infoTable(`
   ${infoRow('Employee Code', empCode)}
   ${infoRow('Role', role)}
-  ${infoRow('Department', department)}
-  ${infoRow('Joining Date', fmtDate(joiningDate))}
-</div>
-<a href="${feUrl()}/login" class="btn">Access HRMS Portal</a>`,
+  ${department ? infoRow('Department', department) : ''}
+  ${joiningDate ? infoRow('Date of Joining', fmtDate(joiningDate)) : ''}
+`)}
+${btn('Access HR Portal', `${feUrl()}/login`)}`,
   }),
-  text: `Your ${co()} HRMS profile has been created. Emp Code: ${empCode}. Login: ${feUrl()}/login`,
+  text: `Your ${co(companyName)} profile has been created. Emp Code: ${empCode}.`,
 });
 
-exports.employeeDeactivated = ({ name, reason }) => ({
-  subject: `Your ${co()} HRMS account has been deactivated`,
-  html: layout({
+exports.employeeDeactivated = ({ name, reason, companyName = '' }) => ({
+  subject: `Your ${co(companyName)} account has been deactivated`,
+  html: layout({ companyName,
     title: 'Account Deactivated',
-    color: '#7C3AED',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>Your HRMS account has been deactivated.</p>
-${reason ? `<div class="info-box">${infoRow('Reason', reason)}</div>` : ''}
-<p>For queries, contact your HR department.</p>`,
+    accent: '#DC2626',
+    body: `
+${greeting(name)}
+<p style="font-size:14px;color:#4B5563;margin:0 0 16px">Your HR Portal account has been deactivated.</p>
+${reason ? infoTable(infoRow('Reason', reason)) : ''}
+<p style="font-size:14px;color:#4B5563;margin:12px 0 0">For any queries, please contact your HR department.</p>`,
   }),
-  text: `Your ${co()} HRMS account has been deactivated. Contact HR for queries.`,
+  text: `Your ${co(companyName)} account has been deactivated.`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   LEAVE TEMPLATES
+   LEAVE
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.leaveApplied = ({ managerName, employeeName, empCode, leaveType, fromDate, toDate, days, reason, approveUrl, rejectUrl }) => ({
-  subject: `[Action Required] Leave request from ${esc(employeeName)}`,
-  html: layout({
+exports.leaveApplied = ({ managerName, employeeName, empCode, leaveType, fromDate, toDate, days, reason, balance, fromSession, toSession, approveUrl, rejectUrl, companyName = '' }) => ({
+  subject: `[Action Required] Leave request from ${employeeName}`,
+  html: layout({ companyName,
     title: 'Leave Request — Action Required',
-    color: '#0369A1',
-    body: `<p>Dear <strong>${esc(managerName)}</strong>,</p>
-<p><strong>${esc(employeeName)}</strong> has submitted a leave request requiring your approval.</p>
-<div class="info-box">
-  ${infoRow('Employee', `${employeeName} (${empCode})`)}
+    subtitle: `From ${esc(employeeName)}${empCode ? ' · ' + esc(empCode) : ''} · Awaiting Your Approval`,
+    body: `
+${greeting(managerName)}
+${lead(`<strong style="color:#111827">${esc(employeeName)}</strong>${empCode ? ` <span style="color:#9CA3AF">(${esc(empCode)})</span>` : ''} has submitted a leave request that requires your review and approval.`)}
+
+${infoTable(`
+  ${infoRow('Employee', `${employeeName}${empCode ? '  [' + empCode + ']' : ''}`)}
   ${infoRow('Leave Type', leaveType)}
-  ${infoRow('From', fmtDate(fromDate))}
-  ${infoRow('To', fmtDate(toDate))}
-  ${infoRow('Duration', `${days} day(s)`)}
-  ${infoRow('Reason', reason || '—')}
-</div>
-<p>
-  <a href="${esc(approveUrl || feUrl())}" class="btn" style="background:#16a34a;margin-right:10px">✓ Approve</a>
-  <a href="${esc(rejectUrl || feUrl())}" class="btn" style="background:#dc2626">✗ Reject</a>
-</p>
-<p style="font-size:12px;color:#888">Or review directly in <a href="${feUrl()}/manager/leaves">HRMS Leave Dashboard</a>.</p>`,
+  ${infoRow('From Date', fmtDate(fromDate) + (fromSession ? '  (' + fromSession + ')' : ''))}
+  ${infoRow('To Date',   fmtDate(toDate)   + (toSession   ? '  (' + toSession   + ')' : ''))}
+  ${infoRow('Number of Days', String(days))}
+  ${balance != null ? infoRow('Leave Balance', balance + ' day(s)') : ''}
+  ${reason ? infoRow('Reason', reason) : ''}
+`)}
+
+<!-- Action Buttons -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:20px 0 8px">
+  <tr>
+    <td style="text-align:center">
+      <a href="${esc(approveUrl || feUrl() + '/manager/leaves')}" style="display:inline-block;padding:13px 30px;background:#16a34a;border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;margin-right:10px">&#10003;&nbsp; Approve</a>
+      <a href="${esc(rejectUrl  || feUrl() + '/manager/leaves')}" style="display:inline-block;padding:13px 30px;background:#DC2626;border-radius:8px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;margin-left:10px">&#10007;&nbsp; Reject</a>
+    </td>
+  </tr>
+</table>
+<p style="text-align:center;font-size:12px;color:#9CA3AF;margin:0">Or review directly in <a href="${feUrl()}/manager/leaves" style="color:${ORANGE};text-decoration:none;font-weight:600">HRMS Leave Dashboard</a></p>`,
   }),
-  text: `Leave request from ${employeeName} (${empCode}): ${leaveType} from ${fmtDate(fromDate)} to ${fmtDate(toDate)} (${days} days).`,
+  text: `Leave request from ${employeeName} (${empCode}): ${leaveType} from ${fmtDate(fromDate)} to ${fmtDate(toDate)} (${days} days). Reason: ${reason || '—'}.`,
 });
 
-exports.leaveApproved = ({ employeeName, reviewerName, leaveType, fromDate, toDate, days, remarks }) => ({
-  subject: `Your leave request has been approved`,
-  html: layout({
-    title: 'Leave Approved ✓',
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your leave request has been <span class="badge green">Approved</span></p>
-<div class="info-box">
+exports.leaveApproved = ({ employeeName, empCode, leaveType, fromDate, toDate, days, balance, reviewerName, remarks, companyName = '' }) => ({
+  subject: `Your Leave Request Has Been Approved`,
+  html: layout({ companyName,
+    title: 'Leave Approved',
+    subtitle: `${esc(leaveType)} · ${fmtDate(fromDate)} – ${fmtDate(toDate)}`,
+    accent: '#16a34a',
+    body: `
+${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
+${lead(`Your leave request has been ${badgeGreen('✓ Approved')}. Please plan accordingly.`)}
+${infoTable(`
   ${infoRow('Leave Type', leaveType)}
-  ${infoRow('From', fmtDate(fromDate))}
-  ${infoRow('To', fmtDate(toDate))}
-  ${infoRow('Duration', `${days} day(s)`)}
+  ${infoRow('From Date', fmtDate(fromDate))}
+  ${infoRow('To Date', fmtDate(toDate))}
+  ${infoRow('Duration', days + ' day(s)')}
+  ${balance != null ? infoRow('Remaining Balance', balance + ' day(s)') : ''}
   ${infoRow('Approved By', reviewerName)}
-  ${remarks ? infoRow('Remarks', remarks) : ''}
-</div>
-<a href="${feUrl()}/leaves" class="btn">View My Leaves</a>`,
+`)}
+${remarks ? remarksBox('Manager Remarks', remarks) : ''}
+${btn('View My Leaves', `${feUrl()}/leaves`)}`,
   }),
   text: `Your ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}, ${days} days) has been approved by ${reviewerName}.`,
 });
 
-exports.leaveRejected = ({ employeeName, reviewerName, leaveType, fromDate, toDate, days, remarks }) => ({
-  subject: `Your leave request has been declined`,
-  html: layout({
-    title: 'Leave Declined',
-    color: '#DC2626',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your leave request has been <span class="badge red">Declined</span></p>
-<div class="info-box">
+exports.leaveRejected = ({ employeeName, empCode, leaveType, fromDate, toDate, fromSession, toSession, days, reviewerName, remarks, companyName = '' }) => ({
+  subject: `Your Leave Request Has Been Rejected`,
+  html: layout({ companyName,
+    title: 'Leave Request Rejected',
+    subtitle: `${esc(leaveType)} · ${fmtDate(fromDate)} – ${fmtDate(toDate)}`,
+    accent: '#DC2626',
+    body: `
+${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
+${lead(`Your leave application has been ${badgeRed('✗ Rejected')}. Please contact your manager for details.`)}
+${infoTable(`
   ${infoRow('Leave Type', leaveType)}
-  ${infoRow('From', fmtDate(fromDate))}
-  ${infoRow('To', fmtDate(toDate))}
-  ${infoRow('Duration', `${days} day(s)`)}
+  ${infoRow('From Date', fmtDate(fromDate) + (fromSession ? '  (' + fromSession + ')' : ''))}
+  ${infoRow('To Date',   fmtDate(toDate)   + (toSession   ? '  (' + toSession   + ')' : ''))}
+  ${infoRow('Duration', days + ' day(s)')}
   ${infoRow('Reviewed By', reviewerName)}
-  ${remarks ? infoRow('Reason', remarks) : ''}
-</div>
-<a href="${feUrl()}/leaves" class="btn">Apply for Another Leave</a>`,
+`)}
+${remarks ? remarksBox('Manager Remarks', remarks) : ''}
+${btn('Apply for Another Leave', `${feUrl()}/leaves`)}`,
   }),
-  text: `Your ${leaveType} leave request (${fmtDate(fromDate)} – ${fmtDate(toDate)}) has been declined by ${reviewerName}. Reason: ${remarks || 'Not specified'}.`,
+  text: `Your ${leaveType} leave request (${fmtDate(fromDate)} – ${fmtDate(toDate)}) has been rejected by ${reviewerName}. Reason: ${remarks || '—'}.`,
 });
 
-exports.leaveCancelled = ({ managerName, employeeName, leaveType, fromDate, toDate }) => ({
-  subject: `Leave cancelled by ${esc(employeeName)}`,
-  html: layout({
+exports.leaveCancelled = ({ managerName, employeeName, leaveType, fromDate, toDate, companyName = '' }) => ({
+  subject: `Leave Cancelled — ${esc(employeeName)}`,
+  html: layout({ companyName,
     title: 'Leave Cancellation Notice',
-    body: `<p>Dear <strong>${esc(managerName)}</strong>,</p>
-<p><strong>${esc(employeeName)}</strong> has cancelled their leave request.</p>
-<div class="info-box">
+    body: `
+${greeting(managerName)}
+${lead(`<strong>${esc(employeeName)}</strong> has cancelled their leave request. No further action is required.`)}
+${infoTable(`
+  ${infoRow('Employee', employeeName)}
   ${infoRow('Leave Type', leaveType)}
   ${infoRow('From', fmtDate(fromDate))}
   ${infoRow('To', fmtDate(toDate))}
-</div>`,
+`)}`,
   }),
-  text: `${employeeName} has cancelled their ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}).`,
+  text: `${employeeName} cancelled their ${leaveType} leave (${fmtDate(fromDate)} – ${fmtDate(toDate)}).`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   ATTENDANCE TEMPLATES
+   ATTENDANCE
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.missingCheckIn = ({ name, date }) => ({
-  subject: `Reminder: Please check in today — ${esc(date)}`,
-  html: layout({
+exports.missingCheckIn = ({ name, date, companyName = '' }) => ({
+  subject: `Reminder: Check-In Not Recorded — ${esc(date)}`,
+  html: layout({ companyName,
     title: 'Check-In Reminder',
-    color: '#D97706',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>Our records show that you have not checked in today (<strong>${esc(date)}</strong>).</p>
-<p>If you are working today, please mark your attendance in the HRMS portal.</p>
-<a href="${feUrl()}/attendance" class="btn">Mark Attendance</a>`,
+    body: `
+${greeting(name)}
+${lead(`Our records show that your <strong>check-in</strong> for today (<strong>${esc(date)}</strong>) has not been recorded. If you are working today, please mark your attendance immediately.`)}
+${btn('Mark Attendance', `${feUrl()}/attendance`)}`,
   }),
-  text: `Reminder: No check-in recorded for ${name} on ${date}. Please mark attendance.`,
+  text: `Reminder: No check-in recorded for ${name} on ${date}.`,
 });
 
-exports.missingCheckOut = ({ name, date }) => ({
-  subject: `Reminder: Please check out — ${esc(date)}`,
-  html: layout({
+exports.missingCheckOut = ({ name, date, companyName = '' }) => ({
+  subject: `Reminder: Check-Out Not Recorded — ${esc(date)}`,
+  html: layout({ companyName,
     title: 'Check-Out Reminder',
-    color: '#D97706',
-    body: `<p>Dear <strong>${esc(name)}</strong>,</p>
-<p>Your check-out for today (<strong>${esc(date)}</strong>) has not been recorded.</p>
-<p>Please mark your check-out in the HRMS portal.</p>
-<a href="${feUrl()}/attendance" class="btn">Mark Check-Out</a>`,
+    body: `
+${greeting(name)}
+${lead(`Your <strong>check-out</strong> for today (<strong>${esc(date)}</strong>) has not been recorded. Please mark your check-out as soon as possible.`)}
+${btn('Mark Check-Out', `${feUrl()}/attendance`)}`,
   }),
   text: `Reminder: No check-out recorded for ${name} on ${date}.`,
 });
 
-exports.attendanceRegularized = ({ employeeName, date, remarks }) => ({
-  subject: `Your attendance has been regularized`,
-  html: layout({
-    title: 'Attendance Regularized ✓',
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your attendance for <strong>${esc(fmtDate(date))}</strong> has been regularized.</p>
-${remarks ? `<div class="info-box">${infoRow('Remarks', remarks)}</div>` : ''}`,
-  }),
-  text: `Your attendance for ${fmtDate(date)} has been regularized.`,
-});
+exports.attendanceRegularizationRequest = ({ managerName, employeeName, empCode, dates, date, reason, remarks, companyName = '' }) => {
+  const rows = dates || (date ? [{ date, reason }] : []);
+  return {
+    subject: `[Action Required] Attendance Regularization — ${esc(employeeName)}${empCode ? ` [${esc(empCode)}]` : ''}`,
+    html: layout({ companyName,
+      title: 'Attendance Regularization Request',
+      subtitle: `From ${esc(employeeName)}${empCode ? ' [' + esc(empCode) + ']' : ''} · ${rows.length} date(s)`,
+      body: `
+${greeting(managerName)}
+${lead(`<strong>${esc(employeeName)}</strong>${empCode ? ` <span style="color:#9CA3AF">[${esc(empCode)}]</span>` : ''} has applied for attendance regularization for the following date(s). Please log in to the HR Portal to review and take action.`)}
+${attTable(rows)}
+${remarksBox('Employee Remarks', remarks || '')}
+${btn('Review in HR Portal', `${feUrl()}/manager/attendance`)}`,
+    }),
+    text: `${employeeName}${empCode ? ' [' + empCode + ']' : ''} has applied for attendance regularization for ${rows.length} date(s).`,
+  };
+};
 
-exports.attendanceRegularizationRequest = ({ managerName, employeeName, date, reason }) => ({
-  subject: `[Action Required] Attendance regularization from ${esc(employeeName)}`,
-  html: layout({
-    title: 'Attendance Regularization Request',
-    color: '#0369A1',
-    body: `<p>Dear <strong>${esc(managerName)}</strong>,</p>
-<p><strong>${esc(employeeName)}</strong> has requested attendance regularization.</p>
-<div class="info-box">
-  ${infoRow('Date', fmtDate(date))}
-  ${infoRow('Reason', reason || '—')}
-</div>
-<a href="${feUrl()}/manager/attendance" class="btn">Review Request</a>`,
-  }),
-  text: `${employeeName} has requested attendance regularization for ${fmtDate(date)}.`,
-});
+exports.attendanceRegularized = ({ employeeName, empCode, dates, date, remarks, managerRemarks, companyName = '' }) => {
+  const rows = dates || (date ? [{ date }] : []);
+  return {
+    subject: `Attendance Regularization Approved`,
+    html: layout({ companyName,
+      title: 'Attendance Regularization Approved',
+      subtitle: `${rows.length} date(s) approved`,
+      accent: '#16a34a',
+      body: `
+${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
+${lead(`Your attendance regularization request has been ${badgeGreen('✓ Approved')} for the following date(s):`)}
+${attTable(rows)}
+${remarksBox('Manager Remarks', managerRemarks || '')}
+${btn('View Attendance', `${feUrl()}/attendance`)}`,
+    }),
+    text: `Your attendance regularization for ${rows.length} date(s) has been approved.`,
+  };
+};
+
+exports.attendanceRegularizationRejected = ({ employeeName, empCode, dates, date, remarks, managerRemarks, companyName = '' }) => {
+  const rows = dates || (date ? [{ date }] : []);
+  return {
+    subject: `Attendance Regularization Rejected`,
+    html: layout({ companyName,
+      title: 'Attendance Regularization Rejected',
+      subtitle: `${rows.length} date(s) rejected`,
+      accent: '#DC2626',
+      body: `
+${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
+${lead(`Your attendance regularization request has been ${badgeRed('✗ Rejected')} for the following date(s):`)}
+${attTable(rows)}
+${remarksBox('Manager Remarks', managerRemarks || '')}
+${btn('View Attendance', `${feUrl()}/attendance`)}`,
+    }),
+    text: `Your attendance regularization for ${rows.length} date(s) has been rejected.`,
+  };
+};
 
 /* ══════════════════════════════════════════════════════════════════════
-   PAYROLL TEMPLATES
+   PAYROLL
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.payslipReleased = ({ employeeName, empCode, month, year, grossSalary, deductions, netSalary, payslipUrl }) => ({
-  subject: `Your payslip for ${esc(month)} ${esc(String(year))} is ready`,
-  html: layout({
+exports.payslipReleased = ({ employeeName, empCode, month, year, grossSalary, deductions, netSalary, payslipUrl, companyName = '' }) => ({
+  subject: `Your Payslip for ${esc(month)} ${esc(String(year))} is Ready`,
+  html: layout({ companyName,
     title: `Payslip — ${esc(month)} ${esc(String(year))}`,
-    color: '#065F46',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your payslip for <strong>${esc(month)} ${esc(String(year))}</strong> has been generated and is now available.</p>
-<div class="info-box">
-  ${infoRow('Employee Code', empCode)}
+    subtitle: `Pay period: ${esc(month)} ${esc(String(year))}`,
+    accent: '#065F46',
+    body: `
+${greeting(employeeName + (empCode ? ` (${empCode})` : ''))}
+${lead(`Your payslip for <strong>${esc(month)} ${esc(String(year))}</strong> has been generated and is available for download.`)}
+${infoTable(`
+  ${empCode ? infoRow('Employee Code', empCode) : ''}
   ${infoRow('Pay Period', `${month} ${year}`)}
   ${infoRow('Gross Earnings', fmtINR(grossSalary))}
   ${infoRow('Total Deductions', fmtINR(deductions))}
   ${infoRow('Net Pay', fmtINR(netSalary))}
-</div>
-<a href="${esc(payslipUrl || feUrl() + '/payslips')}" class="btn">View & Download Payslip</a>`,
+`)}
+${btn('View &amp; Download Payslip', esc(payslipUrl || `${feUrl()}/payslips`), '#065F46')}`,
   }),
-  text: `Your payslip for ${month} ${year} is ready. Net Pay: ${fmtINR(netSalary)}. Login to download.`,
+  text: `Your payslip for ${month} ${year} is ready. Net Pay: ${fmtINR(netSalary)}.`,
 });
 
-exports.salaryRevised = ({ employeeName, effectiveDate, newCTC, revisedBy }) => ({
-  subject: `Your salary has been revised effective ${esc(fmtDate(effectiveDate))}`,
-  html: layout({
+exports.salaryRevised = ({ employeeName, effectiveDate, newCTC, revisedBy, companyName = '' }) => ({
+  subject: `Salary Revision Notice — Effective ${esc(fmtDate(effectiveDate))}`,
+  html: layout({ companyName,
     title: 'Salary Revision Notice',
-    color: '#065F46',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your salary has been revised. The updated structure will be reflected from <strong>${esc(fmtDate(effectiveDate))}</strong>.</p>
-<div class="info-box">
+    body: `
+${greeting(employeeName)}
+${lead(`Your salary structure has been revised. The updated CTC will be reflected from <strong>${esc(fmtDate(effectiveDate))}</strong>.`)}
+${infoTable(`
   ${infoRow('Effective Date', fmtDate(effectiveDate))}
   ${infoRow('Revised CTC', fmtINR(newCTC))}
   ${infoRow('Revised By', revisedBy || 'HR')}
-</div>
-<a href="${feUrl()}/payslips" class="btn">View Payslips</a>`,
+`)}
+${btn('View Payslips', `${feUrl()}/payslips`, '#065F46')}`,
   }),
   text: `Your salary has been revised effective ${fmtDate(effectiveDate)}. New CTC: ${fmtINR(newCTC)}.`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   RECRUITMENT TEMPLATES
+   RECRUITMENT
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.applicationAcknowledgment = ({ candidateName, jobTitle, applicationCode }) => ({
-  subject: `Application received — ${esc(jobTitle)} at ${co()}`,
-  html: layout({
+exports.applicationAcknowledgment = ({ candidateName, jobTitle, applicationCode, companyName = '' }) => ({
+  subject: `Application Received — ${esc(jobTitle)} at ${co(companyName)}`,
+  html: layout({ companyName,
     title: 'Application Received',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>Thank you for applying for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong>.</p>
-<div class="info-box">
-  ${applicationCode ? infoRow('Application Reference', applicationCode) : ''}
+    subtitle: `${esc(jobTitle)} at ${co(companyName)}`,
+    body: `
+${greeting(candidateName)}
+${lead(`Thank you for applying for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong>. We have received your application.`)}
+${infoTable(`
+  ${applicationCode ? infoRow('Reference No.', applicationCode) : ''}
   ${infoRow('Position', jobTitle)}
-  ${infoRow('Company', co())}
-</div>
-<p>Our recruitment team will review your application and reach out to you soon.</p>`,
+  ${infoRow('Company', co(companyName))}
+`)}
+<p style="color:#6B7280;font-size:13px;margin:0">Our recruitment team will review your application and reach out if your profile matches our requirements. We appreciate your interest.</p>`,
   }),
-  text: `Thank you for applying for ${jobTitle} at ${co()}. We will be in touch.`,
+  text: `Thank you for applying for ${jobTitle} at ${co(companyName)}. We will be in touch.`,
 });
 
-exports.candidateShortlisted = ({ candidateName, jobTitle }) => ({
-  subject: `Great news! You've been shortlisted for ${esc(jobTitle)}`,
-  html: layout({
-    title: 'You Have Been Shortlisted! 🎉',
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>Congratulations! After reviewing your profile, you have been <span class="badge green">Shortlisted</span> for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong>.</p>
-<p>Our recruitment team will reach out shortly to schedule the next steps.</p>
-<p>Thank you for your interest in joining us!</p>`,
+exports.candidateShortlisted = ({ candidateName, jobTitle, companyName = '' }) => ({
+  subject: `Great News! You've Been Shortlisted — ${esc(jobTitle)} at ${co(companyName)}`,
+  html: layout({ companyName,
+    title: 'You Have Been Shortlisted!',
+    subtitle: `${esc(jobTitle)} at ${co(companyName)}`,
+    accent: '#16a34a',
+    body: `
+${greeting(candidateName)}
+${lead(`Congratulations! After reviewing your profile, you have been ${badgeGreen('Shortlisted')} for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong>.`)}
+<p style="font-size:14px;color:#4B5563;margin:0 0 12px">Our recruitment team will reach out to you shortly to schedule the next steps. Please keep your phone and email accessible.</p>
+<p style="color:#6B7280;font-size:13px;margin:0">Thank you for your interest in joining our team!</p>`,
   }),
-  text: `Congratulations ${candidateName}! You have been shortlisted for ${jobTitle} at ${co()}.`,
+  text: `Congratulations ${candidateName}! You have been shortlisted for ${jobTitle} at ${co(companyName)}.`,
 });
 
-exports.candidateRejected = ({ candidateName, jobTitle }) => ({
-  subject: `Update on your application — ${esc(jobTitle)} at ${co()}`,
-  html: layout({
-    title: 'Application Update',
-    color: '#6B7280',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>Thank you for your interest in the <strong>${esc(jobTitle)}</strong> position at <strong>${co()}</strong>.</p>
-<p>After careful consideration, we have decided to move forward with other candidates at this time. We appreciate the time you invested in the application process.</p>
-<p>We encourage you to apply for future openings that match your profile.</p>
-<p>We wish you the very best in your career journey.</p>`,
+exports.candidateRejected = ({ candidateName, jobTitle, companyName = '' }) => ({
+  subject: `Update on Your Application — ${esc(jobTitle)} at ${co(companyName)}`,
+  html: layout({ companyName,
+    title: 'Application Status Update',
+    subtitle: `${esc(jobTitle)} at ${co(companyName)}`,
+    body: `
+${greeting(candidateName)}
+${lead(`Thank you for your interest in the <strong>${esc(jobTitle)}</strong> position at <strong>${co(companyName)}</strong> and for the time you invested in the application process.`)}
+<p style="font-size:14px;color:#4B5563;margin:0 0 12px">After careful review, we have decided to move forward with other candidates whose experience more closely matches our current requirements.</p>
+<p style="font-size:13px;color:#6B7280;margin:0">We will keep your profile on record and encourage you to apply for future openings that align with your skills. We wish you the very best in your career journey.</p>`,
   }),
-  text: `Thank you for applying for ${jobTitle} at ${co()}. We have decided to move forward with other candidates at this time.`,
+  text: `Thank you for applying for ${jobTitle} at ${co(companyName)}. We have moved forward with other candidates.`,
 });
 
-exports.offerLetter = ({ candidateName, jobTitle, ctc, joiningDate, offerUrl }) => ({
-  subject: `Offer Letter — ${esc(jobTitle)} at ${co()}`,
-  html: layout({
-    title: `Offer Letter — ${co()}`,
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>We are thrilled to offer you the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong>.</p>
-<div class="info-box">
+exports.offerLetter = ({ candidateName, jobTitle, ctc, joiningDate, offerUrl, companyName = '' }) => ({
+  subject: `Offer Letter — ${esc(jobTitle)} at ${co(companyName)}`,
+  html: layout({ companyName,
+    title: `Offer of Employment — ${co(companyName)}`,
+    subtitle: `Position: ${esc(jobTitle)}`,
+    body: `
+${greeting(candidateName)}
+${lead(`We are delighted to extend an offer of employment for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong>.`)}
+${infoTable(`
   ${infoRow('Position', jobTitle)}
-  ${joiningDate ? infoRow('Expected Joining Date', fmtDate(joiningDate)) : ''}
-  ${ctc ? infoRow('CTC', fmtINR(ctc)) : ''}
-</div>
-<p>Please review your offer letter and confirm your acceptance.</p>
-<a href="${esc(offerUrl || feUrl())}" class="btn">View & Accept Offer</a>`,
+  ${joiningDate ? infoRow('Expected Date of Joining', fmtDate(joiningDate)) : ''}
+  ${ctc ? infoRow('Cost to Company (CTC)', fmtINR(ctc) + ' per annum') : ''}
+`)}
+<p style="font-size:14px;color:#4B5563;margin:0 0 4px">Please review your offer letter carefully and confirm your acceptance at the earliest.</p>
+${btn('View &amp; Accept Offer', esc(offerUrl || feUrl()))}`,
   }),
-  text: `Congratulations! You have been offered the position of ${jobTitle} at ${co()}.`,
+  text: `Congratulations! You've been offered the position of ${jobTitle} at ${co(companyName)}.`,
 });
 
-exports.offerAccepted = ({ recruiterName, candidateName, jobTitle, joiningDate }) => ({
-  subject: `Offer accepted by ${esc(candidateName)} — ${esc(jobTitle)}`,
-  html: layout({
+exports.offerAccepted = ({ recruiterName, candidateName, jobTitle, joiningDate, companyName = '' }) => ({
+  subject: `Offer Accepted — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({ companyName,
     title: 'Offer Accepted ✓',
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(recruiterName)}</strong>,</p>
-<p><strong>${esc(candidateName)}</strong> has accepted the offer for <strong>${esc(jobTitle)}</strong>.</p>
-<div class="info-box">
+    accent: '#16a34a',
+    body: `
+${greeting(recruiterName)}
+${lead(`<strong>${esc(candidateName)}</strong> has ${badgeGreen('✓ Accepted')} the offer for <strong>${esc(jobTitle)}</strong>.`)}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
   ${joiningDate ? infoRow('Expected Joining', fmtDate(joiningDate)) : ''}
-</div>
-<a href="${feUrl()}/recruitment/candidates" class="btn">View in HRMS</a>`,
+`)}
+${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`,
   }),
   text: `${candidateName} has accepted the offer for ${jobTitle}.`,
 });
 
-exports.offerRejected = ({ recruiterName, candidateName, jobTitle }) => ({
-  subject: `Offer declined by ${esc(candidateName)} — ${esc(jobTitle)}`,
-  html: layout({
+exports.offerRejected = ({ recruiterName, candidateName, jobTitle, companyName = '' }) => ({
+  subject: `Offer Declined — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({ companyName,
     title: 'Offer Declined',
-    color: '#DC2626',
-    body: `<p>Dear <strong>${esc(recruiterName)}</strong>,</p>
-<p><strong>${esc(candidateName)}</strong> has declined the offer for <strong>${esc(jobTitle)}</strong>.</p>
-<a href="${feUrl()}/recruitment/candidates" class="btn">View in HRMS</a>`,
+    accent: '#DC2626',
+    body: `
+${greeting(recruiterName)}
+${lead(`<strong>${esc(candidateName)}</strong> has ${badgeRed('✗ Declined')} the offer for <strong>${esc(jobTitle)}</strong>.`)}
+${infoTable(`
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Position', jobTitle)}
+`)}
+${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`,
   }),
   text: `${candidateName} has declined the offer for ${jobTitle}.`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   RESIGNATION TEMPLATES
+   RESIGNATION
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.resignationSubmitted = ({ managerName, employeeName, empCode, submitDate, endDate, reason }) => ({
-  subject: `[Action Required] Resignation received from ${esc(employeeName)}`,
-  html: layout({
+exports.resignationSubmitted = ({ managerName, employeeName, empCode, submitDate, endDate, reason, companyName = '' }) => ({
+  subject: `[Action Required] Resignation Received — ${esc(employeeName)}`,
+  html: layout({ companyName,
     title: 'Resignation Submitted — Action Required',
-    color: '#9333EA',
-    body: `<p>Dear <strong>${esc(managerName)}</strong>,</p>
-<p><strong>${esc(employeeName)}</strong> has submitted a resignation and requires your review.</p>
-<div class="info-box">
-  ${infoRow('Employee', `${employeeName} (${empCode})`)}
-  ${infoRow('Submission Date', fmtDate(submitDate))}
+    subtitle: `From ${esc(employeeName)}${empCode ? ' [' + esc(empCode) + ']' : ''}`,
+    accent: '#9333EA',
+    body: `
+${greeting(managerName)}
+${lead(`<strong>${esc(employeeName)}</strong>${empCode ? ` <span style="color:#9CA3AF">[${esc(empCode)}]</span>` : ''} has submitted a resignation request that requires your review.`)}
+${infoTable(`
+  ${infoRow('Employee', `${employeeName}${empCode ? ' [' + empCode + ']' : ''}`)}
+  ${infoRow('Submitted On', fmtDate(submitDate))}
   ${infoRow('Requested Last Working Day', fmtDate(endDate))}
   ${reason ? infoRow('Reason', reason) : ''}
-</div>
-<a href="${feUrl()}/manager/resignations" class="btn">Review Resignation</a>`,
+`)}
+${btn('Review Resignation', `${feUrl()}/manager/resignations`, '#9333EA')}`,
   }),
   text: `${employeeName} has submitted a resignation. Last working day requested: ${fmtDate(endDate)}.`,
 });
 
-exports.resignationApproved = ({ employeeName, lastWorkingDay, reviewerName }) => ({
-  subject: `Your resignation has been accepted — Last Working Day: ${esc(fmtDate(lastWorkingDay))}`,
-  html: layout({
+exports.resignationApproved = ({ employeeName, lastWorkingDay, reviewerName, companyName = '' }) => ({
+  subject: `Resignation Accepted — Last Working Day: ${esc(fmtDate(lastWorkingDay))}`,
+  html: layout({ companyName,
     title: 'Resignation Accepted',
-    color: '#9333EA',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your resignation has been <span class="badge blue">Accepted</span>.</p>
-<div class="info-box">
+    body: `
+${greeting(employeeName)}
+${lead(`Your resignation has been ${badgeBlue('Accepted')}.`)}
+${infoTable(`
   ${infoRow('Last Working Day', fmtDate(lastWorkingDay))}
   ${infoRow('Accepted By', reviewerName)}
-</div>
-<p>The HR team will reach out regarding your exit formalities, full & final settlement, and experience letter.</p>`,
+`)}
+<p style="font-size:13px;color:#6B7280;margin:12px 0 0">The HR team will reach out to you regarding exit formalities, full &amp; final settlement, and your experience letter.</p>`,
   }),
   text: `Your resignation has been accepted. Last working day: ${fmtDate(lastWorkingDay)}.`,
 });
 
-exports.resignationRejected = ({ employeeName, reviewerName, remarks }) => ({
-  subject: `Update on your resignation request`,
-  html: layout({
+exports.resignationRejected = ({ employeeName, reviewerName, remarks, companyName = '' }) => ({
+  subject: `Update on Your Resignation Request`,
+  html: layout({ companyName,
     title: 'Resignation Not Accepted',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your resignation request has not been accepted at this time.</p>
-${remarks ? `<div class="info-box">${infoRow('Reason', remarks)}</div>` : ''}
-<p>For further discussion, please reach out to <strong>${esc(reviewerName)}</strong> or your HR team.</p>`,
+    body: `
+${greeting(employeeName)}
+${lead('Your resignation request has not been accepted at this time.')}
+${remarks ? remarksBox('Reason', remarks) : ''}
+<p style="font-size:14px;color:#4B5563;margin:0">For further discussion, please reach out to <strong>${esc(reviewerName)}</strong> or your HR team directly.</p>`,
   }),
   text: `Your resignation request was not accepted. Reason: ${remarks || 'Contact HR for details'}.`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   HELPDESK TEMPLATES
+   HELPDESK
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.ticketCreated = ({ agentName, reporterName, ticketId, subject: ticketSubject, priority, category }) => ({
-  subject: `[#${ticketId}] New helpdesk ticket: ${esc(ticketSubject)}`,
-  html: layout({
+exports.ticketCreated = ({ agentName, reporterName, ticketId, subject: ticketSubject, priority, category, companyName = '' }) => ({
+  subject: `[#${ticketId}] New Helpdesk Ticket: ${esc(ticketSubject)}`,
+  html: layout({ companyName,
     title: `New Ticket #${ticketId}`,
-    color: '#0369A1',
-    body: `<p>Dear <strong>${esc(agentName)}</strong>,</p>
-<p>A new helpdesk ticket has been assigned to you.</p>
-<div class="info-box">
-  ${infoRow('Ticket ID', `#${ticketId}`)}
+    subtitle: esc(ticketSubject),
+    body: `
+${greeting(agentName)}
+${lead('A new helpdesk ticket has been assigned to you and requires attention.')}
+${infoTable(`
+  ${infoRow('Ticket ID', '#' + ticketId)}
   ${infoRow('Subject', ticketSubject)}
   ${infoRow('Raised By', reporterName)}
-  ${infoRow('Category', category || '—')}
+  ${category ? infoRow('Category', category) : ''}
   ${infoRow('Priority', priority || 'Normal')}
-</div>
-<a href="${feUrl()}/helpdesk/${ticketId}" class="btn">View Ticket</a>`,
+`)}
+${btn('View &amp; Respond to Ticket', `${feUrl()}/helpdesk/${ticketId}`)}`,
   }),
-  text: `New ticket #${ticketId}: ${ticketSubject} raised by ${reporterName}.`,
+  text: `New ticket #${ticketId}: "${ticketSubject}" raised by ${reporterName}.`,
 });
 
-exports.ticketResolved = ({ reporterName, ticketId, subject: ticketSubject }) => ({
-  subject: `[#${ticketId}] Your request has been resolved`,
-  html: layout({
-    title: `Ticket #${ticketId} Resolved ✓`,
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(reporterName)}</strong>,</p>
-<p>Your helpdesk request has been <span class="badge green">Resolved</span>.</p>
-<div class="info-box">
-  ${infoRow('Ticket ID', `#${ticketId}`)}
+exports.ticketResolved = ({ reporterName, ticketId, subject: ticketSubject, companyName = '' }) => ({
+  subject: `[#${ticketId}] Your Helpdesk Request Has Been Resolved`,
+  html: layout({ companyName,
+    title: `Ticket #${ticketId} Resolved`,
+    accent: '#16a34a',
+    body: `
+${greeting(reporterName)}
+${lead(`Your helpdesk request has been ${badgeGreen('✓ Resolved')}.`)}
+${infoTable(`
+  ${infoRow('Ticket ID', '#' + ticketId)}
   ${infoRow('Subject', ticketSubject)}
-</div>
-<p>If you have further questions, feel free to raise a new ticket.</p>`,
+`)}
+<p style="color:#6B7280;font-size:13px;margin:0">If you have further questions or the issue persists, please raise a new ticket.</p>`,
   }),
   text: `Your ticket #${ticketId} (${ticketSubject}) has been resolved.`,
 });
 
-exports.ticketUpdated = ({ reporterName, ticketId, subject: ticketSubject, updateMessage }) => ({
-  subject: `[#${ticketId}] Update on your helpdesk request`,
-  html: layout({
+exports.ticketUpdated = ({ reporterName, ticketId, subject: ticketSubject, updateMessage, companyName = '' }) => ({
+  subject: `[#${ticketId}] Update on Your Helpdesk Request`,
+  html: layout({ companyName,
     title: `Ticket #${ticketId} — Update`,
-    body: `<p>Dear <strong>${esc(reporterName)}</strong>,</p>
-<p>There is an update on your helpdesk ticket <strong>#${ticketId}</strong>.</p>
-<div class="info-box">
+    body: `
+${greeting(reporterName)}
+${lead('There is an update on your helpdesk ticket.')}
+${infoTable(`
+  ${infoRow('Ticket ID', '#' + ticketId)}
   ${infoRow('Subject', ticketSubject)}
-  ${updateMessage ? infoRow('Update', updateMessage) : ''}
-</div>
-<a href="${feUrl()}/helpdesk/${ticketId}" class="btn">View Ticket</a>`,
+`)}
+${updateMessage ? remarksBox('Update', updateMessage) : ''}
+${btn('View Ticket', `${feUrl()}/helpdesk/${ticketId}`)}`,
   }),
-  text: `Update on ticket #${ticketId} (${ticketSubject}): ${updateMessage}`,
+  text: `Update on ticket #${ticketId}: ${updateMessage}`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   TIMESHEET TEMPLATES
+   TIMESHEET
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.timesheetSubmitted = ({ managerName, employeeName, weekLabel, totalHours }) => ({
-  subject: `[Action Required] Timesheet submitted by ${esc(employeeName)}`,
-  html: layout({
+exports.timesheetSubmitted = ({ managerName, employeeName, weekLabel, totalHours, companyName = '' }) => ({
+  subject: `[Action Required] Timesheet Submitted — ${esc(employeeName)}`,
+  html: layout({ companyName,
     title: 'Timesheet Submitted — Review Required',
-    color: '#0369A1',
-    body: `<p>Dear <strong>${esc(managerName)}</strong>,</p>
-<p><strong>${esc(employeeName)}</strong> has submitted a timesheet for your approval.</p>
-<div class="info-box">
+    body: `
+${greeting(managerName)}
+${lead(`<strong>${esc(employeeName)}</strong> has submitted a timesheet for your approval.`)}
+${infoTable(`
   ${weekLabel ? infoRow('Week', weekLabel) : ''}
-  ${totalHours ? infoRow('Total Hours', `${totalHours} hrs`) : ''}
-</div>
-<a href="${feUrl()}/manager/timesheets" class="btn">Review Timesheet</a>`,
+  ${totalHours ? infoRow('Total Hours', totalHours + ' hrs') : ''}
+  ${infoRow('Employee', employeeName)}
+`)}
+${btn('Review Timesheet', `${feUrl()}/manager/timesheets`)}`,
   }),
-  text: `${employeeName} has submitted a timesheet for week ${weekLabel} (${totalHours} hrs). Please review.`,
+  text: `${employeeName} has submitted a timesheet for ${weekLabel} (${totalHours} hrs).`,
 });
 
-exports.timesheetApproved = ({ employeeName, weekLabel }) => ({
-  subject: `Your timesheet has been approved`,
-  html: layout({
+exports.timesheetApproved = ({ employeeName, weekLabel, companyName = '' }) => ({
+  subject: `Your Timesheet Has Been Approved`,
+  html: layout({ companyName,
     title: 'Timesheet Approved ✓',
-    color: '#16A34A',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your timesheet ${weekLabel ? `for <strong>${esc(weekLabel)}</strong>` : ''} has been <span class="badge green">Approved</span>.</p>`,
+    accent: '#16a34a',
+    body: `
+${greeting(employeeName)}
+${lead(`Your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''} has been ${badgeGreen('✓ Approved')}.`)}
+${btn('View Timesheets', `${feUrl()}/tasks`)}`,
   }),
   text: `Your timesheet for ${weekLabel} has been approved.`,
 });
 
-exports.timesheetRejected = ({ employeeName, weekLabel, remarks }) => ({
-  subject: `Your timesheet requires revision`,
-  html: layout({
+exports.timesheetRejected = ({ employeeName, weekLabel, remarks, companyName = '' }) => ({
+  subject: `Your Timesheet Requires Revision`,
+  html: layout({ companyName,
     title: 'Timesheet Needs Revision',
-    color: '#DC2626',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your timesheet ${weekLabel ? `for <strong>${esc(weekLabel)}</strong>` : ''} has been <span class="badge red">Returned for Revision</span>.</p>
-${remarks ? `<div class="info-box">${infoRow('Remarks', remarks)}</div>` : ''}
-<a href="${feUrl()}/tasks" class="btn">Update Timesheet</a>`,
+    accent: '#DC2626',
+    body: `
+${greeting(employeeName)}
+${lead(`Your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''} has been ${badgeRed('Returned for Revision')}.`)}
+${remarks ? remarksBox('Manager Remarks', remarks) : ''}
+${btn('Update Timesheet', `${feUrl()}/tasks`)}`,
   }),
   text: `Your timesheet for ${weekLabel} has been returned for revision. Remarks: ${remarks}`,
 });
 
-exports.timesheetReminder = ({ employeeName, weekLabel }) => ({
-  subject: `Reminder: Please submit your timesheet`,
-  html: layout({
+exports.timesheetReminder = ({ employeeName, weekLabel, companyName = '' }) => ({
+  subject: `Reminder: Please Submit Your Timesheet`,
+  html: layout({ companyName,
     title: 'Timesheet Submission Reminder',
-    color: '#D97706',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>This is a reminder to submit your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''}.</p>
-<a href="${feUrl()}/tasks" class="btn">Submit Timesheet</a>`,
+    body: `
+${greeting(employeeName)}
+${lead(`This is a friendly reminder to submit your timesheet${weekLabel ? ` for <strong>${esc(weekLabel)}</strong>` : ''} at the earliest.`)}
+${btn('Submit Timesheet', `${feUrl()}/tasks`)}`,
   }),
   text: `Reminder: Please submit your timesheet for ${weekLabel}.`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   DOCUMENT EXPIRY TEMPLATES
+   DOCUMENT EXPIRY
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.documentExpiry = ({ employeeName, documentType, expiryDate, daysLeft }) => ({
-  subject: `${daysLeft <= 7 ? 'URGENT: ' : ''}Your ${esc(documentType)} expires in ${daysLeft} day(s)`,
-  html: layout({
-    title: daysLeft <= 7 ? '⚠️ Document Expiring Soon — Urgent' : 'Document Expiry Reminder',
-    color: daysLeft <= 7 ? '#DC2626' : '#D97706',
-    body: `<p>Dear <strong>${esc(employeeName)}</strong>,</p>
-<p>Your <strong>${esc(documentType)}</strong> is expiring soon. Please renew it before the expiry date.</p>
-<div class="info-box">
+exports.documentExpiry = ({ employeeName, documentType, expiryDate, daysLeft, companyName = '' }) => ({
+  subject: `${daysLeft <= 7 ? 'URGENT: ' : ''}${esc(documentType)} Expires in ${daysLeft} Day(s)`,
+  html: layout({ companyName,
+    title: daysLeft <= 7 ? '⚠ Document Expiring Soon — Urgent' : 'Document Expiry Reminder',
+    accent: daysLeft <= 7 ? '#DC2626' : ORANGE,
+    body: `
+${greeting(employeeName)}
+${lead(`Your <strong>${esc(documentType)}</strong> is expiring soon. Please renew it before the expiry date to avoid any compliance issues.`)}
+${infoTable(`
   ${infoRow('Document Type', documentType)}
   ${infoRow('Expiry Date', fmtDate(expiryDate))}
-  ${infoRow('Days Remaining', `${daysLeft} day(s)`)}
-</div>
-<p>Please upload the renewed document in HRMS as soon as possible.</p>
-<a href="${feUrl()}/documents" class="btn">Upload Document</a>`,
+  ${infoRow('Days Remaining', daysLeft + ' day(s)')}
+`)}
+${btn('Upload Renewed Document', `${feUrl()}/documents`)}`,
   }),
-  text: `${documentType} expires on ${fmtDate(expiryDate)} (${daysLeft} days left). Please renew and upload.`,
+  text: `${documentType} expires on ${fmtDate(expiryDate)} (${daysLeft} days left). Please renew.`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   ADMIN ALERT TEMPLATE
+   ADMIN ALERT
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.emailDeliveryFailed = ({ to, template, error, attempts }) => ({
-  subject: `[HRMS Alert] Email delivery failed — ${esc(template)}`,
-  html: layout({
+exports.emailDeliveryFailed = ({ to, template, error, attempts, companyName = '' }) => ({
+  subject: `[HRMS Alert] Email Delivery Failed — ${esc(template)}`,
+  html: layout({ companyName,
     title: 'Email Delivery Failed',
-    color: '#991B1B',
-    body: `<p>An email could not be delivered after all retry attempts.</p>
-<div class="info-box">
+    accent: '#DC2626',
+    body: `
+<p style="font-size:14px;color:#374151;margin:0 0 16px">An email could not be delivered after all retry attempts.</p>
+${infoTable(`
   ${infoRow('Recipient', to)}
   ${infoRow('Template', template)}
   ${infoRow('Error', error)}
   ${infoRow('Attempts Made', String(attempts))}
   ${infoRow('Time', new Date().toLocaleString('en-IN'))}
-</div>
-<p>Please check SMTP configuration and retry manually if required.</p>`,
+`)}
+<p style="font-size:13px;color:#6B7280;margin:0">Please check SMTP configuration and retry manually if required.</p>`,
   }),
   text: `Email delivery failed. Recipient: ${to}, Template: ${template}, Error: ${error}`,
 });
 
 /* ══════════════════════════════════════════════════════════════════════
-   RECRUITER ASSIGNMENT TEMPLATE
+   RECRUITER / TL TEMPLATES
 ══════════════════════════════════════════════════════════════════════ */
 
-exports.recruiterAssigned = ({ recruiterName, jobTitle, jobCode, client, vacancies, skillSet, loginUrl }) => ({
-  subject: `[${co()}] New Job Assigned to You — ${esc(jobTitle)}`,
-  html: layout({
+exports.recruiterAssigned = ({ recruiterName, jobTitle, jobCode, client, vacancies, skillSet, loginUrl, companyName = '' }) => ({
+  subject: `[${co(companyName)}] New Job Assigned — ${esc(jobTitle)}`,
+  html: layout({ companyName,
     title: 'New Job Assignment',
-    color: '#1E3A5F',
-    body: `<p>Hi <strong>${esc(recruiterName)}</strong>,</p>
-<p>A new job has been assigned to you by HR. Please review the details and start sourcing candidates.</p>
-<div class="info-box">
+    subtitle: esc(jobTitle),
+    body: `
+${greeting(`Hi ${recruiterName}`)}
+${lead('A new job has been assigned to you by HR. Please review the details below and begin sourcing candidates.')}
+${infoTable(`
   ${infoRow('Job Title', jobTitle)}
-  ${infoRow('Job Code', jobCode || '-')}
-  ${infoRow('Client / Department', client || '-')}
+  ${jobCode ? infoRow('Job Code', jobCode) : ''}
+  ${client ? infoRow('Client / Department', client) : ''}
   ${infoRow('Vacancies', String(vacancies || 1))}
-  ${infoRow('Skills Required', skillSet || '-')}
-</div>
-<p>Login to the HRMS portal to view the full job description and begin uploading candidates.</p>
-<a href="${esc(loginUrl || feUrl() + '/recruitment')}" class="btn">View Job &amp; Upload Candidates</a>
-<p style="color:#888;font-size:12px">If you have any questions, contact your HR manager directly.</p>`,
+  ${skillSet ? infoRow('Skills Required', skillSet) : ''}
+`)}
+${btn('View Job &amp; Upload Candidates', esc(loginUrl || `${feUrl()}/recruitment`))}`,
   }),
-  text: `Hi ${recruiterName}, a new job "${jobTitle}" has been assigned to you. Vacancies: ${vacancies || 1}. Skills: ${skillSet || '-'}. Login to view details.`,
+  text: `Hi ${recruiterName}, job "${jobTitle}" assigned. Vacancies: ${vacancies || 1}. Skills: ${skillSet || '—'}.`,
 });
 
-/* ── Recruiter Manager (Team Lead) Templates ─────────────────────────── */
-
-exports.tlJobAssigned = ({ tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet }) => ({
-  subject: `[${co()}] Team Update — ${esc(recruiterName)} assigned to ${esc(jobTitle)}`,
-  html: layout({
-    title: 'Team Job Assignment',
-    color: '#1E3A5F',
-    body: `<p>Hi <strong>${esc(tlName)}</strong>,</p>
-<p>A new job has been assigned to your team member <strong>${esc(recruiterName)}</strong>. Here are the details:</p>
-<div class="info-box">
+exports.tlJobAssigned = ({ tlName, recruiterName, jobTitle, jobCode, client, vacancies, skillSet, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Team Update — ${esc(recruiterName)} Assigned to ${esc(jobTitle)}`,
+  html: layout({ companyName,
+    title: 'Team Job Assignment Update',
+    body: `
+${greeting(`Hi ${tlName}`)}
+${lead(`A new job has been assigned to your team member <strong>${esc(recruiterName)}</strong>.`)}
+${infoTable(`
   ${infoRow('Job Title', jobTitle)}
-  ${infoRow('Job Code', jobCode || '-')}
-  ${infoRow('Client / Department', client || '-')}
+  ${jobCode ? infoRow('Job Code', jobCode) : ''}
+  ${client ? infoRow('Client / Department', client) : ''}
   ${infoRow('Vacancies', String(vacancies || 1))}
-  ${infoRow('Skills Required', skillSet || '-')}
+  ${skillSet ? infoRow('Skills Required', skillSet) : ''}
   ${infoRow('Assigned To', recruiterName)}
-</div>
-<a href="${esc(feUrl() + '/recruitment')}" class="btn">View in HRMS</a>`,
+`)}
+${btn('View in HRMS', `${feUrl()}/recruitment`)}`,
   }),
-  text: `Hi ${tlName}, job "${jobTitle}" has been assigned to your team member ${recruiterName}. Vacancies: ${vacancies || 1}.`,
+  text: `Hi ${tlName}, job "${jobTitle}" assigned to ${recruiterName}. Vacancies: ${vacancies || 1}.`,
 });
 
-exports.tlCandidateUpdate = ({ tlName, recruiterName, candidateName, jobTitle, status }) => ({
-  subject: `[${co()}] Candidate ${esc(status)} — ${esc(candidateName)} for ${esc(jobTitle)}`,
-  html: layout({
+exports.tlCandidateUpdate = ({ tlName, recruiterName, candidateName, jobTitle, status, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Candidate ${esc(status)} — ${esc(candidateName)}`,
+  html: layout({ companyName,
     title: `Candidate ${esc(status)}`,
-    color: status === 'Shortlisted' ? '#16a34a' : '#dc2626',
-    body: `<p>Hi <strong>${esc(tlName)}</strong>,</p>
-<p>Your team member <strong>${esc(recruiterName)}</strong> has updated a candidate status:</p>
-<div class="info-box">
+    body: `
+${greeting(`Hi ${tlName}`)}
+${lead(`Your team member <strong>${esc(recruiterName)}</strong> has updated a candidate status.`)}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Job Title', jobTitle)}
   ${infoRow('New Status', status)}
   ${infoRow('Updated By', recruiterName)}
-</div>
-<a href="${esc(feUrl() + '/recruitment')}" class="btn">View Candidate</a>`,
+`)}
+${btn('View Candidate', `${feUrl()}/recruitment`)}`,
   }),
   text: `Hi ${tlName}, ${recruiterName} marked ${candidateName} as ${status} for ${jobTitle}.`,
 });
 
+exports.tlOfferUpdate = ({ tlName, candidateName, jobTitle, event, ctc, dateOfJoining, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Offer ${esc(event)} — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({ companyName,
+    title: `Offer ${esc(event)}`,
+    body: `
+${greeting(`Hi ${tlName}`)}
+${lead(`An offer for a candidate sourced by your team has been <strong>${esc(event)}</strong>.`)}
+${infoTable(`
+  ${infoRow('Candidate', candidateName)}
+  ${infoRow('Job Title', jobTitle)}
+  ${infoRow('Offer Status', event)}
+  ${ctc ? infoRow('CTC', 'INR ' + Number(ctc).toLocaleString('en-IN')) : ''}
+  ${dateOfJoining ? infoRow('Date of Joining', fmtDate(dateOfJoining)) : ''}
+`)}
+${btn('View Offer', `${feUrl()}/recruitment`)}`,
+  }),
+  text: `Hi ${tlName}, offer for ${candidateName} (${jobTitle}) has been ${event}.`,
+});
+
 /* ══════════════════════════════════════════════════════════════════════
-   RECRUITMENT FLOW NOTIFICATION TEMPLATES (Steps 2 – 10)
+   RECRUITMENT FLOW (Steps 2–10)
 ══════════════════════════════════════════════════════════════════════ */
 
-/** Step 2 — HR Manager: new candidate submitted by recruiter */
-exports.candidateSubmittedToHR = ({ hrName, recruiterName, candidateName, jobTitle, candidateCode }) => ({
-  subject: `[${co()}] New Candidate Submitted for Review — ${esc(jobTitle)}`,
-  html: layout({
+exports.candidateSubmittedToHR = ({ hrName, recruiterName, candidateName, jobTitle, candidateCode, companyName = '' }) => ({
+  subject: `[${co(companyName)}] New Candidate for Review — ${esc(jobTitle)}`,
+  html: layout({ companyName,
     title: 'New Candidate Submitted for Review',
-    color: '#1E3A5F',
-    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
-<p>Your recruiter <strong>${esc(recruiterName)}</strong> has submitted a new candidate for the following position:</p>
-<div class="info-box">
+    body: `
+${greeting(`Hi ${hrName}`)}
+${lead(`<strong>${esc(recruiterName)}</strong> has submitted a new candidate for review.`)}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${candidateCode ? infoRow('Reference', candidateCode) : ''}
   ${infoRow('Position', jobTitle)}
   ${infoRow('Submitted By', recruiterName)}
-</div>
-<p>Please review the candidate profile and take appropriate action.</p>
-<a href="${feUrl()}/recruitment/candidates" class="btn">Review Candidate</a>`,
+`)}
+${btn('Review Candidate', `${feUrl()}/recruitment/candidates`)}`,
   }),
-  text: `Hi ${hrName}, ${recruiterName} submitted ${candidateName} for ${jobTitle}. Please review.`,
+  text: `Hi ${hrName}, ${recruiterName} submitted ${candidateName} for ${jobTitle}.`,
 });
 
-/** Steps 3 & 6 — Recruiter: candidate status changed by HR */
-exports.candidateStatusToRecruiter = ({ recruiterName, candidateName, jobTitle, status }) => ({
-  subject: `[${co()}] Candidate Status Updated — ${esc(candidateName)}`,
-  html: layout({
+exports.candidateStatusToRecruiter = ({ recruiterName, candidateName, jobTitle, status, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Candidate Status Updated — ${esc(candidateName)}`,
+  html: layout({ companyName,
     title: 'Candidate Status Updated',
-    color: '#1E3A5F',
-    body: `<p>Hi <strong>${esc(recruiterName)}</strong>,</p>
-<p>The status of your candidate has been updated by HR.</p>
-<div class="info-box">
+    body: `
+${greeting(`Hi ${recruiterName}`)}
+${lead('The status of your candidate has been updated by HR.')}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
   ${infoRow('New Status', status)}
-</div>
-<a href="${feUrl()}/recruitment/candidates" class="btn">View Candidate</a>`,
+`)}
+${btn('View Candidate', `${feUrl()}/recruitment/candidates`)}`,
   }),
-  text: `Hi ${recruiterName}, ${candidateName}'s status was updated to "${status}" for ${jobTitle}.`,
+  text: `${candidateName} status updated to "${status}" for ${jobTitle}.`,
 });
 
-/** Steps 4 & 7 — Candidate: interview scheduled */
-exports.interviewScheduledCandidate = ({ candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer }) => ({
-  subject: `Interview Scheduled — ${esc(jobTitle)} at ${co()}`,
-  html: layout({
+exports.interviewScheduledCandidate = ({ candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, companyName = '' }) => ({
+  subject: `Interview Scheduled — ${esc(jobTitle)} at ${co(companyName)}`,
+  html: layout({ companyName,
     title: 'Your Interview Has Been Scheduled',
-    color: '#1E3A5F',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>Your interview for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong> has been scheduled.</p>
-<div class="info-box">
+    subtitle: `${esc(jobTitle)} at ${co(companyName)}`,
+    body: `
+${greeting(candidateName)}
+${lead(`Your interview for the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong> has been scheduled. Please ensure you are available at the scheduled time.`)}
+${infoTable(`
   ${infoRow('Position', jobTitle)}
-  ${level ? infoRow('Round', level) : ''}
+  ${level ? infoRow('Interview Round', level) : ''}
   ${infoRow('Date', interviewDate ? fmtDate(interviewDate) : '—')}
   ${interviewTime ? infoRow('Time', interviewTime) : ''}
   ${interviewType ? infoRow('Mode', interviewType) : ''}
   ${interviewer ? infoRow('Interviewer', interviewer) : ''}
-</div>
-<p>Please ensure you are available at the scheduled time. Best of luck!</p>`,
+`)}
+<p style="color:#6B7280;font-size:13px;margin:0">Best of luck! Please be on time and carry relevant documents.</p>`,
   }),
-  text: `Dear ${candidateName}, your interview for ${jobTitle} at ${co()} is on ${interviewDate ? fmtDate(interviewDate) : '—'}${interviewTime ? ' at ' + interviewTime : ''}. Interviewer: ${interviewer || '—'}.`,
+  text: `Dear ${candidateName}, your interview for ${jobTitle} is on ${fmtDate(interviewDate)}${interviewTime ? ' at ' + interviewTime : ''}.`,
 });
 
-/** Steps 4 & 7 — HR Manager: interview scheduled notification */
-exports.interviewScheduledHR = ({ hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName }) => ({
-  subject: `[${co()}] Interview Scheduled — ${esc(candidateName)} for ${esc(jobTitle)}`,
-  html: layout({
+exports.interviewScheduledHR = ({ hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Interview Scheduled — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({ companyName,
     title: 'Interview Scheduled',
-    color: '#1E3A5F',
-    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
-<p>An interview has been scheduled for a candidate on your team's pipeline.</p>
-<div class="info-box">
+    body: `
+${greeting(`Hi ${hrName}`)}
+${lead('An interview has been scheduled for a candidate in your pipeline.')}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
   ${level ? infoRow('Round', level) : ''}
@@ -785,262 +1019,212 @@ exports.interviewScheduledHR = ({ hrName, candidateName, jobTitle, level, interv
   ${interviewType ? infoRow('Mode', interviewType) : ''}
   ${interviewer ? infoRow('Interviewer', interviewer) : ''}
   ${scheduledByName ? infoRow('Scheduled By', scheduledByName) : ''}
-</div>
-<a href="${feUrl()}/recruitment/interviews" class="btn">View Interview</a>`,
+`)}
+${btn('View Interview', `${feUrl()}/recruitment/interviews`)}`,
   }),
-  text: `Hi ${hrName}, interview for ${candidateName} (${jobTitle}) on ${interviewDate ? fmtDate(interviewDate) : '—'}${interviewTime ? ' at ' + interviewTime : ''}.`,
+  text: `Interview for ${candidateName} (${jobTitle}) on ${fmtDate(interviewDate)}.`,
 });
 
-/** Step 5 — HR Manager: interview feedback submitted */
-exports.interviewFeedbackToHR = ({ hrName, candidateName, jobTitle, level, feedbackStatus, feedbackComments, interviewerName }) => ({
-  subject: `[${co()}] Interview Feedback Received — ${esc(candidateName)}`,
-  html: layout({
+exports.interviewFeedbackToHR = ({ hrName, candidateName, jobTitle, level, interviewerName, feedbackStatus, feedbackComments, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Interview Feedback Received — ${esc(candidateName)}`,
+  html: layout({ companyName,
     title: 'Interview Feedback Submitted',
-    color: '#1E3A5F',
-    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
-<p>Interview feedback has been submitted for a candidate in your pipeline.</p>
-<div class="info-box">
+    body: `
+${greeting(`Hi ${hrName}`)}
+${lead('Interview feedback has been submitted for a candidate.')}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
   ${level ? infoRow('Round', level) : ''}
   ${interviewerName ? infoRow('Interviewer', interviewerName) : ''}
   ${feedbackStatus ? infoRow('Outcome', feedbackStatus) : ''}
-  ${feedbackComments ? infoRow('Comments', feedbackComments) : ''}
-</div>
-<a href="${feUrl()}/recruitment/interviews" class="btn">View Details</a>`,
+`)}
+${feedbackComments ? remarksBox('Comments', feedbackComments) : ''}
+${btn('View Details', `${feUrl()}/recruitment/interviews`)}`,
   }),
-  text: `Hi ${hrName}, feedback received for ${candidateName} (${jobTitle}). Outcome: ${feedbackStatus || '—'}.`,
+  text: `Feedback received for ${candidateName} (${jobTitle}). Outcome: ${feedbackStatus || '—'}.`,
 });
 
-/** Step 8 — Admin: candidate marked Selected */
-exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) => ({
-  subject: `[${co()}] Candidate Selected — ${esc(candidateName)} for ${esc(jobTitle)}`,
-  html: layout({
-    title: 'Candidate Selected — Offer Pending',
-    color: '#16A34A',
-    body: `<p>Hi Admin,</p>
-<p>A candidate has been marked as <span class="badge green">Selected</span> and is ready for an offer letter.</p>
-<div class="info-box">
+exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Candidate Selected — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({ companyName,
+    title: 'Candidate Selected — Offer Required',
+    accent: '#16a34a',
+    body: `
+${greeting('Hi Admin')}
+${lead(`A candidate has been marked as ${badgeGreen('Selected')} and is ready for an offer letter.`)}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
   ${recruiterName ? infoRow('Sourced By', recruiterName) : ''}
-  ${infoRow('Next Step', 'Please prepare and release an offer letter')}
-</div>
-<a href="${feUrl()}/recruitment/offers" class="btn">Create Offer</a>`,
+  ${infoRow('Next Step', 'Prepare and release the offer letter')}
+`)}
+${btn('Create Offer', `${feUrl()}/recruitment/offers`)}`,
   }),
-  text: `${candidateName} has been selected for ${jobTitle} (sourced by ${recruiterName || '—'}). Please release an offer.`,
+  text: `${candidateName} selected for ${jobTitle}. Please release an offer.`,
 });
 
-/** Step 9 — HR Manager: offer released */
-exports.offerReleasedToHR = ({ hrName, candidateName, jobTitle, ctc, dateOfJoining }) => ({
-  subject: `[${co()}] Offer Released — ${esc(candidateName)} for ${esc(jobTitle)}`,
-  html: layout({
+exports.offerReleasedToHR = ({ hrName, candidateName, jobTitle, ctc, dateOfJoining, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Offer Released — ${esc(candidateName)} for ${esc(jobTitle)}`,
+  html: layout({ companyName,
     title: 'Offer Released',
-    color: '#16A34A',
-    body: `<p>Hi <strong>${esc(hrName)}</strong>,</p>
-<p>An offer letter has been released to the following candidate.</p>
-<div class="info-box">
+    body: `
+${greeting(`Hi ${hrName}`)}
+${lead('An offer letter has been released to the following candidate. Awaiting acceptance.')}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
-  ${ctc ? infoRow('CTC', fmtINR(ctc)) : ''}
+  ${ctc ? infoRow('CTC', fmtINR(ctc) + ' per annum') : ''}
   ${dateOfJoining ? infoRow('Expected Joining', fmtDate(dateOfJoining)) : ''}
   ${infoRow('Status', 'Offer Sent — Awaiting Acceptance')}
-</div>
-<a href="${feUrl()}/recruitment/offers" class="btn">View Offer</a>`,
+`)}
+${btn('View Offer', `${feUrl()}/recruitment/offers`)}`,
   }),
-  text: `Hi ${hrName}, offer released to ${candidateName} for ${jobTitle}${ctc ? ' (CTC: ' + fmtINR(ctc) + ')' : ''}. Awaiting acceptance.`,
+  text: `Offer released to ${candidateName} for ${jobTitle}. Awaiting acceptance.`,
 });
 
-/** Step 10 — Admin: offer accepted */
-exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => ({
-  subject: `[${co()}] Offer Accepted — ${esc(candidateName)} for ${esc(jobTitle)}`,
-  html: layout({
+exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Offer Accepted — ${esc(candidateName)} Joining ${dateOfJoining ? fmtDate(dateOfJoining) : ''}`,
+  html: layout({ companyName,
     title: 'Offer Accepted ✓',
-    color: '#16A34A',
-    body: `<p>Hi Admin,</p>
-<p><strong>${esc(candidateName)}</strong> has <span class="badge green">Accepted</span> the offer for <strong>${esc(jobTitle)}</strong>.</p>
-<div class="info-box">
+    accent: '#16a34a',
+    body: `
+${greeting('Hi Admin')}
+${lead(`<strong>${esc(candidateName)}</strong> has ${badgeGreen('✓ Accepted')} the offer for <strong>${esc(jobTitle)}</strong>.`)}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Position', jobTitle)}
   ${dateOfJoining ? infoRow('Expected Joining', fmtDate(dateOfJoining)) : ''}
   ${infoRow('Next Step', 'Initiate employee onboarding')}
-</div>
-<a href="${feUrl()}/recruitment/candidates" class="btn">View in HRMS</a>`,
+`)}
+${btn('View in HRMS', `${feUrl()}/recruitment/candidates`)}`,
   }),
-  text: `${candidateName} has accepted the offer for ${jobTitle}.${dateOfJoining ? ' Expected joining: ' + fmtDate(dateOfJoining) : ''}`,
+  text: `${candidateName} accepted the offer for ${jobTitle}.`,
 });
 
-/* ── Recruiter Manager (Team Lead) Templates ──────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   JOINING FORMALITIES
+══════════════════════════════════════════════════════════════════════ */
 
-exports.tlOfferUpdate = ({ tlName, recruiterName, candidateName, jobTitle, event, ctc, dateOfJoining }) => ({
-  subject: `[${co()}] Offer ${esc(event)} — ${esc(candidateName)} for ${esc(jobTitle)}`,
-  html: layout({
-    title: `Offer ${esc(event)}`,
-    color: event === 'Accepted' ? '#16a34a' : event === 'Released' ? '#1E3A5F' : '#dc2626',
-    body: `<p>Hi <strong>${esc(tlName)}</strong>,</p>
-<p>An offer for a candidate sourced by your team has been <strong>${esc(event)}</strong>.</p>
-<div class="info-box">
-  ${infoRow('Candidate', candidateName)}
-  ${infoRow('Job Title', jobTitle)}
-  ${infoRow('Offer Status', event)}
-  ${ctc ? infoRow('CTC', 'INR ' + Number(ctc).toLocaleString('en-IN')) : ''}
-  ${dateOfJoining ? infoRow('Date of Joining', dateOfJoining) : ''}
-</div>
-<a href="${esc(feUrl() + '/recruitment')}" class="btn">View Offer</a>`,
-  }),
-  text: `Hi ${tlName}, offer for ${candidateName} (${jobTitle}) has been ${event}. CTC: ${ctc || '-'}.`,
-});
-
-/* ── Joining Formalities Templates ─────────────────────────────────────────── */
-
-exports.joiningInvitation = ({
-  candidateName, jobTitle, joiningUrl, expiresAt,
-  ctc, ctcInWords, dateOfJoining, offerCode,
-  basic = 0, hra = 0, telephoneAllowance = 0, specialAllowance = 0, grossSalary = 0,
-  pfContribution = 0, statutoryBonus = 0, gratuity = 0, esi = 0,
-}) => {
-  /* All stored values are ANNUAL. Monthly = value / 12 */
+exports.joiningInvitation = ({ candidateName, jobTitle, joiningUrl, expiresAt, ctc, dateOfJoining, offerCode, basic, hra, telephoneAllowance, leaveTravel, specialAllowance, grossSalary, pfContribution, statutoryBonus, gratuity, esi, companyName = '' }) => {
   const ann = (v) => Number(v) || 0;
   const mon = (v) => Math.round((Number(v) || 0) / 12);
   const ctcAnnual = ann(ctc);
-  const ctcLabel  = ctcAnnual ? fmtINR(ctcAnnual) + ' per annum' : '';
 
-  /* CTC table row builders */
-  const tblRow = (label, annVal) => {
-    if (!annVal) return '';
-    return `<tr>
-      <td style="padding:6px 12px;border:1px solid #E5E7EB;font-size:12px;color:#374151">${esc(label)}</td>
-      <td style="padding:6px 12px;border:1px solid #E5E7EB;font-size:12px;text-align:right;color:#111827">${fmtINR(mon(annVal))}</td>
-      <td style="padding:6px 12px;border:1px solid #E5E7EB;font-size:12px;text-align:right;color:#111827">${fmtINR(ann(annVal))}</td>
-    </tr>`;
-  };
-  const boldRow = (label, annVal) =>
-    `<tr style="background:#EFF6FF;font-weight:700">
-      <td style="padding:6px 12px;border:1px solid #BFDBFE;font-size:12px;color:#1E3A5F">${esc(label)}</td>
-      <td style="padding:6px 12px;border:1px solid #BFDBFE;font-size:12px;text-align:right;color:#1E3A5F">${fmtINR(mon(annVal))}</td>
-      <td style="padding:6px 12px;border:1px solid #BFDBFE;font-size:12px;text-align:right;color:#1E3A5F">${fmtINR(ann(annVal))}</td>
-    </tr>`;
+  const ctcRow = (label, annVal) => !annVal ? '' : `<tr>
+    <td style="padding:8px 12px;border-bottom:1px solid #FFE8CC;font-size:12px;color:#374151">${esc(label)}</td>
+    <td style="padding:8px 12px;border-bottom:1px solid #FFE8CC;font-size:12px;text-align:right;color:#111827;font-family:monospace">${fmtINR(mon(annVal))}</td>
+    <td style="padding:8px 12px;border-bottom:1px solid #FFE8CC;font-size:12px;text-align:right;color:#111827;font-family:monospace">${fmtINR(ann(annVal))}</td>
+  </tr>`;
+  const ctcTotal = (label, annVal) => `<tr style="background:#FFF3E0">
+    <td style="padding:8px 12px;font-size:12px;font-weight:700;color:${ORANGE}">${esc(label)}</td>
+    <td style="padding:8px 12px;font-size:12px;font-weight:700;text-align:right;color:${ORANGE};font-family:monospace">${fmtINR(mon(annVal))}</td>
+    <td style="padding:8px 12px;font-size:12px;font-weight:700;text-align:right;color:${ORANGE};font-family:monospace">${fmtINR(ann(annVal))}</td>
+  </tr>`;
 
   const ctcTable = `
-<table style="width:100%;border-collapse:collapse;margin:12px 0">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid ${CREAM_B}">
   <thead>
-    <tr style="background:#1E3A5F">
-      <th style="padding:8px 12px;text-align:left;color:#fff;font-size:12px;border:1px solid #1E3A5F">COMPONENTS</th>
-      <th style="padding:8px 12px;text-align:right;color:#fff;font-size:12px;border:1px solid #1E3A5F">MONTHLY</th>
-      <th style="padding:8px 12px;text-align:right;color:#fff;font-size:12px;border:1px solid #1E3A5F">YEARLY</th>
+    <tr style="background:${ORANGE}">
+      <th style="padding:9px 12px;text-align:left;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.5px">COMPONENT</th>
+      <th style="padding:9px 12px;text-align:right;color:rgba(255,255,255,0.8);font-size:11px;font-weight:600">MONTHLY</th>
+      <th style="padding:9px 12px;text-align:right;color:rgba(255,255,255,0.8);font-size:11px;font-weight:600">YEARLY</th>
     </tr>
   </thead>
-  <tbody>
-    ${tblRow('Basic', basic)}
-    ${tblRow('HRA', hra)}
-    ${tblRow('Telephone / Internet Expenses', telephoneAllowance)}
-    ${tblRow('Spl. Allowance', specialAllowance)}
-    ${boldRow('Gross Salary', grossSalary)}
-    ${tblRow("Company's PF Contribution", pfContribution)}
-    ${Number(statutoryBonus) ? tblRow('Statutory Bonus', statutoryBonus) : ''}
-    ${Number(gratuity)       ? tblRow('Gratuity', gratuity) : ''}
-    ${Number(esi)            ? tblRow('ESI (Employer Share)', esi) : ''}
-    ${boldRow('Cost To Company (CTC)', ctcAnnual)}
+  <tbody style="background:${CREAM}">
+    ${ctcRow('Basic', basic)}
+    ${ctcRow('HRA', hra)}
+    ${ctcRow('Telephone / Internet Expenses', telephoneAllowance)}
+    ${ctcRow('Leave Travel Allowance', leaveTravel)}
+    ${ctcRow('Spl. Allowance', specialAllowance)}
+    ${ctcTotal('Gross Salary', grossSalary)}
+    ${ctcRow("Company's PF Contribution", pfContribution)}
+    ${ann(statutoryBonus) ? ctcRow('Statutory Bonus', statutoryBonus) : ''}
+    ${ann(gratuity)       ? ctcRow('Gratuity', gratuity) : ''}
+    ${ann(esi)            ? ctcRow('ESI (Employer Share)', esi) : ''}
+    ${ctcTotal('Cost To Company (CTC)', ctcAnnual)}
   </tbody>
 </table>`;
 
   const body = `
-<p style="margin:0 0 12px">Dear <strong>${esc(candidateName)}</strong>,</p>
-<p style="margin:0 0 14px;color:#374151">
-  We are pleased to offer you the position of <strong>${esc(jobTitle)}</strong> at <strong>${co()}</strong>.
-  Your complete Offer Letter with all terms, conditions and CTC breakdown is <strong>attached as a PDF</strong>.
-</p>
-
-<div class="info-box">
+${greeting(candidateName)}
+${lead(`We are delighted to offer you the position of <strong>${esc(jobTitle)}</strong> at <strong>${co(companyName)}</strong>. Your complete Offer Letter with all terms, conditions and CTC breakdown is <strong>attached as a PDF</strong>.`)}
+${infoTable(`
   ${offerCode ? infoRow('Offer Reference', offerCode) : ''}
   ${dateOfJoining ? infoRow('Date of Joining', fmtDate(dateOfJoining)) : ''}
-</div>
-
-<p style="margin:20px 0 8px;font-weight:700;font-size:13px;color:#1E3A5F">COMPLETE YOUR JOINING FORMALITIES</p>
-<p style="margin:0 0 12px;font-size:13px;color:#374151">
-  Please submit your joining formalities online before your date of joining:
-</p>
-
-<div style="text-align:center;margin:24px 0 20px">
-  <a href="${esc(joiningUrl)}"
-     style="display:inline-block;background:#16A34A;color:#fff;text-decoration:none;
-            padding:14px 40px;border-radius:6px;font-size:15px;font-weight:700;letter-spacing:.3px">
-    &#10003;&nbsp;&nbsp;Complete Joining Formalities
-  </a>
-  <p style="margin:10px 0 0;font-size:11px;color:#9CA3AF">
-    Link valid until <strong>${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}</strong>.
-    Do not share this link with anyone.
-  </p>
-</div>
-
-<p style="font-size:12px;color:#6B7280;border-top:1px solid #E5E7EB;padding-top:12px;margin-top:8px">
-  The Offer Letter PDF is attached. Please sign and return a copy on your date of joining.
-</p>`;
+  ${ctcAnnual ? infoRow('Cost To Company', fmtINR(ctcAnnual) + ' per annum') : ''}
+`)}
+<p style="font-size:13px;font-weight:700;color:${ORANGE};margin:20px 0 8px;letter-spacing:0.5px;text-transform:uppercase">CTC Structure</p>
+${ctcTable}
+${divider}
+<p style="font-size:13px;font-weight:700;color:${ORANGE};margin:0 0 8px;letter-spacing:0.5px;text-transform:uppercase">Complete Your Joining Formalities</p>
+<p style="font-size:13px;color:#4B5563;margin:0 0 16px">Please submit your joining formalities online before your date of joining using the secure link below.</p>
+${btn('&#10003;&nbsp; Complete Joining Formalities', esc(joiningUrl))}
+<p style="text-align:center;font-size:11px;color:#9CA3AF;margin:0">Link valid until <strong>${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}</strong> &mdash; do not share this link.</p>
+<p style="font-size:12px;color:#9CA3AF;border-top:1px solid #E5E7EB;padding-top:12px;margin-top:16px">The signed Offer Letter PDF is attached. Please bring a copy on your date of joining.</p>`;
 
   return {
-    subject: `Offer Letter &mdash; ${jobTitle} at ${emailCfg.companyName || 'HRMS'}`,
-    html: layout({ title: 'Congratulations! Your Offer Letter', color: '#1E3A5F', body }),
-    text: `Congratulations ${candidateName}!\n\nOffer for ${jobTitle} at ${emailCfg.companyName || 'HRMS'}.\nCTC: ${ctcLabel}\nDate of Joining: ${dateOfJoining ? new Date(dateOfJoining).toDateString() : 'As agreed'}\n\nComplete joining formalities at: ${joiningUrl}\nLink valid until: ${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}\n\nOffer Letter PDF is attached.`,
+    subject: `Offer Letter — ${jobTitle} at ${emailCfg.companyName || 'HRMS'}`,
+    html: layout({ companyName, title: 'Congratulations! Your Offer Letter', subtitle: `Position: ${esc(jobTitle)}`, body }),
+    text: `Congratulations ${candidateName}!\nOffer for ${jobTitle} at ${emailCfg.companyName || 'HRMS'}.\nComplete joining formalities at: ${joiningUrl}\nLink valid until: ${expiresAt ? new Date(expiresAt).toDateString() : '7 days from now'}`,
   };
 };
 
-exports.joiningSubmittedHR = ({ candidateName, candidateEmail, jobTitle }) => ({
-  subject: `[${co()}] Joining Formalities Submitted — ${esc(candidateName)}`,
-  html: layout({
+exports.joiningSubmittedHR = ({ candidateName, candidateEmail, jobTitle, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Joining Formalities Submitted — ${esc(candidateName)}`,
+  html: layout({ companyName,
     title: 'Joining Formalities Submitted for Review',
-    color: '#1E3A5F',
-    body: `<p>Hi HR Team,</p>
-<p><strong>${esc(candidateName)}</strong> has submitted their joining formalities for review.</p>
-<div class="info-box">
+    body: `
+${greeting('Hi HR Team')}
+${lead(`<strong>${esc(candidateName)}</strong> has submitted their joining formalities and is awaiting verification.`)}
+${infoTable(`
   ${infoRow('Candidate', candidateName)}
   ${infoRow('Email', candidateEmail)}
   ${infoRow('Position', jobTitle)}
   ${infoRow('Status', 'Pending Verification')}
-</div>
-<a href="${esc(feUrl() + '/dashboard/joining-verification')}" class="btn">Review Formalities</a>`,
+`)}
+${btn('Review Formalities', `${feUrl()}/dashboard/joining-verification`)}`,
   }),
-  text: `${candidateName} has submitted joining formalities. Login to review.`,
+  text: `${candidateName} submitted joining formalities. Login to review.`,
 });
 
-exports.joiningApproved = ({ candidateName, jobTitle }) => ({
-  subject: `[${co()}] Joining Formalities Approved — Welcome Aboard!`,
-  html: layout({
-    title: 'Joining Formalities Approved',
-    color: '#16a34a',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>Your joining formalities for <strong>${esc(jobTitle)}</strong> have been reviewed and <strong>approved</strong>.</p>
-<p>Your employee account will be activated shortly. You will receive login credentials from HR to access the employee portal.</p>
-<p>Welcome to the team! We look forward to working with you.</p>
-<p style="color:#888;font-size:12px">If you have questions, please contact HR.</p>`,
+exports.joiningApproved = ({ candidateName, jobTitle, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Joining Formalities Approved — Welcome Aboard!`,
+  html: layout({ companyName,
+    title: 'Joining Formalities Approved — Welcome!',
+    accent: '#16a34a',
+    body: `
+${greeting(candidateName)}
+${lead(`Your joining formalities for <strong>${esc(jobTitle)}</strong> have been reviewed and ${badgeGreen('✓ Approved')}.`)}
+<p style="font-size:14px;color:#4B5563;margin:0 0 12px">Your employee account will be activated shortly. You will receive login credentials from HR to access the employee portal.</p>
+<p style="font-size:13px;color:#6B7280;margin:0">Welcome to the team! We look forward to working with you. If you have any questions before your start date, please contact HR.</p>`,
   }),
   text: `Hi ${candidateName}, your joining formalities have been approved. Welcome aboard!`,
 });
 
-exports.joiningChangesRequested = ({ candidateName, jobTitle, remarks, joiningUrl }) => ({
-  subject: `[${co()}] Action Required — Update Your Joining Formalities`,
-  html: layout({
-    title: 'Updates Required for Joining Formalities',
-    color: '#d97706',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>HR has reviewed your joining formalities for <strong>${esc(jobTitle)}</strong> and requires the following updates:</p>
-<div class="info-box" style="border-left:4px solid #d97706">
-  <p style="margin:0;color:#374151">${esc(remarks || 'Please review and update the highlighted fields.')}</p>
-</div>
-<p>Please click the link below to update and resubmit your formalities:</p>
-<a href="${esc(joiningUrl)}" class="btn">Update Formalities</a>`,
+exports.joiningChangesRequested = ({ candidateName, jobTitle, remarks, joiningUrl, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Action Required — Update Your Joining Formalities`,
+  html: layout({ companyName,
+    title: 'Updates Required — Joining Formalities',
+    body: `
+${greeting(candidateName)}
+${lead(`HR has reviewed your joining formalities for <strong>${esc(jobTitle)}</strong> and has requested some updates before they can be approved.`)}
+${remarksBox('HR Remarks', remarks || 'Please review and update the highlighted fields.')}
+${btn('Update Formalities', esc(joiningUrl))}`,
   }),
-  text: `Hi ${candidateName}, HR has requested changes to your joining formalities. Please update at: ${joiningUrl}`,
+  text: `Hi ${candidateName}, HR has requested changes to your joining formalities. Update at: ${joiningUrl}`,
 });
 
-exports.joiningRejected = ({ candidateName, jobTitle, remarks }) => ({
-  subject: `[${co()}] Joining Formalities — Important Update`,
-  html: layout({
-    title: 'Joining Formalities Status Update',
-    color: '#dc2626',
-    body: `<p>Dear <strong>${esc(candidateName)}</strong>,</p>
-<p>We regret to inform you that your joining formalities for <strong>${esc(jobTitle)}</strong> could not be processed.</p>
-${remarks ? `<div class="info-box"><p style="margin:0;color:#374151">${esc(remarks)}</p></div>` : ''}
-<p>Please contact HR for further information.</p>`,
+exports.joiningRejected = ({ candidateName, jobTitle, remarks, companyName = '' }) => ({
+  subject: `[${co(companyName)}] Joining Formalities — Important Update`,
+  html: layout({ companyName,
+    title: 'Joining Formalities — Status Update',
+    accent: '#DC2626',
+    body: `
+${greeting(candidateName)}
+${lead(`We regret to inform you that your joining formalities for <strong>${esc(jobTitle)}</strong> could not be processed at this time.`)}
+${remarks ? remarksBox('HR Remarks', remarks) : ''}
+<p style="font-size:14px;color:#4B5563;margin:0">Please contact HR directly for further information and next steps.</p>`,
   }),
-  text: `Hi ${candidateName}, there is an important update regarding your joining formalities for ${jobTitle}. Please contact HR.`,
+  text: `Hi ${candidateName}, your joining formalities for ${jobTitle} require attention. Please contact HR.`,
 });

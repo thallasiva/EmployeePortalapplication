@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import {
   Download, LayoutGrid, List, Upload, ChevronDown, ChevronRight,
   Users, Search, X, Filter, Check } from
@@ -367,6 +368,8 @@ export default function Employee() {
     return list;
   }, [employees, search, filterStatus, filterDept, filterType]);
 
+  const { paged: pagedEmployees, page: empPage, setPage: setEmpPage, totalPages: empTotalPages, from: empFrom, to: empTo, total: empTotal, pageSize: empPageSize, setPageSize: setEmpPageSize } = usePagination(filteredEmployees);
+
   const activeFilterCount = filterStatus.size + filterDept.size + filterType.size;
 
   const clearAllFilters = useCallback(() => {
@@ -562,11 +565,17 @@ export default function Employee() {
               </button>
             </div> :
         viewMode === "grid" ?
+        <>
         <div className="emp-grid">
-              {filteredEmployees.map((emp) => <EmployeeGridCard key={emp.employee_id} employee={emp} />)}
-            </div> :
+              {pagedEmployees.map((emp) => <EmployeeGridCard key={emp.employee_id} employee={emp} />)}
+            </div>
+        <Pagination page={empPage} setPage={setEmpPage} totalPages={empTotalPages} from={empFrom} to={empTo} total={empTotal} pageSize={empPageSize} setPageSize={setEmpPageSize} />
+        </> :
 
-        <EmployeeListTable employees={filteredEmployees} />
+        <>
+        <EmployeeListTable employees={pagedEmployees} />
+        <Pagination page={empPage} setPage={setEmpPage} totalPages={empTotalPages} from={empFrom} to={empTo} total={empTotal} pageSize={empPageSize} setPageSize={setEmpPageSize} />
+        </>
         }
         </div>
       }

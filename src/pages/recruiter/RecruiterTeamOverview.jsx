@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import {
   Users, CalendarCheck, Clock, UserCheck, Search,
   TrendingUp, Building2, CheckCircle, XCircle, AlertCircle,
@@ -71,7 +72,7 @@ const RecruiterTeamOverview = () => {
       listEmployees({ status: "Active", limit: 500 })
         .then((r) => setTeam(Array.isArray(r) ? r : (r?.rows ?? r?.data ?? [])))
         .catch(() => {}),
-      listLeaveRequests({ limit: 200 })
+      listLeaveRequests({})
         .then((r) => setLeaves(Array.isArray(r) ? r : (r?.data ?? [])))
         .catch(() => {}),
       listAttendance({ from_date: today, to_date: today, limit: 500 })
@@ -113,6 +114,7 @@ const RecruiterTeamOverview = () => {
       return matchSearch && matchDept;
     });
   }, [team, search, deptFilter]);
+  const { paged: pagedTeam, page: teamPage, setPage: setTeamPage, totalPages: teamTotalPages, from: teamFrom, to: teamTo, total: teamTotal, pageSize: teamPageSize, setPageSize: setTeamPageSize } = usePagination(filteredTeam);
 
   const pendingLeavesRows = leaves.filter((l) => l.status === "Pending").slice(0, 8);
 
@@ -217,6 +219,7 @@ const RecruiterTeamOverview = () => {
               {filteredTeam.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-10">No employees found.</p>
               ) : (
+                <>
                 <table className="admin-att-table w-full">
                   <thead>
                     <tr>
@@ -229,7 +232,7 @@ const RecruiterTeamOverview = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTeam.map((m) => {
+                    {pagedTeam.map((m) => {
                       const empId = m.employee_id || m.id;
                       const rec   = att.find((a) => String(a.employee_id) === String(empId));
                       const status    = rec?.status || "—";
@@ -269,6 +272,8 @@ const RecruiterTeamOverview = () => {
                     })}
                   </tbody>
                 </table>
+                <Pagination page={teamPage} setPage={setTeamPage} totalPages={teamTotalPages} from={teamFrom} to={teamTo} total={teamTotal} pageSize={teamPageSize} setPageSize={setTeamPageSize} />
+                </>
               )}
             </div>
           </div>

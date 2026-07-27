@@ -92,9 +92,19 @@ const submitFeedback = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, "Feedback submitted").send(res);
 });
 
+const submitRecruiterFeedback = asyncHandler(async (req, res) => {
+  const data = await interviewSvc.submitRecruiterFeedback(
+    Number(req.params.id),
+    req.body,
+    req.user.userId,
+    req.ip,
+  );
+  new ApiResponse(200, data, "Recruiter feedback submitted").send(res);
+});
+
 const cancel = asyncHandler(async (req, res) => {
   const data = await interviewSvc.cancel(Number(req.params.id), req.user.userId, req.ip);
   new ApiResponse(200, data, "Interview cancelled").send(res);
 });
 
-module.exports = { list, getOne, schedule, submitFeedback, cancel };
+module.exports = { list, getOne, schedule, submitFeedback, submitRecruiterFeedback, cancel };

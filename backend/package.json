@@ -137,6 +137,7 @@
     "jwa": "^2.0.1",
     "jws": "^4.0.1",
     "lazystream": "^1.0.1",
+    "libreoffice-convert": "^1.8.2",
     "lie": "^3.3.0",
     "listenercount": "^1.0.1",
     "locate-path": "^5.0.0",

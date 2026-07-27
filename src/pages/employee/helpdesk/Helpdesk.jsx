@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Pagination, { usePagination } from "../../../components/Pagination";
 import {
   Search, ChevronRight, ChevronDown,
   Monitor, Smartphone, HardDrive, Download,
@@ -902,6 +903,7 @@ function MyTicketsView({ onNewRequest }) {
   };
 
   const visible = filter === "all" ? tickets : tickets.filter((t) => t.status === filter);
+  const { paged: pagedTickets, page: tkPage, setPage: setTkPage, totalPages: tkTotalPages, from: tkFrom, to: tkTo, total: tkTotal, pageSize: tkPageSize, setPageSize: setTkPageSize } = usePagination(visible);
 
   return (
     <div className={cssClass({ flex: 1, display: "flex", flexDirection: "column", minHeight: 0,
@@ -950,7 +952,7 @@ function MyTicketsView({ onNewRequest }) {
           </div> :
 
         <ul className={cssClass({ margin: 0, padding: 0, listStyle: "none" })}>
-            {visible.map((t, i) => {
+            {pagedTickets.map((t, i) => {
             const sc = STATUS_STYLE[t.status] || STATUS_STYLE["Open"];
             const isResolved = t.status === "Resolved";
             const isReopened = t.status === "Reopened";
@@ -1036,6 +1038,7 @@ function MyTicketsView({ onNewRequest }) {
           })}
           </ul>
         }
+        <Pagination page={tkPage} setPage={setTkPage} totalPages={tkTotalPages} from={tkFrom} to={tkTo} total={tkTotal} pageSize={tkPageSize} setPageSize={setTkPageSize} />
       </div>
 
       {reopenFor &&

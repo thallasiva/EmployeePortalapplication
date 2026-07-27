@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import { useNavigate } from "react-router-dom";
 import { Mail, Upload, X, Download } from "lucide-react";
 import {
@@ -222,6 +223,7 @@ const AdminPayslips = () => {
 
   const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { paged: pagedPayslips, page: psPage, setPage: setPsPage, totalPages: psTotalPages, from: psFrom, to: psTo, total: psTotal, pageSize: psPageSize, setPageSize: setPsPageSize } = usePagination(payslips);
   const [generating, setGenerating] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [generateResult, setGenerateResult] = useState(null);
@@ -358,7 +360,7 @@ const AdminPayslips = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {payslips.map((p) =>
+                {pagedPayslips.map((p) =>
               <tr key={p.payslip_id}>
                     <td className="px-3 py-2 font-medium text-gray-800">
                       {p.employee_name} <span className="text-gray-400">({p.emp_code})</span>
@@ -409,6 +411,7 @@ const AdminPayslips = () => {
               )}
               </tbody>
             </table>
+            <Pagination page={psPage} setPage={setPsPage} totalPages={psTotalPages} from={psFrom} to={psTo} total={psTotal} pageSize={psPageSize} setPageSize={setPsPageSize} />
           </div>
         }
       </div>

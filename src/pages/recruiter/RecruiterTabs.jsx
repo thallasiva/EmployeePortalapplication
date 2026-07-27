@@ -1,11 +1,12 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, CalendarCheck, Users } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Users, FileCheck } from "lucide-react";
 
 const TABS = [
-  { label: "Team Overview",  path: "/recruiter/team/overview",    icon: LayoutDashboard },
-  { label: "Leave Requests", path: "/recruiter/team/leave",        icon: CalendarCheck },
-  { label: "Attendance",     path: "/recruiter/team/attendance",   icon: Users },
+  { label: "Team Overview",       path: "/recruiter/team/overview",    icon: LayoutDashboard },
+  { label: "Leave Requests",      path: "/recruiter/team/leave",        icon: CalendarCheck },
+  { label: "Attendance",          path: "/recruiter/team/attendance",   icon: Users },
+  { label: "Joining Formalities", path: "/recruiter/team/joining",      icon: FileCheck },
 ];
 
 const RecruiterTabs = () => {

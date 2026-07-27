@@ -12,6 +12,7 @@ const CreateJobPage           = lazy(() => import("../pages/admin/recruitment/Cr
 const RecruiterTeamOverview   = lazy(() => import("../pages/recruiter/RecruiterTeamOverview"));
 const RecruiterTeamLeave      = lazy(() => import("../pages/recruiter/RecruiterTeamLeave"));
 const RecruiterTeamAttendance = lazy(() => import("../pages/recruiter/RecruiterTeamAttendance"));
+const RecruiterJoining        = lazy(() => import("../pages/recruiter/RecruiterJoining"));
 
 const Page = LazyPage;
 
@@ -28,9 +29,10 @@ const RecruiterRoutes = () => {
       {/* Team Lead only — team management */}
       {isTL && (
         <>
-          <Route path="team"            element={<Page><RecruiterTeamOverview /></Page>} />
-          <Route path="team/leave"      element={<Page><RecruiterTeamLeave /></Page>} />
-          <Route path="team/attendance" element={<Page><RecruiterTeamAttendance /></Page>} />
+          <Route path="team"               element={<Page><RecruiterTeamOverview /></Page>} />
+          <Route path="team/leave"         element={<Page><RecruiterTeamLeave /></Page>} />
+          <Route path="team/attendance"    element={<Page><RecruiterTeamAttendance /></Page>} />
+          <Route path="team/joining"       element={<Page><RecruiterJoining /></Page>} />
         </>
       )}
 

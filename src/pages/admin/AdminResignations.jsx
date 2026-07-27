@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import {
   LogOut, Search, CheckCircle2, XCircle, ChevronDown,
   Paperclip, Clock, User, AlertTriangle, MessageSquare } from
@@ -340,6 +341,8 @@ export default function AdminResignations() {
     return matchStatus && matchSearch;
   });
 
+  const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(visible);
+
   const counts = {
     pending: rows.filter((r) => r.status === "pending").length,
     rm_approved: rows.filter((r) => r.status === "rm_approved").length,
@@ -411,11 +414,16 @@ export default function AdminResignations() {
         </div> :
 
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 10 })}>
-          {visible.map((r) =>
+          {paged.map((r) =>
         <ResignRow key={r.resignation_id} row={r} onReview={setReviewing} />
         )}
         </div>
       }
+      {total > 0 && (
+        <div className="mt-4">
+          <Pagination page={page} setPage={setPage} totalPages={totalPages} from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
+        </div>
+      )}
 
       {reviewing &&
       <ReviewModal

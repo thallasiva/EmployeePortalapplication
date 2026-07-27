@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import { getAllTimesheets, getAdminDashboardCounts, getAnyTimesheetDetail } from "../../api/timesheet.api";
 import "./adminDashboard.css";
 
@@ -135,6 +136,8 @@ export default function AdminTimesheets() {
     ? timesheets.filter(t => t.employee_name?.toLowerCase().includes(search.toLowerCase()) || t.emp_code?.includes(search))
     : timesheets;
 
+  const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(filtered);
+
   const FILTER_OPTIONS = ["all", "pending", "approved", "rejected", "draft"];
 
   return (
@@ -202,7 +205,7 @@ export default function AdminTimesheets() {
                 <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">Loading…</td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">No timesheets found</td></tr>
-              ) : filtered.map(ts => (
+              ) : paged.map(ts => (
                 <tr key={ts.timesheet_id}>
                   <td>
                     <div>
@@ -230,6 +233,7 @@ export default function AdminTimesheets() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} setPage={setPage} totalPages={totalPages} from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
       </div>
 
       {viewId && <TimesheetDetailModal timesheetId={viewId} onClose={() => setViewId(null)} />}

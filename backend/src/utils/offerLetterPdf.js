@@ -15,6 +15,10 @@ const path        = require('path');
 const fs          = require('fs');
 const { email: emailCfg } = require('../config/env');
 
+/* ---- Asset paths (relative to this file: src/utils/ → public/) ---- */
+const NATIT_LOGO = path.join(__dirname, '../../public/logo_full.jpeg');
+const SIGNATURE  = path.join(__dirname, '../../public/logo.png');
+
 /* ------------------------------------------------------------------ */
 /*  Formatters                                                          */
 /* ------------------------------------------------------------------ */
@@ -41,13 +45,14 @@ function fmtDateSlash(d) {
 /* ------------------------------------------------------------------ */
 function co() {
   return {
-    name:     emailCfg.companyName     || 'NAT IT Services Pvt Ltd',
-    address:  emailCfg.companyAddress  || 'Gachibowli, Hyderabad - 500032',
-    phone:    emailCfg.companyPhone    || '',
-    cin:      emailCfg.companyCIN      || '',
-    email:    emailCfg.companyEmail    || 'hr@natit.in',
-    reportTo: emailCfg.companyReportTo || '',
-    logoPath: emailCfg.logoPath        || '',
+    name:          emailCfg.companyName    || 'NAT IT Services Pvt Ltd',
+    address:       emailCfg.companyAddress || 'Gachibowli, Hyderabad - 500032',
+    phone:         emailCfg.companyPhone   || '',
+    cin:           emailCfg.companyCIN     || '',
+    email:         emailCfg.companyEmail   || 'hr@natit.in',
+    reportTo:      emailCfg.companyReportTo|| '',
+    hrManagerName: emailCfg.hrManagerName  || '',
+    logoPath:      emailCfg.logoPath       || '',
   };
 }
 
@@ -70,6 +75,7 @@ function generateOfferLetterPdf(opts) {
     dateOfJoining      = null,
     ctc                = 0,
     ctcInWords         = '',
+    hrManagerName      = null,
     basic              = 0,
     hra                = 0,
     telephoneAllowance = 0,
@@ -84,6 +90,8 @@ function generateOfferLetterPdf(opts) {
 
   const C        = co();
   const logoFile = resolveLogoPath(C.logoPath);
+  // hrManagerName: prefer opts value, fall back to .env HR_MANAGER_NAME
+  const hrMgrName = hrManagerName || C.hrManagerName || '';
   const ctcNum   = Number(ctc) || 0;
   const mo       = (v) => Math.round((Number(v) || 0) / 12);
 
@@ -93,9 +101,9 @@ function generateOfferLetterPdf(opts) {
   const PH       = 841.89;
   const BW       = PW - MARGIN * 2;   /* 495.28 */
 
-  /* Logo / header occupies top 75pt, footer occupies bottom 40pt */
+  /* Logo / header occupies top 75pt, footer occupies bottom 50pt */
   const LOGO_H   = 75;
-  const FTR_H    = 40;
+  const FTR_H    = 50;
   const CONTENT_TOP    = MARGIN + LOGO_H + 8;
   const CONTENT_BOTTOM = PH - MARGIN - FTR_H - 8;
 
@@ -115,6 +123,41 @@ function generateOfferLetterPdf(opts) {
     doc.on('end',  () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
+    /* ---- Auto-draw header + footer on EVERY page (including pdfkit overflow pages) ---- */
+    let _drawingChrome = false;
+    doc.on('pageAdded', () => {
+      if (_drawingChrome) return;
+      _drawingChrome = true;
+      /* Keep margins.bottom small while drawing chrome so pdfkit doesn't page-break
+         inside drawFooter() (which writes at absolute y near the bottom).
+         Then raise it so content auto-breaks before entering the footer zone. */
+      doc.page.margins.bottom = MARGIN;     // small — lets drawFooter write freely
+      drawHeader();
+      drawFooter();
+      doc.page.margins.bottom = MARGIN + FTR_H + 12;  // raise threshold for body content
+      /* Reset font/colour so body text that resumes on this page is black, not footer pink */
+      doc.font('Helvetica').fontSize(10).fillColor(COL_MID);
+      doc.y = CONTENT_TOP;
+      _drawingChrome = false;
+    });
+
+    /* ---- Try to register Verdana (Windows system font) ---- */
+    let VERD  = 'Helvetica';
+    let VERDB = 'Helvetica-Bold';
+    try {
+      const vReg  = 'C:\\Windows\\Fonts\\verdana.ttf';
+      const vBold = 'C:\\Windows\\Fonts\\verdanab.ttf';
+      if (fs.existsSync(vReg)) {
+        doc.registerFont('Verdana',      vReg);
+        doc.registerFont('Verdana-Bold', vBold);
+        VERD  = 'Verdana';
+        VERDB = 'Verdana-Bold';
+      }
+    } catch (e) { /* fallback to Helvetica */ }
+
+    const FTR_LINE1 = 'NAT IT Services Pvt Ltd';
+    const FTR_LINE2 = 'SY.#90/1,  Plot No.21, Sruthi Sadan ,2nd Floor,  Gachibowli, Hyderabad, RR District  PIN: 500032  PH:040-23006287 / 90108 77718  CIN: U72900TG2010PTC066694';
+
     /* ============================================================
        HELPERS
     ============================================================ */
@@ -123,65 +166,87 @@ function generateOfferLetterPdf(opts) {
       if (doc.y + needed > CONTENT_BOTTOM) { newPage(); }
     }
 
-    /** Draw logo banner + gold rule in header zone. */
+    /** Draw NAT IT logo top-right in header zone. */
     function drawHeader() {
-      const hx = MARGIN;
-      const hy = MARGIN;
-
-      if (logoFile) {
-        try {
-          /* full-width banner style - fit in 495 x 65 */
-          doc.image(logoFile, hx, hy, { width: BW, height: LOGO_H - 10, fit: [BW, LOGO_H - 10] });
-        } catch (e) {
-          /* fallback to text header */
-          _textHeader(hx, hy);
+      const logoW = 120, logoH = 40;
+      const lx = MARGIN + BW - logoW;
+      const ly = MARGIN;
+      try {
+        if (fs.existsSync(NATIT_LOGO)) {
+          doc.image(NATIT_LOGO, lx, ly, { width: logoW, height: logoH, fit: [logoW, logoH] });
+        } else {
+          doc.font('Helvetica-Bold').fontSize(12).fillColor(COL_NAVY)
+             .text(C.name, lx, ly + 10, { width: logoW, align: 'right' });
         }
-      } else {
-        _textHeader(hx, hy);
+      } catch (e) {
+        doc.font('Helvetica-Bold').fontSize(12).fillColor(COL_NAVY)
+           .text(C.name, lx, ly + 10, { width: logoW, align: 'right' });
       }
-
-      /* gold rule below logo */
-      const ruleY = MARGIN + LOGO_H;
-      doc.moveTo(hx, ruleY).lineTo(hx + BW, ruleY).strokeColor(COL_GOLD).lineWidth(2).stroke();
     }
 
-    function _textHeader(hx, hy) {
-      doc.font('Helvetica-Bold').fontSize(16).fillColor(COL_NAVY)
-         .text(C.name, hx, hy + 10, { width: BW, align: 'center' });
-      doc.font('Helvetica').fontSize(8).fillColor(COL_GREY)
-         .text(C.address + (C.phone ? '  Ph: ' + C.phone : ''),
-               hx, hy + 30, { width: BW, align: 'center' });
-    }
-
-    /** Draw two-line footer. */
+    /** Company footer on every page — centered, Verdana, #FF0066. */
     function drawFooter() {
-      const fy = PH - MARGIN - FTR_H + 6;
+      const fy = PH - MARGIN - FTR_H + 4;
       doc.moveTo(MARGIN, fy - 4).lineTo(MARGIN + BW, fy - 4)
-         .strokeColor('#cccccc').lineWidth(0.5).stroke();
-      doc.font('Helvetica-Bold').fontSize(8).fillColor(COL_NAVY)
-         .text(C.name, MARGIN, fy, { width: BW, align: 'center' });
-      const footerLine2 = C.address + (C.phone ? '  PH:' + C.phone : '') +
-                          (C.cin ? '  CIN: ' + C.cin : '');
-      doc.font('Helvetica').fontSize(7).fillColor(COL_GREY)
-         .text(footerLine2, MARGIN, fy + 12, { width: BW, align: 'center' });
+         .strokeColor('#FF0066').lineWidth(0.5).stroke();
+      doc.font(VERDB).fontSize(10.5).fillColor('#FF0066')
+         .text(FTR_LINE1, MARGIN, fy, { width: BW, align: 'center', lineBreak: false });
+      doc.font(VERD).fontSize(10.5).fillColor('#FF0066')
+         .text(FTR_LINE2, MARGIN, fy + 15, { width: BW, align: 'center', lineBreak: false });
     }
 
-    /** Add a new page, draw header+footer, reset y to CONTENT_TOP. */
+    /** HR Manager block — drawn inline (relative) after the CTC table.
+     *  Uses ensureSpace so it never overlaps the footer. */
+    function drawHRBlock() {
+      const sigW = 100, sigH = 40;
+      const blockH = sigH + 44;   // signature + 2 text lines + spacing
+
+      ensureSpace(blockH + 16);
+      doc.moveDown(1.2);
+
+      const blockY = doc.y;
+      const rx     = MARGIN + BW;
+
+      /* Signature image — right-aligned above the name */
+      try {
+        if (fs.existsSync(SIGNATURE)) {
+          doc.image(SIGNATURE, rx - sigW, blockY, { width: sigW, height: sigH, fit: [sigW, sigH] });
+        }
+      } catch (e) { /* skip if image missing */ }
+
+      const textY = blockY + sigH + 4;
+
+      /* "HR Manager" label */
+      doc.font(VERDB).fontSize(9).fillColor(COL_DARK)
+         .text('HR Manager', MARGIN, textY, { width: BW, align: 'right', lineBreak: false });
+
+      /* HR person name (if provided) */
+      if (hrMgrName) {
+        doc.font(VERD).fontSize(9).fillColor(COL_MID)
+           .text(hrMgrName, MARGIN, textY + 13, { width: BW, align: 'right', lineBreak: false });
+        doc.font(VERD).fontSize(9).fillColor(COL_MID)
+           .text(C.name, MARGIN, textY + 26, { width: BW, align: 'right', lineBreak: false });
+        doc.y = textY + 40;
+      } else {
+        doc.font(VERD).fontSize(9).fillColor(COL_MID)
+           .text(C.name, MARGIN, textY + 13, { width: BW, align: 'right', lineBreak: false });
+        doc.y = textY + 28;
+      }
+    }
+
+    /** Add a new page — pageAdded event handles header/footer/y reset automatically. */
     function newPage() {
       doc.addPage({ margin: MARGIN, size: 'A4' });
-      drawHeader();
-      drawFooter();
-      doc.y = CONTENT_TOP;
     }
 
     /* ---- text helpers ---- */
     function text(str, opts2) {
       doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2, ...opts2 });
+         .text(str, MARGIN, doc.y, { width: BW, lineGap: 1, ...opts2 });
     }
     function boldText(str, opts2) {
       doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
-         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2, ...opts2 });
+         .text(str, MARGIN, doc.y, { width: BW, lineGap: 1, ...opts2 });
     }
     function heading(str) {
       ensureSpace(40);
@@ -191,14 +256,14 @@ function generateOfferLetterPdf(opts) {
       doc.moveDown(0.2);
     }
     function clauseTitle(str) {
-      ensureSpace(45);
-      doc.moveDown(0.5);
+      ensureSpace(40);
+      doc.moveDown(0.3);
       doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
          .text(str, MARGIN, doc.y, { width: BW });
     }
     function clauseBody(str) {
       doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-         .text(str, MARGIN, doc.y, { width: BW, lineGap: 2 });
+         .text(str, MARGIN, doc.y, { width: BW, lineGap: 1 });
     }
     function subHeading(str) {
       ensureSpace(30);
@@ -208,12 +273,12 @@ function generateOfferLetterPdf(opts) {
     function subBody(str) {
       ensureSpace(25);
       doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-         .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 2 });
+         .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 1 });
     }
     function noteBody(str) {
       ensureSpace(25);
       doc.font('Helvetica-Oblique').fontSize(9.5).fillColor(COL_GREY)
-         .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 2 });
+         .text(str, MARGIN + 20, doc.y, { width: BW - 20, lineGap: 1 });
     }
     function hr() {
       ensureSpace(12);
@@ -238,12 +303,12 @@ function generateOfferLetterPdf(opts) {
 
     /* --- Candidate name --- */
     boldText(candidateName);
-    doc.moveDown(0.8);
+    doc.moveDown(0.5);
 
     /* --- "Offer Letter" title --- */
     doc.font('Helvetica-Bold').fontSize(14).fillColor(COL_DARK)
        .text('Offer Letter', MARGIN, doc.y, { width: BW });
-    doc.moveDown(0.8);
+    doc.moveDown(0.5);
 
     /* --- Salutation + opening para --- */
     text('Dear ' + candidateName + ',');
@@ -458,39 +523,39 @@ function generateOfferLetterPdf(opts) {
 
     /* --- Closing --- */
     ensureSpace(70);
-    doc.moveDown(0.8);
+    doc.moveDown(0.4);
     text('We look forward for a long and mutually rewarding association.');
-    doc.moveDown(1.5);
+    doc.moveDown(0.8);
     text('Sincerely,');
-    doc.moveDown(2.0);
+    doc.moveDown(1.2);
     boldText('HR Manager');
     text(C.name);
 
     /* --- Acceptance --- */
     ensureSpace(100);
-    doc.moveDown(1.0);
+    doc.moveDown(0.6);
     hr();
     doc.font('Helvetica-Bold').fontSize(11).fillColor(COL_DARK)
        .text('Acceptance', MARGIN, doc.y, { width: BW });
-    doc.moveDown(0.4);
+    doc.moveDown(0.2);
     text(
       'I have read and understood the above Terms & Conditions hereby signify my acceptance. ' +
       'I would be joining the duties on __________________.'
     );
-    doc.moveDown(1.2);
+    doc.moveDown(0.6);
     text('Name  \t:  ' + candidateName);
-    doc.moveDown(0.6);
+    doc.moveDown(0.4);
     text('Signature\t:  ___________________________');
-    doc.moveDown(0.6);
+    doc.moveDown(0.4);
     text('Date\t\t:  ________________');
 
     /* --- Report to --- */
     ensureSpace(80);
-    doc.moveDown(1.2);
+    doc.moveDown(0.6);
     hr();
     doc.font('Helvetica-Bold').fontSize(11).fillColor(COL_DARK)
        .text('Report to', MARGIN, doc.y, { width: BW });
-    doc.moveDown(0.2);
+    doc.moveDown(0.1);
     text(C.name + '.');
     text(C.reportTo || C.address);
 
@@ -610,7 +675,7 @@ function generateOfferLetterPdf(opts) {
     const T_C2 = T_X + 390;   /* YEARLY col start */
     const T_W0 = 275;
     const T_W1 = 105;
-    const T_W2 = T_W - 280 - 110 + 5;
+    const T_W2 = (T_X + T_W) - T_C2 - 2;  /* right edge - col start - 2pt safe gap */
     const T_RH = 24;
 
     /* Table title row (merged) */
@@ -659,27 +724,24 @@ function generateOfferLetterPdf(opts) {
     /* Exact 13-row CTC structure matching Word document */
     ctcRow('Basic',                                    basic,              false, false);
     ctcRow('HRA',                                      hra,                false, false);
-    ctcRow('Telephone/Internet Expenses',              telephoneAllowance, false, false);
+    ctcRow('Telephone Allowance',                      telephoneAllowance, false, false);
     ctcRow('Leave Travel Allowance',                   leaveTravel,        false, false);
-    ctcRow('Spl. Allowance',                           specialAllowance,   false, false);
+    ctcRow('Special Allowance',                        specialAllowance,   false, false);
     ctcRow('Gross Salary',                             grossSalary,        true,  false);
-    ctcRow("Company's PF Contribution",                pfContribution,     false, true);
+    ctcRow('Employer Contribution',                    0,                  false, false, true);
+    ctcRow('PF Contribution',                          pfContribution,     false, true);
     ctcRow('Statutory Bonus',                          statutoryBonus,     false, true);
     ctcRow('Gratuity',                                 gratuity,           false, true);
     ctcRow('ESI',                                      esi,                false, true);
-    ctcRow('Variable Pay',                             0,                  false, false, true);
-    ctcRow('Insurance premiums (GMC, GPA and Term life)', 0,              false, false, true);
-    ctcRow('Cost To Company',                          ctcNum,             true,  false);
-    /* Signature */
-    ensureSpace(60);
-    doc.moveDown(2.0);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor(COL_DARK)
-       .text('HR Manager', MARGIN, doc.y, { width: BW });
-    doc.font('Helvetica').fontSize(10).fillColor(COL_MID)
-       .text(C.name, MARGIN, doc.y, { width: BW });
+    ctcRow('Total Employer Contribution',
+           pfContribution + statutoryBonus + gratuity + esi, true, false);
+    ctcRow('CTC',                                      ctcNum,             true,  false);
+
+    /* HR Manager block — inline after CTC table */
+    drawHRBlock();
 
     doc.end();
   });
 }
 
-module.exports = { generateOfferLetterPdf };
+module.exports = { generateOfferLetterPdf }

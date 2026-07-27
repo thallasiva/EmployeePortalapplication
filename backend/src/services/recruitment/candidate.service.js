@@ -126,8 +126,7 @@ class CandidateService extends BaseService {
 
       // Notify candidate on shortlist / rejection
       if (email) {
-        if (isShort)   notify.candidateShortlisted({ candidateEmail: email, candidateName: name, jobTitle });
-        else if (isReject) notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
+        if (isReject) notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
       }
 
       // Steps 3 & 6: Notify Recruiter of status change; also TL on shortlist/rejection

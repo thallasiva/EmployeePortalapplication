@@ -57,6 +57,9 @@ export const scheduleInterview = (payload) =>
 export const submitFeedback = (id, payload) =>
   apiClient.put(`/recruitment/interviews/${id}/feedback`, payload).then(unwrap);
 
+export const submitRecruiterFeedback = (id, payload) =>
+  apiClient.put(`/recruitment/interviews/${id}/recruiter-feedback`, payload).then(unwrap);
+
 export const cancelInterview = (id) =>
   apiClient.put(`/recruitment/interviews/${id}/cancel`, {}).then(unwrap);
 

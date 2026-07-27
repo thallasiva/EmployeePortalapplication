@@ -102,6 +102,7 @@ const uploadAndMatch = asyncHandler(async (req, res) =>
     jobReqId,
     candidateSkills: parsed.skills.join(", "),
     candidateExperience: parsed.experience,
+    resumeText: parsed.rawText || '',
   });
 
   new ApiResponse(200, { ...score, parsed }, "Resume parsed and matched").send(res);

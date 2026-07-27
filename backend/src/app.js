@@ -86,6 +86,14 @@ app.use(compression());
 // ── Cookie parser ─────────────────────────────────────────────────────────────
 app.use(cookieParser());
 
+// ── Static assets (logo served for email templates) ──────────────────────────
+const path = require('path');
+app.use('/public', express.static(path.join(__dirname, '../../src/assets'), {
+  maxAge: '7d',
+  immutable: false,
+  setHeaders: (res) => { res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); }
+}));
+
 // ── Body parsing (strict size limit) ─────────────────────────────────────────
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));

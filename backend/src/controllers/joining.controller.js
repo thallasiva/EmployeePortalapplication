@@ -14,9 +14,21 @@ const verifyToken = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, 'Token verified').send(res);
 });
 
-/** POST /api/joining/save — save draft or submit */
+/** GET /api/joining/form?token=xxx — load all saved formality fields (for reopen after changes_requested) */
+const getFormByToken = asyncHandler(async (req, res) => {
+  const data = await joiningSvc.getFormByToken(req.query.token);
+  new ApiResponse(200, data, 'Form data loaded').send(res);
+});
+
+/** POST /api/joining/save — save draft or submit (multipart/form-data with optional file uploads) */
 const saveFormalities = asyncHandler(async (req, res) => {
   const { token, submit, ...formData } = req.body;
+
+  // Attach uploaded file paths to form data
+  const files = req.files || {};
+  if (files.aadhar_doc?.[0]) formData.aadharDocUrl = `/uploads/${files.aadhar_doc[0].filename}`;
+  if (files.pan_doc?.[0])    formData.panDocUrl    = `/uploads/${files.pan_doc[0].filename}`;
+
   const data = await joiningSvc.saveFormalities(token, formData, !!submit);
 
   if (submit) {
@@ -53,12 +65,16 @@ const getDetail = asyncHandler(async (req, res) => {
 
 /** PUT /api/joining/invitations/:id/review */
 const review = asyncHandler(async (req, res) => {
-  const { decision, remarks, changesFields } = req.body;
+  const { decision, remarks, changesFields, employeeId, designation, reportingTo, department } = req.body;
   const data = await joiningSvc.review(Number(req.params.id), {
     decision,
     remarks,
     changesFields,
-    reviewedBy: req.user.employeeId,
+    reviewedBy:  req.user.employeeId,
+    employeeId:  employeeId  || null,
+    designation: designation || null,
+    reportingTo: reportingTo || null,
+    department:  department  || null,
   });
 
   // Fire notification based on decision
@@ -83,6 +99,12 @@ const review = asyncHandler(async (req, res) => {
   }
 
   new ApiResponse(200, data, `Decision recorded: ${decision}`).send(res);
+});
+
+/** GET /api/joining/my-joining-docs — employee fetches their own uploaded docs + acknowledgments */
+const getMyJoiningDocs = asyncHandler(async (req, res) => {
+  const data = await joiningSvc.getMyJoiningDocs(req.user.employeeId);
+  new ApiResponse(200, data || {}, 'Joining docs fetched').send(res);
 });
 
 /** GET /api/joining/by-offer/:offerId — get joining invitation for an offer */
@@ -117,10 +139,12 @@ const resendInvitation = asyncHandler(async (req, res) => {
 
 module.exports = {
   verifyToken,
+  getFormByToken,
   saveFormalities,
   list,
   getDetail,
   review,
+  getMyJoiningDocs,
   getByOffer,
   resendInvitation,
 };

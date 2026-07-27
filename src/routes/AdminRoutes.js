@@ -42,6 +42,11 @@ const Recruitment = lazy(() => import("../pages/admin/Recruitment"));
 const CreateJobPage = lazy(() => import("../pages/admin/recruitment/CreateJobPage"));
 const RoleManagement      = lazy(() => import("../pages/admin/RoleManagement"));
 const JoiningVerification = lazy(() => import("../pages/admin/JoiningVerification"));
+const SalaryTemplates     = lazy(() => import("../pages/admin/SalaryTemplates"));
+const SalaryComponents    = lazy(() => import("../pages/admin/SalaryComponents"));
+const SalaryStructures    = lazy(() => import("../pages/admin/SalaryStructures"));
+const SalaryAssignments      = lazy(() => import("../pages/admin/SalaryAssignments"));
+const SalaryStructureEditor  = lazy(() => import("../pages/admin/SalaryStructureEditor"));
 
 const Page = LazyPage;
 
@@ -90,6 +95,12 @@ const AdminRoutes = () =>
       <Route path="recruitment/create-new" element={<Page><CreateJobPage /></Page>} />
       <Route path="role-management"       element={<Page><RoleManagement /></Page>} />
       <Route path="joining-verification"  element={<Page><JoiningVerification /></Page>} />
+      <Route path="salary-templates"     element={<Page><SalaryTemplates /></Page>} />
+      <Route path="salary-components"   element={<Page><SalaryComponents /></Page>} />
+      <Route path="salary-structures"           element={<Page><SalaryStructures /></Page>} />
+      <Route path="salary-structures/new"       element={<SalaryStructureEditor />} />
+      <Route path="salary-structures/:id"       element={<SalaryStructureEditor />} />
+      <Route path="salary-assignment"  element={<Page><SalaryAssignments /></Page>} />
       <Route path="*" element={<Navigate to="" replace />} />
     </Routes>
   );

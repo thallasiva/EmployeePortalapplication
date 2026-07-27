@@ -6,7 +6,9 @@ import {
 } from "./shared";
 import { INTERVIEW_LEVELS, INTERVIEW_TYPES, FEEDBACK_STATUSES } from "./mockData";
 import {
-  listInterviews, scheduleInterview, submitFeedback as apiSubmitFeedback,
+  listInterviews, scheduleInterview,
+  submitFeedback as apiSubmitFeedback,
+  submitRecruiterFeedback as apiSubmitRecruiterFeedback,
   listCandidates, listJobs, getErrorMessage,
 } from "../../../api/recruitment.api";
 import { successToast, errorToast } from "../../../utils/ToastControllers";
@@ -52,13 +54,16 @@ function RoundBadge({ level }) {
 }
 
 // ── Single row in accordion ────────────────────────────────────────────
-function RoundRow({ iv, canFeedback, onFeedback, onView }) {
+function RoundRow({ iv, canFeedback, canRecruiterFeedback, onFeedback, onRecruiterFeedback, onView }) {
   const ss = STATUS_CLS[iv.status] ?? "bg-gray-100 text-gray-500";
-  const fc = FB_CLS[iv.feedback_status];
+  const fc  = FB_CLS[iv.feedback_status];
+  const rfc = FB_CLS[iv.recruiter_feedback_status];
+  const isExternal = (iv.candidate_type || "External") === "External";
+
   return (
     <div
       className={`grid items-center gap-3 px-4 py-3 border-b border-gray-100 ${iv.status === "Scheduled" ? "bg-[#fafffe]" : "bg-white"}`}
-      style={{ gridTemplateColumns: "160px 1fr 120px 130px 160px auto" }}
+      style={{ gridTemplateColumns: "160px 1fr 120px 1fr 160px auto" }}
     >
       <RoundBadge level={iv.level} />
       <div>
@@ -74,23 +79,46 @@ function RoundRow({ iv, canFeedback, onFeedback, onView }) {
         )}
       </div>
       <span className={`text-[11px] font-bold px-2.5 py-[3px] rounded-full whitespace-nowrap ${ss}`}>{iv.status}</span>
-      <div>
-        {iv.feedback_status && fc ? (
-          <span className={`text-[11px] font-bold px-2.5 py-[3px] rounded-full ${fc}`}>{iv.feedback_status}</span>
-        ) : iv.status === "Completed" ? (
-          <span className="text-[11px] text-gray-400">No feedback</span>
-        ) : (
-          <span className="text-[11px] text-gray-400">Pending</span>
-        )}
-        {iv.shortlisted === 1 && (
-          <span className="text-[10px] font-bold ml-1 bg-[#fff7ed] text-[#f18200] px-1.5 py-px rounded-[10px]">Shortlisted</span>
+
+      {/* Feedback column — shows HR feedback + recruiter feedback for External */}
+      <div className="space-y-1">
+        {/* HR Feedback */}
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-gray-400 w-12 shrink-0">HR:</span>
+          {iv.feedback_status && fc
+            ? <span className={`text-[10px] font-bold px-2 py-[2px] rounded-full ${fc}`}>{iv.feedback_status}</span>
+            : <span className="text-[10px] text-gray-400">{iv.status === "Completed" ? "No feedback" : "Pending"}</span>
+          }
+          {iv.shortlisted === 1 && (
+            <span className="text-[10px] font-bold bg-[#fff7ed] text-[#f18200] px-1.5 py-px rounded-full">★</span>
+          )}
+        </div>
+        {/* Recruiter Feedback — only for External */}
+        {isExternal && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-gray-400 w-12 shrink-0">Rec:</span>
+            {iv.recruiter_feedback_status && rfc
+              ? <span className={`text-[10px] font-bold px-2 py-[2px] rounded-full ${rfc}`}>{iv.recruiter_feedback_status}</span>
+              : <span className="text-[10px] text-amber-500">Pending</span>
+            }
+          </div>
         )}
       </div>
+
       <div className="text-[11px] text-gray-400">{iv.interview_code}</div>
-      <div className="flex gap-1.5 shrink-0">
+      <div className="flex flex-col gap-1 shrink-0">
         <button onClick={() => onView(iv)} className="text-[11px] font-semibold text-gray-500 bg-transparent border border-gray-200 rounded-md px-2.5 py-[4px] cursor-pointer">View</button>
+        {/* HR Feedback button — only when Scheduled */}
         {iv.status === "Scheduled" && canFeedback && (
-          <button onClick={() => onFeedback(iv)} className="text-[11px] font-semibold text-white bg-[#f18200] border-0 rounded-md px-2.5 py-[4px] cursor-pointer">Feedback</button>
+          <button onClick={() => onFeedback(iv)} className="text-[11px] font-semibold text-white bg-[#f18200] border-0 rounded-md px-2.5 py-[4px] cursor-pointer">HR Feedback</button>
+        )}
+        {/* Recruiter Feedback button — for External, any status, if not yet given */}
+        {isExternal && canRecruiterFeedback && !iv.recruiter_feedback_status && (
+          <button onClick={() => onRecruiterFeedback(iv)}
+            className="text-[11px] font-semibold text-white border-0 rounded-md px-2.5 py-[4px] cursor-pointer"
+            style={{backgroundColor:"#6d28d9"}}>
+            My Feedback
+          </button>
         )}
       </div>
     </div>
@@ -98,9 +126,11 @@ function RoundRow({ iv, canFeedback, onFeedback, onView }) {
 }
 
 // ── Candidate accordion ────────────────────────────────────────────────
-function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, canRaiseOffer, onFeedback, onView, onScheduleNext, defaultOpen }) {
+function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, canRecruiterFeedback, canRaiseOffer, onFeedback, onRecruiterFeedback, onView, onScheduleNext, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen || false);
 
+  const candidateType   = (rounds[0]?.candidate_type || "External");
+  const isExternal      = candidateType === "External";
   const scheduledRounds = rounds.filter(r => r.status === "Scheduled");
   const completedRounds = rounds.filter(r => r.status === "Completed");
   const selectedRounds  = completedRounds.filter(r => r.feedback_status === "Selected");
@@ -108,7 +138,10 @@ function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, canR
   const sortedCompleted = [...completedRounds].sort((a,b) => LEVEL_ORDER.indexOf(b.level) - LEVEL_ORDER.indexOf(a.level));
   const lastCompleted   = sortedCompleted[0];
   const lastIsSelected  = lastCompleted?.feedback_status === "Selected";
-  const offerReady      = selectedRounds.length > 0 && scheduledRounds.length === 0 && !rejectedRound;
+  // For External: require both HR + recruiter feedback before next round
+  const recruiterFeedbackDone = !isExternal || !!(lastCompleted?.recruiter_feedback_status);
+  const nextRoundReady  = lastIsSelected && recruiterFeedbackDone;
+  const offerReady      = selectedRounds.length > 0 && scheduledRounds.length === 0 && !rejectedRound && nextRoundReady;
 
   let pipelineLabel, pipelineColor, pipelineBg;
   if (rejectedRound) {
@@ -164,19 +197,36 @@ function CandidateAccordion({ candidateName, jobTitle, rounds, canFeedback, canR
         <div>
           <div
             className="grid gap-3 px-4 py-1.5 bg-gray-50 border-b border-gray-100"
-            style={{ gridTemplateColumns: "160px 1fr 120px 130px 160px auto" }}
+            style={{ gridTemplateColumns: "160px 1fr 120px 1fr 160px auto" }}
           >
-            {["Round","Date & Interviewer","Status","Feedback","ID",""].map(h => (
+            {["Round","Date & Interviewer","Status","Feedback (HR / Recruiter)","ID",""].map(h => (
               <div key={h} className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.05em]">{h}</div>
             ))}
           </div>
           {[...rounds].sort((a,b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level)).map(iv => (
-            <RoundRow key={iv.interview_id} iv={iv} canFeedback={canFeedback} onFeedback={onFeedback} onView={onView} />
+            <RoundRow key={iv.interview_id} iv={iv}
+              canFeedback={canFeedback}
+              canRecruiterFeedback={canRecruiterFeedback}
+              onFeedback={onFeedback}
+              onRecruiterFeedback={onRecruiterFeedback}
+              onView={onView} />
           ))}
-          {lastIsSelected && scheduledRounds.length === 0 && !rejectedRound && canRaiseOffer && (
+
+          {/* Waiting for recruiter feedback banner (External only) */}
+          {lastIsSelected && scheduledRounds.length === 0 && !rejectedRound && isExternal && !recruiterFeedbackDone && (
+            <div className="flex items-center gap-3 px-[18px] py-3 bg-violet-50 border-t border-dashed border-violet-200">
+              <div className="flex-1">
+                <div className="text-[12px] font-bold text-violet-700">{lastCompleted?.level} — HR: Selected · Recruiter: Pending</div>
+                <div className="text-[11px] text-violet-600">Recruiter must submit their feedback before the next round can be scheduled.</div>
+              </div>
+            </div>
+          )}
+
+          {/* Ready to proceed banner */}
+          {nextRoundReady && scheduledRounds.length === 0 && !rejectedRound && canRaiseOffer && (
             <div className="flex items-center gap-3 px-[18px] py-3 bg-[#fff7ed] border-t border-dashed border-[#fed7aa]">
               <div className="flex-1">
-                <div className="text-[12px] font-bold text-[#f18200]">{lastCompleted?.level} — Selected</div>
+                <div className="text-[12px] font-bold text-[#f18200]">{lastCompleted?.level} — Selected{isExternal ? " (Both feedbacks received)" : ""}</div>
                 <div className="text-[11px] text-[#92400e]">All interview levels are optional. You can raise an offer now or schedule another round.</div>
               </div>
               <button onClick={e => { e.stopPropagation(); onScheduleNext && onScheduleNext(rounds[0]); }}
@@ -206,9 +256,11 @@ export default function InterviewsPage({ role }) {
   const [filterStatus, setFilterStatus] = useState("");
   const [schedOpen, setSchedOpen] = useState(false);
   const [fbOpen, setFbOpen]       = useState(null);
+  const [fbRecruiterOpen, setFbRecruiterOpen] = useState(null);
   const [viewIv, setViewIv]       = useState(null);
   const [form, setForm] = useState(BLANK_INT);
   const [fb, setFb]     = useState(BLANK_FB);
+  const [fbRecruiter, setFbRecruiter] = useState(BLANK_FB);
   const [saving, setSaving] = useState(false);
 
   const isAdmin     = role === 1;
@@ -216,7 +268,8 @@ export default function InterviewsPage({ role }) {
   const isRecruiter = role === 5;
   const isExternal  = isRecruiter;
   const canSchedule = isAdmin || isTL || isRecruiter;
-  const canFeedback = isAdmin || isTL;
+  const canFeedback          = isAdmin || isTL;   // HR feedback
+  const canRecruiterFeedback = isRecruiter;        // Recruiter feedback (External only)
 
   useEffect(() => {
     listCandidates({ limit: 500 }).then(r => setCandidates(r?.data ?? [])).catch(() => {});
@@ -300,9 +353,33 @@ export default function InterviewsPage({ role }) {
     const { name, value, type, checked } = e.target;
     setFb(f => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
+  async function handleRecruiterFeedback(e) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await apiSubmitRecruiterFeedback(fbRecruiterOpen.interview_id, {
+        feedbackStatus:   fbRecruiter.feedbackStatus,
+        feedbackComments: fbRecruiter.feedbackComments || null,
+      });
+      successToast("Recruiter feedback submitted");
+      setFbRecruiterOpen(null);
+      setFbRecruiter(BLANK_FB);
+      loadInterviews();
+    } catch (err) {
+      errorToast(getErrorMessage(err, "Failed to submit feedback"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function openFeedback(row) {
     setFbOpen(row);
     setFb({ feedbackStatus: row.feedback_status || "", feedbackComments: row.feedback_comments || "", shortlisted: !!row.shortlisted });
+  }
+
+  function openRecruiterFeedback(row) {
+    setFbRecruiterOpen(row);
+    setFbRecruiter({ feedbackStatus: row.recruiter_feedback_status || "", feedbackComments: row.recruiter_feedback_comments || "", shortlisted: false });
   }
 
   const filtered = interviews.filter(iv => {
@@ -383,9 +460,11 @@ export default function InterviewsPage({ role }) {
               jobTitle={g.jobTitle}
               rounds={g.rounds}
               canFeedback={canFeedback}
+              canRecruiterFeedback={canRecruiterFeedback}
               canRaiseOffer={isAdmin}
               defaultOpen={idx === 0}
               onFeedback={openFeedback}
+              onRecruiterFeedback={openRecruiterFeedback}
               onView={row => setViewIv(row)}
               onScheduleNext={() => { setForm(f => ({ ...f, candidateId: String(g.candidateId) })); setSchedOpen(true); }}
             />
@@ -503,7 +582,7 @@ export default function InterviewsPage({ role }) {
 
       {/* ── Feedback Modal ── */}
       <Modal open={!!fbOpen} onClose={() => setFbOpen(null)}
-        title={"Feedback - " + (fbOpen?.candidate_name || "") + " (" + (fbOpen?.level || "") + ")"} width={500}
+        title={"HR Feedback — " + (fbOpen?.candidate_name || "") + " (" + (fbOpen?.level || "") + ")"} width={500}
         footer={
           <>
             <Btn variant="secondary" onClick={() => setFbOpen(null)}>Cancel</Btn>
@@ -539,6 +618,42 @@ export default function InterviewsPage({ role }) {
               <input type="checkbox" name="shortlisted" checked={fb.shortlisted} onChange={handleFbChange} className="accent-[#f18200]" />
               Mark as Shortlisted
             </label>
+          </div>
+        )}
+      </Modal>
+
+      {/* ── Recruiter Feedback Modal ── */}
+      <Modal open={!!fbRecruiterOpen} onClose={() => setFbRecruiterOpen(null)}
+        title={"Your Feedback — " + (fbRecruiterOpen?.candidate_name || "") + " (" + (fbRecruiterOpen?.level || "") + ")"} width={500}
+        footer={
+          <>
+            <Btn variant="secondary" onClick={() => setFbRecruiterOpen(null)}>Cancel</Btn>
+            <Btn onClick={handleRecruiterFeedback} disabled={saving || !fbRecruiter.feedbackStatus}>
+              {saving ? "Saving..." : "Submit Feedback"}
+            </Btn>
+          </>
+        }>
+        {fbRecruiterOpen && (
+          <div>
+            <div className="mb-4 px-3.5 py-2.5 bg-violet-50 rounded-lg border border-violet-200">
+              <div className="text-[12px] font-bold text-violet-700 mb-1">RECRUITER FEEDBACK</div>
+              <div className="text-[13px] text-gray-900 font-semibold">{fbRecruiterOpen.candidate_name}</div>
+              <div className="text-[12px] text-gray-500">
+                {fbRecruiterOpen.level} · {fbRecruiterOpen.interview_type}
+                {fbRecruiterOpen.interview_date ? " · " + fbRecruiterOpen.interview_date.slice(0,10) : ""}
+              </div>
+              <div className="text-[11px] text-violet-600 mt-1">Your feedback will be reviewed by the HR Manager before the next round is scheduled.</div>
+            </div>
+            <Field label="Your Assessment" required>
+              <Select name="feedbackStatus" value={fbRecruiter.feedbackStatus}
+                onChange={e => setFbRecruiter(f => ({ ...f, feedbackStatus: e.target.value }))}
+                options={[{value:"",label:"Select outcome"},...FEEDBACK_STATUSES.map(s=>({value:s,label:s}))]} />
+            </Field>
+            <Field label="Comments">
+              <Textarea name="feedbackComments" value={fbRecruiter.feedbackComments}
+                onChange={e => setFbRecruiter(f => ({ ...f, feedbackComments: e.target.value }))}
+                rows={4} placeholder="Share your observations about the candidate..." />
+            </Field>
           </div>
         )}
       </Modal>
@@ -579,8 +694,18 @@ export default function InterviewsPage({ role }) {
             )}
             {viewIv.feedback_comments && (
               <div className="mt-3 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-lg">
-                <div className="text-[11px] font-bold text-gray-500 mb-1.5">FEEDBACK</div>
+                <div className="text-[11px] font-bold text-gray-500 mb-1.5">HR FEEDBACK</div>
                 <p className="text-[13px] text-gray-700 m-0 leading-relaxed">{viewIv.feedback_comments}</p>
+              </div>
+            )}
+            {viewIv.recruiter_feedback_comments && (
+              <div className="mt-2 px-3.5 py-2.5 bg-violet-50 border border-violet-200 rounded-lg">
+                <div className="text-[11px] font-bold text-violet-600 mb-1.5">RECRUITER FEEDBACK
+                  {viewIv.recruiter_feedback_status && (
+                    <span className="ml-2 font-normal normal-case">(Outcome: {viewIv.recruiter_feedback_status})</span>
+                  )}
+                </div>
+                <p className="text-[13px] text-gray-700 m-0 leading-relaxed">{viewIv.recruiter_feedback_comments}</p>
               </div>
             )}
           </div>

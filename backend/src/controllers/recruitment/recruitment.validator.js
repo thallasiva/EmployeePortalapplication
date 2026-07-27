@@ -97,7 +97,7 @@ const createOfferSchema = Joi.object({
   basic:              Joi.number().min(0).default(0),
   hra:                Joi.number().min(0).default(0),
   telephoneAllowance: Joi.number().min(0).default(0),
-  specialAllowance:   Joi.number().min(0).default(0),
+  specialAllowance:   Joi.number().default(0),
   grossSalary:        Joi.number().min(0).default(0),
   pfContribution:     Joi.number().min(0).default(0),
   statutoryBonus:     Joi.number().min(0).default(0),

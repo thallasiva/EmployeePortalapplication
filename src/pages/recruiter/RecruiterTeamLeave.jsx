@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Pagination, { usePagination } from "../../components/Pagination";
 import { Check, X } from "lucide-react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
 import { successToast, errorToast } from "../../utils/ToastControllers";
@@ -35,7 +36,7 @@ const RecruiterTeamLeave = () => {
 
   const load = () => {
     setLoading(true);
-    listLeaveRequests({ limit: 200 })
+    listLeaveRequests({})
       .then((res) => {
         const data = Array.isArray(res) ? res : (res?.data ?? []);
         setRequests(data.map(mapRow));
@@ -57,6 +58,7 @@ const RecruiterTeamLeave = () => {
   };
 
   const filtered = filter === "All" ? requests : requests.filter((r) => r.status === filter);
+  const { paged: pagedLeave, page: leavePage, setPage: setLeavePage, totalPages: leaveTotalPages, from: leaveFrom, to: leaveTo, total: leaveTotal, pageSize: leavePageSize, setPageSize: setLeavePageSize } = usePagination(filtered);
 
   return (
     <div className="admin-dash space-y-4">
@@ -93,7 +95,8 @@ const RecruiterTeamLeave = () => {
         ) : filtered.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-10">No {filter.toLowerCase()} leave requests.</p>
         ) : (
-          filtered.map((r) => (
+          <>
+          {pagedLeave.map((r) => (
             <div key={r.id} className="admin-dash-card flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="font-semibold text-gray-900 text-sm">{r.employee}</p>
@@ -122,7 +125,9 @@ const RecruiterTeamLeave = () => {
                 )}
               </div>
             </div>
-          ))
+          ))}
+          <Pagination page={leavePage} setPage={setLeavePage} totalPages={leaveTotalPages} from={leaveFrom} to={leaveTo} total={leaveTotal} pageSize={leavePageSize} setPageSize={setLeavePageSize} />
+          </>
         )}
       </div>
     </div>

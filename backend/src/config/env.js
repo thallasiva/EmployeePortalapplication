@@ -47,7 +47,9 @@ module.exports = {
     companyCIN:     required('COMPANY_CIN', ''),
     companyEmail:   required('COMPANY_EMAIL', ''),
     companyReportTo:required('COMPANY_REPORT_TO', ''),
+    hrManagerName:  required('HR_MANAGER_NAME', ''),
     logoPath:       required('COMPANY_LOGO_PATH', ''),
+    backendUrl:     required('BACKEND_URL', 'http://localhost:5000'),
     frontendUrl:    required('FRONTEND_URL', 'http://localhost:3000'),
   },
 

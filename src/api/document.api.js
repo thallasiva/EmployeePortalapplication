@@ -1,5 +1,9 @@
 import apiClient, { unwrap, unwrapList } from "./client";
 
+/** GET /joining/my-joining-docs — employee's own joining doc URLs + acknowledgment flags */
+export const getMyJoiningDocs = () =>
+  apiClient.get("/joining/my-joining-docs").then(unwrap);
+
 /** GET /documents — admin list (supports ?employee_id=, ?category_id=, ?visibility=, ?search=) */
 export const listDocuments = (params) =>
   apiClient.get("/documents", { params }).then(unwrapList);

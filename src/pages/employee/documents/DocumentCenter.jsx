@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { downloadPayslip, viewPayslip } from "../../../utils/payslipDownload";
 import { errorToast, successToast } from "../../../utils/ToastControllers";
-import { getMyDocuments } from "../../../api/document.api";
+import { getMyDocuments, getMyJoiningDocs } from "../../../api/document.api";
 import { API_BASE_URL } from "../../../api/client";
 
 const VIEW = {
@@ -221,15 +221,28 @@ function DocumentCenter() {
   // ── Dynamic documents from API ──────────────────────────────────────────────
   const [myDocs, setMyDocs] = useState(null); // null = not loaded yet
   const [docsLoading, setDocsLoading] = useState(false);
+  const [joiningDocs, setJoiningDocs] = useState(null); // joining acknowledgments + uploads
 
   useEffect(() => {
     if (view !== VIEW.DOCUMENTS || myDocs !== null) return;
     setDocsLoading(true);
-    getMyDocuments({ limit: 200 })
-      .then(({ data }) => setMyDocs(data || []))
+    Promise.all([
+      getMyDocuments({ limit: 200 }),
+      getMyJoiningDocs().catch(() => null),
+    ])
+      .then(([docsRes, jd]) => {
+        setMyDocs(docsRes?.data || []);
+        setJoiningDocs(jd || null);
+      })
       .catch(() => { errorToast("Failed to load documents"); setMyDocs([]); })
       .finally(() => setDocsLoading(false));
   }, [view, myDocs]);
+
+  // Also fetch joining docs when Policies view opens (for acknowledgment badges)
+  useEffect(() => {
+    if (view !== VIEW.POLICIES || joiningDocs !== null) return;
+    getMyJoiningDocs().then(setJoiningDocs).catch(() => {});
+  }, [view, joiningDocs]);
 
   // Group documents by category (or "General")
   const docsByCategory = useMemo(() => {
@@ -350,9 +363,108 @@ function DocumentCenter() {
 
   if (view === VIEW.DOCUMENTS) {
     const categoryNames = Object.keys(docsByCategory);
+
+    // Build joining card items
+    const joiningItems = joiningDocs ? [
+      {
+        key: "aadhaar",
+        label: "Aadhaar Card",
+        url: joiningDocs.aadhar_doc_url || null,
+        ack: !!joiningDocs.aadhar_doc_url,
+        type: "upload",
+      },
+      {
+        key: "pan",
+        label: "PAN Card",
+        url: joiningDocs.pan_doc_url || null,
+        ack: !!joiningDocs.pan_doc_url,
+        type: "upload",
+      },
+      {
+        key: "handbook",
+        label: "Employee Handbook",
+        url: null,
+        ack: !!(joiningDocs.handbook_acknowledged),
+        type: "acknowledgment",
+      },
+      {
+        key: "privacy",
+        label: "Privacy Policy",
+        url: null,
+        ack: !!(joiningDocs.privacy_policy_accepted),
+        type: "acknowledgment",
+      },
+    ] : [];
+    const hasAnyJoiningData = joiningItems.some(i => i.ack);
+
     return (
       <div className="-m-4 bg-[#f5f7fb] min-h-[calc(100vh-5rem)] p-4">
         <PanelTitle>Documents</PanelTitle>
+
+        {/* ── Joining Documents ───────────────────────────────────────── */}
+        {hasAnyJoiningData && (
+          <div className="mb-4">
+            <h3 className="text-[13px] font-semibold text-[#3a4558] mb-2">Joining Documents</h3>
+            <div className="border border-[#dfe5ed] bg-white">
+              <div className="px-3 py-2 border-b border-[#edf1f5] flex items-center justify-between">
+                <h4 className="text-[14px] font-semibold text-[#586377] flex items-center gap-1">
+                  <ChevronDown size={14} />
+                  Joining Formalities
+                </h4>
+                <span className="text-[11px] text-[#a4afbf]">
+                  {joiningDocs?.reviewed_at
+                    ? `Approved ${new Date(joiningDocs.reviewed_at).toLocaleDateString()}`
+                    : ""}
+                </span>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-2">
+                {joiningItems.map((item) => (
+                  <div
+                    key={item.key}
+                    className="border border-[#e8edf3] rounded px-3 py-2 bg-[#fafbfc] flex items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileText size={14} className={item.ack ? "text-green-500" : "text-[#c8d3e0]"} />
+                      <div>
+                        <p className="text-[13px] font-medium text-[#3a4558]">{item.label}</p>
+                        <p className="text-[11px] mt-0.5">
+                          {item.type === "acknowledgment" ? (
+                            item.ack
+                              ? <span className="text-green-600 font-medium">✓ Acknowledged</span>
+                              : <span className="text-gray-400">Not acknowledged</span>
+                          ) : (
+                            item.ack
+                              ? <span className="text-green-600 font-medium">✓ Uploaded</span>
+                              : <span className="text-gray-400">Not uploaded</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    {item.url && (
+                      <div className="flex gap-1 shrink-0">
+                        <a
+                          href={docFileUrl(item.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="border border-[#dfe5ed] h-7 px-2 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#5a78ad]"
+                        >
+                          <Search size={12} /> View
+                        </a>
+                        <a
+                          href={docFileUrl(item.url)}
+                          download
+                          className="border border-[#dfe5ed] h-7 px-2 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#8d9aad]"
+                        >
+                          <Download size={12} /> Download
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {docsLoading ? (
           <div className="border border-[#dfe5ed] bg-white min-h-[200px] flex items-center justify-center">
@@ -576,6 +688,12 @@ function DocumentCenter() {
   }
 
   if (view === VIEW.POLICIES) {
+    // Acknowledgment lookup from joining data (if available)
+    const ackMap = {
+      "employee-handbook": !!(joiningDocs?.handbook_acknowledged),
+      "privacy":           !!(joiningDocs?.privacy_policy_accepted),
+    };
+
     const togglePolicyDetail = (id) => {
       setPolicyDetailOpen((curr) => ({
         ...curr,
@@ -624,13 +742,18 @@ function DocumentCenter() {
                     }
                     className="w-full px-3 py-2 border-b border-[#edf1f5] flex justify-between items-center text-left"
                   >
-                    <h4 className="text-[14px] font-semibold text-[#586377] inline-flex items-center gap-1">
+                    <h4 className="text-[14px] font-semibold text-[#586377] inline-flex items-center gap-2">
                       {sectionOpen ? (
                         <ChevronDown size={14} />
                       ) : (
                         <ChevronRight size={14} />
                       )}
                       {policy.title}
+                      {ackMap[policy.id] && (
+                        <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                          ✓ Acknowledged
+                        </span>
+                      )}
                     </h4>
                     <span className="text-[11px] text-[#a4afbf] shrink-0 ml-2">
                       Last updated on {policy.date}

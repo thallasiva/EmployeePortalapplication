@@ -44,5 +44,8 @@ router.use('/dashboard', require('./dashboard.routes'));
 
 router.use('/recruitment', require('../controllers/recruitment/recruitment.routes'));
 router.use('/joining',    require('./joining.routes'));
+router.use('/salary-templates', require('./salaryTemplate.routes'));
+router.use('/salary-components', require('./salaryComponent.routes'));
+router.use('/salary-assignments', require('./salaryAssignment.routes'));
 
 module.exports = router;
