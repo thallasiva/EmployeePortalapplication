@@ -26,7 +26,7 @@ const DocumentsSection = React.memo(function DocumentsSection({ detail }) {
         <div className="flex items-center justify-between py-2 border-b border-amber-50 text-[13px]">
           <span className="text-gray-400 text-[12px]">Privacy Policy / HR Policy</span>
           <div className="flex items-center gap-2">
-            {detail.hr_policy_acknowledged || detail.hr_policy_ack ? (
+            {detail.privacy_policy_accepted || detail.hr_policy_acknowledged || detail.hr_policy_ack ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold">
                 <CheckCircle size={11} /> Acknowledged
               </span>

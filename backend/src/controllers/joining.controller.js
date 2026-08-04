@@ -26,8 +26,11 @@ const saveFormalities = asyncHandler(async (req, res) => {
 
 
   const files = req.files || {};
-  if (files.aadhar_doc?.[0]) formData.aadharDocUrl = `/uploads/${files.aadhar_doc[0].filename}`;
-  if (files.pan_doc?.[0]) formData.panDocUrl = `/uploads/${files.pan_doc[0].filename}`;
+  if (files.aadhar_doc?.[0]) formData.aadharDocUrl  = `/uploads/${files.aadhar_doc[0].filename}`;
+  if (files.pan_doc?.[0])    formData.panDocUrl      = `/uploads/${files.pan_doc[0].filename}`;
+  // photo & signature now arrive as file uploads (not base64 text fields)
+  if (files.photo?.[0])      formData.photo_url      = `/uploads/${files.photo[0].filename}`;
+  if (files.signature?.[0])  formData.signature_url  = `/uploads/${files.signature[0].filename}`;
 
   const data = await joiningSvc.saveFormalities(token, formData, !!submit);
 

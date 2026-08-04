@@ -1,7 +1,4 @@
--- ============================================================
--- Patch: Add Aadhaar/PAN document URL columns to joining_formalities
--- Run in MySQL Workbench against hrms_db
--- ============================================================
+
 USE hrms_db;
 
 ALTER TABLE joining_formalities

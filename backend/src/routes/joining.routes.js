@@ -13,10 +13,12 @@ const CAN_VIEW = authorizeRoles('Admin', 'Recruiter Team Lead');
 router.get('/verify', ctrl.verifyToken);
 router.get('/form', ctrl.getFormByToken);
 
-router.post('/save', upload.fields([
-{ name: 'aadhar_doc', maxCount: 1 },
-{ name: 'pan_doc', maxCount: 1 }]
-), ctrl.saveFormalities);
+router.post("/save", upload.fields([
+  { name: 'aadhar_doc', maxCount: 1 },
+  { name: 'pan_doc',    maxCount: 1 },
+  { name: 'photo',      maxCount: 1 },
+  { name: 'signature',  maxCount: 1 },
+]), ctrl.saveFormalities);
 
 
 

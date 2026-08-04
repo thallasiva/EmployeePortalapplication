@@ -9,7 +9,9 @@ export function fmt(v) {
 
 export function parse(v) {
   try {
-    return JSON.parse(v) || [];
+    if (!v) return [];
+    const parsed = typeof v === "string" ? JSON.parse(v) : v;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }

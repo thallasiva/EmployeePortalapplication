@@ -184,18 +184,42 @@ export function validateTab(tab, form) {
   return errs;
 }
 
+/** Convert a base64 data-URL to a Blob so it can be sent as a file upload
+ *  instead of a large text field (avoids Multer fieldSize limit errors). */
+function dataURLtoBlob(dataURL) {
+  const [header, b64] = dataURL.split(",");
+  const mime = header.match(/:(.*?);/)[1];
+  const binary = atob(b64);
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 export function buildPayload(form, token, submitFlag) {
   const { photoFile, photoPreview, signatureFile, signaturePreview,
     aadharDocFile, aadharDocName, panDocFile, panDocName, ...rest } = form;
 
-  const hasFiles = !!(aadharDocFile || panDocFile);
+  const hasFiles = !!(aadharDocFile || panDocFile || photoPreview || signaturePreview);
 
   if (hasFiles) {
     const fd = new FormData();
     fd.append("token", token);
     fd.append("submit", submitFlag ? "1" : "0");
-    fd.append("photo_url", photoPreview || "");
-    fd.append("signature_url", signaturePreview || "");
+
+    // Send photo & signature as file uploads (not base64 text fields)
+    // to avoid Multer fieldSize limit errors.
+    if (photoPreview && photoPreview.startsWith("data:")) {
+      fd.append("photo", dataURLtoBlob(photoPreview), "photo.jpg");
+    } else if (photoPreview) {
+      fd.append("photo_url", photoPreview);
+    }
+
+    if (signaturePreview && signaturePreview.startsWith("data:")) {
+      fd.append("signature", dataURLtoBlob(signaturePreview), "signature.jpg");
+    } else if (signaturePreview) {
+      fd.append("signature_url", signaturePreview);
+    }
+
     Object.entries(rest).forEach(([k, v]) => {
       if (v === null || v === undefined) return;
       fd.append(k, typeof v === "object" ? JSON.stringify(v) : String(v));

@@ -156,7 +156,7 @@ async function saveFormalities(token, data, submit = false) {
     if (data.aadharDocUrl) {sets.push('aadhar_doc_url = ?');vals.push(data.aadharDocUrl);}
     if (data.panDocUrl) {sets.push('pan_doc_url = ?');vals.push(data.panDocUrl);}
     vals.push(inv.id);
-    await pool.promise().execute(
+    await pool.execute(
       `UPDATE joining_formalities SET ${sets.join(', ')} WHERE invitation_id = ?`, vals
     );
     if (data.aadharDocUrl) row.aadhar_doc_url = data.aadharDocUrl;
@@ -225,7 +225,7 @@ async function review(invitationId, { decision, remarks, changesFields, reviewed
 
   if (decision === 'approve' && formData) {
     const { pool } = require('../config/db');
-    const conn = await pool.promise();
+    const conn = await pool.getConnection();
 
 
 
@@ -299,7 +299,7 @@ async function review(invitationId, { decision, remarks, changesFields, reviewed
 
 async function getMyJoiningDocs(employeeId) {
   const { pool } = require('../config/db');
-  const [rows] = await pool.promise().execute(
+  const [rows] = await pool.execute(
     `SELECT jf.aadhar_doc_url, jf.pan_doc_url,
             jf.handbook_acknowledged, jf.privacy_policy_accepted,
             jf.status, jf.reviewed_at, jf.candidate_name

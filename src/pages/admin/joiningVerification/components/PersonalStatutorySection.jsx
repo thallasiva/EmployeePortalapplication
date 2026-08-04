@@ -5,13 +5,23 @@ import {
 import { Row, Sec, TblHead } from "./SharedUI";
 import { fmt, parse } from "../utils";
 
+const API_BASE =
+  process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
+
+/** Resolve a URL that may be a base64 data-URL or a relative server path */
+function resolveUrl(url) {
+  if (!url) return null;
+  if (url.startsWith("data:") || url.startsWith("http")) return url;
+  return `${API_BASE}${url}`;
+}
+
 const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ detail }) {
   return (
     <>
       {detail.photo_url && (
         <Sec icon={User} title="Profile Photo">
           <img
-            src={detail.photo_url}
+            src={resolveUrl(detail.photo_url)}
             alt="Profile"
             className="w-28 h-32 object-cover rounded-xl border-2 border-amber-200 shadow"
           />
@@ -108,7 +118,7 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
       {detail.signature_url && (
         <Sec icon={PenLine} title="Employee Signature">
           <img
-            src={detail.signature_url}
+            src={resolveUrl(detail.signature_url)}
             alt="Signature"
             className="h-16 object-contain border border-amber-200 rounded-lg bg-white px-3 py-2"
           />
