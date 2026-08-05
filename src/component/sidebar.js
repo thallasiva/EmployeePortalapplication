@@ -275,7 +275,11 @@ export const Sidebar = ({ open }) =>
   {
     label: "Settings",
     icon: <Settings size={20} />,
-    navigationLink: "/dashboard/settings"
+    children: [
+    { label: "General Settings", navigationLink: "/dashboard/settings" },
+    { label: "Email Configuration", navigationLink: "/dashboard/settings/email-configuration" },
+    { label: "Notification Settings", navigationLink: "/dashboard/notification-settings" },
+    { label: "Audit Logs", navigationLink: "/dashboard/audit-logs" }]
   },
   {
     label: "Profile",

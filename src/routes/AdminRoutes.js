@@ -27,6 +27,9 @@ const Onboarding = lazy(() => import("../pages/admin/Onboarding"));
 const Manage = lazy(() => import("../pages/admin/Manage"));
 const ManagePermissions = lazy(() => import("../pages/admin/ManagePermissions"));
 const Settings = lazy(() => import("../pages/admin/Settings"));
+const EmailConfiguration = lazy(() => import("../pages/admin/settings/EmailConfiguration"));
+const NotificationSettings = lazy(() => import("../pages/admin/settings/NotificationSettings"));
+const AuditLogs = lazy(() => import("../pages/admin/settings/AuditLogs"));
 const Profile = lazy(() => import("../pages/admin/Profile"));
 const MfaSetup = lazy(() => import("../pages/admin/MfaSetup"));
 const LeaveSummaryReport = lazy(() => import("../pages/admin/LeaveSummaryReport"));
@@ -101,6 +104,9 @@ const AdminRoutes = () =>
       <Route path="salary-structures/new"       element={<SalaryStructureEditor />} />
       <Route path="salary-structures/:id"       element={<SalaryStructureEditor />} />
       <Route path="salary-assignment"  element={<Page><SalaryAssignments /></Page>} />
+      <Route path="settings/email-configuration" element={<Page><EmailConfiguration /></Page>} />
+      <Route path="notification-settings" element={<Page><NotificationSettings /></Page>} />
+      <Route path="audit-logs" element={<Page><AuditLogs /></Page>} />
       <Route path="*" element={<Navigate to="" replace />} />
     </Routes>
   );

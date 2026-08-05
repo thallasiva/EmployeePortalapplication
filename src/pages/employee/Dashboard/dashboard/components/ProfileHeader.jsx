@@ -14,10 +14,6 @@ const ProfileHeader = React.memo(function ProfileHeader({
   checkIn,
   checkOut,
   elapsed,
-  checkingIn,
-  checkingOut,
-  handleCheckIn,
-  handleCheckOut,
   todayAtt,
 }) {
   return (
@@ -48,57 +44,8 @@ const ProfileHeader = React.memo(function ProfileHeader({
         </div>
       </div>
 
-      {/* Attendance mini-widget */}
-      <div className={cssClass({
-        background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "14px 20px",
-        minWidth: 220, textAlign: "center",
-      })}>
-        <div className={cssClass({ fontSize: 11, opacity: 0.8, marginBottom: 6, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" })}>
-          Today's Attendance
-        </div>
-        <div className="flex justify-center gap-4 mb-2">
-          <div className="text-center">
-            <div className="text-[10px] opacity-70 mb-0.5 uppercase tracking-widest">Check In</div>
-            <div className="text-sm font-bold">{loading ? "…" : fmtTime(checkIn)}</div>
-          </div>
-          <div className="w-px bg-white/30 self-stretch" />
-          <div className="text-center">
-            <div className="text-[10px] opacity-70 mb-0.5 uppercase tracking-widest">Check Out</div>
-            <div className="text-sm font-bold">{loading ? "…" : fmtTime(checkOut)}</div>
-          </div>
-        </div>
-        {elapsed && (
-          <div className="text-center mb-2">
-            <div className="text-[10px] opacity-60 uppercase tracking-widest mb-0.5">Time Elapsed</div>
-            <div className="text-[22px] font-black tracking-widest text-white tabular-nums">{elapsed}</div>
-          </div>
-        )}
-        <div className="flex gap-2 mt-1">
-          <button
-            onClick={handleCheckIn}
-            disabled={!!checkIn || checkingIn || loading}
-            className={`flex-1 h-8 rounded-lg text-xs font-bold border-0 transition-all ${
-              checkIn ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-white/95 text-[#f18200] cursor-pointer hover:bg-white"
-            }`}
-          >
-            {checkingIn ? "…" : checkIn ? "✓ Checked In" : "Check In"}
-          </button>
-          <button
-            onClick={handleCheckOut}
-            disabled={!checkIn || !!checkOut || checkingOut || loading}
-            className={`flex-1 h-8 rounded-lg text-xs font-bold border-0 transition-all ${
-              checkOut ? "bg-white/10 text-white/40 cursor-not-allowed" :
-              !checkIn ? "bg-white/10 text-white/30 cursor-not-allowed" :
-              "bg-white/95 text-[#f18200] cursor-pointer hover:bg-white"
-            }`}
-          >
-            {checkingOut ? "…" : checkOut ? "✓ Checked Out" : "Check Out"}
-          </button>
-        </div>
-        {todayAtt?.status && (
-          <div className={cssClass({ fontSize: 11, marginTop: 6, opacity: 0.7 })}>{todayAtt.status}</div>
-        )}
-      </div>
+      {/* Attendance info — display only, no action buttons */}
+     
 
       {/* Greeting */}
       <div className={cssClass({ textAlign: "right" })}>

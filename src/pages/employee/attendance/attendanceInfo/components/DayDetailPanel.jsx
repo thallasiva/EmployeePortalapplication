@@ -1,21 +1,33 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { AlertCircle, CheckCircle2, Calendar } from "lucide-react";
 import { CELL_STYLES } from "../../../../../lib/attendanceUtils";
 import { SHIFT_CODE, SHIFT_NAME, SHIFT_TIME, SCHEME } from "../constants";
 import DetailTable from "./DetailTable";
 
 const PROCESSED_HEADERS = [
-  "First In",
-  "Last Out",
-  "Late In",
-  "Early Out",
-  "Total Work Hrs",
-  "Break Hrs",
-  "Actual Work Hrs"
+  "First In", "Last Out", "Late In", "Early Out",
+  "Total Work Hrs", "Break Hrs", "Actual Work Hrs"
 ];
 
+const SIX_HOURS_MINUTES = 360; // 6 * 60
+
 const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
+  const navigate = useNavigate();
+
+  const isWorkday = !selected.isWeekend && !selected.isHoliday && !selected.pending;
+  const workedMinutes = selected?.status?.workMinutes ?? 0;
+  const canRegularize = isWorkday && workedMinutes > 0 && workedMinutes < SIX_HOURS_MINUTES;
+
+  const handleRegularize = () => {
+    navigate("/employee/attendance/regularizations", {
+      state: { prefillDate: selected.iso },
+    });
+  };
+
   return (
-    <div className="xl:col-span-5 bg-white border border-[#dce3eb] rounded-lg shadow-sm flex flex-col min-h-[420px]">
+    <div className="xl:col-span-5 bg-white border border-[#dce3eb] rounded-xl shadow-sm flex flex-col min-h-[420px]">
+      {/* Header */}
       <div className="px-4 py-4 border-b border-[#e8edf2]">
         <div className="flex items-baseline gap-2">
           <span className="text-2xl font-bold text-[#1f2937]">{selected.day}</span>
@@ -34,8 +46,38 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
             {selected.status.code} — {selected.status.label}
           </span>
         )}
+
+        {/* Regularization alert for <6h days */}
+        {canRegularize && (
+          <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+            <AlertCircle size={15} className="text-amber-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-amber-800">Less than 6 hours worked</p>
+              <p className="text-[11px] text-amber-700 mt-0.5">
+                Only {selected.processed.totalWorkHrs} recorded. You can apply for regularization.
+              </p>
+            </div>
+            <button
+              onClick={handleRegularize}
+              className="shrink-0 text-xs font-bold text-[#f18200] hover:text-[#e07000] underline underline-offset-2 transition-colors"
+            >
+              Regularize
+            </button>
+          </div>
+        )}
+
+        {/* Already full-day present */}
+        {isWorkday && workedMinutes >= SIX_HOURS_MINUTES && (
+          <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+            <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+            <p className="text-xs text-emerald-700 font-medium">
+              {selected.processed.totalWorkHrs} worked — no regularization needed
+            </p>
+          </div>
+        )}
       </div>
 
+      {/* Body */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5 text-sm">
         <section>
           <h3 className="text-xs font-semibold text-[#94a3b8] uppercase tracking-wide mb-2">
@@ -113,7 +155,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
       </div>
 
       <p className="px-4 py-2 text-[11px] text-[#94a3b8] border-t border-[#e8edf2]">
-        {user?.name || "Employee"} · Rule: ≥9h = P · partial (e.g. 4h 30m) = P:A
+        {user?.name || "Employee"} · Rule: ≥9h = P · ≥6h = P:A · &lt;6h = eligible for regularization
       </p>
     </div>
   );
