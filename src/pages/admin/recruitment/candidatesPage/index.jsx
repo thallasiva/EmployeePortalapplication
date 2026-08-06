@@ -6,19 +6,17 @@ import StatusStrips from "./components/StatusStrips";
 import CandidateTable from "./components/CandidateTable";
 import AddCandidateWizard from "./components/AddCandidateWizard";
 import CandidateProfileModal from "./components/CandidateProfileModal";
-import ScheduleInterviewModal from "./components/ScheduleInterviewModal";
 import { BLANK_INT } from "./constants";
 
 export default function CandidatesPage({ role }) {
   const {
     candidates, jobs, recruiters, loading, filtered,
     search, filterStatus, filterJob,
-    addOpen, detail, schedOpen, intForm, scheduling, tableRef,
+    addOpen, detail, tableRef,
     isAdmin, isTL, isHRMgr, isRecruiter,
     setSearch, setFilterStatus, setFilterJob,
-    setAddOpen, setDetail, setSchedOpen, setIntForm,
-    loadCandidates, updateStatus, openSchedule,
-    handleScheduleInterview, handleIntChange
+    setAddOpen, setDetail,
+    loadCandidates, updateStatus,
   } = useCandidatesData({ role });
 
   return (
@@ -45,7 +43,7 @@ export default function CandidatesPage({ role }) {
         search={search} filterJob={filterJob} filterStatus={filterStatus}
         isRecruiter={isRecruiter} isHRMgr={isHRMgr} isTL={isTL}
         setSearch={setSearch} setFilterJob={setFilterJob} setFilterStatus={setFilterStatus}
-        setDetail={setDetail} openSchedule={openSchedule} updateStatus={updateStatus}
+        setDetail={setDetail} updateStatus={updateStatus}
         tableRef={tableRef} />
 
       <AddCandidateWizard
@@ -61,16 +59,7 @@ export default function CandidatesPage({ role }) {
         isAdmin={isAdmin} isTL={isTL} isHRMgr={isHRMgr} isRecruiter={isRecruiter}
         onClose={() => setDetail(null)}
         updateStatus={updateStatus}
-        openSchedule={openSchedule} />
-
-      <ScheduleInterviewModal
-        open={schedOpen}
-        detail={detail}
-        intForm={intForm}
-        scheduling={scheduling}
-        onClose={() => { setSchedOpen(false); setIntForm(BLANK_INT); }}
-        onSubmit={handleScheduleInterview}
-        onChange={handleIntChange} />
+/>
     </div>
   );
 }

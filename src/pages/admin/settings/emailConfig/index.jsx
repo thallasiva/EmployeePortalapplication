@@ -46,10 +46,10 @@ export default function EmailConfigIndex() {
                     ? "bg-[#f18200] text-white border-[#f18200] shadow-md shadow-[#f18200]/20"
                     : "bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#f18200]/40 hover:text-[#f18200]"
                 }`}>
-                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold ${
+                {/* <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold ${
                   isActive?"bg-white/20":"bg-[#f8fafc]"}`}>
                   {i + 1}
-                </span>
+                </span> */}
                 {tab.icon}
                 {tab.label}
               </button>

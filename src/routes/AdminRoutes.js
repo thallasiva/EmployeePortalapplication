@@ -30,6 +30,11 @@ const Settings = lazy(() => import("../pages/admin/Settings"));
 const EmailConfiguration = lazy(() => import("../pages/admin/settings/EmailConfiguration"));
 const NotificationSettings = lazy(() => import("../pages/admin/settings/NotificationSettings"));
 const AuditLogs = lazy(() => import("../pages/admin/settings/AuditLogs"));
+const NotificationCenter = lazy(() => import("../pages/admin/NotificationCenter"));
+const FormBuilder = lazy(() => import("../pages/admin/FormBuilder"));
+const DashboardBuilder = lazy(() => import("../pages/admin/DashboardBuilder"));
+const MenuPermissionBuilder = lazy(() => import("../pages/admin/MenuPermissionBuilder"));
+const ReportBuilder = lazy(() => import("../pages/admin/ReportBuilder"));
 const Profile = lazy(() => import("../pages/admin/Profile"));
 const MfaSetup = lazy(() => import("../pages/admin/MfaSetup"));
 const LeaveSummaryReport = lazy(() => import("../pages/admin/LeaveSummaryReport"));
@@ -44,7 +49,6 @@ const AdminWorkflowDelegation = lazy(() => import("../pages/admin/AdminWorkflowD
 const Recruitment = lazy(() => import("../pages/admin/Recruitment"));
 const CreateJobPage = lazy(() => import("../pages/admin/recruitment/CreateJobPage"));
 const RoleManagement      = lazy(() => import("../pages/admin/RoleManagement"));
-const JoiningVerification = lazy(() => import("../pages/admin/JoiningVerification"));
 const SalaryTemplates     = lazy(() => import("../pages/admin/SalaryTemplates"));
 const SalaryComponents    = lazy(() => import("../pages/admin/SalaryComponents"));
 const SalaryStructures    = lazy(() => import("../pages/admin/SalaryStructures"));
@@ -83,6 +87,10 @@ const AdminRoutes = () =>
       <Route path="manage" element={<Page><Manage /></Page>} />
       <Route path="manage/permissions/:roleSlug" element={<Page><ManagePermissions /></Page>} />
       <Route path="settings" element={<Page><Settings /></Page>} />
+      <Route path="form-builder" element={<Page><FormBuilder /></Page>} />
+      <Route path="dash-builder" element={<Page><DashboardBuilder /></Page>} />
+      <Route path="menu-perm" element={<Page><MenuPermissionBuilder /></Page>} />
+      <Route path="report-builder" element={<Page><ReportBuilder /></Page>} />
       <Route path="profile" element={<Page><Profile /></Page>} />
       <Route path="security/mfa" element={<Page><MfaSetup /></Page>} />
       <Route path="leave/summary" element={<Page><LeaveSummaryReport /></Page>} />
@@ -97,7 +105,6 @@ const AdminRoutes = () =>
       <Route path="recruitment" element={<Page><Recruitment /></Page>} />
       <Route path="recruitment/create-new" element={<Page><CreateJobPage /></Page>} />
       <Route path="role-management"       element={<Page><RoleManagement /></Page>} />
-      <Route path="joining-verification"  element={<Page><JoiningVerification /></Page>} />
       <Route path="salary-templates"     element={<Page><SalaryTemplates /></Page>} />
       <Route path="salary-components"   element={<Page><SalaryComponents /></Page>} />
       <Route path="salary-structures"           element={<Page><SalaryStructures /></Page>} />
@@ -107,6 +114,7 @@ const AdminRoutes = () =>
       <Route path="settings/email-configuration" element={<Page><EmailConfiguration /></Page>} />
       <Route path="notification-settings" element={<Page><NotificationSettings /></Page>} />
       <Route path="audit-logs" element={<Page><AuditLogs /></Page>} />
+      <Route path="notification-center" element={<Page><NotificationCenter /></Page>} />
       <Route path="*" element={<Navigate to="" replace />} />
     </Routes>
   );

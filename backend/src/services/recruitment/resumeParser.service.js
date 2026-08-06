@@ -1,14 +1,21 @@
 'use strict';
-
-const crypto = require('crypto');
-const _pdfParse = require('pdf-parse');
-const pdfParse = _pdfParse.default || _pdfParse;
-const mammoth = require('mammoth');
-const OpenAI = require('openai');
-
+/**
+ * Dynamic Resume Parser Service
+ * - Fields loaded from DB (sp_rec_get_parser_fields)
+ * - Dynamic prompt builder
+ * - OpenAI with regex fallback
+ * - Dynamic persistence via sp_rec_save_dynamic_field
+ * - Duplicate check, logging, scoring
+ */
+const crypto   = require('crypto');
+const path     = require('path');
+const _pdf     = require('pdf-parse');
+const pdfParse = _pdf.default || _pdf;
+const mammoth  = require('mammoth');
+const OpenAI   = require('openai');
 const { callProcedure } = require('../../config/db');
 
-
+/* ── OpenAI singleton ── */
 let _openai = null;
 function getOpenAI() {
   if (_openai) return _openai;
@@ -21,441 +28,414 @@ function getOpenAI() {
   return _openai;
 }
 
+function getModel() {
+  return process.env.OPENAI_MODEL || 'gpt-4o-mini';
+}
 
-function hashBuffer(buffer) {
+/* ── Utilities ── */
+function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
-
-async function extractText(buffer, mimetype, originalname) {
-  const ext = (originalname || '').split('.').pop().toLowerCase();
-
-  if (mimetype === 'application/pdf' || ext === 'pdf') {
-    const data = await pdfParse(buffer);
-    return data.text || '';
-  }
-
-  if (
-  mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-  mimetype === 'application/msword' ||
-  ext === 'docx' || ext === 'doc')
-  {
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value || '';
-  }
-
-  throw new Error('Unsupported file type. Please upload a PDF or DOCX file.');
+function normalizeText(text = '') {
+  return text
+    .replace(/\r/g, '')
+    .replace(/\t/g, ' ')
+    .replace(/[ ]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[""]/g, '"')
+    .replace(/['']/g, "'")
+    .replace(/[–—]/g, '-')
+    .trim();
 }
 
-
-function cleanText(raw) {
-  return raw.
-
-  replace(/(\r?\n){3,}/g, '\n\n').
-
-  replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').
-
-  replace(/[‘’]/g, "'").
-  replace(/[“”]/g, '"').
-  replace(/[–—]/g, '-').
-
-  replace(/ {2,}/g, ' ').
-  trim();
-}
-
-
-async function parseWithOpenAI(text, retries = 2) {
-  const client = getOpenAI();
-  if (!client) return null;
-
-
-  const trimmed = text.slice(0, 8000);
-
-  const prompt = `You are an expert resume parser. Extract every field listed below from the resume text and return ONLY a valid JSON object — no markdown, no explanation, no code fences.
-
-Fields:
-- name: full candidate name (string | null)
-- email: email address (string | null)
-- phone: primary phone number (string | null)
-- skills: array of ALL technical and professional skills — be thorough, include frameworks, tools, languages, methodologies (string[])
-- experience: total years of work experience as a number (number, 0 if not found)
-- education: array of { degree: string, institution: string | null, year: number | null } — empty array if none
-- work_experience: array of { company_name: string, designation: string | null, start_month: number | null, start_year: number | null, end_month: number | null, end_year: number | null, is_current: 0|1, description: string | null } — ordered newest first
-- companies: array of ALL company/employer names ever mentioned in work history (string[])
-- location: current city or location of the candidate (string | null)
-- current_role: most recent job title (string | null)
-- current_company: most recent employer name (string | null)
-- linkedin_url: LinkedIn profile URL (string | null)
-- github_url: GitHub profile URL (string | null)
-- notice_period_days: notice period in days as integer (number | null) — e.g. "30 days" → 30, "2 months" → 60, "immediate" → 0
-- current_ctc_annual: current CTC in INR per year as a number (number | null) — convert lakhs if needed (e.g. "12 LPA" → 1200000)
-- expected_ctc_annual: expected CTC in INR per year as a number (number | null)
-- summary: 1-2 sentence professional summary (string | null)
-- certifications: array of certification names (string[])
-- languages: array of spoken/written languages (string[])
-
-Resume text:
----
-${trimmed}
----
-
-Return only the JSON object.`;
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0,
-        max_tokens: 1800
-      });
-
-      const content = response.choices[0]?.message?.content?.trim() || '';
-      const clean = content.
-      replace(/^```(?:json)?\s*/i, '').
-      replace(/```$/i, '').
-      trim();
-
-      const parsed = JSON.parse(clean);
-      return parsed;
-    } catch (err) {
-      if (attempt === retries) {
-        console.error('[ResumeParser] OpenAI parse failed after retries:', err.message);
-        return null;
-      }
-
-      await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+async function extractText(buffer, mimeType, fileName) {
+  const ext = path.extname(fileName || '').replace('.', '').toLowerCase();
+  switch (ext) {
+    case 'pdf': {
+      const r = await pdfParse(buffer);
+      return normalizeText(r.text || '');
     }
+    case 'doc':
+    case 'docx': {
+      const r = await mammoth.extractRawText({ buffer });
+      return normalizeText(r.value || '');
+    }
+    case 'txt':
+      return normalizeText(buffer.toString('utf8'));
+    default:
+      if (mimeType === 'application/pdf') {
+        const r = await pdfParse(buffer);
+        return normalizeText(r.text || '');
+      }
+      throw new Error('Unsupported resume format. Upload PDF, DOC, DOCX or TXT.');
   }
-  return null;
 }
 
-
-function regexEmail(text) {
-  const m = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
-  return m ? m[0] : null;
+/* ── Dynamic field loader ── */
+async function loadParserFields() {
+  try {
+    const rows = await callProcedure('sp_rec_get_parser_fields()');
+    if (rows && rows[0] && rows[0].length) return rows[0];
+  } catch (err) {
+    console.warn('[ResumeParser] sp_rec_get_parser_fields failed, using defaults:', err.message);
+  }
+  // Default field schema
+  return [
+    { field_name: 'name',                type: 'string',  required: 1 },
+    { field_name: 'email',               type: 'string',  required: 1 },
+    { field_name: 'phone',               type: 'string',  required: 0 },
+    { field_name: 'skills',              type: 'array',   required: 0 },
+    { field_name: 'experience',          type: 'number',  required: 0 },
+    { field_name: 'education',           type: 'array',   required: 0 },
+    { field_name: 'work_experience',     type: 'array',   required: 0 },
+    { field_name: 'companies',           type: 'array',   required: 0 },
+    { field_name: 'location',            type: 'string'              },
+    { field_name: 'current_role',        type: 'string'              },
+    { field_name: 'current_company',     type: 'string'              },
+    { field_name: 'linkedin_url',        type: 'string'              },
+    { field_name: 'github_url',          type: 'string'              },
+    { field_name: 'notice_period_days',  type: 'number'              },
+    { field_name: 'current_ctc_annual',  type: 'number'              },
+    { field_name: 'expected_ctc_annual', type: 'number'              },
+    { field_name: 'summary',             type: 'string'              },
+    { field_name: 'certifications',      type: 'array'               },
+    { field_name: 'languages',           type: 'array'               },
+  ];
 }
 
-function regexPhone(text) {
-  const m = text.match(/(?:\+91[-\s]?)?[6-9]\d{9}|(?:\+\d{1,3}[-\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-  return m ? m[0].trim() : null;
+/* ── Dynamic prompt builder ── */
+function buildPrompt(fields, resumeText) {
+  const list = fields.map(f => `- ${f.field_name} (${f.type})`).join('\n');
+  return `You are an expert ATS Resume Parser.
+Extract ALL possible information from the resume below.
+Return ONLY valid JSON — no markdown, no code fences, no explanation.
+
+Fields to extract:
+${list}
+
+Rules:
+1. Return only a JSON object.
+2. Arrays must always be arrays (never null for array fields).
+3. Missing values → null (or [] for arrays).
+4. Never invent data not present in the resume.
+5. Preserve company names, dates, and skills exactly as written.
+6. notice_period_days: convert "2 months"→60, "30 days"→30, "immediate"→0.
+7. current_ctc_annual / expected_ctc_annual: convert to annual INR number ("12 LPA"→1200000).
+
+Resume:
+---
+${resumeText.slice(0, 25000)}
+---`;
 }
 
-function regexName(text) {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-  for (const line of lines.slice(0, 10)) {
+function safeJson(text) {
+  if (!text) return {};
+  try {
+    return JSON.parse(
+      text.replace(/^```json/i, '').replace(/^```/i, '').replace(/```$/i, '').trim()
+    );
+  } catch { return {}; }
+}
+
+/* ── Regex fallback helpers ── */
+function regexEmail(t)    { const m = t.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/); return m?m[0]:null; }
+function regexPhone(t)    { const m = t.match(/(?:\+91[- ]?)?[6-9]\d{9}/); return m?m[0]:null; }
+function regexLinkedIn(t) { const m = t.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[A-Za-z0-9-_%]+\/?/i); return m?m[0]:null; }
+function regexGithub(t)   { const m = t.match(/https?:\/\/(?:www\.)?github\.com\/[A-Za-z0-9-_%]+\/?/i); return m?m[0]:null; }
+function regexName(t) {
+  const lines = t.split('\n').map(l=>l.trim()).filter(Boolean);
+  for (const line of lines.slice(0,10)) {
     const words = line.split(/\s+/);
-    if (
-    words.length >= 2 && words.length <= 4 &&
-    words.every((w) => /^[A-Za-z.'-]{1,30}$/.test(w)) &&
-    !line.toLowerCase().match(/resume|curriculum|profile|summary|objective|address|email|phone|mobile/))
-    return line;
+    if (words.length>=2&&words.length<=4&&words.every(w=>/^[A-Za-z.'-]{1,30}$/.test(w))&&
+        !line.toLowerCase().match(/resume|curriculum|profile|summary|objective|email|phone|mobile/))
+      return line;
   }
   return null;
 }
-
-function regexExperience(text) {
-  const patterns = [
-  /(\d+)\s*\+?\s*years?\s+(?:of\s+)?(?:total\s+)?(?:work\s+)?experience/i,
-  /(\d+)\s*\+?\s*yrs?\s+(?:of\s+)?experience/i,
-  /experience\s*(?:of\s*)?(\d+)\s*\+?\s*years?/i,
-  /total\s+(?:experience|exp)\s*:?\s*(\d+)/i,
-  /(\d+)\s*years?\s+of\s+(?:professional\s+)?experience/i];
-
-  for (const pat of patterns) {
-    const m = text.match(pat);
-    if (m) return Number(m[1]);
-  }
-  const fallback = [...text.matchAll(/(\d+)\s*\+?\s*(?:years?|yrs?)/gi)];
-  if (fallback.length) {
-    const nums = fallback.map((m) => Number(m[1])).filter((n) => n > 0 && n < 40);
-    if (nums.length) return Math.max(...nums);
-  }
+function regexExperience(t) {
+  const pats = [
+    /(\d+)\s*\+?\s*years?\s+(?:of\s+)?(?:total\s+)?(?:work\s+)?experience/i,
+    /(\d+)\s*\+?\s*yrs?\s+(?:of\s+)?experience/i,
+    /experience\s*(?:of\s*)?(\d+)\s*\+?\s*years?/i,
+  ];
+  for (const p of pats) { const m=t.match(p); if(m) return Number(m[1]); }
   return 0;
 }
-
-function regexLinkedIn(text) {
-  const m = text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9\-_%]+\/?/i);
-  return m ? m[0].trim() : null;
-}
-
-function regexGitHub(text) {
-  const m = text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9\-_%]+\/?/i);
-  return m ? m[0].trim() : null;
-}
-
-function regexNoticePeriod(text) {
-
-  const immediate = /immediate(?:ly)?\s+(?:joiner|available|join)/i.test(text);
-  if (immediate) return 0;
-  const months = text.match(/(\d+)\s*months?\s+notice/i);
-  if (months) return Number(months[1]) * 30;
-  const days = text.match(/(\d+)\s*days?\s+notice/i);
+function regexNoticePeriod(t) {
+  if (/immediate(?:ly)?\s+(?:joiner|available|join)/i.test(t)) return 0;
+  const months = t.match(/(\d+)\s*months?\s+notice/i);
+  if (months) return Number(months[1])*30;
+  const days = t.match(/(\d+)\s*days?\s+notice/i);
   if (days) return Number(days[1]);
   return null;
 }
 
-
-function extractSkillsSection(text) {
-  const headingPattern = /(?:^|\n)\s*(?:TECHNICAL\s+)?(?:KEY\s+)?(?:CORE\s+)?(?:PROFESSIONAL\s+)?SKILLS?\s*(?:&\s*(?:COMPETENCIES|EXPERTISE))?\s*[:\-]?\s*\n([\s\S]{10,600}?)(?=\n\s*(?:[A-Z][A-Z\s]{3,}|EDUCATION|EXPERIENCE|PROJECTS?|CERTIF|ACHIEV|INTEREST|LANGUAGE|REFERENCE|$))/im;
-  const m = text.match(headingPattern);
-  if (!m) return [];
-
-  const block = m[1];
-  const raw = block.
-  replace(/[•·▪▸►✓✔\-–—]/g, ',').
-  replace(/\|/g, ',').
-  replace(/\n/g, ',').
-  split(',').
-  map((s) => s.trim()).
-  filter((s) => s.length >= 2 && s.length <= 50 && /[a-zA-Z]/.test(s));
-
-  const stopWords = new Set(['and', 'or', 'the', 'with', 'in', 'of', 'for', 'to', 'a', 'an', 'on', 'at', 'by', 'is', 'are', 'was', 'i', 'we', 'my', 'our', 'you', 'your']);
-  return raw.filter((s) => {
-    const lower = s.toLowerCase();
-    return !stopWords.has(lower) && !/^\d+$/.test(s);
-  });
-}
-
-
-function buildFieldsSummary(parsed) {
+function regexFallback(text) {
   return {
-    name: !!parsed.name,
-    email: !!parsed.email,
-    phone: !!parsed.phone,
-    skills: (parsed.skills || []).length,
-    experience: parsed.experience > 0,
-    education: (parsed.education || []).length,
-    work_experience: (parsed.work_experience || []).length,
-    companies: (parsed.companies || []).length,
-    location: !!parsed.location,
-    current_role: !!parsed.current_role,
-    linkedin_url: !!parsed.linkedin_url,
-    github_url: !!parsed.github_url,
-    notice_period: parsed.notice_period_days != null,
-    current_ctc: !!parsed.current_ctc_annual,
-    expected_ctc: !!parsed.expected_ctc_annual,
-    certifications: (parsed.certifications || []).length,
-    languages: (parsed.languages || []).length
+    name:                regexName(text),
+    email:               regexEmail(text),
+    phone:               regexPhone(text),
+    linkedin_url:        regexLinkedIn(text),
+    github_url:          regexGithub(text),
+    experience:          regexExperience(text),
+    notice_period_days:  regexNoticePeriod(text),
+    skills: [], education: [], work_experience: [], companies: [],
+    summary: null, location: null, current_role: null, current_company: null,
+    current_ctc_annual: null, expected_ctc_annual: null,
+    certifications: [], languages: [],
   };
 }
 
-
-
-
-
-
-async function parseResume(buffer, mimetype, originalname) {
-  const resumeHash = hashBuffer(buffer);
-  const rawText = await extractText(buffer, mimetype, originalname);
-  const cleanedText = cleanText(rawText);
-
-
+/* ── OpenAI parsing ── */
+async function parseWithOpenAI(text, parserFields) {
+  const client = getOpenAI();
+  if (!client) return null;
+  const prompt = buildPrompt(parserFields, text);
   try {
-    const ai = await parseWithOpenAI(cleanedText);
-    if (ai) {
-      return {
-        rawText,
-        resumeHash,
-        name: ai.name || null,
-        email: ai.email || null,
-        phone: ai.phone || null,
-        skills: Array.isArray(ai.skills) ? ai.skills : [],
-        experience: Number(ai.experience) || 0,
-        education: Array.isArray(ai.education) ? ai.education : [],
-        work_experience: Array.isArray(ai.work_experience) ? ai.work_experience : [],
-        companies: Array.isArray(ai.companies) ? ai.companies : [],
-        location: ai.location || null,
-        summary: ai.summary || null,
-        current_role: ai.current_role || null,
-        current_company: ai.current_company || null,
-        linkedin_url: ai.linkedin_url || null,
-        github_url: ai.github_url || null,
-        notice_period_days: ai.notice_period_days != null ? Number(ai.notice_period_days) : null,
-        current_ctc_annual: ai.current_ctc_annual != null ? Number(ai.current_ctc_annual) : null,
-        expected_ctc_annual: ai.expected_ctc_annual != null ? Number(ai.expected_ctc_annual) : null,
-        certifications: Array.isArray(ai.certifications) ? ai.certifications : [],
-        languages: Array.isArray(ai.languages) ? ai.languages : [],
-        parsedBy: 'openai'
-      };
-    }
+    const resp = await client.chat.completions.create({
+      model: getModel(),
+      temperature: 0,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: 'You are a world-class ATS Resume Parser. Return only valid JSON.' },
+        { role: 'user',   content: prompt },
+      ],
+    });
+    return safeJson(resp.choices?.[0]?.message?.content);
   } catch (err) {
-    console.error('[ResumeParser] OpenAI failed, falling back to regex:', err.message);
+    console.error('[ResumeParser] OpenAI failed:', err.message);
+    return null;
   }
-
-
-  return {
-    rawText,
-    resumeHash,
-    name: regexName(cleanedText),
-    email: regexEmail(cleanedText),
-    phone: regexPhone(cleanedText),
-    skills: extractSkillsSection(cleanedText),
-    experience: regexExperience(cleanedText),
-    education: [],
-    work_experience: [],
-    companies: [],
-    location: null,
-    summary: null,
-    current_role: null,
-    current_company: null,
-    linkedin_url: regexLinkedIn(cleanedText),
-    github_url: regexGitHub(cleanedText),
-    notice_period_days: regexNoticePeriod(cleanedText),
-    current_ctc_annual: null,
-    expected_ctc_annual: null,
-    certifications: [],
-    languages: [],
-    parsedBy: 'regex'
-  };
 }
 
+/* ── Dynamic field normalizer ── */
+function normalizeValue(value, type) {
+  if (value === undefined || value === '') return type === 'array' ? [] : null;
+  if (value === null) return type === 'array' ? [] : null;
+  switch (type) {
+    case 'number':  return Number(value) || 0;
+    case 'array':   return Array.isArray(value) ? value : [value];
+    case 'boolean': return Boolean(value);
+    default:        return value;
+  }
+}
 
+function mapDynamicFields(ai, parserFields) {
+  const parsed = {};
+  for (const field of parserFields) {
+    parsed[field.field_name] = normalizeValue(ai[field.field_name], field.type);
+  }
+  return parsed;
+}
 
+function validateParsedData(parsed, parserFields) {
+  for (const field of parserFields) {
+    if (field.required == 1 && (parsed[field.field_name] == null || parsed[field.field_name] === '')) {
+      parsed[field.field_name] = null;
+    }
+  }
+  return parsed;
+}
 
+/* ── Core parse ── */
+async function parseResume(buffer, mimeType, fileName) {
+  const parserFields = await loadParserFields();
+  const resumeHash   = sha256(buffer);
+  const rawText      = await extractText(buffer, mimeType, fileName);
 
+  let ai = await parseWithOpenAI(rawText, parserFields);
+  if (!ai || Object.keys(ai).length === 0) ai = regexFallback(rawText);
 
-async function checkDuplicate(email, resumeHash) {
+  const parsed = mapDynamicFields(ai, parserFields);
+  validateParsedData(parsed, parserFields);
+
+  parsed.rawText    = rawText;
+  parsed.resumeHash = resumeHash;
+  parsed.parsedBy   = getOpenAI() ? 'openai' : 'regex';
+  return parsed;
+}
+
+/* ── Scoring ── */
+function calculateResumeScore(parsed) {
+  let score = 0;
+  if (parsed.skills?.length)          score += Math.min(parsed.skills.length * 3, 30);
+  if (parsed.work_experience?.length) score += Math.min(parsed.work_experience.length * 10, 20);
+  if (parsed.education?.length)       score += 10;
+  if (parsed.certifications?.length)  score += Math.min(parsed.certifications.length * 2, 10);
+  if (parsed.current_company)         score += 10;
+  if (parsed.current_role)            score += 10;
+  if (parsed.languages?.length)       score += 5;
+  if (parsed.summary)                 score += 5;
+  return Math.min(score, 100);
+}
+
+function calculateJobMatch(parsed, job) {
+  let score = 0;
+  const candidateSkills = (parsed.skills || []).map(s => s.toLowerCase());
+  const requiredSkills  = (job.requiredSkills || []).map(s => s.toLowerCase());
+  if (requiredSkills.length > 0) {
+    const matched = requiredSkills.filter(s => candidateSkills.includes(s)).length;
+    score += (matched / requiredSkills.length) * 60;
+  }
+  if (Number(parsed.experience || 0) >= job.minExperience) score += 20;
+  if (parsed.education?.length)    score += 10;
+  if (parsed.certifications?.length) score += 10;
+  return Math.round(score);
+}
+
+/* ── Flatten for full-text search ── */
+function flattenResume(parsed) {
+  const json = {};
+  Object.keys(parsed).forEach(key => {
+    const v = parsed[key];
+    if (Array.isArray(v)) json[key] = v.join(',');
+    else if (typeof v === 'object' && v !== null) json[key] = JSON.stringify(v);
+    else json[key] = v;
+  });
+  return json;
+}
+
+/* ── Field summary for logs ── */
+function buildFieldsSummary(parsed) {
+  const summary = {};
+  Object.keys(parsed).forEach(key => {
+    const v = parsed[key];
+    if (Array.isArray(v)) summary[key] = v.length;
+    else summary[key] = (v !== null && v !== undefined && v !== '');
+  });
+  return summary;
+}
+
+/* ── Normalize (add score + search doc) ── */
+function normalizeParsedResume(parsed) {
+  parsed.resume_score     = calculateResumeScore(parsed);
+  parsed.search_document  = flattenResume(parsed);
+  parsed.parsed_date      = new Date();
+  return parsed;
+}
+
+/* ── Duplicate check ── */
+async function checkDuplicate(parsed) {
   try {
     const rows = await callProcedure(
-      'sp_rec_check_duplicate_candidate(?, ?)',
-      [email || null, resumeHash || null]
+      'sp_rec_check_duplicate_candidate_dynamic(?,?,?,?,?)',
+      [
+        parsed.email        || null,
+        parsed.phone        || null,
+        parsed.linkedin_url || null,
+        parsed.resumeHash   || null,
+        parsed.github_url   || null,
+      ]
     );
-    return rows[0] || [];
+    return rows?.[0] || [];
   } catch (err) {
     console.error('[ResumeParser] Duplicate check failed:', err.message);
     return [];
   }
 }
 
-
-
-async function saveSkills(candidateId, skills) {
-  if (!Array.isArray(skills) || skills.length === 0) return 0;
-  const json = JSON.stringify(skills.slice(0, 150));
+/* ── Dynamic persistence ── */
+async function saveDynamicField(candidateId, field, value) {
   try {
-    const rows = await callProcedure('sp_rec_save_candidate_skills(?, ?)', [candidateId, json]);
-    return rows[0]?.[0]?.skills_saved || 0;
+    await callProcedure('sp_rec_save_dynamic_field(?,?,?)', [
+      candidateId, field, JSON.stringify(value),
+    ]);
   } catch (err) {
-    console.error('[ResumeParser] saveSkills failed:', err.message);
-    return 0;
+    console.error('[ResumeParser] saveDynamicField', field, err.message);
   }
 }
 
-async function saveEducation(candidateId, education) {
-  if (!Array.isArray(education) || education.length === 0) return 0;
-  const json = JSON.stringify(education.slice(0, 20));
+async function persistParsedResume(candidateId, parsed) {
+  // Save full JSON blob
   try {
-    const rows = await callProcedure('sp_rec_save_candidate_education(?, ?)', [candidateId, json]);
-    return rows[0]?.[0]?.education_saved || 0;
+    await callProcedure('sp_rec_save_candidate_json(?,?)', [
+      candidateId, JSON.stringify(parsed),
+    ]);
   } catch (err) {
-    console.error('[ResumeParser] saveEducation failed:', err.message);
-    return 0;
+    console.error('[ResumeParser] sp_rec_save_candidate_json failed:', err.message);
+  }
+  // Save individual dynamic fields
+  for (const field of Object.keys(parsed)) {
+    await saveDynamicField(candidateId, field, parsed[field]);
   }
 }
 
-async function saveExperience(candidateId, workExperience) {
-  if (!Array.isArray(workExperience) || workExperience.length === 0) return 0;
-  const json = JSON.stringify(workExperience.slice(0, 30));
+/* ── Parse log ── */
+async function logParse({ candidateId, parsed, filename, mimeType, fileSize, duration, status, error }) {
   try {
-    const rows = await callProcedure('sp_rec_save_candidate_experience(?, ?)', [candidateId, json]);
-    return rows[0]?.[0]?.experience_saved || 0;
-  } catch (err) {
-    console.error('[ResumeParser] saveExperience failed:', err.message);
-    return 0;
-  }
-}
-
-async function updateCandidateParseFields(candidateId, parsed) {
-  try {
-    await callProcedure(
-      'sp_rec_update_candidate_parse_status(?, ?, ?, ?, ?, ?, ?, ?)',
-      [
+    await callProcedure('sp_rec_log_parser_dynamic(?,?,?,?,?,?,?,?,?,?,?)', [
       candidateId,
-      'done',
-      parsed.resumeHash || null,
-      parsed.linkedin_url || null,
-      parsed.github_url || null,
-      parsed.notice_period_days != null ? parsed.notice_period_days : null,
-      parsed.companies?.length ? JSON.stringify(parsed.companies) : null,
-      parsed.current_role || null]
-
-    );
-  } catch (err) {
-    console.error('[ResumeParser] updateCandidateParseFields failed:', err.message);
-  }
-}
-
-async function logParse({ candidateId, filename, fileSizeBytes, mimeType, parsed, durationMs, status, errorMessage }) {
-  try {
-    const fieldsSummary = parsed ? buildFieldsSummary(parsed) : null;
-    await callProcedure(
-      'sp_rec_log_parser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @log_id)',
-      [
-      candidateId || null,
       filename,
-      fileSizeBytes,
       mimeType,
+      fileSize,
       parsed?.parsedBy || 'none',
       status,
-      errorMessage || null,
+      error || null,
       parsed?.rawText?.length || 0,
-      fieldsSummary ? JSON.stringify(fieldsSummary) : null,
-      durationMs]
-
-    );
+      JSON.stringify(buildFieldsSummary(parsed || {})),
+      duration,
+      JSON.stringify(parsed || {}),
+    ]);
   } catch (err) {
-
     console.error('[ResumeParser] logParse failed:', err.message);
   }
 }
 
-
-
-
-
-
-async function persistParsedResume(candidateId, parsed, fileInfo = {}) {
-  const t0 = Date.now();
+/* ── Full pipeline ── */
+async function processResume(candidateId, file) {
+  const started = Date.now();
   try {
-    await Promise.all([
-    saveSkills(candidateId, parsed.skills),
-    saveEducation(candidateId, parsed.education),
-    saveExperience(candidateId, parsed.work_experience)]
-    );
-    await updateCandidateParseFields(candidateId, parsed);
+    const parsed = await parseResume(file.buffer, file.mimetype, file.originalname);
+    const duplicate = await checkDuplicate(parsed);
 
+    if (duplicate.length > 0) {
+      return { success: false, duplicate: true, duplicateCandidate: duplicate[0], parsed };
+    }
+
+    await persistParsedResume(candidateId, parsed);
     await logParse({
-      candidateId,
-      filename: fileInfo.originalname || 'resume',
-      fileSizeBytes: fileInfo.size || 0,
-      mimeType: fileInfo.mimetype || '',
-      parsed,
-      durationMs: Date.now() - t0,
-      status: 'success'
+      candidateId, parsed,
+      filename: file.originalname, mimeType: file.mimetype, fileSize: file.size,
+      duration: Date.now() - started, status: 'SUCCESS', error: null,
     });
+
+    return { success: true, duplicate: false, parsed };
   } catch (err) {
-    console.error('[ResumeParser] persistParsedResume error:', err.message);
+    console.error('[ResumeParser] processResume failed:', err.message);
     await logParse({
       candidateId,
-      filename: fileInfo.originalname || 'resume',
-      fileSizeBytes: fileInfo.size || 0,
-      mimeType: fileInfo.mimetype || '',
-      parsed,
-      durationMs: Date.now() - t0,
-      status: 'failed',
-      errorMessage: err.message
+      parsed: { rawText: '', parsedBy: 'FAILED' },
+      filename: file.originalname, mimeType: file.mimetype, fileSize: file.size,
+      duration: Date.now() - started, status: 'FAILED', error: err.message,
     });
+    throw err;
   }
 }
 
+async function saveResume(candidateId, file) {
+  const result = await processResume(candidateId, file);
+  if (!result.success) return result;
+  normalizeParsedResume(result.parsed);
+  return result;
+}
+
+/* ── Exports ── */
 module.exports = {
   parseResume,
-  checkDuplicate,
+  processResume,
+  saveResume,
   persistParsedResume,
-  saveSkills,
-  saveEducation,
-  saveExperience,
+  checkDuplicate,
+  calculateResumeScore,
+  calculateJobMatch,
+  normalizeParsedResume,
+  flattenResume,
+  buildFieldsSummary,
   logParse,
-  hashBuffer
+  sha256,
+  extractText,
+  loadParserFields,
+  buildPrompt,
+  parseWithOpenAI,
 };

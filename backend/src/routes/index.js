@@ -48,4 +48,6 @@ router.use('/salary-templates', require('./salaryTemplate.routes'));
 router.use('/salary-components', require('./salaryComponent.routes'));
 router.use('/salary-assignments', require('./salaryAssignment.routes'));
 
+router.use('/settings', require('./settings.routes'));
+
 module.exports = router;

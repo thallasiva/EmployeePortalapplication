@@ -19,14 +19,10 @@ export default function JoiningVerification() {
     decision,
     setDecision,
     reviewing,
-    adminFields,
-    managers,
     load,
     openDetail,
     submitReview,
-    saveAdminFieldsOnly,
     resend,
-    updateAdminField,
     closeDetail,
   } = useJoiningVerification();
 
@@ -84,17 +80,13 @@ export default function JoiningVerification() {
         detailId={detailId}
         detail={detail}
         selectedRow={selectedRow}
-        adminFields={adminFields}
-        managers={managers}
         remarks={remarks}
         decision={decision}
         reviewing={reviewing}
         onClose={closeDetail}
-        onUpdateAdminField={updateAdminField}
         onSetDecision={setDecision}
         onSetRemarks={setRemarks}
         onSubmitReview={submitReview}
-        onSaveAdminFieldsOnly={saveAdminFieldsOnly}
       />
     </div>
   );

@@ -30,7 +30,7 @@ const TABS = {
   { key: "candidates", label: "Candidates", icon: Users },
   { key: "interviews", label: "Interviews", icon: CalendarCheck },
   { key: "offers", label: "Offers", icon: FileCheck },
-  { key: "onboarding", label: "Onboarding", icon: CheckSquare },
+  // { key: "onboarding", label: "Onboarding", icon: CheckSquare },
   { key: "reports", label: "Reports", icon: BarChart3 }],
 
 
@@ -40,7 +40,8 @@ const TABS = {
   { key: "candidates", label: "Candidates", icon: Users },
   { key: "interviews", label: "Interviews", icon: CalendarCheck },
   { key: "offers", label: "Offers", icon: FileCheck },
-  { key: "onboarding", label: "Onboarding", icon: CheckSquare }],
+//  { key: "onboarding", label: "Onboarding", icon: CheckSquare }
+],
 
 
   4: [
@@ -70,7 +71,7 @@ function RenderPage({ page, roleId })
     case "interviews":return <InterviewsPage role={roleId} />;
     case "resume-match":return <ResumeMatchTab role={roleId} />;
     case "offers":return <OffersPage role={roleId} />;
-    case "onboarding":return <OnboardingPage role={roleId} />;
+    // case "onboarding":return <OnboardingPage role={roleId} />;
     case "employees":return <EmployeesTab />;
     case "reports":return <ReportsTab />;
     default:

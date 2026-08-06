@@ -9,13 +9,13 @@ import InterviewHistory from "./InterviewHistory";
 
 const CandidateProfileModal = React.memo(function CandidateProfileModal({
   detail, role, isAdmin, isTL, isHRMgr, isRecruiter,
-  onClose, updateStatus, openSchedule
+  onClose, updateStatus
 }) {
   if (!detail) return null;
 
-  const recruiterOpts = ["Work in Progress", "Schedule Interview"].map((s) => ({ value: s, label: s }));
+  const recruiterOpts = ["Work in Progress", "Shortlisted"].map((s) => ({ value: s, label: s }));
   const hrMgrOpts = ["Shortlisted"].map((s) => ({ value: s, label: s }));
-  const tlOpts = ["Work in Progress", "Schedule Interview"].map((s) => ({ value: s, label: s }));
+  const tlOpts = ["Work in Progress", "Shortlisted"].map((s) => ({ value: s, label: s }));
   const adminOpts = STATUS_OPTS.map((s) => ({ value: s, label: s }));
 
   const footer = (
@@ -29,8 +29,6 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
         <div className="flex-1">
           <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={hrMgrOpts} />
         </div>
-        <Btn icon={<Calendar size={15} />} onClick={() => updateStatus(detail.candidate_id, "Schedule Interview")}
-          style={{ background: "#1e3a5f", color: "#fff", border: "none" }}>Next Round</Btn>
         <Btn onClick={() => updateStatus(detail.candidate_id, "Offer Rejected")}
           style={{ background: "#dc2626", color: "#fff", border: "none" }}>Reject</Btn>
       </>}
@@ -44,10 +42,7 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
           <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={adminOpts} />
         </div>
       }
-      {isRecruiter && detail.status === "Schedule Interview" &&
-        <Btn icon={<Calendar size={15} />} onClick={() => openSchedule(detail)}
-          style={{ background: "#f18200", color: "#fff", border: "none" }}>Schedule Interview</Btn>
-      }
+
       <Btn variant="secondary" onClick={onClose}>Close</Btn>
     </div>
   );
@@ -107,24 +102,11 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
 
         <MatchScoreWidget candidateId={detail.candidate_id} jobReqId={detail.job_req_id} />
 
-        {detail.status === "Schedule Interview" && isRecruiter &&
-          <div className="mt-4 px-4 py-3.5 bg-amber-50 border border-orange-200 border-l-4 border-l-[#f18200] rounded-xl flex items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-bold text-amber-800">Ready for Next Interview Round</div>
-              <div className="text-[11px] text-amber-700 mt-0.5">HR has approved this candidate - schedule the next interview</div>
-            </div>
-            <button onClick={() => openSchedule(detail)}
-              className="text-xs font-bold text-white bg-[#f18200] border-0 rounded-lg px-4 py-2 cursor-pointer flex-shrink-0">
-              Schedule Interview
-            </button>
-          </div>
-        }
-
         <InterviewHistory
           candidateId={detail.candidate_id}
           role={role}
           candidateStatus={detail.status}
-          onMoveToNextRound={() => updateStatus(detail.candidate_id, "Schedule Interview")} />
+          onMoveToNextRound={null} />
       </div>
     </Modal>
   );

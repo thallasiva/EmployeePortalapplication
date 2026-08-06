@@ -112,7 +112,7 @@ export function SectionCard({ title, subtitle, children, action, noPad }) {
 }
 
 /* ── Confirm dialog ── */
-export function ConfirmDialog({ open, title, message, onConfirm, onCancel, danger }) {
+export function ConfirmDialog({ open = true, title, message, onConfirm, onCancel, danger }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

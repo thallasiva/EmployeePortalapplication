@@ -11,7 +11,7 @@ export const BLANK_INT = {
 };
 
 export const STATUS_OPTS = [
-  "Work in Progress", "Schedule Interview", "Shortlisted", "Offer Released",
+  "Work in Progress", "Shortlisted", "Offer Released",
   "Offer Accepted", "Offer Rejected", "Joining Formalities", "Onboarded"
 ];
 
@@ -42,7 +42,6 @@ export const REQUIRED_FIELDS = [
 export const STATUS_STRIPS_CONFIG = [
   { label: "Total", val: "", cls: "text-gray-500 bg-gray-100", activeBorder: "border-gray-500", defaultBorder: "border-gray-200" },
   { label: "Shortlisted", val: "Shortlisted", cls: "text-blue-700 bg-blue-50", activeBorder: "border-blue-700", defaultBorder: "border-blue-200" },
-  { label: "In Interview", val: "Schedule Interview", cls: "text-purple-700 bg-purple-50", activeBorder: "border-purple-700", defaultBorder: "border-purple-200" },
   { label: "Offer Released", val: "Offer Released", cls: "text-amber-700 bg-amber-50", activeBorder: "border-amber-700", defaultBorder: "border-amber-200" },
   { label: "Offer Accepted", val: "Offer Accepted", cls: "text-[#f18200] bg-orange-50", activeBorder: "border-[#f18200]", defaultBorder: "border-orange-200" },
   { label: "Onboarded", val: "Onboarded", cls: "text-green-800 bg-green-100", activeBorder: "border-green-800", defaultBorder: "border-green-300" }

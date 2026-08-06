@@ -11,7 +11,7 @@ import { successToast, errorToast } from "../../../../utils/ToastControllers";
 export function useJoiningVerification() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("pending_verification");
+  const [filter, setFilter] = useState("all");
   const [detail, setDetail] = useState(null);
   const [detailId, setDetailId] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);

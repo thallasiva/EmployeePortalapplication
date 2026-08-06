@@ -8,7 +8,7 @@ const CandidateTable = React.memo(function CandidateTable({
   loading, filtered, jobs, search, filterJob, filterStatus,
   isRecruiter, isHRMgr, isTL,
   setSearch, setFilterJob, setFilterStatus,
-  setDetail, openSchedule, updateStatus, tableRef
+  setDetail, updateStatus, tableRef
 }) {
   const jobOpts = useMemo(() => [
     { value: "", label: "All Jobs" },
@@ -42,28 +42,13 @@ const CandidateTable = React.memo(function CandidateTable({
     { header: "Source", key: "source" },
     { header: "", key: "candidate_id", width: 180, render: (_, row) =>
       <div className="flex gap-1 flex-wrap">
-        {row.status === "Schedule Interview" && isRecruiter &&
-          <button onClick={(e) => { e.stopPropagation(); setDetail(row); openSchedule(row); }}
-            className="text-[11px] font-bold px-2.5 py-1 bg-[#f18200] text-white border-0 rounded-md cursor-pointer whitespace-nowrap">
-            Schedule
-          </button>
-        }
-        {row.status === "Schedule Interview" && isHRMgr &&
-          <button onClick={(e) => { e.stopPropagation(); updateStatus(row.candidate_id, "Shortlisted"); }}
-            className="text-[11px] font-bold px-2.5 py-1 bg-blue-600 text-white border-0 rounded-md cursor-pointer whitespace-nowrap">
-            Shortlist
-          </button>
-        }
-        {isTL && row.last_interview_feedback === "Selected" && !NO_NEXT_STATUSES.includes(row.status) &&
-          <button onClick={(e) => { e.stopPropagation(); updateStatus(row.candidate_id, "Schedule Interview"); }}
-            className="text-[11px] font-bold px-2.5 py-1 bg-violet-600 text-white border-0 rounded-md cursor-pointer whitespace-nowrap">
-            Next Round
-          </button>
-        }
+
+
+
         <Btn size="sm" variant="ghost" icon={<Eye size={14} />} onClick={(e) => { e.stopPropagation(); setDetail(row); }}>View</Btn>
       </div>
     }
-  ], [isRecruiter, isHRMgr, isTL, setDetail, openSchedule, updateStatus]);
+  ], [isTL, setDetail, updateStatus]);
 
   return (
     <div ref={tableRef} className="scroll-mt-4">

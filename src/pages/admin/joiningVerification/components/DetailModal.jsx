@@ -3,24 +3,19 @@ import { XCircle } from "lucide-react";
 import PersonalStatutorySection from "./PersonalStatutorySection";
 import NomineeSections from "./NomineeSections";
 import DocumentsSection from "./DocumentsSection";
-import AdminEntryPanel from "./AdminEntryPanel";
 import DecisionPanel from "./DecisionPanel";
 
 const DetailModal = React.memo(function DetailModal({
   detailId,
   detail,
   selectedRow,
-  adminFields,
-  managers,
   remarks,
   decision,
   reviewing,
   onClose,
-  onUpdateAdminField,
   onSetDecision,
   onSetRemarks,
   onSubmitReview,
-  onSaveAdminFieldsOnly,
 }) {
   if (!detailId) return null;
 
@@ -87,14 +82,6 @@ const DetailModal = React.memo(function DetailModal({
               <PersonalStatutorySection detail={detail} />
               <NomineeSections detail={detail} />
               <DocumentsSection detail={detail} />
-              <AdminEntryPanel
-                detail={detail}
-                adminFields={adminFields}
-                managers={managers}
-                reviewing={reviewing}
-                onUpdateAdminField={onUpdateAdminField}
-                onSave={onSaveAdminFieldsOnly}
-              />
               <DecisionPanel
                 detail={detail}
                 decision={decision}

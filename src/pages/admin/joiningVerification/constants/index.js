@@ -37,11 +37,11 @@ export const STATUS = {
 };
 
 export const FILTERS = [
+  { key: "all", label: "All" },
   { key: "pending_verification", label: "Pending Review" },
   { key: "submitted", label: "Submitted" },
   { key: "changes_requested", label: "Changes Requested" },
   { key: "approved", label: "Approved" },
   { key: "rejected", label: "Rejected" },
   { key: "pending", label: "Not Submitted" },
-  { key: "all", label: "All" },
 ];

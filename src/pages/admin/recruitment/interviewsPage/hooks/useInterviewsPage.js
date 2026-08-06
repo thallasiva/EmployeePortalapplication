@@ -33,7 +33,8 @@ export function useInterviewsPage(role) {
   const isTL = role === 3 || role === 4;
   const isRecruiter = role === 5;
   const isExternal = isRecruiter;
-  const canSchedule = isAdmin || isTL || isRecruiter;
+  const isHRMgr = role === 2;
+  const canSchedule = isHRMgr || isTL || isRecruiter;
   const canFeedback = isAdmin || isTL;
   const canRecruiterFeedback = isRecruiter;
 

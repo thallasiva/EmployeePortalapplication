@@ -1,134 +1,138 @@
 'use strict';
 
-const asyncHandler = require("express-async-handler");
-const multer = require("multer");
-const resumeMatchSvc = require("../../services/recruitment/resumeMatch.service");
-const resumeParserSvc = require("../../services/recruitment/resumeParser.service");
-const ApiResponse = require("../../utils/ApiResponse");
+const asyncHandler     = require("express-async-handler");
+const multer           = require("multer");
+const resumeMatchSvc   = require("../../services/recruitment/resumeMatch.service");
+const resumeParserSvc  = require("../../services/recruitment/resumeParser.service");
+const ApiResponse      = require("../../utils/ApiResponse");
 
-
+/* ── Multer (PDF / DOC / DOCX, max 5 MB) ── */
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) =>
-  {
-    const allowed = ['application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (allowed.includes(file.mimetype) || /\.(pdf|doc|docx)$/i.test(file.originalname))
-    {
+  fileFilter: (req, file, cb) => {
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (allowed.includes(file.mimetype) || /\.(pdf|doc|docx)$/i.test(file.originalname)) {
       cb(null, true);
-    } else
-    {
+    } else {
       cb(new Error('Only PDF and DOCX files are allowed'));
     }
-  }
+  },
 }).single('resume');
 
-function uploadMiddleware(req, res)
-{
+function uploadMiddleware(req, res) {
   return new Promise((resolve, reject) =>
-  upload(req, res, (err) => err ? reject(err) : resolve())
+    upload(req, res, (err) => (err ? reject(err) : resolve()))
   );
 }
 
-
-const getMatch = asyncHandler(async (req, res) =>
-{
+/* ── GET single match ── */
+const getMatch = asyncHandler(async (req, res) => {
   const candidateId = Number(req.params.candidateId);
-  const jobReqId = Number(req.params.jobReqId);
+  const jobReqId    = Number(req.params.jobReqId);
   const data = await resumeMatchSvc.getMatch(candidateId, jobReqId);
-  new ApiResponse(200, data || null, data ? "Match found" : "No match computed yet").send(res);
+  new ApiResponse(200, data || null, data ? 'Match found' : 'No match computed yet').send(res);
 });
 
-
-const computeMatch = asyncHandler(async (req, res) =>
-{
+/* ── POST compute & store match ── */
+const computeMatch = asyncHandler(async (req, res) => {
   const candidateId = Number(req.params.candidateId);
-  const jobReqId = Number(req.params.jobReqId);
+  const jobReqId    = Number(req.params.jobReqId);
   const data = await resumeMatchSvc.computeAndStore(candidateId, jobReqId);
-  new ApiResponse(200, data, "Match computed").send(res);
+  new ApiResponse(200, data, 'Match computed').send(res);
 });
 
-
-const listByJob = asyncHandler(async (req, res) =>
-{
+/* ── GET all matches for a job ── */
+const listByJob = asyncHandler(async (req, res) => {
   const jobReqId = Number(req.params.jobReqId);
   const data = await resumeMatchSvc.listByJob(jobReqId);
-  new ApiResponse(200, data, "Matches fetched").send(res);
+  new ApiResponse(200, data, 'Matches fetched').send(res);
 });
 
-
-const quickMatch = asyncHandler(async (req, res) =>
-{
+/* ── POST quick match (skills text, no file) ── */
+const quickMatch = asyncHandler(async (req, res) => {
   const { jobReqId, candidateSkills, candidateExperience } = req.body;
   if (!jobReqId || !candidateSkills)
-  {
-    return res.status(400).json({ success: false, message: "jobReqId and candidateSkills are required" });
-  }
+    return res.status(400).json({ success: false, message: 'jobReqId and candidateSkills are required' });
+
   const data = await resumeMatchSvc.quickMatch({
-    jobReqId: Number(jobReqId),
-    candidateSkills: String(candidateSkills),
-    candidateExperience: Number(candidateExperience) || 0
+    jobReqId:            Number(jobReqId),
+    candidateSkills:     String(candidateSkills),
+    candidateExperience: Number(candidateExperience) || 0,
   });
-  new ApiResponse(200, data, "Quick match computed").send(res);
+  new ApiResponse(200, data, 'Quick match computed').send(res);
 });
 
-
-
-
-
-const uploadAndMatch = asyncHandler(async (req, res) =>
-{
+/* ── POST upload resume → dynamic parse → match ── */
+const uploadAndMatch = asyncHandler(async (req, res) => {
   await uploadMiddleware(req, res);
 
   if (!req.file)
-  {
-    return res.status(400).json({ success: false, message: "Please upload a PDF or DOCX resume file" });
-  }
-  const jobReqId = Number(req.body.jobReqId);
+    return res.status(400).json({ success: false, message: 'Please upload a PDF or DOCX resume file' });
+
+  const jobReqId    = Number(req.body.jobReqId);
+  const candidateId = Number(req.body.candidateId) || null;
+
   if (!jobReqId)
-  {
-    return res.status(400).json({ success: false, message: "jobReqId is required" });
+    return res.status(400).json({ success: false, message: 'jobReqId is required' });
+
+  let parsed;
+
+  if (candidateId) {
+    // Full dynamic pipeline: parse → duplicate check → persist → log
+    const result = await resumeParserSvc.saveResume(candidateId, req.file);
+
+    if (result.duplicate) {
+      return res.status(409).json({
+        success: false,
+        duplicate: true,
+        duplicateCandidate: result.duplicateCandidate,
+        parsed: result.parsed,
+        message: 'Duplicate candidate detected',
+      });
+    }
+    parsed = result.parsed;
+  } else {
+    // Anonymous quick-match — parse + normalize, no persistence
+    parsed = await resumeParserSvc.parseResume(
+      req.file.buffer, req.file.mimetype, req.file.originalname
+    );
+    resumeParserSvc.normalizeParsedResume(parsed);
   }
 
-  const parsed = await resumeParserSvc.parseResume(
-    req.file.buffer,
-    req.file.mimetype,
-    req.file.originalname
-  );
-
+  // Compute job match score
   const score = await resumeMatchSvc.quickMatch({
     jobReqId,
-    candidateSkills: parsed.skills.join(", "),
-    candidateExperience: parsed.experience,
-    resumeText: parsed.rawText || ''
+    candidateSkills:     (parsed.skills || []).join(', '),
+    candidateExperience: Number(parsed.experience) || 0,
+    resumeText:          parsed.rawText || '',
   });
 
-  new ApiResponse(200, { ...score, parsed }, "Resume parsed and matched").send(res);
+  new ApiResponse(200, {
+    ...score,
+    parsed,
+    resume_score: parsed.resume_score || null,
+    parsedBy:     parsed.parsedBy,
+  }, 'Resume parsed and matched').send(res);
 });
 
-
-
-
-
-
-const parseOnly = asyncHandler(async (req, res) =>
-{
+/* ── POST parse only (no match, no persistence) ── */
+const parseOnly = asyncHandler(async (req, res) => {
   await uploadMiddleware(req, res);
 
   if (!req.file)
-  {
-    return res.status(400).json({ success: false, message: "Please upload a PDF or DOCX resume file" });
-  }
+    return res.status(400).json({ success: false, message: 'Please upload a PDF or DOCX resume file' });
 
   const parsed = await resumeParserSvc.parseResume(
-    req.file.buffer,
-    req.file.mimetype,
-    req.file.originalname
+    req.file.buffer, req.file.mimetype, req.file.originalname
   );
+  resumeParserSvc.normalizeParsedResume(parsed);
 
-  new ApiResponse(200, parsed, "Resume parsed successfully").send(res);
+  new ApiResponse(200, parsed, 'Resume parsed successfully').send(res);
 });
 
 module.exports = { getMatch, computeMatch, listByJob, quickMatch, uploadAndMatch, parseOnly };

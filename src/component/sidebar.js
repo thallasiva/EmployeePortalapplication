@@ -1,46 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
+import
+  {
 
-  Home,
-  Users,
-  Building,
-  Calendar,
-  CalendarRange,
-  LogOut,
-  Wallet,
-  Receipt,
-  Settings,
-  Headphones,
-  FileOutput,
+    Home,
+    Users,
+    Building,
+    Calendar,
+    CalendarRange,
+    LogOut,
+    Wallet,
+    Receipt,
+    Settings,
+    Headphones,
+    FileOutput,
 
-  UserPen,
-  Proportions,
-  Radio,
-  LayoutGrid,
-  ClipboardList,
-  HandCoins,
-  SquareCheck,
-  UserRoundPlus,
-  BookOpen,
-  UserRound,
-  Info,
-  Layers,
-  GitBranch,
-  Clock,
-  ChevronDown,
-  ChevronRight,
-  FileText,
-  Network,
-  IdCard,
-  Award,
-  UserSearch,
-  ShieldCheck,
-  FileCheck } from
-"lucide-react";
+    UserPen,
+    Proportions,
+    Radio,
+    LayoutGrid,
+    ClipboardList,
+    HandCoins,
+    SquareCheck,
+    UserRoundPlus,
+    BookOpen,
+    UserRound,
+    Info,
+    Layers,
+    GitBranch,
+    Clock,
+    ChevronDown,
+    ChevronRight,
+    FileText,
+    Network,
+    IdCard,
+    Award,
+    UserSearch,
+    ShieldCheck,
+    FileCheck
+  } from
+  "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
 import natLogo from "../assets/logo.png";
+import { useMenuPermissions } from "../hooks/useMenuPermissions";
 
 const BRAND_NAME = "NAT IT";
 const BRAND_LOGO = natLogo;
@@ -54,12 +57,11 @@ const isPathActive = (pathname, link, search = "") =>
   const target = linkPath.replace(/\/$/, "") || "/";
 
   if (
-  target === "/dashboard" ||
-  target === "/employee/home" ||
-  target === "/employee/engage" ||
-  target === "/manager")
-
-  {
+    target === "/dashboard" ||
+    target === "/employee/home" ||
+    target === "/employee/engage" ||
+    target === "/manager")
+{
     return normalized === target && (!linkQuery || search.includes(linkQuery));
   }
 
@@ -77,6 +79,7 @@ export const Sidebar = ({ open }) =>
 
   const user = getStoredUser();
   const role = user?.role ?? ROLE_ADMIN;
+  const { isAllowed, isSuperAdmin } = useMenuPermissions(user);
 
   const [appraisalActive, setAppraisalActive] = useState(false);
   useEffect(() =>
@@ -84,229 +87,228 @@ export const Sidebar = ({ open }) =>
     if (!isAdmin(user))
     {
       getAppraisalCycle().
-      then((cycle) => setAppraisalActive(cycle?.status === "active")).
-      catch(() => setAppraisalActive(false));
+        then((cycle) => setAppraisalActive(cycle?.status === "active")).
+        catch(() => setAppraisalActive(false));
     }
   }, [pathname]);
 
   const adminItems = [
 
-  {
-    label: "Dashboard",
-    icon: <Home size={20} />,
-    navigationLink: "/dashboard"
-  },
-  {
-    label: "Employees",
-    icon: <Users size={20} />,
-    navigationLink: "/dashboard/employee"
-  },
+    {
+      label: "Dashboard", permId: "dashboard",
+      icon: <Home size={20} />,
+      navigationLink: "/dashboard"
+    },
+    {
+      label: "Employees", permId: "employees",
+      icon: <Users size={20} />,
+      navigationLink: "/dashboard/employee"
+    },
 
-  {
-    label: "Attendance",
-    icon: <Clock size={20} />,
-    navigationLink: "/dashboard/attendance"
-  },
-  {
-    label: "Leave",
-    icon: <FileOutput size={20} />,
-    children: [
-    { label: "Leave Requests", navigationLink: "/dashboard/leave?tab=requests" },
-    { label: "Leave Balances", navigationLink: "/dashboard/leave?tab=balances" },
-    { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" }]
+    {
+      label: "Attendance", permId: "attendance",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/attendance"
+    },
+    {
+      label: "Leave", permId: "leave",
+      icon: <FileOutput size={20} />,
+      children: [
+        { label: "Leave Requests", navigationLink: "/dashboard/leave?tab=requests" },
+        { label: "Leave Balances", navigationLink: "/dashboard/leave?tab=balances" },
+        { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" }]
 
-  },
-  {
-    label: "Timesheets",
-    icon: <Clock size={20} />,
-    navigationLink: "/dashboard/timesheets"
-  },
-  {
-    label: "Calendar",
-    icon: <Calendar size={20} />,
-    navigationLink: "/dashboard/calendar"
-  },
+    },
+    {
+      label: "Timesheets", permId: "timesheets",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/timesheets"
+    },
+    {
+      label: "Calendar", permId: "calendar",
+      icon: <Calendar size={20} />,
+      navigationLink: "/dashboard/calendar"
+    },
 
-  {
-    label: "Payroll",
-    icon: <FileText size={20} />,
-    navigationLink: "/dashboard/payroll"
-  },
-  {
-    label: "Payroll Inputs",
-    icon: <HandCoins size={20} />,
-    children: [
-    { label: "Salary Structures", navigationLink: "/dashboard/payroll/salary" },
-    { label: "Salary Revisions", navigationLink: "/dashboard/payroll/setup?tab=revision" },
-    { label: "Income Tax", navigationLink: "/dashboard/it-declaration" },
-    { label: "Reimbursement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
-    { label: "Loan & Advances", navigationLink: "/employee/payroll/loans" },
-    { label: "Employee LOP Days", navigationLink: "/dashboard/payroll/inputs?tab=lop" },
-    { label: "Overtime Register", navigationLink: "/dashboard/payroll/inputs?tab=overtime" },
-    { label: "Arrears", navigationLink: "/dashboard/payroll/inputs?tab=arrears" },
-    { label: "Final Settlement", navigationLink: "/dashboard/payroll/inputs?tab=settlement" },
-    { label: "Stop Salary Processing", navigationLink: "/dashboard/payroll/inputs?tab=stop" }]
+    {
+      label: "Payroll", permId: "payroll",
+      icon: <FileText size={20} />,
+      navigationLink: "/dashboard/payroll"
+    },
+    {
+      label: "Payroll Inputs", permId: "payroll",
+      icon: <HandCoins size={20} />,
+      children: [
+        { label: "Salary Structures", navigationLink: "/dashboard/payroll/salary" },
+        { label: "Salary Revisions", navigationLink: "/dashboard/payroll/setup?tab=revision" },
+        { label: "Income Tax", navigationLink: "/dashboard/it-declaration" },
+        { label: "Reimbursement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
+        { label: "Loan & Advances", navigationLink: "/employee/payroll/loans" },
+        { label: "Employee LOP Days", navigationLink: "/dashboard/payroll/inputs?tab=lop" },
+        { label: "Overtime Register", navigationLink: "/dashboard/payroll/inputs?tab=overtime" },
+        { label: "Arrears", navigationLink: "/dashboard/payroll/inputs?tab=arrears" },
+        { label: "Final Settlement", navigationLink: "/dashboard/payroll/inputs?tab=settlement" },
+        { label: "Stop Salary Processing", navigationLink: "/dashboard/payroll/inputs?tab=stop" }]
 
-  },
-  {
-    label: "Verify",
-    icon: <BookOpen size={20} />,
-    children: [
-    { label: "Quick Salary Statement", navigationLink: "/dashboard/payroll/statement?tab=quick" },
-    { label: "Payroll Statement", navigationLink: "/dashboard/payroll/statement?tab=statement" },
-    { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
-    { label: "Payroll Differences", navigationLink: "/dashboard/payroll/statement?tab=diff" }]
+    },
+    {
+      label: "Verify", permId: "payroll",
+      icon: <BookOpen size={20} />,
+      children: [
+        { label: "Quick Salary Statement", navigationLink: "/dashboard/payroll/statement?tab=quick" },
+        { label: "Payroll Statement", navigationLink: "/dashboard/payroll/statement?tab=statement" },
+        { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
+        { label: "Payroll Differences", navigationLink: "/dashboard/payroll/statement?tab=diff" }]
 
-  },
-  {
-    label: "Published Info",
-    icon: <BookOpen size={20} />,
-    children: [
-    { label: "Payslip", navigationLink: "/dashboard/payroll/payslips" },
-    { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
-    { label: "YTD Summary", navigationLink: "/dashboard/payroll/ytd?tab=ytd" },
-    { label: "PF YTD Statement", navigationLink: "/dashboard/payroll/ytd?tab=pf-ytd" },
-    { label: "Reimbursement Statement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
-    { label: "Loan Statement", navigationLink: "/employee/payroll/loans" },
-    { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
-    { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" }]
+    },
+    {
+      label: "Published Info", permId: "payroll",
+      icon: <BookOpen size={20} />,
+      children: [
+        { label: "Payslip", navigationLink: "/dashboard/payroll/payslips" },
+        { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
+        { label: "YTD Summary", navigationLink: "/dashboard/payroll/ytd?tab=ytd" },
+        { label: "PF YTD Statement", navigationLink: "/dashboard/payroll/ytd?tab=pf-ytd" },
+        { label: "Reimbursement Statement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
+        { label: "Loan Statement", navigationLink: "/employee/payroll/loans" },
+        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
+        { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" }]
 
-  },
-  {
-    label: "Payroll Admin",
-    icon: <Layers size={20} />,
-    children: [
-    { label: "Form 16", navigationLink: "/dashboard/payroll/tax-forms?tab=form16" },
-    { label: "Form 24Q", navigationLink: "/dashboard/payroll/tax-forms?tab=form24q" },
-    { label: "Employee IT Declaration", navigationLink: "/dashboard/it-declaration" },
-    { label: "PAN Status", navigationLink: "/dashboard/payroll/compliance?tab=pan" },
-    { label: "Revision Planner", navigationLink: "/dashboard/payroll/setup?tab=revision" },
-    { label: "Remittances", navigationLink: "/dashboard/payroll/compliance?tab=remittances" },
-    { label: "Payroll Release", navigationLink: "/dashboard/payroll/compliance?tab=release" },
-    { label: "POI Overview", navigationLink: "/dashboard/payroll/tax-forms?tab=poi" },
-    { label: "PF KYC Mapping", navigationLink: "/dashboard/payroll/compliance?tab=pf-kyc" }]
+    },
+    {
+      label: "Payroll Admin", permId: "payroll",
+      icon: <Layers size={20} />,
+      children: [
+        { label: "Form 16", navigationLink: "/dashboard/payroll/tax-forms?tab=form16" },
+        { label: "Form 24Q", navigationLink: "/dashboard/payroll/tax-forms?tab=form24q" },
+        { label: "Employee IT Declaration", navigationLink: "/dashboard/it-declaration" },
+        { label: "PAN Status", navigationLink: "/dashboard/payroll/compliance?tab=pan" },
+        { label: "Revision Planner", navigationLink: "/dashboard/payroll/setup?tab=revision" },
+        { label: "Remittances", navigationLink: "/dashboard/payroll/compliance?tab=remittances" },
+        { label: "Payroll Release", navigationLink: "/dashboard/payroll/compliance?tab=release" },
+        { label: "POI Overview", navigationLink: "/dashboard/payroll/tax-forms?tab=poi" },
+        { label: "PF KYC Mapping", navigationLink: "/dashboard/payroll/compliance?tab=pf-kyc" }]
 
-  },
-  {
-    label: "Payroll Setup",
-    icon: <Layers size={20} />,
-    children: [
-    { label: "Salary Components", navigationLink: "/dashboard/salary-components" },
-    { label: "Salary Structures", navigationLink: "/dashboard/salary-structures" },
-    { label: "Salary Assignment", navigationLink: "/dashboard/salary-assignment" },
-    { label: "Salary Templates", navigationLink: "/dashboard/salary-templates" },
-    { label: "Payroll Settings", navigationLink: "/dashboard/payroll/setup?tab=settings" }]
+    },
+    {
+      label: "Payroll Setup", permId: "payroll",
+      icon: <Layers size={20} />,
+      children: [
+        { label: "Salary Components", navigationLink: "/dashboard/salary-components" },
+        { label: "Salary Structures", navigationLink: "/dashboard/salary-structures" },
+        { label: "Salary Assignment", navigationLink: "/dashboard/salary-assignment" },
+        { label: "Salary Templates", navigationLink: "/dashboard/salary-templates" },
+        { label: "Payroll Settings", navigationLink: "/dashboard/payroll/setup?tab=settings" }]
 
-  },
+    },
 
-  {
-    label: "Onboarding",
-    icon: <UserRoundPlus size={20} />,
-    navigationLink: "/dashboard/onboarding"
-  },
-  {
-    label: "Joining Formalities",
-    icon: <FileCheck size={20} strokeWidth={1.75} />,
-    navigationLink: "/dashboard/joining-verification"
-  },
+    {
+      label: "Onboarding", permId: "onboarding",
+      icon: <UserRoundPlus size={20} />,
+      navigationLink: "/dashboard/onboarding"
+    },
 
-  {
-    label: "Recruitment",
-    icon: <UserSearch size={20} strokeWidth={1.75} />,
-    navigationLink: "/dashboard/recruitment",
-    badge: "New",
-    badgeColor: "#f18200"
-  },
-  {
-    label: "Appraisal",
-    icon: <Award size={20} strokeWidth={1.75} />,
-    navigationLink: "/dashboard/performance",
-    badge: "New",
-    badgeColor: "#f18200"
-  },
-  {
-    label: "Resignation",
-    icon: <LogOut size={20} strokeWidth={1.75} />,
-    navigationLink: "/dashboard/resignations",
-    badge: "New",
-    badgeColor: "#f18200"
-  },
+    {
+      label: "Recruitment", permId: "recruitment",
+      icon: <UserSearch size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/recruitment",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
+    {
+      label: "Appraisal", permId: "performance",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/performance",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
+    {
+      label: "Resignation", permId: "resignation",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/resignations",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
 
-  {
-    label: "Reports",
-    icon: <Proportions size={20} />,
-    navigationLink: "/dashboard/report"
-  },
-  {
-    label: "Documents",
-    icon: <BookOpen size={20} />,
-    navigationLink: "/dashboard/documents"
-  },
+    {
+      label: "Reports", permId: "reports",
+      icon: <Proportions size={20} />,
+      navigationLink: "/dashboard/report"
+    },
+    {
+      label: "Documents", permId: "documents",
+      icon: <BookOpen size={20} />,
+      navigationLink: "/dashboard/documents"
+    },
 
-  {
-    label: "Helpdesk",
-    icon: <Headphones size={20} />,
-    navigationLink: "/dashboard/helpdesk"
+    {
+      label: "Helpdesk", permId: "helpdesk",
+      icon: <Headphones size={20} />,
+      navigationLink: "/dashboard/helpdesk"
 
-  },
-  {
-    label: "Company",
-    icon: <Building size={20} />,
-    navigationLink: "/dashboard/company",
-    badge: "New",
-    badgeColor: "#f18200"
-  },
-  {
-    label: "Workflow & Hierarchy",
-    icon: <Network size={20} />,
-    children: [
-    { label: "Org Hierarchy", navigationLink: "/dashboard/workflow-delegation?tab=org" },
-    { label: "Reporting Managers", navigationLink: "/dashboard/workflow-delegation?tab=managers" },
-    { label: "Manager Transfer", navigationLink: "/dashboard/workflow-delegation?tab=transfer" },
-    { label: "Delegation", navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
-    { label: "Audit History", navigationLink: "/dashboard/workflow-delegation?tab=audit" }]
+    },
+    {
+      label: "Company", permId: "company",
+      icon: <Building size={20} />,
+      navigationLink: "/dashboard/company",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
+    {
+      label: "Workflow & Hierarchy", permId: "workflow",
+      icon: <Network size={20} />,
+      children: [
+        { label: "Org Hierarchy", navigationLink: "/dashboard/workflow-delegation?tab=org" },
+        { label: "Reporting Managers", navigationLink: "/dashboard/workflow-delegation?tab=managers" },
+        { label: "Manager Transfer", navigationLink: "/dashboard/workflow-delegation?tab=transfer" },
+        { label: "Delegation", navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
+        { label: "Audit History", navigationLink: "/dashboard/workflow-delegation?tab=audit" }]
 
-  },
-  {
-    label: "Role Management",
-    icon: <ShieldCheck size={20} />,
-    navigationLink: "/dashboard/role-management"
-  },
-  {
-    label: "Settings",
-    icon: <Settings size={20} />,
-    children: [
-    { label: "General Settings", navigationLink: "/dashboard/settings" },
-    { label: "Email Configuration", navigationLink: "/dashboard/settings/email-configuration" },
-    { label: "Notification Settings", navigationLink: "/dashboard/notification-settings" },
-    { label: "Audit Logs", navigationLink: "/dashboard/audit-logs" }]
-  },
-  {
-    label: "Profile",
-    icon: <UserPen size={20} />,
-    navigationLink: "/dashboard/profile"
-  }];
+    },
+    {
+      label: "Role Management", permId: "role-mgmt",
+      icon: <ShieldCheck size={20} />,
+      navigationLink: "/dashboard/role-management"
+    },
+    {
+      label: "Settings", permId: "settings",
+      icon: <Settings size={20} />,
+      children: [
+        { label: "General Settings", navigationLink: "/dashboard/settings" },
+        { label: "Email Configuration", navigationLink: "/dashboard/settings/email-configuration" },
+        { label: "Notification Settings", navigationLink: "/dashboard/notification-settings" },
+        { label: "Audit Logs", navigationLink: "/dashboard/audit-logs" },
+        { label: "Form Builder", permId: "form-builder", navigationLink: "/dashboard/form-builder" },
+        { label: "Report Builder", permId: "report-builder", navigationLink: "/dashboard/report-builder" },
+        { label: "Dashboard Builder", permId: "dash-builder", navigationLink: "/dashboard/dash-builder" },
+        { label: "Menu Permissions", permId: "menu-perm", navigationLink: "/dashboard/menu-perm" }]
+    },
+    {
+      label: "Profile", permId: "profile",
+      icon: <UserPen size={20} />,
+      navigationLink: "/dashboard/profile"
+    }];
 
 
 
   const teamOverviewItem = isRecruiterLead(user) ?
-  {
-    label: "Team Management",
-    icon: <Users size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "Team Overview", navigationLink: "/manager" },
-    { label: "Leave Requests", navigationLink: "/manager/team/leave" },
-    { label: "Attendance", navigationLink: "/manager/team/attendance" },
-    { label: "Regularizations", navigationLink: "/manager/team/regularizations" },
-    { label: "Resignations", navigationLink: "/manager/team/resignations" },
-    { label: "Appraisal", navigationLink: "/manager/team/appraisal" }]
+    {
+      label: "Team Management",
+      icon: <Users size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Team Overview", navigationLink: "/manager" },
+        { label: "Leave Requests", navigationLink: "/manager/team/leave" },
+        { label: "Attendance", navigationLink: "/manager/team/attendance" },
+        { label: "Regularizations", navigationLink: "/manager/team/regularizations" },
+        { label: "Resignations", navigationLink: "/manager/team/resignations" },
+        { label: "Appraisal", navigationLink: "/manager/team/appraisal" }]
 
-  } :
-  {
-    label: "Team Overview",
-    icon: <Users size={20} strokeWidth={1.75} />,
-    navigationLink: "/manager"
-  };
+    } :
+    {
+      label: "Team Overview",
+      icon: <Users size={20} strokeWidth={1.75} />,
+      navigationLink: "/manager"
+    };
 
 
   const hiringItemTL = {
@@ -314,12 +316,11 @@ export const Sidebar = ({ open }) =>
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
     badge: "New",
     children: [
-    { label: "Dashboard", navigationLink: "/recruiter/recruitment?page=dashboard" },
-    { label: "Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
-    { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
-    { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
-    { label: "Resume Match", navigationLink: "/recruiter/recruitment?page=resume-match" }]
-
+      { label: "Dashboard", navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
+      { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" }
+    ]
   };
 
 
@@ -328,152 +329,151 @@ export const Sidebar = ({ open }) =>
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
     badge: "New",
     children: [
-    { label: "My Dashboard", navigationLink: "/recruiter/recruitment?page=dashboard" },
-    { label: "My Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
-    { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
-    { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
-    { label: "Resume Match", navigationLink: "/recruiter/recruitment?page=resume-match" }]
-
+      { label: "My Dashboard", navigationLink: "/recruiter/recruitment?page=dashboard" },
+      { label: "My Jobs", navigationLink: "/recruiter/recruitment?page=jobs" },
+      { label: "Candidates", navigationLink: "/recruiter/recruitment?page=candidates" },
+      { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
+    ]
   };
 
   const employeeItems = [
 
-  {
-    label: "Home",
-    icon: <Home size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/home"
-  },
-  {
-    label: "My Info",
-    icon: <IdCard size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/my-info"
-  },
+    {
+      label: "Home",
+      icon: <Home size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/home"
+    },
+    {
+      label: "My Info",
+      icon: <IdCard size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/my-info"
+    },
 
-  {
-    label: "Attendance",
-    icon: <SquareCheck size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "Attendance Info", navigationLink: "/employee/attendance/daily" },
-    { label: "My Regularizations", navigationLink: "/employee/attendance/regularizations" },
-    { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
-    { label: "Shift Roster", navigationLink: "/employee/attendance/shifts" }]
+    {
+      label: "Attendance",
+      icon: <SquareCheck size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Attendance Info", navigationLink: "/employee/attendance/daily" },
+        { label: "My Regularizations", navigationLink: "/employee/attendance/regularizations" },
+        { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
+        { label: "Shift Roster", navigationLink: "/employee/attendance/shifts" }]
 
-  },
-  {
-    label: "Leave",
-    icon: <Calendar size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
-    { label: "Apply Leave", navigationLink: "/employee/leave/apply" }]
+    },
+    {
+      label: "Leave",
+      icon: <Calendar size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
+        { label: "Apply Leave", navigationLink: "/employee/leave/apply" }]
 
-  },
-  {
-    label: "Calendar",
-    icon: <CalendarRange size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/leave/calendar"
-  },
+    },
+    {
+      label: "Calendar",
+      icon: <CalendarRange size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/leave/calendar"
+    },
 
-  {
-    label: "Salary",
-    icon: <HandCoins size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
-    { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
-    { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" }]
+    {
+      label: "Salary",
+      icon: <HandCoins size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
+        { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
+        { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" }]
 
-  },
-  {
-    label: "Tax & Benefits",
-    icon: <Receipt size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
-    { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
-    { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" }]
+    },
+    {
+      label: "Tax & Benefits",
+      icon: <Receipt size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
+        { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
+        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" }]
 
-  },
-  {
-    label: "Finance",
-    icon: <Wallet size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
-    { label: "Loans & Advances", navigationLink: "/employee/payroll/loans" }]
+    },
+    {
+      label: "Finance",
+      icon: <Wallet size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
+        { label: "Loans & Advances", navigationLink: "/employee/payroll/loans" }]
 
-  },
+    },
 
 
-  ...(appraisalActive ? [{
-    label: "Appraisal",
-    icon: <Award size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/appraisal"
-  }] : []),
-  {
-    label: "Timesheet",
-    icon: <Clock size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "My Timesheet", navigationLink: "/employee/todo/tasks" },
-    { label: "Overview", navigationLink: "/employee/todo/review" }]
+    ...(appraisalActive ? [{
+      label: "Appraisal",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/appraisal"
+    }] : []),
+    {
+      label: "Timesheet",
+      icon: <Clock size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "My Timesheet", navigationLink: "/employee/todo/tasks" },
+        { label: "Overview", navigationLink: "/employee/todo/review" }]
 
-  },
+    },
 
-  {
-    label: "People",
-    icon: <UserRound size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/people"
-  },
-  {
-    label: "Organization Chart",
-    icon: <Network size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/org-chart"
-  },
-  {
-    label: "Engage",
-    icon: <Radio size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/engage"
-  },
-  {
-    label: "My Worklife",
-    icon: <LayoutGrid size={20} strokeWidth={1.75} />,
-    children: [
-    { label: "Kudos", navigationLink: "/employee/worklife/kudos" },
-    { label: "Feedback", navigationLink: "/employee/worklife/feedback" }]
+    {
+      label: "People",
+      icon: <UserRound size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/people"
+    },
+    {
+      label: "Organization Chart",
+      icon: <Network size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/org-chart"
+    },
+    {
+      label: "Engage",
+      icon: <Radio size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/engage"
+    },
+    {
+      label: "My Worklife",
+      icon: <LayoutGrid size={20} strokeWidth={1.75} />,
+      children: [
+        { label: "Kudos", navigationLink: "/employee/worklife/kudos" },
+        { label: "Feedback", navigationLink: "/employee/worklife/feedback" }]
 
-  },
+    },
 
-  {
-    label: "Document Center",
-    icon: <BookOpen size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/documents"
-  },
-  {
-    label: "Helpdesk",
-    icon: <Headphones size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/helpdesk"
-  },
-  {
-    label: "Request Hub",
-    icon: <Layers size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/request-hub"
-  },
+    {
+      label: "Document Center",
+      icon: <BookOpen size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/documents"
+    },
+    {
+      label: "Helpdesk",
+      icon: <Headphones size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/helpdesk"
+    },
+    {
+      label: "Request Hub",
+      icon: <Layers size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/request-hub"
+    },
 
-  {
-    label: "Hiring",
-    icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
-    badge: "New",
-    children: [
-    { label: "Internal Jobs", navigationLink: "/employee/hiring" }]
+    {
+      label: "Hiring",
+      icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
+      badge: "New",
+      children: [
+        { label: "Internal Jobs", navigationLink: "/employee/hiring" }]
 
-  },
-  {
-    label: "Resignation",
-    icon: <LogOut size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/resignation"
-  },
+    },
+    {
+      label: "Resignation",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/resignation"
+    },
 
-  {
-    label: "Workflow Delegates",
-    icon: <GitBranch size={20} strokeWidth={1.75} />,
-    navigationLink: "/employee/workflow-delegates"
-  }];
+    {
+      label: "Workflow Delegates",
+      icon: <GitBranch size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/workflow-delegates"
+    }];
 
 
 
@@ -484,16 +484,22 @@ export const Sidebar = ({ open }) =>
   const employeeItemsWithoutHiring = employeeItems.filter((item) => item.label !== "Hiring");
 
   const employeeItemsForRecruiters = canViewTeamOverview(user) ?
-  [hiringEntry, teamOverviewItem, ...employeeItemsWithoutHiring] :
-  [hiringEntry, ...employeeItemsWithoutHiring];
+    [hiringEntry, teamOverviewItem, ...employeeItemsWithoutHiring] :
+    [hiringEntry, ...employeeItemsWithoutHiring];
+
+  // Filter adminItems for non-super-admin roles based on MenuPermissions
+  // Super Admin sees all items; other admin-role users see filtered items
+  const filteredAdminItems = isSuperAdmin
+    ? adminItems
+    : adminItems.filter(item => !item.permId || isAllowed(item.permId));
 
   const items = isAdmin(user) ?
-  adminItems :
-  isReportingManager(user) ?
-  [teamOverviewItem, ...employeeItems] :
-  isRecruitmentRole(user) ?
-  employeeItemsForRecruiters :
-  employeeItems;
+    filteredAdminItems :
+    isReportingManager(user) ?
+      [teamOverviewItem, ...employeeItems] :
+      isRecruitmentRole(user) ?
+        employeeItemsForRecruiters :
+        employeeItems;
   const toggleAccordion = (index) =>
   {
     setExpanded(expanded === index ? null : index);
@@ -509,10 +515,10 @@ export const Sidebar = ({ open }) =>
   {
     const activeIndex = items.findIndex(
       (item) =>
-      item.children &&
-      item.children.some((child) =>
-      isPathActive(pathname, child.navigationLink, search)
-      )
+        item.children &&
+        item.children.some((child) =>
+          isPathActive(pathname, child.navigationLink, search)
+        )
     );
     if (activeIndex >= 0)
     {
@@ -522,36 +528,36 @@ export const Sidebar = ({ open }) =>
   }, [pathname, search, role]);
 
   const menuItemClass = (active, childActive = false) =>
-  [
-  "sidebar-menu-item",
-  active ? "sidebar-menu-item-active" : "",
-  childActive && !active ? "sidebar-menu-item-parent-active" : "",
-  !open ? "justify-center px-2" : "",
-  "cursor-pointer"].
+    [
+      "sidebar-menu-item",
+      active ? "sidebar-menu-item-active" : "",
+      childActive && !active ? "sidebar-menu-item-parent-active" : "",
+      !open ? "justify-center px-2" : "",
+      "cursor-pointer"].
 
-  filter(Boolean).
-  join(" ");
+      filter(Boolean).
+      join(" ");
 
   const childItemClass = (active) =>
-  [
-  "sidebar-child-item",
-  active ? "sidebar-child-item-active" : "",
-  "cursor-pointer"].
+    [
+      "sidebar-child-item",
+      active ? "sidebar-child-item-active" : "",
+      "cursor-pointer"].
 
-  filter(Boolean).
-  join(" ");
+      filter(Boolean).
+      join(" ");
 
   return (
     <aside className={[
-    "relative flex h-screen shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
-    open ? "w-[248px]" : "w-[68px]"].
-    join(" ")}>
-
-      {}
-      <div className={[
-      "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
-      open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3"].
+      "relative flex h-screen shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
+      open ? "w-[248px]" : "w-[68px]"].
       join(" ")}>
+
+      { }
+      <div className={[
+        "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
+        open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3"].
+        join(" ")}>
         <img
           src={BRAND_LOGO}
           alt={`${BRAND_NAME} logo`}
@@ -559,12 +565,12 @@ export const Sidebar = ({ open }) =>
 
       </div>
 
-      {}
+      { }
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2.5">
         {items.map((item, index) =>
         {
           const childActive = item.children?.some((child) =>
-          isPathActive(pathname, child.navigationLink, search)
+            isPathActive(pathname, child.navigationLink, search)
           );
 
           if (!item.children)
@@ -572,25 +578,25 @@ export const Sidebar = ({ open }) =>
             const active = isPathActive(pathname, item.navigationLink, search);
             return (
               <div key={index} className={menuItemClass(active)}
-              onClick={() => navigate(item.navigationLink)}
-              title={!open ? item.label : undefined}>
+                onClick={() => navigate(item.navigationLink)}
+                title={!open ? item.label : undefined}>
 
                 <span className={[
-                "flex shrink-0",
-                active ? "text-white" : "text-gray-400"].
-                join(" ")}>
+                  "flex shrink-0",
+                  active ? "text-white" : "text-gray-400"].
+                  join(" ")}>
                   {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open &&
-                <>
+                  <>
                     <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                       {item.label}
                     </span>
                     {item.badge &&
-                  <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
+                      <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
                         {item.badge}
                       </span>
-                  }
+                    }
                   </>
                 }
               </div>);
@@ -600,49 +606,49 @@ export const Sidebar = ({ open }) =>
           return (
             <div key={index}>
               <div className={menuItemClass(false, childActive)}
-              onClick={() => toggleAccordion(index)}
-              title={!open ? item.label : undefined}>
+                onClick={() => toggleAccordion(index)}
+                title={!open ? item.label : undefined}>
 
                 <span className={[
-                "flex shrink-0",
-                childActive ? "text-brand-500" : "text-gray-400"].
-                join(" ")}>
+                  "flex shrink-0",
+                  childActive ? "text-brand-500" : "text-gray-400"].
+                  join(" ")}>
                   {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open &&
-                <>
+                  <>
                     <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                       {item.label}
                     </span>
                     {item.badge &&
-                  <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
+                      <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
                         {item.badge}
                       </span>
-                  }
+                    }
                     {expanded === index ?
-                  <ChevronDown size={14} className="shrink-0 text-gray-400" /> :
-                  <ChevronRight size={14} className="shrink-0 text-gray-400" />}
+                      <ChevronDown size={14} className="shrink-0 text-gray-400" /> :
+                      <ChevronRight size={14} className="shrink-0 text-gray-400" />}
                   </>
                 }
               </div>
 
               {expanded === index && open &&
-              <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
+                <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
                   {item.children.map((child, childIndex) =>
-                {
-                  const isChildActive = isPathActive(pathname, child.navigationLink, search);
-                  return (
-                    <div key={childIndex} className={childItemClass(isChildActive)}
-                    onClick={() =>
-                    {
-                      const [p, q] = child.navigationLink.split("?");
-                      navigate(q ? `${p}?${q}` : p);
-                    }}>
+                  {
+                    const isChildActive = isPathActive(pathname, child.navigationLink, search);
+                    return (
+                      <div key={childIndex} className={childItemClass(isChildActive)}
+                        onClick={() =>
+                        {
+                          const [p, q] = child.navigationLink.split("?");
+                          navigate(q ? `${p}?${q}` : p);
+                        }}>
 
                         {child.label}
                       </div>);
 
-                })}
+                  })}
                 </div>
               }
             </div>);
