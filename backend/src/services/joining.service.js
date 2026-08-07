@@ -302,7 +302,8 @@ async function getMyJoiningDocs(employeeId) {
   const [rows] = await pool.execute(
     `SELECT jf.aadhar_doc_url, jf.pan_doc_url,
             jf.handbook_acknowledged, jf.privacy_policy_accepted,
-            jf.status, jf.reviewed_at, jf.candidate_name
+            jf.status, jf.reviewed_at,
+            COALESCE(jf.full_name, ji.candidate_name) AS candidate_name
      FROM joining_formalities jf
      JOIN joining_invitations ji ON ji.id = jf.invitation_id
      JOIN employees e ON e.emp_code = jf.admin_employee_id
