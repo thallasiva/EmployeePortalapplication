@@ -73,7 +73,7 @@ req.headers.authorization ? '[REDACTED]' : '-'
 if (env !== 'test') {
   app.use(
     morgan(
-      env === 'production' ?
+      env === "development" ? //'production' ?
       ':remote-addr :method :url :status :res[content-length] :response-time ms' :
       ':method :url :status :response-time ms - auth::safe-auth'
     )
@@ -159,6 +159,15 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/api/health/', async (req, res) => {
+  try {
+   
+    const result = "Middleware Working";
+    res.status(result.ok ? 200 : 503).json(result);
+  } catch (err) {
+    res.status(503).json({ ok: false, error: err.message });
+  }
+});
 
 app.get('/api/health/email', async (req, res) => {
   try {

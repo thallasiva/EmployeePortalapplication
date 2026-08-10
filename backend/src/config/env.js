@@ -13,10 +13,10 @@ module.exports = {
   clientOrigin: required('CLIENT_ORIGIN', '*'),
 
   db: {
-    host: required('DB_HOST', 'localhost'),
-    port: Number(required('DB_PORT', 3306)),
-    user: required('DB_USER', 'root'),
-    password: required('DB_PASSWORD', ''),
+    host: required('DB_HOST', 'hrms.c02gczm2cgx8.us-east-1.rds.amazonaws.com'),
+    port: Number(required('DB_PORT', 4306)),
+    user: required('DB_USER', 'HRMSadmin'),
+    password: required('DB_PASSWORD', 'HwULGJ6gbxQIhzwNeZ9L'),
     database: required('DB_NAME', 'hrms_db'),
     connectionLimit: Number(required('DB_CONNECTION_LIMIT', 10))
   },
@@ -39,7 +39,7 @@ module.exports = {
     secure: String(required('SMTP_SECURE', 'false')).toLowerCase() === 'true',
     user: required('SMTP_USER', ''),
     pass: required('SMTP_PASS', ''),
-    from: required('SMTP_FROM', 'HRMS <no-reply@hrms.local>'),
+    from: required('SMTP_FROM', 'HRMS <thallasiva786@gmail.com>'),
     adminAlert: required('EMAIL_ADMIN_ALERT', ''),
     companyName: required('COMPANY_NAME', 'HRMS'),
     companyAddress: required('COMPANY_ADDRESS', ''),
@@ -49,7 +49,7 @@ module.exports = {
     companyReportTo: required('COMPANY_REPORT_TO', ''),
     hrManagerName: required('HR_MANAGER_NAME', ''),
     logoPath: required('COMPANY_LOGO_PATH', ''),
-    backendUrl: required('BACKEND_URL', 'http://localhost:5000'),
+    backendUrl: required('BACKEND_URL', 'https://backend.natsoft.io'),
     frontendUrl: required('FRONTEND_URL', 'http://localhost:3000')
   },
 
