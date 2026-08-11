@@ -6,7 +6,7 @@ import { Row, Sec, TblHead } from "./SharedUI";
 import { fmt, parse } from "../utils";
 
 const API_BASE =
-  process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
+  process.env.REACT_APP_API_URL?.replace("/api", "") || "https://backend.natsoft.io";
 
 /** Resolve a URL that may be a base64 data-URL or a relative server path */
 function resolveUrl(url) {

@@ -46,7 +46,7 @@ function getLogoTag() {
   }
 
 
-  const backendUrl = (emailCfg.backendUrl || 'http://localhost:5000').replace(/\/$/, '');
+  const backendUrl = (emailCfg.backendUrl || 'https://backend.natsoft.io').replace(/\/$/, '');
   const logoFileExists = fs.existsSync(DEFAULT_LOGO_PATH);
   if (logoFileExists) {
     _logoCache = `<img src="${backendUrl}/public/logo.png" alt="${co()}" style="height:48px;max-width:160px;object-fit:contain;display:block">`;

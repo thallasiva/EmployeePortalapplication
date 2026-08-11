@@ -1,26 +1,23 @@
 import axios from "axios";
 
 export const API_BASE_URL =
-process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+process.env.REACT_APP_API_URL || "https://backend.natsoft.io/api";
 
+export function getAccessToken() {
+  return localStorage.getItem("accessToken");
+}
+export function getRefreshToken() {
+  return localStorage.getItem("refreshToken");
+}
 
-
-
-
-
-export function getAccessToken() {return null;}
-export function getRefreshToken() {return null;}
-
-export function setAuthTokens() {
-
+export function setAuthTokens({ accessToken, refreshToken } = {}) {
+  if (accessToken) localStorage.setItem("accessToken", accessToken);
+  if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
 }
 
 export function clearAuthSession() {
-
-
   localStorage.removeItem("user");
   localStorage.removeItem("token");
-
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
 }
@@ -31,7 +28,12 @@ const apiClient = axios.create({
   withCredentials: true
 });
 
-
+// Attach Bearer token from localStorage on every request
+apiClient.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 let isRefreshing = false;
 let pendingRequests = [];
@@ -67,8 +69,14 @@ apiClient.interceptors.response.use(
 
       isRefreshing = true;
       try {
-
-        await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        const refreshToken = getRefreshToken();
+        const { data } = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          { refreshToken },
+          { withCredentials: true }
+        );
+        // Store new tokens from refresh response
+        if (data?.data?.accessToken) setAuthTokens(data.data);
         onRefreshed(true);
         config._retry = true;
         return apiClient(config);

@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "NAT IT HRMS",
+    "slug": "nat-it-hrms",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f18200"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.natit.hrms"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f18200"
+      },
+      "package": "com.natit.hrms",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      ["expo-notifications", {
+        "icon": "./assets/notification-icon.png",
+        "color": "#f18200"
+      }]
+    ]
+  }
+}

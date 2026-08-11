@@ -49,5 +49,6 @@ router.use('/salary-components', require('./salaryComponent.routes'));
 router.use('/salary-assignments', require('./salaryAssignment.routes'));
 
 router.use('/settings', require('./settings.routes'));
+router.use('/audit-logs', require('./auditLog.routes'));
 
 module.exports = router;

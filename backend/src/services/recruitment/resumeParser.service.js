@@ -355,6 +355,16 @@ async function persistParsedResume(candidateId, parsed) {
   } catch (err) {
     console.error('[ResumeParser] sp_rec_save_candidate_json failed:', err.message);
   }
+  // Save skills into rec_candidate_skills table (so getSkills returns them)
+  if (Array.isArray(parsed.skills) && parsed.skills.length > 0) {
+    try {
+      await callProcedure('sp_rec_save_candidate_skills(?,?)', [
+        candidateId, JSON.stringify(parsed.skills),
+      ]);
+    } catch (err) {
+      console.error('[ResumeParser] sp_rec_save_candidate_skills failed:', err.message);
+    }
+  }
   // Save individual dynamic fields
   for (const field of Object.keys(parsed)) {
     await saveDynamicField(candidateId, field, parsed[field]);

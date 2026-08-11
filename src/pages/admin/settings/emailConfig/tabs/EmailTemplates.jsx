@@ -15,9 +15,28 @@ const SAMPLES = {
   "{{OfferDate}}":"05 Aug 2026","{{JoiningDate}}":"01 Sep 2026","{{Month}}":"July 2026",
   "{{Amount}}":"₹4,500","{{PolicyName}}":"Health Insurance","{{DocumentName}}":"Passport",
   "{{ExpiryDate}}":"31 Dec 2026","{{SupportLink}}":"https://support.company.com","{{Year}}":"2026",
+  "{{Status}}":"Approved","{{Remarks}}":"Approved as requested","{{ActionBy}}":"HR Admin",
 };
-const ALL_VARS = Object.keys(SAMPLES);
-const renderPreview = (body) => Object.entries(SAMPLES).reduce((s,[k,v]) => s.replaceAll(k,`<strong style="color:#f18200">${v}</strong>`), body || "");
+
+// Action button HTML snippets rendered in preview
+const ACTION_VARS = {
+  "{{ApproveButton}}": `<a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">✓ Approve</a>`,
+  "{{RejectButton}}":  `<a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">✕ Reject</a>`,
+  "{{ActionButtons}}": `<div style="margin:20px 0;"><a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">✓ Approve</a><a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">✕ Reject</a></div>`,
+};
+
+const ALL_VARS = [...Object.keys(SAMPLES), ...Object.keys(ACTION_VARS)];
+
+const renderPreview = (body) => {
+  let result = body || "";
+  // Replace action button vars first (they produce raw HTML)
+  Object.entries(ACTION_VARS).forEach(([k, v]) => { result = result.replaceAll(k, v); });
+  // Replace data vars with highlighted values
+  Object.entries(SAMPLES).forEach(([k, v]) => {
+    result = result.replaceAll(k, `<strong style="color:#f18200">${v}</strong>`);
+  });
+  return result;
+};
 
 /* ── Editor Modal ── */
 function TemplateModal({ tpl, onClose, onSave }) {
@@ -93,13 +112,24 @@ function TemplateModal({ tpl, onClose, onSave }) {
               {/* Variable pills */}
               <div>
                 <label className="text-[12px] font-semibold text-[#475569] mb-2 block">Available Variables <span className="text-[#94a3b8] font-normal">(click to insert)</span></label>
-                <div className="flex flex-wrap gap-1.5">
-                  {ALL_VARS.map(v => (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {Object.keys(SAMPLES).map(v => (
                     <button key={v} onClick={() => insertVar(v)} type="button"
                       className="text-[10px] font-mono px-2 py-0.5 rounded border border-[#e2e8f0] bg-[#f8fafc] hover:bg-[#fff8f0] hover:border-[#f18200] hover:text-[#f18200] text-[#64748b] transition-all">
                       {v}
                     </button>
                   ))}
+                </div>
+                <div className="mt-2">
+                  <p className="text-[10px] font-semibold text-[#10b981] uppercase tracking-wide mb-1.5">Action Buttons (renders as clickable buttons in email)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.keys(ACTION_VARS).map(v => (
+                      <button key={v} onClick={() => insertVar(v)} type="button"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded border border-[#bbf7d0] bg-[#f0fdf4] hover:bg-[#dcfce7] hover:border-[#10b981] hover:text-[#059669] text-[#059669] transition-all font-bold">
+                        {v}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div>

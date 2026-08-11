@@ -1,7 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Check, X, RefreshCw } from "lucide-react";
 import Pagination, { usePagination } from "../../components/Pagination";
-import { getAllTimesheets, getAdminDashboardCounts, getAnyTimesheetDetail } from "../../api/timesheet.api";
+import { getAllTimesheets, getAdminDashboardCounts, getAnyTimesheetDetail, reviewTimesheet } from "../../api/timesheet.api";
 import "./adminDashboard.css";
+
+function Toast({ msg, type, onClose }) {
+  if (!msg) return null;
+  const color = type === "error" ? "bg-red-50 border-red-300 text-red-700" : "bg-emerald-50 border-emerald-300 text-emerald-700";
+  return (
+    <div className={`fixed top-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg text-sm font-semibold ${color}`}>
+      {msg}
+      <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100"><X size={14} /></button>
+    </div>
+  );
+}
+
+
 
 const STATUS_STYLE = {
   draft: "bg-gray-100 text-gray-600 border-gray-300",
@@ -19,7 +33,7 @@ function StatusBadge({ status }) {
 }
 
 
-function TimesheetDetailModal({ timesheetId, onClose }) {
+function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -107,6 +121,19 @@ function TimesheetDetailModal({ timesheetId, onClose }) {
             </div>
           </div>
         }
+          {/* Approve / Reject actions inside modal */}
+          {detail && detail.status === "pending" && onApprove && (
+            <div className="px-6 pb-6 flex gap-3 border-t border-gray-100 pt-4">
+              <button type="button" onClick={() => { onApprove(timesheetId); onClose(); }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors">
+                <Check size={14} /> Approve Timesheet
+              </button>
+              <button type="button" onClick={() => { onReject(timesheetId); onClose(); }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl transition-colors">
+                <X size={14} /> Reject Timesheet
+              </button>
+            </div>
+          )}
       </div>
     </div>);
 
@@ -120,6 +147,35 @@ export default function AdminTimesheets() {
   const [filter, setFilter] = useState("all");
   const [viewId, setViewId] = useState(null);
   const [search, setSearch] = useState("");
+  const [toast, setToast] = useState(null);
+  const [actioning, setActioning] = useState(null); // timesheetId being actioned
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleApprove = async (timesheetId) => {
+    setActioning(timesheetId);
+    try {
+      await reviewTimesheet(timesheetId, { decision: "approved", comments: "" });
+      showToast("Timesheet approved successfully");
+      load();
+    } catch (e) {
+      showToast(e?.response?.data?.message || "Approval failed", "error");
+    } finally { setActioning(null); }
+  };
+
+  const handleReject = async (timesheetId, comments = "") => {
+    setActioning(timesheetId);
+    try {
+      await reviewTimesheet(timesheetId, { decision: "rejected", comments });
+      showToast("Timesheet rejected");
+      load();
+    } catch (e) {
+      showToast(e?.response?.data?.message || "Rejection failed", "error");
+    } finally { setActioning(null); }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -142,6 +198,8 @@ export default function AdminTimesheets() {
 
   return (
     <div className="admin-dash space-y-4">
+      <Toast msg={toast?.msg} type={toast?.type} onClose={() => setToast(null)} />
+
       {}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Timesheets</h1>
@@ -223,10 +281,33 @@ export default function AdminTimesheets() {
                   </td>
                   <td className="text-center text-xs text-gray-500">{ts.reviewer_name || "—"}</td>
                   <td className="text-center">
-                    <button type="button" onClick={() => setViewId(ts.timesheet_id)}
-                  className="text-xs font-semibold text-brand hover:underline px-3 py-1 rounded-lg border border-brand/30 hover:bg-brand/5">
-                      View
-                    </button>
+                    <div className="flex items-center justify-center gap-1 flex-wrap">
+                      {ts.status === "pending" && (
+                        <>
+                          <button
+                            type="button"
+                            disabled={actioning === ts.timesheet_id}
+                            onClick={() => handleApprove(ts.timesheet_id)}
+                            className="flex items-center gap-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 px-2.5 py-1 rounded-lg transition-colors">
+                            <Check size={11} />Approve
+                          </button>
+                          <button
+                            type="button"
+                            disabled={actioning === ts.timesheet_id}
+                            onClick={async () => {
+                              const comments = window.prompt("Reason for rejection (optional):") ?? "";
+                              await handleReject(ts.timesheet_id, comments);
+                            }}
+                            className="flex items-center gap-1 text-xs font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 px-2.5 py-1 rounded-lg transition-colors">
+                            <X size={11} />Reject
+                          </button>
+                        </>
+                      )}
+                      <button type="button" onClick={() => setViewId(ts.timesheet_id)}
+                        className="text-xs font-semibold text-brand hover:underline px-2.5 py-1 rounded-lg border border-brand/30 hover:bg-brand/5">
+                        View
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -236,7 +317,17 @@ export default function AdminTimesheets() {
         <Pagination page={page} setPage={setPage} totalPages={totalPages} from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
       </div>
 
-      {viewId && <TimesheetDetailModal timesheetId={viewId} onClose={() => setViewId(null)} />}
+      {viewId && (
+        <TimesheetDetailModal
+          timesheetId={viewId}
+          onClose={() => setViewId(null)}
+          onApprove={(id) => handleApprove(id)}
+          onReject={async (id) => {
+            const comments = window.prompt("Reason for rejection (optional):") ?? "";
+            await handleReject(id, comments);
+          }}
+        />
+      )}
     </div>);
 
 }

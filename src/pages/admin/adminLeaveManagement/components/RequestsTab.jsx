@@ -5,7 +5,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import Btn from "./Btn";
 import StatusBadge from "./StatusBadge";
 import Toast from "./Toast";
-import RejectModal from "./RejectModal";
 
 const TH = ({ children, right }) => (
   <th className={cssClass({ padding: "10px 14px", fontWeight: 700, fontSize: 11, color: "#9ca3af",
@@ -27,7 +26,7 @@ const RequestsTab = memo(() => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus]   = useState("");
   const [toast, setToast]     = useState(null);
-  const [reviewing, setReviewing] = useState(null);
+
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -110,7 +109,10 @@ const RequestsTab = memo(() => {
                           <Check size={12} />Approve
                         </Btn>
                         <Btn size="sm" variant="danger"
-                          onClick={() => setReviewing({ id: r.leave_request_id, decision: "Rejected" })}>
+                          onClick={async () => {
+                            const remarks = window.prompt("Reason for rejection (optional):") ?? "";
+                            await handleReview(r.leave_request_id, "Rejected", remarks);
+                          }}>
                           <X size={12} />Reject
                         </Btn>
                       </div>
@@ -161,12 +163,7 @@ const RequestsTab = memo(() => {
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#9ca3af" })}>No leave requests found.</div>
       )}
 
-      {reviewing && (
-        <RejectModal
-          onConfirm={(remarks) => handleReview(reviewing.id, reviewing.decision, remarks)}
-          onClose={() => setReviewing(null)}
-        />
-      )}
+
     </div>
   );
 });

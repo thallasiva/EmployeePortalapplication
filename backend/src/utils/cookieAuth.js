@@ -14,7 +14,7 @@ const IS_PROD = env === 'production';
 const BASE_OPTS = {
   httpOnly: true,
   secure: IS_PROD,
-  sameSite: IS_PROD ? 'Strict' : 'Lax',
+  sameSite: IS_PROD ? 'None' : 'Lax',
   path: '/'
 };
 
