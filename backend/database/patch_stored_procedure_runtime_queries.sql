@@ -165,4 +165,98 @@ BEGIN
   WHERE job_req_id = p_job_req_id;
 END $$
 
+DROP PROCEDURE IF EXISTS sp_rec_get_recruiter_team_lead $$
+CREATE PROCEDURE sp_rec_get_recruiter_team_lead(IN p_recruiter_id INT)
+BEGIN
+  SELECT
+    tl.email AS tl_email,
+    CONCAT(tl.first_name, ' ', IFNULL(tl.last_name, '')) AS tl_name,
+    CONCAT(r.first_name, ' ', IFNULL(r.last_name, '')) AS recruiter_name
+  FROM employees r
+  LEFT JOIN employees tl ON tl.employee_id = r.reporting_to
+  WHERE r.employee_id = p_recruiter_id
+  LIMIT 1;
+END $$
+
+DROP PROCEDURE IF EXISTS sp_joining_update_formality_documents $$
+CREATE PROCEDURE sp_joining_update_formality_documents(
+  IN p_invitation_id INT,
+  IN p_aadhar_doc_url TEXT,
+  IN p_pan_doc_url TEXT
+)
+BEGIN
+  UPDATE joining_formalities
+  SET aadhar_doc_url = COALESCE(p_aadhar_doc_url, aadhar_doc_url),
+      pan_doc_url = COALESCE(p_pan_doc_url, pan_doc_url)
+  WHERE invitation_id = p_invitation_id;
+
+  SELECT aadhar_doc_url, pan_doc_url
+  FROM joining_formalities
+  WHERE invitation_id = p_invitation_id
+  LIMIT 1;
+END $$
+
+DROP PROCEDURE IF EXISTS sp_joining_get_employee_id_by_code $$
+CREATE PROCEDURE sp_joining_get_employee_id_by_code(IN p_emp_code VARCHAR(100))
+BEGIN
+  SELECT employee_id
+  FROM employees
+  WHERE emp_code = p_emp_code
+  LIMIT 1;
+END $$
+
+DROP PROCEDURE IF EXISTS sp_joining_sync_identity_documents $$
+CREATE PROCEDURE sp_joining_sync_identity_documents(
+  IN p_employee_id INT,
+  IN p_uploaded_by INT,
+  IN p_aadhar_doc_url TEXT,
+  IN p_pan_doc_url TEXT
+)
+BEGIN
+  DECLARE v_category_id INT DEFAULT NULL;
+
+  SELECT category_id INTO v_category_id
+  FROM document_categories
+  WHERE category_name = 'Identity Documents'
+  LIMIT 1;
+
+  IF v_category_id IS NULL THEN
+    INSERT INTO document_categories (category_name) VALUES ('Identity Documents');
+    SET v_category_id = LAST_INSERT_ID();
+  END IF;
+
+  IF p_aadhar_doc_url IS NOT NULL AND p_aadhar_doc_url <> '' THEN
+    INSERT INTO documents
+      (title, category_id, file_type, file_size, file_url, visibility, employee_id, uploaded_by)
+    VALUES
+      ('Aadhaar Card', v_category_id, UPPER(SUBSTRING_INDEX(p_aadhar_doc_url, '.', -1)), '', p_aadhar_doc_url, 'employee', p_employee_id, p_uploaded_by)
+    ON DUPLICATE KEY UPDATE file_url = VALUES(file_url);
+  END IF;
+
+  IF p_pan_doc_url IS NOT NULL AND p_pan_doc_url <> '' THEN
+    INSERT INTO documents
+      (title, category_id, file_type, file_size, file_url, visibility, employee_id, uploaded_by)
+    VALUES
+      ('PAN Card', v_category_id, UPPER(SUBSTRING_INDEX(p_pan_doc_url, '.', -1)), '', p_pan_doc_url, 'employee', p_employee_id, p_uploaded_by)
+    ON DUPLICATE KEY UPDATE file_url = VALUES(file_url);
+  END IF;
+
+  SELECT v_category_id AS category_id;
+END $$
+
+DROP PROCEDURE IF EXISTS sp_joining_get_my_documents $$
+CREATE PROCEDURE sp_joining_get_my_documents(IN p_employee_id INT)
+BEGIN
+  SELECT jf.aadhar_doc_url, jf.pan_doc_url,
+         jf.handbook_acknowledged, jf.privacy_policy_accepted,
+         jf.status, jf.reviewed_at,
+         COALESCE(jf.full_name, ji.candidate_name) AS candidate_name
+  FROM joining_formalities jf
+  JOIN joining_invitations ji ON ji.id = jf.invitation_id
+  JOIN employees e ON e.emp_code = jf.admin_employee_id
+  WHERE e.employee_id = p_employee_id
+  ORDER BY jf.updated_at DESC
+  LIMIT 1;
+END $$
+
 DELIMITER ;

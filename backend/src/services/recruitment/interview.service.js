@@ -1,4 +1,4 @@
-const { callProcedure, query } = require('../../config/db');
+const { callProcedure } = require('../../config/db');
 const BaseService = require('../base.service');
 const ApiError = require('../../utils/ApiError');
 const notify = require('../mailNotify.service');
@@ -11,15 +11,8 @@ class InterviewService extends BaseService {
 
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
-    const rows = await query(
-      `SELECT tl.email AS tl_email,
-              CONCAT(tl.first_name, ' ', IFNULL(tl.last_name, '')) AS tl_name
-         FROM employees r
-         LEFT JOIN employees tl ON tl.employee_id = r.reporting_to
-        WHERE r.employee_id = ? LIMIT 1`,
-      [recruiterId]
-    );
-    return rows[0] ?? {};
+    const results = await callProcedure('sp_rec_get_recruiter_team_lead(?)', [recruiterId]);
+    return (results[0] ?? [])[0] ?? {};
   }
 
 

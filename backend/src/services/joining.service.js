@@ -150,17 +150,13 @@ async function saveFormalities(token, data, submit = false) {
 
 
   if (row && (data.aadharDocUrl || data.panDocUrl)) {
-    const { pool } = require('../config/db');
-    const sets = [];
-    const vals = [];
-    if (data.aadharDocUrl) {sets.push('aadhar_doc_url = ?');vals.push(data.aadharDocUrl);}
-    if (data.panDocUrl) {sets.push('pan_doc_url = ?');vals.push(data.panDocUrl);}
-    vals.push(inv.id);
-    await pool.execute(
-      `UPDATE joining_formalities SET ${sets.join(', ')} WHERE invitation_id = ?`, vals
+    const documentResults = await callProcedure(
+      'sp_joining_update_formality_documents(?, ?, ?)',
+      [inv.id, data.aadharDocUrl || null, data.panDocUrl || null]
     );
-    if (data.aadharDocUrl) row.aadhar_doc_url = data.aadharDocUrl;
-    if (data.panDocUrl) row.pan_doc_url = data.panDocUrl;
+    const documents = (documentResults[0] ?? [])[0] ?? {};
+    row.aadhar_doc_url = documents.aadhar_doc_url ?? row.aadhar_doc_url;
+    row.pan_doc_url = documents.pan_doc_url ?? row.pan_doc_url;
   }
 
   return row;
@@ -224,53 +220,22 @@ async function review(invitationId, { decision, remarks, changesFields, reviewed
 
 
   if (decision === 'approve' && formData) {
-    const { pool } = require('../config/db');
-    const conn = await pool.getConnection();
-
-
-
     let empId = row?.employee_id || formData.employee_id || null;
     if (!empId && employeeId) {
-
-      const [empRows] = await conn.execute(
-        'SELECT employee_id FROM employees WHERE emp_code = ? LIMIT 1',
-        [employeeId]
-      );
-      empId = empRows[0]?.employee_id || null;
+      const employeeResults = await callProcedure('sp_joining_get_employee_id_by_code(?)', [employeeId]);
+      empId = (employeeResults[0] ?? [])[0]?.employee_id ?? null;
     }
 
     if (empId) {
-
-      let [catRows] = await conn.execute(
-        "SELECT category_id FROM document_categories WHERE category_name = 'Identity Documents' LIMIT 1"
-      );
-      let categoryId = catRows[0]?.category_id || null;
-      if (!categoryId) {
-        const [ins] = await conn.execute(
-          "INSERT INTO document_categories (category_name) VALUES ('Identity Documents')"
-        );
-        categoryId = ins.insertId;
-      }
-
-      const docsToCreate = [
-      { title: 'Aadhaar Card', url: formData.aadhar_doc_url },
-      { title: 'PAN Card', url: formData.pan_doc_url }].
-      filter((d) => d.url);
-
-      for (const doc of docsToCreate) {
-        const ext = (doc.url.split('.').pop() || 'pdf').toUpperCase();
-        await conn.execute(
-          `INSERT INTO documents (title, category_id, file_type, file_size, file_url, visibility, employee_id, uploaded_by)
-           VALUES (?, ?, ?, ?, ?, 'employee', ?, ?)
-           ON DUPLICATE KEY UPDATE file_url = VALUES(file_url)`,
-          [doc.title, categoryId, ext, '', doc.url, empId, reviewedBy || null]
-        ).catch(() => {});
-      }
+      await callProcedure(
+        'sp_joining_sync_identity_documents(?, ?, ?, ?)',
+        [empId, reviewedBy || null, formData.aadhar_doc_url || null, formData.pan_doc_url || null]
+      ).catch(() => {});
 
 
       if (formData.bank_name || formData.account_number) {
-        await conn.execute(
-          'CALL sp_upsert_bank_details(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        await callProcedure(
+          'sp_upsert_bank_details(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
           empId,
           formData.bank_name || null,
@@ -298,20 +263,8 @@ async function review(invitationId, { decision, remarks, changesFields, reviewed
 
 
 async function getMyJoiningDocs(employeeId) {
-  const { pool } = require('../config/db');
-  const [rows] = await pool.execute(
-    `SELECT jf.aadhar_doc_url, jf.pan_doc_url,
-            jf.handbook_acknowledged, jf.privacy_policy_accepted,
-            jf.status, jf.reviewed_at,
-            COALESCE(jf.full_name, ji.candidate_name) AS candidate_name
-     FROM joining_formalities jf
-     JOIN joining_invitations ji ON ji.id = jf.invitation_id
-     JOIN employees e ON e.emp_code = jf.admin_employee_id
-     WHERE e.employee_id = ?
-     ORDER BY jf.updated_at DESC LIMIT 1`,
-    [employeeId]
-  );
-  return rows[0] || null;
+  const results = await callProcedure('sp_joining_get_my_documents(?)', [employeeId]);
+  return (results[0] ?? [])[0] ?? null;
 }
 
 
