@@ -17,8 +17,8 @@ exports.getMyProofs = asyncHandler(async (req, res) => res.json(await svc.getMyP
 exports.uploadProof = asyncHandler(async (req, res) => res.status(201).json(await svc.uploadProof(req.user.employeeId, req.body, req.file)));
 exports.deleteMyProof = asyncHandler(async (req, res) => res.json(await svc.deleteMyProof(req.user.employeeId, req.params.id)));
 exports.downloadProof = asyncHandler(async (req, res) => {
-  const isAdmin = req.user.roleName === 'Admin';
-  const { filePath, fileName } = await svc.getProofFile(req.params.id, req.user.employeeId, isAdmin);
+  const isReviewer = ['Admin', 'HR Manager'].includes(req.user.roleName);
+  const { filePath, fileName } = await svc.getProofFile(req.params.id, req.user.employeeId, isReviewer);
   res.download(filePath, fileName);
 });
 

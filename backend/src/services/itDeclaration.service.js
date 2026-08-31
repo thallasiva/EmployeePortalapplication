@@ -94,6 +94,8 @@ async function getMyProofs(employeeId) {
 }
 
 async function uploadProof(employeeId, { investment_type, section_key, declared_amount, actual_amount }, file) {
+  if (!file) throw ApiError.badRequest('A PDF, JPG, or PNG proof document is required');
+  if (!investment_type) throw ApiError.badRequest('Investment type is required');
   const cycle = await getLatestCycle();
   if (!cycle) throw ApiError.notFound('No IT declaration cycle');
   if (cycle.status !== 'active') throw ApiError.badRequest('IT Declaration cycle is not active');

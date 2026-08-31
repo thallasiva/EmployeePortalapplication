@@ -17,6 +17,12 @@ const storage = multer.diskStorage({
   },
 });
 
+const allowedProofTypes = new Set(['application/pdf', 'image/jpeg', 'image/png']);
+function fileFilter(_req, file, cb) {
+  if (allowedProofTypes.has(file.mimetype)) return cb(null, true);
+  return cb(new Error('Only PDF, JPG, and PNG files are allowed'));
+}
+
 // const upload = multer({
 //   storage,
 //   limits: { fileSize: uploadConfig.maxMb * 1024 * 1024 },
@@ -31,4 +37,11 @@ const upload = multer({
     parts: 120                                  
   }
 });
+const proofUpload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: uploadConfig.maxMb * 1024 * 1024 }
+});
+
 module.exports = upload;
+module.exports.proofUpload = proofUpload;

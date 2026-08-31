@@ -278,15 +278,40 @@ BEGIN
     FROM employees WHERE employee_id = p_employee_id;
   END IF;
 
-  -- working days in the month (excluding Sundays as a simple approximation)
-  SET v_working_days = DAY(LAST_DAY(STR_TO_DATE(CONCAT(p_year,'-',p_month,'-01'), '%Y-%m-%d')));
+  -- Count scheduled workdays only: Sundays and the employee's holiday-calendar
+  -- holidays are never treated as payable workdays or loss-of-pay days.
+  SELECT COUNT(*) INTO v_working_days
+  FROM (
+    SELECT DATE_ADD(STR_TO_DATE(CONCAT(p_year, '-', p_month, '-01'), '%Y-%m-%d'), INTERVAL seq.n DAY) AS work_date
+    FROM (
+      SELECT ones.n + tens.n * 10 AS n
+      FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) ones
+      CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3) tens
+    ) seq
+  ) dates
+  WHERE dates.work_date <= LAST_DAY(STR_TO_DATE(CONCAT(p_year, '-', p_month, '-01'), '%Y-%m-%d'))
+    AND DAYOFWEEK(dates.work_date) <> 1
+    AND NOT EXISTS (
+      SELECT 1 FROM holidays h
+      JOIN employees e ON e.employee_id = p_employee_id
+      WHERE h.holiday_date = dates.work_date
+        AND (h.holiday_calendar = e.holiday_calendar OR h.holiday_calendar IS NULL)
+    );
 
-  SELECT COUNT(*) INTO v_lop_days
-  FROM attendance
-  WHERE employee_id = p_employee_id
-    AND MONTH(attendance_date) = p_month
-    AND YEAR(attendance_date) = p_year
-    AND status = 'absent';
+  -- An explicit absence is LOP, a half-day is 0.5 LOP. Approved leave is paid
+  -- and regularized attendance has already updated the attendance record.
+  SELECT COALESCE(SUM(CASE WHEN a.status = 'half_day' THEN 0.5 ELSE 1 END), 0) INTO v_lop_days
+  FROM attendance a
+  WHERE a.employee_id = p_employee_id
+    AND MONTH(a.attendance_date) = p_month
+    AND YEAR(a.attendance_date) = p_year
+    AND a.status IN ('absent', 'half_day')
+    AND NOT EXISTS (
+      SELECT 1 FROM leave_requests lr
+      WHERE lr.employee_id = a.employee_id
+        AND lr.status = 'Approved'
+        AND a.attendance_date BETWEEN lr.from_date AND lr.to_date
+    );
 
   SET v_paid_days = v_working_days - v_lop_days;
   SET v_gross = v_basic + v_hra + v_allowances;
