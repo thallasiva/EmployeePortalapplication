@@ -51,7 +51,7 @@ function fyMonthIndex(month) {
 
 
 
-function computeTdsSection({ earnings = [], pfMonthly = 0, professionTaxMonthly = 0, month, year }) {
+function computeTdsSection({ earnings = [], pfMonthly = 0, professionTaxMonthly = 0, approvedProofs = [], taxRegime = 'old', month, year }) {
   const tdsRows = earnings.
   filter((e) => Number(e.amount) > 0).
   map((e) => {
@@ -62,7 +62,19 @@ function computeTdsSection({ earnings = [], pfMonthly = 0, professionTaxMonthly 
   const grossSalary = tdsRows.reduce((sum, r) => sum + r.gross, 0);
 
   const pfAnnual = Math.round((Number(pfMonthly) || 0) * 12);
-  const chapterVIA = pfAnnual > 0 ? [{ label: 'PF', amount: pfAnnual }] : [];
+  const proofTotals = approvedProofs.reduce((totals, proof) => {
+    const key = String(proof.section_key || '').toUpperCase();
+    const type = String(proof.investment_type || '').toLowerCase();
+    const section = key || (type.includes('medical') ? '80D' : type.includes('nps') ? '80CCD(1B)' : '80C');
+    totals[section] = (totals[section] || 0) + Number(proof.actual_amount || 0);
+    return totals;
+  }, {});
+  const oldRegime = String(taxRegime || 'old').toLowerCase() !== 'new';
+  const chapterVIA = oldRegime ? [
+    { label: '80C / PF', amount: Math.min(150000, pfAnnual + (proofTotals['80C'] || 0)) },
+    { label: '80CCD(1B)', amount: Math.min(50000, proofTotals['80CCD(1B)'] || 0) },
+    { label: '80D', amount: Math.min(50000, proofTotals['80D'] || 0) }
+  ].filter(x => x.amount > 0) : [];
   const totalVIADeduction = chapterVIA.reduce((sum, r) => sum + r.amount, 0);
 
   const professionTax = Math.round((Number(professionTaxMonthly) || 0) * 12);

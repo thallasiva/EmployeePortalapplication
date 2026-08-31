@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, readOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const emailService = require('./email.service');
 const notify = require('./mailNotify.service');
@@ -168,8 +168,13 @@ class PayslipService extends BaseService {
     const pfMonthly = deductions.find((d) => d.label === 'PF' || d.label === 'EMP PF')?.amount || 0;
     const professionTaxMonthly = deductions.find((d) => /prof/i.test(d.label))?.amount || 0;
 
+    const regimeRows = await query('SELECT tax_regime FROM employees WHERE employee_id = ? LIMIT 1', [row.emp_id]);
+    const proofRows = await query(`SELECT p.section_key, p.investment_type, p.actual_amount
+      FROM it_proof_documents p
+      WHERE p.employee_id = ? AND p.status = 'verified'`, [row.emp_id]);
     const tds = computeTdsSection({
-      earnings, pfMonthly, professionTaxMonthly, month: row.month, year: row.year
+      earnings, pfMonthly, professionTaxMonthly, approvedProofs: proofRows,
+      taxRegime: regimeRows[0]?.tax_regime || 'old', month: row.month, year: row.year
     });
 
     const incomeTaxDeduction = deductions.find((d) => /income.?tax|tds/i.test(d.label));
@@ -224,6 +229,14 @@ class PayslipService extends BaseService {
     const out = await readOuts('payslip_id');
     const payslipId = out[0].payslip_id;
     if (!payslipId) throw ApiError.internal('Failed to generate payslip');
+
+    const approvedInputs = await query(`SELECT COALESCE(SUM(amount),0) AS total FROM payroll_inputs
+      WHERE employee_id=? AND month=? AND year=? AND status='APPROVED'`, [employee_id, month, year]);
+    const variableEarnings = Number(approvedInputs[0]?.total || 0);
+    if (variableEarnings > 0) {
+      await query(`UPDATE payslips SET gross_earnings = gross_earnings + ?, net_pay = net_pay + ? WHERE payslip_id=?`,
+        [variableEarnings, variableEarnings, payslipId]);
+    }
 
 
     const rawResults = await callProcedure('sp_get_payslip_raw(?)', [payslipId]);

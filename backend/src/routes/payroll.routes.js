@@ -81,5 +81,11 @@ controller.markPayslipPaid);
 router.get('/runs', requirePermission('payroll', 'view'), auditLog('READ_PAYROLL_RUN_LIST'), controller.listPayrollRuns);
 router.get('/runs/:id', requirePermission('payroll', 'view'), auditLog('READ_PAYROLL_RUN'), controller.getPayrollRun);
 router.post('/runs', requirePermission('payroll', 'add'), auditLog('CREATE_PAYROLL_RUN'), validate(runPayrollSchema), controller.runPayroll);
+router.post('/runs/:id/submit-review', requirePermission('payroll', 'add'), controller.submitPayrollReview);
+router.put('/runs/:id/review', requirePermission('payroll', 'edit'), controller.reviewPayroll);
+router.get('/runs/:id/bank-export', requirePermission('payroll', 'edit'), controller.exportBankFile);
+router.get('/inputs', requirePermission('payroll', 'view'), controller.listPayrollInputs);
+router.post('/inputs', requirePermission('payroll', 'add'), controller.createPayrollInput);
+router.put('/inputs/:id/review', requirePermission('payroll', 'edit'), controller.reviewPayrollInput);
 
 module.exports = router;

@@ -177,6 +177,20 @@ const runPayroll = asyncHandler(async (req, res) =>
   new ApiResponse(200, record, 'Payroll run completed').send(res);
 });
 
+const submitPayrollReview = asyncHandler(async (req, res) =>
+  new ApiResponse(200, await payrollRunService.submitForReview(req.params.id, req.user.employeeId), 'Payroll submitted for review').send(res));
+const reviewPayroll = asyncHandler(async (req, res) =>
+  new ApiResponse(200, await payrollRunService.review(req.params.id, req.user.employeeId, req.body), 'Payroll review recorded').send(res));
+const exportBankFile = asyncHandler(async (req, res) => {
+  const rows = await payrollRunService.exportBankFile(req.params.id);
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const csv = ['EMP_CODE,EMPLOYEE_NAME,ACCOUNT_NUMBER,IFSC_CODE,AMOUNT', ...rows.map(r => [r.emp_code, r.employee_name, r.account_number, r.ifsc_code, Number(r.net_pay).toFixed(2)].map(esc).join(','))].join('\n');
+  res.attachment(`payroll-${req.params.id}-neft.csv`).type('text/csv').send(csv);
+});
+const listPayrollInputs = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.listInputs(req.query), 'Payroll inputs fetched').send(res));
+const createPayrollInput = asyncHandler(async (req, res) => new ApiResponse(201, await payrollRunService.createInput({ ...req.body, createdBy: req.user.employeeId }), 'Payroll input submitted for review').send(res));
+const reviewPayrollInput = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.reviewInput(req.params.id, req.user.employeeId, req.body), 'Payroll input reviewed').send(res));
+
 module.exports = {
   listSalaryStructures,
   getSalaryStructure,
@@ -192,7 +206,7 @@ module.exports = {
   markPayslipPaid,
   listPayrollRuns,
   getPayrollRun,
-  runPayroll,
+  runPayroll, submitPayrollReview, reviewPayroll, exportBankFile, listPayrollInputs, createPayrollInput, reviewPayrollInput,
   importSalaryStructures,
   generateMyPayslip,
   generateAllPayslips
