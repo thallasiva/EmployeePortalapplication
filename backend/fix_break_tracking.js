@@ -38,7 +38,6 @@ async function run() {
     [`ALTER TABLE attendance ADD COLUMN   checkout_lat DECIMAL(10,6) DEFAULT NULL`, 'checkout_lat column'],
     [`ALTER TABLE attendance ADD COLUMN   checkout_lng DECIMAL(10,6) DEFAULT NULL`, 'checkout_lng column'],
     [`ALTER TABLE attendance ADD COLUMN   checkout_location VARCHAR(200) DEFAULT NULL`, 'checkout_location column'],
-
     // 3. sp_employee_checkin — supports multiple punches (break re-check-in)
     [`DROP PROCEDURE IF EXISTS sp_employee_checkin`, 'drop sp_employee_checkin'],
     [`CREATE PROCEDURE sp_employee_checkin(
