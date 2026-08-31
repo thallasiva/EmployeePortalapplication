@@ -11,12 +11,20 @@ const offerCtrl = require("./offer.controller");
 const onboardingCtrl = require("./onboarding.controller");
 const dashboardCtrl = require("./dashboard.controller");
 const resumeMatchCtrl = require("./resumeMatch.controller");
+const aiInterviewCtrl = require("./aiInterview.controller");
 
 
 const V = require("./recruitment.validator");
 
 const { callProcedure } = require("../../config/db");
 
+
+// ── PUBLIC routes (no auth required) ─────────────────────────────────────────
+router.get("/public/ai-interview/:token",         aiInterviewCtrl.getSession);
+router.post("/public/ai-interview/:token/start",   aiInterviewCtrl.start);
+router.post("/public/ai-interview/:token/answer",  aiInterviewCtrl.answer);
+router.post("/public/ai-interview/:token/submit",  aiInterviewCtrl.submit);
+router.post("/public/ai-interview/:token/complete", aiInterviewCtrl.submit);
 
 router.use(authenticate);
 
@@ -144,5 +152,10 @@ router.post("/resume-match/upload", ALL_REC, resumeMatchCtrl.uploadAndMatch);
 router.get("/resume-match/candidate/:candidateId/job/:jobReqId", ALL_REC, resumeMatchCtrl.getMatch);
 router.post("/resume-match/candidate/:candidateId/job/:jobReqId", ALL_REC, resumeMatchCtrl.computeMatch);
 router.get("/resume-match/job/:jobReqId", ALL_REC, resumeMatchCtrl.listByJob);
+
+// ── AI Interview routes (protected) ──────────────────────────────────────────
+router.post("/ai-interviews",             REC_TEAM, aiInterviewCtrl.create);
+router.get("/ai-interviews",              ALL_REC,  aiInterviewCtrl.list);
+router.get("/ai-interviews/report/:id",   ALL_REC,  aiInterviewCtrl.getReport);
 
 module.exports = router;

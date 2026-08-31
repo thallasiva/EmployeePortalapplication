@@ -153,3 +153,26 @@ apiClient.get(`/recruitment/resume-match/job/${jobReqId}`).then((r) => r.data?.d
 
 
 export { getErrorMessage };
+
+// ── AI Interview ──────────────────────────────────────────────────────────────
+export const createAIInterview = (payload) =>
+  apiClient.post("/recruitment/ai-interviews", payload).then(unwrap);
+
+export const listAIInterviews = (params = {}) =>
+  apiClient.get("/recruitment/ai-interviews", { params }).then(unwrapList);
+
+export const getAIInterviewReport = (sessionId) =>
+  apiClient.get(`/recruitment/ai-interviews/report/${sessionId}`).then(unwrap);
+
+// Public (no auth) — candidate-facing
+export const getAIInterviewSession = (token) =>
+  apiClient.get(`/recruitment/public/ai-interview/${token}`).then(unwrap);
+
+export const startAIInterview = (token) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/start`).then(unwrap);
+
+export const answerAIInterview = (token, answer) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/answer`, { answer }).then(unwrap);
+
+export const completeAIInterview = (token) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/complete`).then(unwrap);
