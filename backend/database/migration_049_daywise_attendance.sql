@@ -1,4 +1,5 @@
 -- Check-in/check-out are day-wise. A missing checkout on an earlier date never blocks today.
+;
 DROP PROCEDURE IF EXISTS sp_employee_checkin;
 DELIMITER $$
 CREATE PROCEDURE sp_employee_checkin (
