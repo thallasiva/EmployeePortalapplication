@@ -1,6 +1,10 @@
 const BaseService = require('./base.service');
 const { callProcedure } = require('../config/db');
 
+function indiaDate() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+}
+
 class AttendanceService extends BaseService {
   constructor() {
     super('attendance', 'attendance_id', [
@@ -41,7 +45,7 @@ class AttendanceService extends BaseService {
   }
 
   async checkIn(employeeId, { date, time, shift_start, lat, lng, location } = {}) {
-    const checkDate = date || new Date().toISOString().slice(0, 10);
+    const checkDate = date || indiaDate();
     const checkTime = time || new Date().toTimeString().slice(0, 8);
     // Always use 7-param version (lat/lng/location default to NULL if not provided)
     await callProcedure('sp_employee_checkin(?, ?, ?, ?, ?, ?, ?)', [
@@ -54,7 +58,7 @@ class AttendanceService extends BaseService {
   }
 
   async checkOut(employeeId, { date, time, lat, lng, location } = {}) {
-    const checkDate = date || new Date().toISOString().slice(0, 10);
+    const checkDate = date || indiaDate();
     const checkTime = time || new Date().toTimeString().slice(0, 8);
     // Always use 6-param version (lat/lng/location default to NULL if not provided)
     await callProcedure('sp_employee_checkout(?, ?, ?, ?, ?, ?)', [
