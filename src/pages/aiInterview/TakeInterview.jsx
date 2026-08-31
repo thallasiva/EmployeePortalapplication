@@ -43,10 +43,15 @@ export default function TakeInterview() {
   const [error, setError] = useState("");
   const recognitionRef = useRef(null);
   const answerRef = useRef("");
+  const interimRef = useRef("");
+  const autoAdvanceRef = useRef(false);
+  const startListeningRef = useRef(null);
 
   const stopMedia = useCallback(() => {
     try { recognitionRef.current?.stop(); } catch (_) {}
     recognitionRef.current = null;
+    autoAdvanceRef.current = false;
+    interimRef.current = "";
     setListening(false);
     setInterimTranscript("");
     window.speechSynthesis?.cancel();
@@ -70,13 +75,16 @@ export default function TakeInterview() {
     tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
   }, [session?.expiresAt, screen, stopMedia, token]);
 
-  const readQuestion = useCallback(() => {
+  const readQuestion = useCallback((listenAfterQuestion = false) => {
     if (!question?.question) return;
     setSpeaking(true);
-    speak(question.question, () => setSpeaking(false));
+    speak(question.question, () => {
+      setSpeaking(false);
+      if (listenAfterQuestion) setTimeout(() => startListeningRef.current?.(true), 350);
+    });
   }, [question]);
 
-  useEffect(() => { if (screen === "interview" && voiceMode) readQuestion(); }, [screen, voiceMode, question, readQuestion]);
+  useEffect(() => { if (screen === "interview" && voiceMode) readQuestion(true); }, [screen, voiceMode, question, readQuestion]);
 
   async function begin(useVoice) {
     try {
@@ -92,9 +100,11 @@ export default function TakeInterview() {
     } catch (err) { setError(err?.response?.data?.message || "Unable to start the interview."); setScreen("error"); }
   }
 
-  function startListening() {
+  function startListening(autoSubmit = false) {
     if (!Recognition) return;
     window.speechSynthesis?.cancel(); setSpeaking(false); setInterimTranscript("");
+    autoAdvanceRef.current = autoSubmit;
+    interimRef.current = "";
     const recognizer = new Recognition();
     recognizer.lang = "en-IN";
     recognizer.continuous = true;
@@ -107,14 +117,29 @@ export default function TakeInterview() {
         else interimText += ` ${text}`;
       }
       if (finalText.trim()) { answerRef.current = `${answerRef.current} ${finalText}`.trim(); setAnswer(answerRef.current); }
-      setInterimTranscript(interimText.trim());
+      interimRef.current = interimText.trim();
+      setInterimTranscript(interimRef.current);
     };
-    recognizer.onerror = event => { setListening(false); if (event.error === "not-allowed") setError("Microphone permission was denied. Allow microphone access and try again."); };
-    recognizer.onend = () => { recognitionRef.current = null; setListening(false); setInterimTranscript(""); };
+    recognizer.onerror = event => { autoAdvanceRef.current = false; setListening(false); if (event.error === "not-allowed") setError("Microphone permission was denied. Allow microphone access and try again."); };
+    recognizer.onend = () => {
+      recognitionRef.current = null;
+      setListening(false);
+      const unfinishedWords = interimRef.current.trim();
+      if (unfinishedWords) {
+        answerRef.current = `${answerRef.current} ${unfinishedWords}`.trim();
+        setAnswer(answerRef.current);
+      }
+      interimRef.current = "";
+      setInterimTranscript("");
+      const shouldAdvance = autoAdvanceRef.current;
+      autoAdvanceRef.current = false;
+      if (shouldAdvance && answerRef.current.trim()) setTimeout(() => submitAnswer(), 900);
+    };
     recognitionRef.current = recognizer;
     recognizer.start();
     setListening(true);
   }
+  startListeningRef.current = startListening;
 
   async function submitAnswer() {
     if (!answer.trim()) return;
