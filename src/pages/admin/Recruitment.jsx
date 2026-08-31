@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import {
 
   LayoutDashboard, Briefcase, Users, CalendarCheck,
-  FileCheck, UserPlus, BarChart3, CheckSquare, Zap } from
+  FileCheck, UserPlus, BarChart3, CheckSquare, Zap, Bot } from
 "lucide-react";
 
 import { getStoredUser } from "../../data/auth";
@@ -20,6 +20,7 @@ import AdminDashboard from "./recruitment/AdminDashboard";
 import ManagerDashboard from "./recruitment/ManagerDashboard";
 import RecruiterDashboard from "./recruitment/RecruiterDashboard";
 import ReportsTab from "./recruitment/ReportsTab";
+import AIInterviewSetup from "../recruiter/AIInterviewSetup";
 import EmployeesTab from "./recruitment/EmployeesTab";
 
 const TABS = {
@@ -31,7 +32,8 @@ const TABS = {
   { key: "interviews", label: "Interviews", icon: CalendarCheck },
   { key: "offers", label: "Offers", icon: FileCheck },
   // { key: "onboarding", label: "Onboarding", icon: CheckSquare },
-  { key: "reports", label: "Reports", icon: BarChart3 }],
+  { key: "reports", label: "Reports", icon: BarChart3 },
+  { key: "ai-interview", label: "AI Interview", icon: Bot }],
 
 
   3: [
@@ -41,6 +43,7 @@ const TABS = {
   { key: "interviews", label: "Interviews", icon: CalendarCheck },
   { key: "offers", label: "Offers", icon: FileCheck },
 //  { key: "onboarding", label: "Onboarding", icon: CheckSquare }
+  { key: "ai-interview", label: "AI Interview", icon: Bot },
 ],
 
 
@@ -54,7 +57,8 @@ const TABS = {
   { key: "dashboard", label: "My Dashboard", icon: LayoutDashboard },
   { key: "jobs", label: "My Jobs", icon: Briefcase },
   { key: "candidates", label: "Candidates", icon: Users },
-  { key: "interviews", label: "Interviews", icon: CalendarCheck }]
+  { key: "interviews", label: "Interviews", icon: CalendarCheck },
+  { key: "ai-interview", label: "AI Interview", icon: Bot }]
 
 };
 
@@ -74,6 +78,7 @@ function RenderPage({ page, roleId })
     // case "onboarding":return <OnboardingPage role={roleId} />;
     case "employees":return <EmployeesTab />;
     case "reports":return <ReportsTab />;
+    case "ai-interview":return <AIInterviewSetup />;
     default:
       if (roleId === 1) return <AdminDashboard />;
       if (roleId === 3 || roleId === 4) return <ManagerDashboard />;

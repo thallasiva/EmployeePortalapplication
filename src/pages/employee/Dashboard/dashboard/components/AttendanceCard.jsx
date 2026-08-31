@@ -14,6 +14,9 @@ const AttendanceCard = React.memo(function AttendanceCard({
   handleCheckIn,
   handleCheckOut,
   todayLabel,
+  checkinLocation,
+  checkoutLocation,
+  onBreak,
 }) {
   return (
     <div className={cssClass({
@@ -45,9 +48,16 @@ const AttendanceCard = React.memo(function AttendanceCard({
             {loading ? "…" : checkIn ? fmtTime(checkIn) : "—"}
           </div>
           {checkIn && (
-            <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#16a34a", display: "flex", alignItems: "center", justifyContent: "center", gap: 3 })}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
-              Recorded
+            <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#16a34a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 })}>
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
+                Recorded
+              </div>
+              {(checkinLocation || todayAtt?.checkin_location) && (
+                <div style={{ fontSize: 9, color: "#4ade80", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }} title={checkinLocation || todayAtt?.checkin_location}>
+                  📍 {checkinLocation || todayAtt?.checkin_location}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -64,9 +74,16 @@ const AttendanceCard = React.memo(function AttendanceCard({
             {loading ? "…" : checkOut ? fmtTime(checkOut) : "—"}
           </div>
           {checkOut && (
-            <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#f18200", display: "flex", alignItems: "center", justifyContent: "center", gap: 3 })}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f18200", display: "inline-block" }} />
-              Recorded
+            <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#f18200", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 })}>
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f18200", display: "inline-block" }} />
+                Recorded
+              </div>
+              {(checkoutLocation || todayAtt?.checkout_location) && (
+                <div style={{ fontSize: 9, color: "#fb923c", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }} title={checkoutLocation || todayAtt?.checkout_location}>
+                  📍 {checkoutLocation || todayAtt?.checkout_location}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -86,23 +103,29 @@ const AttendanceCard = React.memo(function AttendanceCard({
       <div className="grid grid-cols-2 gap-2.5">
         <button
           onClick={handleCheckIn}
-          disabled={!!checkIn || checkingIn || loading}
+          disabled={(!!checkIn && !onBreak) || checkingIn || loading}
           className={`h-10 rounded-lg text-sm font-bold border-0 transition-all ${
-            checkIn ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "bg-green-600 text-white cursor-pointer hover:bg-green-700"
+            checkIn && !onBreak
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+              : onBreak
+              ? "bg-blue-600 text-white cursor-pointer hover:bg-blue-700"
+              : "bg-green-600 text-white cursor-pointer hover:bg-green-700"
           }`}
         >
-          {checkingIn ? "…" : checkIn ? "✓ Checked In" : "Check In"}
+          {checkingIn ? "…" : checkIn && !onBreak ? "✓ Checked In" : onBreak ? "▶ Resume" : "Check In"}
         </button>
         <button
           onClick={handleCheckOut}
-          disabled={!checkIn || !!checkOut || checkingOut || loading}
+          disabled={!checkIn || onBreak || checkingOut || loading}
           className={`h-10 rounded-lg text-sm font-bold border-0 transition-all ${
-            checkOut ? "bg-slate-100 text-slate-400 cursor-not-allowed" :
-            !checkIn ? "bg-slate-100 text-slate-400 cursor-not-allowed" :
-            "bg-[#f18200] text-white cursor-pointer hover:bg-orange-600"
+            onBreak
+              ? "bg-amber-100 text-amber-500 cursor-not-allowed"
+              : !checkIn
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+              : "bg-[#f18200] text-white cursor-pointer hover:bg-orange-600"
           }`}
         >
-          {checkingOut ? "…" : checkOut ? "✓ Checked Out" : "Check Out"}
+          {checkingOut ? "…" : onBreak ? "⏸ On Break" : "Check Out"}
         </button>
       </div>
     </div>

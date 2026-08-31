@@ -85,6 +85,7 @@ export function useInterviewsPage(role) {
         teamsParticipants: participants,
         teamsStart: form.teamsStart || null,
         teamsEnd: form.teamsEnd || null,
+        notes: form.notes || null,
       });
       successToast("Interview scheduled");
       setSchedOpen(false);
@@ -104,7 +105,7 @@ export function useInterviewsPage(role) {
       await apiSubmitFeedback(fbOpen.interview_id, {
         feedbackStatus: fb.feedbackStatus,
         feedbackComments: fb.feedbackComments || null,
-        shortlisted: fb.shortlisted,
+        shortlisted: fb.feedbackStatus === "Shortlist",
       });
       successToast("Feedback submitted");
       setFbOpen(null);
@@ -149,7 +150,13 @@ export function useInterviewsPage(role) {
   const openFeedback = useCallback((row) => {
     setFbOpen(row);
     setFb({
-      feedbackStatus: row.feedback_status || "",
+      feedbackStatus: row.shortlisted
+        ? "Shortlist"
+        : row.feedback_status === "Selected"
+          ? "Move to Next Round"
+          : row.feedback_status === "Not Selected"
+            ? "Reject / Drop"
+            : "",
       feedbackComments: row.feedback_comments || "",
       shortlisted: !!row.shortlisted,
     });

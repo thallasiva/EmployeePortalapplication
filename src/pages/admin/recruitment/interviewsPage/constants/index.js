@@ -15,6 +15,7 @@ export const BLANK_INT = {
   teamsParticipants: "",
   teamsStart: "",
   teamsEnd: "",
+  notes: "",
 };
 
 export const BLANK_FB = { feedbackStatus: "", feedbackComments: "", shortlisted: false };

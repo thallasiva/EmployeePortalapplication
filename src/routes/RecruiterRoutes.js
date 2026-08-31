@@ -13,6 +13,7 @@ const RecruiterTeamOverview = lazy(() => import("../pages/recruiter/RecruiterTea
 const RecruiterTeamLeave = lazy(() => import("../pages/recruiter/RecruiterTeamLeave"));
 const RecruiterTeamAttendance = lazy(() => import("../pages/recruiter/RecruiterTeamAttendance"));
 const RecruiterJoining = lazy(() => import("../pages/recruiter/RecruiterJoining"));
+const AIInterviewSetup = lazy(() => import("../pages/recruiter/AIInterviewSetup"));
 
 const Page = LazyPage;
 
@@ -25,6 +26,7 @@ const RecruiterRoutes = () => {
       <Route index element={<Navigate to="recruitment?page=dashboard" replace />} />
       <Route path="recruitment" element={<Page><Recruitment /></Page>} />
       <Route path="recruitment/create-new" element={<Page><CreateJobPage /></Page>} />
+      <Route path="recruitment/ai-interview" element={<Page><AIInterviewSetup /></Page>} />
 
       {}
       {isTL &&

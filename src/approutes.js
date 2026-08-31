@@ -22,6 +22,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Register = lazy(() => import("./pages/Register"));
 const PayslipPrintView = lazy(() => import("./pages/payslip/PayslipPrintView"));
 const JoiningFormalities = lazy(() => import("./pages/joining/JoiningFormalities"));
+const TakeInterview = lazy(() => import("./pages/aiInterview/TakeInterview"));
 
 const AppRoutes = () =>
 {
@@ -62,6 +63,9 @@ const AppRoutes = () =>
 
       {}
       <Route path="/joining/:token" element={<LazyPage label="Loading..."><JoiningFormalities /></LazyPage>} />
+
+      {/* AI Interview — public, no auth required */}
+      <Route path="/ai-interview/:token" element={<LazyPage label="Loading interview..."><TakeInterview /></LazyPage>} />
 
       <Route path="/performance-showcase" element={<PerformanceDemoRoute />} />
 

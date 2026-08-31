@@ -28,7 +28,11 @@ class AttendanceService extends BaseService {
 
   async getToday(employeeId) {
     const results = await callProcedure('sp_get_today_attendance(?)', [employeeId]);
-    return (results[0] ?? [])[0] ?? null;
+    const row = (results[0] ?? [])[0] ?? null;
+    if (!row) return null;
+    // Attach punches from result set 1
+    const punches = results[1] ?? [];
+    return { ...row, punches };
   }
 
   async monthly(employeeId, month, year) {
@@ -36,22 +40,29 @@ class AttendanceService extends BaseService {
     return results[0] ?? [];
   }
 
-  async checkIn(employeeId, { date, time, shift_start } = {}) {
+  async checkIn(employeeId, { date, time, shift_start, lat, lng, location } = {}) {
     const checkDate = date || new Date().toISOString().slice(0, 10);
     const checkTime = time || new Date().toTimeString().slice(0, 8);
-    await callProcedure('sp_employee_checkin(?, ?, ?, ?)', [
-      employeeId,
-      checkDate,
-      checkTime,
-      shift_start || '09:30:00',
+    // Always use 7-param version (lat/lng/location default to NULL if not provided)
+    await callProcedure('sp_employee_checkin(?, ?, ?, ?, ?, ?, ?)', [
+      employeeId, checkDate, checkTime, shift_start || '09:30:00',
+      lat != null ? Number(lat) : null,
+      lng != null ? Number(lng) : null,
+      location || null,
     ]);
     return this.getToday(employeeId);
   }
 
-  async checkOut(employeeId, { date, time } = {}) {
+  async checkOut(employeeId, { date, time, lat, lng, location } = {}) {
     const checkDate = date || new Date().toISOString().slice(0, 10);
     const checkTime = time || new Date().toTimeString().slice(0, 8);
-    await callProcedure('sp_employee_checkout(?, ?, ?)', [employeeId, checkDate, checkTime]);
+    // Always use 6-param version (lat/lng/location default to NULL if not provided)
+    await callProcedure('sp_employee_checkout(?, ?, ?, ?, ?, ?)', [
+      employeeId, checkDate, checkTime,
+      lat != null ? Number(lat) : null,
+      lng != null ? Number(lng) : null,
+      location || null,
+    ]);
     return this.getToday(employeeId);
   }
 

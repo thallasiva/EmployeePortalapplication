@@ -11,13 +11,9 @@ const PARAMS = [
 { key: 'attitude', label: 'Attitude & Behaviour' },
 { key: 'attendance', label: 'Attendance & Punctuality' }];
 
-
-
-
 async function getActiveCycle()
 {
   const results = await callProcedure('sp_get_active_appraisal_cycle()');
-
   return (results[0] ?? [])[0] ?? (results[1] ?? [])[0] ?? null;
 }
 

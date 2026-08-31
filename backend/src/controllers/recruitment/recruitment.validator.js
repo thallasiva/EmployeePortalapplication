@@ -5,7 +5,7 @@ const POSITION_TYPES = ["Contract", "Contract to Hire", "Direct Hire"];
 const ASSIGNMENT_STATUSES = ["Open", "Closed", "Completed", "Hold"];
 const JOB_STATUSES = ["Active", "On Hold", "Closed", "Find items"];
 const INTERVIEW_LEVELS = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
-const INTERVIEW_TYPES = ["Video Call", "Phone", "In-Person", "Teams"];
+const INTERVIEW_TYPES = ["Video Call", "Phone", "In-Person", "Teams", "GoogleMeet", "Zoom"];
 const OFFER_RESPONSES = ["Accepted", "Rejected"];
 
 
@@ -42,7 +42,7 @@ const assignRecruitersSchema = Joi.object({
 
 
 const createCandidateSchema = Joi.object({
-  jobReqId: Joi.number().integer().positive().required(),
+  jobReqId: Joi.number().integer().positive().allow(null).optional(),
   name: Joi.string().max(200).required(),
   email: Joi.string().email().max(200).required(),
   mobile: Joi.string().max(20).allow("", null),
@@ -69,7 +69,7 @@ const updateCandidateStatusSchema = Joi.object({
 
 const scheduleInterviewSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
-  jobReqId: Joi.number().integer().positive().required(),
+  jobReqId: Joi.number().integer().positive().allow(null).optional(),
   level: Joi.string().valid(...INTERVIEW_LEVELS).required(),
   interviewType: Joi.string().valid(...INTERVIEW_TYPES).required(),
   interviewDate: Joi.date().iso().required(),
@@ -79,11 +79,14 @@ const scheduleInterviewSchema = Joi.object({
   teamsSubject: Joi.string().max(500).allow("", null),
   teamsParticipants: Joi.string().allow("", null),
   teamsStart: Joi.date().iso().allow(null),
+  candidateType: Joi.string().valid("Internal", "External").allow(null).optional(),
+  toAddresses: Joi.string().allow("", null).optional(),
+  notes: Joi.string().allow("", null).optional(),
   teamsEnd: Joi.date().iso().allow(null)
 });
 
 const feedbackSchema = Joi.object({
-  feedbackStatus: Joi.string().valid("Selected", "Not Selected", "Hold").required(),
+  feedbackStatus: Joi.string().valid("Shortlist", "Move to Next Round", "Reject / Drop").required(),
   feedbackComments: Joi.string().allow("", null),
   shortlisted: Joi.boolean().default(false)
 });
@@ -91,7 +94,7 @@ const feedbackSchema = Joi.object({
 
 const createOfferSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
-  jobReqId: Joi.number().integer().positive().required(),
+  jobReqId: Joi.number().integer().positive().allow(null).optional(),
   designation: Joi.string().max(200).required(),
   dateOfJoining: Joi.date().iso().allow(null),
   basic: Joi.number().min(0).default(0),

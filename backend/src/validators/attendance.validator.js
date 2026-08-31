@@ -4,11 +4,17 @@ const checkInSchema = Joi.object({
   date: Joi.date().iso().optional(),
   time: Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).optional(),
   shift_start: Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).optional(),
+  lat: Joi.number().min(-90).max(90).optional().allow(null),
+  lng: Joi.number().min(-180).max(180).optional().allow(null),
+  location: Joi.string().max(200).optional().allow('', null),
 });
 
 const checkOutSchema = Joi.object({
   date: Joi.date().iso().optional(),
   time: Joi.string().pattern(/^\d{2}:\d{2}(:\d{2})?$/).optional(),
+  lat: Joi.number().min(-90).max(90).optional().allow(null),
+  lng: Joi.number().min(-180).max(180).optional().allow(null),
+  location: Joi.string().max(200).optional().allow('', null),
 });
 
 const createRegularizationSchema = Joi.object({

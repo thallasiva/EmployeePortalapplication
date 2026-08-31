@@ -1,14 +1,4 @@
 
-
-
-
-
-
-
-
-
-
-
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
@@ -18,16 +8,6 @@ const files = process.argv.slice(2);
 if (files.length === 0) {
   files.push('schema.sql', 'procedures.sql', 'seed.sql');
 }
-
-
-
-
-
-
-
-
-
-
 
 function splitStatements(sql) {
   const statements = [];

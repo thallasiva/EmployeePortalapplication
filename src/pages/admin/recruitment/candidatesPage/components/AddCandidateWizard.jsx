@@ -45,11 +45,32 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
     }
   }
 
-  function handleFileChange(e) {
+  async function handleFileChange(e) {
     const f = e.target.files[0];
     if (!f) return;
     setFile(f); setParseErr(""); setPreScore(null); setScoreErr("");
     triggerScoring(f, form.jobReqId);
+    // Auto-extract skills (and other fields) from resume as soon as it's uploaded
+    try {
+      const data = await parseResume(f);
+      if (data) {
+        const updates = {};
+        if (data.name && !form.name) updates.name = data.name;
+        if (data.email && !form.email) updates.email = data.email;
+        if (data.phone && !form.mobile) updates.mobile = data.phone;
+        if (data.experience != null && data.experience !== "" && !form.totalExperience) {
+          updates.totalExperience = String(data.experience);
+          updates.relevantExperience = String(data.experience);
+        }
+        const skills = (data.skills || []).join(", ");
+        if (skills) updates.skillSet = skills;
+        if (Object.keys(updates).length) {
+          setForm(prev => ({ ...prev, ...updates }));
+          setAutoFilled(Object.keys(updates));
+        }
+        setParsed(data);
+      }
+    } catch { /* silent — user can still parse manually */ }
   }
 
   function handleChange(e) {

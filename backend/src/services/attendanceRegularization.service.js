@@ -37,10 +37,37 @@ class AttendanceRegularizationService extends BaseService {
     const request = await this.findById(id);
     if (!request) throw ApiError.notFound('Regularization request not found');
     if (request.status !== 'Pending') throw ApiError.conflict('Regularization request already reviewed');
-    await callProcedure(
-      'sp_review_attendance_regularization(?, ?, ?, ?)',
-      [id, decision, reviewed_by, remarks || null]
-    );
+
+    // Pre-check: 5-day monthly limit before calling the procedure
+    if (decision === 'Approved') {
+      const { query } = require('../config/db');
+      const [limitRow] = await query(
+        `SELECT COUNT(*) AS cnt
+           FROM attendance_regularization
+          WHERE employee_id = ?
+            AND MONTH(attendance_date) = MONTH(?)
+            AND YEAR(attendance_date)  = YEAR(?)
+            AND status = 'Approved'
+            AND regularization_id <> ?`,
+        [request.employee_id, request.attendance_date, request.attendance_date, id]
+      );
+      if ((limitRow?.cnt || 0) >= 5) {
+        throw ApiError.conflict('Regularization limit reached: maximum 5 approvals allowed per month');
+      }
+    }
+
+    try {
+      await callProcedure(
+        'sp_review_attendance_regularization(?, ?, ?, ?)',
+        [id, decision, reviewed_by, remarks || null]
+      );
+    } catch (err) {
+      // Translate MySQL SIGNAL message to a clean API error
+      if (err.message && err.message.includes('limit reached')) {
+        throw ApiError.conflict(err.message);
+      }
+      throw err;
+    }
     return this.getDetails(id);
   }
 }

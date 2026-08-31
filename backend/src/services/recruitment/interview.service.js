@@ -76,7 +76,12 @@ class InterviewService extends BaseService {
       const scheduledByName = row.scheduled_by_name || '';
 
 
-      if (candidateEmail) {
+      // For online meeting types (GoogleMeet/Zoom/Teams), skip the basic email here —
+      // the controller setImmediate sends a richer invite WITH the meeting link.
+      const onlineMeetingTypes = ["Teams", "GoogleMeet", "Zoom"];
+      // Use data.interviewType from request body — row.interview_type may be null if proc does not return it
+      const effectiveType = data.interviewType || interviewType;
+      if (candidateEmail && !onlineMeetingTypes.includes(effectiveType)) {
         notify.interviewScheduledCandidate({
           candidateEmail, candidateName, jobTitle, level,
           interviewDate, interviewTime, interviewType, interviewer
@@ -102,13 +107,24 @@ class InterviewService extends BaseService {
   }
 
   async submitFeedback(interviewId, { feedbackStatus, feedbackComments, shortlisted }, submittedBy, ip) {
+    const actionMap = {
+      'Shortlist': { feedbackStatus: 'Selected', shortlisted: true, candidateStatus: 'Shortlisted' },
+      'Move to Next Round': { feedbackStatus: 'Selected', shortlisted: false, candidateStatus: 'Schedule Interview' },
+      'Reject / Drop': { feedbackStatus: 'Not Selected', shortlisted: false, candidateStatus: 'Rejected' },
+    };
+    const action = actionMap[feedbackStatus];
+    if (!action) throw new ApiError(400, 'Invalid interview feedback action');
+
     const results = await callProcedure(
       'sp_rec_submit_feedback(?, ?, ?, ?, ?, ?)',
-      [interviewId, feedbackStatus, feedbackComments || null, shortlisted ? 1 : 0, submittedBy, ip]
+      [interviewId, action.feedbackStatus, feedbackComments || null, action.shortlisted ? 1 : 0, submittedBy, ip]
     );
     const row = (results[0] ?? [])[0];
 
     if (row) {
+      // The legacy procedure applies a level-based default. Override it with
+      // the explicit decision selected by the reviewer.
+      await callProcedure('sp_rec_update_candidate_status(?, ?, ?, ?)', [row.candidate_id, action.candidateStatus, submittedBy, ip]);
       const email = row.candidate_email || row.email || '';
       const name = row.candidate_name || row.name || 'Candidate';
       const jobTitle = row.job_title || '';
@@ -118,7 +134,7 @@ class InterviewService extends BaseService {
 
 
       if (email) {
-        if (feedbackStatus && feedbackStatus.toLowerCase().includes('reject')) {
+        if (action.candidateStatus === 'Rejected') {
           notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
         }
       }
@@ -155,6 +171,10 @@ class InterviewService extends BaseService {
 
   async setJoinUrl(interviewId, joinUrl) {
     await callProcedure('sp_rec_set_interview_join_url(?, ?)', [interviewId, joinUrl]);
+  }
+
+  async setZoomMeetingDetails(interviewId, meetingId, joinUrl) {
+    await callProcedure('sp_rec_set_zoom_meeting_details(?, ?, ?)', [interviewId, meetingId, joinUrl]);
   }
 
   async cancel(interviewId, cancelledBy, ip) {

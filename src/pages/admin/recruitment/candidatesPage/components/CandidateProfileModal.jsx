@@ -13,9 +13,17 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
 }) {
   if (!detail) return null;
 
-  const recruiterOpts = ["Work in Progress", "Shortlisted"].map((s) => ({ value: s, label: s }));
-  const hrMgrOpts = ["Shortlisted"].map((s) => ({ value: s, label: s }));
-  const tlOpts = ["Work in Progress", "Shortlisted"].map((s) => ({ value: s, label: s }));
+  const actionOpts = [
+    { value: "Shortlisted", label: "Shortlist" },
+    { value: "Schedule Interview", label: "Move to Next Round" },
+    { value: "Rejected", label: "Reject / Drop" },
+  ];
+  const reviewerOpts = actionOpts.some((option) => option.value === detail.status)
+    ? actionOpts
+    : [{ value: detail.status, label: `Current: ${detail.status}` }, ...actionOpts];
+  const recruiterOpts = reviewerOpts;
+  const hrMgrOpts = reviewerOpts;
+  const tlOpts = reviewerOpts;
   const adminOpts = STATUS_OPTS.map((s) => ({ value: s, label: s }));
 
   const footer = (
@@ -29,8 +37,6 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
         <div className="flex-1">
           <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={hrMgrOpts} />
         </div>
-        <Btn onClick={() => updateStatus(detail.candidate_id, "Offer Rejected")}
-          style={{ background: "#dc2626", color: "#fff", border: "none" }}>Reject</Btn>
       </>}
       {isTL &&
         <div className="flex-1">

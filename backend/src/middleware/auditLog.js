@@ -1,20 +1,6 @@
 'use strict';
 
-
-
-
-
-
-
-
-
-
-
 const { callProcedure } = require('../config/db');
-
-
-
-
 
 function auditLog(action, getEmployeeId = null) {
   return async (req, res, next) => {

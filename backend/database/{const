@@ -1,0 +1,12 @@
+[eval]:1
+require('dotenv').config(); const m=require('mysql2/promise'); m.createConnection({host:process.env.DB_HOST,port:process.env.DB_PORT,user:process.env.DB_USER,password:process.env.DB_PASSWORD,database:process.env.DB_NAME}).then(async c= [r]=await c.query("SELECT COUNT(*) AS n FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='hrms_db'");console.log('Procedures in DB:',r[0].n);c.end()})
+                                                                                                                                                                                                                                   ^^^^^
+Expected '=>', got '='
+
+SyntaxError: missing ) after argument list
+    at makeContextifyScript (node:internal/vm:194:14)
+    at compileScript (node:internal/process/execution:388:10)
+    at evalTypeScript (node:internal/process/execution:260:22)
+    at node:internal/main/eval_string:71:3
+
+Node.js v24.19.0

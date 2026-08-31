@@ -1,105 +1,120 @@
 import React from "react";
-import { ChevronLeft, ChevronRight, Monitor } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toISODateString } from "../../../../../lib/dateUtils";
-import { CELL_STYLES } from "../../../../../lib/attendanceUtils";
 import { WEEKDAYS } from "../constants";
-import LegendDot from "./LegendDot";
 
-const SIX_HOURS_MINUTES = 360;
+const STATUS_STYLES = {
+  P:   { bg: "bg-emerald-50",  border: "border-emerald-200", dot: "bg-emerald-500",  text: "text-emerald-700",  badge: "bg-emerald-100 text-emerald-700" },
+  "P:A": { bg: "bg-amber-50", border: "border-amber-200",   dot: "bg-amber-400",    text: "text-amber-700",    badge: "bg-amber-100 text-amber-700" },
+  A:   { bg: "bg-red-50",     border: "border-red-200",     dot: "bg-red-500",      text: "text-red-700",      badge: "bg-red-100 text-red-700" },
+  H:   { bg: "bg-blue-50",    border: "border-blue-200",    dot: "bg-blue-400",     text: "text-blue-700",     badge: "bg-blue-100 text-blue-700" },
+  L:   { bg: "bg-purple-50",  border: "border-purple-200",  dot: "bg-purple-400",   text: "text-purple-700",   badge: "bg-purple-100 text-purple-700" },
+  WO:  { bg: "bg-slate-50",   border: "border-slate-150",   dot: "bg-slate-300",    text: "text-slate-400",    badge: "bg-slate-100 text-slate-500" },
+};
+
+const getStyle = (record) => {
+  if (record.isWeekend || record.isHoliday) return STATUS_STYLES.WO;
+  return STATUS_STYLES[record.status?.code] || {};
+};
 
 const AttendanceCalendar = React.memo(function AttendanceCalendar({
   grid, dayMap, monthLabel, selectedIso, today, onSelectDay, onPrevMonth, onNextMonth
 }) {
+  const todayIso = toISODateString(today);
+
   return (
-    <div className="xl:col-span-7 bg-white border border-[#dce3eb] rounded-xl shadow-sm overflow-hidden">
-      {/* Month navigation */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#e8edf2] bg-[#fafbfc]">
+    <div className="xl:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <button
-          type="button"
           onClick={onPrevMonth}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#f18200] transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 hover:text-[#f18200] transition-colors"
         >
           <ChevronLeft size={18} />
         </button>
-        <span className="text-[15px] font-bold text-[#1f2937]">{monthLabel}</span>
+        <div className="text-center">
+          <p className="text-base font-extrabold text-slate-800 tracking-tight">{monthLabel}</p>
+        </div>
         <button
-          type="button"
           onClick={onNextMonth}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#f18200] transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 hover:text-[#f18200] transition-colors"
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 flex-1">
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 mb-2">
           {WEEKDAYS.map((wd) => (
-            <div key={wd} className="text-center text-[11px] font-bold text-[#94a3b8] py-1.5 uppercase tracking-wider">
+            <div key={wd} className="text-center text-[10px] font-bold text-slate-400 py-1 uppercase tracking-widest">
               {wd}
             </div>
           ))}
         </div>
 
-        {/* Day cells */}
+        {/* Day grid */}
         <div className="grid grid-cols-7 gap-1.5">
           {grid.map((date, idx) => {
-            if (!date) return <div key={`empty-${idx}`} className="min-h-[76px]" />;
+            if (!date) return <div key={`e-${idx}`} />;
 
             const record = dayMap.get(toISODateString(date));
-            const isSelected = selectedIso === record.iso;
-            const isToday = toISODateString(today) === record.iso;
-            const code = record.pending ? "" : record.status.code;
-            const workedMinutes = record?.status?.workMinutes ?? 0;
-            const needsRegularize =
-              !record.isWeekend && !record.isHoliday && !record.pending &&
-              workedMinutes > 0 && workedMinutes < SIX_HOURS_MINUTES;
-
-            let cellBg = "bg-white";
-            let textCol = "text-[#334155]";
-            if (record.isWeekend || record.isHoliday) { cellBg = "bg-[#f8fafc]"; textCol = "text-[#94a3b8]"; }
-            if (record.status.code === "P") { cellBg = "bg-[#ecfdf5]"; textCol = "text-[#065f46]"; }
-            if (record.status.code === "P:A") { cellBg = "bg-[#fff7ed]"; textCol = "text-[#9a3412]"; }
-            if (record.status.code === "A") { cellBg = "bg-[#fff1f2]"; textCol = "text-[#9f1239]"; }
-            if (record.status.code === "H") { cellBg = "bg-[#eff6ff]"; textCol = "text-[#1e40af]"; }
-            if (record.status.code === "L") { cellBg = "bg-[#faf5ff]"; textCol = "text-[#6b21a8]"; }
+            const iso = record?.iso || toISODateString(date);
+            const isSelected = selectedIso === iso;
+            const isToday = todayIso === iso;
+            const style = getStyle(record);
+            const code = record?.pending ? "" : (record?.status?.code || "");
+            const isWeekendOrHoliday = record?.isWeekend || record?.isHoliday;
+            const workedMins = record?.status?.workMinutes ?? 0;
+            const needsReg = !isWeekendOrHoliday && !record?.pending && workedMins > 0 && workedMins < 360;
 
             return (
               <button
-                key={record.iso}
+                key={iso}
                 type="button"
-                onClick={() => onSelectDay(record.iso)}
-                className={`relative min-h-[76px] rounded-xl border text-left p-2 transition-all
-                  hover:shadow-md hover:border-[#f18200]/40
-                  ${cellBg}
-                  ${isSelected ? "ring-2 ring-[#f18200] border-[#f18200] z-[1] shadow-md" : "border-[#e8edf2]"}
+                onClick={() => onSelectDay(iso)}
+                className={`relative rounded-xl border transition-all text-left p-2 min-h-[70px] flex flex-col
+                  ${isWeekendOrHoliday ? "bg-slate-50 border-slate-100" : (style.bg || "bg-white") + " " + (style.border || "border-slate-200")}
+                  ${isSelected
+                    ? "ring-2 ring-[#f18200] border-[#f18200] shadow-md shadow-orange-100 z-10"
+                    : "hover:shadow-sm hover:border-slate-300"
+                  }
                 `}
               >
-                {record.hasRemote && (
-                  <Monitor size={11} className="absolute top-1.5 right-1.5 text-[#64748b]" />
-                )}
-                {/* Warning triangle for late/regularize eligible */}
-                {needsRegularize && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400" title="Regularization eligible" />
-                )}
-
-                <span
-                  className={`inline-flex items-center justify-center w-7 h-7 text-sm font-bold rounded-full
-                    ${isToday ? "bg-[#f18200] text-white" : isSelected ? "bg-[#f18200] text-white" : textCol}
-                  `}
+                {/* Date number */}
+                <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold shrink-0
+                  ${isToday
+                    ? "bg-[#f18200] text-white shadow-sm"
+                    : isSelected
+                    ? "bg-orange-100 text-[#f18200]"
+                    : isWeekendOrHoliday ? "text-slate-400" : (style.text || "text-slate-700")
+                  }`}
                 >
-                  {record.day}
+                  {record?.day ?? date.getDate()}
                 </span>
 
-                {code && (
-                  <span className={`block mt-1 text-[11px] font-bold ${textCol}`}>
+                {/* Status badge */}
+                {code && !isWeekendOrHoliday && (
+                  <span className={`mt-auto text-[9px] font-bold px-1.5 py-0.5 rounded-md self-start ${style.badge || "bg-slate-100 text-slate-500"}`}>
                     {code}
                   </span>
                 )}
-                {!record.isWeekend && !record.isHoliday && (
-                  <span className="absolute bottom-1.5 right-2 text-[10px] text-[#94a3b8] font-medium">
-                    {record.shiftCode}
+
+                {/* Weekend / Holiday label */}
+                {isWeekendOrHoliday && (
+                  <span className="mt-auto text-[9px] font-semibold text-slate-300 self-start">
+                    {record?.isHoliday ? "HOL" : "OFF"}
                   </span>
+                )}
+
+                {/* Regularization dot */}
+                {needsReg && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-white" title="Eligible for regularization" />
+                )}
+
+                {/* Today ring */}
+                {isToday && !isSelected && (
+                  <span className="absolute inset-0 rounded-xl ring-2 ring-orange-300 pointer-events-none" />
                 )}
               </button>
             );
@@ -107,16 +122,20 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-[#e8edf2] text-xs text-[#64748b]">
-          <LegendDot color="bg-[#ecfdf5] border border-[#bbf7d0]" label="P — Full day (≥9h)" />
-          <LegendDot color="bg-[#fff7ed] border border-[#fed7aa]" label="P:A — Partial (6–9h)" />
-          <LegendDot color="bg-[#fff1f2] border border-[#fecdd3]" label="A — Absent" />
-          <LegendDot color="bg-[#eff6ff] border border-[#bfdbfe]" label="H — Holiday" />
-          <LegendDot color="bg-[#faf5ff] border border-[#e9d5ff]" label="L — Leave" />
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-            <span>&lt;6h — needs regularization</span>
-          </span>
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4 pt-3 border-t border-slate-100">
+          {[
+            { dot: "bg-emerald-500", label: "P — Present (≥9h)" },
+            { dot: "bg-amber-400",   label: "P:A — Partial (6–9h)" },
+            { dot: "bg-red-500",     label: "A — Absent" },
+            { dot: "bg-blue-400",    label: "H — Holiday" },
+            { dot: "bg-purple-400",  label: "L — Leave" },
+            { dot: "bg-amber-400 ring-2 ring-white ring-offset-1", label: "<6h — regularize" },
+          ].map(({ dot, label }) => (
+            <span key={label} className="flex items-center gap-1.5 text-[10px] text-slate-500">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+              {label}
+            </span>
+          ))}
         </div>
       </div>
     </div>

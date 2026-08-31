@@ -74,5 +74,29 @@ module.exports = {
     clientId: required('AZURE_CLIENT_ID', ''),
     clientSecret: required('AZURE_CLIENT_SECRET', ''),
     organizerUserId: required('TEAMS_ORGANIZER_USER_ID', '')
+  },
+
+  googleMeet: {
+    clientId:     required('GOOGLE_CLIENT_ID', ''),
+    clientSecret: required('GOOGLE_CLIENT_SECRET', ''),
+    refreshToken: required('GOOGLE_REFRESH_TOKEN', ''),
+    organizerEmail: required('GOOGLE_ORGANIZER_EMAIL', '')
+  },
+
+  zoom: {
+    accountId:   required('ZOOM_ACCOUNT_ID', ''),
+    clientId:    required('ZOOM_CLIENT_ID', ''),
+    clientSecret: required('ZOOM_CLIENT_SECRET', ''),
+    hostEmail:   required('ZOOM_HOST_EMAIL', '')
+  },
+
+  openai: {
+    apiKey: required('OPENAI_API_KEY', ''),
+    model:  required('OPENAI_MODEL', 'gpt-4o-mini')
+  },
+
+  frontend: {
+    url: required('FRONTEND_URL', 'http://localhost:3000')
   }
+
 };

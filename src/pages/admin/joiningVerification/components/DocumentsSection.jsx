@@ -3,7 +3,7 @@ import { CheckCircle, FileText, ExternalLink } from "lucide-react";
 import { Sec } from "./SharedUI";
 
 const API_BASE =
-  process.env.REACT_APP_API_URL?.replace("/api", "") || "https://backend.natsoft.io";
+  process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 const DocumentsSection = React.memo(function DocumentsSection({ detail }) {
   return (

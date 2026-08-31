@@ -28,7 +28,7 @@ export default function Dashboard() {
     user, holidays, leaveBalance, todayAtt, setTodayAtt, monthAtt, loading, sal, payslipLabel,
   } = useDashboardData({ month, year });
 
-  const { checkIn, checkOut, elapsed, workHours, checkingIn, checkingOut, handleCheckIn, handleCheckOut } =
+  const { checkIn, checkOut, elapsed, workHours, checkingIn, checkingOut, handleCheckIn, handleCheckOut, checkinLocation, checkoutLocation } =
     useAttendance({ todayAtt, setTodayAtt });
 
   // Derived employee info
@@ -72,7 +72,7 @@ export default function Dashboard() {
         designation={designation} department={department} joinDate={joinDate}
         payslipLabel={payslipLabel} checkIn={checkIn} checkOut={checkOut}
         elapsed={elapsed} checkingIn={checkingIn} checkingOut={checkingOut}
-        handleCheckIn={handleCheckIn} handleCheckOut={handleCheckOut} todayAtt={todayAtt}
+        handleCheckIn={handleCheckIn} handleCheckOut={handleCheckOut} todayAtt={todayAtt} checkinLocation={checkinLocation} checkoutLocation={checkoutLocation}
       />
 
       <SummaryTiles
@@ -84,7 +84,7 @@ export default function Dashboard() {
         <AttendanceCard
           loading={loading} todayAtt={todayAtt} checkIn={checkIn} checkOut={checkOut}
           elapsed={elapsed} workHours={workHours} checkingIn={checkingIn} checkingOut={checkingOut}
-          handleCheckIn={handleCheckIn} handleCheckOut={handleCheckOut} todayLabel={todayLabel}
+          handleCheckIn={handleCheckIn} handleCheckOut={handleCheckOut} todayLabel={todayLabel} checkinLocation={checkinLocation} checkoutLocation={checkoutLocation}
         />
         <PayslipCard
           loading={loading} sal={sal} showSal={showSal} setShowSal={setShowSal}

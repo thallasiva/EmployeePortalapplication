@@ -8,11 +8,7 @@ export const createAppraisalCycle = (body) => apiClient.post(`${BASE}/cycles`, b
 export const updateCycleSettings = (id, body) => apiClient.put(`${BASE}/cycle/${id}/settings`, body).then(unwrap);
 export const rolloutCycle = (id, body) => apiClient.post(`${BASE}/cycle/${id}/rollout`, body).then(unwrap);
 export const disableCycle = (id) => apiClient.post(`${BASE}/cycle/${id}/disable`).then(unwrap);
-
-
 export const toggleAppraisalCycle = () => apiClient.put(`${BASE}/cycle/toggle`).then(unwrap);
-
-
 export const getMyAppraisal = () => apiClient.get(`${BASE}/my`).then(unwrap);
 export const saveMyAppraisal = (body) => apiClient.post(`${BASE}/my/save`, body).then(unwrap);
 

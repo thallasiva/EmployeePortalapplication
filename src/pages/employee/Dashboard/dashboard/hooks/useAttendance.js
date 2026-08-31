@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   checkIn as apiCheckIn,
   checkOut as apiCheckOut,
@@ -13,6 +13,9 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [elapsed, setElapsed] = useState("");
+  const [checkinLocation, setCheckinLocation] = useState("");
+  const [checkoutLocation, setCheckoutLocation] = useState("");
+  const [onBreak, setOnBreak] = useState(false);
 
   useEffect(() => {
     if (!checkIn || checkOut) { setElapsed(""); return; }
@@ -62,31 +65,76 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
     [setTodayAtt]
   );
 
+  // Reverse geocode lat/lng → readable address via OpenStreetMap Nominatim (free, no key)
+  const reverseGeocode = useCallback(async (lat, lng) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      if (!res.ok) return `${lat}, ${lng}`;
+      const data = await res.json();
+      const a = data.address || {};
+      // Build short readable name: suburb/neighbourhood, city
+      const parts = [
+        a.suburb || a.neighbourhood || a.quarter || a.road || a.hamlet,
+        a.city || a.town || a.village || a.county,
+      ].filter(Boolean);
+      return parts.length ? parts.join(", ") : (data.display_name || `${lat}, ${lng}`);
+    } catch {
+      return `${lat}, ${lng}`;
+    }
+  }, []);
+
+  // Get GPS coordinates + human-readable location name
+  const getLocation = useCallback(() => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve({});
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = parseFloat(pos.coords.latitude.toFixed(6));
+          const lng = parseFloat(pos.coords.longitude.toFixed(6));
+          const location = await reverseGeocode(lat, lng);
+          resolve({ lat, lng, location });
+        },
+        () => resolve({}),
+        { timeout: 5000, maximumAge: 30000 }
+      );
+    });
+  }, [reverseGeocode]);
+
   const handleCheckIn = useCallback(async () => {
     setCheckingIn(true);
     try {
-      await apiCheckIn({});
+      const gps = await getLocation();
+      await apiCheckIn(gps);
+      if (gps.location) setCheckinLocation(gps.location);
+      setOnBreak(false);
       await refreshAttendance();
-      successToast("Checked in successfully!");
+      const isResuming = !!checkOut;
+      successToast((isResuming ? "Break ended — resumed!" : "Checked in successfully!") + (gps.location ? ` 📍 ${gps.location}` : ""));
     } catch (err) {
       errorToast(err?.response?.data?.message || "Check-in failed.");
     } finally {
       setCheckingIn(false);
     }
-  }, [refreshAttendance]);
+  }, [refreshAttendance, getLocation, checkOut]);
 
   const handleCheckOut = useCallback(async () => {
     setCheckingOut(true);
     try {
-      await apiCheckOut({});
+      const gps = await getLocation();
+      await apiCheckOut(gps);
+      if (gps.location) setCheckoutLocation(gps.location);
+      setOnBreak(true);
       await refreshAttendance();
-      successToast("Checked out successfully!");
+      successToast("Checked out — on break!" + (gps.location ? ` 📍 ${gps.location}` : ""));
     } catch (err) {
       errorToast(err?.response?.data?.message || "Check-out failed.");
     } finally {
       setCheckingOut(false);
     }
-  }, [refreshAttendance]);
+  }, [refreshAttendance, getLocation]);
 
-  return { checkIn, checkOut, elapsed, workHours, checkingIn, checkingOut, handleCheckIn, handleCheckOut };
+  return { checkIn, checkOut, elapsed, workHours, checkingIn, checkingOut, handleCheckIn, handleCheckOut, checkinLocation, checkoutLocation, onBreak };
 }

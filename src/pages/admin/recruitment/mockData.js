@@ -5,8 +5,8 @@ export const BUSINESS_UNITS = ['Nat IT', 'Natsoft'];
 export const ASSIGNMENT_STATUSES = ['Open', 'Closed', 'Completed', 'Hold'];
 export const JOB_STATUSES = ['Active', 'In Active'];
 export const INTERVIEW_LEVELS = ['Round 1', 'Round 2', 'Round 3', 'HR', 'Final'];
-export const INTERVIEW_TYPES = ['Video Call', 'Phone', 'In-Person', 'Teams'];
-export const FEEDBACK_STATUSES = ['Selected', 'Not Selected', 'Hold'];
+export const INTERVIEW_TYPES = ['Video Call', 'Phone', 'In-Person', 'Teams', 'GoogleMeet', 'Zoom'];
+export const FEEDBACK_STATUSES = ['Shortlist', 'Move to Next Round', 'Reject / Drop'];
 export const GENDERS = ['Male', 'Female', 'Other'];
 
 export const CANDIDATE_STATUSES = {

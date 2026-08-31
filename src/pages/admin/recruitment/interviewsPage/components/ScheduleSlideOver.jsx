@@ -14,6 +14,9 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
   onSubmit,
 }) {
   const isTeams = form.interviewType === "Teams";
+  const isGoogleMeet = form.interviewType === "GoogleMeet";
+  const isZoom = form.interviewType === "Zoom";
+  const isOnline = isTeams || isGoogleMeet || isZoom;
 
   return (
     <SlideOver
@@ -37,8 +40,7 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
           </div>
         ) : (
           <div className="mb-4 px-3.5 py-2 bg-[#fff7ed] border-l-[3px] border-[#f18200] rounded-lg text-[13px] text-[#92400e]">
-            Schedule a new interview round. Teams invite will be generated automatically when type
-            is "Teams".
+            Schedule a new interview round. A meeting link will be automatically generated and sent to the candidate when type is Teams, Google Meet, or Zoom.
           </div>
         )}
 
@@ -173,8 +175,26 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
         )}
 
         {isTeams && isExternal && (
-          <div className="mt-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-[12px] text-gray-500">
-            Teams meeting details will be configured by internal HR after schedule confirmation.
+          <div className="mt-2 px-3 py-2 bg-[#eff6ff] rounded-lg border border-blue-200 text-[12px] text-blue-700">
+            💼 A Microsoft Teams meeting link will be automatically created and emailed to the candidate after scheduling.
+          </div>
+        )}
+
+        {isGoogleMeet && (
+          <div className="px-3.5 py-3 bg-[#f0fdf4] border border-green-200 rounded-lg mt-2">
+            <div className="text-[12px] font-bold text-green-800 mb-1.5">📹 Google Meet</div>
+            <div className="text-[11px] text-green-700 px-2.5 py-1.5 bg-green-100 rounded-md">
+              A Google Meet link will be automatically created and emailed to the candidate after scheduling.
+            </div>
+          </div>
+        )}
+
+        {isZoom && (
+          <div className="px-3.5 py-3 bg-[#fff7ed] border border-orange-200 rounded-lg mt-2">
+            <div className="text-[12px] font-bold text-orange-800 mb-1.5">🎥 Zoom Meeting</div>
+            <div className="text-[11px] text-orange-700 px-2.5 py-1.5 bg-orange-100 rounded-md">
+              A Zoom meeting link will be automatically created and emailed to the candidate after scheduling.
+            </div>
           </div>
         )}
 

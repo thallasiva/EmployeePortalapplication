@@ -50,7 +50,7 @@ export const HrFeedbackModal = React.memo(function HrFeedbackModal({
           <Field label="Interviewer Name">
             <Input value={fbOpen.interviewer || "—"} readOnly style={{ background: "#f9fafb" }} />
           </Field>
-          <Field label="Outcome" required>
+          <Field label="Select Action" required>
             <Select
               name="feedbackStatus"
               value={fb.feedbackStatus}
@@ -70,16 +70,6 @@ export const HrFeedbackModal = React.memo(function HrFeedbackModal({
               placeholder="Enter detailed interviewer feedback..."
             />
           </Field>
-          <label className="flex items-center gap-2 text-[13px] text-gray-700 cursor-pointer mt-2">
-            <input
-              type="checkbox"
-              name="shortlisted"
-              checked={fb.shortlisted}
-              onChange={onChange}
-              className="accent-[#f18200]"
-            />
-            Mark as Shortlisted
-          </label>
         </div>
       )}
     </Modal>
@@ -133,7 +123,7 @@ export const RecruiterFeedbackModal = React.memo(function RecruiterFeedbackModal
               Your feedback will be reviewed by the HR Manager before the next round is scheduled.
             </div>
           </div>
-          <Field label="Your Assessment" required>
+          <Field label="Select Action" required>
             <Select
               name="feedbackStatus"
               value={fbRecruiter.feedbackStatus}
