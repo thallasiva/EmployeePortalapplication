@@ -7,7 +7,7 @@ import {
   updateSalaryStructure,
   generatePayslip
 } from "../../../../api/payroll.api";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { usePagination } from "../../../../components/Pagination";
 import { getFullName } from "../utils";
 
@@ -115,7 +115,7 @@ export function usePayRoll() {
       setSalaryModal(null);
       await loadData();
     } catch (err) {
-      errorToast(err?.response?.data?.message || err?.message || "Failed to save salary.");
+      apiErrorToast(err, 'save salary');
     } finally {
       setSaving(false);
     }

@@ -10,7 +10,7 @@ import {
 "../data/auth";
 import { register as registerApi } from "../api/auth.api";
 import { getErrorMessage } from "../api/client";
-import { successToast, errorToast } from "../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
 
 
@@ -191,7 +191,7 @@ const Register = () =>
       }
       catch (err)
       {
-        errorToast(getErrorMessage(err, "Registration failed"));
+        apiErrorToast(err, "Registration failed");
       } finally
 
       {

@@ -6,7 +6,7 @@ import DataTable from "./DataTable";
 import { statGridClass } from "./data";
 import { useNavigate } from "react-router-dom";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
-import { errorToast } from "../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
 
 function ManagerDashboard() {
   const router = useNavigate();
@@ -16,7 +16,7 @@ function ManagerDashboard() {
   useEffect(() => {
     getDashboard()
       .then(setData)
-      .catch(err => errorToast(getErrorMessage(err, "Failed to load dashboard")))
+      .catch(err => apiErrorToast(err, "Failed to load dashboard"))
       .finally(() => setLoading(false));
   }, []);
 

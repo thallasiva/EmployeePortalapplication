@@ -5,7 +5,7 @@ import DataTable from "./DataTable";
 import Stat from "./Stat";
 import { statGridClass } from "./data";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
-import { errorToast } from "../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
 
 function AdminDashboard() {
   const [data, setData] = useState(null);
@@ -14,7 +14,7 @@ function AdminDashboard() {
   useEffect(() => {
     getDashboard()
       .then(setData)
-      .catch(err => errorToast(getErrorMessage(err, "Failed to load dashboard")))
+      .catch(err => apiErrorToast(err, "Failed to load dashboard"))
       .finally(() => setLoading(false));
   }, []);
 

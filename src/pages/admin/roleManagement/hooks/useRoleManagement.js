@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import apiClient from "../../../../api/client";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { ROLE_COLORS } from "../constants";
 
 export function useRoleManagement() {
@@ -57,7 +57,7 @@ export function useRoleManagement() {
       await loadEmployees();
       setSelected((prev) => ({ ...prev, role_id: pickedRole }));
     } catch (err) {
-      errorToast(err?.response?.data?.message || "Failed to update role");
+      apiErrorToast(err, "Failed to update role");
     } finally {
       setSaving(false);
     }

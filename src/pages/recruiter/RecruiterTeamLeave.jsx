@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Pagination, { usePagination } from "../../components/Pagination";
 import { Check, X } from "lucide-react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
-import { successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
 
@@ -54,7 +54,7 @@ const RecruiterTeamLeave = () => {
       remarks: decision === "Rejected" ? "Rejected by HR Manager" : undefined,
     })
       .then(() => { successToast(`Leave ${decision.toLowerCase()}`); load(); })
-      .catch((err) => { errorToast(err?.response?.data?.message || "Failed"); load(); });
+      .catch((err) => { apiErrorToast(err, "Failed"); load(); });
   };
 
   const filtered = filter === "All" ? requests : requests.filter((r) => r.status === filter);

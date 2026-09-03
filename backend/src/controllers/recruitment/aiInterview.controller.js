@@ -175,6 +175,7 @@ const getSession = asyncHandler(async (req, res) => {
   new ApiResponse(200, {
     sessionId:      session.session_id,
     candidateName:  session.candidate_name,
+    candidateEmail: session.candidate_email,
     jobTitle:       session.job_title,
     expiresAt:      state.expiresAt || null,
     invitationExpiresAt: session.expires_at,
@@ -196,7 +197,7 @@ const start = asyncHandler(async (req, res) => {
 // PUBLIC: POST /public/ai-interview/:token/answer
 const answer = asyncHandler(async (req, res) => {
   if (!String(req.body.answer || '').trim()) return res.status(400).json({ success: false, message: 'An answer is required' });
-  const result = await aiSvc.answerAdaptiveSession({ token: req.params.token, answer: req.body.answer });
+  const result = await aiSvc.answerAdaptiveSessionV2({ token: req.params.token, answer: req.body.answer, questionId: req.body.questionId });
   if (!result) return res.status(410).json({ success: false, message: 'Interview is unavailable, expired, or already completed' });
   // SECURITY: never return evaluation/score data to candidate — strip it before responding
   const safeResult = result.complete
@@ -214,4 +215,28 @@ const submit = asyncHandler(async (req, res) => {
   new ApiResponse(200, { complete: true }, 'Interview submitted successfully. Thank you!').send(res);
 });
 
-module.exports = { create, list, getReport, getSession, start, answer, submit };
+
+// ── PUBLIC: POST /public/ai-interview/:token/proctoring ────────────────────
+const logProctoring = asyncHandler(async (req, res) => {
+  const { event, count, timestamp } = req.body;
+  if (!event) return res.status(400).json({ success: false, message: 'event is required' });
+  const result = await aiSvc.logProctoringEvent(req.params.token, {
+    event: String(event).toUpperCase().slice(0, 40),
+    count: Number(count) || 1,
+    timestamp: timestamp || new Date().toISOString(),
+    ip: req.ip,
+  });
+  if (result?.autoSubmitted) {
+    return new ApiResponse(200, { autoSubmitted: true }, 'Interview auto-submitted due to proctoring violations').send(res);
+  }
+  new ApiResponse(200, result, 'Proctoring event logged').send(res);
+});
+
+// ── PUBLIC: POST /public/ai-interview/:token/draft ─────────────────────────
+const saveDraft = asyncHandler(async (req, res) => {
+  const { questionId, draft } = req.body;
+  await aiSvc.saveDraft(req.params.token, questionId, draft || '');
+  new ApiResponse(200, {}, 'Draft saved').send(res);
+});
+
+module.exports = { create, list, getReport, getSession, start, answer, submit, logProctoring, saveDraft };

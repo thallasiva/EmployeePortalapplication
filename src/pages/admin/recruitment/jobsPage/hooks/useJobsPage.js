@@ -7,7 +7,7 @@ import {
   listRecruiters,
   getErrorMessage,
 } from "../../../../../api/recruitment.api";
-import { errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 import { PERIODS } from "../constants";
 import { periodStart, filterJobs, computePeriodCounts } from "../utils";
 
@@ -36,7 +36,7 @@ export function useJobsPage() {
       setJobs(data ?? []);
       setTotalCount(meta?.total ?? data?.length ?? 0);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to load jobs"));
+      apiErrorToast(err, "Failed to load jobs");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export function useJobsPage() {
       setAssignIds([]);
       loadJobs();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to assign recruiters"));
+      apiErrorToast(err, "Failed to assign recruiters");
     } finally {
       setAssigning(false);
     }
@@ -93,7 +93,7 @@ export function useJobsPage() {
       setDetailJob(null);
       loadJobs();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to close job"));
+      apiErrorToast(err, "Failed to close job");
     }
   }, [loadJobs]);
 

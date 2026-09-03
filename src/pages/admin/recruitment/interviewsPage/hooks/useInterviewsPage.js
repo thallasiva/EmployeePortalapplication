@@ -8,7 +8,7 @@ import {
   listJobs,
   getErrorMessage,
 } from "../../../../../api/recruitment.api";
-import { successToast, errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK_INT, BLANK_FB, LEVEL_ORDER } from "../constants";
 import { INTERVIEW_LEVELS, INTERVIEW_TYPES } from "../mockData";
 
@@ -53,7 +53,7 @@ export function useInterviewsPage(role) {
       const { data } = await listInterviews(params);
       setInterviews(data ?? []);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to load interviews"));
+      apiErrorToast(err, "Failed to load interviews");
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ export function useInterviewsPage(role) {
       setForm(BLANK_INT);
       loadInterviews();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to schedule interview"));
+      apiErrorToast(err, "Failed to schedule interview");
     } finally {
       setSaving(false);
     }
@@ -112,7 +112,7 @@ export function useInterviewsPage(role) {
       setFb(BLANK_FB);
       loadInterviews();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to submit feedback"));
+      apiErrorToast(err, "Failed to submit feedback");
     } finally {
       setSaving(false);
     }
@@ -131,7 +131,7 @@ export function useInterviewsPage(role) {
       setFbRecruiter(BLANK_FB);
       loadInterviews();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to submit feedback"));
+      apiErrorToast(err, "Failed to submit feedback");
     } finally {
       setSaving(false);
     }

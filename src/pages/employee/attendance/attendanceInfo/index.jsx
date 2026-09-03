@@ -119,6 +119,11 @@ export default function AttendanceInfo() {
     return rec ? { ...rec, date: selectedDate } : null;
   }, [selectedDate, dayMap]);
 
+  const refreshToday = useCallback(async () => {
+    const td = await getMyTodayAttendance().catch(() => null);
+    setToday(td);
+  }, []);
+
   const prevMonth = useCallback(() => {
     setMonth((m) => { if (m === 1) { setYear((y) => y - 1); return 12; } return m - 1; });
     setSelectedDate(null);
@@ -137,6 +142,7 @@ export default function AttendanceInfo() {
         today={today}
         onPrevMonth={prevMonth}
         onNextMonth={nextMonth}
+        onTodayRefresh={refreshToday}
       />
 
       {/* Page body */}

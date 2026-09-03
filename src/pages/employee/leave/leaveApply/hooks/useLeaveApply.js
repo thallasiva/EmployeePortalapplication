@@ -7,7 +7,7 @@ import {
   getMyLeaveBalances,
   getMyLeaveRequests,
 } from "../../../../../api/leaveRequest.api";
-import { errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 import { calcDays, getLeaveColor } from "../utils";
 
 export default function useLeaveApply() {
@@ -102,7 +102,7 @@ export default function useLeaveApply() {
           successToast("Leave request cancelled.");
           loadPending();
         })
-        .catch((err) => errorToast(err?.response?.data?.message || "Unable to cancel."))
+        .catch((err) => apiErrorToast(err, "Unable to cancel."))
         .finally(() => setCancellingId(null));
     },
     [loadPending]
@@ -133,7 +133,7 @@ export default function useLeaveApply() {
             .catch(() => {});
           setActiveTab("pending");
         })
-        .catch((err) => errorToast(err?.response?.data?.message || "Unable to submit."))
+        .catch((err) => apiErrorToast(err, "Unable to submit."))
         .finally(() => setSubmitting(false));
     },
     [days, fromDate, fromSession, leaveTypeId, reason, resetForm, toDate, toSession]

@@ -9,6 +9,7 @@ import KpiChip from "./components/KpiChip";
 import PayoutDetailsPanel from "./components/PayoutDetailsPanel";
 import EmployeeDetailsPanel from "./components/EmployeeDetailsPanel";
 import PayrollControlsPanel from "./components/PayrollControlsPanel";
+import PayrollLockBar from "./components/PayrollLockBar";
 
 const months = buildMonthList();
 
@@ -24,7 +25,7 @@ export default function AdminPayrollOverview() {
   });
 
   const selected = months[selIdx];
-  const { payslips, employees, runs, loading, processing, handleProcess } = usePayrollData(selected);
+  const { payslips, employees, runs, loading, processing, handleProcess, load } = usePayrollData(selected);
 
   const processedSet = useMemo(() => new Set(runs.map((r) => `${r.month}-${r.year}`)), [runs]);
   const isProcessed = useCallback((m, y) => processedSet.has(`${m}-${y}`), [processedSet]);
@@ -98,6 +99,7 @@ export default function AdminPayrollOverview() {
         </div>
       ) : (
         <div className={cssClass({ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 18 })}>
+          {(() => { const selRun = runs.find(r => Number(r.month)===selected.month && Number(r.year)===selected.year); return selRun ? <PayrollLockBar run={selRun} onRefresh={load} canUnlock={true} /> : null; })()}
           <PayoutDetailsPanel payslips={payslips} />
           <div className={cssClass({ display: "flex", flexDirection: "column", gap: 16 })}>
             <EmployeeDetailsPanel

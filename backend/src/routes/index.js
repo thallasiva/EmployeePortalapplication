@@ -52,3 +52,7 @@ router.use('/settings', require('./settings.routes'));
 router.use('/audit-logs', require('./auditLog.routes'));
 
 module.exports = router;
+
+// Production-readiness additions
+router.use('/attendance/admin', require('./attendance.admin.routes'));
+router.use('/system-health',    require('./health.routes'));

@@ -5,7 +5,7 @@ import {
   transferManager, listDelegations, createDelegation,
   cancelDelegation, getReportingHistory,
 } from "../../../../api/orgHierarchy.api";
-import { errorToast, successToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
 
 const filterTree = (nodes, q) => {
   if (!q) return nodes;
@@ -73,7 +73,7 @@ export function useWorkflowData(activeTab) {
       const t = await getOrgTree(deptFilter ? { department_id: deptFilter } : {});
       setTree(Array.isArray(t) ? t : []);
     } catch (e) {
-      errorToast("Could not load hierarchy: " + (e?.response?.data?.message || e.message));
+      apiErrorToast(e, "load delegation hierarchy");
       setTree([]);
     }
   }, [deptFilter]);
@@ -179,7 +179,7 @@ export function useWorkflowData(activeTab) {
       const d = await listDelegations();
       setDelegations(Array.isArray(d) ? d : []);
     } catch (e) {
-      errorToast(e?.response?.data?.message || "Delegation failed");
+      apiErrorToast(e, "create delegation");
     }
     setDelSaving(false);
   }, [delForm]);
@@ -190,8 +190,8 @@ export function useWorkflowData(activeTab) {
       successToast("Delegation cancelled");
       const d = await listDelegations();
       setDelegations(Array.isArray(d) ? d : []);
-    } catch {
-      errorToast("Could not cancel delegation");
+    } catch (e) {
+      apiErrorToast(e, "cancel delegation");
     }
   }, []);
 

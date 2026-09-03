@@ -4,7 +4,7 @@ import {
   listCandidates, listJobs, getErrorMessage, createOnboarding
 } from "../../../../../api/recruitment.api";
 import { getJoiningByOffer, resendJoiningInvitation } from "../../../../../api/joining.api";
-import { successToast, errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK_OFFER } from "../constants";
 import { computeFromCTC, numToWords } from "../utils/ctcUtils";
 import { buildChecks } from "../utils/buildChecks";
@@ -40,7 +40,7 @@ export function useOffersState(role) {
       const { data } = await listOffers({ status: filterStatus || undefined, search: search || undefined, limit: 100 });
       setOffers(data ?? []);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to load offers"));
+      apiErrorToast(err, "Failed to load offers");
     } finally { setLoading(false); }
   }, [filterStatus, search]);
 
@@ -115,7 +115,7 @@ export function useOffersState(role) {
       closeCreateForm();
       loadOffers();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to create offer"));
+      apiErrorToast(err, "Failed to create offer");
     } finally { setSaving(false); }
   }, [form, computed, step, candidates, closeCreateForm, loadOffers]);
 
@@ -137,7 +137,7 @@ export function useOffersState(role) {
       setDetail(updated);
       getJoiningByOffer(offerId).then((inv) => setJoiningInv(inv || null)).catch(() => {});
       loadOffers();
-    } catch (err) { errorToast(getErrorMessage(err, "Failed to release offer")); }
+    } catch (err) { apiErrorToast(err, "Failed to release offer"); }
     finally { setActing(false); }
   }, [loadOffers]);
 
@@ -147,14 +147,14 @@ export function useOffersState(role) {
     try {
       await resendJoiningInvitation(joiningInv.id);
       successToast("Joining invitation resent");
-    } catch { errorToast("Failed to resend invitation"); }
+    } catch (err) { apiErrorToast(err, "Failed to resend invitation"); }
     finally { setResending(false); }
   }, [joiningInv]);
 
   const copyJoiningLink = useCallback(() => {
     if (!joiningInv?.token) return;
     const url = `${window.location.origin}/joining/${joiningInv.token}`;
-    navigator.clipboard.writeText(url).then(() => successToast("Link copied!")).catch(() => errorToast("Copy failed"));
+    navigator.clipboard.writeText(url).then(() => successToast("Link copied!")).catch(err => apiErrorToast(err, "Copy failed"));
   }, [joiningInv]);
 
   const handleRespond = useCallback(async (offerId, response) => {
@@ -164,7 +164,7 @@ export function useOffersState(role) {
       successToast(`Offer ${response.toLowerCase()}`);
       setDetail(updated);
       loadOffers();
-    } catch (err) { errorToast(getErrorMessage(err, "Failed to update offer")); }
+    } catch (err) { apiErrorToast(err, "Failed to update offer"); }
     finally { setActing(false); }
   }, [loadOffers]);
 
@@ -182,7 +182,7 @@ export function useOffersState(role) {
       setOnboardEffDate("");
       setDetail(null);
       loadOffers();
-    } catch (err) { errorToast(getErrorMessage(err, "Failed to start onboarding")); }
+    } catch (err) { apiErrorToast(err, "Failed to start onboarding"); }
     finally { setOnboarding(false); }
   }, [detail, onboardEffDate, loadOffers]);
 

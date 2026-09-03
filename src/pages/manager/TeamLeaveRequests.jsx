@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Pagination, { usePagination } from "../../components/Pagination";
 import { Check, X } from "lucide-react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
-import { successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
 
@@ -67,7 +67,7 @@ const TeamLeaveRequests = () => {
       loadRequests();
     }).
     catch((err) => {
-      errorToast(err?.response?.data?.message || "Failed to update leave request.");
+      apiErrorToast(err, "Failed to update leave request.");
       loadRequests();
     });
   };

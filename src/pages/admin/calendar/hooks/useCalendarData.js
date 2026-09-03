@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDashboardStats, getDashboardEvents } from '../../../../api/dashboard.api';
 import { listHolidays } from '../../../../api/holiday.api';
@@ -169,8 +171,8 @@ export function useCalendarData(year, month, typeFilter) {
         await deleteCalendarEvent(event_id);
         successToast('Event removed');
         fetchData();
-      } catch {
-        errorToast('Failed to delete event');
+      } catch (err) {
+        apiErrorToast(err, 'delete event');
       }
     },
     [fetchData]

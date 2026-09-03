@@ -1,122 +1,142 @@
 import React, { useMemo } from "react";
-import { X, MapPin, Clock, Coffee, AlertCircle } from "lucide-react";
+import { X, Clock, Coffee, AlertCircle, LogIn, LogOut } from "lucide-react";
 
-function fmt(t) {
-  if (!t || t === "—") return "—";
-  const [h, m] = t.split(":").map(Number);
-  const suffix = h >= 12 ? "PM" : "AM";
-  return `${((h % 12) || 12)}:${String(m).padStart(2, "0")} ${suffix}`;
+function fmtTime(t) {
+  if (!t) return "—";
+  const s = String(t);
+  const time = s.includes("T") ? s.slice(11, 16) : s.slice(0, 5);
+  const [h, m] = time.split(":").map(Number);
+  return `${((h % 12) || 12)}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+}
+function minsToHM(m) {
+  if (!m || m <= 0) return "0m";
+  const h = Math.floor(m / 60), mn = m % 60;
+  return h > 0 ? `${h}h ${mn}m` : `${mn}m`;
+}
+function hoursToHM(hrs) {
+  if (!hrs || hrs <= 0) return "—";
+  const h = Math.floor(hrs), m = Math.round((hrs - h) * 60);
+  return `${h}h ${String(m).padStart(2, "0")}m`;
 }
 
-export default function DayDrawer({ selected, onClose }) {
-  const raw = selected?.raw || {};
-  const punches = useMemo(() => {
-    const arr = raw.punches || [];
-    return arr.map((p) => ({
-      type: p.punch_type || p.type,
-      time: p.punch_time || p.time,
-      location: p.location,
-    }));
-  }, [raw.punches]);
+const STATUS_COLOR = {
+  P: "#16a34a", L: "#ea580c", "P:A": "#0284c7",
+  A: "#dc2626", H: "#3b82f6", LV: "#9333ea", WO: "#94a3b8",
+};
 
-  if (!selected) return null;
+const PUNCH_CFG = {
+  CHECK_IN:    { icon: LogIn,   color: "#16a34a", bg: "#f0fdf4", label: "Check In"    },
+  BREAK_START: { icon: Coffee,  color: "#d97706", bg: "#fffbeb", label: "Break Start" },
+  BREAK_END:   { icon: Coffee,  color: "#f18200", bg: "#fff7ed", label: "Break End"   },
+  CHECK_OUT:   { icon: LogOut,  color: "#dc2626", bg: "#fef2f2", label: "Check Out"   },
+  // legacy punch types
+  IN:  { icon: LogIn,  color: "#16a34a", bg: "#f0fdf4", label: "Check In"  },
+  OUT: { icon: LogOut, color: "#dc2626", bg: "#fef2f2", label: "Check Out" },
+};
 
-  const proc = selected.processed || {};
-  const { firstIn, lastOut, workHours } = proc;
-  const breakMins = raw.break_minutes ?? 0;
-  const status = selected.status || {};
+export default function DayDrawer({ entry, onClose }) {
+  const punches = useMemo(() => entry?.raw?.punches || [], [entry]);
 
-  const dateLabel = new Date(selected.date + "T00:00:00").toLocaleDateString("en-IN", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
+  if (!entry) return null;
+
+  const { raw, processed, status } = entry;
+  const code       = status?.code;
+  const accentColor = STATUS_COLOR[code] || "#f18200";
+  const checkIn    = fmtTime(raw?.check_in);
+  const checkOut   = fmtTime(raw?.check_out);
+  const worked     = hoursToHM(raw?.work_hours);
+  const breakTime  = minsToHM(raw?.break_minutes);
+  const lateBy     = raw?.late_by_minutes > 0 ? minsToHM(raw.late_by_minutes) : null;
+
+  // Format display date
+  const dt = new Date(entry.date + "T00:00:00");
+  const dateLabel = dt.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-      {/* ── Orange header ── */}
-      <div className="bg-gradient-to-br from-[#f18200] to-[#d97000] px-5 pt-5 pb-6 text-white">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <p className="text-xs font-semibold text-orange-200 uppercase tracking-widest">{dateLabel}</p>
-            {status.label && (
-              <span className="mt-1 inline-block text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">
-                {status.label}
-              </span>
-            )}
-          </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-            <X size={14} />
-          </button>
-        </div>
+    <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 4px 20px rgba(0,0,0,.08)", overflow: "hidden" }}>
 
-        {/* Big time display */}
-        <div className="flex items-end gap-6 mt-2">
+      {/* ── Gradient header ── */}
+      <div style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`, padding: "16px 16px 14px", position: "relative" }}>
+        <button
+          onClick={onClose}
+          style={{ position: "absolute", top: 10, right: 10, width: 28, height: 28, borderRadius: 8, border: "none", background: "rgba(255,255,255,.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}
+        >
+          <X size={14} />
+        </button>
+
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,.7)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+          {dateLabel}
+        </p>
+
+        {/* IN / OUT big display */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-orange-200">Check In</p>
-            <p className="text-3xl font-black tracking-tight tabular-nums">{fmt(firstIn)}</p>
+            <p style={{ fontSize: 10, color: "rgba(255,255,255,.6)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Check In</p>
+            <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", lineHeight: 1.1 }}>{checkIn}</p>
           </div>
-          {lastOut && lastOut !== "—" && (
-            <>
-              <div className="w-6 h-px bg-orange-300 mb-3" />
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-orange-200">Check Out</p>
-                <p className="text-3xl font-black tracking-tight tabular-nums">{fmt(lastOut)}</p>
-              </div>
-            </>
+          <div style={{ width: 1, height: 36, background: "rgba(255,255,255,.3)" }} />
+          <div>
+            <p style={{ fontSize: 10, color: "rgba(255,255,255,.6)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Check Out</p>
+            <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", lineHeight: 1.1 }}>{checkOut}</p>
+          </div>
+          {code && (
+            <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 800, background: "rgba(255,255,255,.2)", color: "#fff", padding: "3px 10px", borderRadius: 20, letterSpacing: "0.06em" }}>
+              {code}
+            </span>
           )}
         </div>
       </div>
 
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, borderBottom: "1px solid #f1f5f9" }}>
         {[
-          { icon: Clock,        color: "text-green-600",  bg: "bg-green-50",  label: "Work",  val: workHours || "—" },
-          { icon: Coffee,       color: "text-amber-600",  bg: "bg-amber-50",  label: "Break", val: breakMins ? `${breakMins}m` : "—" },
-          { icon: AlertCircle,  color: "text-[#f18200]",  bg: "bg-orange-50", label: "Late",  val: raw.late_by_minutes ? `${raw.late_by_minutes}m` : "—" },
-        ].map(({ icon: Icon, color, bg, label, val }) => (
-          <div key={label} className="flex flex-col items-center py-4 gap-1">
-            <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center`}>
-              <Icon size={15} className={color} />
+          { icon: Clock,        color: "#16a34a", label: "Work",  value: worked   },
+          { icon: Coffee,       color: "#d97706", label: "Break", value: breakTime },
+          { icon: AlertCircle,  color: "#ef4444", label: "Late",  value: lateBy || "—" },
+        ].map(({ icon: Icon, color, label, value }) => (
+          <div key={label} style={{ padding: "12px 0", textAlign: "center", borderRight: "1px solid #f1f5f9" }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 4px" }}>
+              <Icon size={13} color={color} />
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-            <p className="text-base font-black text-slate-800 tabular-nums">{val}</p>
+            <p style={{ fontSize: 13, fontWeight: 800, color: "#1e293b" }}>{value}</p>
+            <p style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</p>
           </div>
         ))}
       </div>
 
       {/* ── Punch timeline ── */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div style={{ padding: "14px 16px" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
+          Punch Timeline
+        </p>
+
         {punches.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-6">No punch records for this day.</p>
+          <p style={{ fontSize: 12, color: "#cbd5e1", textAlign: "center", padding: "12px 0" }}>No punch records for this day</p>
         ) : (
-          <div className="space-y-3">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Punch Timeline</p>
-            {punches.map((p, i) => {
-              const isIn = p.type === "IN";
-              return (
-                <div key={i} className="flex items-start gap-3">
-                  {/* Dot + line */}
-                  <div className="flex flex-col items-center pt-1">
-                    <div className={`w-3 h-3 rounded-full border-2 ${isIn ? "border-green-500 bg-green-100" : "border-[#f18200] bg-orange-100"}`} />
-                    {i < punches.length - 1 && <div className="w-px flex-1 bg-slate-200 mt-1" style={{ minHeight: 24 }} />}
-                  </div>
-                  {/* Card */}
-                  <div className={`flex-1 rounded-xl border px-3 py-2.5 mb-1 ${isIn ? "border-green-100 bg-green-50/50" : "border-orange-100 bg-orange-50/50"}`}>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold ${isIn ? "text-green-700" : "text-[#f18200]"}`}>
-                        {isIn ? "▶ Check In" : "⏸ Check Out"}
-                      </span>
-                      <span className="text-sm font-black text-slate-800 tabular-nums">{fmt(p.time)}</span>
+          <div style={{ position: "relative" }}>
+            {/* vertical line */}
+            <div style={{ position: "absolute", left: 17, top: 0, bottom: 0, width: 2, background: "#f1f5f9", borderRadius: 2 }} />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {punches.map((p, i) => {
+                const cfg = PUNCH_CFG[p.punch_type] || PUNCH_CFG.IN;
+                const Icon = cfg.icon;
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, position: "relative" }}>
+                    {/* dot */}
+                    <div style={{ width: 34, height: 34, borderRadius: "50%", background: cfg.bg, border: `2px solid ${cfg.color}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, zIndex: 1 }}>
+                      <Icon size={13} color={cfg.color} />
                     </div>
-                    {p.location && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <MapPin size={10} className="text-slate-400" />
-                        <span className="text-[10px] text-slate-400 truncate">{p.location}</span>
-                      </div>
-                    )}
+                    <div style={{ flex: 1, background: cfg.bg, borderRadius: 8, padding: "6px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color }}>{cfg.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: "#374151", fontVariantNumeric: "tabular-nums" }}>
+                        {p.punch_time || "—"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

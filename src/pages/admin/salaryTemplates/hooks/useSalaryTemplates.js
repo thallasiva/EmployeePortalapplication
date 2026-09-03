@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useCallback, useEffect, useState } from "react";
 import {
   listSalaryTemplates, createSalaryTemplate,
@@ -14,7 +16,7 @@ export function useSalaryTemplates() {
   const load = useCallback(async () => {
     setLoading(true);
     try { setTemplates(await listSalaryTemplates()); }
-    catch { errorToast("Failed to load templates"); }
+    catch { errorToast(ERR.LOAD_FAILED("salary templates")); }
     finally { setLoading(false); }
   }, []);
 
@@ -33,7 +35,7 @@ export function useSalaryTemplates() {
       onSuccess();
       load();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to save template"));
+      apiErrorToast(err, "Failed to save template");
     } finally { setSaving(false); }
   }, [load]);
 
@@ -44,7 +46,7 @@ export function useSalaryTemplates() {
       successToast("Template deleted");
       load();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to delete"));
+      apiErrorToast(err, "Failed to delete");
     }
   }, [load]);
 

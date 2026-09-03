@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { listWorkSchedules, saveEmployeeSchedule, resetEmployeeSchedule } from "../../../../api/workSchedule.api";
 import { listEmployees } from "../../../../api/employee.api";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 
 const toRow = (e) => ({
   employee_id: e.employee_id,
@@ -103,8 +103,8 @@ export function useEmployeeSchedules() {
       await resetEmployeeSchedule(empId);
       successToast("Schedule reset to company default");
       await loadEmpSchedules();
-    } catch {
-      errorToast("Failed to reset schedule");
+    } catch (err) {
+      apiErrorToast(err, "reset schedule");
     }
   }, [loadEmpSchedules]);
 

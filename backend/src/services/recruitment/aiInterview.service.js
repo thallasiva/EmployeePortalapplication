@@ -510,6 +510,48 @@ async function completeAdaptiveSession(token, reason = 'candidate_completed', su
   return { complete: true, evaluation };
 }
 
+
+// ── Proctoring event logging ───────────────────────────────────────────────
+async function logProctoringEvent(token, event) {
+  const session = await getSession(token);
+  if (!session) return { ok: false };
+  const state = parseState(session.questions_json);
+  if (!state.proctoringEvents) state.proctoringEvents = [];
+  state.proctoringEvents.push({ ...event, serverTimestamp: new Date().toISOString() });
+  const tabCount = state.proctoringEvents.filter(e => e.event === 'TAB_SWITCH').length;
+  await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
+  if (tabCount >= 3 && session.status === 'pending') {
+    await completeAdaptiveSession(token, 'auto_submitted_proctoring', state);
+    return { autoSubmitted: true };
+  }
+  return { ok: true, tabSwitchCount: tabCount };
+}
+
+// ── Auto-save draft answer ─────────────────────────────────────────────────
+async function saveDraft(token, questionId, draft) {
+  const session = await getSession(token);
+  if (!session || session.status !== 'pending') return;
+  const state = parseState(session.questions_json);
+  state.currentDraft = { questionId, draft: String(draft || '').slice(0, 5000), savedAt: new Date().toISOString() };
+  await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
+}
+
+// ── Idempotency-aware answer ───────────────────────────────────────────────
+async function answerAdaptiveSessionV2({ token, answer, questionId }) {
+  const session = await getSession(token);
+  if (!session || session.status !== 'pending') return null;
+  const state = parseState(session.questions_json);
+  if (!state.currentQuestion) throw new Error('Interview has not been started.');
+  // Idempotency: if this question was already answered, return cached state
+  if (questionId && state.transcript.some(t => String(t.question?.id) === String(questionId))) {
+    return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt, cached: true };
+  }
+  // Clear draft for this question
+  if (state.currentDraft?.questionId === questionId) delete state.currentDraft;
+  // Delegate to existing handler
+  return answerAdaptiveSession({ token, answer });
+}
+
 module.exports = {
   generateQuestions,
   evaluateAnswers,
@@ -523,4 +565,7 @@ module.exports = {
   answerAdaptiveSession,
   completeAdaptiveSession,
   getRemainingSeconds,
+  logProctoringEvent,
+  saveDraft,
+  answerAdaptiveSessionV2,
 };

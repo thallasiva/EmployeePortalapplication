@@ -3,7 +3,7 @@ import { toISODateString } from "../../../../../lib/dateUtils";
 import { formatMinutesAsHrs } from "../../../../../lib/attendanceUtils";
 import { getMyMonthlyAttendance, getMyTodayAttendance, checkIn, checkOut } from "../../../../../api/attendance.api";
 import { getLoggedInUser } from "../../../../../lib/dateUtils";
-import { errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 import { getMonthGrid, buildDayRecord } from "../utils/calendarUtils";
 
 export function useAttendanceData() {
@@ -100,7 +100,7 @@ export function useAttendanceData() {
         successToast("Checked in successfully.");
         refreshMonthly();
       })
-      .catch((err) => errorToast(err?.response?.data?.message || "Unable to check in."))
+      .catch((err) => apiErrorToast(err, "Unable to check in."))
       .finally(() => setPunching(false));
   }, [refreshMonthly]);
 
@@ -112,7 +112,7 @@ export function useAttendanceData() {
         successToast("Checked out successfully.");
         refreshMonthly();
       })
-      .catch((err) => errorToast(err?.response?.data?.message || "Unable to check out."))
+      .catch((err) => apiErrorToast(err, "Unable to check out."))
       .finally(() => setPunching(false));
   }, [refreshMonthly]);
 

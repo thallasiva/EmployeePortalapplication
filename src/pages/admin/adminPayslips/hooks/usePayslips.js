@@ -3,7 +3,7 @@ import {
   listPayslips, generateAllPayslips, markPayslipPaid, getPayslipFull,
 } from "../../../../api/payroll.api";
 import { downloadPayslipPdf } from "../../../../utils/payslipPdfGenerator";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 
 export function usePayslips(month, year) {
   const [payslips, setPayslips] = useState([]);
@@ -32,7 +32,7 @@ export function usePayslips(month, year) {
       successToast(`Generated ${result.generated} payslip(s), emailed ${result.emailed}.`);
       loadPayslips();
     } catch (err) {
-      errorToast(err?.response?.data?.message || err?.message || "Failed to generate payslips.");
+      apiErrorToast(err, "generate payslips");
     } finally {
       setGenerating(false);
     }
@@ -44,7 +44,7 @@ export function usePayslips(month, year) {
       successToast("Payslip marked as paid.");
       loadPayslips();
     } catch (err) {
-      errorToast(err?.response?.data?.message || err?.message || "Failed to update payslip.");
+      apiErrorToast(err, "update payslip");
     }
   }, [loadPayslips]);
 
@@ -54,7 +54,7 @@ export function usePayslips(month, year) {
       const full = await getPayslipFull(id);
       await downloadPayslipPdf(full);
     } catch (err) {
-      errorToast(err?.response?.data?.message || err?.message || "Failed to generate the payslip PDF.");
+      apiErrorToast(err, "generate payslip PDF");
     } finally {
       setDownloadingId(null);
     }

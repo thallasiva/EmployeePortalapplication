@@ -92,3 +92,18 @@ export const getPayrollRun = (id) => apiClient.get(`/payroll/runs/${id}`).then(u
 
 export const runPayroll = (payload) =>
 apiClient.post("/payroll/runs", payload).then(unwrap);
+
+export const submitPayrollReview = (id) =>
+  apiClient.post(`/payroll/runs/${id}/submit-review`).then(unwrap);
+
+export const reviewPayrollRun = (id, payload) =>
+  apiClient.put(`/payroll/runs/${id}/review`, payload).then(unwrap);
+
+export const lockPayrollRun = (id, note) =>
+  apiClient.post(`/payroll/runs/${id}/lock`, { note }).then(unwrap);
+
+export const unlockPayrollRun = (id) =>
+  apiClient.delete(`/payroll/runs/${id}/lock`).then(unwrap);
+
+export const exportBankFile = (id) =>
+  apiClient.get(`/payroll/runs/${id}/bank-export`, { responseType: 'blob' });

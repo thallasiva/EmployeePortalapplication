@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../../../api/leaveRequest.api";
 import { listAttendance } from "../../../../api/attendance.api";
 import { listEmployees } from "../../../../api/employee.api";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 
 export function useTeamOverview() {
   const [team, setTeam] = useState([]);
@@ -72,8 +72,8 @@ export function useTeamOverview() {
         });
         successToast(`Leave ${action === "approve" ? "approved" : "rejected"}`);
         load();
-      } catch {
-        errorToast("Action failed");
+      } catch (err) {
+        apiErrorToast(err, "complete this action");
       } finally {
         setReviewing(null);
       }

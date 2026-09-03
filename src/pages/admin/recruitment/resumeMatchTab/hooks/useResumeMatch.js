@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listJobs, listMatchesByJob, computeResumeMatch, getErrorMessage,
 } from "../../../../../api/recruitment.api";
-import { errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
 
 export function useResumeMatch() {
   const [jobs, setJobs] = useState([]);
@@ -19,7 +19,7 @@ export function useResumeMatch() {
     if (!jobId) return;
     setLoading(true);
     try { setMatches((await listMatchesByJob(jobId)) ?? []); }
-    catch (err) { errorToast(getErrorMessage(err, "Failed to load matches")); }
+    catch (err) { apiErrorToast(err, "Failed to load matches"); }
     finally { setLoading(false); }
   }, []);
 

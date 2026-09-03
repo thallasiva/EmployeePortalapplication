@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { listEmployees } from "../../../../api/employee.api";
 import { listDocuments } from "../../../../api/document.api";
-import { errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
 import { ONBOARDING_DAYS, CHECKLIST_TEMPLATE } from "../constants";
 import {
   daysSince,
@@ -21,7 +21,7 @@ export function useOnboardingData() {
     setLoading(true);
     listEmployees({ limit: 200, status: "active" })
       .then(({ data }) => setEmployees(data || []))
-      .catch(() => errorToast("Failed to load employees"))
+      .catch(err => apiErrorToast(err, "load employees"))
       .finally(() => setLoading(false));
   }, []);
 

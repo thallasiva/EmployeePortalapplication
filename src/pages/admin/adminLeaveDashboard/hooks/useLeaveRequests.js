@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { listLeaveRequests, reviewLeaveRequest } from '../../../../api/leaveRequest.api';
-import { successToast, errorToast } from '../../../../utils/ToastControllers';
+import { apiErrorToast, successToast, errorToast } from '../../../../utils/ToastControllers';
 import {
   countApprovedThisMonth,
   getApprovedLeavesToday,
@@ -69,7 +69,7 @@ export function useLeaveRequests() {
           loadRequests();
         })
         .catch((err) => {
-          errorToast(err?.response?.data?.message || 'Failed to approve leave request.');
+          apiErrorToast(err, 'approve leave request');
           loadRequests();
         });
     },
@@ -89,7 +89,7 @@ export function useLeaveRequests() {
           loadRequests();
         })
         .catch((err) => {
-          errorToast(err?.response?.data?.message || 'Failed to reject leave request.');
+          apiErrorToast(err, 'reject leave request');
           loadRequests();
         });
     },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Upload, X } from "lucide-react";
 import { uploadDocument } from "../../../../api/document.api";
-import { errorToast, successToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
 
 const UploadDocumentModal = React.memo(function UploadDocumentModal({
   employee,
@@ -32,7 +32,7 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
       onUploaded();
       onClose();
     } catch (err) {
-      errorToast(err?.response?.data?.message || "Upload failed");
+      apiErrorToast(err, "Upload failed");
     } finally {
       setUploading(false);
     }

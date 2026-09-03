@@ -3,7 +3,7 @@ import Pagination, { usePagination } from "../../components/Pagination";
 import { Search, X, ChevronDown, ChevronUp, Clock, CheckCircle } from "lucide-react";
 import { listSalaryAssignments, assignSalaryStructure, getAssignmentHistory } from "../../api/salaryAssignment.api";
 import { listStructures } from "../../api/salaryComponent.api";
-import { successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 import { getErrorMessage } from "../../api/client";
 
 const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400";
@@ -90,7 +90,7 @@ function HistoryPanel({ employeeId, onClose }) {
   useEffect(() => {
     getAssignmentHistory(employeeId).
     then((h) => setHistory(h ?? [])).
-    catch(() => errorToast("Failed to load history")).
+    catch(err => apiErrorToast(err, "load salary history")).
     finally(() => setLoading(false));
   }, [employeeId]);
 
@@ -142,7 +142,7 @@ function EmployeeRow({ emp, structures, onAssigned }) {
       setOpen(false);
       onAssigned();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to assign"));
+      apiErrorToast(err, "assign salary structure");
     } finally {setSaving(false);}
   };
 
@@ -215,7 +215,7 @@ export default function SalaryAssignmentsPage() {
       );
       setEmployees(emps ?? []);
       setStructures(structs ?? []);
-    } catch {errorToast("Failed to load");} finally
+    } catch (err) { apiErrorToast(err, "load salary data");} finally
     {setLoading(false);}
   }, [search]);
 

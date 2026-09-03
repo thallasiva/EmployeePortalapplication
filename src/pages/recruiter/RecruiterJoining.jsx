@@ -5,7 +5,7 @@ import {
   listJoiningInvitations, getJoiningDetail,
   resendJoiningInvitation } from
 "../../api/joining.api";
-import { errorToast, successToast } from "../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../utils/ToastControllers";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
 
@@ -73,12 +73,12 @@ export default function RecruiterJoining() {
     try {
       const d = await getJoiningDetail(id);
       setDetail(d);
-    } catch {errorToast("Failed to load details");}
+    } catch (err) { apiErrorToast(err, "load joining details"); }
   };
 
   const resend = async (id) => {
     try {await resendJoiningInvitation(id);successToast("Invitation resent");}
-    catch {errorToast("Failed to resend");}
+    catch (err) { apiErrorToast(err, "resend invitation"); }
   };
 
   const parse = (v) => {try {return JSON.parse(v) || [];} catch {return [];}};

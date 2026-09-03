@@ -4,7 +4,7 @@ import {
   checkOut as apiCheckOut,
   getMyTodayAttendance,
 } from "../../../../../api/attendance.api";
-import { errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 
 export function useAttendance({ todayAtt, setTodayAtt }) {
   const checkIn = todayAtt?.check_in || todayAtt?.check_in_time || todayAtt?.checkIn || null;
@@ -114,7 +114,7 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       const isResuming = !!checkOut;
       successToast((isResuming ? "Break ended — resumed!" : "Checked in successfully!") + (gps.location ? ` 📍 ${gps.location}` : ""));
     } catch (err) {
-      errorToast(err?.response?.data?.message || "Check-in failed.");
+      apiErrorToast(err, "Check-in failed.");
     } finally {
       setCheckingIn(false);
     }
@@ -130,7 +130,7 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       await refreshAttendance();
       successToast("Checked out — on break!" + (gps.location ? ` 📍 ${gps.location}` : ""));
     } catch (err) {
-      errorToast(err?.response?.data?.message || "Check-out failed.");
+      apiErrorToast(err, "Check-out failed.");
     } finally {
       setCheckingOut(false);
     }

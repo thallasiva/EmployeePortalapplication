@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { getMyDocuments, getMyJoiningDocs } from "../../../../../api/document.api";
 import { downloadPayslip, viewPayslip } from "../../../../../utils/payslipDownload";
-import { errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 import { VIEW, PAYSLIP_ROWS } from "../constants";
 import { toJumpId, scrollElementIntoContainer } from "../utils";
 
@@ -29,8 +29,8 @@ export function useDocumentCenter() {
     ]).then(([docsRes, jd]) => {
       setMyDocs(docsRes?.data || []);
       setJoiningDocs(jd || null);
-    }).catch(() => {
-      errorToast("Failed to load documents");
+    }).catch((err) => {
+      apiErrorToast(err, "load documents");
       setMyDocs([]);
     }).finally(() => setDocsLoading(false));
   }, [view, myDocs]);
@@ -69,14 +69,14 @@ export function useDocumentCenter() {
 
   const handleViewPayslip = useCallback((row) => {
     try { viewPayslip(row); }
-    catch { errorToast("Unable to open payslip."); }
+    catch (err) { apiErrorToast(err, "open payslip"); }
   }, []);
 
   const handleDownloadPayslip = useCallback(async (row) => {
     try {
       await downloadPayslip(row);
       successToast(`Downloaded ${row.file}`);
-    } catch { errorToast("Unable to download payslip."); }
+    } catch (err) { apiErrorToast(err, "download payslip"); }
   }, []);
 
   const togglePayslipMonth = useCallback((month) => {

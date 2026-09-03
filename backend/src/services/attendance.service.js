@@ -57,6 +57,30 @@ class AttendanceService extends BaseService {
     return this.getToday(employeeId);
   }
 
+  async breakStart(employeeId, { date, time, lat, lng, location } = {}) {
+    const d = date || new Date().toISOString().slice(0, 10);
+    const t = time || new Date().toTimeString().slice(0, 8);
+    await callProcedure('sp_break_start(?, ?, ?, ?, ?, ?)', [
+      employeeId, d, t,
+      lat  != null ? Number(lat)  : null,
+      lng  != null ? Number(lng)  : null,
+      location || null,
+    ]);
+    return this.getToday(employeeId);
+  }
+
+  async breakEnd(employeeId, { date, time, lat, lng, location } = {}) {
+    const d = date || new Date().toISOString().slice(0, 10);
+    const t = time || new Date().toTimeString().slice(0, 8);
+    await callProcedure('sp_break_end(?, ?, ?, ?, ?, ?)', [
+      employeeId, d, t,
+      lat  != null ? Number(lat)  : null,
+      lng  != null ? Number(lng)  : null,
+      location || null,
+    ]);
+    return this.getToday(employeeId);
+  }
+
   async checkOut(employeeId, { date, time, lat, lng, location } = {}) {
     const checkDate = date || indiaDate();
     const checkTime = time || new Date().toTimeString().slice(0, 8);

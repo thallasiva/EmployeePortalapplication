@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Briefcase, ChevronDown, ChevronRight, CheckCircle } from "lucide-react";
 import apiClient from "../../../../api/client";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { JOB_ROLES } from "../constants";
 
 const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignationSaved, onEmployeesRefresh }) {
@@ -35,7 +35,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
       onDesignationSaved?.(selected.employee_id, pickedDesig);
       onEmployeesRefresh?.();
     } catch (err) {
-      errorToast(err?.response?.data?.message || "Failed to update designation");
+      apiErrorToast(err, "Failed to update designation");
     } finally {
       setSavingDesig(false);
     }

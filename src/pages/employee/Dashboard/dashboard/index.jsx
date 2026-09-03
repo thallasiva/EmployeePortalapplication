@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { generateMyPayslip, getPayslipFull } from "../../../../api/payroll.api";
 import { downloadPayslipPdf } from "../../../../utils/payslipPdfGenerator";
-import { errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
 import { useDashboardData } from "./hooks/useDashboardData";
 import { useAttendance } from "./hooks/useAttendance";
 import ProfileHeader from "./components/ProfileHeader";
@@ -59,7 +59,7 @@ export default function Dashboard() {
       const full = await getPayslipFull(rec.payslip_id);
       await downloadPayslipPdf(full);
     } catch (err) {
-      errorToast(err?.response?.data?.message || "Download failed.");
+      apiErrorToast(err, "Download failed.");
     } finally {
       setDownloading(false);
     }

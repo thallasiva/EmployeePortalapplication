@@ -11,7 +11,7 @@ import
     listOnboarding, getOnboarding, updateOnboardingTask, finalizeOnboarding, getErrorMessage
   } from
   "../../../api/recruitment.api";
-import { successToast, errorToast } from "../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../utils/ToastControllers";
 
 const FORMALITY_STEPS = [
   { key: "employee_info_submitted", label: "Employee Info Submitted", boolean: true },
@@ -84,7 +84,7 @@ export default function OnboardingPage({ role })
       setRecords(data ?? []);
     } catch (err)
     {
-      errorToast(getErrorMessage(err, "Failed to load onboarding records"));
+      apiErrorToast(err, "Failed to load onboarding records");
     } finally { setLoading(false); }
   }, []);
 
@@ -113,7 +113,7 @@ export default function OnboardingPage({ role })
       setRecords((rs) => rs.map((r) => r.onboarding_id === onboardingId ? { ...r, [taskName]: taskValue } : r));
     } catch (err)
     {
-      errorToast(getErrorMessage(err, "Failed to update task"));
+      apiErrorToast(err, "Failed to update task");
     } finally { setUpdating(false); }
   }
 
@@ -128,7 +128,7 @@ export default function OnboardingPage({ role })
       loadRecords();
     } catch (err)
     {
-      errorToast(getErrorMessage(err, "Failed to finalize onboarding"));
+      apiErrorToast(err, "Failed to finalize onboarding");
     } finally { setUpdating(false); }
   }
 

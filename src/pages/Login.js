@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import { getHomePath, getStoredUser, persistAuthSession } from "../data/auth";
 import { login as loginApi, verifyMfa } from "../api/auth.api";
 import { getErrorMessage } from "../api/client";
-import { errorToast } from "../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
 import logo from "../assets/logo.png";
 
@@ -98,7 +98,7 @@ const Login = () => {
         }
         router(home);
       } catch (err) {
-        errorToast(getErrorMessage(err, "Invalid email or password"));
+        apiErrorToast(err, "Invalid email or password");
       } finally {
         setSubmitting(false);
       }

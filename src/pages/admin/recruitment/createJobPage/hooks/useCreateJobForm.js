@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { createJob, assignRecruiters, listRecruiters, getErrorMessage } from "../../../../../api/recruitment.api";
-import { successToast, errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK } from "../constants/formConstants";
 
 export function useCreateJobForm() {
@@ -88,7 +88,7 @@ export function useCreateJobForm() {
         successToast("Job request created successfully");
         navigate(-1);
       } catch (err) {
-        errorToast(getErrorMessage(err, "Failed to create job request"));
+        apiErrorToast(err, "create job request");
       } finally {
         setSubmitting(false);
       }

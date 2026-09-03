@@ -4,7 +4,7 @@ import { createEmployee } from "../../../../api/employee.api";
 import { listDepartments } from "../../../../api/department.api";
 import { getManagers } from "../../../../api/orgHierarchy.api";
 import { getErrorMessage } from "../../../../api/client";
-import { errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
 import { INITIAL_VALUES, STEPS } from "../constants";
 import { validateStep } from "../utils";
 
@@ -21,10 +21,10 @@ export function useCreateEmployee() {
   useEffect(() => {
     listDepartments()
       .then(setDepartments)
-      .catch((err) => errorToast(getErrorMessage(err, "Failed to load departments")));
+      .catch((err) => apiErrorToast(err, "Failed to load departments"));
     getManagers()
       .then((data) => setMembers(Array.isArray(data) ? data : []))
-      .catch((err) => errorToast(getErrorMessage(err, "Failed to load managers")));
+      .catch((err) => apiErrorToast(err, "Failed to load managers"));
   }, []);
 
   const setField = useCallback((name, value) => {
@@ -127,7 +127,7 @@ export function useCreateEmployee() {
       });
       setShowSuccessModal(true);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to create employee"));
+      apiErrorToast(err, "Failed to create employee");
     } finally {
       setSubmitting(false);
     }

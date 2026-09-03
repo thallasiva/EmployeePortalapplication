@@ -36,3 +36,8 @@ apiClient.post("/attendance/regularizations", payload).then(unwrap);
 
 export const reviewRegularization = (id, payload) =>
 apiClient.put(`/attendance/regularizations/${id}/review`, payload).then(unwrap);
+
+
+export const breakStart = (payload) => apiClient.post("/attendance/break-start", payload).then(unwrap);
+
+export const breakEnd = (payload) => apiClient.post("/attendance/break-end", payload).then(unwrap);

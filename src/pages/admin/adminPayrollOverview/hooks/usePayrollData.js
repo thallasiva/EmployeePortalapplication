@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useState, useCallback, useEffect } from "react";
 import { listPayslips, generateAllPayslips, listPayrollRuns } from "../../../../api/payroll.api";
 import { listEmployees } from "../../../../api/employee.api";
@@ -33,14 +35,14 @@ export function usePayrollData(selected) {
     setProcessing(true);
     try {
       await generateAllPayslips({ month: selected.month, year: selected.year });
-      successToast(`Payroll processed for ${MONTHS[selected.month - 1]} ${selected.year}`);
+      successToast(`✅ Payroll processed for ${MONTHS[selected.month - 1]} ${selected.year}. Payslips are ready for review.`);
       load();
     } catch (e) {
-      errorToast(e?.response?.data?.message || "Payroll processing failed");
+      apiErrorToast(e, "process payroll");
     } finally {
       setProcessing(false);
     }
   }, [selected, load]);
 
-  return { payslips, employees, runs, loading, processing, handleProcess };
+  return { payslips, employees, runs, loading, processing, handleProcess, load };
 }

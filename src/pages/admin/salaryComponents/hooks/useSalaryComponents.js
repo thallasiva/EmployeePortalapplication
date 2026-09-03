@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   listComponents,
@@ -24,7 +26,7 @@ export function useSalaryComponents() {
     try {
       setComponents(await listComponents(null));
     } catch {
-      errorToast("Failed to load components");
+      errorToast(ERR.LOAD_FAILED("salary components"));
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export function useSalaryComponents() {
         closeForm();
         load();
       } catch (err) {
-        errorToast(getErrorMessage(err, "Failed to save"));
+        apiErrorToast(err, "Failed to save");
       } finally {
         setSaving(false);
       }
@@ -103,7 +105,7 @@ export function useSalaryComponents() {
         successToast(c.is_active ? "Component deactivated" : "Component activated");
         load();
       } catch (err) {
-        errorToast(getErrorMessage(err, "Failed"));
+        apiErrorToast(err, "Failed");
       }
     },
     [load]

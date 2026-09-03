@@ -176,3 +176,12 @@ export const answerAIInterview = (token, answer) =>
 
 export const completeAIInterview = (token) =>
   apiClient.post(`/recruitment/public/ai-interview/${token}/complete`).then(unwrap);
+
+export const logAIInterviewProctoring = (token, event) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/proctoring`, event).catch(() => {});
+
+export const saveAIInterviewDraft = (token, questionId, draft) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/draft`, { questionId, draft }).catch(() => {});
+
+export const answerAIInterviewV2 = (token, answer, questionId) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/answer`, { answer, questionId }).then(r => r.data?.data ?? r.data);

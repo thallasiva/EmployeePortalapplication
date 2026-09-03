@@ -3,19 +3,21 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const STATUS_STYLES = {
-  "P":   { bg: "bg-green-100",  text: "text-green-700",  label: "Present" },
-  "P:A": { bg: "bg-teal-100",   text: "text-teal-700",   label: "Half Day" },
-  "A":   { bg: "bg-red-100",    text: "text-red-600",    label: "Absent" },
-  "H":   { bg: "bg-blue-100",   text: "text-blue-700",   label: "Holiday" },
-  "L":   { bg: "bg-purple-100", text: "text-purple-700", label: "Leave" },
-  "WO":  { bg: "bg-slate-100",  text: "text-slate-400",  label: "Weekend" },
+// Each status: cell background, pill background, pill text color, label
+const STATUS_CFG = {
+  P:    { cellBg: "#f0fdf4", pillBg: "#16a34a", pillColor: "#fff", label: "Present",  pill: "PRESENT"  },
+  L:    { cellBg: "#fff7ed", pillBg: "#ea580c", pillColor: "#fff", label: "Late",     pill: "LATE"     },
+  "P:A":{ cellBg: "#f0f9ff", pillBg: "#0284c7", pillColor: "#fff", label: "Half Day", pill: "HALF DAY" },
+  A:    { cellBg: "#fef2f2", pillBg: "#dc2626", pillColor: "#fff", label: "Absent",   pill: "ABSENT"   },
+  H:    { cellBg: "#eff6ff", pillBg: "#3b82f6", pillColor: "#fff", label: "Holiday",  pill: "HOLIDAY"  },
+  LV:   { cellBg: "#faf5ff", pillBg: "#9333ea", pillColor: "#fff", label: "Leave",    pill: "LEAVE"    },
+  WO:   { cellBg: "#f8fafc", pillBg: null,       pillColor: null,   label: "Weekend",  pill: null       },
 };
 
 export default function CalendarGrid({ month, year, dayMap, selectedDate, onSelect, onPrevMonth, onNextMonth, loading }) {
-  const firstDow = new Date(year, month - 1, 1).getDay();
+  const firstDow    = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr    = new Date().toISOString().slice(0, 10);
 
   const cells = [];
   for (let i = 0; i < firstDow; i++) cells.push(null);
@@ -25,100 +27,123 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
     cells.push(`${year}-${mon}-${pad}`);
   }
 
-  const monthName = new Date(year, month - 1, 1).toLocaleString("default", { month: "long" });
+  const monthName = new Date(year, month - 1, 1)
+    .toLocaleString("default", { month: "long" });
+
+  function resolveCode(dateStr, rec) {
+    const dow = new Date(dateStr).getDay();
+    if (dow === 0 || dow === 6) return "WO";
+    const raw = rec?.status?.code;
+    if (raw === "L" || raw === "LV") return "LV";
+    if (raw) return raw;                    // P, A, P:A, H, late → L
+    if (dateStr < todayStr) return "A";     // past weekday, no record = absent
+    return null;                            // future
+  }
+
+  const CELL_BORDER = "1px solid #e2e8f0";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Calendar Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-        <button
-          onClick={onPrevMonth}
-          className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
-        >
-          <ChevronLeft size={18} />
+    <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,.06)", overflow: "hidden" }}>
+
+      {/* ── Month nav ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: CELL_BORDER }}>
+        <button onClick={onPrevMonth} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
+          <ChevronLeft size={17} />
         </button>
-        <span className="text-base font-bold text-slate-800 tracking-tight">
-          {monthName} {year}
-        </span>
-        <button
-          onClick={onNextMonth}
-          className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
-        >
-          <ChevronRight size={18} />
+        <span style={{ fontSize: 15, fontWeight: 700, color: "#1e293b" }}>{monthName} {year}</span>
+        <button onClick={onNextMonth} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
+          <ChevronRight size={17} />
         </button>
       </div>
 
-      {/* Day-of-week headers */}
-      <div className="grid grid-cols-7 border-b border-slate-100">
-        {DOW.map((d) => (
-          <div key={d} className="py-2 text-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+      {/* ── DOW row ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#f8fafc", borderBottom: CELL_BORDER }}>
+        {DOW.map((d, i) => (
+          <div key={d} style={{ padding: "10px 0", textAlign: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: i === 0 || i === 6 ? "#cbd5e1" : "#94a3b8" }}>
             {d}
           </div>
         ))}
       </div>
 
-      {/* Calendar cells */}
-      <div className="grid grid-cols-7">
+      {/* ── Day cells ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
         {cells.map((dateStr, idx) => {
           if (!dateStr) {
-            return <div key={`blank-${idx}`} className="min-h-[72px] border-b border-r border-slate-100 bg-slate-50/50" />;
+            return <div key={`b-${idx}`} style={{ minHeight: 80, background: "#f8fafc", borderBottom: CELL_BORDER, borderRight: CELL_BORDER }} />;
           }
 
-          const rec = dayMap?.get(dateStr);
+          const rec        = dayMap?.get(dateStr);
+          const code       = resolveCode(dateStr, rec);
+          const cfg        = STATUS_CFG[code] || {};
           const isSelected = dateStr === selectedDate;
-          const isToday = dateStr === todayStr;
-          const code = rec?.status?.code || (rec?.isWeekend ? "WO" : rec?.isHoliday ? "H" : null);
-          const style = STATUS_STYLES[code] || {};
-          const dayNum = parseInt(dateStr.slice(8), 10);
-          const canRegularize = rec?.canRegularize;
+          const isToday    = dateStr === todayStr;
+          const isFuture   = dateStr > todayStr;
+          const dayNum     = parseInt(dateStr.slice(8), 10);
+          const checkIn    = rec?.processed?.firstIn;
+          const hasCheckIn = checkIn && checkIn !== "—";
+          const canReg     = rec?.canRegularize;
+
+          const cellStyle = {
+            minHeight: 80,
+            padding: "8px 8px 6px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            textAlign: "left",
+            border: "none",
+            borderBottom: CELL_BORDER,
+            borderRight: CELL_BORDER,
+            cursor: isFuture ? "default" : "pointer",
+            transition: "filter .15s",
+            background: isSelected
+              ? "linear-gradient(135deg,#f18200,#d97000)"
+              : isToday
+              ? "#fff7ed"
+              : cfg.cellBg || "#fff",
+          };
 
           return (
             <button
               key={dateStr}
-              onClick={() => onSelect(dateStr)}
-              disabled={loading}
-              className={[
-                "min-h-[72px] border-b border-r border-slate-100 p-2 text-left flex flex-col gap-1 transition-all",
-                isSelected
-                  ? "bg-[#f18200] text-white shadow-inner"
-                  : "hover:bg-orange-50/70",
-              ].join(" ")}
+              onClick={() => !isFuture && onSelect(dateStr)}
+              disabled={loading || isFuture}
+              style={cellStyle}
+              onMouseEnter={e => { if (!isFuture && !isSelected) e.currentTarget.style.filter = "brightness(.96)"; }}
+              onMouseLeave={e => { e.currentTarget.style.filter = ""; }}
             >
-              {/* Day number row */}
-              <div className="flex items-center justify-between">
-                <span
-                  className={[
-                    "text-sm font-bold w-6 h-6 flex items-center justify-center rounded-full",
-                    isSelected
-                      ? "bg-white text-[#f18200]"
-                      : isToday
-                      ? "ring-2 ring-[#f18200] text-[#f18200]"
-                      : "text-slate-700",
-                  ].join(" ")}
-                >
+              {/* Day number */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{
+                  width: 24, height: 24, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 700,
+                  background: isSelected ? "#fff" : isToday ? "#fff7ed" : "transparent",
+                  color: isSelected ? "#f18200" : isToday ? "#f18200" : isFuture ? "#cbd5e1" : code === "WO" ? "#cbd5e1" : "#374151",
+                  outline: isToday && !isSelected ? "2px solid #f18200" : "none",
+                }}>
                   {dayNum}
                 </span>
-                {canRegularize && !isSelected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" title="Eligible for regularization" />
+                {canReg && !isSelected && (
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fbbf24" }} title="Can regularize" />
                 )}
               </div>
 
               {/* Status pill */}
-              {code && code !== "WO" && (
-                <span
-                  className={[
-                    "text-[9px] font-bold px-1.5 py-0.5 rounded-md inline-block leading-tight",
-                    isSelected ? "bg-white/25 text-white" : `${style.bg} ${style.text}`,
-                  ].join(" ")}
-                >
-                  {code}
+              {cfg.pill && cfg.pillBg && (
+                <span style={{
+                  fontSize: 9, fontWeight: 700, letterSpacing: "0.04em",
+                  padding: "2px 5px", borderRadius: 5, display: "inline-block", lineHeight: 1.4,
+                  background: isSelected ? "rgba(255,255,255,.25)" : cfg.pillBg,
+                  color: isSelected ? "#fff" : cfg.pillColor,
+                }}>
+                  {cfg.pill}
                 </span>
               )}
 
               {/* Check-in time */}
-              {rec?.processed?.firstIn && rec.processed.firstIn !== "—" && (
-                <span className={`text-[9px] font-medium leading-none ${isSelected ? "text-orange-100" : "text-slate-400"}`}>
-                  {rec.processed.firstIn}
+              {hasCheckIn && (
+                <span style={{ fontSize: 9, fontWeight: 600, color: isSelected ? "rgba(255,255,255,.85)" : cfg.pillBg || "#94a3b8", lineHeight: 1 }}>
+                  {checkIn}
                 </span>
               )}
             </button>
@@ -126,16 +151,21 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
         })}
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-3 px-5 py-3 border-t border-slate-100 bg-slate-50/50">
-        {Object.entries(STATUS_STYLES)
-          .filter(([k]) => k !== "WO")
-          .map(([code, st]) => (
-            <span key={code} className="flex items-center gap-1.5 text-[11px] text-slate-500">
-              <span className={`inline-block w-2 h-2 rounded-sm ${st.bg}`} />
-              {st.label}
-            </span>
-          ))}
+      {/* ── Legend ── */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", padding: "10px 20px", borderTop: CELL_BORDER, background: "#f8fafc" }}>
+        {[
+          { label: "Present",  color: "#16a34a" },
+          { label: "Late",     color: "#ea580c" },
+          { label: "Half Day", color: "#0284c7" },
+          { label: "Absent",   color: "#dc2626" },
+          { label: "Holiday",  color: "#3b82f6" },
+          { label: "Leave",    color: "#9333ea" },
+        ].map(({ label, color }) => (
+          <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#64748b" }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: color, display: "inline-block" }} />
+            {label}
+          </span>
+        ))}
       </div>
     </div>
   );

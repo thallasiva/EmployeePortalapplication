@@ -24,7 +24,9 @@ router.get("/public/ai-interview/:token",         aiInterviewCtrl.getSession);
 router.post("/public/ai-interview/:token/start",   aiInterviewCtrl.start);
 router.post("/public/ai-interview/:token/answer",  aiInterviewCtrl.answer);
 router.post("/public/ai-interview/:token/submit",  aiInterviewCtrl.submit);
-router.post("/public/ai-interview/:token/complete", aiInterviewCtrl.submit);
+router.post("/public/ai-interview/:token/complete",    aiInterviewCtrl.submit);
+router.post("/public/ai-interview/:token/proctoring", aiInterviewCtrl.logProctoring);
+router.post("/public/ai-interview/:token/draft",      aiInterviewCtrl.saveDraft);
 
 router.use(authenticate);
 

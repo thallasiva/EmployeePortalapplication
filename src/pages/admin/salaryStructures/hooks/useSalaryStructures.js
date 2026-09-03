@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useState, useEffect, useCallback } from "react";
 import {
   listStructures,
@@ -23,7 +25,7 @@ export function useSalaryStructures() {
       setStructures(s);
       setAllComp(c);
     } catch {
-      errorToast("Failed to load structures");
+      errorToast(ERR.LOAD_FAILED("salary structures"));
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export function useSalaryStructures() {
         closeForm();
         load();
       } catch (err) {
-        errorToast(getErrorMessage(err, "Failed to save"));
+        apiErrorToast(err, "Failed to save");
       } finally {
         setSaving(false);
       }

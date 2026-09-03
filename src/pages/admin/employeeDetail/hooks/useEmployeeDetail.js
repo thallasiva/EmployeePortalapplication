@@ -4,7 +4,7 @@ import { getManagers } from "../../../../api/orgHierarchy.api";
 import { listDepartments } from "../../../../api/department.api";
 import { calculatePayslip } from "../../PayRollForm";
 import { getErrorMessage } from "../../../../api/client";
-import { errorToast, successToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
 import { employeeSchema } from "../constants";
 import { toDateInput, cleanForm } from "../utils";
 
@@ -80,7 +80,7 @@ export function useEmployeeDetail(id) {
     setLoading(true);
     getEmployee(id)
       .then((data) => setEmployee(data))
-      .catch((err) => errorToast(getErrorMessage(err, "Failed to load employee")))
+      .catch((err) => apiErrorToast(err, "Failed to load employee"))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -186,7 +186,7 @@ export function useEmployeeDetail(id) {
       setTouched({});
       successToast("Employee updated successfully");
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to update employee"));
+      apiErrorToast(err, "Failed to update employee");
     } finally {
       setSaving(false);
     }

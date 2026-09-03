@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { Btn, SlideOver } from "../../shared";
 import { parseResume, quickResumeMatch, uploadResumeMatch, createCandidate, getErrorMessage } from "../../../../../api/recruitment.api";
-import { successToast, errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK } from "../constants";
 import { missingFields } from "../utils";
 import StepBar from "./StepBar";
@@ -137,7 +137,7 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
       reset();
       onSuccess();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to add candidate"));
+      apiErrorToast(err, "Failed to add candidate");
     } finally {
       setSaving(false);
     }

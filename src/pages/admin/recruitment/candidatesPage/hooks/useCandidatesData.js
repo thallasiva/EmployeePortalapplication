@@ -4,7 +4,7 @@ import {
   updateCandidateStatus as apiUpdateStatus,
   scheduleInterview, listInterviews, getErrorMessage
 } from "../../../../../api/recruitment.api";
-import { successToast, errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK_INT, LEVEL_ORDER } from "../constants";
 
 export function useCandidatesData({ role }) {
@@ -39,7 +39,7 @@ export function useCandidatesData({ role }) {
       const { data } = await listCandidates(params);
       setCandidates(data ?? []);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to load candidates"));
+      apiErrorToast(err, "Failed to load candidates");
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export function useCandidatesData({ role }) {
     } catch (err) {
       setCandidates((cs2) => cs2.map((c) => c.candidate_id === candidateId ? { ...c, status: prevStatus } : c));
       setDetail((d) => d?.candidate_id === candidateId ? { ...d, status: prevStatus } : d);
-      errorToast(getErrorMessage(err, "Failed to update status"));
+      apiErrorToast(err, "Failed to update status");
     }
   }, [candidates]);
 

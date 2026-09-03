@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { listEmployees, createEmployee } from "../../../../api/employee.api";
 import { getErrorMessage } from "../../../../api/client";
@@ -26,7 +28,7 @@ export function useEmployeeData() {
       const { data } = await listEmployees({ limit: 500 });
       setEmployees(data);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to load employees"));
+      errorToast(getErrorMessage(err, ERR.LOAD_FAILED("employee list")));
     } finally {
       setLoading(false);
     }
@@ -132,7 +134,7 @@ export function useEmployeeData() {
       reader.onload = async (event) => {
         let rows = [];
         try { rows = parseEmployeeCsv(event.target.result); }
-        catch { errorToast("Failed to parse CSV. Check file format."); e.target.value = ""; return; }
+        catch (err) { apiErrorToast(err, "Failed to parse CSV. Check file format."); e.target.value = ""; return; }
         const codeToId = new Map();
         employees.forEach((emp) => { if (emp.emp_code) codeToId.set(String(emp.emp_code), emp.employee_id); });
         let created = 0, failed = 0;
@@ -165,7 +167,7 @@ export function useEmployeeData() {
   );
 
   const handleCsvExport = useCallback(() => {
-    if (!employees.length) { errorToast("No employees to export"); return; }
+    if (!employees.length) { errorToast("No employees found to export."); return; }
     downloadEmployeeCsv(employees, `employees-${new Date().toISOString().slice(0, 10)}.csv`);
     successToast("Employee list exported");
   }, [employees]);

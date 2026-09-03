@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Btn, Select, Field } from "../../shared";
 import { uploadResumeMatch, getErrorMessage } from "../../../../../api/recruitment.api";
-import { errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
 import ScoreCircle from "./ScoreCircle";
 import RecBadge from "./RecBadge";
 import SkillBar from "./SkillBar";
@@ -265,7 +265,7 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
     if (!jobId || !file) return;
     setLoading(true); setResult(null);
     try { setResult(await uploadResumeMatch(Number(jobId), file)); }
-    catch (err) { errorToast(getErrorMessage(err, "Failed to parse resume")); }
+    catch (err) { apiErrorToast(err, "Failed to parse resume"); }
     finally { setLoading(false); }
   }, [jobId, file]);
 

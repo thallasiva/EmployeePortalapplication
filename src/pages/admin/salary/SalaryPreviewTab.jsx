@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { RefreshCw, Eye } from "lucide-react";
 import { computeCTC } from "../../../api/salaryComponent.api";
-import { errorToast } from "../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
 import { fmtINR } from "./salaryHelpers";
 
 function Section({ title, items, colorClass }) {
@@ -39,7 +39,7 @@ export default function SalaryPreviewTab({ structureId }) {
     if (!structureId || ctcM < 1000) return;
     setLoading(true);
     try {setResult(await computeCTC(structureId, ctcM * 12));}
-    catch {errorToast("Failed to compute. Make sure the structure is saved first.");} finally
+    catch (err) { apiErrorToast(err, "compute salary preview"); } finally
     {setLoading(false);}
   }, [structureId, ctcM]);
 

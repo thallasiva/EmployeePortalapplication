@@ -4,7 +4,7 @@ import {
   ChevronDown, User, Briefcase, Star
 } from "lucide-react";
 import { createAIInterview, listAIInterviews, getAIInterviewReport, listCandidates, listJobs } from "../../api/recruitment.api";
-import { successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 
 const PRIMARY = "#0E7C86";
 const LIGHT   = "#f0fbfc";
@@ -66,7 +66,7 @@ function ReportModal({ sessionId, onClose }) {
   useEffect(() => {
     getAIInterviewReport(sessionId)
       .then(setReport)
-      .catch(() => errorToast("Failed to load report"))
+      .catch(err => apiErrorToast(err, "load interview report"))
       .finally(() => setLoading(false));
   }, [sessionId]);
 
@@ -232,7 +232,7 @@ export default function AIInterviewSetup() {
     setLoadingList(true);
     listAIInterviews({ limit: 50 })
       .then(r => setSessions(r?.data ?? []))
-      .catch(() => errorToast("Failed to load sessions"))
+      .catch(err => apiErrorToast(err, "load interview sessions"))
       .finally(() => setLoadingList(false));
   }
 

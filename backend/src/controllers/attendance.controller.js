@@ -37,6 +37,18 @@ const checkIn = asyncHandler(async (req, res) => {
   new ApiResponse(200, record, 'Checked in successfully').send(res);
 });
 
+const breakStart = asyncHandler(async (req, res) => {
+  const employeeId = req.user.employeeId;
+  const record = await attendanceService.breakStart(employeeId, req.body);
+  new ApiResponse(200, record, 'Break started').send(res);
+});
+
+const breakEnd = asyncHandler(async (req, res) => {
+  const employeeId = req.user.employeeId;
+  const record = await attendanceService.breakEnd(employeeId, req.body);
+  new ApiResponse(200, record, 'Break ended').send(res);
+});
+
 const checkOut = asyncHandler(async (req, res) => {
   const employeeId = req.user.employeeId;
   const record = await attendanceService.checkOut(employeeId, req.body);
@@ -84,6 +96,8 @@ module.exports = {
   list,
   today,
   monthly,
+  breakStart,
+  breakEnd,
   checkIn,
   checkOut,
   dashboard,

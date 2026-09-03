@@ -3,7 +3,7 @@ import {
   updateStructure,
 } from "../../../../api/salaryComponent.api";
 import { getErrorMessage } from "../../../../api/client";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 
 /**
  * Handles saving a component from the Add/Edit panel.
@@ -85,6 +85,6 @@ export async function executePanelSave({
     setEditLine(null);
     await load();
   } catch (err) {
-    errorToast(getErrorMessage(err, "Failed to save component"));
+    apiErrorToast(err, "Failed to save component");
   }
 }

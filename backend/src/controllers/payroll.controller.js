@@ -211,3 +211,19 @@ module.exports = {
   generateMyPayslip,
   generateAllPayslips
 };
+
+// ─── append lock handlers then re-export ───
+// (Node caches module.exports; we patch the exported object directly)
+
+const _payrollRunSvc = require('../services/payrollRun.service');
+const _lockRun   = asyncHandler(async (req, res) => {
+  const run = await _payrollRunSvc.lockRun(req.params.id, req.user.userId, req.body.note);
+  new ApiResponse(200, run, 'Payroll run locked').send(res);
+});
+const _unlockRun = asyncHandler(async (req, res) => {
+  const run = await _payrollRunSvc.unlockRun(req.params.id, req.user.userId);
+  new ApiResponse(200, run, 'Payroll run unlocked').send(res);
+});
+
+module.exports.lockPayrollRun   = _lockRun;
+module.exports.unlockPayrollRun = _unlockRun;

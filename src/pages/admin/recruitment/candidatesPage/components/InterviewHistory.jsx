@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { listInterviews, submitFeedback, getErrorMessage } from "../../../../../api/recruitment.api";
-import { successToast, errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { LEVEL_ORDER, NO_NEXT_STATUSES } from "../constants";
 import InterviewPipeline from "./InterviewPipeline";
 
@@ -50,7 +50,7 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
       successToast("Comment saved");
       cancelEdit(iv.interview_id);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to save comment"));
+      apiErrorToast(err, "Failed to save comment");
       setCs((s) => ({ ...s, [iv.interview_id]: { ...c, saving: false } }));
     }
   }

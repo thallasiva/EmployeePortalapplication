@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { getErrorMessage } from "../../../../../api/recruitment.api";
-import { errorToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
 import ScoreCircle from "./ScoreCircle";
 import RecBadge from "./RecBadge";
 import SkillBar from "./SkillBar";
@@ -17,7 +17,7 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
     e.stopPropagation();
     setRecomputing(true);
     try { await onRecompute(row.candidate_id, row.job_req_id); }
-    catch (err) { errorToast(getErrorMessage(err, "Failed")); }
+    catch (err) { apiErrorToast(err, "Failed"); }
     finally { setRecomputing(false); }
   }
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { forgotPassword, resetPassword } from "../api/auth.api";
 import { getErrorMessage } from "../api/client";
-import { successToast, errorToast } from "../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
 
 const ForgotPassword = () => {
@@ -31,7 +31,7 @@ const ForgotPassword = () => {
       }
       setStep(2);
     } catch (err) {
-      errorToast(getErrorMessage(err, "Could not process your request"));
+      apiErrorToast(err, "Could not process your request");
     } finally {
       setSubmitting(false);
     }
@@ -57,7 +57,7 @@ const ForgotPassword = () => {
       successToast("Password reset successfully. Please sign in.");
       navigate("/login");
     } catch (err) {
-      errorToast(getErrorMessage(err, "Could not reset your password"));
+      apiErrorToast(err, "Could not reset your password");
     } finally {
       setSubmitting(false);
     }

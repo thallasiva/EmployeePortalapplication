@@ -6,7 +6,7 @@ import {
   resendJoiningInvitation,
 } from "../../../../api/joining.api";
 import { listEmployees } from "../../../../api/employee.api";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 
 export function useJoiningVerification() {
   const [rows, setRows] = useState([]);
@@ -70,8 +70,8 @@ export function useJoiningVerification() {
         reportingTo: d.admin_reporting_to || "",
         department: d.admin_department || "",
       });
-    } catch {
-      errorToast("Failed to load details");
+    } catch (e) {
+      apiErrorToast(e, "load joining details");
     }
   }, []);
 
@@ -121,8 +121,8 @@ export function useJoiningVerification() {
     try {
       await resendJoiningInvitation(id);
       successToast("Invitation resent");
-    } catch {
-      errorToast("Failed to resend");
+    } catch (e) {
+      apiErrorToast(e, "resend invitation");
     }
   }, []);
 

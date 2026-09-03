@@ -5,7 +5,7 @@ import {
   updateStructure,
   removeStructureLine,
 } from "../../../../api/salaryComponent.api";
-import { successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { getErrorMessage } from "../../../../api/client";
 import { CAT_ORDER, CAT_COLOR } from "../constants";
 import { groupLinesByCategory } from "../utils";
@@ -25,8 +25,7 @@ const StructureDetail = React.memo(function StructureDetail({
     setLD(true);
     try {
       setDetail(await getStructure(structure.structure_id));
-    } catch {
-      errorToast("Failed to load structure detail");
+    } catch (err) { apiErrorToast(err, "Failed to load structure detail");
     } finally {
       setLD(false);
     }
@@ -54,7 +53,7 @@ const StructureDetail = React.memo(function StructureDetail({
         await loadDetail();
         onRefresh();
       } catch (err) {
-        errorToast(getErrorMessage(err, "Failed to add"));
+        apiErrorToast(err, "Failed to add");
       } finally {
         setSL(false);
       }
@@ -70,7 +69,7 @@ const StructureDetail = React.memo(function StructureDetail({
         successToast("Removed");
         await loadDetail();
       } catch (err) {
-        errorToast(getErrorMessage(err, "Failed"));
+        apiErrorToast(err, "Failed");
       }
     },
     [structure.structure_id, loadDetail]

@@ -1,3 +1,5 @@
+import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -47,7 +49,7 @@ export default function useSalaryStructure() {
         setDraftName(blank.structure_name);
       }
     } catch {
-      errorToast("Failed to load structure");
+      errorToast(ERR.LOAD_FAILED("salary structure"));
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export default function useSalaryStructure() {
       successToast("Structure saved");
       if (!isNew) await load();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Save failed"));
+      apiErrorToast(err, "Unable to save salary structure. Please check your entries.");
     } finally {
       setSaving(false);
     }
@@ -107,7 +109,7 @@ export default function useSalaryStructure() {
       successToast("Component removed");
       await load();
     } catch (err) {
-      errorToast(getErrorMessage(err, "Failed to remove"));
+      apiErrorToast(err, "Failed to remove");
     }
   }, [load, structure]);
 

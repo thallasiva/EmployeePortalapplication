@@ -17,6 +17,8 @@ router.use(authenticate);
 
 router.post('/check-in', validate(checkInSchema), controller.checkIn);
 router.post('/check-out', validate(checkOutSchema), controller.checkOut);
+router.post('/break-start', controller.breakStart);
+router.post('/break-end',   controller.breakEnd);
 router.get('/me/today', controller.today);
 router.get('/me/monthly', controller.monthly);
 
