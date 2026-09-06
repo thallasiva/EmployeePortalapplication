@@ -3,7 +3,7 @@ import {
   Bot, Send, Loader2, CheckCircle2, AlertCircle,
   ChevronDown, User, Briefcase, Star
 } from "lucide-react";
-import { createAIInterview, listAIInterviews, getAIInterviewReport, listCandidates, listJobs } from "../../api/recruitment.api";
+import { createAIInterview, listAIInterviews, getAIInterviewReport, listCandidates, listJobs, uploadResumeMatch } from "../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 
 const PRIMARY = "#0E7C86";
@@ -209,8 +209,10 @@ export default function AIInterviewSetup() {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs]             = useState([]);
   const [form, setForm] = useState({
-    candidateId: "", jobReqId: "", durationMinutes: 30,
+    candidateId: "", jobReqId: "", durationMinutes: 20,
   });
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeUploading, setResumeUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent]       = useState(false);
 
@@ -249,11 +251,30 @@ export default function AIInterviewSetup() {
       });
       successToast("AI interview invitation sent to candidate!");
       setSent(true);
-      setTimeout(() => { setSent(false); setForm({ candidateId: "", jobReqId: "", durationMinutes: 30 }); }, 3000);
+      setTimeout(() => { setSent(false); setForm({ candidateId: "", jobReqId: "", durationMinutes: 20 }); }, 3000);
     } catch (e) {
       errorToast(e?.message || "Failed to send invitation");
     } finally {
       setSending(false);
+    }
+  }
+
+  async function handleResumeUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !form.candidateId || !form.jobReqId) {
+      errorToast("Select a candidate and job before uploading a resume");
+      return;
+    }
+    setResumeUploading(true);
+    try {
+      await uploadResumeMatch(Number(form.jobReqId), file, Number(form.candidateId));
+      setResumeFile(file);
+      successToast("Resume uploaded and parsed. Interview questions will use it.");
+    } catch (error) {
+      errorToast(error?.message || "Resume upload failed");
+    } finally {
+      setResumeUploading(false);
     }
   }
 
@@ -343,13 +364,22 @@ export default function AIInterviewSetup() {
                 </Select>
               </Field>
 
+              <Field label="Candidate Resume">
+                <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 12px", border: `1px dashed ${resumeFile ? PRIMARY : BORDER}`, borderRadius: 8, background: resumeFile ? LIGHT : "#f9fafb", cursor: resumeUploading ? "wait" : "pointer" }}>
+                  <span style={{ fontSize: 13, color: resumeFile ? PRIMARY : "#6b7280", fontWeight: 600 }}>{resumeUploading ? "Uploading and parsing…" : resumeFile ? resumeFile.name : "Upload PDF or DOCX resume"}</span>
+                  <span style={{ fontSize: 12, color: PRIMARY, fontWeight: 700 }}>Browse</span>
+                  <input type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} disabled={resumeUploading || !form.candidateId || !form.jobReqId} style={{ display: "none" }} />
+                </label>
+                <div style={{ marginTop: 5, color: "#9ca3af", fontSize: 11 }}>Questions will be tailored to the uploaded resume, skills, and projects.</div>
+              </Field>
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
                 <Field label="Interview duration (hard limit)">
                   <Select
                     value={form.durationMinutes}
                     onChange={e => setForm(f => ({ ...f, durationMinutes: e.target.value }))}
                   >
-                    {[15, 30, 45, 60].map(n => (
+                    {[10, 20, 30, 45, 60].map(n => (
                       <option key={n} value={n}>{n} minutes</option>
                     ))}
                   </Select>

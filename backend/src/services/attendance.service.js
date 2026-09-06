@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure } = require('../config/db');
+const { callProcedure, query } = require('../config/db');
 
 function indiaDate() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
@@ -42,6 +42,16 @@ class AttendanceService extends BaseService {
   async monthly(employeeId, month, year) {
     const results = await callProcedure('sp_get_monthly_attendance(?, ?, ?)', [employeeId, month, year]);
     return results[0] ?? [];
+  }
+
+  async swipes(employeeId, date) {
+    return query(
+      `SELECT punch_id, punch_type, DATE_FORMAT(punch_time, '%H:%i') AS punch_time, location
+         FROM attendance_punches
+        WHERE employee_id = ? AND attendance_date = ?
+        ORDER BY punch_time ASC, punch_id ASC`,
+      [employeeId, date]
+    );
   }
 
   async checkIn(employeeId, { date, time, shift_start, lat, lng, location } = {}) {

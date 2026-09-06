@@ -77,19 +77,17 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {user?.name?.split(" ")[0] ?? "Admin"}!
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            One place to manage leave, attendance, employees, and reviews — click any card for details
-          </p>
+       
         </div>
         {loading && <span className="text-xs text-gray-400">Refreshing dashboard…</span>}
       </div>
 
-      {error &&
+      {/* {error &&
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-700">
           Some dashboard data couldn&apos;t be loaded from the server, so a few numbers below may be
           incomplete or fall back to sample data. (Check the browser console for details.)
         </div>
-      }
+      } */}
 
       {}
       <section>

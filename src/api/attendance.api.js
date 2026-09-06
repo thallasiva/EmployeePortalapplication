@@ -12,6 +12,10 @@ export const getMyMonthlyAttendance = (params) =>
 apiClient.get("/attendance/me/monthly", { params }).then(unwrap);
 
 
+export const getMyAttendanceSwipes = (date) =>
+apiClient.get("/attendance/me/swipes", { params: { date } }).then(unwrap);
+
+
 export const checkIn = (payload) => apiClient.post("/attendance/check-in", payload).then(unwrap);
 
 

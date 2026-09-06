@@ -21,6 +21,7 @@ router.post('/break-start', controller.breakStart);
 router.post('/break-end',   controller.breakEnd);
 router.get('/me/today', controller.today);
 router.get('/me/monthly', controller.monthly);
+router.get('/me/swipes', controller.swipes);
 
 
 router.get('/', requirePermission('attendance', 'view'), controller.list);
@@ -28,6 +29,7 @@ router.get('/dashboard', requirePermission('attendance', 'view'), controller.das
 router.get('/team-leave-calendar', requirePermission('attendance', 'view'), controller.teamLeaveCalendar);
 router.get('/employees/:employeeId/today', requirePermission('attendance', 'view'), controller.today);
 router.get('/employees/:employeeId/monthly', requirePermission('attendance', 'view'), controller.monthly);
+router.get('/employees/:employeeId/swipes', requirePermission('attendance', 'view'), controller.swipes);
 
 
 router.get('/regularizations', requirePermission('attendance', 'view'), controller.listRegularizations);

@@ -34,7 +34,7 @@ const PUNCH_CFG = {
   OUT: { icon: LogOut, color: "#dc2626", bg: "#fef2f2", label: "Check Out" },
 };
 
-export default function DayDrawer({ entry, onClose }) {
+export default function DayDrawer({ entry, swipesLoading, onClose }) {
   const punches = useMemo(() => entry?.raw?.punches || [], [entry]);
 
   if (!entry) return null;
@@ -110,7 +110,9 @@ export default function DayDrawer({ entry, onClose }) {
           Punch Timeline
         </p>
 
-        {punches.length === 0 ? (
+        {swipesLoading ? (
+          <p style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", padding: "12px 0" }}>Loading swipe details...</p>
+        ) : punches.length === 0 ? (
           <p style={{ fontSize: 12, color: "#cbd5e1", textAlign: "center", padding: "12px 0" }}>No punch records for this day</p>
         ) : (
           <div style={{ position: "relative" }}>

@@ -3,22 +3,22 @@ import { ChevronDown, Globe, Mail, MapPin, Phone, ExternalLink, Building2, Tag, 
 
 const COMPANIES = [
 {
-  id: 'natit',
-  name: 'NAT IT Services Pvt. Ltd.',
-  short: 'NAT IT',
-  logo: 'https://www.natit.in/assets/images/logo.png',
+  id: 'hrms',
+  name: 'HRMS',
+  short: 'HRMS',
+  logo: 'https://www.hrms.local/assets/images/logo.png',
   banner: 'linear-gradient(135deg, #f18200 0%, #e05c00 100%)',
   address: 'Plot no. 21, Sruthi Sadan, Gachibowli, Hyderabad, Telangana',
   phone: '+91 9010877718',
-  email: 'hr@natit.in',
-  website: 'https://www.natit.in',
+  email: 'hr@hrms.local',
+  website: 'https://www.hrms.local',
   language: 'English',
   currency: 'Indian Rupee (₹)',
   source: 'Direct',
   createdOn: '01 Jan 2004',
   lastModified: 'Today',
   tags: ['IT Services', 'Consulting', 'Product'],
-  about: 'NAT IT Services is a newly emerging one-stop solution provider for all your IT needs. It currently focuses on Consulting services, Application Implementations, Support and Maintenance. We provide a complete suite of All IT services to our clients.',
+  about: 'HRMS is a newly emerging one-stop solution provider for all your IT needs. It currently focuses on Consulting services, Application Implementations, Support and Maintenance. We provide a complete suite of All IT services to our clients.',
   products: [
   { name: 'HiTrack', url: 'https://www.natsoft.us/hitrack', desc: 'Project tracking & management platform' },
   { name: 'Optio', url: 'https://www.natsoft.us/optio', desc: 'Business intelligence & analytics tool' },
@@ -35,7 +35,7 @@ const COMPANIES = [
   { name: 'Data Solutions', url: 'https://www.natsoft.us/data-solutions' },
   { name: 'System Integration', url: 'https://www.natsoft.us/system-integration' }],
 
-  social: { linkedin: 'https://www.linkedin.com/company/nat-it-services', twitter: 'https://twitter.com/natitservices', instagram: 'https://instagram.com/natitservices' }
+  social: { linkedin: 'https://www.linkedin.com/company/hrms', twitter: 'https://twitter.com/hrms', instagram: 'https://instagram.com/hrms' }
 },
 {
   id: 'natsoft-corp',

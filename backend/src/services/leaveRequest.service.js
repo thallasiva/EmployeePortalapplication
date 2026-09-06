@@ -19,7 +19,7 @@ class LeaveRequestService extends BaseService {
 
   async list({ employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset } = {}) {
     const results = await callProcedure(
-      'sp_list_leave_requests(?, ?, ?, ?, ?, ?, ?)',
+      'sp_list_leave_requests(?, ?, ?, ?, ?, ?, ?, ?)',
       [
       employee_id ?? null,
       status ?? null,
@@ -27,7 +27,8 @@ class LeaveRequestService extends BaseService {
       department_id ?? null,
       reporting_to ?? null,
       limit != null ? Math.min(Number(limit), 10000) : null,
-      limit != null ? Number(offset || 0) : null]
+      limit != null ? Number(offset || 0) : null,
+      team_role_id ?? null]
 
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };

@@ -59,11 +59,11 @@ function fmtDateSlash(d) {
 
 function co() {
   return {
-    name: emailCfg.companyName || 'NAT IT Services Pvt Ltd',
+    name: emailCfg.companyName || 'HRMS',
     address: emailCfg.companyAddress || 'Gachibowli, Hyderabad - 500032',
     phone: emailCfg.companyPhone || '',
     cin: emailCfg.companyCIN || '',
-    email: emailCfg.companyEmail || 'hr@natit.in',
+    email: emailCfg.companyEmail || 'hr@hrms.local',
     reportTo: emailCfg.companyReportTo || '',
     logoPath: emailCfg.logoPath || ''
   };

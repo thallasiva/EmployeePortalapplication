@@ -42,11 +42,9 @@ import
   "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
-import natLogo from "../assets/logo.png";
 import { useMenuPermissions } from "../hooks/useMenuPermissions";
 
-const BRAND_NAME = "NAT IT";
-const BRAND_LOGO = natLogo;
+const BRAND_NAME = "HRMS";
 
 const isPathActive = (pathname, link, search = "") =>
 {
@@ -558,10 +556,13 @@ export const Sidebar = ({ open }) =>
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
         open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3"].
         join(" ")}>
-        <img
-          src={BRAND_LOGO}
-          alt={`${BRAND_NAME} logo`}
-          className={open ? "h-9 w-auto object-contain" : "h-8 w-8 object-contain"} />
+        <div
+          aria-label={`${BRAND_NAME} logo`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-xs font-black tracking-tight text-white shadow-sm"
+        >
+          EP
+        </div>
+        {open && <span className="text-sm font-extrabold tracking-tight text-slate-800">{BRAND_NAME}</span>}
 
       </div>
 

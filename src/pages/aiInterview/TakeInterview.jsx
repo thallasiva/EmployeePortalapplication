@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import {
   answerAIInterview, completeAIInterview,
-  getAIInterviewSession, startAIInterview,
+  getAIInterviewSession, sendAIInterviewOtp, verifyAIInterviewOtp, startAIInterview,
   logAIInterviewProctoring, saveAIInterviewDraft,
 } from "../../api/recruitment.api";
 
@@ -21,7 +21,7 @@ const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const formatTime  = s => `${String(Math.floor(Math.max(s,0)/60)).padStart(2,"0")}:${String(Math.max(s,0)%60).padStart(2,"0")}`;
 
 // Default time limits per question type (seconds). Backend question.timeLimit overrides.
-const TYPE_TIME = { MCQ: 60, TEXT: 120, CODING: 300, CODE: 300, DEFAULT: 90 };
+const TYPE_TIME = { MCQ: 120, TEXT: 120, SCENARIO: 300, SYSTEM_DESIGN: 900, CODING: 600, CODE: 600, DEFAULT: 120 };
 
 function speak(text, onEnd) {
   if (!window.speechSynthesis || !text) { onEnd?.(); return; }
@@ -84,7 +84,7 @@ function AiAvatar({ size=80, speaking=false }) {
 }
 
 /* ─── Question timer bar (for coding questions) ──────────────────────────── */
-function QuestionTimerBar({ seconds, total, onExpire }) {
+function QuestionTimerBar({ seconds, total, label = "Question time limit" }) {
   const pct     = Math.max(0, (seconds / total) * 100);
   const isWarn  = seconds <= 60;
   const isUrgent= seconds <= 20;
@@ -94,7 +94,7 @@ function QuestionTimerBar({ seconds, total, onExpire }) {
     <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
         <span style={{display:"flex",alignItems:"center",gap:6,fontSize:12,fontWeight:700,color:C.muted}}>
-          <Timer size={13}/> Coding time limit
+          <Timer size={13}/> {label}
         </span>
         <span className={isUrgent?"time-urgent":""} style={{fontSize:20,fontWeight:800,color,fontVariantNumeric:"tabular-nums",fontFamily:"'Fira Code',monospace"}}>
           {formatTime(seconds)}
@@ -105,7 +105,7 @@ function QuestionTimerBar({ seconds, total, onExpire }) {
       </div>
       {isWarn && (
         <p style={{margin:"6px 0 0",fontSize:11,color,fontWeight:600}}>
-          {isUrgent ? "⚠ Time almost up — your code will be submitted soon!" : "Less than 1 minute remaining for this question."}
+          {isUrgent ? (label.toLowerCase().includes("coding") ? "⚠ Time almost up — your code will be submitted soon!" : "⚠ Time almost up — this question will be skipped soon.") : "Less than 1 minute remaining for this question."}
         </p>
       )}
     </div>
@@ -151,8 +151,22 @@ function CandidateVideo({ stream, name, onFaceStatus }) {
     const ctx    = canvas.getContext("2d");
     const video  = videoRef.current;
 
-    function detectFace() {
+    async function detectFace() {
       if (!video || video.readyState < 2) return;
+
+      if (typeof window.FaceDetector === "function") {
+        try {
+          const faces = await new window.FaceDetector({ fastMode: true, maxDetectedFaces: 2 }).detect(video);
+          const noFace = faces.length === 0;
+          setCamBlocked(false);
+          setFaceWarn(noFace);
+          onFaceStatus?.({ noFace, camBlocked: false });
+          return;
+        } catch (_) {
+          // Fall through to the compatibility detector below.
+        }
+      }
+
       ctx.drawImage(video, 0, 0, 160, 120);
       const { data } = ctx.getImageData(30, 10, 100, 100);
       let skinPx = 0;
@@ -166,13 +180,14 @@ function CandidateVideo({ stream, name, onFaceStatus }) {
       }
       const skinRatio = skinPx / totalPx;
       const tooBlack  = skinPx < 5;
-      const noFace    = skinRatio < 0.04;
+      const noFace    = skinRatio < 0.015;
       setCamBlocked(tooBlack);
       setFaceWarn(noFace && !tooBlack);
       onFaceStatus?.({ noFace, camBlocked: tooBlack });
     }
 
-    const id = setInterval(detectFace, 3000);
+    detectFace();
+    const id = setInterval(detectFace, 2500);
     return () => clearInterval(id);
   }, [stream, onFaceStatus]);
 
@@ -306,7 +321,9 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   // Per-question time limit: use question.timeLimit if set, else type default
   const getQTime = () => {
     if (question?.timeLimit && Number(question.timeLimit) > 0) return Number(question.timeLimit);
-    if (isCode) return TYPE_TIME.CODING;
+    if (isCode) return question?.problemSize === "large" ? 1200 : TYPE_TIME.CODING;
+    if (qType === "SCENARIO" || question?.stage === "scenario") return TYPE_TIME.SCENARIO;
+    if (qType === "SYSTEM_DESIGN" || question?.stage === "system_design") return TYPE_TIME.SYSTEM_DESIGN;
     if (isMCQ)  return TYPE_TIME.MCQ;
     return TYPE_TIME.TEXT;
   };
@@ -349,28 +366,6 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   useEffect(() => { codeAnswerRef.current = codeAnswer; }, [codeAnswer]);
   useEffect(() => { answerRef.current = textAnswer; }, [textAnswer]);
 
-  function resetTimer() {
-    // Typing / speaking resets non-coding timers back to full
-    if (!isCode) {
-      const limit = qTimeTotalRef.current;
-      setQSecs(limit);
-      clearInterval(qTimer.current);
-      qTimer.current = setInterval(() => {
-        setQSecs(s => {
-          if (s <= 1) {
-            clearInterval(qTimer.current);
-            if (!skippedRef.current) {
-              skippedRef.current = true;
-              onAnswer("(skipped — no response)", qId);
-            }
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1000);
-    }
-  }
-
   function scheduleDraft(val) {
     clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
@@ -412,7 +407,6 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
         answerRef.current = `${answerRef.current} ${fin}`.trim();
         setTextAnswer(answerRef.current);
         scheduleDraft(answerRef.current);
-        resetTimer(); // talking resets skip timer
       }
       setInterim(int.trim());
     };
@@ -477,9 +471,10 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
 
             {/* Answer area */}
             <div style={{flex:1,background:C.card,borderTop:`1px solid ${C.border}`,padding:"10px 14px",overflow:"auto"}}>
+              {!isCode && <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current || TYPE_TIME.TEXT} label="Answer time limit — next question starts automatically"/>}
               {isCode ? (
                 <>
-                  <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current||TYPE_TIME.CODING}/>
+                  <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current||TYPE_TIME.CODING} label={question?.problemSize === "large" ? "Large coding time limit" : "Coding time limit"}/>
                   <CodeEditor value={codeAnswer} onChange={v => { setCodeAnswer(v); scheduleDraft(v); }} language={question?.language || "javascript"}/>
                 </>
               ) : isMCQ ? (
@@ -490,7 +485,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
                 <div>
                   <textarea
                     value={textAnswer + (interim ? ` ${interim}` : "")}
-                    onChange={e => { answerRef.current = e.target.value; setTextAnswer(e.target.value); scheduleDraft(e.target.value); resetTimer(); }}
+                    onChange={e => { answerRef.current = e.target.value; setTextAnswer(e.target.value); scheduleDraft(e.target.value); }}
                     placeholder="Speak or type your answer…" rows={5}
                     style={{width:"100%",background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",color:C.text,fontSize:14,resize:"none",outline:"none",fontFamily:"inherit",lineHeight:1.6}}/>
                   <div style={{display:"flex",alignItems:"center",gap:10,marginTop:8}}>
@@ -550,7 +545,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
 }
 
 /* ─── Join screen ────────────────────────────────────────────────────────── */
-function JoinScreen({ session, onJoin }) {
+function JoinScreen({ session, error, onJoin }) {
   const mins = Math.round((session?.durationSeconds||0)/60);
   return (
     <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#1a1060 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
@@ -567,6 +562,7 @@ function JoinScreen({ session, onJoin }) {
           <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",background:C.accent,color:"#fff",borderRadius:20,padding:"2px 12px",fontSize:11,fontWeight:700,whiteSpace:"nowrap"}}>Avya</div>
         </div>
         <p style={{color:C.muted,fontSize:13,margin:"18px 0 28px"}}>Your AI interviewer is ready.<br/>Make sure your camera and microphone are on.</p>
+        {error && <p style={{color:C.danger,fontSize:12,lineHeight:1.5,margin:"-14px 0 16px"}}>{error}</p>}
         <button className="btn-primary" onClick={onJoin} style={{width:"100%",padding:"14px 0",fontSize:16}}>Join Interview</button>
         <p style={{color:C.muted,fontSize:11,marginTop:14}}>Responses are recorded and reviewed by the recruitment team.</p>
       </div>
@@ -575,7 +571,7 @@ function JoinScreen({ session, onJoin }) {
 }
 
 /* ─── OTP screen ─────────────────────────────────────────────────────────── */
-function OtpScreen({ email, onVerify }) {
+function OtpScreen({ email, token, onVerify }) {
   const [otp,setOtp]      = useState("");
   const [busy,setBusy]    = useState(false);
   const [err,setErr]      = useState("");
@@ -583,7 +579,10 @@ function OtpScreen({ email, onVerify }) {
 
   async function verify() {
     if (otp.length !== 6) { setErr("Enter the 6-digit code"); return; }
-    setBusy(true); await new Promise(r => setTimeout(r,900)); setBusy(false); onVerify();
+    setBusy(true);
+    try { await verifyAIInterviewOtp(token, otp); onVerify(); }
+    catch (error) { setErr(error?.response?.data?.message || "Invalid verification code"); }
+    finally { setBusy(false); }
   }
   return (
     <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#1a1060 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
@@ -601,7 +600,7 @@ function OtpScreen({ email, onVerify }) {
         </div>
         {err && <p style={{color:C.danger,fontSize:12,margin:"0 0 10px"}}>{err}</p>}
         <button className="btn-primary" onClick={verify} disabled={busy} style={{width:"100%",padding:"13px 0",fontSize:15}}>{busy?"Verifying…":"Verify OTP"}</button>
-        <button onClick={()=>setResent(true)} style={{background:"none",border:"none",color:resent?C.muted:C.accent,cursor:"pointer",marginTop:14,fontSize:13,fontWeight:600}}>{resent?"OTP resent ✓":"Resend OTP"}</button>
+        <button onClick={async()=>{ if (resent || busy) return; try { await sendAIInterviewOtp(token); setResent(true); setOtp(""); setErr(""); setTimeout(()=>setResent(false),30000); } catch (error) { setErr(error?.response?.data?.message || "Could not resend code"); } }} style={{background:"none",border:"none",color:resent?C.muted:C.accent,cursor:"pointer",marginTop:14,fontSize:13,fontWeight:600}}>{resent?"OTP resent ✓":"Resend OTP"}</button>
       </div>
     </div>
   );
@@ -651,7 +650,7 @@ export default function TakeInterview() {
 
   useEffect(()=>{
     getAIInterviewSession(token)
-      .then(data=>{ setSession(data); setRemaining(data.remainingSeconds||data.durationSeconds||0); setScreen("join"); })
+      .then(async data=>{ setSession(data); setRemaining(data.remainingSeconds||data.durationSeconds||0); await sendAIInterviewOtp(token); setScreen("otp"); })
       .catch(err=>{ setError(err?.response?.data?.message||"This interview link is invalid or expired."); setScreen("error"); });
   },[token]);
 
@@ -688,7 +687,18 @@ export default function TakeInterview() {
   function endStream(){ stream?.getTracks().forEach(t=>t.stop()); setStream(null); window.speechSynthesis?.cancel(); }
 
   async function requestCamera(){
-    try{ const s=await navigator.mediaDevices.getUserMedia({video:true,audio:true}); setStream(s); }catch(_){}
+    if(!navigator.mediaDevices?.getUserMedia){
+      setError("Camera access is not supported in this browser.");
+      return false;
+    }
+    try{
+      const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:true});
+      setStream(s);
+      return true;
+    }catch(err){
+      setError(err?.name === "NotAllowedError" ? "Please allow camera and microphone access to continue." : "Unable to access your camera. Check that it is connected and not being used by another app.");
+      return false;
+    }
   }
 
   function setNextQuestion(data){
@@ -700,8 +710,10 @@ export default function TakeInterview() {
     speak(data.question?.question,()=>setAiSpeaking(false));
   }
 
-  const handleJoin        = async ()=>{ await requestCamera(); setScreen("otp"); };
-  const handleOtpVerified = ()=>setScreen("intro");
+  const handleJoin        = async ()=>{
+    const cameraReady = await requestCamera();
+    if (cameraReady) setScreen("intro");
+  };
 
   const handleIntroDone = useCallback(()=>{
     setScreen("working");
@@ -755,8 +767,8 @@ export default function TakeInterview() {
     </div>
   );
 
-  if(screen==="join")  return <JoinScreen session={session} onJoin={handleJoin}/>;
-  if(screen==="otp")   return <OtpScreen  email={session?.candidateEmail} onVerify={handleOtpVerified}/>;
+  if(screen==="join")  return <JoinScreen session={session} error={error} onJoin={handleJoin}/>;
+  if(screen==="otp")   return <OtpScreen  email={session?.candidateEmail} token={token} onVerify={()=>setScreen("join")}/>;
   if(screen==="intro") return <AiSpeakingIntro onSkip={handleIntroDone}/>;
 
   return (

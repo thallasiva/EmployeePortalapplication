@@ -19,7 +19,7 @@ const fmtDT = (d) => {
   catch {return String(d);}
 };
 const fmtINR = (n) => n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '₹0';
-const co = (override) => esc(override || emailCfg.companyName || 'NAT IT Services Pvt Ltd');
+const co = (override) => esc(override || emailCfg.companyName || 'HRMS');
 const feUrl = () => emailCfg.frontendUrl || 'http://localhost:3000';
 
 
@@ -162,7 +162,7 @@ function layout({ title, subtitle, body, accent = ORANGE, companyName = '' }) {
             ${logo ? `<td style="width:64px;vertical-align:middle;padding-right:16px">${logo}</td>` : ''}
             <td style="vertical-align:middle">
               <div style="font-size:19px;font-weight:700;color:#ffffff;line-height:1.25;letter-spacing:-0.2px">${esc(title)}</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px">${subtitle ? esc(subtitle) : co(companyName) + ' &mdash; HR Portal Notification'}</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px">${subtitle ? esc(subtitle) : co(companyName) + ' &mdash; HRMS Notification'}</div>
             </td>
           </tr>
         </table>
@@ -206,7 +206,7 @@ exports.employeeInvite = ({ name, email, tempPassword, role, department, company
     title: `Welcome to ${co(companyName)}`,
     body: `
 ${greeting(name)}
-${lead(`Your employee account has been created on the <strong>${co(companyName)}</strong> HR Portal. You can now log in and manage your profile, leaves, payslips and more.`)}
+${lead(`Your employee account has been created on the <strong>${co(companyName)}</strong> HRMS. You can now log in and manage your profile, leaves, payslips and more.`)}
 ${infoTable(`
   ${infoRow('Email / Username', email)}
   ${infoRow('Temporary Password', tempPassword || '(Set via invitation link)')}
@@ -214,7 +214,7 @@ ${infoTable(`
   ${department ? infoRow('Department', department) : ''}
 `)}
 <p style="color:#6B7280;font-size:13px;margin:0 0 20px">Please log in and change your password immediately from your profile settings.</p>
-${btn('Login to HR Portal', `${feUrl()}/login`)}
+${btn('Login to HRMS', `${feUrl()}/login`)}
 <p style="font-size:12px;color:#9CA3AF;margin:12px 0 0;text-align:center">If you were not expecting this email, please contact your HR administrator.</p>`
   }),
   text: `Dear ${name}, your ${co(companyName)} account has been created.\nEmail: ${email}\nLogin: ${feUrl()}/login`
@@ -226,7 +226,7 @@ exports.loginAlert = ({ name, ip, device, time, companyName = '' }) => ({
     title: 'New Login Detected',
     body: `
 ${greeting(name)}
-${lead('A new login was detected on your HR Portal account. If this was you, no action is needed.')}
+${lead('A new login was detected on your HRMS account. If this was you, no action is needed.')}
 ${infoTable(`
   ${infoRow('Time', time || new Date().toLocaleString('en-IN'))}
   ${infoRow('IP Address', ip || 'Unknown')}
@@ -261,7 +261,7 @@ exports.passwordChanged = ({ name, companyName = '' }) => ({
     title: 'Password Changed',
     body: `
 ${greeting(name)}
-<p style="font-size:14px;color:#4B5563;margin:0 0 14px">Your HR Portal account password was successfully changed.</p>
+<p style="font-size:14px;color:#4B5563;margin:0 0 14px">Your HRMS account password was successfully changed.</p>
 <p style="font-size:13px;color:#B91C1C;margin:0">If you did not make this change, please <a href="${feUrl()}/forgot-password" style="color:${ORANGE}">reset your password</a> immediately and contact IT support.</p>`
   }),
   text: `Your ${co(companyName)} password was changed.`
@@ -273,7 +273,7 @@ exports.forgotPassword = ({ name, resetUrl, expiresIn, companyName = '' }) => ({
     title: 'Password Reset Request',
     body: `
 ${greeting(name)}
-${lead('We received a request to reset your HR Portal password. Click the button below to set a new password.')}
+${lead('We received a request to reset your HRMS password. Click the button below to set a new password.')}
 ${btn('Reset My Password', esc(resetUrl))}
 <p style="font-size:12px;color:#9CA3AF;text-align:center;margin:0">This link expires in <strong>${esc(expiresIn || '1 hour')}</strong>. If you did not request a reset, you can safely ignore this email.</p>`
   }),
@@ -297,7 +297,7 @@ ${infoTable(`
   ${department ? infoRow('Department', department) : ''}
   ${joiningDate ? infoRow('Date of Joining', fmtDate(joiningDate)) : ''}
 `)}
-${btn('Access HR Portal', `${feUrl()}/login`)}`
+${btn('Access HRMS', `${feUrl()}/login`)}`
   }),
   text: `Your ${co(companyName)} profile has been created. Emp Code: ${empCode}.`
 });
@@ -309,7 +309,7 @@ exports.employeeDeactivated = ({ name, reason, companyName = '' }) => ({
     accent: '#DC2626',
     body: `
 ${greeting(name)}
-<p style="font-size:14px;color:#4B5563;margin:0 0 16px">Your HR Portal account has been deactivated.</p>
+<p style="font-size:14px;color:#4B5563;margin:0 0 16px">Your HRMS account has been deactivated.</p>
 ${reason ? infoTable(infoRow('Reason', reason)) : ''}
 <p style="font-size:14px;color:#4B5563;margin:12px 0 0">For any queries, please contact your HR department.</p>`
   }),
@@ -452,10 +452,10 @@ exports.attendanceRegularizationRequest = ({ managerName, employeeName, empCode,
       subtitle: `From ${esc(employeeName)}${empCode ? ' [' + esc(empCode) + ']' : ''} · ${rows.length} date(s)`,
       body: `
 ${greeting(managerName)}
-${lead(`<strong>${esc(employeeName)}</strong>${empCode ? ` <span style="color:#9CA3AF">[${esc(empCode)}]</span>` : ''} has applied for attendance regularization for the following date(s). Please log in to the HR Portal to review and take action.`)}
+${lead(`<strong>${esc(employeeName)}</strong>${empCode ? ` <span style="color:#9CA3AF">[${esc(empCode)}]</span>` : ''} has applied for attendance regularization for the following date(s). Please log in to the HRMS to review and take action.`)}
 ${attTable(rows)}
 ${remarksBox('Employee Remarks', remarks || '')}
-${btn('Review in HR Portal', `${feUrl()}/manager/attendance`)}`
+${btn('Review in HRMS', `${feUrl()}/manager/attendance`)}`
     }),
     text: `${employeeName}${empCode ? ' [' + empCode + ']' : ''} has applied for attendance regularization for ${rows.length} date(s).`
   };

@@ -31,6 +31,13 @@ const monthly = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Monthly attendance fetched').send(res);
 });
 
+const swipes = asyncHandler(async (req, res) => {
+  const employeeId = req.params.employeeId || req.user.employeeId;
+  if (!req.query.date) throw new Error('Attendance date is required');
+  const rows = await attendanceService.swipes(employeeId, req.query.date);
+  new ApiResponse(200, rows, 'Daily swipes fetched').send(res);
+});
+
 const checkIn = asyncHandler(async (req, res) => {
   const employeeId = req.user.employeeId;
   const record = await attendanceService.checkIn(employeeId, req.body);
@@ -96,6 +103,7 @@ module.exports = {
   list,
   today,
   monthly,
+  swipes,
   breakStart,
   breakEnd,
   checkIn,

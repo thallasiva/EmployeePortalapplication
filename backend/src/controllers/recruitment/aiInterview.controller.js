@@ -2,21 +2,51 @@
 
 const asyncHandler   = require('express-async-handler');
 const aiSvc          = require('../../services/recruitment/aiInterview.service');
-const { callProcedure } = require('../../config/db');
+const { callProcedure, query } = require('../../config/db');
 const ApiResponse    = require('../../utils/ApiResponse');
-const nodemailer     = require('nodemailer');
-const { email: emailCfg } = require('../../config/env');
+const { sendMailNow } = require('../../services/email.service');
+
+async function getCandidateResumeText(candidateId) {
+  const dynamicRows = await query(
+    `SELECT field_value
+       FROM rec_candidate_dynamic_fields
+      WHERE candidate_id = ? AND field_name IN ('rawText', 'resume_text', 'summary')
+      ORDER BY created_date DESC, id DESC`,
+    [candidateId]
+  ).catch(() => []);
+
+  for (const row of dynamicRows) {
+    try {
+      const value = JSON.parse(row.field_value);
+      if (typeof value === 'string' && value.trim()) return value;
+      if (value && typeof value.rawText === 'string' && value.rawText.trim()) return value.rawText;
+    } catch {
+      if (String(row.field_value || '').trim()) return String(row.field_value);
+    }
+  }
+
+  const parserLogs = await query(
+    `SELECT full_json
+       FROM rec_parser_logs
+      WHERE candidate_id = ? AND parser_status = 'SUCCESS'
+      ORDER BY created_date DESC, log_id DESC
+      LIMIT 1`,
+    [candidateId]
+  ).catch(() => []);
+
+  try {
+    const parsed = JSON.parse(parserLogs[0]?.full_json || '{}');
+    return parsed.rawText || parsed.resume_text || parsed.summary || '';
+  } catch {
+    return '';
+  }
+}
 
 // ── send invite email ──────────────────────────────────────────────────────
 async function sendAIInterviewInvite({ candidateEmail, candidateName, jobTitle, token, expiresAt, recruiterName }) {
   const link = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/ai-interview/${token}`;
-  const transporter = nodemailer.createTransport({
-    host: emailCfg.host, port: emailCfg.port, secure: emailCfg.secure,
-    auth: { user: emailCfg.user, pass: emailCfg.pass },
-  });
   const expiryStr = new Date(expiresAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-  await transporter.sendMail({
-    from: emailCfg.from,
+  return sendMailNow({
     to: candidateEmail,
     subject: `AI Interview Invitation — ${jobTitle}`,
     html: `
@@ -64,7 +94,7 @@ const create = asyncHandler(async (req, res) => {
     preferredSkills: job.preferred_skills || '',
     totalExperience: candidate.total_experience || '',
     relevantExperience: candidate.relevant_experience || '',
-    resume: candidate.resume_text || candidate.resume_summary || candidate.skill_set || '',
+    resume: candidate.resume_text || candidate.resume_summary || await getCandidateResumeText(Number(candidateId)) || candidate.skill_set || '',
   };
   const { token, expiresAt } = await aiSvc.createAdaptiveSession({
     candidateId:    Number(candidateId),
@@ -78,9 +108,10 @@ const create = asyncHandler(async (req, res) => {
     expiresHours:   48,
   });
 
-  // Send email invite
+  // Send email invite without blocking session creation when SMTP is unavailable.
+  let inviteEmail = { sent: false, error: 'SMTP not configured' };
   try {
-    await sendAIInterviewInvite({
+    inviteEmail = await sendAIInterviewInvite({
       candidateEmail: candidate.email || candidate.candidate_email,
       candidateName:  candidate.name  || candidate.candidate_name,
       jobTitle:       job.title || job.job_title,
@@ -88,11 +119,18 @@ const create = asyncHandler(async (req, res) => {
       expiresAt,
       recruiterName:  req.user.name || 'Recruitment Team',
     });
+    if (!inviteEmail.sent) {
+      console.warn('[AIInterview] Invite not sent:', inviteEmail.error || 'SMTP unavailable');
+    }
   } catch (err) {
-    console.error('[AIInterview] Email send failed:', err.message);
+    console.error('[AIInterview] Email delivery skipped:', err.message);
   }
 
-  new ApiResponse(201, { token, expiresAt, durationMinutes: Number(durationMinutes) || 30 }, 'AI interview session created and invite sent').send(res);
+  new ApiResponse(
+    201,
+    { token, expiresAt, durationMinutes: Number(durationMinutes) || 30, inviteEmail },
+    inviteEmail.sent ? 'AI interview session created and invite sent' : 'AI interview session created; invite email was not sent'
+  ).send(res);
 });
 
 // ── GET /ai-interviews  — recruiter lists sessions ─────────────────────────
@@ -194,6 +232,19 @@ const start = asyncHandler(async (req, res) => {
   new ApiResponse(200, { question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: aiSvc.getRemainingSeconds(state), startedAt: state.startedAt, expiresAt: state.expiresAt }, 'Interview started').send(res);
 });
 
+const sendOtp = asyncHandler(async (req, res) => {
+  const result = await aiSvc.issueOtp(req.params.token);
+  if (!result) return res.status(404).json({ success: false, message: 'Interview not found or expired' });
+  if (!result.sent) return res.status(503).json({ success: false, message: result.error || 'Verification email could not be sent' });
+  new ApiResponse(200, { sent: true }, 'Verification code sent').send(res);
+});
+
+const verifyOtp = asyncHandler(async (req, res) => {
+  const result = await aiSvc.verifyOtp(req.params.token, req.body.code);
+  if (!result.valid) return res.status(400).json({ success: false, message: result.error });
+  new ApiResponse(200, { verified: true }, 'Verification successful').send(res);
+});
+
 // PUBLIC: POST /public/ai-interview/:token/answer
 const answer = asyncHandler(async (req, res) => {
   if (!String(req.body.answer || '').trim()) return res.status(400).json({ success: false, message: 'An answer is required' });
@@ -239,4 +290,4 @@ const saveDraft = asyncHandler(async (req, res) => {
   new ApiResponse(200, {}, 'Draft saved').send(res);
 });
 
-module.exports = { create, list, getReport, getSession, start, answer, submit, logProctoring, saveDraft };
+module.exports = { create, list, getReport, getSession, start, sendOtp, verifyOtp, answer, submit, logProctoring, saveDraft };

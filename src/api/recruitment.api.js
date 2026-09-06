@@ -133,9 +133,10 @@ export const parseResume = (file) => {
   }).then(unwrap);
 };
 
-export const uploadResumeMatch = (jobReqId, file) => {
+export const uploadResumeMatch = (jobReqId, file, candidateId) => {
   const form = new FormData();
   form.append("jobReqId", String(jobReqId));
+  if (candidateId) form.append("candidateId", String(candidateId));
   form.append("resume", file);
   return apiClient.post("/recruitment/resume-match/upload", form, {
     headers: { "Content-Type": "multipart/form-data" }
@@ -168,11 +169,17 @@ export const getAIInterviewReport = (sessionId) =>
 export const getAIInterviewSession = (token) =>
   apiClient.get(`/recruitment/public/ai-interview/${token}`).then(unwrap);
 
+export const sendAIInterviewOtp = (token) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/otp`).then(unwrap);
+
+export const verifyAIInterviewOtp = (token, code) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/verify-otp`, { code }).then(unwrap);
+
 export const startAIInterview = (token) =>
   apiClient.post(`/recruitment/public/ai-interview/${token}/start`).then(unwrap);
 
-export const answerAIInterview = (token, answer) =>
-  apiClient.post(`/recruitment/public/ai-interview/${token}/answer`, { answer }).then(unwrap);
+export const answerAIInterview = (token, answer, questionId) =>
+  apiClient.post(`/recruitment/public/ai-interview/${token}/answer`, { answer, questionId }).then(unwrap);
 
 export const completeAIInterview = (token) =>
   apiClient.post(`/recruitment/public/ai-interview/${token}/complete`).then(unwrap);

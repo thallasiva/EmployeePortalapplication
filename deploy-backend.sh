@@ -88,6 +88,7 @@ cat > /home/ubuntu/app/backend/.env << 'ENV'
 NODE_ENV=production
 PORT=5000
 CLIENT_ORIGIN=https://hrms.natsoft.io
+FRONTEND_URL=https://hrms.natsoft.io
 
 DB_HOST=localhost
 DB_PORT=3306
@@ -110,8 +111,8 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=thallasiva786@gmail.com
-SMTP_PASS=woqv pobs nonz smjk
-MAIL_FROM=thallasiva786@gmail.com
+SMTP_PASS=woqvpobsnonzsmjk
+SMTP_FROM=HRMS\ <thallasiva786@gmail.com>
 ENV
 echo ".env written ✅"
 REMOTE

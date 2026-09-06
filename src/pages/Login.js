@@ -7,7 +7,6 @@ import { login as loginApi, verifyMfa } from "../api/auth.api";
 import { getErrorMessage } from "../api/client";
 import { apiErrorToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
-import logo from "../assets/logo.png";
 
 const inputClassName =
   "w-full rounded-[10px] border-[1.5px] border-slate-200 bg-slate-50 px-3.5 py-[11px] text-[0.9rem] text-slate-800 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10";
@@ -23,17 +22,17 @@ function BrandPanel() {
 
       <div className="relative z-10 flex h-[140px] w-[140px] items-center justify-center rounded-[20px] bg-white px-6 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)]">
         <span aria-hidden="true" className="absolute bottom-0 left-1/5 right-1/5 h-[3px] rounded bg-orange-500" />
-        <img src={logo} alt="NAT IT Services" className="max-h-full max-w-full object-contain" />
+        <span className="text-4xl font-black tracking-tight text-slate-900">HRMS</span>
       </div>
 
       <div className="relative z-10 mt-7 text-center">
-        <h1 className="m-0 text-[1.75rem] font-bold tracking-[-0.01em] text-white">NAT IT Services</h1>
+        <h1 className="m-0 text-[1.75rem] font-bold tracking-[-0.01em] text-white">HRMS</h1>
         <div className="mx-auto my-3 h-[3px] w-10 rounded bg-gradient-to-r from-orange-500 to-orange-700" />
         <p className="m-0 text-[0.85rem] font-medium uppercase tracking-[0.05em] text-white/65">Human Resources Portal</p>
       </div>
 
       <p className="absolute bottom-6 left-0 right-0 z-10 m-0 text-center text-[0.72rem] text-white/35">
-        © {new Date().getFullYear()} NAT IT Services Pvt Ltd
+        © {new Date().getFullYear()} HRMS
       </p>
     </section>
   );
@@ -153,7 +152,7 @@ const Login = () => {
     <AuthShell>
       <div className="mb-8">
         <h2 className="mb-1.5 text-[1.6rem] font-extrabold tracking-[-0.02em] text-slate-900">Welcome back</h2>
-        <p className="text-[0.88rem] text-slate-500">Sign in to your HR portal account</p>
+        <p className="text-[0.88rem] text-slate-500">Sign in to your HRMS account</p>
       </div>
       {idleSignOut && <div className="mb-5 flex items-center gap-2 rounded-[10px] border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[0.82rem] text-amber-900"><span>⏱</span>You were signed out due to inactivity. Please sign in again.</div>}
       <form onSubmit={loginForm.handleSubmit} noValidate>

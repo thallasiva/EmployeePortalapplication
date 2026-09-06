@@ -16,7 +16,7 @@ const fs = require('fs');
 const { email: emailCfg } = require('../config/env');
 
 
-const NATIT_LOGO = path.join(__dirname, '../../public/logo_full.jpeg');
+const BRAND_LOGO = path.join(__dirname, '../../public/logo_full.jpeg');
 const SIGNATURE = path.join(__dirname, '../../public/logo.png');
 
 
@@ -45,11 +45,11 @@ function fmtDateSlash(d) {
 
 function co() {
   return {
-    name: emailCfg.companyName || 'NAT IT Services Pvt Ltd',
+    name: emailCfg.companyName || 'HRMS',
     address: emailCfg.companyAddress || 'Gachibowli, Hyderabad - 500032',
     phone: emailCfg.companyPhone || '',
     cin: emailCfg.companyCIN || '',
-    email: emailCfg.companyEmail || 'hr@natit.in',
+    email: emailCfg.companyEmail || 'hr@hrms.local',
     reportTo: emailCfg.companyReportTo || '',
     hrManagerName: emailCfg.hrManagerName || '',
     logoPath: emailCfg.logoPath || ''
@@ -155,7 +155,7 @@ function generateOfferLetterPdf(opts) {
       }
     } catch (e) {}
 
-    const FTR_LINE1 = 'NAT IT Services Pvt Ltd';
+    const FTR_LINE1 = 'HRMS';
     const FTR_LINE2 = 'SY.#90/1,  Plot No.21, Sruthi Sadan ,2nd Floor,  Gachibowli, Hyderabad, RR District  PIN: 500032  PH:040-23006287 / 90108 77718  CIN: U72900TG2010PTC066694';
 
 
@@ -172,8 +172,8 @@ function generateOfferLetterPdf(opts) {
       const lx = MARGIN + BW - logoW;
       const ly = MARGIN;
       try {
-        if (fs.existsSync(NATIT_LOGO)) {
-          doc.image(NATIT_LOGO, lx, ly, { width: logoW, height: logoH, fit: [logoW, logoH] });
+        if (fs.existsSync(BRAND_LOGO)) {
+          doc.image(BRAND_LOGO, lx, ly, { width: logoW, height: logoH, fit: [logoW, logoH] });
         } else {
           doc.font('Helvetica-Bold').fontSize(12).fillColor(COL_NAVY).
           text(C.name, lx, ly + 10, { width: logoW, align: 'right' });

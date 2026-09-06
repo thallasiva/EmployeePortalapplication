@@ -208,7 +208,7 @@ class PayslipService extends BaseService {
         uan_number: row.uan_number || '-'
       },
       company: {
-        company_name: row.company_name || 'NAT IT Services',
+        company_name: row.company_name || 'HRMS',
         address: row.company_address || ''
       },
       earnings,

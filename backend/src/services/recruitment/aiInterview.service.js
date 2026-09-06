@@ -7,6 +7,7 @@
 const crypto = require('crypto');
 const OpenAI = require('openai');
 const { query } = require('../../config/db');
+const { sendMailNow } = require('../email.service');
 
 let _openai = null;
 function getOpenAI() {
@@ -175,6 +176,37 @@ async function getSession(token) {
   return rows[0] || null;
 }
 
+async function issueOtp(token) {
+  const session = await getSession(token);
+  if (!session || session.status !== 'pending') return null;
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const state = parseState(session.questions_json);
+  state.otpHash = crypto.createHash('sha256').update(code).digest('hex');
+  state.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  state.otpAttempts = 0;
+  await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
+  const result = await sendMailNow({
+    to: session.candidate_email,
+    subject: 'Your AI interview verification code',
+    text: `Your verification code is ${code}. It expires in 10 minutes.`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px"><h2>AI Interview Verification</h2><p>Your verification code is:</p><p style="font-size:32px;font-weight:800;letter-spacing:8px">${code}</p><p>This code expires in 10 minutes.</p></div>`,
+  });
+  return { sent: Boolean(result.sent), error: result.error || null };
+}
+
+async function verifyOtp(token, code) {
+  const session = await getSession(token);
+  if (!session || session.status !== 'pending') return { valid: false, error: 'Interview unavailable' };
+  const state = parseState(session.questions_json);
+  if (Number(state.otpAttempts || 0) >= 5) return { valid: false, error: 'Too many attempts. Request a new code.' };
+  if (!state.otpExpiresAt || new Date(state.otpExpiresAt) < new Date()) return { valid: false, error: 'Code expired. Request a new code.' };
+  state.otpAttempts = Number(state.otpAttempts || 0) + 1;
+  const valid = crypto.createHash('sha256').update(String(code || '')).digest('hex') === state.otpHash;
+  if (valid) state.otpVerifiedAt = new Date().toISOString();
+  await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
+  return valid ? { valid: true } : { valid: false, error: 'Invalid verification code.' };
+}
+
 async function submitSession({ token, answers, evaluation }) {
   const aJson = JSON.stringify(answers);
   const eJson = JSON.stringify(evaluation);
@@ -221,6 +253,14 @@ function parseState(raw) {
 function getRemainingSeconds(state, now = Date.now()) {
   if (!state?.expiresAt) return Math.max(0, Number(state?.durationSeconds) || 0);
   return Math.max(0, Math.ceil((new Date(state.expiresAt).getTime() - now) / 1000));
+}
+
+function questionTimeLimit(question) {
+  const type = String(question?.type || '').toUpperCase();
+  if (type === 'CODING' || type === 'CODE') return question?.timeLimit || (question?.problemSize === 'large' ? 1200 : 600);
+  if (type === 'SCENARIO' || question?.stage === 'scenario') return question?.timeLimit || 300;
+  if (type === 'SYSTEM_DESIGN' || question?.stage === 'system_design') return question?.timeLimit || 900;
+  return question?.timeLimit || 120;
 }
 
 function fallbackNextQuestion({ profile, transcript }) {
@@ -345,6 +385,8 @@ Return ONLY valid JSON — no markdown, no explanation:
   "id": ${qNum},
   "stage": "introduction|resume_validation|technical|scenario|domain",
   "type": "experience|resume_probe|technical|practical|scenario|system_design|clarification",
+  "problemSize": "small|large|null",
+  "timeLimit": "120 for normal, 300 for scenario, 600 for normal coding, 1200 for large coding, 900 for system design",
   "skill": "<primary skill being assessed>",
   "difficulty": "basic|intermediate|advanced|expert",
   "rationale": "<1 sentence: why this question now, based on adaptive logic>",
@@ -462,8 +504,8 @@ Return ONLY valid JSON with this exact structure (no markdown):
   return normFallback;
 }
 
-async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 30, expiresHours = 48 }) {
-  const durationSeconds = Math.min(Math.max(Number(durationMinutes) || 30, 15), 60) * 60;
+async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 20, expiresHours = 48 }) {
+  const durationSeconds = Math.min(Math.max(Number(durationMinutes) || 20, 10), 60) * 60;
   return createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions: { profile, transcript: [], durationSeconds, skillsAssessed: [], status: 'PENDING' }, expiresHours });
 }
 
@@ -471,6 +513,7 @@ async function startAdaptiveSession(token) {
   const session = await getSession(token);
   if (!session) return null;
   const state = parseState(session.questions_json);
+  if (!state.otpVerifiedAt) return null;
   if (!state.startedAt) {
     state.startedAt = new Date().toISOString();
     state.expiresAt = new Date(Date.now() + (Number(state.durationSeconds) || 1800) * 1000).toISOString();
@@ -479,6 +522,7 @@ async function startAdaptiveSession(token) {
   if (getRemainingSeconds(state) <= 0) return null;
   if (!state.currentQuestion) {
     state.currentQuestion = await generateNextQuestion(state);
+    state.currentQuestionStartedAt = new Date().toISOString();
     await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
   }
   return { session, state };
@@ -490,11 +534,15 @@ async function answerAdaptiveSession({ token, answer }) {
   const state = parseState(session.questions_json);
   if (!state.currentQuestion) throw new Error('Interview has not been started.');
   if (getRemainingSeconds(state) <= 0) return completeAdaptiveSession(token, 'time_expired');
-  const answerQuality = _scoreLastAnswer([...state.transcript, { answer: String(answer || '').trim() }]);
-  const evaluation = await evaluateAnswer({ profile: state.profile || {}, question: state.currentQuestion, answer, transcript: state.transcript });
-  state.transcript.push({ question: state.currentQuestion, answer: String(answer || '').trim(), answeredAt: new Date().toISOString(), answerQuality, evaluation });
+  const questionExpired = state.currentQuestionStartedAt &&
+    Date.now() - new Date(state.currentQuestionStartedAt).getTime() >= questionTimeLimit(state.currentQuestion) * 1000;
+  const effectiveAnswer = questionExpired ? '(skipped — question time expired)' : String(answer || '').trim();
+  const answerQuality = _scoreLastAnswer([...state.transcript, { answer: effectiveAnswer }]);
+  const evaluation = await evaluateAnswer({ profile: state.profile || {}, question: state.currentQuestion, answer: effectiveAnswer, transcript: state.transcript });
+  state.transcript.push({ question: state.currentQuestion, answer: effectiveAnswer, answeredAt: new Date().toISOString(), answerQuality, evaluation, timedOut: questionExpired });
   if (state.currentQuestion.skill && !state.skillsAssessed.includes(state.currentQuestion.skill)) state.skillsAssessed.push(state.currentQuestion.skill);
   state.currentQuestion = await generateNextQuestion(state);
+  state.currentQuestionStartedAt = new Date().toISOString();
   if (getRemainingSeconds(state) <= 0 || state.currentQuestion?.nextAction === 'END_INTERVIEW') return completeAdaptiveSession(token, state.currentQuestion?.reason || 'sufficient_evidence', state);
   await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
   return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt };
@@ -557,6 +605,8 @@ module.exports = {
   evaluateAnswers,
   createSession,
   getSession,
+  issueOtp,
+  verifyOtp,
   submitSession,
   listByRecruiter,
   getReport,

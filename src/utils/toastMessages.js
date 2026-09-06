@@ -72,11 +72,29 @@ export function getApiError(e, context = "complete this action") {
   if (raw.includes("network") || raw.includes("econnrefused") || raw.includes("timeout") || raw.includes("etimedout"))
                                               return "Network error — check your connection and try again.";
 
-  // Fallback with context
-  const msg = e?.response?.data?.message || e?.message || "";
-  if (msg.length > 5 && msg.length < 200) {
-    return msg.charAt(0).toUpperCase() + msg.slice(1).replace(/\.$/, "") + ".";
+  // ─── Hardened fallback: never surface raw technical / DB / stack text ─────
+  const status = e?.response?.status;
+  const rawMsg = (e?.response?.data?.message || e?.message || "").trim();
+
+  // Programming / DB / server errors → generic, never leaked to the user
+  const technical = /(sql|collation|deadlock|syntax error|prototype|is not a function|cannot read|referenceerror|typeerror|\bstack\b|at object|econn|etimed|err_|xhr|status code|unexpected token|\bnull\b|\bundefined\b)/i;
+  if ((status && status >= 500) || technical.test(rawMsg)) {
+    return "Something went wrong on our side. Please try again in a moment.";
   }
+
+  // Known HTTP statuses that arrived without a specific business message
+  if (status === 401) return "Your session has expired. Please log in again.";
+  if (status === 403) return "You don't have permission to do that.";
+  if (status === 404) return "The requested record was not found.";
+  if (status === 409) return "A conflict occurred — this record may already exist.";
+  if (status === 422) return "Some fields have invalid values. Please review and try again.";
+  if (status === 429) return "Too many requests. Please wait a moment and try again.";
+
+  // A clean, human backend message → show it as-is
+  if (rawMsg.length > 5 && rawMsg.length < 160) {
+    return rawMsg.charAt(0).toUpperCase() + rawMsg.slice(1).replace(/\.$/, "") + ".";
+  }
+
   return `Unable to ${context}. Please try again.`;
 }
 

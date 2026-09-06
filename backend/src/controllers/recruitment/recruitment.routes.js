@@ -21,6 +21,8 @@ const { callProcedure } = require("../../config/db");
 
 // ── PUBLIC routes (no auth required) ─────────────────────────────────────────
 router.get("/public/ai-interview/:token",         aiInterviewCtrl.getSession);
+router.post("/public/ai-interview/:token/otp",    aiInterviewCtrl.sendOtp);
+router.post("/public/ai-interview/:token/verify-otp", aiInterviewCtrl.verifyOtp);
 router.post("/public/ai-interview/:token/start",   aiInterviewCtrl.start);
 router.post("/public/ai-interview/:token/answer",  aiInterviewCtrl.answer);
 router.post("/public/ai-interview/:token/submit",  aiInterviewCtrl.submit);

@@ -12,8 +12,8 @@ const CreateCompany = ({ createModal, setCreateModal }) =>
 
     const handleSave = () => {
         const payload = {
-            company_name: "NAT IT Solutions Pvt Ltd",
-            email: "solutions@natit.com",
+            company_name: "HRMS",
+            email: "hr@hrms.local",
             phone: "9876543210",
             perment_address: "123 Main Street, Hyderabad",
             secondary_address: "456 Branch Office, Bangalore",

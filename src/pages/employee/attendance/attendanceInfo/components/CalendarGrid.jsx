@@ -8,7 +8,7 @@ const STATUS_CFG = {
   P:    { cellBg: "#f0fdf4", pillBg: "#16a34a", pillColor: "#fff", label: "Present",  pill: "PRESENT"  },
   L:    { cellBg: "#fff7ed", pillBg: "#ea580c", pillColor: "#fff", label: "Late",     pill: "LATE"     },
   "P:A":{ cellBg: "#f0f9ff", pillBg: "#0284c7", pillColor: "#fff", label: "Half Day", pill: "HALF DAY" },
-  A:    { cellBg: "#fef2f2", pillBg: "#dc2626", pillColor: "#fff", label: "Absent",   pill: "ABSENT"   },
+  A:    { cellBg: "#fff8f8", pillBg: "#e11d48", pillColor: "#fff", label: "Absent",   pill: "ABSENT"   },
   H:    { cellBg: "#eff6ff", pillBg: "#3b82f6", pillColor: "#fff", label: "Holiday",  pill: "HOLIDAY"  },
   LV:   { cellBg: "#faf5ff", pillBg: "#9333ea", pillColor: "#fff", label: "Leave",    pill: "LEAVE"    },
   WO:   { cellBg: "#f8fafc", pillBg: null,       pillColor: null,   label: "Weekend",  pill: null       },
@@ -84,8 +84,8 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
           const canReg     = rec?.canRegularize;
 
           const cellStyle = {
-            minHeight: 80,
-            padding: "8px 8px 6px",
+            minHeight: 88,
+            padding: "9px 9px 8px",
             display: "flex",
             flexDirection: "column",
             gap: 4,
@@ -94,22 +94,22 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
             borderBottom: CELL_BORDER,
             borderRight: CELL_BORDER,
             cursor: isFuture ? "default" : "pointer",
-            transition: "filter .15s",
-            background: isSelected
-              ? "linear-gradient(135deg,#f18200,#d97000)"
-              : isToday
+            transition: "background .15s, box-shadow .15s, transform .15s",
+            background: isToday
               ? "#fff7ed"
               : cfg.cellBg || "#fff",
+            boxShadow: isSelected ? "inset 0 0 0 2px #f18200" : "none",
           };
 
           return (
             <button
               key={dateStr}
+              aria-label={`${dateStr}: ${cfg.label || "No attendance record"}`}
               onClick={() => !isFuture && onSelect(dateStr)}
               disabled={loading || isFuture}
               style={cellStyle}
-              onMouseEnter={e => { if (!isFuture && !isSelected) e.currentTarget.style.filter = "brightness(.96)"; }}
-              onMouseLeave={e => { e.currentTarget.style.filter = ""; }}
+              onMouseEnter={e => { if (!isFuture && !isSelected) { e.currentTarget.style.filter = "brightness(.97)"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
+              onMouseLeave={e => { e.currentTarget.style.filter = ""; e.currentTarget.style.transform = ""; }}
             >
               {/* Day number */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -117,8 +117,8 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
                   width: 24, height: 24, borderRadius: "50%",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 12, fontWeight: 700,
-                  background: isSelected ? "#fff" : isToday ? "#fff7ed" : "transparent",
-                  color: isSelected ? "#f18200" : isToday ? "#f18200" : isFuture ? "#cbd5e1" : code === "WO" ? "#cbd5e1" : "#374151",
+                  background: isSelected ? "#f18200" : isToday ? "#fff7ed" : "transparent",
+                  color: isSelected ? "#fff" : isToday ? "#f18200" : isFuture ? "#cbd5e1" : code === "WO" ? "#cbd5e1" : "#374151",
                   outline: isToday && !isSelected ? "2px solid #f18200" : "none",
                 }}>
                   {dayNum}
@@ -129,12 +129,12 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
               </div>
 
               {/* Status pill */}
-              {cfg.pill && cfg.pillBg && (
+              {cfg.pill && (
                 <span style={{
-                  fontSize: 9, fontWeight: 700, letterSpacing: "0.04em",
-                  padding: "2px 5px", borderRadius: 5, display: "inline-block", lineHeight: 1.4,
-                  background: isSelected ? "rgba(255,255,255,.25)" : cfg.pillBg,
-                  color: isSelected ? "#fff" : cfg.pillColor,
+                  fontSize: 9, fontWeight: 800, letterSpacing: "0.05em",
+                  padding: "3px 6px", borderRadius: 5, display: "inline-block", lineHeight: 1.25,
+                  background: cfg.pillBg ? (isSelected ? "#f18200" : cfg.pillBg + "18") : "#eef2f7",
+                  color: cfg.pillBg ? (isSelected ? "#fff" : cfg.pillBg) : "#94a3b8",
                 }}>
                   {cfg.pill}
                 </span>
@@ -142,7 +142,7 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
 
               {/* Check-in time */}
               {hasCheckIn && (
-                <span style={{ fontSize: 9, fontWeight: 600, color: isSelected ? "rgba(255,255,255,.85)" : cfg.pillBg || "#94a3b8", lineHeight: 1 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: isSelected ? "#c2410c" : cfg.pillBg || "#94a3b8", lineHeight: 1 }}>
                   {checkIn}
                 </span>
               )}
