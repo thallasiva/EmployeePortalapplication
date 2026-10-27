@@ -2,6 +2,8 @@ const ts = require('../services/timesheet.service');
 const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
+const { query } = require('../config/db');
+const { assertManagesEmployee } = require('../middleware/rbac');
 
 
 
@@ -77,6 +79,9 @@ const managerTimesheets = asyncHandler(async (req, res) => {
 });
 
 const reviewTimesheet = asyncHandler(async (req, res) => {
+  const timesheet = await ts.getTimesheetById(req.params.timesheetId);
+  if (!timesheet) throw ApiError.notFound('Timesheet not found');
+  await assertManagesEmployee(req.user, timesheet.employee_id);
   const result = await ts.reviewTimesheet(req.params.timesheetId, {
     decision: req.body.decision,
     reviewed_by: req.user.employeeId,
@@ -91,6 +96,9 @@ const managerExtraWork = asyncHandler(async (req, res) => {
 });
 
 const reviewExtraWork = asyncHandler(async (req, res) => {
+  const [request] = await query('SELECT employee_id FROM extra_work_requests WHERE extra_work_id = ?', [req.params.extraWorkId]);
+  if (!request) throw ApiError.notFound('Extra work request not found');
+  await assertManagesEmployee(req.user, request.employee_id);
   const result = await ts.reviewExtraWork(req.params.extraWorkId, {
     decision: req.body.decision,
     reviewed_by: req.user.employeeId,
@@ -111,6 +119,11 @@ const managerFullDashboard = asyncHandler(async (req, res) => {
 
 
 
+const adminTasks = asyncHandler(async (req, res) => {
+  const rows = await ts.listAllTasks({ limit: req.query.limit });
+  new ApiResponse(200, rows, 'All tasks fetched').send(res);
+});
+
 const adminTimesheets = asyncHandler(async (req, res) => {
   const rows = await ts.listAllTimesheets(req.query);
   new ApiResponse(200, rows, 'All timesheets fetched').send(res);
@@ -127,5 +140,5 @@ module.exports = {
   createExtraWork, myExtraWork,
   managerTimesheets, reviewTimesheet, managerExtraWork, reviewExtraWork,
   managerDashboardCounts, managerFullDashboard,
-  adminTimesheets, adminDashboardCounts
+  adminTimesheets, adminDashboardCounts, adminTasks
 };

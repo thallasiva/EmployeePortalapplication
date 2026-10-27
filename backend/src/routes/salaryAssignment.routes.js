@@ -9,6 +9,7 @@ router.use(authenticate);
 const VIEW = requirePermission('salary_components', 'view');
 const EDIT = requirePermission('salary_components', 'edit');
 
+router.get ('/me/history',                          ctrl.myHistory);   // own history; before /:employeeId
 router.get ('/',                                    VIEW, ctrl.listAll);
 router.get ('/:employeeId',                         VIEW, ctrl.getAssignment);
 router.post('/:employeeId',                         EDIT, ctrl.assign);

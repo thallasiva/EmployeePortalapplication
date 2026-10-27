@@ -16,7 +16,7 @@ const verifySchema = Joi.object({
 
 
 router.get('/status', authenticate, controller.status);
-router.get('/setup', authenticate, controller.setup);
+router.post('/setup', authenticate, controller.setup);
 router.post('/enable', authenticate, validate(codeSchema), controller.enable);
 router.post('/disable', authenticate, validate(codeSchema), controller.disable);
 

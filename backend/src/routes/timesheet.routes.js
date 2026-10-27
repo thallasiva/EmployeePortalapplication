@@ -39,5 +39,6 @@ router.get('/:timesheetId', authorizeRoles(...TEAM_OVERVIEW_ROLES), c.getTimeshe
 
 router.get('/admin/all', authorizeRoles('Admin'), c.adminTimesheets);
 router.get('/admin/dashboard-counts', authorizeRoles('Admin'), c.adminDashboardCounts);
+router.get('/admin/tasks', authorizeRoles('Admin'), c.adminTasks);
 
 module.exports = router;

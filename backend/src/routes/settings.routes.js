@@ -1,6 +1,28 @@
 'use strict';
 const router = require('express').Router();
 const c = require('../controllers/settings.controller');
+const { authenticate, authorizeRoles } = require('../middleware/auth');
+
+// Every settings endpoint requires sign-in. Most are admin configuration; a few reads are
+// needed by all users (sidebar menu permissions, their own notifications, preferences).
+const OPEN_TO_ALL_USERS = [
+  ['GET', /^\/menu-permissions$/],
+  ['GET', /^\/notifications$/],
+  ['PATCH', /^\/notifications\/(read-all|\d+\/read)$/],
+  ['GET', /^\/notification-preferences$/],
+];
+const adminOnly = authorizeRoles('Admin');
+
+router.use(authenticate);
+router.use((req, res, next) => {
+  const open = OPEN_TO_ALL_USERS.some(([method, path]) => method === req.method && path.test(req.path));
+  if (!open) return adminOnly(req, res, next);
+  // Non-admins only ever see and update their own notifications.
+  if (req.path.startsWith('/notifications') && req.user.roleName !== 'Admin') {
+    req.query.employee_id = req.user.employeeId;
+  }
+  next();
+});
 
 /* SMTP */
 router.get('/smtp',          c.getSmtp);

@@ -56,6 +56,9 @@ async function saveMyDeclaration(employeeId, { items, submit }) {
   const cycle = await getLatestCycle();
   if (!cycle) throw ApiError.notFound('No IT declaration cycle found');
   if (cycle.status !== 'active') throw ApiError.badRequest('IT Declaration cycle is not active');
+  if ((items || []).some((it) => Number(it?.declared_amount) > 0 && !it.section_key)) {
+    throw ApiError.badRequest('Each declared item needs a section_key');
+  }
 
   const decl = await getOrCreateDeclaration(employeeId, cycle.cycle_id);
   if (decl.status === 'submitted' || decl.status === 'approved') {

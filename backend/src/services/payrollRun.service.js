@@ -1,6 +1,6 @@
 'use strict';
 const BaseService = require('./base.service');
-const { callProcedure, readOuts, query } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 // IFSC format: 4 uppercase letters, then '0', then 6 alphanumeric chars
@@ -28,9 +28,8 @@ class PayrollRunService extends BaseService {
   }
 
   async run({ month, year, processed_by }) {
-    await callProcedure('sp_run_payroll(?, ?, ?, @payroll_run_id)', [month, year, processed_by || null]);
-    const out = await readOuts('payroll_run_id');
-    const payrollRunId = out[0].payroll_run_id;
+    const { outs: out } = await callProcedureWithOuts('sp_run_payroll(?, ?, ?, @payroll_run_id)', [month, year, processed_by || null]);
+    const payrollRunId = out.payroll_run_id;
     return this.getDetails(payrollRunId);
   }
 

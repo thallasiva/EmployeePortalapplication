@@ -35,7 +35,9 @@ function splitStatements(sql) {
     if (trimmed.endsWith(delimiter)) {
 
       const stmt = buf.slice(0, buf.lastIndexOf(delimiter)).trim();
-      if (stmt && !stmt.startsWith('--') && !stmt.startsWith('/*')) {
+      // Drop leading comment lines, not the statement they sit above.
+      const withoutLeadingComments = stmt.replace(/^(\s*--[^\n]*\n)+/, '').trim();
+      if (withoutLeadingComments && !withoutLeadingComments.startsWith('--') && !withoutLeadingComments.startsWith('/*')) {
         statements.push(stmt);
       }
       buf = '';

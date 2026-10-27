@@ -3,6 +3,7 @@ const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPagination, buildMeta } = require('../utils/pagination');
+const { assertManagesEmployee } = require('../middleware/rbac');
 
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
@@ -39,6 +40,7 @@ const myRequests = asyncHandler(async (req, res) => {
 const getOne = asyncHandler(async (req, res) => {
   const record = await leaveRequestService.getDetails(req.params.id);
   if (!record) throw ApiError.notFound('Leave request not found');
+  await assertManagesEmployee(req.user, record.employee_id);
   new ApiResponse(200, record, 'Leave request fetched').send(res);
 });
 
@@ -48,6 +50,9 @@ const apply = asyncHandler(async (req, res) => {
 });
 
 const review = asyncHandler(async (req, res) => {
+  const leave = await leaveRequestService.getDetails(req.params.id);
+  if (!leave) throw ApiError.notFound('Leave request not found');
+  await assertManagesEmployee(req.user, leave.employee_id);
   const record = await leaveRequestService.review(req.params.id, {
     decision: req.body.decision,
     reviewed_by: req.user.employeeId,
@@ -63,6 +68,7 @@ const cancel = asyncHandler(async (req, res) => {
 
 const balances = asyncHandler(async (req, res) => {
   const employeeId = req.params.employeeId || req.user.employeeId;
+  if (req.params.employeeId) await assertManagesEmployee(req.user, employeeId);
   const rows = await leaveRequestService.balances(employeeId, req.query.year);
   new ApiResponse(200, rows, 'Leave balances fetched').send(res);
 });

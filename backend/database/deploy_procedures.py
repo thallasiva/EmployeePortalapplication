@@ -12,6 +12,7 @@ HOW TO RUN (from Windows Command Prompt or PowerShell):
        python deploy_procedures.py
 """
 
+import os
 import re
 import sys
 
@@ -19,7 +20,9 @@ import sys
 HOST     = "hrms.c02gczm2cgx8.us-east-1.rds.amazonaws.com"
 PORT     = 4306
 USER     = "HRMSadmin"
-PASSWORD = "HwULGJ6gbxQIhzwNeZ9L"
+PASSWORD = os.environ.get('PROD_DB_PASSWORD')
+if not PASSWORD:
+    sys.exit('Set PROD_DB_PASSWORD (the production DB password is no longer stored in this file).')
 DATABASE = "hrms_db"
 SQL_FILE = "all_procedures.sql"
 # ──────────────────────────────────────────────────────────────────────────────

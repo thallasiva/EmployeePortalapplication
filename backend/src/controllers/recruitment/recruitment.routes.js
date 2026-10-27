@@ -29,6 +29,13 @@ router.post("/public/ai-interview/:token/submit",  aiInterviewCtrl.submit);
 router.post("/public/ai-interview/:token/complete",    aiInterviewCtrl.submit);
 router.post("/public/ai-interview/:token/proctoring", aiInterviewCtrl.logProctoring);
 router.post("/public/ai-interview/:token/draft",      aiInterviewCtrl.saveDraft);
+// Spoken-answer audio for server-side transcription (kept in memory, never stored).
+const answerAudio = require("multer")({
+  storage: require("multer").memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => cb(null, /^audio\//.test(file.mimetype) || file.mimetype === "video/webm"),
+});
+router.post("/public/ai-interview/:token/transcribe", answerAudio.single("audio"), aiInterviewCtrl.transcribe);
 
 router.use(authenticate);
 
@@ -161,5 +168,17 @@ router.get("/resume-match/job/:jobReqId", ALL_REC, resumeMatchCtrl.listByJob);
 router.post("/ai-interviews",             REC_TEAM, aiInterviewCtrl.create);
 router.get("/ai-interviews",              ALL_REC,  aiInterviewCtrl.list);
 router.get("/ai-interviews/report/:id",   ALL_REC,  aiInterviewCtrl.getReport);
+router.post("/ai-interviews/:id/decision", ALL_REC, aiInterviewCtrl.decide);
+
+// HR-approved interview plans: recruiters draft and edit; Admin / HR / team lead approve.
+const planCtrl = require("./interviewPlan.controller");
+router.get("/interview-plans/jobs",                    ALL_REC,  planCtrl.jobStatuses);
+router.get("/interview-plans/job/:jobReqId",           ALL_REC,  planCtrl.listForJob);
+router.post("/interview-plans/job/:jobReqId/generate", ALL_REC,  planCtrl.generate);
+router.post("/interview-plans/job/:jobReqId/revise",   ALL_REC,  planCtrl.revise);
+router.get("/interview-plans/:planId",                 ALL_REC,  planCtrl.getPlan);
+router.put("/interview-plans/:planId",                 ALL_REC,  planCtrl.save);
+router.post("/interview-plans/:planId/approve",        ADMIN_TL, planCtrl.approve);
+router.delete("/interview-plans/:planId",              ALL_REC,  planCtrl.discard);
 
 module.exports = router;

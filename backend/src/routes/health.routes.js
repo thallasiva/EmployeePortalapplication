@@ -18,7 +18,7 @@ router.get('/', (req, res) => res.json({ status: 'ok', ts: new Date().toISOStrin
 // Detailed health (admin/hr only)
 router.get('/detail',
   authenticate,
-  authorizeRoles('admin', 'hr'),
+  authorizeRoles('Admin', 'HR Manager'),
   asyncHandler(async (req, res) => {
     const checks = await runHealthChecks();
     const overall = checks.every(c => c.status === 'ok') ? 'ok' : 'degraded';

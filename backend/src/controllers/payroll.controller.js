@@ -4,6 +4,7 @@ const salaryStructureService = require('../services/salaryStructure.service');
 const salaryComponentService = require('../services/salaryComponent.service');
 const payslipService = require('../services/payslip.service');
 const payrollRunService = require('../services/payrollRun.service');
+const payrollAttendanceService = require('../services/payrollAttendance.service');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
@@ -171,10 +172,32 @@ const getPayrollRun = asyncHandler(async (req, res) =>
   new ApiResponse(200, record, 'Payroll run fetched').send(res);
 });
 
+// Payroll is calculated from each employee's attendance for the month.
 const runPayroll = asyncHandler(async (req, res) =>
 {
-  const record = await payrollRunService.run({ ...req.body, processed_by: req.user.employeeId });
-  new ApiResponse(200, record, 'Payroll run completed').send(res);
+  const { month, year } = req.body;
+  const result = await payrollAttendanceService.processPayroll({ month: Number(month), year: Number(year), processedBy: req.user.employeeId });
+  const record = await payrollRunService.getDetails(result.payroll_run_id);
+  new ApiResponse(200, { ...record, processing: result },
+    `Payroll processed for ${result.processed} employee(s)${result.on_hold ? `, ${result.on_hold} on hold` : ''}${result.skipped.length ? `, ${result.skipped.length} skipped (no salary)` : ''}`).send(res);
+});
+
+const attendanceSummary = asyncHandler(async (req, res) => {
+  const data = await payrollAttendanceService.getMonthSummary({
+    month: req.query.month, year: req.query.year,
+    includeDays: req.query.days !== '0',
+  });
+  new ApiResponse(200, data, 'Attendance and salary summary fetched').send(res);
+});
+
+const saveAttendanceAdjustment = asyncHandler(async (req, res) => {
+  const { month, year, lop_adjustment, hold_salary, reason } = req.body;
+  const record = await payrollAttendanceService.saveAdjustment({
+    employeeId: Number(req.params.employeeId), month: Number(month), year: Number(year),
+    lopAdjustment: lop_adjustment, holdSalary: hold_salary, reason, userId: req.user.employeeId,
+  });
+  const [row] = (await payrollAttendanceService.getMonthSummary({ month, year, employeeIds: [Number(req.params.employeeId)] })).employees;
+  new ApiResponse(200, { adjustment: record, employee: row || null }, 'Adjustment saved').send(res);
 });
 
 const submitPayrollReview = asyncHandler(async (req, res) =>
@@ -192,6 +215,8 @@ const createPayrollInput = asyncHandler(async (req, res) => new ApiResponse(201,
 const reviewPayrollInput = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.reviewInput(req.params.id, req.user.employeeId, req.body), 'Payroll input reviewed').send(res));
 
 module.exports = {
+  attendanceSummary,
+  saveAttendanceAdjustment,
   listSalaryStructures,
   getSalaryStructure,
   getLatestSalaryStructure,

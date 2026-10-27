@@ -29,6 +29,7 @@ router.use('/resignations',   require('./resignation.routes'));
 
 router.use('/helpdesk', require('./helpdesk.routes'));
 router.use('/documents', require('./document.routes'));
+router.use('/kudos-feedback', require('./kudosFeedback.routes'));
 
 router.use('/companies', require('./company.routes'));
 router.use('/calendar-events', require('./calendar.routes'));

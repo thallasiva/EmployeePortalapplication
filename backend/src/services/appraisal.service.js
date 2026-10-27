@@ -1,4 +1,4 @@
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 const PARAMS = [
@@ -28,12 +28,11 @@ async function createCycle(adminEmployeeId, { fy_label, deadline, cycle_type })
   if (!fy_label) throw ApiError.badRequest('FY label is required');
   const validTypes = ['monthly', 'quarterly', 'half_yearly', 'yearly'];
   const type = validTypes.includes(cycle_type) ? cycle_type : 'yearly';
-  await callProcedure('sp_create_appraisal_cycle(?, ?, ?, ?, @cycle_id)', [
+  const { outs: out } = await callProcedureWithOuts('sp_create_appraisal_cycle(?, ?, ?, ?, @cycle_id)', [
   adminEmployeeId, fy_label, type, deadline || null]
   );
-  const out = await readOuts('cycle_id');
   const results = await callProcedure('sp_update_appraisal_cycle(?, ?, ?, ?)', [
-  out[0].cycle_id, null, null, null]
+  out.cycle_id, null, null, null]
   );
   return (results[0] ?? [])[0] ?? null;
 }
@@ -52,11 +51,10 @@ async function updateCycleSettings(adminEmployeeId, cycleId, { fy_label, deadlin
 
 async function rolloutCycle(adminEmployeeId, cycleId, { rollout_type = 'all', employee_ids = [] })
 {
-  await callProcedure('sp_rollout_appraisal_cycle(?, ?, ?, @ok, @msg)', [
+  const { outs: out } = await callProcedureWithOuts('sp_rollout_appraisal_cycle(?, ?, ?, @ok, @msg)', [
   adminEmployeeId, cycleId, rollout_type]
   );
-  const out = await readOuts('ok', 'msg');
-  if (!out[0]?.ok) throw ApiError.badRequest(out[0]?.msg || 'Cannot rollout cycle');
+  if (!out.ok) throw ApiError.badRequest(out.msg || 'Cannot rollout cycle');
 
 
   if (rollout_type === 'selected')
@@ -73,9 +71,8 @@ async function rolloutCycle(adminEmployeeId, cycleId, { rollout_type = 'all', em
 
 async function disableCycle(adminEmployeeId, cycleId)
 {
-  await callProcedure('sp_disable_appraisal_cycle(?, ?, @ok)', [adminEmployeeId, cycleId]);
-  const out = await readOuts('ok');
-  if (!out[0]?.ok) throw ApiError.badRequest('Cycle is not active');
+  const { outs: out } = await callProcedureWithOuts('sp_disable_appraisal_cycle(?, ?, @ok)', [adminEmployeeId, cycleId]);
+  if (!out.ok) throw ApiError.badRequest('Cycle is not active');
   const results = await callProcedure('sp_update_appraisal_cycle(?, ?, ?, ?)', [cycleId, null, null, null]);
   return (results[0] ?? [])[0] ?? null;
 }
@@ -142,13 +139,13 @@ async function saveMyAppraisal(employeeId, { ratings, overall_comments, submit }
 {
   const cycle = await getActiveCycle();
   if (!cycle || cycle.status !== 'active') throw ApiError.badRequest('No active appraisal cycle');
+  if ((ratings || []).some((r) => !r?.parameter_key)) throw ApiError.badRequest('Each rating needs a parameter_key');
 
-  await callProcedure('sp_get_or_create_appraisal(?, ?, ?, @appraisal_id, @is_submitted)', [
+  const { outs: out } = await callProcedureWithOuts('sp_get_or_create_appraisal(?, ?, ?, @appraisal_id, @is_submitted)', [
   cycle.cycle_id, employeeId, overall_comments || null]
   );
-  const out = await readOuts('appraisal_id', 'is_submitted');
-  const appraisalId = out[0].appraisal_id;
-  const isSubmitted = out[0].is_submitted;
+  const appraisalId = out.appraisal_id;
+  const isSubmitted = out.is_submitted;
 
   if (isSubmitted) throw ApiError.badRequest('Appraisal already submitted');
 

@@ -11,25 +11,25 @@ const ApiResponse  = require('../utils/ApiResponse');
 const { query }    = require('../config/db');
 const notifySvc    = require('../services/notify.service');
 
-router.use(authenticate, authorizeRoles('admin', 'hr', 'team_lead'));
+router.use(authenticate, authorizeRoles('Admin', 'HR Manager'));
 
 // Who is still checked in without a check-out today?
 router.get('/missing-checkout', asyncHandler(async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
   const rows = await query(`
-    SELECT a.attendance_id, a.employee_id, a.date,
-           a.check_in_time, a.is_on_break,
+    SELECT a.attendance_id, a.employee_id, a.attendance_date AS date,
+           a.check_in AS check_in_time, a.is_on_break,
            CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
-           e.emp_code, e.work_email,
-           d.name AS department
+           e.emp_code, e.email AS work_email,
+           d.department_name AS department
     FROM attendance a
     JOIN employees  e ON e.employee_id = a.employee_id
     LEFT JOIN departments d ON d.department_id = e.department_id
-    WHERE a.date = ?
-      AND a.check_in_time IS NOT NULL
-      AND a.check_out_time IS NULL
+    WHERE a.attendance_date = ?
+      AND a.check_in IS NOT NULL
+      AND a.check_out IS NULL
       AND a.status NOT IN ('LEAVE','HOLIDAY')
-    ORDER BY a.check_in_time
+    ORDER BY a.check_in
   `, [date]);
   new ApiResponse(200, { date, count: rows.length, employees: rows }, 'Missing check-out list').send(res);
 }));
@@ -38,14 +38,14 @@ router.get('/missing-checkout', asyncHandler(async (req, res) => {
 router.post('/notify-missing-checkout', asyncHandler(async (req, res) => {
   const date = req.body.date || new Date().toISOString().slice(0, 10);
   const rows = await query(`
-    SELECT a.attendance_id, a.employee_id, a.check_in_time,
+    SELECT a.attendance_id, a.employee_id, a.check_in AS check_in_time,
            CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
-           e.work_email
+           e.email AS work_email
     FROM attendance a
     JOIN employees e ON e.employee_id = a.employee_id
-    WHERE a.date = ?
-      AND a.check_in_time IS NOT NULL
-      AND a.check_out_time IS NULL
+    WHERE a.attendance_date = ?
+      AND a.check_in IS NOT NULL
+      AND a.check_out IS NULL
       AND a.missing_checkout_notified = 0
       AND a.status NOT IN ('LEAVE','HOLIDAY')
   `, [date]);

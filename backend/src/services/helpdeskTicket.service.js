@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
 
@@ -92,12 +92,11 @@ class HelpdeskTicketService extends BaseService {
     `Request approved and forwarded to ${forwardedToTeam}.` :
     `[Rejected] ${(comment || '').trim()}`;
 
-    await callProcedure('sp_manager_action_ticket(?, ?, ?, ?, ?, @ok, @msg)', [
+    const { outs: out } = await callProcedureWithOuts('sp_manager_action_ticket(?, ?, ?, ?, ?, @ok, @msg)', [
     managerId, ticketId, action, forwardedToTeam || null, autoComment]
     );
-    const out = await readOuts('ok', 'msg');
-    if (!out[0]?.ok) {
-      const msg = out[0]?.msg ?? 'Cannot action ticket';
+    if (!out.ok) {
+      const msg = out.msg ?? 'Cannot action ticket';
       if (msg.includes('not in your team')) throw ApiError.forbidden(msg);
       throw ApiError.badRequest(msg);
     }
@@ -105,10 +104,9 @@ class HelpdeskTicketService extends BaseService {
   }
 
   async closeTicket(employeeId, ticketId) {
-    await callProcedure('sp_close_ticket(?, ?, @ok, @msg)', [employeeId, ticketId]);
-    const out = await readOuts('ok', 'msg');
-    if (!out[0]?.ok) {
-      const msg = out[0]?.msg ?? 'Cannot close';
+    const { outs: out } = await callProcedureWithOuts('sp_close_ticket(?, ?, @ok, @msg)', [employeeId, ticketId]);
+    if (!out.ok) {
+      const msg = out.msg ?? 'Cannot close';
       if (msg === 'Ticket not found') throw ApiError.notFound(msg);
       if (msg === 'Not your ticket') throw ApiError.forbidden(msg);
       throw ApiError.badRequest(msg);
@@ -120,10 +118,9 @@ class HelpdeskTicketService extends BaseService {
     const reason = comment && comment.trim() ?
     comment.trim() :
     'Employee is not satisfied with the resolution.';
-    await callProcedure('sp_reopen_ticket(?, ?, ?, @ok, @msg)', [employeeId, ticketId, `[Reopened] ${reason}`]);
-    const out = await readOuts('ok', 'msg');
-    if (!out[0]?.ok) {
-      const msg = out[0]?.msg ?? 'Cannot reopen';
+    const { outs: out } = await callProcedureWithOuts('sp_reopen_ticket(?, ?, ?, @ok, @msg)', [employeeId, ticketId, `[Reopened] ${reason}`]);
+    if (!out.ok) {
+      const msg = out.msg ?? 'Cannot reopen';
       if (msg === 'Ticket not found') throw ApiError.notFound(msg);
       if (msg === 'Not your ticket') throw ApiError.forbidden(msg);
       throw ApiError.badRequest(msg);

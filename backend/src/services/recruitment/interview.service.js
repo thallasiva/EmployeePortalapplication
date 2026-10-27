@@ -49,9 +49,10 @@ class InterviewService extends BaseService {
       data.level,
       data.interviewType,
       data.interviewDate,
-      data.interviewTime || null,
+      // interview_time and interviewer are NOT NULL; mirror the controller's 09:00 default.
+      data.interviewTime || '09:00',
       data.durationMinutes || null,
-      data.interviewer || null,
+      data.interviewer || '',
       data.candidateType || 'External',
       data.teamsSubject || null,
       data.teamsParticipants || null,

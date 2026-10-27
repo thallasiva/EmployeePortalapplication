@@ -21,49 +21,63 @@ async function ensureTable() {
 router.get(
   '/',
   authenticate,
-  authorizeRoles('admin', 'hr'),
+  authorizeRoles('Admin', 'HR Manager'),
   asyncHandler(async (req, res) => {
     await ensureTable();
 
     const { search = '', module: mod, result, page = 1, limit = 15 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 15));
+    const offset = (pageNum - 1) * pageSize;
+
+    // Generic audit_logs plus the salary/payroll access trail written by middleware/auditLog.js
+    // (nothing else writes audit_logs, so the page was always empty without it).
+    const source = `
+      SELECT CONCAT('a', al.id) AS id, al.created_at, al.user_id, al.action,
+             al.entity AS module, '—' AS ip, 'Success' AS result
+        FROM audit_logs al
+      UNION ALL
+      SELECT CONCAT('s', sal.id), sal.created_at, sal.user_id, sal.action,
+             'Payroll', COALESCE(sal.ip_address, '—'),
+             CASE sal.status WHEN 'OK' THEN 'Success' WHEN 'DENIED' THEN 'Denied' ELSE 'Failed' END
+        FROM salary_audit_log sal`;
 
     let where = 'WHERE 1=1';
     const params = [];
 
     if (search) {
-      where += ' AND (al.action LIKE ? OR al.entity LIKE ? OR u.email LIKE ?)';
+      where += ' AND (x.action LIKE ? OR x.module LIKE ? OR u.email LIKE ?)';
       const s = `%${search}%`;
       params.push(s, s, s);
     }
     if (mod && mod !== 'All Modules') {
-      where += ' AND al.entity = ?';
+      where += ' AND x.module = ?';
       params.push(mod);
     }
+    if (result && result !== 'All Results') {
+      where += ' AND x.result = ?';
+      params.push(result);
+    }
 
-    const countSql = `SELECT COUNT(*) AS total FROM audit_logs al
-      LEFT JOIN users u ON u.user_id = al.user_id ${where}`;
-    const [countRows] = await query(countSql, params);
-    const total = countRows[0]?.total ?? 0;
+    const countRows = await query(
+      `SELECT COUNT(*) AS total FROM (${source}) x LEFT JOIN users u ON u.user_id = x.user_id ${where}`,
+      params
+    );
+    const total = Number(countRows[0]?.total ?? 0);
 
-    const dataSql = `
+    const rows = await query(`
       SELECT
-        al.id,
-        DATE_FORMAT(al.created_at, '%d %b %Y, %h:%i %p') AS dt,
+        x.id,
+        DATE_FORMAT(x.created_at, '%d %b %Y, %h:%i %p') AS dt,
         COALESCE(CONCAT(e.first_name, ' ', e.last_name), u.email, 'System') AS user,
-        COALESCE(u.email, '')  AS email,
-        al.action,
-        al.entity              AS module,
-        '—'                    AS ip,
-        'Success'              AS result
-      FROM audit_logs al
-      LEFT JOIN users     u ON u.user_id      = al.user_id
-      LEFT JOIN employees e ON e.employee_id  = u.employee_id
+        COALESCE(u.email, '') AS email,
+        x.action, x.module, x.ip, x.result
+      FROM (${source}) x
+      LEFT JOIN users     u ON u.user_id     = x.user_id
+      LEFT JOIN employees e ON e.employee_id = u.employee_id
       ${where}
-      ORDER BY al.created_at DESC
-      LIMIT ? OFFSET ?`;
-
-    const [rows] = await query(dataSql, [...params, Number(limit), offset]);
+      ORDER BY x.created_at DESC
+      LIMIT ? OFFSET ?`, [...params, pageSize, offset]);
 
     new ApiResponse(200, { rows, total }, 'OK').send(res);
   })

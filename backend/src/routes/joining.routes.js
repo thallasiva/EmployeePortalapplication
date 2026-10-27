@@ -7,7 +7,7 @@ const { authenticate, authorizeRoles } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 const ADMIN_ONLY = authorizeRoles('Admin');
-const CAN_VIEW = authorizeRoles('Admin', 'Recruiter Team Lead');
+const CAN_VIEW = authorizeRoles('Admin', 'Recruiter Team Lead', 'HR Manager');
 
 
 router.get('/verify', ctrl.verifyToken);

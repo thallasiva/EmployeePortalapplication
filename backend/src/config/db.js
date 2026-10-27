@@ -73,10 +73,20 @@ async function withTransaction(fn) {
 
 
 
-async function readOuts(...vars) {
-  const sql = 'SELECT ' + vars.map((v) => `@${v} AS \`${v}\``).join(', ');
-  const [rows] = await pool.query(sql);
-  return rows[0] ?? {};
+// Calls a procedure with OUT params (e.g. 'sp_x(?, @ok, @msg)') and reads them back.
+// Session variables are per-connection, so the CALL and the SELECT must share one
+// connection — reading @vars through the pool can hit another request's session.
+async function callProcedureWithOuts(call, params = []) {
+  const vars = [...new Set(call.match(/@\w+/g) || [])].map((v) => v.slice(1));
+  const conn = await pool.getConnection();
+  try {
+    const [results] = await conn.query(`CALL ${call}`, params);
+    if (!vars.length) return { results, outs: {} };
+    const [rows] = await conn.query('SELECT ' + vars.map((v) => `@${v} AS \`${v}\``).join(', '));
+    return { results, outs: rows[0] ?? {} };
+  } finally {
+    conn.release();
+  }
 }
 
 async function testConnection() {
@@ -85,4 +95,4 @@ async function testConnection() {
   conn.release();
 }
 
-module.exports = { pool, query, callProcedure, readOuts, withTransaction, testConnection };
+module.exports = { pool, query, callProcedure, callProcedureWithOuts, withTransaction, testConnection };

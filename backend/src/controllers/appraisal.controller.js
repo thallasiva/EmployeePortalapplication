@@ -1,6 +1,7 @@
 const svc = require('../services/appraisal.service');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
+const ApiError = require('../utils/ApiError');
 
 
 const getCycle = asyncHandler(async (req, res) => {
@@ -94,7 +95,7 @@ const enrollEmployees = asyncHandler(async (req, res) => {
     const cycle = await svc.getActiveCycle();
     cycleId = cycle?.cycle_id;
   }
-  if (!cycleId) throw new Error('No cycle');
+  if (!cycleId) throw ApiError.badRequest('No active appraisal cycle');
   const { employee_ids } = req.body;
   const data = await svc.enrollEmployees(cycleId, req.user.employeeId, employee_ids);
   new ApiResponse(200, data, 'Employees enrolled').send(res);
@@ -105,7 +106,7 @@ const unenrollEmployee = asyncHandler(async (req, res) => {
     const cycle = await svc.getActiveCycle();
     cycleId = cycle?.cycle_id;
   }
-  if (!cycleId) throw new Error('No cycle');
+  if (!cycleId) throw ApiError.badRequest('No active appraisal cycle');
   await svc.unenrollEmployee(cycleId, Number(req.params.employeeId));
   new ApiResponse(200, {}, 'Employee unenrolled').send(res);
 });

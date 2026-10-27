@@ -116,11 +116,17 @@ async function saveSmtp(data) {
   return getSmtp();
 }
 
+// Query-string paging arrives as strings; LIMIT/OFFSET placeholders need integers.
+function toPaging(page, limit) {
+  return { page: Math.max(1, parseInt(page, 10) || 1), limit: Math.min(500, Math.max(1, parseInt(limit, 10) || 20)) };
+}
+
 /* ════════════════════════════════════
    EMAIL TEMPLATES
 ════════════════════════════════════ */
 async function listTemplates({ search, category, status, page = 1, limit = 50 }) {
   await ensureTables();
+  ({ page, limit } = toPaging(page, limit));
   const offset = (page - 1) * limit;
   let where = 'WHERE 1=1';
   const params = [];
@@ -177,6 +183,7 @@ async function cloneTemplate(id) {
 ════════════════════════════════════ */
 async function listLogs({ search, status, module, page = 1, limit = 20 }) {
   await ensureTables();
+  ({ page, limit } = toPaging(page, limit));
   const offset = (page - 1) * limit;
   let where = 'WHERE 1=1';
   const params = [];
@@ -395,11 +402,12 @@ async function deleteReport(id) {
 ════════════════════════════════════ */
 async function listNotifications({ employee_id, page = 1, limit = 20, unread_only = false }) {
   await ensureTables();
+  ({ page, limit } = toPaging(page, limit));
   const offset = (page - 1) * limit;
   let where = 'WHERE 1=1';
   const params = [];
   if (employee_id) { where += ' AND employee_id=?'; params.push(employee_id); }
-  if (unread_only) { where += ' AND is_read=0'; }
+  if (unread_only === true || unread_only === 'true' || unread_only === '1') { where += ' AND is_read=0'; }
   const [rows, total, unread] = await Promise.all([
     query(`SELECT * FROM hr_notifications ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, limit, offset]),
     query(`SELECT COUNT(*) AS c FROM hr_notifications ${where}`, params),

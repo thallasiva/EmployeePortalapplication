@@ -15,6 +15,15 @@ const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
 const auditLog = require('../middleware/auditLog');
 
+const Joi = require('joi');
+const attendanceAdjustmentSchema = Joi.object({
+  month: Joi.number().integer().min(1).max(12).required(),
+  year: Joi.number().integer().min(2000).max(2100).required(),
+  lop_adjustment: Joi.number().min(-31).max(31).precision(1).default(0),
+  hold_salary: Joi.boolean().default(false),
+  reason: Joi.string().trim().min(3).max(255).required(),
+});
+
 const router = express.Router();
 router.use(authenticate);
 
@@ -41,6 +50,10 @@ router.post('/payslips/generate-all', requirePermission('payroll','add'), auditL
 router.put('/payslips/:id/mark-paid', requirePermission('payroll','edit'), auditLog('MARK_PAYSLIP_PAID'), controller.markPayslipPaid);
 
 // ── Payroll runs ──────────────────────────────────────────────────────────
+// Attendance → salary: per-employee attendance and computed pay before processing
+router.get('/attendance-summary', requirePermission('payroll','view'), auditLog('READ_PAYROLL_ATTENDANCE'), controller.attendanceSummary);
+router.put('/attendance-summary/:employeeId/adjustment', requirePermission('payroll','edit'), auditLog('ADJUST_PAYROLL_ATTENDANCE', r => r.params.employeeId), validate(attendanceAdjustmentSchema), controller.saveAttendanceAdjustment);
+
 router.get('/runs', requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN_LIST'), controller.listPayrollRuns);
 router.get('/runs/:id', requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN'), controller.getPayrollRun);
 router.post('/runs', requirePermission('payroll','add'), auditLog('CREATE_PAYROLL_RUN'), validate(runPayrollSchema), controller.runPayroll);

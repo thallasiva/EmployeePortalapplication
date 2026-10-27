@@ -1,4 +1,4 @@
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 function toDateStr(val) {
@@ -36,7 +36,7 @@ class HolidayService {
   }
 
   async create(data) {
-    await callProcedure(
+    const { outs: out } = await callProcedureWithOuts(
       'sp_create_holiday(?, ?, ?, ?, ?, ?, @p_holiday_id)',
       [
         data.holiday_name     || null,
@@ -47,7 +47,6 @@ class HolidayService {
         data.is_restricted    ? 1 : 0,
       ]
     );
-    const out = await readOuts('p_holiday_id');
     return { holiday_id: out.p_holiday_id };
   }
 

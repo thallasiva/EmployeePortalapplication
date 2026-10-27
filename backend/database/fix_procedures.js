@@ -17,11 +17,16 @@ const mysql = require('mysql2/promise');
 const fs    = require('fs');
 const path  = require('path');
 
+if (!process.env.PROD_DB_PASSWORD) {
+  console.error('Set PROD_DB_PASSWORD (the production DB password is no longer stored in this file).');
+  process.exit(1);
+}
+
 const DB_CONFIG = {
   host: 'hrms.c02gczm2cgx8.us-east-1.rds.amazonaws.com',
   port: 4306,
   user: 'HRMSadmin',
-  password: 'HwULGJ6gbxQIhzwNeZ9L',
+  password: process.env.PROD_DB_PASSWORD,
   database: 'hrms_db',
   multipleStatements: false,
   connectTimeout: 30000,
@@ -79,64 +84,116 @@ const MANUAL_FIXES = {
 
   sp_delete_designation: `
 DROP PROCEDURE IF EXISTS sp_delete_designation;
-CREATE PROCEDURE sp_delete_designation (IN p_id INT)
+CREATE PROCEDURE sp_delete_designation(IN p_id INT)
 BEGIN
   DELETE FROM designations WHERE designation_id = p_id;
+  SELECT ROW_COUNT() AS affected;
 END`,
 
   sp_manager_action_ticket: `
 DROP PROCEDURE IF EXISTS sp_manager_action_ticket;
-CREATE PROCEDURE sp_manager_action_ticket (
-  IN  p_manager_id   INT,
-  IN  p_ticket_id    INT,
-  IN  p_action       VARCHAR(20),
-  IN  p_forward_team VARCHAR(50),
-  IN  p_comment      TEXT,
-  OUT p_ok           TINYINT,
-  OUT p_msg          VARCHAR(200)
+CREATE PROCEDURE sp_manager_action_ticket(
+    IN p_manager_id INT,
+    IN p_ticket_id INT,
+    IN p_action VARCHAR(20),
+    IN p_forward_team VARCHAR(50),
+    IN p_comment TEXT,
+    OUT p_ok TINYINT,
+    OUT p_msg VARCHAR(200)
 )
 BEGIN
-  DECLARE v_status VARCHAR(30);
-  DECLARE v_cnt    INT DEFAULT 0;
 
-  SELECT COUNT(*) INTO v_cnt
+    DECLARE v_cnt INT DEFAULT 0;
+    DECLARE v_status VARCHAR(30);
+
+    SET p_ok = 0;
+    SET p_msg = '';
+
+    SELECT COUNT(*)
+    INTO v_cnt
     FROM helpdesk_tickets t
-    JOIN employees e ON e.employee_id = t.employee_id
-   WHERE t.ticket_id = p_ticket_id AND e.reporting_to = p_manager_id;
+    INNER JOIN employees e
+        ON e.employee_id = t.employee_id
+    WHERE
+        t.ticket_id = p_ticket_id
+        AND e.reporting_to = p_manager_id;
 
-  IF v_cnt = 0 THEN
-    SET p_ok = 0;
-    SET p_msg = 'Ticket does not belong to your team';
-    RETURN;
-  END IF;
+    IF v_cnt = 0 THEN
 
-  SELECT status INTO v_status
-    FROM helpdesk_tickets
-   WHERE ticket_id = p_ticket_id
-   LIMIT 1;
+        SET p_msg = 'Ticket does not belong to your team';
 
-  IF v_status != 'Open' THEN
-    SET p_ok = 0;
-    SET p_msg = 'Only Open tickets can be actioned by manager';
-    RETURN;
-  END IF;
+    ELSE
 
-  IF p_action = 'approve' THEN
-    UPDATE helpdesk_tickets
-       SET status = 'Forwarded', forwarded_to_team = p_forward_team
-     WHERE ticket_id = p_ticket_id;
-    INSERT INTO helpdesk_comments (ticket_id, commented_by, comment)
-    VALUES (p_ticket_id, p_manager_id, p_comment);
-  ELSE
-    UPDATE helpdesk_tickets
-       SET status = 'Rejected', resolved_at = NOW()
-     WHERE ticket_id = p_ticket_id;
-    INSERT INTO helpdesk_comments (ticket_id, commented_by, comment)
-    VALUES (p_ticket_id, p_manager_id, p_comment);
-  END IF;
+        SELECT status
+        INTO v_status
+        FROM helpdesk_tickets
+        WHERE ticket_id = p_ticket_id
+        LIMIT 1;
 
-  SET p_ok  = 1;
-  SET p_msg = 'OK';
+        IF v_status <> 'Open' THEN
+
+            SET p_msg = 'Only Open tickets can be actioned by manager';
+
+        ELSEIF LOWER(TRIM(p_action)) = 'approve' THEN
+
+            IF p_forward_team IS NULL OR TRIM(p_forward_team) = '' THEN
+
+                SET p_msg = 'Forward team is required';
+
+            ELSE
+
+                UPDATE helpdesk_tickets
+                SET
+                    status = 'Forwarded',
+                    forwarded_to_team = p_forward_team
+                WHERE ticket_id = p_ticket_id;
+
+                INSERT INTO helpdesk_comments (
+                    ticket_id,
+                    commented_by,
+                    comment
+                )
+                VALUES (
+                    p_ticket_id,
+                    p_manager_id,
+                    COALESCE(p_comment, '')
+                );
+
+                SET p_ok = 1;
+                SET p_msg = 'Ticket forwarded successfully';
+
+            END IF;
+
+        ELSEIF LOWER(TRIM(p_action)) = 'reject' THEN
+
+            UPDATE helpdesk_tickets
+            SET
+                status = 'Rejected',
+                resolved_at = NOW()
+            WHERE ticket_id = p_ticket_id;
+
+            INSERT INTO helpdesk_comments (
+                ticket_id,
+                commented_by,
+                comment
+            )
+            VALUES (
+                p_ticket_id,
+                p_manager_id,
+                COALESCE(p_comment, '')
+            );
+
+            SET p_ok = 1;
+            SET p_msg = 'Ticket rejected successfully';
+
+        ELSE
+
+            SET p_msg = 'Invalid action. Use approve or reject';
+
+        END IF;
+
+    END IF;
+
 END`,
 };
 

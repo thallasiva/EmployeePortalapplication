@@ -15,6 +15,7 @@ const { clientOrigin, env } = require('./config/env');
 const routes = require('./routes');
 const sanitizeBody = require('./middleware/sanitizeBody');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
+const { authenticate, authorizeRoles } = require('./middleware/auth');
 
 const app = express();
 
@@ -159,17 +160,14 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.get('/api/health/', async (req, res) => {
-  try {
-   
-    const result = "Middleware Working";
-    res.status(result.ok ? 200 : 503).json(result);
-  } catch (err) {
-    res.status(503).json({ ok: false, error: err.message });
-  }
+app.get('/api/health/', (req, res) => {
+  res.status(200).json({ ok: true, status: 'ok', ts: new Date().toISOString() });
 });
 
-app.get('/api/health/email', async (req, res) => {
+// Email diagnostics send real mail from the company SMTP account — Admin only.
+const adminOnly = [authenticate, authorizeRoles('Admin')];
+
+app.get('/api/health/email', adminOnly, async (req, res) => {
   try {
     const { verifySmtp } = require('./services/email.service');
     const result = await verifySmtp();
@@ -181,7 +179,7 @@ app.get('/api/health/email', async (req, res) => {
 
 
 
-app.post('/api/health/email/send-test', async (req, res) => {
+app.post('/api/health/email/send-test', adminOnly, async (req, res) => {
   try {
     const { sendMailNow } = require('./services/email.service');
     const to = req.body.to || 'test@example.com';
@@ -198,7 +196,7 @@ app.post('/api/health/email/send-test', async (req, res) => {
 });
 
 
-app.get('/api/health/email/send-test', async (req, res) => {
+app.get('/api/health/email/send-test', adminOnly, async (req, res) => {
   try {
     const { sendMailNow } = require('./services/email.service');
     const to = req.query.to || 'pavan@yopmail.com';
@@ -215,7 +213,7 @@ app.get('/api/health/email/send-test', async (req, res) => {
 });
 
 
-app.get('/api/health/email/send-pdf-test', async (req, res) => {
+app.get('/api/health/email/send-pdf-test', adminOnly, async (req, res) => {
   try {
     const { sendMailNow } = require('./services/email.service');
     const { generateOfferLetterPdf } = require('./utils/offerLetterPdf');
@@ -257,5 +255,6 @@ app.use("/api", routes);
 
 
 app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

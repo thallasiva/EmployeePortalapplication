@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, readOuts, query } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const emailService = require('./email.service');
 const notify = require('./mailNotify.service');
@@ -145,7 +145,23 @@ class PayslipService extends BaseService {
 
     const gratuityEligible = isGratuityEligible(row.emp_joining_date, row.month, row.year);
 
-    try {
+    // Payslips processed from attendance carry their exact (LOP-prorated) breakdown.
+    const stored = await query('SELECT breakdown_json FROM payslips WHERE payslip_id = ?', [id]).catch(() => []);
+    let storedBreakdown = stored[0]?.breakdown_json || null;
+    if (typeof storedBreakdown === 'string') { try { storedBreakdown = JSON.parse(storedBreakdown); } catch { storedBreakdown = null; } }
+    if (storedBreakdown?.earnings?.length) {
+      earnings = storedBreakdown.earnings.filter((e) => e.amount > 0).map((e) => ({ label: String(e.label).toUpperCase(), amount: e.amount }));
+      deductions = (storedBreakdown.deductions || []).map((d) => ({ label: d.code === 'PF' ? 'PF' : String(d.label).toUpperCase(), amount: d.amount }));
+      totalEarnings = earnings.reduce((s, e) => s + e.amount, 0);
+      const pfWage = Math.min(storedBreakdown.earnings.find((e) => /^BASIC/i.test(e.code || ''))?.amount || 0, 15000);
+      eps = Math.round(pfWage * 0.0833); epf = Math.round(pfWage * 0.0367); employerPf = eps + epf;
+      edli = Math.min(Math.round(pfWage * 0.005), 75);
+      esiEmployee = deductions.find((d) => /ESI/i.test(d.label))?.amount || 0;
+      esiEmployer = esiEmployee ? Math.round(totalEarnings * 0.0325) : 0;
+      professionalTax = deductions.find((d) => /PROF/i.test(d.label))?.amount || 0;
+    }
+
+    if (!earnings) try {
       const structured = await salaryAssignmentSvc.computePayslipBreakdown(row.emp_id);
       if (structured && structured.components?.length) {
         ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
@@ -223,11 +239,10 @@ class PayslipService extends BaseService {
   }
 
   async generate({ employee_id, month, year, payroll_run_id }) {
-    await callProcedure('sp_generate_payslip(?, ?, ?, ?, @payslip_id)', [
+    const { outs: out } = await callProcedureWithOuts('sp_generate_payslip(?, ?, ?, ?, @payslip_id)', [
     employee_id, month, year, payroll_run_id || null]
     );
-    const out = await readOuts('payslip_id');
-    const payslipId = out[0].payslip_id;
+    const payslipId = out.payslip_id;
     if (!payslipId) throw ApiError.internal('Failed to generate payslip');
 
     const approvedInputs = await query(`SELECT COALESCE(SUM(amount),0) AS total FROM payroll_inputs

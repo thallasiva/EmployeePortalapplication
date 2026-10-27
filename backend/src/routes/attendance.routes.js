@@ -7,7 +7,7 @@ const {
   createRegularizationSchema,
   reviewRegularizationSchema
 } = require('../validators/attendance.validator');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorizeRoles } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
 
 const router = express.Router();
@@ -25,8 +25,10 @@ router.get('/me/swipes', controller.swipes);
 
 
 router.get('/', requirePermission('attendance', 'view'), controller.list);
-router.get('/dashboard', requirePermission('attendance', 'view'), controller.dashboard);
-router.get('/team-leave-calendar', requirePermission('attendance', 'view'), controller.teamLeaveCalendar);
+// Org-wide views; Reporting Managers only get the team-scoped routes.
+const ADMIN_HR = authorizeRoles('Admin', 'HR Manager');
+router.get('/dashboard', ADMIN_HR, requirePermission('attendance', 'view'), controller.dashboard);
+router.get('/team-leave-calendar', ADMIN_HR, requirePermission('attendance', 'view'), controller.teamLeaveCalendar);
 router.get('/employees/:employeeId/today', requirePermission('attendance', 'view'), controller.today);
 router.get('/employees/:employeeId/monthly', requirePermission('attendance', 'view'), controller.monthly);
 router.get('/employees/:employeeId/swipes', requirePermission('attendance', 'view'), controller.swipes);

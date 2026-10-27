@@ -21,10 +21,15 @@ const history = asyncHandler(async (req, res) => {
   new ApiResponse(200, await svc.history(req.params.employeeId), 'History fetched').send(res);
 });
 
+// Self-service: an employee's own salary revision history.
+const myHistory = asyncHandler(async (req, res) => {
+  new ApiResponse(200, await svc.history(req.user.employeeId), 'History fetched').send(res);
+});
+
 const computeBreakdown = asyncHandler(async (req, res) => {
   const { ctc_annual } = req.body;
   const data = await svc.computePayslipBreakdown(req.params.employeeId, ctc_annual ? Number(ctc_annual) : null);
   new ApiResponse(200, data, 'Breakdown computed').send(res);
 });
 
-module.exports = { listAll, getAssignment, assign, history, computeBreakdown };
+module.exports = { listAll, getAssignment, assign, history, myHistory, computeBreakdown };

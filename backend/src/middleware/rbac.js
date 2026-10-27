@@ -1,6 +1,6 @@
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
-const { callProcedure } = require('../config/db');
+const { callProcedure, query } = require('../config/db');
 
 
 
@@ -46,4 +46,16 @@ async function hasPermission(user, module, action) {
   return Boolean(row?.allowed);
 }
 
-module.exports = { requirePermission, hasPermission };
+
+
+// Reporting Managers hold team-level leave/attendance permissions, so any action on a
+// specific employee must be limited to their direct reports. Other roles are unaffected.
+async function assertManagesEmployee(user, employeeId) {
+  if (user?.roleName !== 'Reporting Manager') return;
+  const rows = await query('SELECT reporting_to FROM employees WHERE employee_id = ?', [employeeId]);
+  if (!rows.length || Number(rows[0].reporting_to) !== Number(user.employeeId)) {
+    throw ApiError.forbidden('You can only manage your direct reports');
+  }
+}
+
+module.exports = { requirePermission, hasPermission, assertManagesEmployee };

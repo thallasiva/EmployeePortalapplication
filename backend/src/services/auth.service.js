@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
@@ -55,12 +55,11 @@ async function register({ email, password, firstName, lastName, mobile, roleId, 
   if ((existsResults[0] ?? []).length) throw ApiError.conflict('An account with this email already exists');
 
   const passwordHash = await hashPassword(password);
-  await callProcedure(
+  const { outs: out } = await callProcedureWithOuts(
     'sp_register_user(?, ?, ?, ?, ?, ?, ?, ?, ?, @employee_id, @emp_code)',
     [firstName, lastName ?? null, email, mobile ?? null, empJobTitle ?? 'Employee',
     departmentId ?? null, designationId ?? null, passwordHash, roleId ?? 2]
   );
-  const out = await readOuts('employee_id', 'emp_code');
   return { employeeId: out.employee_id, empCode: out.emp_code };
 }
 
@@ -85,8 +84,8 @@ async function login({ email, password, ip, userAgent }) {
 
   const valid = await comparePassword(password, userRow.password_hash);
   if (!valid) {
-    await callProcedure('sp_login_fail(?, ?, ?, @locked, @attempts)', [userRow.user_id, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES]);
-    const { locked } = await readOuts('locked');
+    const { outs } = await callProcedureWithOuts('sp_login_fail(?, ?, ?, @locked, @attempts)', [userRow.user_id, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES]);
+    const { locked } = outs;
     if (locked) {
       notify.accountLocked({
         name: [userRow.first_name, userRow.last_name].filter(Boolean).join(' '),
@@ -163,8 +162,7 @@ async function forgotPassword(email) {
 
 async function resetPassword(token, newPassword) {
   const newHash = await hashPassword(newPassword);
-  await callProcedure('sp_reset_password(?, ?, @ok)', [token, newHash]);
-  const out = await readOuts('ok');
+  const { outs: out } = await callProcedureWithOuts('sp_reset_password(?, ?, @ok)', [token, newHash]);
   if (!out?.ok) throw ApiError.badRequest('Invalid or expired reset token');
 }
 

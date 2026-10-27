@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
 
@@ -33,7 +33,7 @@ async function submitResignation(employeeId, body, file) {
   const tentative_lwd = addDays(sub_date, NOTICE_DAYS);
   const shortfall = daysBetween(end_date, tentative_lwd);
 
-  await callProcedure(
+  const { outs: out } = await callProcedureWithOuts(
     'sp_submit_resignation(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @resignation_id, @msg)',
     [
     employeeId, reason, sub_date, end_date, tentative_lwd, shortfall,
@@ -42,10 +42,9 @@ async function submitResignation(employeeId, body, file) {
     file ? file.filename : null]
 
   );
-  const out = await readOuts('resignation_id', 'msg');
-  if (!out[0]?.resignation_id) throw ApiError.badRequest(out[0]?.msg || 'Unable to submit resignation');
+  if (!out.resignation_id) throw ApiError.badRequest(out.msg || 'Unable to submit resignation');
 
-  const rowResults = await callProcedure('sp_get_resignation_by_id(?)', [out[0].resignation_id]);
+  const rowResults = await callProcedure('sp_get_resignation_by_id(?)', [out.resignation_id]);
   const row = (rowResults[0] ?? [])[0] ?? null;
 
 
@@ -64,9 +63,8 @@ async function submitResignation(employeeId, body, file) {
 }
 
 async function withdrawResignation(employeeId, resignationId) {
-  await callProcedure('sp_withdraw_resignation(?, ?, @ok)', [employeeId, resignationId]);
-  const out = await readOuts('ok');
-  if (!out[0]?.ok) throw ApiError.notFound('No pending resignation found');
+  const { outs: out } = await callProcedureWithOuts('sp_withdraw_resignation(?, ?, @ok)', [employeeId, resignationId]);
+  if (!out.ok) throw ApiError.notFound('No pending resignation found');
   const results = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
   return (results[0] ?? [])[0] ?? null;
 }
@@ -95,11 +93,10 @@ async function reviewByManager(managerId, resignationId, { status, manager_remar
   if (!['rm_approved', 'rm_rejected'].includes(status))
   throw ApiError.badRequest('Invalid manager status. Use rm_approved or rm_rejected');
 
-  await callProcedure('sp_manager_review_resignation(?, ?, ?, ?, @ok)', [
+  const { outs: out } = await callProcedureWithOuts('sp_manager_review_resignation(?, ?, ?, ?, @ok)', [
   managerId, resignationId, status, manager_remarks || null]
   );
-  const out = await readOuts('ok');
-  if (!out[0]?.ok) throw ApiError.notFound('Resignation not found or already reviewed');
+  if (!out.ok) throw ApiError.notFound('Resignation not found or already reviewed');
 
   const results = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
   return (results[0] ?? [])[0] ?? null;

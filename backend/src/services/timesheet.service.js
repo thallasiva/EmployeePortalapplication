@@ -3,7 +3,7 @@
 
 
 
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 
@@ -27,14 +27,13 @@ async function createTask({
   start_date = null, end_date = null, start_time = null, end_time = null,
   duration_hours = null
 }) {
-  await callProcedure(
+  const { outs: out } = await callProcedureWithOuts(
     'sp_create_task(?, ?, ?, ?, ?, ?, ?, ?, ?, @task_id)',
     [employee_id, task_name, project_name || '', description || '',
     start_date || null, end_date || null, start_time || null, end_time || null,
     duration_hours != null ? parseFloat(duration_hours) : null]
   );
-  const out = await readOuts('task_id');
-  return getTaskById(out[0].task_id);
+  return getTaskById(out.task_id);
 }
 
 async function getTaskById(task_id) {
@@ -67,17 +66,28 @@ async function updateTask(task_id, employee_id, fields) {
 }
 
 async function deleteTask(task_id, employee_id) {
-  await callProcedure('sp_delete_task(?, ?, @affected)', [task_id, employee_id]);
-  const out = await readOuts('affected');
-  if (!out[0]?.affected) throw ApiError.notFound('Task not found');
+  const { outs: out } = await callProcedureWithOuts('sp_delete_task(?, ?, @affected)', [task_id, employee_id]);
+  if (!out.affected) throw ApiError.notFound('Task not found');
 }
 
 
 
+// All employees' tasks, for the admin Task report.
+async function listAllTasks({ limit = 500 } = {}) {
+  const max = Math.min(1000, Math.max(1, parseInt(limit, 10) || 500));
+  return query(
+    `SELECT t.*, e.emp_code, CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name
+       FROM employee_tasks t
+       JOIN employees e ON e.employee_id = t.employee_id
+      ORDER BY t.created_at DESC
+      LIMIT ?`,
+    [max]
+  );
+}
+
 async function getOrCreateWeeklyTimesheet(employee_id, weekStart, weekEnd) {
-  await callProcedure('sp_get_weekly_timesheet(?, ?, ?, @ts_id)', [employee_id, weekStart, weekEnd]);
-  const out = await readOuts('ts_id');
-  const results = await callProcedure('sp_get_timesheet(?)', [out[0].ts_id]);
+  const { outs: out } = await callProcedureWithOuts('sp_get_weekly_timesheet(?, ?, ?, @ts_id)', [employee_id, weekStart, weekEnd]);
+  const results = await callProcedure('sp_get_timesheet(?)', [out.ts_id]);
   return (results[0] ?? [])[0] ?? null;
 }
 
@@ -111,21 +121,19 @@ async function saveEntries(employee_id, weekDateStr, entries) {
     duration_hours: parseFloat(e.duration_hours) || 0
   }));
 
-  await callProcedure(
+  const { outs: out } = await callProcedureWithOuts(
     'sp_save_timesheet_entries(?, ?, ?, ?, @ts_id, @ok, @msg)',
     [employee_id, weekStart, weekEnd, JSON.stringify(sanitised)]
   );
-  const out = await readOuts('ts_id', 'ok', 'msg');
-  const { ts_id, ok, msg } = out[0];
+  const { ts_id, ok, msg } = out;
   if (!ok) throw ApiError.badRequest(msg || 'Failed to save timesheet entries');
   return getTimesheetById(ts_id);
 }
 
 
 async function submitTimesheet(employee_id, timesheet_id) {
-  await callProcedure('sp_submit_timesheet(?, ?, @ok, @msg)', [employee_id, timesheet_id]);
-  const out = await readOuts('ok', 'msg');
-  if (!out[0]?.ok) throw ApiError.badRequest(out[0]?.msg || 'Cannot submit timesheet');
+  const { outs: out } = await callProcedureWithOuts('sp_submit_timesheet(?, ?, @ok, @msg)', [employee_id, timesheet_id]);
+  if (!out.ok) throw ApiError.badRequest(out.msg || 'Cannot submit timesheet');
   return getTimesheetById(timesheet_id);
 }
 
@@ -143,12 +151,11 @@ async function listAllTimesheets({ status, employee_id } = {}) {
 
 
 async function reviewTimesheet(timesheet_id, { decision, reviewed_by, comments = '' }) {
-  await callProcedure('sp_review_timesheet(?, ?, ?, ?, @ok, @msg)', [
+  const { outs: out } = await callProcedureWithOuts('sp_review_timesheet(?, ?, ?, ?, @ok, @msg)', [
   timesheet_id, decision, reviewed_by, comments]
   );
-  const out = await readOuts('ok', 'msg');
-  if (!out[0]?.ok) {
-    const msg = out[0]?.msg ?? 'Cannot review timesheet';
+  if (!out.ok) {
+    const msg = out.msg ?? 'Cannot review timesheet';
     if (msg.includes('not found')) throw ApiError.notFound(msg);
     throw ApiError.badRequest(msg);
   }
@@ -177,12 +184,11 @@ async function listManagerExtraWork(manager_employee_id) {
 
 async function reviewExtraWork(extra_work_id, { decision, reviewed_by, manager_notes = '' }) {
 
-  const results = await callProcedure('sp_review_extra_work(?, ?, ?, ?, @ok, @msg)', [
+  const { results, outs: out } = await callProcedureWithOuts('sp_review_extra_work(?, ?, ?, ?, @ok, @msg)', [
   extra_work_id, decision, reviewed_by, manager_notes]
   );
-  const out = await readOuts('ok', 'msg');
-  if (!out[0]?.ok) {
-    const msg = out[0]?.msg ?? 'Cannot review';
+  if (!out.ok) {
+    const msg = out.msg ?? 'Cannot review';
     if (msg.includes('not found')) throw ApiError.notFound(msg);
     throw ApiError.badRequest(msg);
   }
@@ -268,7 +274,7 @@ async function managerFullDashboard(manager_employee_id) {
 
 module.exports = {
 
-  createTask, getTaskById, listMyTasks, updateTask, deleteTask,
+  createTask, getTaskById, listMyTasks, listAllTasks, updateTask, deleteTask,
 
   getOrCreateWeeklyTimesheet, getMyTimesheets, getTimesheetById,
   getTimesheetEntries, saveEntries, submitTimesheet,

@@ -1,6 +1,7 @@
 'use strict';
 
 const asyncHandler = require("express-async-handler");
+const ApiError = require("../../utils/ApiError");
 const interviewSvc = require("../../services/recruitment/interview.service");
 const teamsSvc     = require("../../services/teams.service");
 const googleMeetSvc = require("../../services/googleMeet.service");
@@ -21,18 +22,18 @@ function buildDateTimes(dateStr, timeStr, durationMins) {
     day = dateStr.getUTCDate();
   } else {
     const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(dateStr || ''));
-    if (!match) throw new Error('Interview date must be a valid ISO date.');
+    if (!match) throw ApiError.badRequest('Interview date must be a valid ISO date.');
     [, year, month, day] = match.map(Number);
   }
   const timeMatch = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(timeStr || '09:00');
-  if (!timeMatch) throw new Error('Interview time must be in HH:mm format.');
+  if (!timeMatch) throw ApiError.badRequest('Interview time must be in HH:mm format.');
   const h = Number(timeMatch[1]);
   const m = Number(timeMatch[2]);
-  if (h > 23 || m > 59) throw new Error('Interview time must be in HH:mm format.');
+  if (h > 23 || m > 59) throw ApiError.badRequest('Interview time must be in HH:mm format.');
   // Build using explicit numeric components — avoids all string-parsing ambiguity
   const startDt = new Date(year, month - 1, day, h, m, 0);
   if (Number.isNaN(startDt.getTime()) || startDt.getFullYear() !== year || startDt.getMonth() !== month - 1 || startDt.getDate() !== day) {
-    throw new Error('Interview date is invalid.');
+    throw ApiError.badRequest('Interview date is invalid.');
   }
   const endDt   = new Date(startDt.getTime() + (durationMins || 60) * 60000);
   const pad = n => String(n).padStart(2, '0');

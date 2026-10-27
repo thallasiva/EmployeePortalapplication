@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { generateMfaSetup, verifyTotp, generateBackupCodes, consumeBackupCode } = require('../utils/mfa');
 
@@ -18,9 +18,8 @@ async function issueMfaTempToken(userId) {
 async function consumeMfaTempToken(rawToken) {
   if (!rawToken) throw ApiError.unauthorized('MFA temp token is required');
   const hash = crypto.createHash('sha256').update(rawToken).digest('hex');
-  await callProcedure('sp_consume_mfa_temp_token(?, @user_id)', [hash]);
-  const out = await readOuts('user_id');
-  const userId = out[0]?.user_id ?? null;
+  const { outs: out } = await callProcedureWithOuts('sp_consume_mfa_temp_token(?, @user_id)', [hash]);
+  const userId = out.user_id ?? null;
   if (!userId) throw ApiError.unauthorized('Invalid or expired MFA session. Please log in again.');
   return userId;
 }

@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
 
@@ -40,12 +40,11 @@ class LeaveRequestService extends BaseService {
   }
 
   async apply(data) {
-    const results = await callProcedure('sp_apply_leave(?, ?, ?, ?, ?, ?, ?, ?, @request_id, @status_msg)', [
+    const { results, outs } = await callProcedureWithOuts('sp_apply_leave(?, ?, ?, ?, ?, ?, ?, ?, @request_id, @status_msg)', [
     data.employee_id, data.leave_type_id, data.from_date, data.from_session || null,
     data.to_date, data.to_session || null, data.days, data.reason || null]
     );
-    const { readOuts } = require('../config/db');
-    const { request_id, status_msg } = await readOuts('request_id', 'status_msg');
+    const { request_id, status_msg } = outs;
     if (!request_id) throw ApiError.badRequest(status_msg || 'Unable to submit leave request');
 
     const leave = await this.getDetails(request_id);
@@ -102,9 +101,8 @@ class LeaveRequestService extends BaseService {
 
     const leaveBeforeCancel = await this.getDetails(id);
 
-    await callProcedure('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
-    const { readOuts } = require('../config/db');
-    const { ok, msg: cancelMsg } = await readOuts('ok', 'msg');
+    const { outs } = await callProcedureWithOuts('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
+    const { ok, msg: cancelMsg } = outs;
     if (!ok) {
       const msg = cancelMsg ?? 'Cannot cancel';
       if (msg.includes('not found')) throw ApiError.notFound(msg);

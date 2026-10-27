@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, readOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify   = require('./mailNotify.service');
 
@@ -16,6 +16,20 @@ const FILLABLE = [
   'contract_end_date', 'date_of_confirmation', 'educational_qualification',
   'total_exp_before_joining', 'previous_employer', 'bgv_status', 'previous_designation',
 ];
+
+const DIRECTORY_FIELDS = [
+  'employee_id', 'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'profile_photo',
+  'emp_job_title', 'department_id', 'department_name', 'designation_id', 'designation_name',
+  'reporting_to', 'reporting_to_name', 'reporting_to_code', 'office_id', 'team_id', 'location',
+  'holiday_calendar', 'shift', 'employee_type', 'employee_status', 'emp_joining_date',
+];
+
+function toDirectoryEntry(e) {
+  const out = {};
+  for (const k of DIRECTORY_FIELDS) out[k] = e[k] ?? null;
+  out.birthday = e.dob ? String(e.dob).slice(5, 10) : null;
+  return out;
+}
 
 class EmployeeService extends BaseService {
   constructor() {
@@ -54,7 +68,7 @@ class EmployeeService extends BaseService {
   }
 
   async createWithProcedure(data) {
-    await callProcedure(
+    const { outs: out } = await callProcedureWithOuts(
       'sp_create_employee(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @employee_id)',
       [
         data.emp_code         ?? null,
@@ -74,8 +88,7 @@ class EmployeeService extends BaseService {
         data.password_hash    ?? null,
       ]
     );
-    const out = await readOuts('employee_id');
-    const profile = await this.getProfile(out[0].employee_id);
+    const profile = await this.getProfile(out.employee_id);
 
     if (profile && data.email) {
       notify.employeeCreated({
@@ -154,7 +167,7 @@ class EmployeeService extends BaseService {
     const managerId = self?.reporting_to ?? null;
 
     if (!managerId) {
-      return { manager: null, teammates: self ? [self] : [], currentEmployeeId: employeeId };
+      return { manager: null, teammates: self ? [toDirectoryEntry(self)] : [], currentEmployeeId: employeeId };
     }
 
     const [managerResults, teammateResults] = await Promise.all([
@@ -162,9 +175,11 @@ class EmployeeService extends BaseService {
       callProcedure('sp_list_employees(?, ?, ?, ?, ?, ?)', [null, 'Active', null, managerId, null, null]),
     ]);
 
+    // Colleague-facing fields only (no salary/statutory data), same as the directory.
+    const manager = (managerResults[0] ?? [])[0] ?? null;
     return {
-      manager:           (managerResults[0] ?? [])[0] ?? null,
-      teammates:         teammateResults[0] ?? [],
+      manager:           manager ? toDirectoryEntry(manager) : null,
+      teammates:         (teammateResults[0] ?? []).map(toDirectoryEntry),
       currentEmployeeId: employeeId,
     };
   }
@@ -178,7 +193,9 @@ class EmployeeService extends BaseService {
         holidayCalendar && holidayCalendar !== 'all' ? holidayCalendar     : null,
       ]
     );
-    return results[0] ?? results;
+    // Every signed-in user can read the directory, so return only the colleague-facing fields —
+    // never salary, Aadhaar, PF/ESI, family or full date-of-birth data. Birthdays go out as MM-DD.
+    return (results[0] ?? []).map(toDirectoryEntry);
   }
 
   async changeRole(employeeId, roleId) {

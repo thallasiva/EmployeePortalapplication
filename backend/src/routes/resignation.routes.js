@@ -12,7 +12,8 @@ router.put('/my/:id/withdraw', ctrl.withdrawResignation);
 router.get('/my/:id/attachment', ctrl.downloadAttachment);
 
 
-const managerOnly = authorizeRoles('Reporting Manager');
+// HR Managers lead the recruiter team and see the same Team Management menu.
+const managerOnly = authorizeRoles('Reporting Manager', 'HR Manager');
 router.get('/manager/team', managerOnly, ctrl.getTeamResignations);
 router.put('/manager/:id/review', managerOnly, ctrl.reviewByManager);
 
