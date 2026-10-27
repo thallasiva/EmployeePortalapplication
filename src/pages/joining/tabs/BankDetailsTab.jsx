@@ -1,5 +1,5 @@
 import React from "react";
-import { Landmark, CheckCircle } from "lucide-react";
+import { Landmark, CheckCircle, Check, AlertTriangle } from "lucide-react";
 
 export default function BankDetailsTab({ form }) {
   const acc = form.accountNumber || "";
@@ -35,7 +35,7 @@ export default function BankDetailsTab({ form }) {
             (form.accountNumber === form.confirmAccountNumber
               ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
               : "bg-red-50 border border-red-200 text-red-600")}>
-            {form.accountNumber === form.confirmAccountNumber ? "✓ Account numbers match" : "⚠ Account numbers do not match — please go back to Tab 3 and correct"}
+            {form.accountNumber === form.confirmAccountNumber ? <><Check size={13} className="inline -mt-0.5" /> Account numbers match</> : <><AlertTriangle size={13} className="inline -mt-0.5" /> Account numbers do not match — please go back to Tab 3 and correct</>}
           </div>
         )}
       </div>

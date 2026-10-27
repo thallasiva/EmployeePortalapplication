@@ -1,5 +1,6 @@
 import React from "react";
 import { fmt, fmtM } from "../utils/ctcUtils";
+import { Check, AlertTriangle, X } from "lucide-react";
 
 const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, computed, candidates, checks }) {
   const ctcAnn = Number(form.ctcInput) * 12;
@@ -171,7 +172,7 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
               className={`flex items-center justify-between px-3 py-2 border-b border-gray-50 last:border-0 text-[12px] ${ck.status === 'fail' ? 'bg-red-50' : ck.status === 'warn' ? 'bg-amber-50' : ''}`}>
               <div className="flex items-center gap-2">
                 <span className={ck.status === 'ok' ? 'text-emerald-500 font-bold' : ck.status === 'warn' ? 'text-amber-500 font-bold' : 'text-red-500 font-bold'}>
-                  {ck.status === 'ok' ? '✓' : ck.status === 'warn' ? '⚠' : '✗'}
+                  {ck.status === 'ok' ? <Check size={13} /> : ck.status === 'warn' ? <AlertTriangle size={13} /> : <X size={13} />}
                 </span>
                 <span className="text-gray-700">{ck.label}</span>
               </div>

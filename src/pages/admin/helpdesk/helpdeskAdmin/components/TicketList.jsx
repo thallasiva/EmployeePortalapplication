@@ -1,5 +1,5 @@
 import React from "react";
-import { Headphones } from "lucide-react";
+import { Headphones, ArrowLeft, ArrowRight } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND, STATUS_COLOR, TEAM_COLOR } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
@@ -84,11 +84,11 @@ const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUs
           <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}
             className={cssClass({ padding: "4px 10px", border: "1px solid #e2e8f0", borderRadius: 6,
               background: "#fff", cursor: page === 1 ? "not-allowed" : "pointer",
-              opacity: page === 1 ? 0.5 : 1, fontSize: 12 })}>← Prev</button>
+              opacity: page === 1 ? 0.5 : 1, fontSize: 12 })}><ArrowLeft size={12} className="inline -mt-0.5" /> Prev</button>
           <button onClick={() => onPageChange(page + 1)} disabled={page * limit >= total}
             className={cssClass({ padding: "4px 10px", border: "1px solid #e2e8f0", borderRadius: 6,
               background: "#fff", cursor: page * limit >= total ? "not-allowed" : "pointer",
-              opacity: page * limit >= total ? 0.5 : 1, fontSize: 12 })}>Next →</button>
+              opacity: page * limit >= total ? 0.5 : 1, fontSize: 12 })}>Next <ArrowRight size={12} className="inline -mt-0.5" /></button>
         </div>
       </div>
     )}

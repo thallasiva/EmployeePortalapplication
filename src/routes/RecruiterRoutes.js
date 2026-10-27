@@ -4,7 +4,7 @@
 
 import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { getStoredUser, isRecruiterLead } from "../data/auth";
+import { getStoredUser, isRecruiterLead, ROLE_RECRUITER } from "../data/auth";
 import LazyPage from "./LazyPage";
 
 const Recruitment = lazy(() => import("../pages/admin/Recruitment"));
@@ -21,11 +21,13 @@ const RecruiterRoutes = () => {
   const user = getStoredUser();
   if (!user) return <Navigate to="/login" replace />;
   const isTL = isRecruiterLead(user);
+  // Only leads/admins may create job requests (the API rejects recruiters).
+  const canCreateJob = Number(user.role) !== ROLE_RECRUITER;
   return (
     <Routes>
       <Route index element={<Navigate to="recruitment?page=dashboard" replace />} />
       <Route path="recruitment" element={<Page><Recruitment /></Page>} />
-      <Route path="recruitment/create-new" element={<Page><CreateJobPage /></Page>} />
+      <Route path="recruitment/create-new" element={canCreateJob ? <Page><CreateJobPage /></Page> : <Navigate to="/recruiter/recruitment?page=jobs" replace />} />
       <Route path="recruitment/ai-interview" element={<Page><AIInterviewSetup /></Page>} />
 
       {}
@@ -38,7 +40,7 @@ const RecruiterRoutes = () => {
         </>
       }
 
-      <Route path="*" element={<Navigate to="recruitment?page=dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/recruiter/recruitment?page=dashboard" replace />} />
     </Routes>);
 
 };

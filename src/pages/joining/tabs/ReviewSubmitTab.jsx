@@ -1,4 +1,5 @@
 import React from "react";
+import { Check } from "lucide-react";
 
 const Section = ({ title, children }) =>
 <div className="mb-6">
@@ -113,7 +114,7 @@ export default function ReviewSubmitTab({ form }) {
       } />
       {(form.termLifeNominees || []).length > 0 &&
       <p className={"text-[12px] font-semibold mb-4 " + (tlTotal === 100 ? "text-emerald-600" : "text-amber-600")}>
-          Total Share: {tlTotal}% {tlTotal === 100 ? "✓" : "(must equal 100%)"}
+          Total Share: {tlTotal}% {tlTotal === 100 ? <Check size={13} className="inline -mt-0.5" /> : "(must equal 100%)"}
         </p>
       }
 
@@ -137,7 +138,7 @@ export default function ReviewSubmitTab({ form }) {
       } />
       {(form.gratuityNominees || []).length > 0 &&
       <p className={"text-[12px] font-semibold mb-4 " + (gTotal === 100 ? "text-emerald-600" : "text-amber-600")}>
-          Total Share: {gTotal}% {gTotal === 100 ? "✓" : "(must equal 100%)"}
+          Total Share: {gTotal}% {gTotal === 100 ? <Check size={13} className="inline -mt-0.5" /> : "(must equal 100%)"}
         </p>
       }
       <div className="mb-6">
@@ -168,7 +169,7 @@ export default function ReviewSubmitTab({ form }) {
       } />
       {(form.insNominees || []).length > 0 &&
       <p className={"text-[12px] font-semibold mb-4 " + (iTotal === 100 ? "text-emerald-600" : "text-amber-600")}>
-          Total Share: {iTotal}% {iTotal === 100 ? "✓" : "(must equal 100%)"}
+          Total Share: {iTotal}% {iTotal === 100 ? <Check size={13} className="inline -mt-0.5" /> : "(must equal 100%)"}
         </p>
       }
 
@@ -205,14 +206,14 @@ export default function ReviewSubmitTab({ form }) {
 
       {}
       <Section title="Acknowledgements">
-        <Field label="Employee Handbook" value={form.handbookAcknowledged ? "Acknowledged ✓" : "Not yet acknowledged"} />
-        <Field label="HR Policy Manual" value={form.hrPolicyAcknowledged ? "Acknowledged ✓" : "Not yet acknowledged"} />
-        <Field label="PF Declaration" value={form.pfDeclarationAccepted ? "Accepted ✓" : "Not yet accepted"} />
+        <Field label="Employee Handbook" value={form.handbookAcknowledged ? "Acknowledged" : "Not yet acknowledged"} />
+        <Field label="HR Policy Manual" value={form.hrPolicyAcknowledged ? "Acknowledged" : "Not yet acknowledged"} />
+        <Field label="PF Declaration" value={form.pfDeclarationAccepted ? "Accepted" : "Not yet accepted"} />
       </Section>
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2">
         <p className="text-[12px] text-amber-700 font-medium">
-          ✓ By clicking <strong>Submit Formalities</strong>, you confirm that all information provided is true and accurate to the best of your knowledge.
+          <Check size={14} className="inline -mt-0.5" /> By clicking <strong>Submit Formalities</strong>, you confirm that all information provided is true and accurate to the best of your knowledge.
         </p>
       </div>
     </div>);

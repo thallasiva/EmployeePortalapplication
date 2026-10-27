@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { listEmployees } from "../../../../../api/employee.api";
+import { getEmployeeDirectory } from "../../../../../api/employee.api";
 import { listHolidays } from "../../../../../api/holiday.api";
 
 export function useEngageData() {
@@ -11,7 +11,7 @@ export function useEngageData() {
     const yr = new Date().getFullYear();
     setLoading(true);
     Promise.allSettled([
-      listEmployees({ limit: 500, status: "active" }),
+      getEmployeeDirectory(),
       listHolidays({ year: yr, limit: 50 }),
     ]).then(([emp, hol]) => {
       const arr = (v) =>

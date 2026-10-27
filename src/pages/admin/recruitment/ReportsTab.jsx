@@ -202,7 +202,7 @@ function ReportsTab() {
         </SectionCard>
 
         {}
-        <SectionCard title="Pipeline Funnel (Selected Period)" subtitle={`${fromDate} → ${toDate}`}>
+        <SectionCard title="Pipeline Funnel (Selected Period)" subtitle={`${fromDate} – ${toDate}`}>
           {repLoading ? <LoadingRow /> : funnelSegments.length === 0 ?
           <p className="py-8 text-center text-sm text-gray-400">No data for selected range</p> :
 
@@ -230,7 +230,7 @@ function ReportsTab() {
         </SectionCard>
 
         {}
-        <SectionCard title="Candidate Source Breakdown" subtitle={`${fromDate} → ${toDate}`}>
+        <SectionCard title="Candidate Source Breakdown" subtitle={`${fromDate} – ${toDate}`}>
           {repLoading ? <LoadingRow /> : !report?.sourceBreakdown?.length ?
           <p className="py-8 text-center text-sm text-gray-400">No source data for selected range</p> :
 

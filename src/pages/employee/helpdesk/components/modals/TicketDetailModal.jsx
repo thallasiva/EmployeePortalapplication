@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ArrowRight, X } from "lucide-react";
 import { getTicket } from "../../../../../api/helpdesk.api";
 import { getStatusStyle, fmtDate, fmtDateTime, getCommentStyle } from "../../utils/helpdeskUtils";
 import { cssClass } from "../../../../../utils/classStyles";
@@ -32,7 +32,7 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
             {ticket && (
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 })}>
                 <span className={cssClass({ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: sc.bg, color: sc.color })}>{ticket.status}</span>
-                {ticket.forwarded_to_team && <span className={cssClass({ fontSize: 11, color: "#7c3aed", fontWeight: 500 })}>→ {ticket.forwarded_to_team}</span>}
+                {ticket.forwarded_to_team && <span className={cssClass({ fontSize: 11, color: "#7c3aed", fontWeight: 500 })}><ArrowRight size={11} className="inline -mt-0.5" /> {ticket.forwarded_to_team}</span>}
                 <span className={cssClass({ fontSize: 11, color: "#9ca3af" })}>#{ticket.ticket_id}</span>
               </div>
             )}
@@ -40,7 +40,7 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
               {ticket?.subject || "Loading…"}
             </p>
           </div>
-          <button onClick={onClose} className={cssClass({ background: "none", border: "none", color: "#9ca3af", fontSize: 20, cursor: "pointer", padding: 4, flexShrink: 0 })}>✕</button>
+          <button onClick={onClose} className={cssClass({ background: "none", border: "none", color: "#9ca3af", fontSize: 20, cursor: "pointer", padding: 4, flexShrink: 0 })} aria-label="Close"><X size={18} /></button>
         </div>
 
         {/* Body */}

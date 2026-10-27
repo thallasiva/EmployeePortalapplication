@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmtHolDate } from "../utils/formatters";
+import { ArrowRight } from "lucide-react";
 
 const HolidayCard = React.memo(function HolidayCard({ loading, holidays }) {
   return (
@@ -9,7 +10,7 @@ const HolidayCard = React.memo(function HolidayCard({ loading, holidays }) {
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 })}>
         <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>Upcoming Holidays</span>
         <Link to="/employee/leave/holiday-calendar" className={cssClass({ fontSize: 12, color: "#f18200", fontWeight: 600, textDecoration: "none" })}>
-          View All →
+          View All <ArrowRight size={12} className="inline -mt-0.5" />
         </Link>
       </div>
       {loading ? (

@@ -1,29 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Shield, Search, Eye, ChevronLeft, ChevronRight, RefreshCw, Loader2 } from "lucide-react";
+import { Shield, Search, Eye, ChevronLeft, ChevronRight, RefreshCw, Loader2, X } from "lucide-react";
 import client from "../../../api/client";
 
 const MODULES_F = ["All Modules","Email Config","Email Templates","Email Permissions","Email Logs","Scheduled Emails","Notification Settings","Menu Permissions","Form Builder","Dashboard Builder","Report Builder","System","Employees","Leave","Payroll","Attendance","Recruitment"];
-const RESULTS_F = ["All Results","Success","Failed"];
+const RESULTS_F = ["All Results","Success","Failed","Denied"];
 const PER_PAGE  = 15;
-
-/* We use the generic system audit_logs endpoint if it exists, or fall back to local seed */
-const SEED = [
-  { id:1,  dt:"06 Aug 2026, 10:32 AM", user:"Super Admin",   email:"admin@company.com",  action:"Updated SMTP Settings",             module:"Email Config",     ip:"192.168.1.10", result:"Success" },
-  { id:2,  dt:"06 Aug 2026, 10:15 AM", user:"HR Manager",    email:"hr@company.com",     action:"Created Email Template: Offer Letter",module:"Email Templates",  ip:"192.168.1.22", result:"Success" },
-  { id:3,  dt:"06 Aug 2026, 09:50 AM", user:"Super Admin",   email:"admin@company.com",  action:"Modified Email Permissions",         module:"Email Permissions", ip:"192.168.1.10", result:"Success" },
-  { id:4,  dt:"06 Aug 2026, 09:30 AM", user:"HR Manager",    email:"hr@company.com",     action:"Retried Failed Email",               module:"Email Logs",        ip:"192.168.1.22", result:"Success" },
-  { id:5,  dt:"06 Aug 2026, 09:00 AM", user:"Super Admin",   email:"admin@company.com",  action:"Deleted Old Template",               module:"Email Templates",   ip:"192.168.1.10", result:"Success" },
-  { id:6,  dt:"05 Aug 2026, 06:20 PM", user:"Finance",       email:"finance@company.com",action:"Exported Email Logs CSV",            module:"Email Logs",        ip:"10.0.0.5",     result:"Success" },
-  { id:7,  dt:"05 Aug 2026, 05:45 PM", user:"Super Admin",   email:"admin@company.com",  action:"Disabled Schedule: Weekly Newsletter",module:"Scheduled Emails", ip:"192.168.1.10", result:"Success" },
-  { id:8,  dt:"05 Aug 2026, 04:00 PM", user:"HR Manager",    email:"hr@company.com",     action:"Cloned Template: Leave Approved",    module:"Email Templates",   ip:"192.168.1.22", result:"Success" },
-  { id:9,  dt:"05 Aug 2026, 03:30 PM", user:"Super Admin",   email:"admin@company.com",  action:"Tested SMTP Connection",            module:"Email Config",      ip:"192.168.1.10", result:"Success" },
-  { id:10, dt:"05 Aug 2026, 02:00 PM", user:"Recruiter",     email:"recruit@company.com",action:"Sent Test Email for Interview Invite",module:"Email Templates",  ip:"10.0.0.8",     result:"Failed"  },
-  { id:11, dt:"05 Aug 2026, 01:00 PM", user:"Super Admin",   email:"admin@company.com",  action:"Created Schedule: Contract Expiry",  module:"Scheduled Emails",  ip:"192.168.1.10", result:"Success" },
-  { id:12, dt:"04 Aug 2026, 11:00 AM", user:"HR Manager",    email:"hr@company.com",     action:"Reset Notification Settings",        module:"Notification Settings",ip:"192.168.1.22",result:"Success"},
-  { id:13, dt:"04 Aug 2026, 10:00 AM", user:"Super Admin",   email:"admin@company.com",  action:"Updated Menu Permissions for Manager",module:"Menu Permissions", ip:"192.168.1.10", result:"Success" },
-  { id:14, dt:"04 Aug 2026, 09:00 AM", user:"HR Manager",    email:"hr@company.com",     action:"Created Form: Employee Onboarding",  module:"Form Builder",      ip:"192.168.1.22", result:"Success" },
-  { id:15, dt:"03 Aug 2026, 05:00 PM", user:"Super Admin",   email:"admin@company.com",  action:"Published Dashboard: HR Overview",   module:"Dashboard Builder",  ip:"192.168.1.10", result:"Success" },
-];
 
 export default function AuditLogs() {
   const [rows, setRows]       = useState([]);
@@ -38,21 +19,15 @@ export default function AuditLogs() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Try real audit endpoint; fall back to seed
       const res = await client.get("/audit-logs", {
         params: { search, module: module==="All Modules"?undefined:module, result: result==="All Results"?undefined:result, page, limit: PER_PAGE }
       });
-      setRows(res.data?.data?.rows || SEED);
-      setTotal(res.data?.data?.total || SEED.length);
+      setRows(res.data?.data?.rows || []);
+      setTotal(res.data?.data?.total || 0);
     } catch {
-      // use local seed + client-side filter/page
-      const filtered = SEED.filter(r =>
-        (module==="All Modules" || r.module===module) &&
-        (result==="All Results" || r.result===result) &&
-        (!search || r.user.toLowerCase().includes(search.toLowerCase()) || r.action.toLowerCase().includes(search.toLowerCase()))
-      );
-      setTotal(filtered.length);
-      setRows(filtered.slice((page-1)*PER_PAGE, page*PER_PAGE));
+      // Never show sample entries on an audit page — an empty list is the honest fallback.
+      setRows([]);
+      setTotal(0);
     }
     setLoading(false);
   }, [search, module, result, page]);
@@ -69,7 +44,7 @@ export default function AuditLogs() {
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
               <span className="text-[15px] font-bold text-[#1e293b]">Audit Log Details</span>
-              <button onClick={() => setViewRow(null)} className="text-[#94a3b8]">✕</button>
+              <button onClick={() => setViewRow(null)} className="text-[#94a3b8]" aria-label="Close"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-3">
               {[["Date & Time",viewRow.dt],["User",viewRow.user],["Email",viewRow.email],

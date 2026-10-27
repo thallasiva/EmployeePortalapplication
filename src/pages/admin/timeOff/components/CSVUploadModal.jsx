@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, X, Download } from "lucide-react";
 import { importHolidays } from "../../../../api/holiday.api";
 import { cssClass } from "../../../../utils/classStyles";
 import { B } from "../constants";
@@ -53,7 +53,7 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
           <div className={cssClass({ fontSize: 17, fontWeight: 800, color: "#111827" })}>
             Bulk Upload Holidays via CSV
           </div>
-          <Btn variant="cancel" size="sm" onClick={onClose}>✕</Btn>
+          <Btn variant="cancel" size="sm" onClick={onClose} aria-label="Close"><X size={14} /></Btn>
         </div>
 
         {/* download template banner */}
@@ -61,7 +61,7 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
           background: "#fff8f0", border: "1px solid #fed7aa", borderRadius: 10,
           padding: "10px 14px", marginBottom: 18 })}>
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 8 })}>
-            <span className={cssClass({ fontSize: 18 })}>📥</span>
+            <Download size={18} />
             <div>
               <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#92400e" })}>Not sure about the format?</div>
               <div className={cssClass({ fontSize: 11, color: "#b45309" })}>Download the template and fill it in</div>
@@ -97,7 +97,7 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
             background: preview ? "#fff8f0" : "#fafafa", marginBottom: 16, transition: "all .2s" })}>
           <Upload size={28} className={cssClass({ color: preview ? B : "#9ca3af", margin: "0 auto 10px", display: "block" })} />
           <div className={cssClass({ fontSize: 13, fontWeight: 600, color: preview ? B : "#374151" })}>
-            {preview ? `✓ ${preview.length} rows loaded` : "Click to select CSV file"}
+            {preview ? `${preview.length} rows loaded` : "Click to select CSV file"}
           </div>
           <div className={cssClass({ fontSize: 11, color: "#9ca3af", marginTop: 4 })}>Supports .csv files</div>
           <input ref={fileRef} type="file" accept=".csv" onChange={handleFile}

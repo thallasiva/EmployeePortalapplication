@@ -112,7 +112,7 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       setOnBreak(false);
       await refreshAttendance();
       const isResuming = !!checkOut;
-      successToast((isResuming ? "Break ended — resumed!" : "Checked in successfully!") + (gps.location ? ` 📍 ${gps.location}` : ""));
+      successToast((isResuming ? "Break ended — resumed!" : "Checked in successfully!") + (gps.location ? ` at ${gps.location}` : ""));
     } catch (err) {
       apiErrorToast(err, "Check-in failed.");
     } finally {
@@ -128,7 +128,7 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       if (gps.location) setCheckoutLocation(gps.location);
       setOnBreak(true);
       await refreshAttendance();
-      successToast("Checked out — on break!" + (gps.location ? ` 📍 ${gps.location}` : ""));
+      successToast("Checked out — on break!" + (gps.location ? ` at ${gps.location}` : ""));
     } catch (err) {
       apiErrorToast(err, "Check-out failed.");
     } finally {

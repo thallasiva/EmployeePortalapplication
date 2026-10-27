@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Eye, Loader2 } from "lucide-react";
+import { Eye, Loader2, X } from "lucide-react";
 import { Card, Btn, Table, SearchBar } from "../../shared";
 import { fmt, fmtM } from "../utils/ctcUtils";
 import { OFFER_CLS } from "../constants";
@@ -44,7 +44,7 @@ const OffersTableCard = React.memo(function OffersTableCard({
           {filterStatus && (
             <span onClick={() => onFilterChange("")}
               className="inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full bg-indigo-100 text-indigo-700 text-[12px] font-semibold cursor-pointer">
-              {filterStatus} ✕
+              {filterStatus} <X size={11} className="inline -mt-0.5" />
             </span>
           )}
           <select value={filterStatus} onChange={(e) => onFilterChange(e.target.value)}

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { cssClass } from "../../../../../utils/classStyles";
 import { QUICK_LINKS } from "../constants";
+import { ArrowRight } from "lucide-react";
 
 const QuickAccessCard = React.memo(function QuickAccessCard() {
   return (
@@ -19,7 +20,7 @@ const QuickAccessCard = React.memo(function QuickAccessCard() {
             })}
           >
             {item.label}
-            <span>→</span>
+            <ArrowRight size={14} />
           </Link>
         ))}
       </div>

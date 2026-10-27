@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  AlertTriangle, CheckCircle2, Clock, FileCheck,
-  FileClock, FileX, UserX, Users, Activity } from
-"lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, FileCheck, FileClock, FileX, UserX, Users, Activity, ArrowRight } from "lucide-react";
 import { getLoggedInUser } from "../../lib/dateUtils";
 import { getManagerFullDashboard } from "../../api/timesheet.api";
 import ManagerTabs from "./ManagerTabs";
@@ -121,7 +118,7 @@ const ManagerDashboard = () => {
               Team Members — Today's Attendance
             </h2>
             <Link to="/manager/team/attendance" className="text-sm text-brand font-medium">
-              Full view →
+              Full view <ArrowRight size={12} className="inline -mt-0.5" />
             </Link>
           </div>
 
@@ -215,9 +212,9 @@ const ManagerDashboard = () => {
           }
 
           <div className="mt-4 pt-4 border-t border-gray-100 space-y-1">
-            <Link to="/manager/team/leave" className="block text-sm text-brand font-medium">Leave requests →</Link>
-            <Link to="/manager/team/regularizations" className="block text-sm text-brand font-medium">Regularizations →</Link>
-            <Link to="/manager/timesheets" className="block text-sm text-brand font-medium">Timesheets →</Link>
+            <Link to="/manager/team/leave" className="block text-sm text-brand font-medium">Leave requests <ArrowRight size={12} className="inline -mt-0.5" /></Link>
+            <Link to="/manager/team/regularizations" className="block text-sm text-brand font-medium">Regularizations <ArrowRight size={12} className="inline -mt-0.5" /></Link>
+            <Link to="/manager/timesheets" className="block text-sm text-brand font-medium">Timesheets <ArrowRight size={12} className="inline -mt-0.5" /></Link>
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { memo, useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
+import { Zap } from "lucide-react";
 
 const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = [], onClose, onSubmit }) {
   const today = new Date().toISOString().slice(0, 10);
@@ -70,7 +71,7 @@ const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = []
               border: "none", cursor: saving ? "not-allowed" : "pointer",
               transition: "background 0.15s",
             })}>
-            {saving ? "Submitting…" : "⚡ Submit Extra Hours"}
+            {saving ? "Submitting…" : <span className="inline-flex items-center gap-1.5"><Zap size={14} /> Submit Extra Hours</span>}
           </button>
         </div>
       </div>

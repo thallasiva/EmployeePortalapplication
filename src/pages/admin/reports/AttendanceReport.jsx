@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Clock } from "lucide-react";
 import {
   ReportPageHeader,
   ReportIconStatCard,
@@ -85,7 +85,7 @@ export default function AttendanceReport() {
             key={stat.label}
             label={stat.label}
             value={stat.value}
-            icon="📅"
+            icon={<CalendarDays size={16} />}
             color={stat.color}
             trend={stat.trend} />
 
@@ -151,16 +151,16 @@ export default function AttendanceReport() {
           <table className="report-data-table">
             <thead>
               <tr>
-                <th>Name ↕</th>
-                <th>Day ↕</th>
-                <th>Date ↕</th>
-                <th>Check in ↕</th>
-                <th>Status ↕</th>
-                <th>Check Out ↕</th>
-                <th>Break ↕</th>
-                <th>Late ↕</th>
-                <th>Overtime ↕</th>
-                <th>Production Hours ↕</th>
+                <th>Name <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Day <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Date <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Check in <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Status <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Check Out <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Break <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Late <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Overtime <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Production Hours <ArrowUpDown size={12} className="inline opacity-50" /></th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -196,7 +196,7 @@ export default function AttendanceReport() {
                   <span className="text-gray-400">—</span> :
 
                   <span className={`report-production ${row.productionGood ? "is-good" : "is-low"}`}>
-                        🕐 {row.production}
+                        <Clock size={12} className="inline -mt-0.5" /> {row.production}
                       </span>
                   }
                   </td>

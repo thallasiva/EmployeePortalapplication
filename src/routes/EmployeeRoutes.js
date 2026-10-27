@@ -88,6 +88,7 @@ const EmployeeRoutes = () =>
       <Route path="my-info" element={<Page><MyInfo /></Page>} />
       <Route path="resignation" element={<Page><Resignation /></Page>} />
       <Route path="appraisal" element={<Page><SelfAppraisal /></Page>} />
+      <Route path="*" element={<Navigate to="/employee/home" replace />} />
 
     </Routes>);
 

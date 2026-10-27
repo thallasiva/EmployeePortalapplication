@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Eye, CheckSquare, Loader2, RefreshCw } from "lucide-react";
+import { Eye, CheckSquare, Loader2, RefreshCw, Check } from "lucide-react";
 import
   {
     PageHeader, Card, Btn, Field, Input,
@@ -53,7 +53,7 @@ function StepBadge({ value, boolean: isBool })
   if (isBool)
   {
     return value ?
-      <span className="bg-emerald-100 text-emerald-600 px-2.5 py-[2px] rounded-full text-[11px] font-bold">✓ Done</span> :
+      <span className="bg-emerald-100 text-emerald-600 px-2.5 py-[2px] rounded-full text-[11px] font-bold inline-flex items-center gap-1"><Check size={11} /> Done</span> :
       <span className="bg-red-100 text-red-600 px-2.5 py-[2px] rounded-full text-[11px] font-bold">Pending</span>;
   }
   const cls = STEP_STATUS_CLS[value] ?? "bg-gray-100 text-gray-500";
@@ -263,7 +263,7 @@ export default function OnboardingPage({ role })
                       <div className="flex items-center gap-2.5">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold ${isDone ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400"}`
                         }>
-                          {isDone ? "✓" : i + 1}
+                          {isDone ? <Check size={14} /> : i + 1}
                         </div>
                         <span className="text-[13px] font-semibold text-gray-900">{step.label}</span>
                       </div>
@@ -275,7 +275,7 @@ export default function OnboardingPage({ role })
                             className={`cursor-pointer px-3 py-[3px] rounded-full border-0 text-[11px] font-bold ${value === true || value === 1 ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"}`
                             }>
 
-                            {value === true || value === 1 ? "✓ Done" : "Pending"}
+                            {value === true || value === 1 ? <span className="inline-flex items-center gap-1"><Check size={12} /> Done</span> : "Pending"}
                           </button> :
 
                           <select

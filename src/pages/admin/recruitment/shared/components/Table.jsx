@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
 
 const PAGE_SIZES = [20, 50, 100, 200, 500];
 
@@ -66,7 +67,7 @@ export const Table = React.memo(function Table({
               className="appearance-none border border-gray-300 rounded px-2 py-0.5 pr-6 text-[13px] bg-white focus:outline-none focus:border-[#d97706] cursor-pointer">
               {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">▾</span>
+            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400"><ChevronDown size={12} /></span>
           </div>
         </div>
         <span className="text-[12px]">{total === 0 ? "0 of 0" : `${from} – ${to} of ${total}`}</span>

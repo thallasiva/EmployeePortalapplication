@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Forward, CornerUpLeft } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { STATUS_COLOR } from "../constants";
 import { updateTicketStatus } from "../../../../../api/helpdesk.api";
@@ -24,13 +24,13 @@ const AdminWorkPanel = React.memo(({ ticket, onUpdated }) => {
       {ticket.status === "Forwarded" && (
         <div className={cssClass({ marginBottom: 12, padding: "10px 14px", background: "#f5f3ff",
           border: "1px solid #ddd6fe", borderRadius: 8, fontSize: 13, color: "#7c3aed" })}>
-          📨 Forwarded to <strong>{ticket.forwarded_to_team}</strong> — take ownership and start working
+          <Forward size={13} className="inline -mt-0.5" /> Forwarded to <strong>{ticket.forwarded_to_team}</strong> — take ownership and start working
         </div>
       )}
       {ticket.status === "Reopened" && (
         <div className={cssClass({ marginBottom: 12, padding: "10px 14px", background: "#fff1f2",
           border: "1px solid #fecdd3", borderRadius: 8, fontSize: 13, color: "#be123c" })}>
-          ↩ Employee was <strong>not satisfied</strong> with the resolution — please re-examine the issue
+          <CornerUpLeft size={13} className="inline -mt-0.5" /> Employee was <strong>not satisfied</strong> with the resolution — please re-examine the issue
         </div>
       )}
 
@@ -60,9 +60,9 @@ const AdminWorkPanel = React.memo(({ ticket, onUpdated }) => {
       {["Resolved", "Closed", "Rejected"].includes(ticket.status) && (
         <div className={cssClass({ padding: "10px 14px", borderRadius: 8, background: sc.bg,
           border: `1px solid ${sc.color}33`, fontSize: 13, color: sc.color, fontWeight: 600 })}>
-          {ticket.status === "Resolved" ? "✓ Issue resolved — awaiting employee confirmation" :
-            ticket.status === "Closed"  ? "✓ Ticket closed by employee" :
-            "✕ Rejected by manager"}
+          {ticket.status === "Resolved" ? "Issue resolved — awaiting employee confirmation" :
+            ticket.status === "Closed"  ? "Ticket closed by employee" :
+            "Rejected by manager"}
         </div>
       )}
     </div>

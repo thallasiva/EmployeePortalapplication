@@ -1,16 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Users,
-  CalendarDays,
-  Clock,
-  UserX,
-  AlertTriangle,
-  Building2,
-  ClipboardCheck,
-  ChevronRight,
-  TrendingUp } from
-"lucide-react";
+import { Users, CalendarDays, Clock, UserX, AlertTriangle, Building2, ClipboardCheck, ChevronRight, TrendingUp, ArrowRight } from "lucide-react";
 import { useAdminDashboard } from "../../hooks/useAdminDashboard";
 import LeaveEmployeeDetailTable from "../../component/admin/LeaveEmployeeDetailTable";
 import AdminChatbot from "../../component/admin/AdminChatbot";
@@ -29,7 +19,7 @@ function KpiCard({ label, value, sub, icon: Icon, className, onClick }) {
         <p className="text-sm opacity-90">{label}</p>
         <p className="text-2xl font-bold mt-1">{value}</p>
         {sub && <p className="text-xs opacity-80 mt-0.5">{sub}</p>}
-        <p className="admin-dash-kpi__link">View details →</p>
+        <p className="admin-dash-kpi__link">View details <ArrowRight size={12} className="inline -mt-0.5" /></p>
       </div>
       <div className="bg-white/20 p-2.5 rounded-lg shrink-0">
         <Icon size={22} />
@@ -197,9 +187,9 @@ export default function Dashboard() {
 
                 <p className="font-medium text-gray-900">{row.employee}</p>
                 <p className="text-xs text-gray-500">
-                  {row.type} · {row.from} → {row.to}
+                  {row.type} · {row.from} – {row.to}
                 </p>
-                <p className="text-[10px] text-emerald-600 mt-1">Open in Leave Management →</p>
+                <p className="text-[10px] text-emerald-600 mt-1">Open in Leave Management <ArrowRight size={11} className="inline -mt-0.5" /></p>
               </button>
             </li>
           } />

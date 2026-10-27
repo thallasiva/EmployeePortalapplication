@@ -51,7 +51,7 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
           {[
             ["Start Date", fmtDate(row.start_date)],
             ["End Date", fmtDate(row.end_date)],
-            ["Shortfall", row.shortfall_days > 0 ? `${row.shortfall_days} days` : "None ✓"],
+            ["Shortfall", row.shortfall_days > 0 ? `${row.shortfall_days} days` : "None"],
             ["Department", row.department_name || "—"],
             ["Job Title", row.job_title || "—"],
             ["Applied On", fmtDate(row.created_at)],

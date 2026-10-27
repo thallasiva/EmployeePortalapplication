@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import { Field, Input, Select, TwoColGrid } from "../../shared";
 import { GENDERS } from "../../mockData";
 import ScorePanel from "./ScorePanel";
@@ -11,7 +11,7 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
 }) {
   function AutoHint({ field }) {
     if (!autoFilled.includes(field)) return null;
-    return <div className="text-[10px] text-[#f18200] mt-0.5 font-semibold">✓ extracted from resume</div>;
+    return <div className="text-[10px] text-[#f18200] mt-0.5 font-semibold inline-flex items-center gap-1"><Sparkles size={10} /> extracted from resume</div>;
   }
 
   function afWrap(field, children) {

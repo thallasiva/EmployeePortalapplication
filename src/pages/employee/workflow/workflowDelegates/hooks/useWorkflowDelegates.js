@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { listEmployees } from "../../../../../api/employee.api";
+import { getEmployeeDirectory } from "../../../../../api/employee.api";
 import { getStoredUser } from "../../../../../data/auth";
 import { successToast } from "../../../../../utils/ToastControllers";
 import { WORKFLOWS } from "../constants";
@@ -18,8 +18,8 @@ export function useWorkflowDelegates() {
   const myId = user?.employeeId;
 
   useEffect(() => {
-    listEmployees({ limit: 500 })
-      .then((res) => setEmployees(res?.data || []))
+    getEmployeeDirectory()
+      .then((rows) => setEmployees(Array.isArray(rows) ? rows : rows?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

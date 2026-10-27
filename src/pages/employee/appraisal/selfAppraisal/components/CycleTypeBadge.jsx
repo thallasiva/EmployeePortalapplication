@@ -1,13 +1,14 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { CYCLE_TYPE_MAP } from "../constants";
+import { Trophy } from "lucide-react";
 
 const CycleTypeBadge = React.memo(function CycleTypeBadge({ type }) {
   const t = CYCLE_TYPE_MAP[type] || {
     label: type || "Yearly",
     color: "#166534",
     bg: "#dcfce7",
-    icon: "🏆",
+    icon: <Trophy size={13} />,
   };
   return (
     <span
@@ -24,7 +25,7 @@ const CycleTypeBadge = React.memo(function CycleTypeBadge({ type }) {
         letterSpacing: 0.2,
       })}
     >
-      {t.icon} {t.label} Appraisal
+      <span style={{ display: "inline-flex", verticalAlign: "-2px", marginRight: 4 }}>{t.icon}</span>{t.label} Appraisal
     </span>
   );
 });

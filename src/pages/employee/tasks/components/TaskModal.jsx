@@ -160,7 +160,7 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
                 value={form.duration_hours}
                 onChange={(e) => set("duration_hours", e.target.value)} />
               {form.start_time && form.end_time && durationHours !== null && (
-                <span className="text-xs text-gray-400">← auto-calculated from times</span>
+                <span className="text-xs text-gray-400">(auto-calculated from times)</span>
               )}
             </div>
           </label>

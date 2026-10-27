@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { DAYS, LEAVE_COLORS, B, BL } from "../constants/leaveConstants";
+import { Star } from "lucide-react";
 
 const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentShiftDef, ltColorMap }) => {
   const year  = cursor.getFullYear();
@@ -46,7 +47,7 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
                 marginBottom: 3, display: "flex", alignItems: "center", gap: 3 })}>
                 {date.getDate()}
                 {isHol && (
-                  <span className={cssClass({ fontSize: 9, fontWeight: 800, color: currentShiftDef.color })}>★</span>
+                  <span className={cssClass({ fontSize: 9, fontWeight: 800, color: currentShiftDef.color, display: "inline-flex" })}><Star size={9} fill="currentColor" /></span>
                 )}
               </div>
 

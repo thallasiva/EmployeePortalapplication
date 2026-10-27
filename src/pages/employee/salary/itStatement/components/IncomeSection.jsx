@@ -2,6 +2,7 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { TSS, TN } from "../constants";
 import { ColHead, SecHdr, NoData } from "./TablePrimitives";
+import { ChevronDown } from "lucide-react";
 
 const tbl = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -29,7 +30,7 @@ export const SectionA = React.memo(function SectionA({ open, onToggle, fiscalMon
             <ColHead fiscalMonths={fiscalMonths} />
             <tbody>
               <tr className={cssClass({ background: "#f8fafc" })}>
-                <td colSpan={fiscalMonths.length + 2} className={cssClass({ padding: "6px 14px", fontSize: 11, fontWeight: 700, color: "#64748b", borderBottom: "1px solid #e2e8f0" })}>{"▾"} Monthly Income</td>
+                <td colSpan={fiscalMonths.length + 2} className={cssClass({ padding: "6px 14px", fontSize: 11, fontWeight: 700, color: "#64748b", borderBottom: "1px solid #e2e8f0" })}><ChevronDown size={12} style={{ display: "inline", verticalAlign: "-2px" }} /> Monthly Income</td>
               </tr>
               {INCOME_ROWS.map(({ key, label }) => (
                 <tr key={key}>
@@ -62,7 +63,7 @@ export const SectionB = React.memo(function SectionB({ open, onToggle, fiscalMon
             <ColHead fiscalMonths={fiscalMonths} />
             <tbody>
               <tr className={cssClass({ background: "#f8fafc" })}>
-                <td colSpan={fiscalMonths.length + 2} className={cssClass({ padding: "6px 14px", fontSize: 11, fontWeight: 700, color: "#64748b", borderBottom: "1px solid #e2e8f0" })}>{"▾"} (Blanks)</td>
+                <td colSpan={fiscalMonths.length + 2} className={cssClass({ padding: "6px 14px", fontSize: 11, fontWeight: 700, color: "#64748b", borderBottom: "1px solid #e2e8f0" })}><ChevronDown size={12} style={{ display: "inline", verticalAlign: "-2px" }} /> (Blanks)</td>
               </tr>
               {DED_ROWS.map(({ key, label }) => (
                 <tr key={key}>

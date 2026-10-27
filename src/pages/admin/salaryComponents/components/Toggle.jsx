@@ -1,4 +1,5 @@
 import React from "react";
+import { Check } from "lucide-react";
 
 const Toggle = React.memo(function Toggle({ value, onChange, label }) {
   return (
@@ -11,7 +12,7 @@ const Toggle = React.memo(function Toggle({ value, onChange, label }) {
           : "bg-gray-50 border-gray-200 text-gray-400"
       }`}
     >
-      {value ? "✓ " : ""}
+      {value ? <Check size={11} className="inline -mt-0.5 mr-0.5" /> : null}
       {label}
     </button>
   );

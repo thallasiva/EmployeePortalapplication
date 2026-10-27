@@ -1,22 +1,23 @@
 import React from "react";
 import { ReportPageHeader } from "../../../component/reports/ReportsLayout";
+import { CreditCard, Receipt, Wallet } from "lucide-react";
 
 const CONFIGS = {
   expense: {
     title: "Expense Report",
-    icon: "💳",
+    icon: <CreditCard size={48} />,
     description: "Track and manage employee expense claims, reimbursements, and approvals.",
     features: ["Submit expense claims", "Upload receipts", "Approval workflows", "Category-wise summaries"],
   },
   invoice: {
     title: "Invoice Report",
-    icon: "🧾",
+    icon: <Receipt size={48} />,
     description: "Manage client invoices, billing cycles, and payment tracking.",
     features: ["Invoice generation", "Client billing", "Payment status", "Revenue tracking"],
   },
   payment: {
     title: "Payment Report",
-    icon: "💰",
+    icon: <Wallet size={48} />,
     description: "Monitor payment transactions, vendor payments, and reconciliation.",
     features: ["Payment history", "Vendor payouts", "Bank reconciliation", "Transaction logs"],
   },
@@ -30,7 +31,7 @@ export default function EmptyStateReport({ type }) {
     <div className="report-page">
       <ReportPageHeader title={config.title} />
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-        <div className="text-6xl mb-4">{config.icon}</div>
+        <div className="mb-4 flex justify-center text-slate-300">{config.icon}</div>
         <h2 className="text-xl font-semibold text-gray-700 mb-2">{config.title} Coming Soon</h2>
         <p className="text-sm text-gray-400 max-w-sm mb-8">{config.description}</p>
         <div className="bg-white border border-gray-100 rounded-xl p-6 max-w-sm w-full shadow-sm text-left">

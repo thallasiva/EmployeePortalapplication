@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Save, Shield, Check, X, ChevronRight, ChevronDown, Users, Loader2 } from "lucide-react";
+import { Save, Shield, Check, X, ChevronRight, ChevronDown, Users, Loader2, LayoutDashboard, ClipboardList, UserPlus, User, Clock, TreePalm, FilePen, ChartColumn, Tag, Timer, Wallet, TrendingUp, FileText, Download, CircleCheck, Target, Briefcase, MessagesSquare, Star, FileStack, FolderOpen, Ticket, Rocket, Link2, Building2, BriefcaseBusiness, Forward, ShieldCheck, Settings, Wrench, Mail, Bell, Palette, Lock } from "lucide-react";
 import { menuPermissionsApi } from "../../api/settings.api";
 import { bustMenuPermissionsCache } from "../../hooks/useMenuPermissions";
 
@@ -9,65 +9,65 @@ const ROLES = ["Admin", "HR Manager", "Manager", "Employee", "Recruiter", "Finan
 const ROLE_COLORS = ["#f18200", "#6366f1", "#8b5cf6", "#10b981", "#3b82f6", "#64748b"];
 
 const MENU_TREE = [
-  { id: "dashboard", label: "Dashboard", icon: "📊", children: [] },
+  { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={16} />, children: [] },
   {
-    id: "employees", label: "Employees", icon: "👥", children: [
-      { id: "emp-list", label: "Employee List", icon: "📋" },
-      { id: "emp-create", label: "Create Employee", icon: "➕" },
-      { id: "emp-detail", label: "Employee Details", icon: "👤" },
+    id: "employees", label: "Employees", icon: <Users size={16} />, children: [
+      { id: "emp-list", label: "Employee List", icon: <ClipboardList size={14} /> },
+      { id: "emp-create", label: "Create Employee", icon: <UserPlus size={14} /> },
+      { id: "emp-detail", label: "Employee Details", icon: <User size={14} /> },
     ]
   },
-  { id: "attendance", label: "Attendance", icon: "🕐", children: [] },
+  { id: "attendance", label: "Attendance", icon: <Clock size={16} />, children: [] },
   {
-    id: "leave", label: "Leave Management", icon: "🏖️", children: [
-      { id: "leave-req", label: "Leave Requests", icon: "📝" },
-      { id: "leave-bal", label: "Leave Balances", icon: "📊" },
-      { id: "leave-type", label: "Leave Types", icon: "🏷️" },
+    id: "leave", label: "Leave Management", icon: <TreePalm size={16} />, children: [
+      { id: "leave-req", label: "Leave Requests", icon: <FilePen size={14} /> },
+      { id: "leave-bal", label: "Leave Balances", icon: <ChartColumn size={14} /> },
+      { id: "leave-type", label: "Leave Types", icon: <Tag size={14} /> },
     ]
   },
-  { id: "timesheets", label: "Timesheets", icon: "⏱️", children: [] },
+  { id: "timesheets", label: "Timesheets", icon: <Timer size={16} />, children: [] },
   {
-    id: "payroll", label: "Payroll", icon: "💰", children: [
-      { id: "pay-overview", label: "Overview", icon: "📈" },
-      { id: "pay-payslips", label: "Payslips", icon: "📄" },
-      { id: "pay-ytd", label: "YTD Reports", icon: "📊" },
-      { id: "pay-inputs", label: "Payroll Inputs", icon: "📥" },
-      { id: "pay-comply", label: "Compliance", icon: "✅" },
+    id: "payroll", label: "Payroll", icon: <Wallet size={16} />, children: [
+      { id: "pay-overview", label: "Overview", icon: <TrendingUp size={14} /> },
+      { id: "pay-payslips", label: "Payslips", icon: <FileText size={14} /> },
+      { id: "pay-ytd", label: "YTD Reports", icon: <ChartColumn size={14} /> },
+      { id: "pay-inputs", label: "Payroll Inputs", icon: <Download size={14} /> },
+      { id: "pay-comply", label: "Compliance", icon: <CircleCheck size={14} /> },
     ]
   },
   {
-    id: "recruitment", label: "Recruitment", icon: "🎯", children: [
-      { id: "rec-jobs", label: "Job Postings", icon: "💼" },
-      { id: "rec-cands", label: "Candidates", icon: "👤" },
-      { id: "rec-inter", label: "Interviews", icon: "🗣️" },
+    id: "recruitment", label: "Recruitment", icon: <Target size={16} />, children: [
+      { id: "rec-jobs", label: "Job Postings", icon: <Briefcase size={14} /> },
+      { id: "rec-cands", label: "Candidates", icon: <User size={14} /> },
+      { id: "rec-inter", label: "Interviews", icon: <MessagesSquare size={14} /> },
     ]
   },
-  { id: "performance", label: "Performance", icon: "⭐", children: [] },
-  { id: "reports", label: "Reports", icon: "📑", children: [] },
-  { id: "documents", label: "Documents", icon: "📂", children: [] },
-  { id: "helpdesk", label: "Helpdesk", icon: "🎫", children: [] },
-  { id: "onboarding", label: "Onboarding", icon: "🚀", children: [] },
+  { id: "performance", label: "Performance", icon: <Star size={16} />, children: [] },
+  { id: "reports", label: "Reports", icon: <FileStack size={16} />, children: [] },
+  { id: "documents", label: "Documents", icon: <FolderOpen size={16} />, children: [] },
+  { id: "helpdesk", label: "Helpdesk", icon: <Ticket size={16} />, children: [] },
+  { id: "onboarding", label: "Onboarding", icon: <Rocket size={16} />, children: [] },
   {
-    id: "workflow", label: "Workflow & Hierarchy", icon: "🔗", children: [
-      { id: "wf-org", label: "Org Hierarchy", icon: "🏢" },
-      { id: "wf-mgrs", label: "Reporting Managers", icon: "👔" },
-      { id: "wf-deleg", label: "Delegation", icon: "↗️" },
+    id: "workflow", label: "Workflow & Hierarchy", icon: <Link2 size={16} />, children: [
+      { id: "wf-org", label: "Org Hierarchy", icon: <Building2 size={14} /> },
+      { id: "wf-mgrs", label: "Reporting Managers", icon: <BriefcaseBusiness size={14} /> },
+      { id: "wf-deleg", label: "Delegation", icon: <Forward size={14} /> },
     ]
   },
-  { id: "role-mgmt", label: "Role Management", icon: "🛡️", children: [] },
+  { id: "role-mgmt", label: "Role Management", icon: <ShieldCheck size={16} />, children: [] },
   {
-    id: "settings", label: "Settings", icon: "⚙️", children: [
-      { id: "set-gen", label: "General Settings", icon: "🔧" },
-      { id: "set-email", label: "Email Configuration", icon: "📧" },
-      { id: "set-notif", label: "Notification Settings", icon: "🔔" },
-      { id: "set-audit", label: "Audit Logs", icon: "📋" },
+    id: "settings", label: "Settings", icon: <Settings size={16} />, children: [
+      { id: "set-gen", label: "General Settings", icon: <Wrench size={14} /> },
+      { id: "set-email", label: "Email Configuration", icon: <Mail size={14} /> },
+      { id: "set-notif", label: "Notification Settings", icon: <Bell size={14} /> },
+      { id: "set-audit", label: "Audit Logs", icon: <ClipboardList size={14} /> },
     ]
   },
-  { id: "form-builder", label: "Form Builder", icon: "📝", children: [] },
-  { id: "report-builder", label: "Report Builder", icon: "📊", children: [] },
-  { id: "dash-builder", label: "Dashboard Builder", icon: "🎨", children: [] },
-  { id: "menu-perm", label: "Menu Permissions", icon: "🔒", children: [] },
-  { id: "notif-center", label: "Notification Center", icon: "🔔", children: [] },
+  { id: "form-builder", label: "Form Builder", icon: <FilePen size={16} />, children: [] },
+  { id: "report-builder", label: "Report Builder", icon: <ChartColumn size={16} />, children: [] },
+  { id: "dash-builder", label: "Dashboard Builder", icon: <Palette size={16} />, children: [] },
+  { id: "menu-perm", label: "Menu Permissions", icon: <Lock size={16} />, children: [] },
+  { id: "notif-center", label: "Notification Center", icon: <Bell size={16} />, children: [] },
 ];
 
 // Build default: Admin=all, others restricted
@@ -260,7 +260,7 @@ export default function MenuPermissionBuilder() {
                         {isExp ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                       </button>
                     ) : <div className="w-[14px]" />}
-                    <span className="text-[16px]">{menu.icon}</span>
+                    <span className="text-slate-500 flex">{menu.icon}</span>
                     <span className="text-[13px] font-semibold text-[#1e293b] flex-1">{menu.label}</span>
                     {hasChildren && (
                       <span className="text-[11px] text-[#94a3b8] mr-2">{childIds.filter(id => perms[activeRole]?.[id]).length}/{childIds.length}</span>
@@ -276,7 +276,7 @@ export default function MenuPermissionBuilder() {
                     <div className="bg-[#f8fafc] border-t border-[#f1f5f9]">
                       {menu.children.map(child => (
                         <div key={child.id} className={`flex items-center gap-4 pl-14 pr-5 py-3 hover:bg-[#f0f4f8] transition-colors ${perms[activeRole]?.[child.id] ? "" : "opacity-50"}`}>
-                          <span className="text-[13px]">{child.icon}</span>
+                          <span className="text-slate-400 flex">{child.icon}</span>
                           <span className="text-[12px] font-medium text-[#374151] flex-1">{child.label}</span>
                           <button onClick={() => toggle(child.id)}
                             className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0 ${perms[activeRole]?.[child.id] ? "bg-[#f18200]" : "bg-[#e2e8f0]"}`}>

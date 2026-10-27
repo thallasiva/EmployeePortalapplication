@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Square } from "lucide-react";
+import { Square, AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { disableCycle } from "../../../../api/appraisal.api";
 import Modal from "./Modal";
@@ -22,7 +22,7 @@ const DisableConfirmModal = React.memo(function DisableConfirmModal({ cycle, onC
     <Modal title="Stop Rollout?" onClose={onClose} width={440}>
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 16 })}>
         <div className={cssClass({ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "14px 16px" })}>
-          <div className={cssClass({ fontWeight: 700, color: "#991b1b", marginBottom: 6 })}>⚠ Warning</div>
+          <div className={cssClass({ fontWeight: 700, color: "#991b1b", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 })}><AlertTriangle size={14} /> Warning</div>
           <p className={cssClass({ margin: 0, fontSize: 13, color: "#7f1d1d", lineHeight: 1.6 })}>Disabling <strong>{cycle.fy_label}</strong> will:</p>
           <ul className={cssClass({ margin: "8px 0 0", paddingLeft: 20, fontSize: 13, color: "#7f1d1d", lineHeight: 1.8 })}>
             <li>Reset all employee submissions back to <strong>Draft</strong></li>

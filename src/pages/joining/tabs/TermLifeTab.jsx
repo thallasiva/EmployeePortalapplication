@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, User, FileText, Info } from "lucide-react";
+import { Heart, User, FileText, Info, Check, AlertTriangle } from "lucide-react";
 import SignatureUpload from "./SignatureUpload";
 
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] focus:border-[#d97706] bg-white text-gray-800 placeholder-gray-400";
@@ -111,7 +111,7 @@ export default function TermLifeTab({ form, set, setForm }) {
         </div>
         <div className={"mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-semibold " + (
         total === 100 ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-amber-50 border border-amber-200 text-amber-700")}>
-          {total === 100 ? "✓" : "⚠"} Total Share: {total}% {total !== 100 ? "(must equal 100%)" : ""}
+          {total === 100 ? <Check size={13} className="inline -mt-0.5" /> : <AlertTriangle size={13} className="inline -mt-0.5" />} Total Share: {total}% {total !== 100 ? "(must equal 100%)" : ""}
         </div>
       </SectionCard>
 

@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import
-  {
-    Plus, Eye, Save, Trash2, Edit2, X, GripVertical, Copy,
-    Type, Hash, Calendar, List, CheckSquare, Circle, AlignLeft, Upload, Star, ToggleLeft, ChevronDown
-  } from "lucide-react";
+import { Plus, Eye, Save, Trash2, Edit2, X, GripVertical, Copy, Type, Hash, Calendar, List, CheckSquare, Circle, AlignLeft, Upload, Star, ToggleLeft, ChevronDown, ArrowLeft, Check } from "lucide-react";
 import { getRolesForSelect } from "../../data/auth";
 import { formsApi } from "../../api/settings.api";
 
@@ -164,7 +160,7 @@ function BuilderView({ form, onBack, onSave })
     <div className="flex flex-col h-full">
       {/* Builder toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-[#e2e8f0] flex-wrap">
-        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold">← Forms</button>
+        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold inline-flex items-center gap-1"><ArrowLeft size={12} /> Forms</button>
         <div className="w-px h-5 bg-[#e2e8f0]" />
         <input value={meta.name} onChange={e => setMeta(p => ({ ...p, name: e.target.value }))}
           placeholder="Form name…"
@@ -328,7 +324,7 @@ export default function FormBuilder()
     <div className="min-h-screen bg-[#f0f4f8]">
       {toast && (
         <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2">
-          ✓ {toast}
+          <Check size={14} className="inline -mt-0.5" /> {toast}
         </div>
       )}
 

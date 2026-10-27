@@ -8,7 +8,6 @@ const crypto = require('crypto');
 const OpenAI = require('openai');
 const { query } = require('../../config/db');
 const { sendMailNow } = require('../email.service');
-const { buildQuestionPlan, hashString } = require('./interviewQuestionBank');
 
 let _openai = null;
 function getOpenAI() {
@@ -133,11 +132,10 @@ Return ONLY valid JSON (no markdown):
 function buildFallbackEvaluation(pairs) {
   const scores = pairs.map((p, i) => {
     const words = (p.answer || '').split(/\s+/).filter(Boolean).length;
-    // Prefer the score already given to this answer (scored against its expected points).
-    const score = Number.isFinite(Number(p.score)) ? Number(p.score) : Math.min(10, Math.max(1, Math.round(words / 15)));
+    const score = Math.min(10, Math.max(1, Math.round(words / 15)));
     return { questionId: i + 1, score, feedback: '', keyPoints: [] };
   });
-  const avg = scores.length ? Math.round(scores.reduce((s, q) => s + q.score, 0) / scores.length * 10) : 0;
+  const avg = Math.round(scores.reduce((s, q) => s + q.score, 0) / scores.length * 10);
   return {
     overallScore: avg,
     recommendation: avg >= 70 ? 'Hire' : avg >= 50 ? 'Maybe' : 'No Hire',
@@ -149,7 +147,7 @@ function buildFallbackEvaluation(pairs) {
 }
 
 // ── DB operations (raw SQL — no stored procedures) ─────────────────────────
-async function createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions, expiresHours = 48, planId = null }) {
+async function createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions, expiresHours = 48 }) {
   const token     = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + expiresHours * 3600 * 1000)
     .toISOString().slice(0, 19).replace('T', ' ');
@@ -157,9 +155,9 @@ async function createSession({ candidateId, jobReqId, recruiterId, candidateName
 
   const result = await query(
     `INSERT INTO ai_interview_sessions
-       (token, candidate_id, job_req_id, plan_id, recruiter_id, candidate_name, candidate_email, job_title, questions_json, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [token, candidateId, jobReqId, planId, recruiterId, candidateName, candidateEmail, jobTitle, qJson, expiresAt]
+       (token, candidate_id, job_req_id, recruiter_id, candidate_name, candidate_email, job_title, questions_json, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [token, candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, qJson, expiresAt]
   );
 
   return { token, expiresAt, sessionId: result.insertId };
@@ -220,10 +218,11 @@ async function verifyOtp(token, code) {
 }
 
 async function submitSession({ token, answers, evaluation }) {
-  const score = normaliseScore(evaluation?.overallScore);
-  const rec   = normaliseRecommendation(evaluation?.recommendation, score);
   const aJson = JSON.stringify(answers);
-  const eJson = JSON.stringify({ ...evaluation, overallScore: score });
+  const eJson = JSON.stringify(evaluation);
+  const score = evaluation?.overallScore ?? null;
+  const recommendationMap = { STRONG_HIRE: 'Strong Hire', HIRE: 'Hire', FURTHER_EVALUATION: 'Maybe', REJECT: 'No Hire' };
+  const rec   = recommendationMap[evaluation?.recommendation] || evaluation?.recommendation || null;
 
   await query(
     `UPDATE ai_interview_sessions
@@ -237,14 +236,12 @@ async function submitSession({ token, answers, evaluation }) {
 async function listByRecruiter({ recruiterId, limit = 20, offset = 0 }) {
   return query(
     `SELECT session_id, token, candidate_name, candidate_email, job_title,
-            status, overall_score, recommendation, expires_at, submitted_at, created_at,
-            JSON_UNQUOTE(JSON_EXTRACT(evaluation_json, '$.integrity.risk')) AS integrity_risk,
-            plan_id, recruiter_decision, decided_at
+            status, overall_score, recommendation, expires_at, submitted_at, created_at
      FROM ai_interview_sessions
-     ${recruiterId == null ? '' : 'WHERE recruiter_id = ?'}
+     WHERE recruiter_id = ?
      ORDER BY created_at DESC
      LIMIT ? OFFSET ?`,
-    recruiterId == null ? [limit, offset] : [recruiterId, limit, offset]
+    [recruiterId, limit, offset]
   );
 }
 
@@ -256,37 +253,11 @@ async function getReport(sessionId) {
   return rows[0] || null;
 }
 
-// The *_json columns are MySQL JSON, which mysql2 already returns parsed;
-// older rows / other drivers may still hand back a string.
-function parseJson(raw, fallback) {
-  if (raw == null || raw === '') return fallback;
-  if (typeof raw === 'object') return raw;
-  try { return JSON.parse(raw); } catch { return fallback; }
-}
-
 function parseState(raw) {
-  const parsed = parseJson(raw, null);
-  if (Array.isArray(parsed)) return { profile: {}, transcript: parsed, durationSeconds: 1800 };
-  if (!parsed || typeof parsed !== 'object') return { profile: {}, transcript: [], durationSeconds: 1800 };
-  return { profile: {}, transcript: [], skillsAssessed: [], durationSeconds: 1800, ...parsed };
-}
-
-const RECOMMENDATIONS = ['Strong Hire', 'Hire', 'Maybe', 'No Hire'];
-
-// overall_score is TINYINT 0-100 and recommendation an ENUM, so normalise whatever
-// the model (or fallback) produced before it reaches the database.
-function normaliseScore(value) {
-  const n = Number(String(value ?? '').replace(/[^0-9.]/g, ''));
-  if (!Number.isFinite(n) || String(value ?? '').trim() === '') return null;
-  return Math.min(100, Math.max(0, Math.round(n)));
-}
-
-function normaliseRecommendation(value, score) {
-  const key = String(value || '').toUpperCase().replace(/[^A-Z]/g, '');
-  const map = { STRONGHIRE: 'Strong Hire', HIRE: 'Hire', FURTHEREVALUATION: 'Maybe', MAYBE: 'Maybe', REJECT: 'No Hire', NOHIRE: 'No Hire' };
-  if (map[key]) return map[key];
-  if (score == null) return null;
-  return score >= 85 ? 'Strong Hire' : score >= 70 ? 'Hire' : score >= 50 ? 'Maybe' : 'No Hire';
+  try {
+    const parsed = JSON.parse(raw || '{}');
+    return Array.isArray(parsed) ? { profile: {}, transcript: parsed, durationSeconds: 1800 } : parsed;
+  } catch { return { profile: {}, transcript: [], durationSeconds: 1800 }; }
 }
 
 function getRemainingSeconds(state, now = Date.now()) {
@@ -299,57 +270,25 @@ function questionTimeLimit(question) {
   if (type === 'CODING' || type === 'CODE') return question?.timeLimit || (question?.problemSize === 'large' ? 1200 : 600);
   if (type === 'SCENARIO' || question?.stage === 'scenario') return question?.timeLimit || 300;
   if (type === 'SYSTEM_DESIGN' || question?.stage === 'system_design') return question?.timeLimit || 900;
-  return question?.timeLimit || 180;
+  return question?.timeLimit || 120;
 }
 
-// Extra time the server allows beyond the visible limit: the question is read aloud
-// before the candidate's clock starts, and the answer still has to reach the server.
-const ANSWER_GRACE_SECONDS = 90;
-
-const normaliseQuestion = (q) => String(q || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-const isSkippedAnswer = (a) => /^\((skipped|time expired)/i.test(String(a || '').trim());
-
-// Used when no LLM is configured (or it fails). Walks a fixed interview plan and never
-// repeats a question already asked in this session.
-const FALLBACK_PLAN = [
-  { stage: 'introduction', type: 'experience', text: () => 'Could you briefly introduce yourself and explain your current role, responsibilities, and the project you work on?' },
-  { stage: 'resume_validation', type: 'resume_probe', text: (s) => `Walk me through the most recent project where you used ${s}. What was the architecture, and which part did you personally build?` },
-  { stage: 'technical', type: 'technical', text: (s) => `What are the most common mistakes or pitfalls you have seen with ${s}, and how do you avoid them?` },
-  { stage: 'technical', type: 'practical', text: (s) => `How do you test and debug code that uses ${s}? Describe the tools and the approach you follow.` },
-  { stage: 'scenario', type: 'scenario', text: () => 'A production issue is reported just before a release and the root cause is unclear. Walk me through exactly what you would do in the first hour.' },
-  { stage: 'technical', type: 'practical', text: (s) => `How would you improve the performance of an application built with ${s}? What would you measure first?` },
-  { stage: 'scenario', type: 'scenario', text: (s) => `You need to deliver a new feature using ${s} with a tight deadline and unclear requirements. How do you plan and deliver it?` },
-  { stage: 'technical', type: 'practical', text: (s) => `How do you keep code written with ${s} secure? Give concrete practices you follow.` },
-  { stage: 'domain', type: 'experience', text: () => 'Tell me about a time you disagreed with a teammate or lead on a technical decision. How was it resolved?' },
-  { stage: 'technical', type: 'practical', text: (s) => `Describe how you would design the data model and APIs for a small module using ${s}. What trade-offs would you consider?` },
-  { stage: 'domain', type: 'experience', text: () => 'What is a technical skill you improved in the last year, and how did you go about learning it?' },
-  { stage: 'domain', type: 'experience', text: () => 'Why are you interested in this role, and what would you want to achieve in your first six months?' },
-];
-
-function fallbackNextQuestion({ profile, transcript, seed }) {
+function fallbackNextQuestion({ profile, transcript }) {
   const n = transcript.length + 1;
-  const asked = new Set(transcript.map((t) => normaliseQuestion(t.question?.question)));
-  const difficulty = Number(profile.relevantExperience || 0) >= 5 ? 'advanced' : 'intermediate';
-
-  // Role-specific plan chosen from the job title/skills, mixed per candidate (seed).
-  // Short or skipped answers are accepted as given (they simply score lower);
-  // the interview always moves on to the next new question.
-  const { plan } = buildQuestionPlan(profile, seed);
-  const next = plan.find((q) => !asked.has(normaliseQuestion(q.question)));
-  if (next) return { id: n, difficulty, skill: '', ...next };
-
-  // Plan exhausted (or an older session): fall back to the generic list.
-  const skills = (Array.isArray(profile.requiredSkills) ? profile.requiredSkills : String(profile.requiredSkills || '').split(','))
-    .map((s) => String(s).trim()).filter(Boolean);
-  const skillFor = (i) => skills[i % Math.max(skills.length, 1)] || profile.jobTitle || 'your main technology';
-  for (let i = 0; i < FALLBACK_PLAN.length; i += 1) {
-    const step = FALLBACK_PLAN[i];
-    const question = step.text(skillFor(i));
-    if (!asked.has(normaliseQuestion(question))) {
-      return { id: n, stage: step.stage, type: step.type, skill: step.text.length ? skillFor(i) : '', difficulty, question };
-    }
-  }
-  return { nextAction: 'END_INTERVIEW', reason: 'question_plan_complete' };
+  if (n === 1) return { id: 1, stage: 'introduction', type: 'experience', difficulty: 'calibrated', question: 'Could you briefly introduce yourself and explain your current role, responsibilities, and the project you work on?' };
+  const skills = String(profile.requiredSkills || '').split(',').map(s => s.trim()).filter(Boolean);
+  const skill = skills[(n - 2) % Math.max(skills.length, 1)] || profile.jobTitle || 'this role';
+  const prior = transcript[transcript.length - 1];
+  const isBrief = (prior?.answer || '').trim().split(/\s+/).length < 35;
+  return {
+    id: n,
+    stage: n > 4 ? 'scenario' : 'technical',
+    type: isBrief ? 'clarification' : 'practical',
+    difficulty: Number(profile.relevantExperience || 0) >= 5 ? 'advanced' : 'intermediate',
+    question: isBrief
+      ? `Could you give a concrete example from your work involving ${skill}, including the problem, your approach, and the result?`
+      : `Based on your experience, how have you used ${skill} in production, and what trade-offs or issues did you need to handle?`,
+  };
 }
 
 // ── Enterprise Adaptive Question Engine ───────────────────────────────────
@@ -377,10 +316,9 @@ function _buildEnterpriseSystemPrompt(profile) {
 - Adapt difficulty dynamically based on the CONTENT QUALITY of candidate answers (not answer length):
   * Excellent answer (A) → step UP one rung on the difficulty ladder, ask a deeper follow-up or a new advanced topic
   * Good answer (B) → maintain level, explore another required skill
-  * Adequate answer (C) → maintain level and move to a NEW topic or a new real-world scenario
-  * Weak answer (D) → step DOWN one rung and ask a simpler NEW question
-  * Very weak / blank / skipped (E) → step DOWN one rung and move to a different skill area
-- Short answers are the candidate's choice: accept them as final and score them as given. NEVER ask the candidate to expand, elaborate, repeat, or give an example for an answer they already gave, and never re-ask an earlier question (even reworded)
+  * Adequate answer (C) → probe the same topic with a real-world scenario at the same level
+  * Weak answer (D) → step DOWN one rung, ask a simpler clarifying question on the same concept
+  * Very weak / blank (E) → step DOWN one rung and move to a different skill area
 - Difficulty ladder (easiest → hardest): fundamental → intermediate → proficient → advanced → senior
 - A long but generic, incorrect, or evasive answer is NOT a good answer — judge substance, correctness, and depth, never word count
 - Prioritize: required skills > preferred skills > general engineering depth
@@ -467,18 +405,9 @@ function _scoreLastAnswer(transcript) {
   return 'A';
 }
 
-async function generateNextQuestion({ profile, transcript, durationSeconds, expiresAt, skillsAssessed = [], seed, planQuestions }) {
-  // HR-approved plan: ask its questions in order and nothing else; finish when they run out.
-  if (Array.isArray(planQuestions) && planQuestions.length) {
-    const askedIds = new Set(transcript.map((t) => t.question?.planQuestionId).filter(Boolean));
-    const next = planQuestions.find((q) => !askedIds.has(q.planQuestionId));
-    if (!next) return { nextAction: 'END_INTERVIEW', reason: 'plan_complete' };
-    return { ...next, id: transcript.length + 1, nextAction: 'ASK_QUESTION' };
-  }
-  // Older sessions have no stored seed; derive a stable one so their plan doesn't shift.
-  const planSeed = seed ?? hashString(`${profile?.jobTitle}|${expiresAt || ''}`);
+async function generateNextQuestion({ profile, transcript, durationSeconds, expiresAt, skillsAssessed = [] }) {
   const openai = getOpenAI();
-  if (!openai) return fallbackNextQuestion({ profile, transcript, seed: planSeed });
+  if (!openai) return fallbackNextQuestion({ profile, transcript });
 
   const qNum = transcript.length + 1;
   const answerQuality = _scoreLastAnswer(transcript);
@@ -561,43 +490,16 @@ Return ONLY valid JSON — no markdown, no explanation:
     });
     const q = JSON.parse(completion.choices[0]?.message?.content || '{}');
     if (q?.nextAction === 'END_INTERVIEW') return { nextAction: 'END_INTERVIEW', reason: q.reason || 'Sufficient evidence collected.' };
-    // Guard against the model re-asking an earlier question verbatim.
-    const alreadyAsked = transcript.some((t) => normaliseQuestion(t.question?.question) === normaliseQuestion(q?.question));
-    if (q?.question && !alreadyAsked) return { ...q, nextAction: 'ASK_QUESTION', id: qNum, answerQuality };
+    if (q?.question) return { ...q, nextAction: 'ASK_QUESTION', id: qNum, answerQuality };
   } catch (err) {
     console.warn('[AIInterview] enterprise question generation failed:', err.message);
   }
-  return fallbackNextQuestion({ profile, transcript, seed: planSeed });
-}
-
-// Which expected points an answer mentions, by overlap of their key words.
-const STOP_WORDS = new Set('the and for with that this from your their they them have has are was were what when which while into about there clearly gives give given uses using used real own work works explains explain mentions mention describes describe specific concrete example examples'.split(' '));
-function rubricCoverage(answer, points) {
-  const text = ` ${String(answer || '').toLowerCase().replace(/[^a-z0-9+#.]+/g, ' ')} `;
-  const covered = [];
-  const missed = [];
-  for (const point of points) {
-    const keys = String(point).toLowerCase().replace(/[^a-z0-9+#.]+/g, ' ').split(' ')
-      .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
-    const hits = keys.filter((k) => text.includes(` ${k.replace(/s$/, '')}`)).length;
-    (keys.length && hits / keys.length >= 0.34 ? covered : missed).push(point);
-  }
-  return { covered, missed, ratio: points.length ? covered.length / points.length : 0 };
+  return fallbackNextQuestion({ profile, transcript });
 }
 
 async function evaluateAnswer({ profile, question, answer, transcript }) {
-  if (isSkippedAnswer(answer)) {
-    return { score: 0, correctness: 0, technicalDepth: 0, practicalKnowledge: 0, problemSolving: 0, communication: 0, confidence: 0, strengths: [], weaknesses: ['No answer given'], assessment: 'Question was not answered.', recommendedDifficulty: 'fundamental' };
-  }
-  // Without an LLM: score by how many of the question's expected points the answer
-  // touches (tempered by length); with no scoring guide, by length alone.
-  const words = String(answer || '').trim().split(/\s+/).filter(Boolean).length;
-  const guide = Array.isArray(question?.expectedPoints) ? question.expectedPoints : [];
-  const coverage = guide.length ? rubricCoverage(answer, guide) : null;
-  const fallbackScore = coverage
-    ? Math.min(10, Math.max(1, Math.round(2 + coverage.ratio * 6 + Math.min(words / 60, 1) * 2)))
-    : Math.min(10, Math.max(1, Math.round(words / 15)));
-  const fallback = { pointsCovered: coverage?.covered || [], pointsMissed: coverage?.missed || [], score: fallbackScore, correctness: fallbackScore, technicalDepth: fallbackScore, practicalKnowledge: fallbackScore, problemSolving: fallbackScore, communication: fallbackScore, confidence: fallbackScore, strengths: [], weaknesses: [], assessment: fallbackScore >= 7 ? 'Strong answer' : 'Answer needs further validation', recommendedDifficulty: fallbackScore >= 7 ? 'advanced' : 'intermediate' };
+  const fallbackScore = Math.min(10, Math.max(1, Math.round(String(answer || '').trim().split(/\s+/).filter(Boolean).length / 15)));
+  const fallback = { score: fallbackScore, correctness: fallbackScore, technicalDepth: fallbackScore, practicalKnowledge: fallbackScore, problemSolving: fallbackScore, communication: fallbackScore, confidence: fallbackScore, strengths: [], weaknesses: [], assessment: fallbackScore >= 7 ? 'Strong answer' : 'Answer needs further validation', recommendedDifficulty: fallbackScore >= 7 ? 'advanced' : 'intermediate' };
   const openai = getOpenAI();
   if (!openai) return fallback;
 
@@ -617,12 +519,6 @@ async function evaluateAnswer({ profile, question, answer, transcript }) {
     weaknesses: [],
     assessment: 'string — 1-2 sentence justification referencing what was said',
     recommendedDifficulty: 'fundamental|intermediate|proficient|advanced|senior',
-    aiGeneratedLikelihood: '0-100 — likelihood this answer was written by an AI assistant rather than the candidate in a live interview. Signals: textbook-perfect or encyclopedic phrasing, heavy bullet/heading structure, generic content with no personal project specifics, style sharply different from the candidate\'s other answers, answering a broader question than asked. A concise, specific, first-person answer is NOT evidence of AI.',
-    aiGeneratedReason: 'string — short evidence for the likelihood (empty if low)',
-    ...(guide.length ? {
-      pointsCovered: ['<expected point the answer covered, copied from expectedPoints>'],
-      pointsMissed: ['<expected point the answer did not cover>'],
-    } : {}),
   };
   // For coding / system-design answers, add an algorithmic rubric.
   const codingSchema = isCoding ? {
@@ -642,7 +538,7 @@ async function evaluateAnswer({ profile, question, answer, transcript }) {
     : 'Evaluate a single interview answer fairly using job-relevant evidence only. Judge substance, correctness and depth — never answer length. Return JSON only.';
 
   try {
-    const completion = await openai.chat.completions.create({ model: getModel(), temperature: 0.2, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sysContent }, { role: 'user', content: JSON.stringify({ role: profile.jobTitle, requiredSkills: profile.requiredSkills, questionType: question?.type, questionDifficulty: question?.difficulty, question: question?.question || question, expectedPoints: guide.length ? guide : undefined, scoringInstruction: guide.length ? 'Score mainly by how many expectedPoints the answer covers correctly, with real substance; list them in pointsCovered/pointsMissed.' : undefined, answer, previousAnswers: transcript.slice(-3).map(t => ({ question: t.question?.question, answer: String(t.answer || '').slice(0, 800) })), schema: { ...baseSchema, ...codingSchema } }) }] });
+    const completion = await openai.chat.completions.create({ model: getModel(), temperature: 0.2, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sysContent }, { role: 'user', content: JSON.stringify({ role: profile.jobTitle, requiredSkills: profile.requiredSkills, questionType: question?.type, questionDifficulty: question?.difficulty, question: question?.question || question, answer, previousAnswers: transcript.slice(-3).map(t => ({ question: t.question?.question, answer: t.answer })), schema: { ...baseSchema, ...codingSchema } }) }] });
     const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
     return typeof result.score === 'number' ? result : fallback;
   } catch (err) { console.warn('[AIInterview] per-answer evaluation failed:', err.message); return fallback; }
@@ -650,10 +546,9 @@ async function evaluateAnswer({ profile, question, answer, transcript }) {
 
 async function evaluateAdaptiveInterview({ profile, transcript }) {
   const openai = getOpenAI();
-  const pairs = transcript.map(t => ({ question: t.question?.question || '', answer: t.answer || '', type: t.question?.type || '', difficulty: t.question?.difficulty || '', skill: t.question?.skill || '', answerQuality: t.answerQuality || '?', score: t.evaluation?.score }));
+  const pairs = transcript.map(t => ({ question: t.question?.question || '', answer: t.answer || '', type: t.question?.type || '', difficulty: t.question?.difficulty || '', skill: t.question?.skill || '', answerQuality: t.answerQuality || '?' }));
   const fallback = buildFallbackEvaluation(pairs);
-  // Without an LLM the scores are a length heuristic; flag it so the report can say so.
-  const normFallback = { ...fallback, scoringMode: 'basic', recommendation: fallback.recommendation === 'Strong Hire' ? 'STRONG_HIRE' : fallback.recommendation === 'Hire' ? 'HIRE' : fallback.recommendation === 'Maybe' ? 'FURTHER_EVALUATION' : 'REJECT' };
+  const normFallback = { ...fallback, recommendation: fallback.recommendation === 'Strong Hire' ? 'STRONG_HIRE' : fallback.recommendation === 'Hire' ? 'HIRE' : fallback.recommendation === 'Maybe' ? 'FURTHER_EVALUATION' : 'REJECT' };
 
   if (!openai) return normFallback;
 
@@ -728,32 +623,16 @@ Return ONLY valid JSON with this exact structure (no markdown):
       response_format: { type: 'json_object' },
     });
     const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
-    if (result.overallScore !== undefined) return { ...result, scoringMode: 'ai' };
+    if (result.overallScore !== undefined) return result;
   } catch (err) {
     console.warn('[AIInterview] enterprise evaluation failed:', err.message);
   }
   return normFallback;
 }
 
-async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 20, expiresHours = 48, plan = null }) {
+async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 20, expiresHours = 48 }) {
   const durationSeconds = Math.min(Math.max(Number(durationMinutes) || 20, 10), 60) * 60;
-  // Snapshot the approved plan into the session so later edits to the plan never
-  // change an interview that has already been sent.
-  const planQuestions = plan ? plan.questions.map((q, i) => ({
-    id: i + 1,
-    planQuestionId: q.question_id,
-    question: q.question_text,
-    stage: q.stage,
-    type: q.question_type,
-    skill: q.skill || '',
-    difficulty: q.difficulty,
-    expectedPoints: q.expected_points || [],
-    timeLimit: q.time_limit_seconds,
-  })) : null;
-  return createSession({
-    candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, expiresHours, planId: plan?.plan_id || null,
-    questions: { profile, transcript: [], durationSeconds, skillsAssessed: [], status: 'PENDING', seed: crypto.randomInt(1, 2 ** 31 - 1), planId: plan?.plan_id || null, planQuestions },
-  });
+  return createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions: { profile, transcript: [], durationSeconds, skillsAssessed: [], status: 'PENDING' }, expiresHours });
 }
 
 async function startAdaptiveSession(token) {
@@ -775,158 +654,20 @@ async function startAdaptiveSession(token) {
   return { session, state };
 }
 
-// ── AI-assistance / integrity signals (shown to the interviewer only) ─────
-// The browser silently reports how each answer was produced; these rules turn
-// that into flags. Never returned to the candidate.
-const INTEGRITY_RULES = {
-  PASTED: 35, BULK_INSERT: 30, FAST_TYPING: 25, QUESTION_COPIED: 25, LEFT_WINDOW: 20, AI_STYLE: 30,
-};
-
-function sanitiseMetrics(raw) {
-  const m = raw && typeof raw === 'object' ? raw : {};
-  const num = (v, max = 1e7) => Math.min(max, Math.max(0, Number(v) || 0));
-  return {
-    pasteCount: num(m.pasteCount, 1000),
-    pastedChars: num(m.pastedChars),
-    bulkInsertChars: num(m.bulkInsertChars),
-    typedChars: num(m.typedChars),
-    voiceChars: num(m.voiceChars),
-    activeTypingMs: num(m.activeTypingMs),
-    firstInputMs: num(m.firstInputMs),
-    blurCount: num(m.blurCount, 1000),
-    blurMs: num(m.blurMs),
-    questionCopied: Boolean(m.questionCopied),
-  };
-}
-
-function assessAnswerIntegrity(metrics, answer, evaluation) {
-  const flags = [];
-  const len = String(answer || '').trim().length;
-  if (metrics && len > 0) {
-    const pastedShare = metrics.pastedChars / len;
-    if (metrics.pasteCount > 0 && (pastedShare >= 0.3 || metrics.pastedChars >= 200)) {
-      flags.push({ code: 'PASTED', detail: `${Math.min(100, Math.round(pastedShare * 100))}% of the answer was pasted (${metrics.pasteCount} paste${metrics.pasteCount > 1 ? 's' : ''})` });
-    }
-    if (metrics.bulkInsertChars >= 40) {
-      flags.push({ code: 'BULK_INSERT', detail: `${metrics.bulkInsertChars} characters appeared at once without typing (auto-typer, drag-drop or injected text)` });
-    }
-    const cps = metrics.activeTypingMs > 0 ? metrics.typedChars / (metrics.activeTypingMs / 1000) : 0;
-    if (metrics.typedChars >= 150 && cps > 10) {
-      flags.push({ code: 'FAST_TYPING', detail: `Typed at ${cps.toFixed(1)} characters/second — typical typing is 3–7` });
-    }
-    if (metrics.questionCopied) {
-      flags.push({ code: 'QUESTION_COPIED', detail: 'Copied the question text' });
-    }
-    if (metrics.blurCount > 0 && metrics.blurMs >= 5000) {
-      flags.push({ code: 'LEFT_WINDOW', detail: `Left the interview window ${metrics.blurCount} time${metrics.blurCount > 1 ? 's' : ''} for ${Math.round(metrics.blurMs / 1000)}s while answering` });
-    }
-  }
-  const likelihood = Number(evaluation?.aiGeneratedLikelihood);
-  if (Number.isFinite(likelihood) && likelihood >= 70) {
-    flags.push({ code: 'AI_STYLE', detail: `Reads like AI-generated text (${Math.round(likelihood)}% likely)${evaluation.aiGeneratedReason ? ` — ${evaluation.aiGeneratedReason}` : ''}` });
-  }
-  const score = Math.min(100, flags.reduce((s, f) => s + (INTEGRITY_RULES[f.code] || 0), 0));
-  return { score, flags };
-}
-
-function summariseIntegrity(state) {
-  const transcript = state.transcript || [];
-  const events = state.proctoringEvents || [];
-  const flagged = transcript
-    .map((t, i) => ({ questionNumber: i + 1, ...(t.integrity || { score: 0, flags: [] }) }))
-    .filter((t) => t.flags.length);
-  const tabSwitches = events.filter((e) => e.event === 'TAB_SWITCH').length;
-  const counts = {};
-  flagged.forEach((t) => t.flags.forEach((f) => { counts[f.code] = (counts[f.code] || 0) + 1; }));
-
-  const answered = transcript.filter((t) => !/^\(skipped|^\(time expired/.test(String(t.answer || ''))).length || 1;
-  const maxScore = flagged.reduce((m, t) => Math.max(m, t.score), 0);
-  const share = flagged.length / answered;
-
-  // Camera episodes (each already lasted 3s+ in the browser).
-  const face = (name) => {
-    const list = events.filter((e) => e.event === name);
-    return { count: list.length, seconds: Math.round(list.reduce((s, e) => s + (Number(e.durationMs) || 0), 0) / 1000) };
-  };
-  const multipleFaces = face('MULTIPLE_FACES');
-  const lookingAway = face('LOOKING_AWAY');
-  const noFace = face('NO_FACE');
-  const camBlocked = face('CAMERA_BLOCKED');
-  const faceCheckUnavailable = events.some((e) => e.event === 'FACE_CHECK_UNAVAILABLE');
-  const cameraHigh = multipleFaces.seconds >= 10 || camBlocked.seconds >= 30;
-  const cameraMedium = multipleFaces.count >= 1 || lookingAway.count >= 4 || lookingAway.seconds >= 45
-    || noFace.seconds >= 30 || camBlocked.count >= 1;
-
-  let risk = 'none';
-  if (maxScore >= 60 || (flagged.length >= 2 && share >= 0.3) || tabSwitches >= 3 || cameraHigh) risk = 'high';
-  else if (flagged.length >= 1 || tabSwitches >= 2 || cameraMedium) risk = 'medium';
-  else if (tabSwitches >= 1 || lookingAway.count || noFace.count || faceCheckUnavailable) risk = 'low';
-
-  const reasons = [];
-  if (counts.PASTED) reasons.push(`Pasted text in ${counts.PASTED} answer(s)`);
-  if (counts.BULK_INSERT) reasons.push(`Text inserted without typing in ${counts.BULK_INSERT} answer(s)`);
-  if (counts.FAST_TYPING) reasons.push(`Unnaturally fast typing in ${counts.FAST_TYPING} answer(s)`);
-  if (counts.QUESTION_COPIED) reasons.push(`Copied the question in ${counts.QUESTION_COPIED} answer(s)`);
-  if (counts.LEFT_WINDOW) reasons.push(`Left the interview window while answering ${counts.LEFT_WINDOW} time(s)`);
-  if (counts.AI_STYLE) reasons.push(`${counts.AI_STYLE} answer(s) read like AI-generated text`);
-  if (tabSwitches) reasons.push(`Switched browser tab ${tabSwitches} time(s)`);
-  if (multipleFaces.count) reasons.push(`Another person was on camera ${multipleFaces.count} time(s), ${multipleFaces.seconds}s in total`);
-  if (lookingAway.count) reasons.push(`Looked away from the screen ${lookingAway.count} time(s), ${lookingAway.seconds}s in total`);
-  if (noFace.count) reasons.push(`Face not visible ${noFace.count} time(s), ${noFace.seconds}s in total`);
-  if (camBlocked.count) reasons.push(`Camera blocked or covered ${camBlocked.count} time(s), ${camBlocked.seconds}s in total`);
-  if (faceCheckUnavailable) reasons.push('Face monitoring could not run on the candidate\'s device');
-
-  return {
-    risk, reasons, flaggedQuestions: flagged, tabSwitches, answeredQuestions: transcript.length,
-    camera: { multipleFaces, lookingAway, noFace, cameraBlocked: camBlocked, faceCheckUnavailable },
-  };
-}
-
-async function notifyRecruiterOfIntegrityRisk(session, evaluation) {
-  try {
-    const rows = await query(
-      `SELECT e.email, TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS name FROM employees e WHERE e.employee_id = ?`,
-      [session.recruiter_id]
-    );
-    const to = rows[0]?.email;
-    if (!to) return;
-    const integrity = evaluation.integrity;
-    await sendMailNow({
-      to,
-      subject: `⚠ Possible AI assistance — ${session.candidate_name} (${session.job_title})`,
-      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px">
-        <h2 style="color:#b91c1c;margin-top:0">Integrity check: ${String(integrity.risk).toUpperCase()} risk</h2>
-        <p>The AI interview for <strong>${session.candidate_name}</strong> (${session.job_title}) has finished and shows signs the candidate may have used an AI tool or outside help.</p>
-        <ul>${integrity.reasons.map((r) => `<li>${r}</li>`).join('')}</ul>
-        <p>Score: <strong>${evaluation.overallScore ?? '—'}/100</strong>. Please review the flagged answers in HRMS → Recruitment → AI Interview before moving the candidate forward.</p>
-        <p style="color:#666;font-size:12px">The candidate was not shown this warning.</p></div>`,
-    });
-  } catch (err) {
-    console.warn('[AIInterview] integrity alert email failed:', err.message);
-  }
-}
-
-async function answerAdaptiveSession({ token, answer, metrics = null }) {
+async function answerAdaptiveSession({ token, answer }) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return null;
   const state = parseState(session.questions_json);
   if (!state.currentQuestion) throw new Error('Interview has not been started.');
   if (getRemainingSeconds(state) <= 0) return completeAdaptiveSession(token, 'time_expired');
-  // Late answers are kept (and marked) rather than thrown away; only an empty
-  // answer is recorded as skipped.
-  const elapsedSeconds = state.currentQuestionStartedAt
-    ? (Date.now() - new Date(state.currentQuestionStartedAt).getTime()) / 1000
-    : 0;
-  const questionExpired = elapsedSeconds >= questionTimeLimit(state.currentQuestion) + ANSWER_GRACE_SECONDS;
-  const given = String(answer || '').trim();
-  const effectiveAnswer = given || '(skipped — question time expired)';
+  const questionExpired = state.currentQuestionStartedAt &&
+    Date.now() - new Date(state.currentQuestionStartedAt).getTime() >= questionTimeLimit(state.currentQuestion) * 1000;
+  const effectiveAnswer = questionExpired ? '(skipped — question time expired)' : String(answer || '').trim();
   // Evaluate content first, then derive the A..E quality grade from that
   // content score (falling back to a length heuristic only if evaluation is unavailable).
   const evaluation = await evaluateAnswer({ profile: state.profile || {}, question: state.currentQuestion, answer: effectiveAnswer, transcript: state.transcript });
   const answerQuality = _qualityFromScore(evaluation?.score) || _scoreLastAnswer([...state.transcript, { answer: effectiveAnswer }]);
-  const cleanMetrics = metrics ? sanitiseMetrics(metrics) : null;
-  const integrity = assessAnswerIntegrity(given ? cleanMetrics : null, effectiveAnswer, evaluation);
-  state.transcript.push({ question: state.currentQuestion, answer: effectiveAnswer, answeredAt: new Date().toISOString(), answerQuality, evaluation, timedOut: questionExpired, metrics: cleanMetrics, integrity });
+  state.transcript.push({ question: state.currentQuestion, answer: effectiveAnswer, answeredAt: new Date().toISOString(), answerQuality, evaluation, timedOut: questionExpired });
   if (state.currentQuestion.skill && !state.skillsAssessed.includes(state.currentQuestion.skill)) state.skillsAssessed.push(state.currentQuestion.skill);
   state.currentQuestion = await generateNextQuestion(state);
   state.currentQuestionStartedAt = new Date().toISOString();
@@ -941,76 +682,10 @@ async function completeAdaptiveSession(token, reason = 'candidate_completed', su
   const state = suppliedState || parseState(session.questions_json);
   const evaluation = await evaluateAdaptiveInterview({ profile: state.profile || {}, transcript: state.transcript || [] });
   evaluation.completionReason = reason;
-  evaluation.integrity = summariseIntegrity(state);
   await submitSession({ token, answers: state.transcript || [], evaluation });
-  if (evaluation.integrity.risk === 'high') await notifyRecruiterOfIntegrityRisk(session, evaluation);
   return { complete: true, evaluation };
 }
 
-
-// ── Speech-to-text for spoken answers ──────────────────────────────────────
-// The browser's built-in recognition mishears accented technical speech, so when an
-// OpenAI key is configured the recorded answer audio is transcribed server-side,
-// primed with the job's vocabulary.
-function transcriptionAvailable() { return Boolean(getOpenAI()); }
-
-async function transcribeAnswerAudio({ token, buffer, mimetype }) {
-  const openai = getOpenAI();
-  if (!openai) return { text: null, reason: 'not_configured' };
-  const session = await getSession(token);
-  if (!session || session.status !== 'pending') return { text: null, reason: 'unavailable' };
-  const state = parseState(session.questions_json);
-  if (!state.startedAt) return { text: null, reason: 'not_started' };
-
-  const profile = state.profile || {};
-  const skills = Array.isArray(profile.requiredSkills) ? profile.requiredSkills.join(', ') : String(profile.requiredSkills || '');
-  const question = state.currentQuestion?.question || '';
-  const prompt = `Job interview answer for a ${profile.jobTitle || 'software'} role. `
-    + `Technical terms that may be spoken: ${[skills, profile.preferredSkills].filter(Boolean).join(', ') || 'software development'}, `
-    + 'API, REST, microservices, database, SQL, deployment, production, integration, scenario, debugging. '
-    + `The question was: ${question}`.slice(0, 600);
-
-  const ext = /ogg/.test(mimetype) ? 'ogg' : /mp4|m4a|aac/.test(mimetype) ? 'mp4' : /wav/.test(mimetype) ? 'wav' : /mpeg|mp3/.test(mimetype) ? 'mp3' : 'webm';
-  try {
-    const file = await OpenAI.toFile(buffer, `answer.${ext}`, { type: mimetype || 'audio/webm' });
-    const result = await openai.audio.transcriptions.create({
-      file,
-      model: process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe',
-      language: 'en',
-      prompt,
-    });
-    const text = String(result?.text || '').trim();
-    return text ? { text } : { text: null, reason: 'empty' };
-  } catch (err) {
-    console.warn('[AIInterview] transcription failed:', err.message);
-    return { text: null, reason: 'failed' };
-  }
-}
-
-// ── Recruiter decision (separate from the AI recommendation) ───────────────
-const DECISION_TO_STATUS = { SHORTLISTED: 'Shortlisted', REJECTED: 'Rejected', ON_HOLD: 'On Hold' };
-
-async function recordDecision({ sessionId, decision, notes, user, ip }) {
-  if (!DECISION_TO_STATUS[decision]) throw Object.assign(new Error('Invalid decision'), { statusCode: 400 });
-  const [session] = await query('SELECT session_id, candidate_id, status, recruiter_id FROM ai_interview_sessions WHERE session_id = ?', [sessionId]);
-  if (!session) return null;
-  if (session.status !== 'completed') throw Object.assign(new Error('Only a completed interview can be decided'), { statusCode: 409 });
-  await query(
-    'UPDATE ai_interview_sessions SET recruiter_decision = ?, decision_notes = ?, decided_by = ?, decided_at = NOW() WHERE session_id = ?',
-    [decision, notes || null, user.employeeId || null, sessionId]);
-  // Move the candidate's hiring stage too (this also notifies the recruiter / team lead).
-  let candidateStatus = null;
-  if (session.candidate_id) {
-    try {
-      const candidateSvc = require('./candidate.service');
-      await candidateSvc.updateStatus(Number(session.candidate_id), DECISION_TO_STATUS[decision], user.userId, ip);
-      candidateStatus = DECISION_TO_STATUS[decision];
-    } catch (err) {
-      console.warn('[AIInterview] candidate stage update failed:', err.message);
-    }
-  }
-  return { session_id: sessionId, recruiter_decision: decision, candidate_status: candidateStatus };
-}
 
 // ── Proctoring event logging ───────────────────────────────────────────────
 async function logProctoringEvent(token, event) {
@@ -1038,7 +713,7 @@ async function saveDraft(token, questionId, draft) {
 }
 
 // ── Idempotency-aware answer ───────────────────────────────────────────────
-async function answerAdaptiveSessionV2({ token, answer, questionId, metrics }) {
+async function answerAdaptiveSessionV2({ token, answer, questionId }) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return null;
   const state = parseState(session.questions_json);
@@ -1050,7 +725,7 @@ async function answerAdaptiveSessionV2({ token, answer, questionId, metrics }) {
   // Clear draft for this question
   if (state.currentDraft?.questionId === questionId) delete state.currentDraft;
   // Delegate to existing handler
-  return answerAdaptiveSession({ token, answer, metrics });
+  return answerAdaptiveSession({ token, answer });
 }
 
 module.exports = {
@@ -1068,12 +743,6 @@ module.exports = {
   answerAdaptiveSession,
   completeAdaptiveSession,
   getRemainingSeconds,
-  parseJson,
-  parseState,
-  summariseIntegrity,
-  recordDecision,
-  transcriptionAvailable,
-  transcribeAnswerAudio,
   logProctoringEvent,
   saveDraft,
   answerAdaptiveSessionV2,

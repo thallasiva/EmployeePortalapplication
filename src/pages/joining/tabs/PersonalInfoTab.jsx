@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Heart, User, GraduationCap, Users, Landmark, Camera, Upload, PenLine, Info } from "lucide-react";
+import { Heart, User, GraduationCap, Users, Landmark, Camera, Upload, PenLine, Info, X, AlertTriangle, Check } from "lucide-react";
 
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] focus:border-[#d97706] bg-white text-gray-800 placeholder-gray-400";
 const tbl_inp = "w-full border border-amber-100 rounded-lg px-2 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-[#d97706] bg-white";
@@ -146,7 +146,7 @@ export default function PersonalInfoTab({ form, set, setForm }) {
                 </span>
                 {form.aadharDocName &&
                 <button type="button" onClick={(e) => {e.stopPropagation();setForm((p) => ({ ...p, aadharDocFile: null, aadharDocName: "" }));}}
-                className="ml-auto text-red-400 hover:text-red-600 text-[11px]">✕</button>
+                className="ml-auto text-red-400 hover:text-red-600" aria-label="Remove"><X size={13} /></button>
                 }
               </div>
               <input ref={aadharRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleAadharDoc} />
@@ -163,7 +163,7 @@ export default function PersonalInfoTab({ form, set, setForm }) {
                 </span>
                 {form.panDocName &&
                 <button type="button" onClick={(e) => {e.stopPropagation();setForm((p) => ({ ...p, panDocFile: null, panDocName: "" }));}}
-                className="ml-auto text-red-400 hover:text-red-600 text-[11px]">✕</button>
+                className="ml-auto text-red-400 hover:text-red-600" aria-label="Remove"><X size={13} /></button>
                 }
               </div>
               <input ref={panDocRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handlePanDoc} />
@@ -291,12 +291,12 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           </F>
           {form.accountNumber && form.confirmAccountNumber && form.accountNumber !== form.confirmAccountNumber &&
           <div className="col-span-2 flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-[12px] text-red-600 font-medium">
-              ⚠ Account numbers do not match
+              <AlertTriangle size={13} className="inline -mt-0.5" /> Account numbers do not match
             </div>
           }
           {form.accountNumber && form.confirmAccountNumber && form.accountNumber === form.confirmAccountNumber &&
           <div className="col-span-2 flex items-center gap-2 rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-[12px] font-medium text-amber-800">
-              ✓ Account numbers match
+              <Check size={13} className="inline -mt-0.5" /> Account numbers match
             </div>
           }
         </div>

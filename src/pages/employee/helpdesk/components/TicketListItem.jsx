@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ArrowRight, Check, CornerUpLeft } from "lucide-react";
 import { getStatusStyle, fmtDate } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
 
@@ -44,13 +44,13 @@ const TicketListItem = memo(function TicketListItem({ ticket, index, total, isCl
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" })}>
             <span className={cssClass({ fontSize: 11, color: "#9ca3af" })}>{fmtDate(ticket.created_at)}</span>
             {ticket.forwarded_to_team && (
-              <span className={cssClass({ fontSize: 11, color: "#7c3aed", fontWeight: 500 })}>→ {ticket.forwarded_to_team}</span>
+              <span className={cssClass({ fontSize: 11, color: "#7c3aed", fontWeight: 500 })}><ArrowRight size={11} className="inline -mt-0.5" /> {ticket.forwarded_to_team}</span>
             )}
             {isResolved && (
-              <span className={cssClass({ fontSize: 12, color: "#15803d", fontWeight: 600 })}>✓ Issue resolved — click to view details and confirm</span>
+              <span className={cssClass({ fontSize: 12, color: "#15803d", fontWeight: 600 })}><Check size={12} className="inline -mt-0.5" /> Issue resolved — click to view details and confirm</span>
             )}
             {isReopened && (
-              <span className={cssClass({ fontSize: 12, color: "#be123c", fontWeight: 600 })}>↩ Reopened — team is working on it again</span>
+              <span className={cssClass({ fontSize: 12, color: "#be123c", fontWeight: 600 })}><CornerUpLeft size={12} className="inline -mt-0.5" /> Reopened — team is working on it again</span>
             )}
           </div>
         </div>

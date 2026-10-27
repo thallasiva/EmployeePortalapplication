@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 
 /**
@@ -26,8 +26,9 @@ const SuccessToast = memo(function SuccessToast({ onDismiss }) {
       <button
         onClick={onDismiss}
         className={cssClass({ background: "none", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: 16, padding: 2 })}
+        aria-label="Close"
       >
-        ✕
+        <X size={16} />
       </button>
     </div>
   );

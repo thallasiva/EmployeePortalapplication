@@ -1,6 +1,7 @@
 import React from "react";
 import { REC_CLASS } from "../constants";
 import { scoreTextCls, scoreBgCls, safeArr } from "../utils";
+import { Target, Wrench, CalendarDays, Check, X, ArrowRight } from "lucide-react";
 
 const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
   const ovr = Number(score.matchScore) || 0;
@@ -20,12 +21,12 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
 
       <div className="grid grid-cols-3 gap-px bg-gray-200">
         {[
-          { label: "Overall Match", value: ovr, icon: "🎯" },
-          { label: "Skill Match", value: skl, icon: "🛠" },
-          { label: "Experience", value: exp, icon: "📅" }
+          { label: "Overall Match", value: ovr, icon: <Target size={12} /> },
+          { label: "Skill Match", value: skl, icon: <Wrench size={12} /> },
+          { label: "Experience", value: exp, icon: <CalendarDays size={12} /> }
         ].map(({ label, value, icon }) =>
           <div key={label} className="bg-white px-3 py-4 text-center">
-            <div className="text-[11px] text-gray-400 mb-1.5">{icon} {label}</div>
+            <div className="text-[11px] text-gray-400 mb-1.5 flex items-center gap-1">{icon} {label}</div>
             <div className={`text-[32px] font-black leading-none ${scoreTextCls(value)}`}>
               {value}<span className="text-base font-bold">%</span>
             </div>
@@ -39,7 +40,7 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
       <div className="p-4">
         {matched.length > 0 &&
           <div className="mb-2.5">
-            <div className="text-[11px] font-bold text-green-600 uppercase tracking-wide mb-1.5">✓ Matched Skills ({matched.length})</div>
+            <div className="text-[11px] font-bold text-green-600 uppercase tracking-wide mb-1.5 flex items-center gap-1"><Check size={12} /> Matched Skills ({matched.length})</div>
             <div className="flex flex-wrap gap-1.5">
               {matched.map((s) =>
                 <span key={s} className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">{s}</span>
@@ -49,7 +50,7 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
         }
         {miss2.length > 0 &&
           <div className="mb-2.5">
-            <div className="text-[11px] font-bold text-red-600 uppercase tracking-wide mb-1.5">✕ Missing Skills ({miss2.length})</div>
+            <div className="text-[11px] font-bold text-red-600 uppercase tracking-wide mb-1.5 flex items-center gap-1"><X size={12} /> Missing Skills ({miss2.length})</div>
             <div className="flex flex-wrap gap-1.5">
               {miss2.map((s) =>
                 <span key={s} className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">{s}</span>
@@ -62,7 +63,7 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
         }
         {showHint &&
           <div className="mt-2 pt-2.5 border-t border-dashed border-gray-200 text-xs text-gray-500">
-            Click <strong className="text-[#f18200]">Parse Resume</strong> to auto-fill candidate details →
+            Click <strong className="text-[#f18200]">Parse Resume</strong> to auto-fill candidate details <ArrowRight size={12} className="inline" />
           </div>
         }
       </div>

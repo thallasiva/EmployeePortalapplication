@@ -1,5 +1,5 @@
 import React from "react";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, ArrowRight } from "lucide-react";
 
 const LateBanner = React.memo(function LateBanner({ summary, onScrollToLate }) {
   return (
@@ -25,7 +25,7 @@ const LateBanner = React.memo(function LateBanner({ summary, onScrollToLate }) {
             arrived late today.{" "}
             <span className="font-semibold text-emerald-700">{summary.presentToday} present</span>,{" "}
             <span className="font-semibold text-pink-600">{summary.absentToday} absent</span>.
-            <span className="text-emerald-600 ml-1">Click to see who is late →</span>
+            <span className="text-emerald-600 ml-1">Click to see who is late <ArrowRight size={12} className="inline -mt-0.5" /></span>
           </>
         )}
       </p>

@@ -20,9 +20,9 @@ const SAMPLES = {
 
 // Action button HTML snippets rendered in preview
 const ACTION_VARS = {
-  "{{ApproveButton}}": `<a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">✓ Approve</a>`,
-  "{{RejectButton}}":  `<a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">✕ Reject</a>`,
-  "{{ActionButtons}}": `<div style="margin:20px 0;"><a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">✓ Approve</a><a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">✕ Reject</a></div>`,
+  "{{ApproveButton}}": `<a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">Approve</a>`,
+  "{{RejectButton}}":  `<a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Reject</a>`,
+  "{{ActionButtons}}": `<div style="margin:20px 0;"><a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">Approve</a><a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Reject</a></div>`,
 };
 
 const ALL_VARS = [...Object.keys(SAMPLES), ...Object.keys(ACTION_VARS)];

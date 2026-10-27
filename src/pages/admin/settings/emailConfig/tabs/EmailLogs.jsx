@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Inbox, CheckCircle2, AlertCircle, Clock, Search, Eye, RefreshCw, Download, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Inbox, CheckCircle2, AlertCircle, Clock, Search, Eye, RefreshCw, Download, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { emailLogsApi } from "../../../../../api/settings.api";
 import { Toast } from "../components/SharedUI";
 
@@ -85,7 +85,7 @@ export default function EmailLogs() {
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
               <span className="text-[15px] font-bold text-[#1e293b]">Email Log Details</span>
-              <button onClick={() => setViewRow(null)} className="text-[#94a3b8] hover:text-[#64748b]">✕</button>
+              <button onClick={() => setViewRow(null)} className="text-[#94a3b8] hover:text-[#64748b]" aria-label="Close"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-3">
               {[["Recipient",viewRow.recipient],["Subject",viewRow.subject],["Module",viewRow.module],

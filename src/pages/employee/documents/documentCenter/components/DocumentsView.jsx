@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronRight, FileText, Search, Download } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Search, Download, Check } from "lucide-react";
 import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { toJumpId, scrollElementIntoContainer, docFileUrl } from "../utils";
@@ -43,8 +43,8 @@ const DocumentsView = React.memo(function DocumentsView({
                       <p className="text-[13px] font-medium text-[#3a4558]">{item.label}</p>
                       <p className="text-[11px] mt-0.5">
                         {item.type === "acknowledgment"
-                          ? item.ack ? <span className="text-green-600 font-medium">✓ Acknowledged</span> : <span className="text-gray-400">Not acknowledged</span>
-                          : item.ack ? <span className="text-green-600 font-medium">✓ Uploaded</span> : <span className="text-gray-400">Not uploaded</span>
+                          ? item.ack ? <span className="text-green-600 font-medium inline-flex items-center gap-1"><Check size={12} className="inline -mt-0.5" /> Acknowledged</span> : <span className="text-gray-400">Not acknowledged</span>
+                          : item.ack ? <span className="text-green-600 font-medium inline-flex items-center gap-1"><Check size={12} className="inline -mt-0.5" /> Uploaded</span> : <span className="text-gray-400">Not uploaded</span>
                         }
                       </p>
                     </div>

@@ -5,7 +5,7 @@ import { formatHours, formatDate } from "../utils";
 
 const INFO_KEYS = [
   ["Employee", (d) => d.employee_name],
-  ["Week", (d) => `${d.week_start} → ${d.week_end}`],
+  ["Week", (d) => `${d.week_start} – ${d.week_end}`],
   ["Total Hours", (d) => formatHours(d.total_hours)],
   ["Status", (d) => <StatusBadge key="s" status={d.status} />],
   ["Submitted", (d) => formatDate(d.submitted_at)],

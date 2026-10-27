@@ -20,6 +20,8 @@ const AdminPayrollOverview = lazy(() => import("../pages/admin/AdminPayrollOverv
 const PayRollForm = lazy(() => import("../pages/admin/PayRollForm"));
 const AdminPayslips = lazy(() => import("../pages/admin/AdminPayslips"));
 const AdminPerformanceRollout = lazy(() => import("../pages/admin/AdminPerformanceRollout"));
+const AdminKudosFeedback = lazy(() => import("../pages/admin/kudosFeedback/AdminKudosFeedback"));
+const AdminSalaryProcessing = lazy(() => import("../pages/admin/salaryProcessing/AdminSalaryProcessing"));
 const AdminITDeclaration = lazy(() => import("../pages/admin/AdminITDeclaration"));
 const AdminResignations = lazy(() => import("../pages/admin/AdminResignations"));
 const AdminTimesheets = lazy(() => import("../pages/admin/AdminTimesheets"));
@@ -78,7 +80,9 @@ const AdminRoutes = () =>
       <Route path="payroll" element={<Page><AdminPayrollOverview /></Page>} />
       <Route path="payroll/salary" element={<Page><PayRollForm /></Page>} />
       <Route path="payroll/payslips" element={<Page><AdminPayslips /></Page>} />
+      <Route path="payroll/process" element={<Page><AdminSalaryProcessing /></Page>} />
       <Route path="performance" element={<Page><AdminPerformanceRollout /></Page>} />
+      <Route path="kudos-feedback" element={<Page><AdminKudosFeedback /></Page>} />
       <Route path="it-declaration" element={<Page><AdminITDeclaration /></Page>} />
       <Route path="resignations" element={<Page><AdminResignations /></Page>} />
       <Route path="timesheets" element={<Page><AdminTimesheets /></Page>} />
@@ -115,7 +119,7 @@ const AdminRoutes = () =>
       <Route path="notification-settings" element={<Page><NotificationSettings /></Page>} />
       <Route path="audit-logs" element={<Page><AuditLogs /></Page>} />
       <Route path="notification-center" element={<Page><NotificationCenter /></Page>} />
-      <Route path="*" element={<Navigate to="" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 };

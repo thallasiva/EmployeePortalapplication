@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
+import { Users } from "lucide-react";
 
 const CHART = { NW: 172, NH: 60, HGAP: 60, VGAP: 16 };
 const TOGGLE_R = 10;
@@ -130,7 +131,7 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
                     <text x={x + CHART.NW - 18} y={y + 14} textAnchor="middle" fill="white"
                       fontSize={9} fontWeight="700"
                       className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
-                      {item.direct_count} 👥
+                      {item.direct_count} <Users size={11} className="inline -mt-0.5" />
                     </text>
                   </>
                 )}

@@ -1,6 +1,7 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmtTime } from "../utils/formatters";
+import { MapPin, Check, Play, Pause } from "lucide-react";
 
 const AttendanceCard = React.memo(function AttendanceCard({
   loading,
@@ -55,7 +56,7 @@ const AttendanceCard = React.memo(function AttendanceCard({
               </div>
               {(checkinLocation || todayAtt?.checkin_location) && (
                 <div style={{ fontSize: 9, color: "#4ade80", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }} title={checkinLocation || todayAtt?.checkin_location}>
-                  📍 {checkinLocation || todayAtt?.checkin_location}
+                  <MapPin size={11} className="inline -mt-0.5" /> {checkinLocation || todayAtt?.checkin_location}
                 </div>
               )}
             </div>
@@ -81,7 +82,7 @@ const AttendanceCard = React.memo(function AttendanceCard({
               </div>
               {(checkoutLocation || todayAtt?.checkout_location) && (
                 <div style={{ fontSize: 9, color: "#fb923c", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }} title={checkoutLocation || todayAtt?.checkout_location}>
-                  📍 {checkoutLocation || todayAtt?.checkout_location}
+                  <MapPin size={11} className="inline -mt-0.5" /> {checkoutLocation || todayAtt?.checkout_location}
                 </div>
               )}
             </div>
@@ -112,7 +113,7 @@ const AttendanceCard = React.memo(function AttendanceCard({
               : "bg-green-600 text-white cursor-pointer hover:bg-green-700"
           }`}
         >
-          {checkingIn ? "…" : checkIn && !onBreak ? "✓ Checked In" : onBreak ? "▶ Resume" : "Check In"}
+          {checkingIn ? "…" : checkIn && !onBreak ? <span className="inline-flex items-center gap-1"><Check size={13} /> Checked In</span> : onBreak ? <span className="inline-flex items-center gap-1"><Play size={13} /> Resume</span> : "Check In"}
         </button>
         <button
           onClick={handleCheckOut}
@@ -125,7 +126,7 @@ const AttendanceCard = React.memo(function AttendanceCard({
               : "bg-[#f18200] text-white cursor-pointer hover:bg-orange-600"
           }`}
         >
-          {checkingOut ? "…" : onBreak ? "⏸ On Break" : "Check Out"}
+          {checkingOut ? "…" : onBreak ? <span className="inline-flex items-center gap-1"><Pause size={13} /> On Break</span> : "Check Out"}
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogIn, LogOut, Clock, AlertCircle, CheckCircle2, CalendarX, Umbrella, Coffee, ArrowRightLeft } from "lucide-react";
+import { LogIn, LogOut, Clock, AlertCircle, CheckCircle2, CalendarX, Umbrella, Coffee, ArrowRightLeft, ArrowRight, MapPin } from "lucide-react";
 
 const SIX_HOURS_MINUTES = 360;
 
@@ -111,7 +111,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
             <p className="text-xs font-bold text-amber-800">Only {selected.processed?.totalWorkHrs} worked</p>
             <p className="text-[11px] text-amber-600 mt-0.5">Less than 6 hours — eligible for regularization.</p>
           </div>
-          <button onClick={() => navigate("/employee/attendance/regularizations", { state: { prefillDate: selected.iso } })} className="shrink-0 text-xs font-extrabold text-[#f18200] hover:underline">Apply →</button>
+          <button onClick={() => navigate("/employee/attendance/regularizations", { state: { prefillDate: selected.iso } })} className="shrink-0 text-xs font-extrabold text-[#f18200] hover:underline inline-flex items-center gap-1">Apply <ArrowRight size={12} /></button>
         </div>
       )}
       {isWorkday && workedMinutes >= SIX_HOURS_MINUTES && (
@@ -157,7 +157,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
                           <span className={`text-xs font-bold ${isIn ? "text-emerald-700" : "text-orange-700"}`}>
                             {isIn ? "Check In" : "Check Out"}
                           </span>
-                          {p.location && <span className="text-[10px] text-slate-400 truncate max-w-[100px]" title={p.location}>📍 {p.location}</span>}
+                          {p.location && <span className="text-[10px] text-slate-400 truncate max-w-[100px]" title={p.location}><MapPin size={10} className="inline -mt-0.5" /> {p.location}</span>}
                         </div>
                         <span className="text-sm font-extrabold text-slate-700 tabular-nums">{p.time}</span>
                       </div>

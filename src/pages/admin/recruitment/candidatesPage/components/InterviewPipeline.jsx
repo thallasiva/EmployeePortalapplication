@@ -1,4 +1,5 @@
 import React from "react";
+import { Check, X, CircleDot } from "lucide-react";
 
 const PIPELINE_STEPS = ["Round 1", "Round 2", "Round 3", "HR", "Shortlisted"];
 
@@ -20,9 +21,9 @@ function stepLabel(label, ivs) {
   if (label === "Shortlisted") return label;
   const iv = ivs.find((r) => r.level === label || (label === "HR" && r.level === "HR"));
   if (!iv) return label;
-  if (iv.feedback_status === "Selected") return label + " ✓";
-  if (iv.feedback_status === "Not Selected") return label + " ✗";
-  if (iv.status === "Scheduled") return label + " ●";
+  if (iv.feedback_status === "Selected") return label + " (selected)";
+  if (iv.feedback_status === "Not Selected") return label + " (not selected)";
+  if (iv.status === "Scheduled") return label + " (scheduled)";
   return label;
 }
 
@@ -50,7 +51,7 @@ const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidate
             <React.Fragment key={label}>
               <div className="flex flex-col items-center" style={{ minWidth: 56 }}>
                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${dotCls}`}>
-                  {state === "done" ? "✓" : state === "failed" ? "✗" : state === "active" ? "●" : i + 1}
+                  {state === "done" ? <Check size={14} /> : state === "failed" ? <X size={14} /> : state === "active" ? <CircleDot size={14} /> : i + 1}
                 </div>
                 <span className={`text-[10px] mt-1.5 text-center leading-tight ${textCls}`} style={{ maxWidth: 52 }}>
                   {label === "HR" ? "HR Round" : label}

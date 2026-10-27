@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { AlertTriangle } from "lucide-react";
 
 const TimesheetActions = memo(function TimesheetActions({
   canEdit,
@@ -16,7 +17,7 @@ const TimesheetActions = memo(function TimesheetActions({
       {hasOvertime && (
         <button type="button" onClick={() => setShowExtraWork(true)}
           className="ts-btn-ghost text-amber-600 border-amber-300 text-sm">
-          ⚠ Extra Work Request
+          <AlertTriangle size={14} className="inline -mt-0.5" /> Extra Work Request
         </button>
       )}
       <button type="button" onClick={addRow} className="ts-btn-ghost text-sm">

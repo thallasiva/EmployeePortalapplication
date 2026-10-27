@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Pencil, X } from "lucide-react";
+import { Plus, Pencil, X, FileText } from "lucide-react";
 import AddDocuments from "../../component/AddDocuments";
 
 export default function AddDocumentScreen()
@@ -33,7 +33,7 @@ export default function AddDocumentScreen()
               </span>
 
               <button className="w-9 h-9 rounded-md border border-gray-300 flex items-center justify-center text-indigo-600 hover:bg-indigo-50">
-                ✎
+                <Pencil size={15} />
               </button>
             </div>
           </div>
@@ -46,7 +46,7 @@ export default function AddDocumentScreen()
               </span>
 
               <button className="w-9 h-9 rounded-md border border-gray-300 flex items-center justify-center text-indigo-600 hover:bg-indigo-50">
-                ✎
+                <Pencil size={15} />
               </button>
             </div>
           </div>
@@ -59,7 +59,7 @@ export default function AddDocumentScreen()
               </span>
 
               <button className="w-9 h-9 rounded-md border border-gray-300 flex items-center justify-center text-indigo-600 hover:bg-indigo-50">
-                ✎
+                <Pencil size={15} />
               </button>
             </div>
           </div>
@@ -122,7 +122,7 @@ export default function AddDocumentScreen()
               className="border rounded-lg px-4 py-3 flex items-center justify-between">
 
                 <div className="flex items-center gap-3">
-                  <span className="text-red-500 text-lg">📄</span>
+                  <FileText size={18} className="text-red-500" />
                   <span className="text-sm font-medium text-gray-700">
                     {doc.name}
                   </span>

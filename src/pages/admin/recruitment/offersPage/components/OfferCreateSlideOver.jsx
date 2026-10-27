@@ -3,6 +3,7 @@ import { SlideOver, Field, Input, TwoColGrid, Btn } from "../../shared";
 import CtcTableRow from "./CtcTableRow";
 import OfferReleaseReview from "./OfferReleaseReview";
 import { fmt } from "../utils/ctcUtils";
+import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 
 const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
   open, onClose, form, computed, candidates, jobs, step, checks, saving, onChange, onSubmit, onBack
@@ -12,13 +13,13 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
   const footer = step === "form" ? (
     <>
       <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
-      <Btn onClick={onSubmit}>Review &amp; Release →</Btn>
+      <Btn onClick={onSubmit}>Review &amp; Release <ArrowRight size={13} className="inline -mt-0.5" /></Btn>
     </>
   ) : (
     <>
-      <Btn variant="secondary" onClick={onBack}>← Back to Form</Btn>
+      <Btn variant="secondary" onClick={onBack}><ArrowLeft size={13} className="inline -mt-0.5" /> Back to Form</Btn>
       <Btn onClick={onSubmit} disabled={saving || hasFail}>
-        {saving ? "Saving…" : hasFail ? "Fix issues above" : "✓ Confirm & Create Offer"}
+        {saving ? "Saving…" : hasFail ? "Fix issues above" : <span className="inline-flex items-center gap-1"><Check size={14} /> Confirm &amp; Create Offer</span>}
       </Btn>
     </>
   );

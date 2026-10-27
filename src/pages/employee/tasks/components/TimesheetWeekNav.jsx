@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { fmt } from "../utils/dateUtils";
 import { STATUS_STYLE, STATUS_LABEL } from "../constants/taskConstants";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const TimesheetWeekNav = memo(function TimesheetWeekNav({ dates, timesheet, setWeekOffset }) {
   return (
@@ -9,7 +10,7 @@ const TimesheetWeekNav = memo(function TimesheetWeekNav({ dates, timesheet, setW
         type="button"
         onClick={() => setWeekOffset((w) => w - 1)}
         className="ts-btn-ghost text-sm">
-        ← Prev
+        <ChevronLeft size={14} className="inline -mt-0.5" /> Prev
       </button>
       <div className="text-center">
         <p className="text-sm font-semibold text-gray-800">
@@ -25,7 +26,7 @@ const TimesheetWeekNav = memo(function TimesheetWeekNav({ dates, timesheet, setW
         type="button"
         onClick={() => setWeekOffset((w) => w + 1)}
         className="ts-btn-ghost text-sm">
-        Next →
+        Next <ChevronRight size={14} className="inline -mt-0.5" />
       </button>
     </div>
   );

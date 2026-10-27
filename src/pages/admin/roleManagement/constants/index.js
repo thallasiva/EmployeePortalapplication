@@ -1,4 +1,5 @@
-export const ROLE_ICONS = { 1: "🛡️", 2: "👤", 3: "📋", 4: "🎯", 5: "🔍" };
+import { ShieldCheck, User, ClipboardList, Target, Search } from "lucide-react";
+export const ROLE_ICONS = { 1: <ShieldCheck size={15} />, 2: <User size={15} />, 3: <ClipboardList size={15} />, 4: <Target size={15} />, 5: <Search size={15} /> };
 
 export const ROLE_COLORS = {
   1: { color: "#dc2626", bg: "#fee2e2", border: "#fca5a5" },

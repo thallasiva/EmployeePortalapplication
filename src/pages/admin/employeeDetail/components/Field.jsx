@@ -1,5 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
+import { AlertTriangle } from "lucide-react";
 
 const Field = React.memo(function Field({ label, required, error, touched, children }) {
   const showErr = touched && error;
@@ -25,7 +26,7 @@ const Field = React.memo(function Field({ label, required, error, touched, child
             display: "flex", alignItems: "center", gap: 3,
           })}
         >
-          <span>⚠</span> {error}
+          <AlertTriangle size={11} className="inline -mt-0.5" /> {error}
         </div>
       )}
     </div>

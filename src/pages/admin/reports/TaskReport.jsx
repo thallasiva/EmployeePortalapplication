@@ -5,8 +5,9 @@ import {
 "../../../component/reports/ReportsLayout";
 import ReportDonutPanel from "../../../component/reports/ReportDonutPanel";
 import apiClient, { unwrapList } from "../../../api/client";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { CircleDot } from "lucide-react";
 
-const listAdminTasks = () => apiClient.get("/timesheets/tasks", { params: { limit: 500 } }).then(unwrapList).catch(() => ({ data: [] }));
+const listAdminTasks = () => apiClient.get("/timesheets/admin/tasks", { params: { limit: 500 } }).then(unwrapList).catch(() => ({ data: [] }));
 
 export default function TaskReport() {
   const [tasks, setTasks] = useState([]);
@@ -51,7 +52,7 @@ export default function TaskReport() {
       <ReportPageHeader title="Task Report" />
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon="◉" color={s.color} />)}
+          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon={<CircleDot size={16} />} color={s.color} />)}
         </div>
         <ReportDonutPanel title="Tasks by Status" segments={donut} centerLabel="Total" centerValue={String(total)} />
       </div>

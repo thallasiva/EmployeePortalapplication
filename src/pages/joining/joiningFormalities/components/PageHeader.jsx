@@ -7,7 +7,7 @@ const PageHeader = React.memo(function PageHeader({ inv }) {
       : inv?.formality_status === "pending_verification"
       ? "Under Review"
       : inv?.formality_status === "changes_requested"
-      ? "⚠ Changes Requested"
+      ? "Changes Requested"
       : "In Progress";
 
   return (

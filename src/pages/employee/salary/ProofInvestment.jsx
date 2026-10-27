@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Upload, CheckCircle2, Clock, XCircle, Trash2, Download, AlertCircle, Lock, RefreshCw } from "lucide-react";
+import { Upload, CheckCircle2, Clock, XCircle, Trash2, Download, AlertCircle, Lock, RefreshCw, AlertTriangle } from "lucide-react";
 import { getMyITDeclaration, getMyProofs, uploadProof, deleteProof, downloadProofUrl } from "../../../api/itDeclaration.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
 
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
@@ -247,7 +247,7 @@ export default function ProofInvestment() {
                       </div>
                       {p.actual_amount > 0 && p.actual_amount < p.declared_amount &&
                   <p className={cssClass({ fontSize: 11, color: "#f59e0b", margin: "3px 0 0" })}>
-                          ⚠ Shortfall: {fmt(p.declared_amount - p.actual_amount)}
+                          <AlertTriangle size={12} className="inline -mt-0.5" /> Shortfall: {fmt(p.declared_amount - p.actual_amount)}
                         </p>
                   }
                       {}
@@ -295,7 +295,7 @@ export default function ProofInvestment() {
               </div>
               {rejectedCount > 0 &&
             <p className={cssClass({ margin: "6px 0 0", fontSize: 12, color: "#dc2626" })}>
-                  ⚠ {rejectedCount} proof(s) rejected — please re-upload with correct documents.
+                  <AlertTriangle size={13} className="inline -mt-0.5" /> {rejectedCount} proof(s) rejected — please re-upload with correct documents.
                 </p>
             }
             </div>

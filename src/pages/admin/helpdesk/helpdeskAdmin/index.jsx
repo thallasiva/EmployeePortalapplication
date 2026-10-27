@@ -46,7 +46,7 @@ export default function HelpdeskAdmin() {
             </h1>
             <p className={cssClass({ fontSize: 12, color: "#64748b", margin: 0 })}>
               {isAdminUser
-                ? "Work on forwarded tickets: In Progress → Resolved"
+                ? "Work on forwarded tickets: In Progress, then Resolved"
                 : "Review, approve & forward — or reject — your team's requests"}
             </p>
           </div>

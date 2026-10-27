@@ -22,14 +22,14 @@ const NoticeSidebar = React.memo(function NoticeSidebar({ startDate, endDate, te
             <>
               <div className={cssClass({ height: 1, background: "#f1f5f9" })} />
               <Chip
-                label="Total Days (Start → End)"
+                label="Total Days (Start to End)"
                 value={`${noticeDays} day${noticeDays !== 1 ? "s" : ""}`}
                 color={noticeDays >= NOTICE ? "#16a34a" : "#d97706"}
                 icon={Info}
               />
               <Chip
                 label="Shortfall"
-                value={shortfall === 0 ? "None ✓" : `${shortfall} day${shortfall !== 1 ? "s" : ""}`}
+                value={shortfall === 0 ? "None" : `${shortfall} day${shortfall !== 1 ? "s" : ""}`}
                 sub={shortfall === 0 ? "Full notice served" : `${shortfall} short of ${NOTICE} days`}
                 color={shortfall === 0 ? "#16a34a" : "#dc2626"}
                 icon={shortfall === 0 ? CheckCircle2 : AlertTriangle}

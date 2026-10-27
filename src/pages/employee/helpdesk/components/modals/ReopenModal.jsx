@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 import { reopenTicket } from "../../../../../api/helpdesk.api";
 import { cssClass } from "../../../../../utils/classStyles";
+import { X, ClipboardList } from "lucide-react";
 
 /**
  * Reopen-ticket modal.
@@ -31,13 +32,13 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
             <p className={cssClass({ fontSize: 15, fontWeight: 700, color: "#111827", margin: 0 })}>Reopen this ticket?</p>
             <p className={cssClass({ fontSize: 12, color: "#6b7280", margin: "3px 0 0" })}>Tell us what's still not resolved.</p>
           </div>
-          <button onClick={onClose} className={cssClass({ background: "none", border: "none", color: "#9ca3af", fontSize: 18, cursor: "pointer", padding: 4 })}>✕</button>
+          <button onClick={onClose} className={cssClass({ background: "none", border: "none", color: "#9ca3af", fontSize: 18, cursor: "pointer", padding: 4 })} aria-label="Close"><X size={18} /></button>
         </div>
 
         {/* Body */}
         <div className={cssClass({ padding: "18px 22px" })}>
           <div className={cssClass({ padding: "10px 14px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, marginBottom: 14 })}>
-            <p className={cssClass({ fontSize: 13, color: "#92400e", margin: 0, fontWeight: 500 })}>📋 {ticket.subject}</p>
+            <p className={cssClass({ fontSize: 13, color: "#92400e", margin: 0, fontWeight: 500 })}><ClipboardList size={13} className="inline -mt-0.5" /> {ticket.subject}</p>
           </div>
           {error && (
             <div className={cssClass({ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "8px 12px", fontSize: 12, color: "#dc2626", marginBottom: 12 })}>

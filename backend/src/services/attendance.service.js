@@ -5,17 +5,6 @@ function indiaDate() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
 }
 
-// Current IST wall-clock time (HH:MM:SS) regardless of the server's timezone.
-function indiaTime() {
-  return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(new Date());
-}
-
-// Punch times come from the server clock (IST). A client may send a bare "HH:MM[:SS]";
-// anything else (e.g. an ISO timestamp from the mobile app) is ignored.
-function punchTime(time) {
-  return /^\d{2}:\d{2}(:\d{2})?$/.test(String(time || '')) ? String(time) : indiaTime();
-}
-
 class AttendanceService extends BaseService {
   constructor() {
     super('attendance', 'attendance_id', [
@@ -67,7 +56,7 @@ class AttendanceService extends BaseService {
 
   async checkIn(employeeId, { date, time, shift_start, lat, lng, location } = {}) {
     const checkDate = date || indiaDate();
-    const checkTime = punchTime(time);
+    const checkTime = time || new Date().toTimeString().slice(0, 8);
     // Always use 7-param version (lat/lng/location default to NULL if not provided)
     await callProcedure('sp_employee_checkin(?, ?, ?, ?, ?, ?, ?)', [
       employeeId, checkDate, checkTime, shift_start || '09:30:00',
@@ -79,8 +68,8 @@ class AttendanceService extends BaseService {
   }
 
   async breakStart(employeeId, { date, time, lat, lng, location } = {}) {
-    const d = date || indiaDate();
-    const t = punchTime(time);
+    const d = date || new Date().toISOString().slice(0, 10);
+    const t = time || new Date().toTimeString().slice(0, 8);
     await callProcedure('sp_break_start(?, ?, ?, ?, ?, ?)', [
       employeeId, d, t,
       lat  != null ? Number(lat)  : null,
@@ -91,8 +80,8 @@ class AttendanceService extends BaseService {
   }
 
   async breakEnd(employeeId, { date, time, lat, lng, location } = {}) {
-    const d = date || indiaDate();
-    const t = punchTime(time);
+    const d = date || new Date().toISOString().slice(0, 10);
+    const t = time || new Date().toTimeString().slice(0, 8);
     await callProcedure('sp_break_end(?, ?, ?, ?, ?, ?)', [
       employeeId, d, t,
       lat  != null ? Number(lat)  : null,
@@ -104,7 +93,7 @@ class AttendanceService extends BaseService {
 
   async checkOut(employeeId, { date, time, lat, lng, location } = {}) {
     const checkDate = date || indiaDate();
-    const checkTime = punchTime(time);
+    const checkTime = time || new Date().toTimeString().slice(0, 8);
     // Always use 6-param version (lat/lng/location default to NULL if not provided)
     await callProcedure('sp_employee_checkout(?, ?, ?, ?, ?, ?)', [
       employeeId, checkDate, checkTime,

@@ -17,6 +17,7 @@
 
 import React from "react";
 import { captureError } from "../utils/sentry";
+import { AlertTriangle } from "lucide-react";
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -53,7 +54,7 @@ export default class ErrorBoundary extends React.Component {
     return (
       <div className="min-h-[300px] flex items-center justify-center p-8">
         <div className="max-w-md w-full rounded-xl border border-red-100 bg-red-50 p-6 text-center shadow-sm">
-          <div className="text-4xl mb-3">⚠️</div>
+          <div className="mb-3 flex justify-center text-amber-500"><AlertTriangle size={40} /></div>
           <h2 className="text-lg font-semibold text-red-800 mb-1">Something went wrong</h2>
           <p className="text-sm text-red-600 mb-4">
             {this.state.error?.message || "An unexpected error occurred."}

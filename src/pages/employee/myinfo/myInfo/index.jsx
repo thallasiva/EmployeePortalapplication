@@ -38,13 +38,13 @@ export default function MyInfo() {
     if (!window.confirm("Are you sure you want to withdraw your resignation?")) return;
     setWithdrawing(true);
     try {
-      const res = await apiClient.put("/resignations/my/withdraw");
+      const res = await apiClient.put(`/resignations/my/${resignation.resignation_id}/withdraw`);
       setResignation(res.data);
     } catch (e) {
       alert(e?.response?.data?.message || "Failed to withdraw");
     }
     setWithdrawing(false);
-  }, [setResignation]);
+  }, [resignation, setResignation]);
 
   const scrollTo = useCallback((id) => {
     setActive(id);

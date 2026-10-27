@@ -3,6 +3,7 @@ import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { REPORT_NAV } from "../../data/reportsData";
 import LazyPage from "../../routes/LazyPage";
 import "./reports.css";import { cssClass, joinClasses } from "../../utils/classStyles";
+import { ChevronDown } from "lucide-react";
 
 const ProjectReport = lazy(() => import("../../pages/admin/reports/ProjectReport"));
 const TaskReport = lazy(() => import("../../pages/admin/reports/TaskReport"));
@@ -53,7 +54,7 @@ export default function ReportsLayout() {
           <Route path="user" element={<ReportRoute><UserReport /></ReportRoute>} />
           <Route path="payslip" element={<ReportRoute><PayslipReport /></ReportRoute>} />
           <Route path="downloads" element={<ReportRoute><DownloadReports /></ReportRoute>} />
-          <Route path="*" element={<Navigate to="daily" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard/report/daily" replace />} />
         </Routes>
       </div>
     </div>);
@@ -69,7 +70,7 @@ export function ReportPageHeader({ title }) {
       </div>
       <button type="button" className="report-header__export">
         Export
-        <span className="report-header__export-arrow">▾</span>
+        <span className="report-header__export-arrow"><ChevronDown size={12} /></span>
       </button>
     </div>);
 

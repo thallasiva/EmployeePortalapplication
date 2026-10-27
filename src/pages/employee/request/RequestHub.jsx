@@ -1,8 +1,5 @@
 import React, { useState } from "react";
-import {
-  Calendar, Clock, Home, Shield, FileText,
-  CheckCircle2, XCircle, AlertCircle, Plus, ChevronRight, Filter
-} from "lucide-react";
+import { Calendar, Clock, Home, Shield, FileText, CheckCircle2, XCircle, AlertCircle, Plus, ChevronRight, Filter, X } from "lucide-react";
 
 // ── Static sample data ────────────────────────────────────────────────────────
 const REQUESTS = [
@@ -60,7 +57,7 @@ function NewRequestModal({ onClose }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-slate-900">New Request</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 text-lg leading-none">✕</button>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500" aria-label="Close"><X size={18} /></button>
         </div>
         <div className="space-y-4">
           <div>

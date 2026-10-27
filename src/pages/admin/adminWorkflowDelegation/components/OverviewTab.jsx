@@ -74,7 +74,7 @@ const OverviewTab = React.memo(function OverviewTab({
                 padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer",
               })}
             >
-              Assign Now →
+              Assign Now <ArrowRight size={12} className="inline -mt-0.5" />
             </button>
           </div>
         )}

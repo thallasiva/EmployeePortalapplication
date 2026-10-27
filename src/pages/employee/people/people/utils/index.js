@@ -34,7 +34,7 @@ export function normalize(emp) {
     departmentName: emp.department_name || "—",
     status: emp.employee_status || "Active",
     gender: emp.gender || "—",
-    dob: emp.dob || "—",
+    dob: emp.birthday ? new Date(2000, Number(emp.birthday.slice(0, 2)) - 1, Number(emp.birthday.slice(3))).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) : "—",
     bloodGroup: emp.blood_group || "—",
     joiningDate: emp.emp_joining_date || emp.joining_date || "—",
     location: emp.location || "—",

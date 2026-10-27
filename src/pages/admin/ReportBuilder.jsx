@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import
-  {
-    Plus, Download, Play, Save, Trash2, Edit2, X, Check,
-    FileText, BarChart2, PieChart, Table2, Filter, ChevronDown, Eye
-  } from "lucide-react";
+import { Plus, Download, Play, Save, Trash2, Edit2, X, Check, FileText, BarChart2, PieChart, Table2, Filter, ChevronDown, Eye, ArrowLeft } from "lucide-react";
 import { reportsApi } from "../../api/settings.api";
 
 const BRAND = "#f18200";
@@ -93,7 +89,7 @@ function BuilderView({ report, onBack, onSave })
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-[#e2e8f0] flex-wrap">
-        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold">← Reports</button>
+        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold inline-flex items-center gap-1"><ArrowLeft size={12} /> Reports</button>
         <div className="w-px h-5 bg-[#e2e8f0]" />
         <input value={name} onChange={e => setName(e.target.value)}
           className="h-[34px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] font-bold outline-none focus:border-[#f18200] w-52" />

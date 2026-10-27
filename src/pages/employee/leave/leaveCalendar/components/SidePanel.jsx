@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, FileText } from "lucide-react";
 import { MONTH_NAMES } from "../constants";
 import { avatarColor, initials, daysBetween } from "../utils";
 
@@ -97,8 +97,8 @@ const SidePanel = React.memo(function SidePanel({
           <div className="flex items-center justify-center h-40 text-sm text-gray-400">Loading…</div>
         ) : monthLeaves.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-56 text-center px-6">
-            <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center text-3xl mb-3">
-              📄
+            <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center mb-3 text-slate-400">
+              <FileText size={28} />
             </div>
             <p className="text-[15px] font-medium text-[#64748b]">No employees on leave</p>
             <p className="mt-1 text-[13px] text-[#94a3b8]">

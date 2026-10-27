@@ -92,7 +92,7 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
                   <p className={cssClass({ margin: "0 0 2px", fontSize: 13, fontWeight: 700, color: shortfall === 0 ? "#15803d" : "#92400e" })}>
                     {shortfall === 0 ? "Full notice period served" : `${shortfall} day${shortfall !== 1 ? "s" : ""} short of ${NOTICE}-day policy`}
                   </p>
-                  <p className={cssClass({ margin: 0, fontSize: 11, color: "#94a3b8" })}>{fmtDate(form.start_date || today)} → {fmtDate(form.end_date)}</p>
+                  <p className={cssClass({ margin: 0, fontSize: 11, color: "#94a3b8" })}>{fmtDate(form.start_date || today)} – {fmtDate(form.end_date)}</p>
                 </div>
                 {shortfall === 0
                   ? <CheckCircle2 size={18} color="#16a34a" className={cssClass({ marginLeft: "auto" })} />

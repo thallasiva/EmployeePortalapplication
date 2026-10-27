@@ -14,7 +14,8 @@ export function useMyInfoData() {
   const loadResignation = useCallback(async () => {
     try {
       const res = await apiClient.get("/resignations/my");
-      setResignation(res.data || null);
+      // The API returns all resignations, newest first; this page shows the latest one.
+      setResignation(Array.isArray(res.data) ? res.data[0] ?? null : res.data || null);
     } catch {
       setResignation(null);
     }

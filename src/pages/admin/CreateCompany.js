@@ -1,5 +1,6 @@
 import React from 'react'
 import { addCompany } from '../../data/employees';
+import { X } from "lucide-react";
 
 const CreateCompany = ({ createModal, setCreateModal }) =>
 {
@@ -39,8 +40,8 @@ const CreateCompany = ({ createModal, setCreateModal }) =>
                             Add Company Information
                         </h2>
 
-                        <button class="text-red-500 border border-red-500 w-6 h-6 flex items-center justify-center rounded hover:bg-red-50" onClick={handleClose}>
-                            ✕
+                        <button class="text-red-500 border border-red-500 w-6 h-6 flex items-center justify-center rounded hover:bg-red-50" onClick={handleClose} aria-label="Close">
+                            <X size={14} />
                         </button>
                     </div>
 

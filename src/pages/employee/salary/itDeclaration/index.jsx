@@ -15,6 +15,7 @@ import ModalMedical from "./components/ModalMedical";
 import ModalHouseProperty from "./components/ModalHouseProperty";
 import ModalOtherIncome from "./components/ModalOtherIncome";
 import ModalTcsTds from "./components/ModalTcsTds";
+import { ChartColumn, ClipboardList, House, Hospital, Building, Coins, ReceiptText } from "lucide-react";
 
 export default function ITDeclaration() {
   const [openModal, setOpenModal] = useState(null);
@@ -57,13 +58,13 @@ export default function ITDeclaration() {
   }
 
   const CARDS = [
-    { key: "123", icon: "📊", title: "Tax-Saving Investments (80C / 80CCD)", declared: declared123 || null },
-    { key: "ch8", icon: "📋", title: "Other Deductions (80D / 80E / 80G)", declared: declaredCh8 || null },
-    { key: "hra", icon: "🏠", title: "HRA Exemption (Sec. 10(13A))", declared: declaredHRA || null },
-    { key: "med", icon: "🏥", title: "Medical & Health Benefits (Sec. 80D)", declared: declaredMed || null },
-    { key: "house", icon: "🏡", title: "House Property Income / Loss (Sec. 24)", declared: declaredHouse },
-    { key: "income", icon: "💰", title: "Other Sources of Income", declared: declaredIncome || null },
-    { key: "tcs", icon: "📄", title: "Tax Credits — TDS / TCS", declared: declaredTcsTds || null },
+    { key: "123", icon: <ChartColumn size={18} />, title: "Tax-Saving Investments (80C / 80CCD)", declared: declared123 || null },
+    { key: "ch8", icon: <ClipboardList size={18} />, title: "Other Deductions (80D / 80E / 80G)", declared: declaredCh8 || null },
+    { key: "hra", icon: <House size={18} />, title: "HRA Exemption (Sec. 10(13A))", declared: declaredHRA || null },
+    { key: "med", icon: <Hospital size={18} />, title: "Medical & Health Benefits (Sec. 80D)", declared: declaredMed || null },
+    { key: "house", icon: <Building size={18} />, title: "House Property Income / Loss (Sec. 24)", declared: declaredHouse },
+    { key: "income", icon: <Coins size={18} />, title: "Other Sources of Income", declared: declaredIncome || null },
+    { key: "tcs", icon: <ReceiptText size={18} />, title: "Tax Credits — TDS / TCS", declared: declaredTcsTds || null },
   ];
 
   return (

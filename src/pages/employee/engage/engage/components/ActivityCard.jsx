@@ -2,6 +2,7 @@ import React from "react";
 import { sectionCfg, timeAgo } from "../utils";
 import Avatar from "./Avatar";
 import StatusBadge from "./StatusBadge";
+import { ArrowRight } from "lucide-react";
 
 const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
   const sec = sectionCfg(item.section);
@@ -57,7 +58,7 @@ const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
           }}>
             <Avatar name={item.fromName} size={20} />
             <span style={{ fontSize: 11, fontWeight: 600, color: sec.color }}>
-              {item.fromName} sent you kudos 💝
+              {item.fromName} sent you kudos
             </span>
           </div>
         )}
@@ -74,7 +75,7 @@ const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
                 background: "none", border: "none", cursor: "pointer", padding: 0, whiteSpace: "nowrap",
               }}
             >
-              View →
+              View <ArrowRight size={12} className="inline" />
             </button>
           )}
         </div>

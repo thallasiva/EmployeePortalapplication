@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, AlertCircle, Square, Play } from "lucide-react";
+import { CheckCircle2, AlertCircle, Square, Play, CircleCheck } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
@@ -12,7 +12,7 @@ const ActiveRolloutBanner = React.memo(function ActiveRolloutBanner({ activeCycl
         <CheckCircle2 size={18} className={cssClass({ color: "#16a34a", flexShrink: 0 })} />
         <div className={cssClass({ flex: 1 })}>
           <div className={cssClass({ fontWeight: 700, color: "#166534", fontSize: 14, marginBottom: 2 })}>
-            🟢 Rollout Active — {activeCycle.fy_label}
+            <CircleCheck size={14} className="inline -mt-0.5" /> Rollout Active — {activeCycle.fy_label}
           </div>
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" })}>
             {activeCycle.cycle_type && <CycleTypeBadge type={activeCycle.cycle_type} />}

@@ -571,11 +571,16 @@ function JoinScreen({ session, error, onJoin }) {
 }
 
 /* ─── OTP screen ─────────────────────────────────────────────────────────── */
-function OtpScreen({ email, token, onVerify }) {
+function OtpScreen({ email, token, devCode, onVerify }) {
   const [otp,setOtp]      = useState("");
   const [busy,setBusy]    = useState(false);
   const [err,setErr]      = useState("");
   const [resent,setResent]= useState(false);
+  const [devHint,setDevHint] = useState(devCode || "");
+
+  // Dev-mode convenience: when SMTP is not configured the backend returns the
+  // code so local testing isn't blocked. Prefill it so it can be verified in one click.
+  useEffect(()=>{ if (devCode) { setDevHint(devCode); setOtp(String(devCode).slice(0,6)); } },[devCode]);
 
   async function verify() {
     if (otp.length !== 6) { setErr("Enter the 6-digit code"); return; }
@@ -598,9 +603,10 @@ function OtpScreen({ email, token, onVerify }) {
               style={{width:44,height:52,textAlign:"center",fontSize:22,fontWeight:700,background:C.panel,border:`1.5px solid ${err?C.danger:otp[i]?C.accent:C.border}`,borderRadius:10,color:C.text,outline:"none"}}/>
           ))}
         </div>
+        {devHint && <p style={{color:C.warn,fontSize:12,margin:"0 0 10px",lineHeight:1.4}}>Dev mode (email not configured): code <strong style={{letterSpacing:2}}>{devHint}</strong> — set SMTP in .env for real delivery.</p>}
         {err && <p style={{color:C.danger,fontSize:12,margin:"0 0 10px"}}>{err}</p>}
         <button className="btn-primary" onClick={verify} disabled={busy} style={{width:"100%",padding:"13px 0",fontSize:15}}>{busy?"Verifying…":"Verify OTP"}</button>
-        <button onClick={async()=>{ if (resent || busy) return; try { await sendAIInterviewOtp(token); setResent(true); setOtp(""); setErr(""); setTimeout(()=>setResent(false),30000); } catch (error) { setErr(error?.response?.data?.message || "Could not resend code"); } }} style={{background:"none",border:"none",color:resent?C.muted:C.accent,cursor:"pointer",marginTop:14,fontSize:13,fontWeight:600}}>{resent?"OTP resent ✓":"Resend OTP"}</button>
+        <button onClick={async()=>{ if (resent || busy) return; try { const r = await sendAIInterviewOtp(token); if (r?.devMode && r?.devCode) { setDevHint(r.devCode); setOtp(String(r.devCode).slice(0,6)); } else { setOtp(""); } setResent(true); setErr(""); setTimeout(()=>setResent(false),30000); } catch (error) { setErr(error?.response?.data?.message || "Could not resend code"); } }} style={{background:"none",border:"none",color:resent?C.muted:C.accent,cursor:"pointer",marginTop:14,fontSize:13,fontWeight:600}}>{resent?"OTP resent ✓":"Resend OTP"}</button>
       </div>
     </div>
   );
@@ -632,6 +638,7 @@ export default function TakeInterview() {
   const [question,  setQuestion]  = useState(null);
   const [remaining, setRemaining] = useState(0);
   const [error,     setError]     = useState("");
+  const [devCode,   setDevCode]   = useState("");
   const [stream,    setStream]    = useState(null);
   const [aiSpeaking,setAiSpeaking]= useState(false);
   const [tabWarning,setTabWarning]= useState(false);
@@ -650,7 +657,7 @@ export default function TakeInterview() {
 
   useEffect(()=>{
     getAIInterviewSession(token)
-      .then(async data=>{ setSession(data); setRemaining(data.remainingSeconds||data.durationSeconds||0); await sendAIInterviewOtp(token); setScreen("otp"); })
+      .then(async data=>{ setSession(data); setRemaining(data.remainingSeconds||data.durationSeconds||0); const otpRes = await sendAIInterviewOtp(token); if (otpRes?.devMode && otpRes?.devCode) setDevCode(otpRes.devCode); setScreen("otp"); })
       .catch(err=>{ setError(err?.response?.data?.message||"This interview link is invalid or expired."); setScreen("error"); });
   },[token]);
 
@@ -768,7 +775,7 @@ export default function TakeInterview() {
   );
 
   if(screen==="join")  return <JoinScreen session={session} error={error} onJoin={handleJoin}/>;
-  if(screen==="otp")   return <OtpScreen  email={session?.candidateEmail} token={token} onVerify={()=>setScreen("join")}/>;
+  if(screen==="otp")   return <OtpScreen  email={session?.candidateEmail} token={token} devCode={devCode} onVerify={()=>setScreen("join")}/>;
   if(screen==="intro") return <AiSpeakingIntro onSkip={handleIntroDone}/>;
 
   return (

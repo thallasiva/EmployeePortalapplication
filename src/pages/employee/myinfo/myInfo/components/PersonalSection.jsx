@@ -1,5 +1,5 @@
 import React from "react";
-import { User } from "lucide-react";
+import { User, ChevronDown } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmtDate, calcAge } from "../utils";
 import Field from "./Field";
@@ -56,7 +56,7 @@ const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, t
       <InfoCard id="card-address" title="Address">
         <div className={cssClass({ marginBottom: 12 })}>
           <span className={cssClass({ fontSize: 12, background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 12px", color: "#475569", fontWeight: 600 })}>
-            Emergency Contact / Address ▾
+            Emergency Contact / Address <ChevronDown size={12} style={{ display: "inline", verticalAlign: "-2px" }} />
           </span>
         </div>
         <Grid cols={3}>

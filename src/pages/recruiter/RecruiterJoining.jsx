@@ -299,7 +299,7 @@ export default function RecruiterJoining() {
               }
 
                   <div className="text-center py-2">
-                    <span className="text-[12px] text-gray-400">View-only — HR review actions are in Admin → Joining Formalities</span>
+                    <span className="text-[12px] text-gray-400">View-only — HR review actions are in Admin &gt; Joining Formalities</span>
                   </div>
                 </>
             }

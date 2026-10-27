@@ -6,6 +6,7 @@ import {
   ReportStatusBadge } from
 "../../../component/reports/ReportsLayout";
 import { GENERIC_REPORTS } from "../../../data/reportsData";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { ArrowUpDown } from "lucide-react";
 
 export default function GenericReport({ type }) {
   const config = GENERIC_REPORTS[type];
@@ -29,7 +30,7 @@ export default function GenericReport({ type }) {
               <tr>
                 <th><input type="checkbox" className="report-checkbox" aria-label="Select all" /></th>
                 {config.columns.map((col) =>
-                <th key={col}>{col} ↕</th>
+                <th key={col}>{col} <ArrowUpDown size={12} className="inline opacity-50" /></th>
                 )}
               </tr>
             </thead>

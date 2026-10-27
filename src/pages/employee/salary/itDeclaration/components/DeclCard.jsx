@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmt } from "../utils/formatters";
 
@@ -54,7 +54,7 @@ function DeclCard({ icon, title, declared, onClick, locked }) {
           background: "#f0fdf4", border: "1px solid #bbf7d0"
         })}>
           <span className={cssClass({ fontSize: 11, color: "#15803d", fontWeight: 700 })}>
-            ✓ {fmt(declared)}
+            <Check size={12} className="inline -mt-0.5" /> {fmt(declared)}
           </span>
         </div>
       ) : locked ? (

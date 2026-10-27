@@ -176,7 +176,7 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
           {/* Action buttons */}
           {!hasCheckedIn && !hasCheckedOut && (
             <button
-              onClick={() => punch(checkIn, "check in", `✅ Checked in successfully at ${timeNow}`)}
+              onClick={() => punch(checkIn, "check in", `Checked in successfully at ${timeNow}`)}
               disabled={loading}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, border: "none", background: "#16a34a", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: loading ? 0.6 : 1, boxShadow: "0 2px 8px #16a34a44" }}
             >
@@ -187,14 +187,14 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
           {hasCheckedIn && !hasCheckedOut && !isOnBreak && (
             <>
               <button
-                onClick={() => punch(breakStart, "start break", "☕ Break started — enjoy your rest!")}
+                onClick={() => punch(breakStart, "start break", "Break started — enjoy your rest!")}
                 disabled={loading}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid #d97706", background: "#fffbeb", color: "#d97706", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: loading ? 0.6 : 1 }}
               >
                 <Coffee size={14} /> {loading ? "Please wait…" : "Start Break"}
               </button>
               <button
-                onClick={() => punch(checkOut, "check out", `🏁 Checked out at ${timeNow} — great work today!`)}
+                onClick={() => punch(checkOut, "check out", `Checked out at ${timeNow} — great work today!`)}
                 disabled={loading}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: "#f18200", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: loading ? 0.6 : 1, boxShadow: "0 2px 8px #f1820044" }}
               >
@@ -205,7 +205,7 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
 
           {hasCheckedIn && !hasCheckedOut && isOnBreak && (
             <button
-              onClick={() => punch(breakEnd, "end break", "✅ Break ended — welcome back!")}
+              onClick={() => punch(breakEnd, "end break", "Break ended — welcome back!")}
               disabled={loading}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, border: "none", background: "#d97706", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: loading ? 0.6 : 1, boxShadow: "0 2px 8px #d9770644" }}
             >

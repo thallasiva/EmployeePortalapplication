@@ -4,6 +4,7 @@ import { listPayslips, markPayslipPaid } from "../../../../api/payroll.api";
 import { ORANGE } from "../constants";
 import { fmtINR } from "../utils";
 import PayrollTable from "./PayrollTable";
+import { Check } from "lucide-react";
 
 function PayrollRelease({ month, year }) {
   const [rows, setRows] = useState([]);
@@ -63,7 +64,7 @@ function PayrollRelease({ month, year }) {
             {releasing[r.payslip_id] ? "..." : "Mark Paid"}
           </button>
         ) : r.status === "paid" ? (
-          <span className={cssClass({ color: "#16a34a", fontSize: 12 })}>✓ Released</span>
+          <span className={cssClass({ color: "#16a34a", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 3 })}><Check size={12} /> Released</span>
         ) : (
           <span className={cssClass({ color: "#aaa", fontSize: 12 })}>Not generated</span>
         ),

@@ -1,6 +1,7 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { GROUPS, SECTION_MAP } from "../constants";
+import { X, Check } from "lucide-react";
 
 const ViewDetailsModal = React.memo(function ViewDetailsModal({ onClose, totals }) {
   return (
@@ -11,7 +12,7 @@ const ViewDetailsModal = React.memo(function ViewDetailsModal({ onClose, totals 
             <h3 className={cssClass({ margin: 0, fontSize: 16, fontWeight: 700, color: "#1e293b" })}>Income Tax Act 2025 — Section Changes</h3>
             <p className={cssClass({ margin: "4px 0 0", fontSize: 12, color: "#64748b" })}>Mapping of old sections (IT Act 1961) to new sections (IT Act 2025)</p>
           </div>
-          <button type="button" onClick={onClose} className={cssClass({ background: "none", border: "none", fontSize: 18, color: "#64748b", cursor: "pointer", lineHeight: 1 })}>{"✕"}</button>
+          <button type="button" onClick={onClose} className={cssClass({ background: "none", border: "none", fontSize: 18, color: "#64748b", cursor: "pointer", lineHeight: 1 })} aria-label="Close"><X size={18} /></button>
         </div>
         <div className={cssClass({ padding: "16px 20px", maxHeight: "70vh", overflowY: "auto" })}>
           {GROUPS.map(({ key, label, color, bg }) => (
@@ -38,7 +39,7 @@ const ViewDetailsModal = React.memo(function ViewDetailsModal({ onClose, totals 
                         <td className={cssClass({ padding: "7px 12px", color: "#475569" })}>{row.desc}</td>
                         <td className={cssClass({ padding: "7px 12px", textAlign: "center" })}>
                           {active
-                            ? <span className={cssClass({ fontSize: 11, fontWeight: 700, color: "#16a34a", background: "#dcfce7", padding: "2px 8px", borderRadius: 10 })}>{"✓"} Active</span>
+                            ? <span className={cssClass({ fontSize: 11, fontWeight: 700, color: "#16a34a", background: "#dcfce7", padding: "2px 8px", borderRadius: 10, display: "inline-flex", alignItems: "center", gap: 3 })}><Check size={11} /> Active</span>
                             : <span className={cssClass({ fontSize: 11, color: "#94a3b8" })}>{"—"}</span>
                           }
                         </td>

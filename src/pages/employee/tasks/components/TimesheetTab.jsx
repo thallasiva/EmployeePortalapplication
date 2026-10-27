@@ -6,6 +6,7 @@ import TimesheetActions from "./TimesheetActions";
 import ExtraWorkList from "./ExtraWorkList";
 import ExtraWorkModal from "./ExtraWorkModal";
 import AddTaskModal from "../AddTaskModal";
+import { Check, Lock } from "lucide-react";
 
 const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
   const {
@@ -36,7 +37,7 @@ const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
       )}
       {toast && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700 font-medium">
-          ✓ {toast}
+          <Check size={14} className="inline -mt-0.5" /> {toast}
         </div>
       )}
       {err && (
@@ -44,7 +45,7 @@ const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
       )}
       {isLocked && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700">
-          🔒 This timesheet has been <strong>approved</strong> and is locked from editing.
+          <Lock size={14} className="inline -mt-0.5" /> This timesheet has been <strong>approved</strong> and is locked from editing.
         </div>
       )}
 

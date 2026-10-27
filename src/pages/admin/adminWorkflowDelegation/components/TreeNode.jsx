@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronRight, ChevronDown, Eye } from "lucide-react";
+import { ChevronRight, ChevronDown, Eye, Forward, CircleX } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { nodeColor } from "../utils/formatters";
 
@@ -53,7 +53,7 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
                 fontSize: 10, background: "#fef3c7", color: "#92400e",
                 borderRadius: 4, padding: "1px 5px", fontWeight: 600, whiteSpace: "nowrap",
               })}>
-                🟡 Delegated → {node.delegate_name}
+                <Forward size={11} className="inline -mt-0.5" /> Delegated to {node.delegate_name}
               </span>
             )}
             {node.status === "Inactive" && (
@@ -61,7 +61,7 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
                 fontSize: 10, background: "#f3f4f6", color: "#6b7280",
                 borderRadius: 4, padding: "1px 5px",
               })}>
-                ⚫ Inactive
+                <CircleX size={11} className="inline -mt-0.5" /> Inactive
               </span>
             )}
           </div>

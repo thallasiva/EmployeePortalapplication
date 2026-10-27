@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Download, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Download, Loader2, ArrowRight } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import InteractivePieChart, { formatINR as fmtINR } from "../../../../../component/charts/InteractivePieChart";
 import { fmt } from "../utils/formatters";
@@ -18,7 +18,7 @@ const PayslipCard = React.memo(function PayslipCard({
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 })}>
         <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>Payslip</span>
         <Link to="/employee/payroll/payslips" className={cssClass({ fontSize: 12, color: "#f18200", fontWeight: 600, textDecoration: "none" })}>
-          View All →
+          View All <ArrowRight size={12} className="inline -mt-0.5" />
         </Link>
       </div>
 

@@ -5,6 +5,7 @@ import { fmtDate, fmtTime } from "../utils/dateUtils";
 import ManagerDecisionPanel from "./ManagerDecisionPanel";
 import AdminWorkPanel from "./AdminWorkPanel";
 import CommentsPanel from "./CommentsPanel";
+import { ArrowRight, X } from "lucide-react";
 
 const TicketDetail = React.memo(({ ticket, isAdminUser, onClose, onUpdated }) => {
   const sc = STATUS_COLOR[ticket.status] || STATUS_COLOR["Open"];
@@ -28,7 +29,7 @@ const TicketDetail = React.memo(({ ticket, isAdminUser, onClose, onUpdated }) =>
                 {ticket.forwarded_to_team && (
                   <span className={cssClass({ fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 600,
                     background: tc.bg || "#f3f4f6", color: tc.color || "#374151" })}>
-                    → {ticket.forwarded_to_team}
+                    <ArrowRight size={11} className="inline -mt-0.5" /> {ticket.forwarded_to_team}
                   </span>
                 )}
               </div>
@@ -38,7 +39,7 @@ const TicketDetail = React.memo(({ ticket, isAdminUser, onClose, onUpdated }) =>
             </div>
             <button onClick={onClose}
               className={cssClass({ background: "none", border: "none", fontSize: 18,
-                color: "#94a3b8", cursor: "pointer", padding: 4, flexShrink: 0 })}>✕</button>
+                color: "#94a3b8", cursor: "pointer", padding: 4, flexShrink: 0 })} aria-label="Close"><X size={16} /></button>
           </div>
         </div>
 

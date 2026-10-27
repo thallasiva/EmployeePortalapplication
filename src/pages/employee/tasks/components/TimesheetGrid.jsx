@@ -2,6 +2,7 @@ import { memo } from "react";
 import { DAYS, PROJECTS, MAX_DAILY_HOURS } from "../constants/taskConstants";
 import { fmt, fmtDuration } from "../utils/dateUtils";
 import { colTotal, rowTotal } from "../utils/timesheetUtils";
+import { Pencil } from "lucide-react";
 
 const TimesheetGrid = memo(function TimesheetGrid({
   entries,
@@ -52,7 +53,7 @@ const TimesheetGrid = memo(function TimesheetGrid({
                   {row.taskId && (
                     <button type="button" title="Edit task details"
                       onClick={() => setEditTask(allTasks.find((t) => t.task_id === row.taskId) || null)}
-                      className="shrink-0 text-brand hover:text-orange-600 text-sm px-1">✏️</button>
+                      className="shrink-0 text-brand hover:text-orange-600 text-sm px-1" aria-label="Edit"><Pencil size={14} /></button>
                   )}
                 </div>
                 <div className="flex items-center gap-1 mt-1">

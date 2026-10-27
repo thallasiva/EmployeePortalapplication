@@ -4,6 +4,7 @@ import {
   STATUS_LABEL,
 } from "../../../../data/adminAttendanceData";
 import { getInitials } from "../utils";
+import { Clock } from "lucide-react";
 
 const EmployeeTable = React.memo(function EmployeeTable({ employees, onRegularize }) {
   if (employees.length === 0) {
@@ -68,7 +69,7 @@ const EmployeeTable = React.memo(function EmployeeTable({ employees, onRegulariz
                   <span className="text-xs text-gray-400">—</span>
                 ) : (
                   <span className={`admin-production-pill ${emp.productionGood ? "is-good" : "is-low"}`}>
-                    🕐 {emp.production}
+                    <Clock size={12} className="inline -mt-0.5" /> {emp.production}
                   </span>
                 )}
               </td>

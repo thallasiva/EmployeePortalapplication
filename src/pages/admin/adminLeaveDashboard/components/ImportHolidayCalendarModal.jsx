@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Download } from "lucide-react";
 import { importHolidays } from '../../../../api/holiday.api';
 import { parseHolidayCsv } from '../../../../utils/holidayImport';
 import { successToast, errorToast } from '../../../../utils/ToastControllers';
@@ -78,7 +78,7 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
             })}
           >
             <div className={cssClass({ display: 'flex', alignItems: 'center', gap: 8 })}>
-              <span className={cssClass({ fontSize: 18 })}>📥</span>
+              <Download size={18} />
               <div>
                 <div className={cssClass({ fontSize: 12, fontWeight: 700, color: '#92400e' })}>
                   Not sure about the format?

@@ -1,6 +1,7 @@
 import React from "react";
 import { SECTIONS } from "../constants";
 import ActivityCard from "./ActivityCard";
+import { Inbox } from "lucide-react";
 
 const FeedPanel = React.memo(function FeedPanel({
   loading, visibleItems, activeFilter, search, navigate,
@@ -24,7 +25,7 @@ const FeedPanel = React.memo(function FeedPanel({
         </div>
       ) : visibleItems.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-100 p-14 text-center">
-          <p className="text-4xl mb-3">📭</p>
+          <div className="mb-3 flex justify-center text-slate-300"><Inbox size={40} /></div>
           <p className="font-semibold text-gray-600 text-sm mb-1">No activities found</p>
           <p className="text-gray-400 text-xs">
             {search ? "Try a different search term." : "Check back later for updates."}

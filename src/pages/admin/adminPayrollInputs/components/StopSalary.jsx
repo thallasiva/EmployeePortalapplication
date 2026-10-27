@@ -1,6 +1,7 @@
 import React from "react";
 import { useStopSalary } from "../hooks/useStopSalary";
 import { cssClass } from "../../../../utils/classStyles";
+import { AlertTriangle } from "lucide-react";
 
 const StopSalary = React.memo(function StopSalary() {
   const { emps, stopped, loading, toggleStopped } = useStopSalary();
@@ -15,7 +16,7 @@ const StopSalary = React.memo(function StopSalary() {
         background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 8,
         padding: "12px 16px", marginBottom: 16, fontSize: 13, color: "#92400e",
       })}>
-        ⚠️ Stopping salary will exclude the employee from payroll processing for the selected month.
+        <AlertTriangle size={13} className="inline -mt-0.5" /> Stopping salary will exclude the employee from payroll processing for the selected month.
         This action can be reversed before payroll is finalized.
       </div>
       <div className={cssClass({ overflowX: "auto" })}>

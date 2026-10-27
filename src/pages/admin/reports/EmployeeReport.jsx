@@ -5,6 +5,7 @@ import {
 "../../../component/reports/ReportsLayout";
 import { listEmployees } from "../../../api/employee.api";
 import { getDepartmentName } from "../../../utils/employeeDisplay";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { User } from "lucide-react";
 
 function EmployeeBarChart({ employees }) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -90,7 +91,7 @@ export default function EmployeeReport() {
       <ReportPageHeader title="Employee Report" />
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon="👤" color={s.color} trend={s.trend} />)}
+          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon={<User size={16} />} color={s.color} trend={s.trend} />)}
         </div>
         <EmployeeBarChart employees={employees} />
       </div>

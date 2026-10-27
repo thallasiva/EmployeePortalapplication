@@ -1,5 +1,5 @@
 import React from "react";
-import { Save } from "lucide-react";
+import { Save, AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 
@@ -18,7 +18,7 @@ const StickyFooter = React.memo(function StickyFooter({
     >
       {errorCount > 0 && (
         <div className={cssClass({ flex: 1, display: "flex", alignItems: "center", fontSize: 12, color: "#dc2626", gap: 6 })}>
-          ⚠ {errorCount} field{errorCount > 1 ? "s" : ""} need attention
+          <AlertTriangle size={13} className="inline -mt-0.5" /> {errorCount} field{errorCount > 1 ? "s" : ""} need attention
         </div>
       )}
       <button

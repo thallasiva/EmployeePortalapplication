@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { MON } from "../constants/leaveConstants";
+import { Flag } from "lucide-react";
 
 const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDef }) => {
   const year = cursor.getFullYear();
@@ -36,7 +37,7 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
               })}>
                 {m}
                 {holidayMonths.has(mi) && (
-                  <div className={cssClass({ fontSize: 8, color: currentShiftDef.color })}>🎌</div>
+                  <div className={cssClass({ fontSize: 8, color: currentShiftDef.color, display: "flex" })}><Flag size={8} /></div>
                 )}
               </th>
             ))}

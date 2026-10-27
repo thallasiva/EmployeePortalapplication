@@ -12,7 +12,7 @@ const EventChip = React.memo(function EventChip({ type, label, onDelete }) {
         cssClass({ background: cfg.bg, color: cfg.color })
       )}
     >
-      <span>{cfg.icon}</span>
+      <span className="flex shrink-0">{cfg.icon}</span>
       <span className="truncate max-w-[80px]">{label}</span>
       {onDelete && (
         <button

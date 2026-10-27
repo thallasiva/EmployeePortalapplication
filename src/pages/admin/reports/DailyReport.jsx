@@ -8,6 +8,7 @@ import {
 "../../../component/reports/ReportsLayout";
 import ReportLineChart from "../../../component/reports/ReportLineChart";
 import { DAILY_STATS, DAILY_LINE, DAILY_LIST } from "../../../data/reportsData";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { ArrowUpDown, Circle } from "lucide-react";
 
 export default function DailyReport() {
   return (
@@ -17,7 +18,7 @@ export default function DailyReport() {
       <div className="report-top-grid">
         <div className="report-stats-grid">
           {DAILY_STATS.map((stat) =>
-          <ReportIconStatCard key={stat.label} {...stat} icon="●" />
+          <ReportIconStatCard key={stat.label} {...stat} icon={<Circle size={14} fill="currentColor" />} />
           )}
         </div>
         <div className="report-chart-card">
@@ -45,10 +46,10 @@ export default function DailyReport() {
           <table className="report-data-table">
             <thead>
               <tr>
-                <th>Name ↕</th>
-                <th>Date ↕</th>
-                <th>Department ↕</th>
-                <th>Status ↕</th>
+                <th>Name <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Date <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Department <ArrowUpDown size={12} className="inline opacity-50" /></th>
+                <th>Status <ArrowUpDown size={12} className="inline opacity-50" /></th>
               </tr>
             </thead>
             <tbody>

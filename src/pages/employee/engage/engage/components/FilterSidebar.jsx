@@ -88,7 +88,7 @@ const FilterSidebar = React.memo(function FilterSidebar({
               })
             )}
           >
-            <span>{emoji}</span>
+            <span className="flex text-slate-500">{emoji}</span>
             <span>{label}</span>
             <ChevronRight size={12} className={cssClass({ marginLeft: "auto", color: "#d1d8e0" })} />
           </button>

@@ -1,4 +1,5 @@
 import React from "react";
+import { AlertTriangle } from "lucide-react";
 
 const ChangesRequestedBanner = React.memo(function ChangesRequestedBanner({ inv }) {
   if (inv?.formality_status !== "changes_requested") return null;
@@ -6,7 +7,7 @@ const ChangesRequestedBanner = React.memo(function ChangesRequestedBanner({ inv 
   return (
     <div className="max-w-5xl mx-auto mt-4 px-4">
       <div className="flex items-start gap-3 rounded-xl border-2 border-amber-600 bg-amber-50 px-4 py-3.5">
-        <span className="text-xl mt-0.5">⚠️</span>
+        <AlertTriangle size={20} className="mt-0.5 shrink-0 text-amber-600" />
         <div>
           <p className="text-[13px] font-bold text-amber-900">
             HR has requested changes to your submission

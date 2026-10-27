@@ -73,7 +73,7 @@ const RoleAssignPanel = React.memo(function RoleAssignPanel({
                     className="w-4 h-4 shrink-0"
                     style={{ accentColor: rc.color }}
                   />
-                  <div className="text-lg shrink-0">{ROLE_ICONS[role.role_id] || "👤"}</div>
+                  <div className="shrink-0 text-slate-500 flex">{ROLE_ICONS[role.role_id] || <User size={15} />}</div>
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 text-[13px] font-bold text-gray-900">
                       {role.role_name}

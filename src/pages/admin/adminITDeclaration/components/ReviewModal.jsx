@@ -26,8 +26,8 @@ const ReviewModal = React.memo(function ReviewModal({ title, onSubmit, onClose }
         <div className={cssClass({ padding: "16px 20px" })}>
           <div className={cssClass({ display: "flex", gap: 10, marginBottom: 14 })}>
             {[
-              ["approved", "✓ Approve", "#22c55e", "#f0fdf4", "#15803d"],
-              ["rejected", "✕ Reject",  "#ef4444", "#fef2f2", "#dc2626"],
+              ["approved", "Approve", "#22c55e", "#f0fdf4", "#15803d"],
+              ["rejected", "Reject",  "#ef4444", "#fef2f2", "#dc2626"],
             ].map(([s, lbl, border, bg, color]) => (
               <button key={s} onClick={() => setStatus(s)}
                 className={cssClass({ flex: 1, padding: 9, borderRadius: 8, fontSize: 13, fontWeight: 600,

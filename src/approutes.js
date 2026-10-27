@@ -73,9 +73,9 @@ const AppRoutes = () =>
       <Route
         path="/dashboard/*"
         element={
-        user ?
+        isAdmin(user) ?
         <Layout /> :
-        <Navigate to="/login" replace />
+        <Navigate to={getHomePath(user)} replace />
         }>
 
         <Route path="*" element={<LazyPage label="Loading admin module..."><AdminRoutes /></LazyPage>} />

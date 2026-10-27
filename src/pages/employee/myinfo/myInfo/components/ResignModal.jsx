@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LogOut, Clock, AlertTriangle, X } from "lucide-react";
+import { LogOut, Clock, AlertTriangle, X, ArrowRight, ArrowLeft } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { RESIGN_REASONS } from "../constants";
 import { fmtDate, noticeDays, minDate } from "../utils";
@@ -79,7 +79,7 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
             </div>
             <div className={cssClass({ display: "flex", gap: 10 })}>
               <button onClick={() => canProceed && setStep(2)} disabled={!canProceed} className={cssClass({ flex: 1, padding: "11px 0", borderRadius: 8, fontWeight: 700, fontSize: 13, border: "none", cursor: canProceed ? "pointer" : "not-allowed", background: canProceed ? "#dc2626" : "#f1f5f9", color: canProceed ? "#fff" : "#94a3b8" })}>
-                Next: Review →
+                Next: Review <ArrowRight size={13} className="inline -mt-0.5" />
               </button>
               <button onClick={onClose} className={cssClass({ padding: "11px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
                 Cancel
@@ -117,7 +117,7 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
                 {saving ? "Submitting…" : "Confirm Resignation"}
               </button>
               <button onClick={() => setStep(1)} disabled={saving} className={cssClass({ padding: "11px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
-                ← Back
+                <ArrowLeft size={13} className="inline -mt-0.5" /> Back
               </button>
             </div>
           </div>

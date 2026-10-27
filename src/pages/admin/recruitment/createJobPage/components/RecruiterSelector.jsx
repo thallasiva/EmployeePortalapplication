@@ -1,5 +1,5 @@
 import React from "react";
-import { User } from "lucide-react";
+import { User, Check } from "lucide-react";
 
 const RecruiterSelector = React.memo(function RecruiterSelector({
   recruiters,
@@ -43,7 +43,7 @@ const RecruiterSelector = React.memo(function RecruiterSelector({
                 <div className="text-[11px] text-gray-500">{r.email}</div>
               </div>
               {checked && (
-                <span className="ml-auto text-[10px] text-orange-500">✔</span>
+                <Check size={13} className="ml-auto text-orange-500" />
               )}
             </label>
           );

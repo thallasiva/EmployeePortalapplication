@@ -1,5 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { getMyTimesheets, getTimesheetDetail } from "../../../../api/timesheet.api";
+import { ClipboardList, ChevronRight } from "lucide-react";
 
 const STATUS_COLOR = {
   draft: "bg-gray-100 text-gray-600",
@@ -44,7 +45,7 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
   if (loading) return <div className="ts-loading">Loading…</div>;
   if (!timesheets.length) return (
     <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
-      <span className="text-4xl">📋</span>
+      <ClipboardList size={40} className="text-slate-300" />
       <p className="text-sm">No {statusFilter || ""} timesheets found.</p>
     </div>
   );
@@ -74,7 +75,7 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
                 <span className={`text-xs font-semibold px-3 py-1 rounded-full ${STATUS_COLOR[t.status] || "bg-gray-100 text-gray-500"}`}>
                   {t.status}
                 </span>
-                <span className={`text-gray-400 text-sm transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}>▶</span>
+                <span className={`text-gray-400 inline-flex transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}><ChevronRight size={14} /></span>
               </div>
             </div>
 

@@ -1,9 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import {
-  Loader2, Zap, MapPin, Briefcase, Building2, Link2, GitBranch,
-  Clock, DollarSign, BookOpen, Award, Globe, ChevronDown, ChevronUp,
-  CheckCircle2, XCircle, User, Star
-} from "lucide-react";
+import { Loader2, Zap, MapPin, Briefcase, Building2, Link2, GitBranch, Clock, DollarSign, BookOpen, Award, Globe, ChevronDown, ChevronUp, CheckCircle2, XCircle, User, Star, Sparkles, FileText, FolderOpen } from "lucide-react";
 import { Btn, Select, Field } from "../../shared";
 import { uploadResumeMatch, getErrorMessage } from "../../../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
@@ -75,7 +71,7 @@ function ParsedDetail({ parsed, result }) {
               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
               : "bg-amber-50 text-amber-700 border-amber-200"
           }`}>
-            {parsed.parsedBy === "openai" ? "✓ AI Parsed" : "⚡ Regex Parsed"}
+            {parsed.parsedBy === "openai" ? <span className="inline-flex items-center gap-1"><Sparkles size={12} /> AI Parsed</span> : <span className="inline-flex items-center gap-1"><Zap size={12} /> Regex Parsed</span>}
           </span>
         )}
       </div>
@@ -88,7 +84,7 @@ function ParsedDetail({ parsed, result }) {
 
       {/* Matched / missing skills */}
       {(matched.length > 0 || missing.length > 0) && (
-        <Section title={`Skills Match (${matched.length}✔ / ${missing.length}✖)`}>
+        <Section title={`Skills Match (${matched.length} matched / ${missing.length} missing)`}>
           {matched.length > 0 && (
             <div className="mb-2">
               <div className="text-[11px] font-bold text-emerald-600 mb-1">Matched ({matched.length})</div>
@@ -284,7 +280,7 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
         <div>
           <div className="text-[14px] font-bold text-gray-900">Resume Match Checker</div>
           <div className="text-[12px] text-gray-500">
-            Upload PDF or DOCX → AI extracts all fields dynamically → instant match score
+            Upload PDF or DOCX — AI extracts all fields and gives an instant match score
           </div>
         </div>
       </div>
@@ -307,13 +303,13 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
                 onChange={e => handleFile(e.target.files[0])}/>
               {file ? (
                 <>
-                  <div className="text-[28px] mb-1.5">📄</div>
+                  <div className="mb-1.5 flex justify-center text-[#f18200]"><FileText size={28} /></div>
                   <div className="text-[13px] font-bold text-[#f18200]">{file.name}</div>
                   <div className="text-[11px] text-gray-500 mt-0.5">{(file.size/1024).toFixed(0)} KB · Click to change</div>
                 </>
               ) : (
                 <>
-                  <div className="text-[28px] mb-1.5">📂</div>
+                  <div className="mb-1.5 flex justify-center text-[#f18200]"><FolderOpen size={28} /></div>
                   <div className="text-[13px] font-semibold text-gray-700">Drop resume here or click to browse</div>
                   <div className="text-[11px] text-gray-400 mt-1">PDF or DOCX · Max 5 MB</div>
                 </>

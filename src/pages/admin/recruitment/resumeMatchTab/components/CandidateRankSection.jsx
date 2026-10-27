@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { RefreshCw, Loader2 } from "lucide-react";
+import { RefreshCw, Loader2, ClipboardList } from "lucide-react";
 import { Btn, Select, SearchBar } from "../../shared";
 import RankStats from "./RankStats";
 import CandidateTable from "./CandidateTable";
@@ -28,7 +28,7 @@ const CandidateRankSection = React.memo(function CandidateRankSection({
   return (
     <div>
       <div className="mb-3">
-        <div className="text-[13px] font-bold text-gray-700 mb-2">📋 All Candidates Ranked by Job</div>
+        <div className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5"><ClipboardList size={14} /> All Candidates Ranked by Job</div>
         <div className="flex gap-3 flex-wrap items-center">
           <div className="flex-1 max-w-[420px]">
             <Select value={selectedJob} onChange={handleSelectJob} options={jobOpts} />

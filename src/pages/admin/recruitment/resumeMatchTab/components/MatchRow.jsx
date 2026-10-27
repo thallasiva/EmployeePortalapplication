@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Check, X, RefreshCw } from "lucide-react";
 import { getErrorMessage } from "../../../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
 import ScoreCircle from "./ScoreCircle";
@@ -35,9 +35,9 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
         <td className="px-3.5 py-3 text-center"><ScoreCircle score={row.match_score} size={52} /></td>
         <td className="px-3.5 py-3"><RecBadge label={row.recommendation} /></td>
         <td className="px-3.5 py-3">
-          <span className="text-[12px] text-[#f18200] font-semibold">✔ {matched.length}</span>
+          <span className="text-[12px] text-[#f18200] font-semibold inline-flex items-center gap-0.5"><Check size={12} /> {matched.length}</span>
           <span className="text-[12px] text-gray-400 mx-1">·</span>
-          <span className="text-[12px] text-red-600 font-semibold">✖ {missing.length}</span>
+          <span className="text-[12px] text-red-600 font-semibold inline-flex items-center gap-0.5"><X size={12} /> {missing.length}</span>
         </td>
         <td className="px-3.5 py-3 text-[12px] text-gray-700">{row.relevant_experience} yrs</td>
         <td className="px-3.5 py-3">
@@ -46,7 +46,7 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
               onClick={handleRecompute} disabled={recomputing} title="Recompute score"
               className="border-0 bg-transparent cursor-pointer text-violet-600 font-bold text-base"
             >
-              {recomputing ? "…" : "↻"}
+              {recomputing ? "…" : <RefreshCw size={13} />}
             </button>
             {expanded
               ? <ChevronUp size={14} className="text-gray-400" />

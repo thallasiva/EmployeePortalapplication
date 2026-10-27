@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Briefcase, ChevronDown, ChevronRight, CheckCircle } from "lucide-react";
+import { Search, Briefcase, ChevronDown, ChevronRight, CheckCircle, ArrowRight } from "lucide-react";
 import apiClient from "../../../../api/client";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { JOB_ROLES } from "../constants";
@@ -157,7 +157,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
         <div className="px-3 py-3 border-t border-gray-100 bg-gray-50 shrink-0">
           {pickedDesig && (
             <div className="text-[11px] text-gray-500 mb-2 truncate">
-              → <span className="font-semibold text-gray-800">{pickedDesig}</span>
+              <ArrowRight size={12} className="inline -mt-0.5" /> <span className="font-semibold text-gray-800">{pickedDesig}</span>
             </div>
           )}
           <button

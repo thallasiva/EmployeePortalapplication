@@ -64,10 +64,10 @@ const EmployeeList = React.memo(function EmployeeList({
                   <div className="text-[11px] text-gray-500">{emp.emp_code} · {desig}</div>
                 </div>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
                   style={{ backgroundColor: rc.bg, color: rc.color, border: `1px solid ${rc.border}` }}
                 >
-                  {ROLE_ICONS[emp.role_id] || ""} {getRoleLabel(emp.role_id)}
+                  {ROLE_ICONS[emp.role_id] ? <span className="flex [&>svg]:w-3 [&>svg]:h-3">{ROLE_ICONS[emp.role_id]}</span> : null} {getRoleLabel(emp.role_id)}
                 </span>
                 {isActive && <CheckCircle size={14} color="#f18200" className="shrink-0" />}
               </div>

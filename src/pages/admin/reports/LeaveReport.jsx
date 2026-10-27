@@ -5,6 +5,7 @@ import {
 "../../../component/reports/ReportsLayout";
 import ReportStackedBarChart from "../../../component/reports/ReportStackedBarChart";
 import { listLeaveRequests } from "../../../api/leaveRequest.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { ClipboardList } from "lucide-react";
 
 export default function LeaveReport() {
   const [leaves, setLeaves] = useState([]);
@@ -57,7 +58,7 @@ export default function LeaveReport() {
       <ReportPageHeader title="Leave Report" />
       <div className="report-top-grid">
         <div className="report-stats-grid">
-          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon="📋" color={s.color} trend={s.trend} />)}
+          {stats.map((s) => <ReportIconStatCard key={s.label} label={s.label} value={s.value} icon={<ClipboardList size={16} />} color={s.color} trend={s.trend} />)}
         </div>
         <ReportStackedBarChart data={chartData} />
       </div>

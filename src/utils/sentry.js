@@ -45,7 +45,7 @@ export async function initSentry() {
         return event;
       }
     });
-    console.info("[Sentry] Initialized ✓");
+    console.info("[Sentry] Initialized");
   } catch {
     console.warn("[Sentry] @sentry/react not installed — run: npm install @sentry/react");
   }

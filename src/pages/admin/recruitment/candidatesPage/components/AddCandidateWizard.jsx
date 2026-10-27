@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 import { Btn, SlideOver } from "../../shared";
 import { parseResume, quickResumeMatch, uploadResumeMatch, createCandidate, getErrorMessage } from "../../../../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
@@ -162,7 +162,7 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
           </>
         ) : (
           <>
-            <Btn variant="secondary" onClick={() => setStep(1)}>← Back</Btn>
+            <Btn variant="secondary" onClick={() => setStep(1)}><ArrowLeft size={13} className="inline -mt-0.5" /> Back</Btn>
             <Btn variant="secondary" onClick={handleClose}>Cancel</Btn>
             <Btn onClick={handleSubmit} disabled={saving || !canSubmit}>
               {saving ? "Submitting…" : "Submit Candidate"}

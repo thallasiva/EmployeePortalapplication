@@ -1,5 +1,6 @@
 import React from 'react';
 import { avatarDataUri } from '../../lib/placeholders';
+import { Pencil } from "lucide-react";
 
 const Offices = ({ employees }) =>
 {
@@ -27,7 +28,7 @@ const Offices = ({ employees }) =>
                             <h3 className="font-semibold">Focus Technologies</h3>
                             <p className="text-sm text-gray-500">Head Office</p>
                         </div>
-                        <button className="text-brand">✏️</button>
+                        <button className="text-brand" aria-label="Edit"><Pencil size={15} /></button>
                     </div>
 
                     {}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown } from "lucide-react";
 
 export const PAGE_SIZES = [20, 50, 100, 200, 500];
 export const DEFAULT_PAGE_SIZE = 20;
@@ -46,7 +46,7 @@ export default function Pagination({ page, setPage, totalPages, from, to, total,
                 <option key={s} value={s}>{s}</option>
               )}
             </select>
-            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">▾</span>
+            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400"><ChevronDown size={12} /></span>
           </div> :
 
           <span className="font-medium">{pageSize ?? DEFAULT_PAGE_SIZE}</span>

@@ -1,5 +1,6 @@
 import React from "react";
 import { YEARS } from "../constants";
+import { Download } from "lucide-react";
 
 const ReportToolbar = React.memo(function ReportToolbar({
   year,
@@ -54,7 +55,7 @@ const ReportToolbar = React.memo(function ReportToolbar({
           disabled={!hasData}
           className="flex items-center gap-1.5 px-4 py-1.5 text-sm border rounded-lg hover:bg-slate-50 disabled:opacity-50"
         >
-          ↓ Export CSV
+          <Download size={13} className="inline -mt-0.5" /> Export CSV
         </button>
       </div>
     </div>

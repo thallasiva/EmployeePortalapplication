@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Star } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import StarPicker from "./StarPicker";
@@ -39,7 +39,7 @@ const ParamCard = React.memo(function ParamCard({ param, idx, rating, onChange, 
               fontSize: 11, fontWeight: 700, color: BRAND,
               background: `${BRAND}12`, padding: "2px 8px", borderRadius: 999,
             })}>
-              ★ {rating.self_rating}/5
+              <Star size={11} fill="currentColor" className="inline -mt-0.5" /> {rating.self_rating}/5
             </span>
           )}
           {open

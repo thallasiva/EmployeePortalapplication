@@ -38,7 +38,7 @@ const TaskDurationSummary = memo(function TaskDurationSummary({
       </div>
       {startDate && endDate && (
         <p className="text-[11px] text-gray-500 text-center pt-1">
-          {fmtDate(startDate)} → {fmtDate(endDate)}
+          {fmtDate(startDate)} – {fmtDate(endDate)}
           {startTime && endTime && (
             <span className="ml-2">· {startTime} – {endTime}</span>
           )}

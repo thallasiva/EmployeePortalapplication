@@ -91,7 +91,14 @@ export const getPayrollRun = (id) => apiClient.get(`/payroll/runs/${id}`).then(u
 
 
 export const runPayroll = (payload) =>
-apiClient.post("/payroll/runs", payload).then(unwrap);
+apiClient.post("/payroll/runs", payload).then((r) => ({ ...(r.data?.data || {}), message: r.data?.message }));
+
+// Attendance → salary for a month, per employee (before processing)
+export const getPayrollAttendanceSummary = (params) =>
+apiClient.get("/payroll/attendance-summary", { params }).then(unwrap);
+
+export const savePayrollAttendanceAdjustment = (employeeId, payload) =>
+apiClient.put(`/payroll/attendance-summary/${employeeId}/adjustment`, payload).then(unwrap);
 
 export const submitPayrollReview = (id) =>
   apiClient.post(`/payroll/runs/${id}/submit-review`).then(unwrap);

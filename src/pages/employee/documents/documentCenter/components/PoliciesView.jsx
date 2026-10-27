@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronRight, Search, Download } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, Download, Check } from "lucide-react";
 import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { POLICIES } from "../constants";
@@ -49,7 +49,7 @@ const PoliciesView = React.memo(function PoliciesView({
                     {sectionOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                     {policy.title}
                     {ackMap[policy.id] &&
-                      <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✓ Acknowledged</span>
+                      <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1"><Check size={10} /> Acknowledged</span>
                     }
                   </h4>
                   <span className="text-[11px] text-[#a4afbf] shrink-0 ml-2">Last updated on {policy.date}</span>

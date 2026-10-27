@@ -1,10 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp,
-  Check, Eye, Save, Building2, Briefcase, BarChart2,
-  Calendar, Users, Clock, MapPin, Globe, DollarSign,
-} from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp, Check, Eye, Save, Building2, Briefcase, BarChart2, Calendar, Users, Clock, MapPin, Globe, DollarSign, ArrowRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 
 // ─── Colour tokens ────────────────────────────────────────────────────────────
@@ -439,7 +435,7 @@ const Template3Wizard = React.memo(function Template3Wizard({
                 onClick={() => goToStep(Math.max(1, currentStep - 1))}
                 disabled={currentStep === 1}
                 className="flex items-center gap-1.5 border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40 transition-colors">
-                ← Previous
+                <ArrowLeft size={13} className="inline -mt-0.5" /> Previous
               </button>
               <div className="flex items-center gap-2">
                 <button onClick={handleSave} disabled={saving}
@@ -449,7 +445,7 @@ const Template3Wizard = React.memo(function Template3Wizard({
                 <button onClick={() => goToStep(Math.min(6, currentStep + 1))}
                   className="flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90"
                   style={{ backgroundColor: AMBER }}>
-                  Next →
+                  Next <ArrowRight size={13} className="inline -mt-0.5" />
                 </button>
               </div>
             </div>

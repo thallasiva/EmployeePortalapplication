@@ -1,6 +1,7 @@
 import React from "react";
 import { STATUS_CLS, FB_CLS } from "../constants";
 import RoundBadge from "./RoundBadge";
+import { Star } from "lucide-react";
 
 const RoundRow = React.memo(function RoundRow({
   iv,
@@ -58,8 +59,8 @@ const RoundRow = React.memo(function RoundRow({
             </span>
           )}
           {iv.shortlisted === 1 && (
-            <span className="text-[10px] font-bold bg-[#fff7ed] text-[#f18200] px-1.5 py-px rounded-full">
-              ★
+            <span className="text-[10px] font-bold bg-[#fff7ed] text-[#f18200] px-1.5 py-px rounded-full inline-flex">
+              <Star size={10} fill="currentColor" />
             </span>
           )}
         </div>

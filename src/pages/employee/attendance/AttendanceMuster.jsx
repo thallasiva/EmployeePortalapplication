@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, Info } from "lucide-react";
+import { Download, Info, CircleDot } from "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
 
@@ -183,8 +183,8 @@ export default function AttendanceMuster() {
                     <td className="px-4 py-2.5 font-semibold text-slate-800">
                       {row.day}
                       {isToday && (
-                        <span className="ml-1 text-[10px] text-brand font-bold">
-                          •
+                        <span className="ml-1 text-brand inline-flex align-middle" title="Today">
+                          <CircleDot size={10} />
                         </span>
                       )}
                     </td>

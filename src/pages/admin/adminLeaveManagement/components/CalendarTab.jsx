@@ -160,7 +160,7 @@ const CalendarTab = memo(() => {
           {" — "}holidays highlighted in{" "}
           <strong className={cssClass({ color: currentShiftDef.color })}>{currentShiftDef.color}</strong>.
           {" "}Switch tabs to see General / Mid / Night shift calendars.
-          {" "}Manage holidays in <strong>Settings → Time Off</strong>.
+          {" "}Manage holidays in <strong>Settings &gt; Time Off</strong>.
         </span>
       </div>
     </div>

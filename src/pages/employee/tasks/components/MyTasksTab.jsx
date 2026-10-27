@@ -10,6 +10,7 @@ import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import { calcDateDiff, fmtDate, fmtDuration } from "../utils/dateUtils";
 import TaskModal from "./TaskModal";
 import ExtraWorkModal from "./ExtraWorkModal";
+import { Zap, Pencil, Trash2, CalendarDays, Clock, Timer } from "lucide-react";
 
 const MyTasksTab = memo(function MyTasksTab() {
   const [tasks, setTasks] = useState([]);
@@ -50,7 +51,7 @@ const MyTasksTab = memo(function MyTasksTab() {
         <h2 className="text-base font-bold text-gray-800">My Tasks</h2>
         <div className="flex gap-2">
           <button type="button" className="ts-btn-extra" onClick={() => setShowExtraWork(true)}>
-            ⚡ Extra Work Request
+            <Zap size={14} className="inline -mt-0.5" /> Extra Work Request
           </button>
           <button type="button" className="ts-btn-primary" onClick={() => setModal("create")}>
             + New Task
@@ -87,8 +88,8 @@ const MyTasksTab = memo(function MyTasksTab() {
                     <span className="text-[10px] text-violet-400 italic shrink-0">locked</span>
                   ) : (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button type="button" onClick={() => setModal(t)} className="ts-icon-btn text-brand">✏️</button>
-                      <button type="button" onClick={() => handleDelete(t.task_id)} className="ts-icon-btn">🗑️</button>
+                      <button type="button" onClick={() => setModal(t)} className="ts-icon-btn text-brand" aria-label="Edit task"><Pencil size={14} /></button>
+                      <button type="button" onClick={() => handleDelete(t.task_id)} className="ts-icon-btn" aria-label="Delete task"><Trash2 size={14} /></button>
                     </div>
                   )}
                 </div>
@@ -97,12 +98,12 @@ const MyTasksTab = memo(function MyTasksTab() {
                   <div className="flex flex-wrap gap-2 pl-4">
                     {t.start_date && (
                       <span className="ts-chip">
-                        📅 {fmtDate(t.start_date)}
-                        {t.end_date && t.end_date !== t.start_date ? ` → ${fmtDate(t.end_date)}` : ""}
+                        <CalendarDays size={11} className="inline -mt-0.5" /> {fmtDate(t.start_date)}
+                        {t.end_date && t.end_date !== t.start_date ? ` – ${fmtDate(t.end_date)}` : ""}
                       </span>
                     )}
                     {t.start_time && t.end_time && (
-                      <span className="ts-chip">🕐 {t.start_time} – {t.end_time}</span>
+                      <span className="ts-chip"><Clock size={11} className="inline -mt-0.5" /> {t.start_time} – {t.end_time}</span>
                     )}
                     {days && (
                       <span className="ts-chip ts-chip--blue">{days} day{days !== 1 ? "s" : ""}</span>
@@ -111,7 +112,7 @@ const MyTasksTab = memo(function MyTasksTab() {
                       <span className="ts-chip ts-chip--indigo">{fmtDuration(perDay)} / day</span>
                     )}
                     {totalH && (
-                      <span className="ts-chip ts-chip--green">⏱ {fmtDuration(totalH)} total</span>
+                      <span className="ts-chip ts-chip--green"><Timer size={11} className="inline -mt-0.5" /> {fmtDuration(totalH)} total</span>
                     )}
                   </div>
                 )}

@@ -6,12 +6,13 @@ import { initials, fullName, anniversaryThisYear, daysFromToday, buildMockFeed }
 import { useEngageData } from "./hooks/useEngageData";
 import FilterSidebar from "./components/FilterSidebar";
 import FeedPanel from "./components/FeedPanel";
+import { TreePalm, ClipboardList, CalendarDays, Headphones, HeartHandshake, FilePen } from "lucide-react";
 
 const QUICK_LINKS = [
-  { label: "Apply Leave",       path: "/employee/leave/apply",        emoji: "🌴" },
-  { label: "Leave Balance",     path: "/employee/leave/balance",      emoji: "📋" },
-  { label: "Holiday Calendar",  path: "/employee/leave/calendar",     emoji: "📅" },
-  { label: "Helpdesk",          path: "/employee/worklife/helpdesk",  emoji: "🎧" },
+  { label: "Apply Leave",       path: "/employee/leave/apply",        emoji: <TreePalm size={14} /> },
+  { label: "Leave Balance",     path: "/employee/leave/balance",      emoji: <ClipboardList size={14} /> },
+  { label: "Holiday Calendar",  path: "/employee/leave/calendar",     emoji: <CalendarDays size={14} /> },
+  { label: "Helpdesk",          path: "/employee/worklife/helpdesk",  emoji: <Headphones size={14} /> },
 ];
 
 const Engage = () => {
@@ -44,7 +45,7 @@ const Engage = () => {
   );
 
   const todayBirthdays = useMemo(
-    () => employees.filter((e) => { const bd = anniversaryThisYear(e.dob); return bd && daysFromToday(bd) === 0; }),
+    () => employees.filter((e) => { const bd = anniversaryThisYear(e.birthday || e.dob); return bd && daysFromToday(bd) === 0; }),
     [employees]
   );
 
@@ -65,7 +66,7 @@ const Engage = () => {
               <h1 className="text-2xl font-bold text-gray-800">Hey {greetingName},</h1>
               <p className="text-gray-500 text-sm">
                 {todayBirthdays.length > 0
-                  ? `🎂 ${todayBirthdays.map((e) => fullName(e).split(" ")[0]).join(", ")} ${todayBirthdays.length === 1 ? "is" : "are"} celebrating a birthday today!`
+                  ? `${todayBirthdays.map((e) => fullName(e).split(" ")[0]).join(", ")} ${todayBirthdays.length === 1 ? "is" : "are"} celebrating a birthday today!`
                   : "Here's what's happening across your workspace."}
               </p>
             </div>
@@ -76,14 +77,14 @@ const Engage = () => {
               onClick={() => navigate("/employee/worklife/kudos")}
               className="flex flex-col items-center gap-2 px-4 py-3 border-2 border-pink-300 rounded-lg hover:bg-pink-50 transition-colors"
             >
-              <span className="text-2xl">💝</span>
+              <HeartHandshake size={24} className="text-rose-500" />
               <span className="text-xs font-medium text-gray-700">Give Kudos</span>
             </button>
             <button
               onClick={() => navigate("/employee/leave/apply")}
               className="flex flex-col items-center gap-2 px-4 py-3 border-2 border-purple-300 rounded-lg hover:bg-purple-50 transition-colors"
             >
-              <span className="text-2xl">📝</span>
+              <FilePen size={24} className="text-[#f18200]" />
               <span className="text-xs font-medium text-gray-700">Apply Leave</span>
             </button>
           </div>

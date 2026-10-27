@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
-import
-  {
-    Plus, Save, Trash2, Eye, Edit2, LayoutDashboard, BarChart2, PieChart,
-    TrendingUp, Users, Clock, Calendar, FileText, X, Check, Maximize2, GripVertical
-  } from "lucide-react";
+import { Plus, Save, Trash2, Eye, Edit2, LayoutDashboard, BarChart2, PieChart, TrendingUp, Users, Clock, Calendar, FileText, X, Check, Maximize2, GripVertical, ArrowUp, ArrowLeft } from "lucide-react";
 import { dashboardsApi } from "../../api/settings.api";
 
 const BRAND = "#f18200";
@@ -50,7 +46,7 @@ function WidgetCard({ widget, onSelect, selected, onDelete })
               {widget.type === "attendance" ? "92%" : widget.type === "headcount" ? "248" : "1,284"}
             </p>
             <p className="text-[11px] text-[#94a3b8] mt-1 font-medium">{widget.label}</p>
-            <p className="text-[10px] text-emerald-500 mt-0.5">↑ 4.2% vs last month</p>
+            <p className="text-[10px] text-emerald-500 mt-0.5 inline-flex items-center gap-0.5"><ArrowUp size={10} /> 4.2% vs last month</p>
           </div>
         );
       case "bar":
@@ -154,7 +150,7 @@ function Builder({ dash, onBack, onSave })
     <div className="flex flex-col min-h-screen">
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-[#e2e8f0] flex-wrap">
-        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold">← Dashboards</button>
+        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold inline-flex items-center gap-1"><ArrowLeft size={12} /> Dashboards</button>
         <div className="w-px h-5 bg-[#e2e8f0]" />
         <input value={name} onChange={e => setName(e.target.value)}
           className="h-[34px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] font-bold outline-none focus:border-[#f18200] w-56" />

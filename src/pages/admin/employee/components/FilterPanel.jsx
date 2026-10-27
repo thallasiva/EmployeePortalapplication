@@ -163,7 +163,7 @@ const FilterPanel = React.memo(function FilterPanel({
                 gap: 4,
               })}
             >
-              ✕ Clear all filters
+              <X size={12} className="inline -mt-0.5" /> Clear all filters
             </button>
           </div>
         )}

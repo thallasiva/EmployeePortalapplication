@@ -52,8 +52,8 @@ const ManagerDecisionPanel = React.memo(({ ticket, onUpdated }) => {
       {alreadyActioned ? (
         <div className={cssClass({ padding: "10px 14px", borderRadius: 8, background: sc.bg,
           border: `1px solid ${sc.color}33`, fontSize: 13, color: sc.color, fontWeight: 600 })}>
-          {ticket.status === "Forwarded" ? `✓ Forwarded to ${ticket.forwarded_to_team}` :
-            ticket.status === "Rejected"  ? "✕ Request rejected" : `Status: ${ticket.status}`}
+          {ticket.status === "Forwarded" ? `Forwarded to ${ticket.forwarded_to_team}` :
+            ticket.status === "Rejected"  ? "Request rejected" : `Status: ${ticket.status}`}
         </div>
       ) : (
         <>

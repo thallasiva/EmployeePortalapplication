@@ -1,5 +1,6 @@
 import React from "react";
 import { STEPS } from "../constants";
+import { Check } from "lucide-react";
 
 const StepBar = React.memo(function StepBar({ step }) {
   return (
@@ -11,7 +12,7 @@ const StepBar = React.memo(function StepBar({ step }) {
           <React.Fragment key={s.id}>
             <div className="flex flex-col items-center gap-1">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${done || active ? "bg-[#f18200]" : "bg-gray-300"}`}>
-                {done ? "✓" : s.id}
+                {done ? <Check size={14} /> : s.id}
               </div>
               <span className={`text-[11px] whitespace-nowrap ${active ? "font-bold text-gray-900" : "font-medium text-gray-400"}`}>
                 {s.label}

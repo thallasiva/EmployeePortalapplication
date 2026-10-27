@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { fmtDuration } from "../utils/dateUtils";
 import { MAX_DAILY_HOURS } from "../constants/taskConstants";
+import { AlertTriangle, Ban, Zap } from "lucide-react";
 
 const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
   isOverHours,
@@ -15,7 +16,7 @@ const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
   if (isOverHours) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-        <p className="text-sm font-semibold text-red-600 mb-1">⚠️ Exceeds 8hr daily limit</p>
+        <p className="text-sm font-semibold text-red-600 mb-1 flex items-center gap-1.5"><AlertTriangle size={14} /> Exceeds 8hr daily limit</p>
         <p className="text-xs text-red-500 mb-3">
           Regular tasks are capped at <strong>08hr / day</strong>. Set this to 8hr and raise an
           <strong> Extra Work Request</strong> for the remaining hours.
@@ -33,7 +34,7 @@ const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
   if (exceedsWithExisting) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 space-y-2">
-        <p className="text-sm font-semibold text-red-600">⛔ Daily hour limit exceeded</p>
+        <p className="text-sm font-semibold text-red-600 flex items-center gap-1.5"><Ban size={14} /> Daily hour limit exceeded</p>
         <div className="text-xs text-red-500 space-y-1">
           <div className="flex justify-between">
             <span>Already logged</span>
@@ -58,7 +59,7 @@ const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
           type="button"
           onClick={() => { onClose(); onOpenExtraWork?.(); }}
           className="text-xs font-semibold text-white bg-brand rounded-lg px-3 py-1.5 hover:bg-orange-600">
-          ⚡ Raise Extra Work Request ({fmtDuration(extraHoursNeeded)} extra)
+          <Zap size={14} className="inline -mt-0.5" /> Raise Extra Work Request ({fmtDuration(extraHoursNeeded)} extra)
         </button>
       </div>
     );

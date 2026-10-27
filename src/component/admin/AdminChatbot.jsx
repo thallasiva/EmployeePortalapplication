@@ -30,11 +30,11 @@ function matchReply(text, pending, onLeave) {
   }
 
   if (q.includes("approve") && q.includes("priya")) {
-    return "Demo: I would approve Priya Sharma's Sick Leave (28–29 May 2026).\n\nWhen connected to your backend, this runs automatically. For now, go to Leave → Pending and click Approve.";
+    return "Demo: I would approve Priya Sharma's Sick Leave (28–29 May 2026).\n\nWhen connected to your backend, this runs automatically. For now, go to Leave > Pending and click Approve.";
   }
 
   if (q.includes("late")) {
-    return "4 employees arrived late today: Rahul Mehta, Neha Kapoor, Vikram Singh, Ananya Iyer.\n\nOpen Attendance → Late Arrivals for details.";
+    return "4 employees arrived late today: Rahul Mehta, Neha Kapoor, Vikram Singh, Ananya Iyer.\n\nOpen Attendance > Late Arrivals for details.";
   }
 
   if (q.includes("hello") || q.includes("hi")) {

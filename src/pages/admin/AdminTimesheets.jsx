@@ -62,7 +62,7 @@ function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               {[
             ["Employee", detail.employee_name],
-            ["Week", `${detail.week_start} → ${detail.week_end}`],
+            ["Week", `${detail.week_start} – ${detail.week_end}`],
             ["Total Hours", `${parseFloat(detail.total_hours || 0).toFixed(1)}h`],
             ["Status", <StatusBadge key="s" status={detail.status} />],
             ["Submitted", detail.submitted_at ? new Date(detail.submitted_at).toLocaleDateString("en-GB") : "—"],

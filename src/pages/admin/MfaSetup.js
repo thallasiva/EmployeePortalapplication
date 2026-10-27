@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { setupMfa, enableMfa, disableMfa, getMfaStatus } from "../../api/auth.api";
 import { getErrorMessage } from "../../api/client";
+import { ArrowRight, Check } from "lucide-react";
 
 
 
@@ -124,7 +125,7 @@ const MfaSetup = () => {
             <span className="font-mono break-all">{qrData.otpauthUrl}</span>
           </p>
           <button className="btn-primary w-full py-2" onClick={() => {setStep("confirm");setError("");}}>
-            I&apos;ve scanned it →
+            I&apos;ve scanned it <ArrowRight size={13} className="inline -mt-0.5" />
           </button>
         </div>
       }
@@ -157,7 +158,7 @@ const MfaSetup = () => {
       {step === "done" && backupCodes &&
       <div className="bg-white border border-green-200 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-green-600 text-lg">✓</span>
+            <Check size={18} className="text-green-600" />
             <span className="font-semibold text-green-700">MFA enabled successfully</span>
           </div>
           <p className="text-sm text-slate-600 mb-3">

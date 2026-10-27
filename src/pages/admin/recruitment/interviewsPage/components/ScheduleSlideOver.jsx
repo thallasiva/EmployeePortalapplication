@@ -1,6 +1,7 @@
 import React from "react";
 import { SlideOver, Field, Input, Select, Textarea, TwoColGrid, Btn } from "../shared";
 import { INTERVIEW_LEVELS, INTERVIEW_TYPES } from "../mockData";
+import { Video } from "lucide-react";
 
 const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
   open,
@@ -176,13 +177,13 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
 
         {isTeams && isExternal && (
           <div className="mt-2 px-3 py-2 bg-[#eff6ff] rounded-lg border border-blue-200 text-[12px] text-blue-700">
-            💼 A Microsoft Teams meeting link will be automatically created and emailed to the candidate after scheduling.
+            <Video size={13} className="inline -mt-0.5" /> A Microsoft Teams meeting link will be automatically created and emailed to the candidate after scheduling.
           </div>
         )}
 
         {isGoogleMeet && (
           <div className="px-3.5 py-3 bg-[#f0fdf4] border border-green-200 rounded-lg mt-2">
-            <div className="text-[12px] font-bold text-green-800 mb-1.5">📹 Google Meet</div>
+            <div className="text-[12px] font-bold text-green-800 mb-1.5 flex items-center gap-1.5"><Video size={13} /> Google Meet</div>
             <div className="text-[11px] text-green-700 px-2.5 py-1.5 bg-green-100 rounded-md">
               A Google Meet link will be automatically created and emailed to the candidate after scheduling.
             </div>
@@ -191,7 +192,7 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
 
         {isZoom && (
           <div className="px-3.5 py-3 bg-[#fff7ed] border border-orange-200 rounded-lg mt-2">
-            <div className="text-[12px] font-bold text-orange-800 mb-1.5">🎥 Zoom Meeting</div>
+            <div className="text-[12px] font-bold text-orange-800 mb-1.5 flex items-center gap-1.5"><Video size={13} /> Zoom Meeting</div>
             <div className="text-[11px] text-orange-700 px-2.5 py-1.5 bg-orange-100 rounded-md">
               A Zoom meeting link will be automatically created and emailed to the candidate after scheduling.
             </div>

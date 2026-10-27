@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { CalendarClock, Plus, Edit2, Trash2, Play, Pause, Loader2, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { CalendarClock, Plus, Edit2, Trash2, Play, Pause, Loader2, Clock, CheckCircle2, XCircle, Repeat, CalendarDays, CalendarRange, Target, Settings2, X, Mail } from "lucide-react";
 import { emailSchedulesApi, emailTemplatesApi } from "../../../../../api/settings.api";
 import { Btn, Toggle, Toast, ConfirmDialog } from "../components/SharedUI";
 
 const FREQ_OPTS  = ["Daily","Weekly","Monthly","Yearly","Custom Cron"];
 const DAYS_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const FREQ_EMOJI = { Daily:"🔁", Weekly:"📅", Monthly:"🗓️", Yearly:"🎯", "Custom Cron":"⚙️" };
+const FREQ_EMOJI = { Daily: <Repeat size={20} />, Weekly: <CalendarDays size={20} />, Monthly: <CalendarRange size={20} />, Yearly: <Target size={20} />, "Custom Cron": <Settings2 size={20} /> };
 
 const BLANK = { name:"", freq:"Daily", send_time:"08:00", template_name:"", recipient:"", cron_expr:"", status:"Active" };
 
@@ -31,7 +31,7 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
           <span className="text-[15px] font-bold text-[#1e293b]">{initial?.id ? "Edit Schedule" : "New Schedule"}</span>
-          <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b]">✕</button>
+          <button onClick={onClose} aria-label="Close" className="text-[#94a3b8] hover:text-[#64748b]"><X size={16} /></button>
         </div>
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {[
@@ -220,7 +220,7 @@ export default function ScheduledEmails() {
             <div key={s.id} className="bg-white rounded-xl border border-[#f1f5f9] p-4 hover:shadow-sm transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-[20px]">{FREQ_EMOJI[s.freq] || "📧"}</span>
+                  <span className="text-[#f18200] flex">{FREQ_EMOJI[s.freq] || <Mail size={20} />}</span>
                   <div>
                     <div className="text-[14px] font-bold text-[#1e293b]">{s.name}</div>
                     <div className="text-[11px] text-[#94a3b8]">{s.freq} · {s.send_time}</div>

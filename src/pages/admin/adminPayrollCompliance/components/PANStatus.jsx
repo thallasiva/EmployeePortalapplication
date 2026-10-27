@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { listEmployees } from "../../../../api/employee.api";
 import PayrollTable from "./PayrollTable";
+import { AlertTriangle } from "lucide-react";
 
 const cols = [
   { key: "emp_code", label: "Emp Code" },
@@ -70,7 +71,7 @@ function PANStatus() {
     <>
       {missing > 0 && (
         <div className={cssClass({ background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#991b1b" })}>
-          ⚠️ {missing} employee{missing > 1 ? "s" : ""} missing PAN number — TDS deduction may be at higher rate (20%)
+          <AlertTriangle size={13} className="inline -mt-0.5" /> {missing} employee{missing > 1 ? "s" : ""} missing PAN number — TDS deduction may be at higher rate (20%)
         </div>
       )}
       <PayrollTable cols={cols} rows={rows} emptyMsg="No employees found" />

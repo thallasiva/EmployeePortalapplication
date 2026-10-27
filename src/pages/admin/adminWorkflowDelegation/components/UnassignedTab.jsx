@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, UserCheck, Check } from "lucide-react";
+import { AlertTriangle, UserCheck, Check, CircleAlert } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import { Btn } from "./SharedUI";
@@ -98,7 +98,7 @@ const UnassignedTab = React.memo(function UnassignedTab({
                 <div className={cssClass({ fontSize: 12, color: "#6b7280", marginTop: 2 })}>
                   {emp.designation_name || "—"} · {emp.department_name || "—"}
                 </div>
-                <div className={cssClass({ fontSize: 11, color: "#dc2626", marginTop: 3 })}>🔴 No reporting manager</div>
+                <div className={cssClass({ fontSize: 11, color: "#dc2626", marginTop: 3, display: "flex", alignItems: "center", gap: 4 })}><CircleAlert size={11} /> No reporting manager</div>
               </div>
               <div className={cssClass({ display: "flex", gap: 10, alignItems: "center", minWidth: 280 })}>
                 <div className={cssClass({ flex: 1 })}>

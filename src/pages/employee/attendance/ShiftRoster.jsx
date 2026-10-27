@@ -153,7 +153,7 @@ export default function ShiftRoster() {
           </div>
         ) : (
           <div className="rounded-xl bg-slate-50 p-4 text-center text-slate-500 text-sm">
-            Today is a week off 🎉
+            Today is a week off
           </div>
         )}
       </div>

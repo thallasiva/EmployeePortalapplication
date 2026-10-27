@@ -1,5 +1,5 @@
 import React from "react";
-import { GitBranch, Search, RefreshCw, X } from "lucide-react";
+import { GitBranch, Search, RefreshCw, X, ArrowRight } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import { statusColor } from "../utils/formatters";
@@ -161,7 +161,7 @@ const OrgChartWithSidebar = React.memo(function OrgChartWithSidebar({
                       {r.designation_name || "—"} · {r.department_name || "—"}
                     </div>
                     <div className={cssClass({ marginTop: 4, fontSize: 10, color: BRAND, fontWeight: 600 })}>
-                      Click to view hierarchy →
+                      Click to view hierarchy <ArrowRight size={12} className="inline -mt-0.5" />
                     </div>
                   </div>
                 ))}
@@ -213,7 +213,7 @@ function FocusedPathView({ focusedPath, setFocusedPath }) {
             padding: "4px 10px", fontSize: 12, color: "#6b7280", cursor: "pointer",
           })}
         >
-          ✕ Show full chart
+          <X size={12} className="inline -mt-0.5" /> Show full chart
         </button>
       </div>
       <svg width={svgW} height={svgH} className={cssClass({ overflow: "visible" })}>

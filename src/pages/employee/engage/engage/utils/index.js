@@ -35,6 +35,9 @@ export function initials(name = "") {
 
 export function anniversaryThisYear(dateStr) {
   if (!dateStr) return null;
+  // The people directory sends birthdays as "MM-DD" (no year).
+  const md = /^(\d{2})-(\d{2})$/.exec(dateStr);
+  if (md) return new Date(new Date().getFullYear(), Number(md[1]) - 1, Number(md[2]));
   const d = new Date(dateStr);
   if (isNaN(d)) return null;
   const now = new Date();
@@ -48,7 +51,7 @@ export function daysFromToday(target) {
 }
 
 export function labelForDays(offset) {
-  if (offset === 0) return "Today 🎉";
+  if (offset === 0) return "Today";
   if (offset === 1) return "Tomorrow";
   if (offset > 0) return `In ${offset} days`;
   return `${Math.abs(offset)}d ago`;
@@ -74,14 +77,14 @@ export function buildMockFeed(holidays) {
   const items = [];
 
   items.push({
-    id: "ann-1", section: "announcement", emoji: "📢",
+    id: "ann-1", section: "announcement", emoji: null,
     title: "Q3 Company All-Hands Meeting",
     description: "Join us for our quarterly all-hands on 15 Jul at 3:00 PM IST. Leadership will share company updates, roadmap highlights, and Q&A.",
     chips: ["15 Jul 2026", "3:00 PM IST", "Virtual"],
     timestamp: t(1), sortTs: now - 1 * 86_400_000,
   });
   items.push({
-    id: "ann-2", section: "announcement", emoji: "📋",
+    id: "ann-2", section: "announcement", emoji: null,
     title: "Updated Work From Home Policy",
     description: "HR has updated the WFH policy effective 1 Aug 2026. Employees may work remotely up to 3 days per week with manager approval.",
     chips: ["Effective 1 Aug 2026", "HR Policy"],
@@ -89,7 +92,7 @@ export function buildMockFeed(holidays) {
     link: "/employee/worklife",
   });
   items.push({
-    id: "ann-3", section: "announcement", emoji: "🏥",
+    id: "ann-3", section: "announcement", emoji: null,
     title: "Health Insurance Renewal — Action Required",
     description: "Annual health insurance enrollment is open. Please review your coverage options and update nominees by 31 Jul 2026.",
     chips: ["Deadline: 31 Jul 2026", "Benefits"],
@@ -101,7 +104,7 @@ export function buildMockFeed(holidays) {
     if (off < -7 || off > 60) continue;
     items.push({
       id: `holiday-${h.holiday_id}`, section: "holiday",
-      emoji: h.is_restricted ? "🔒" : "📅",
+      emoji: null,
       title: h.holiday_name,
       description: `${h.is_restricted ? "Restricted holiday" : "Public holiday"} on ${fmtDate(h.holiday_date)}.`,
       chips: [h.is_restricted ? "Restricted" : "Public Holiday", fmtDate(h.holiday_date)],
@@ -112,7 +115,7 @@ export function buildMockFeed(holidays) {
   }
 
   items.push({
-    id: "kudo-1", section: "recognition", emoji: "💝",
+    id: "kudo-1", section: "recognition", emoji: null,
     title: "Kudos Received!",
     description: "\"Outstanding work on the client onboarding project — delivered ahead of schedule and exceeded expectations!\"",
     fromName: "Priya Sharma",
@@ -121,14 +124,14 @@ export function buildMockFeed(holidays) {
     timestamp: t(2), sortTs: now - 2 * 86_400_000,
   });
   items.push({
-    id: "kudo-2", section: "recognition", emoji: "🏆",
+    id: "kudo-2", section: "recognition", emoji: null,
     title: "Employee Spotlight — June 2026",
     description: "Congratulations to Arjun Kumar for being recognised as Employee of the Month for June 2026!",
     chips: ["Employee of the Month", "Jun 2026"],
     timestamp: t(4), sortTs: now - 4 * 86_400_000,
   });
   items.push({
-    id: "kudo-3", section: "recognition", emoji: "⭐",
+    id: "kudo-3", section: "recognition", emoji: null,
     title: "Team Achievement — Product Launch",
     description: "The Engineering team successfully launched v2.0 on schedule. Great collaborative effort across all squads!",
     chips: ["Team Win", "Engineering"],
@@ -136,21 +139,21 @@ export function buildMockFeed(holidays) {
   });
 
   items.push({
-    id: "event-1", section: "event", emoji: "🎉",
+    id: "event-1", section: "event", emoji: null,
     title: "Team Outing — Adventure Park",
     description: "Join the team for a fun outing at Wonderla on 20 Jul 2026. RSVPs due by 12 Jul. Transport arranged from office.",
     chips: ["20 Jul 2026", "Wonderla", "RSVP by 12 Jul"],
     timestamp: t(2), sortTs: now - 2 * 86_400_000,
   });
   items.push({
-    id: "event-2", section: "event", emoji: "🎓",
+    id: "event-2", section: "event", emoji: null,
     title: "Leadership Workshop — Growth Mindset",
     description: "An interactive half-day session on building a growth mindset at work. Open to all employees.",
     chips: ["18 Jul 2026", "10:00 AM", "Conference Hall A"],
     timestamp: t(6), sortTs: now - 6 * 86_400_000,
   });
   items.push({
-    id: "event-3", section: "event", emoji: "🏸",
+    id: "event-3", section: "event", emoji: null,
     title: "Inter-Department Sports Day",
     description: "Annual sports event featuring badminton, cricket, and carrom. Register your team before 10 Jul.",
     chips: ["25 Jul 2026", "Sports Complex", "Register by 10 Jul"],
@@ -158,7 +161,7 @@ export function buildMockFeed(holidays) {
   });
 
   items.push({
-    id: "hd-1", section: "helpdesk", emoji: "🎧",
+    id: "hd-1", section: "helpdesk", emoji: null,
     title: "IT Support — Laptop Replacement",
     description: "Your request for a laptop replacement (Ticket #HD-2041) has been approved. Collection from IT desk by 14 Jul.",
     chips: ["#HD-2041", "Approved"],
@@ -166,7 +169,7 @@ export function buildMockFeed(holidays) {
     timestamp: t(1), sortTs: now - 1 * 86_400_000,
   });
   items.push({
-    id: "hd-2", section: "helpdesk", emoji: "🔧",
+    id: "hd-2", section: "helpdesk", emoji: null,
     title: "Facility Request — Ergonomic Chair",
     description: "Your request for an ergonomic chair (Ticket #HD-2038) is under review by the Facilities team.",
     chips: ["#HD-2038", "In Progress"],

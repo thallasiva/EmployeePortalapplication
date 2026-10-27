@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Users, Clock, CheckCircle2, Search } from "lucide-react";
+import { Users, Clock, CheckCircle2, Search, Check } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { getAllAppraisals } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
@@ -101,7 +101,7 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
                       <td className={cssClass({ padding: "9px 12px", color: "#475569" })}>{row.manager_name || "—"}</td>
                       <td className={cssClass({ padding: "9px 12px" })}>
                         {row.manager_rated_at
-                          ? <span className={cssClass({ color: "#16a34a", fontWeight: 600 })}>✓ {fmtDate(row.manager_rated_at)}</span>
+                          ? <span className={cssClass({ color: "#16a34a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 3 })}><Check size={12} /> {fmtDate(row.manager_rated_at)}</span>
                           : <span className={cssClass({ color: "#94a3b8" })}>—</span>}
                       </td>
                     </tr>

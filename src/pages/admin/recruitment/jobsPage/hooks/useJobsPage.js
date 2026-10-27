@@ -9,6 +9,7 @@ import {
 } from "../../../../../api/recruitment.api";
 import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 import { PERIODS } from "../constants";
+import { getStoredUser, ROLE_RECRUITER } from "../../../../../data/auth";
 import { periodStart, filterJobs, computePeriodCounts } from "../utils";
 
 export function useJobsPage() {
@@ -45,6 +46,8 @@ export function useJobsPage() {
   useEffect(() => { loadJobs(); }, [loadJobs]);
 
   useEffect(() => {
+    // Recruiters can't assign recruiters, and the endpoint is lead/admin-only.
+    if (Number(getStoredUser()?.role) === ROLE_RECRUITER) return;
     listRecruiters().then((rows) => setRecruiters(rows ?? [])).catch(() => {});
   }, []);
 

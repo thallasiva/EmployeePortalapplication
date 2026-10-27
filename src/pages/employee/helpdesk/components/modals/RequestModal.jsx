@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bold, Italic, Ellipsis, Type, List, ListOrdered, Link2, AtSign, Smile, Code, Plus, X } from "lucide-react";
 import { createTicket } from "../../../../../api/helpdesk.api";
 import { TOPIC_CONFIG, DEFAULT_FIELDS } from "../../constants/topicConfig";
 import { BRAND, BRAND_LIGHT, BRAND_BORDER, INPUT_BASE, buildDescription } from "../../utils/helpdeskUtils";
@@ -16,8 +16,8 @@ function RichTextArea({ label, value, onChange, required }) {
       )}
       <div className={cssClass({ border: "1px solid #d1d5db", borderRadius: 6, overflow: "hidden" })}>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 1, padding: "5px 8px", borderBottom: "1px solid #e5e7eb", background: "#f9fafb", flexWrap: "wrap" })}>
-          {["Normal text ▾", "B", "I", "···", "A▾", "≡", "№", "🔗", "@", "☺", "</>", "+▾"].map((lbl, idx) => (
-            <button key={idx} type="button" className={cssClass({ padding: "2px 6px", border: "none", background: "none", fontSize: idx === 0 ? 11 : 13, color: "#374151", cursor: "default", fontWeight: lbl === "B" ? 700 : 400, fontStyle: lbl === "I" ? "italic" : "normal" })}>
+          {["Normal text", <Bold size={13} />, <Italic size={13} />, <Ellipsis size={13} />, <Type size={13} />, <List size={13} />, <ListOrdered size={13} />, <Link2 size={13} />, <AtSign size={13} />, <Smile size={13} />, <Code size={13} />, <Plus size={13} />].map((lbl, idx) => (
+            <button key={idx} type="button" className={cssClass({ padding: "2px 6px", border: "none", background: "none", fontSize: idx === 0 ? 11 : 13, color: "#374151", cursor: "default", display: "inline-flex", alignItems: "center" })}>
               {lbl}
             </button>
           ))}
@@ -158,7 +158,7 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
             <p className={cssClass({ fontSize: 15, fontWeight: 700, color: BRAND, margin: 0 })}>{topic.label}</p>
             <p className={cssClass({ fontSize: 12, color: "#6b7280", margin: 0 })}>{topic.desc}</p>
           </div>
-          <button onClick={onClose} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 })}>✕</button>
+          <button onClick={onClose} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 })} aria-label="Close"><X size={18} /></button>
         </div>
 
         {/* Body */}

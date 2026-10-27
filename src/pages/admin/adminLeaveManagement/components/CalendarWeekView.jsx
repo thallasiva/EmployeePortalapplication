@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { DAYS, LEAVE_COLORS, B, BL } from "../constants/leaveConstants";
+import { Flag } from "lucide-react";
 
 const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentShiftDef, ltColorMap }) => {
   const weekStart = new Date(cursor);
@@ -45,7 +46,7 @@ const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentS
                 borderRadius: 5, padding: "4px 7px", marginBottom: 5,
                 background: currentShiftDef.color, color: "#fff",
               })}>
-                <div className={cssClass({ fontSize: 10, fontWeight: 800 })}>🎌 {h.holiday_name}</div>
+                <div className={cssClass({ fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", gap: 3 })}><Flag size={10} /> {h.holiday_name}</div>
                 <div className={cssClass({ fontSize: 9, opacity: .8 })}>{currentShiftDef.label} Holiday</div>
               </div>
             ))}

@@ -116,7 +116,7 @@ function HistoryPanel({ employeeId, onClose }) {
                   </div>
                   <div className="text-xs text-gray-500 space-y-0.5">
                     <p>CTC: <b className="text-gray-700">₹{Number(h.ctc_annual).toLocaleString("en-IN")}/year</b> · ₹{Number(h.ctc_monthly).toLocaleString("en-IN")}/month</p>
-                    <p>From: <b>{h.effective_from?.slice(0, 10)}</b>{h.effective_to ? ` → ${h.effective_to.slice(0, 10)}` : ' → Present'}</p>
+                    <p>From: <b>{h.effective_from?.slice(0, 10)}</b>{h.effective_to ? ` – ${h.effective_to.slice(0, 10)}` : ' – Present'}</p>
                   </div>
                 </div>
             )}
