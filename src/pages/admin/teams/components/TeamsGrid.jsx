@@ -2,7 +2,6 @@ import React from "react";
 import { Users } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import TeamCard from "./TeamCard";
-
 const TeamsGrid = React.memo(function TeamsGrid({
   loading,
   error,
@@ -34,7 +33,6 @@ const TeamsGrid = React.memo(function TeamsGrid({
       </div>
     );
   }
-
   if (error) {
     return (
       <div
@@ -64,7 +62,6 @@ const TeamsGrid = React.memo(function TeamsGrid({
       </div>
     );
   }
-
   if (allTeams.length === 0) {
     return (
       <div className={cssClass({ textAlign: "center", padding: 60, color: "#9ca3af" })}>
@@ -77,7 +74,6 @@ const TeamsGrid = React.memo(function TeamsGrid({
       </div>
     );
   }
-
   return (
     <div className="teams-grid">
       {allTeams.map((team) => (
@@ -91,5 +87,4 @@ const TeamsGrid = React.memo(function TeamsGrid({
     </div>
   );
 });
-
 export default TeamsGrid;

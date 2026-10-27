@@ -1,13 +1,11 @@
 import React from "react";
 import { User, Check } from "lucide-react";
-
 const RecruiterSelector = React.memo(function RecruiterSelector({
   recruiters,
   assignedRecruiters,
   onToggle,
 }) {
   if (!recruiters.length) return null;
-
   return (
     <div className="mt-2 mb-5 overflow-hidden rounded-lg border border-gray-200">
       <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
@@ -19,7 +17,6 @@ const RecruiterSelector = React.memo(function RecruiterSelector({
           </span>
         )}
       </div>
-
       <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-0.5 p-3">
         {recruiters.map((r) => {
           const checked = assignedRecruiters.includes(r.employee_id);
@@ -49,7 +46,6 @@ const RecruiterSelector = React.memo(function RecruiterSelector({
           );
         })}
       </div>
-
       {assignedRecruiters.length > 0 && (
         <div className="border-t border-orange-200 bg-orange-50 px-4 py-2 text-[12px] text-orange-900">
           <strong>Assigned:</strong>{" "}
@@ -62,5 +58,4 @@ const RecruiterSelector = React.memo(function RecruiterSelector({
     </div>
   );
 });
-
 export default RecruiterSelector;

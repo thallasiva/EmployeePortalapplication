@@ -3,14 +3,11 @@ import { User } from "lucide-react";
 import { useReviewForm } from "./hooks/useReviewForm";
 import ReviewStats from "./components/ReviewStats";
 import CycleSection from "./components/CycleSection";
-
 export default function ReviewForm() {
   const { filterStatus, filteredCycles, stats, statuses, handleFilterChange } = useReviewForm();
-
   return (
     <div className="space-y-5">
       <ReviewStats stats={stats} />
-
       <div className="flex items-center gap-2">
         <span className="text-[13px] text-gray-500 font-medium">Filter:</span>
         {statuses.map((s) => (
@@ -28,7 +25,6 @@ export default function ReviewForm() {
           </button>
         ))}
       </div>
-
       {filteredCycles.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <User size={36} className="text-gray-300 mx-auto mb-3" />

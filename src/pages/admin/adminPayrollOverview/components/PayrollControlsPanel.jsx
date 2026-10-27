@@ -2,21 +2,18 @@ import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import Toggle from "./Toggle";
-
 const CONTROL_ITEMS = [
   { key: "payrollInputs",    label: "Payroll Inputs",          sub: "Allow data entry" },
   { key: "employeeView",     label: "Employee Payslip View",   sub: "Release to staff" },
   { key: "itStatementView",  label: "IT Statement View",       sub: "Release IT forms" },
   { key: "payroll",          label: "Payroll Processing",      sub: "Allow payroll run" },
 ];
-
 const QUICK_LINKS = [
   { label: "Payroll Statement",    path: "/dashboard/payroll/statement" },
   { label: "PF / ESI Compliance", path: "/dashboard/payroll/compliance?tab=pan" },
   { label: "Payslip Release",      path: "/dashboard/payroll/compliance?tab=release" },
   { label: "IT Declaration",       path: "/dashboard/it-declaration" },
 ];
-
 const PayrollControlsPanel = React.memo(function PayrollControlsPanel({ controls, onControlChange }) {
   return (
     <div className={cssClass({
@@ -25,7 +22,6 @@ const PayrollControlsPanel = React.memo(function PayrollControlsPanel({ controls
     })}>
       <div className={cssClass({ fontWeight: 800, fontSize: 15, color: "#111827", marginBottom: 4 })}>Payroll Controls</div>
       <div className={cssClass({ fontSize: 12, color: "#9ca3af", marginBottom: 16 })}>Access & lock settings</div>
-
       {CONTROL_ITEMS.map((item) => (
         <div key={item.key} className={cssClass({
           display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -41,7 +37,6 @@ const PayrollControlsPanel = React.memo(function PayrollControlsPanel({ controls
           <Toggle on={controls[item.key]} onChange={(v) => onControlChange(item.key, v)} />
         </div>
       ))}
-
       <div className={cssClass({ borderTop: "1px solid #f3f4f6", marginTop: 14, paddingTop: 12 })}>
         <div className={cssClass({
           fontSize: 10, fontWeight: 700, color: "#9ca3af",
@@ -69,5 +64,4 @@ const PayrollControlsPanel = React.memo(function PayrollControlsPanel({ controls
     </div>
   );
 });
-
 export default PayrollControlsPanel;

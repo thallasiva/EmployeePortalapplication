@@ -7,11 +7,9 @@ import ScoreCircle from "./ScoreCircle";
 import RecBadge from "./RecBadge";
 import SkillBar from "./SkillBar";
 import SkillPills from "./SkillPills";
-
 /* ── Helpers ── */
 const fmt = (n) => n ? `₹${Number(n).toLocaleString("en-IN")}` : null;
 const fmtDays = (d) => d === 0 ? "Immediate" : d ? `${d} days` : null;
-
 function InfoRow({ icon, label, value }) {
   if (!value) return null;
   return (
@@ -24,7 +22,6 @@ function InfoRow({ icon, label, value }) {
     </div>
   );
 }
-
 function Section({ title, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -38,19 +35,16 @@ function Section({ title, children, defaultOpen = true }) {
     </div>
   );
 }
-
 /* ── Parsed resume detail panel ── */
 function ParsedDetail({ parsed, result }) {
   const matched = result?.matched ?? [];
   const missing = result?.missing ?? [];
   const rec     = result?.recommendation;
-
   return (
     <div className="px-5 py-[18px] bg-gray-50 overflow-y-auto max-h-[80vh]">
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-[0.04em] mb-3">
         Result — {result?.jobTitle}
       </div>
-
       {/* Score + recommendation */}
       <div className="flex items-center gap-3.5 mb-3 px-3.5 py-3 bg-white rounded-xl border border-gray-200">
         <ScoreCircle score={result?.matchScore} size={68}/>
@@ -75,13 +69,11 @@ function ParsedDetail({ parsed, result }) {
           </span>
         )}
       </div>
-
       {/* Skill bars */}
       <div className="mb-3">
         <SkillBar label="Skills (60%)"      score={result?.skillScore} color="#7c3aed"/>
         <SkillBar label="Experience (40%)"  score={result?.expScore}   color="#0369a1"/>
       </div>
-
       {/* Matched / missing skills */}
       {(matched.length > 0 || missing.length > 0) && (
         <Section title={`Skills Match (${matched.length} matched / ${missing.length} missing)`}>
@@ -99,7 +91,6 @@ function ParsedDetail({ parsed, result }) {
           )}
         </Section>
       )}
-
       {/* Candidate identity */}
       {parsed && (parsed.name || parsed.email || parsed.phone) && (
         <Section title="Candidate Identity">
@@ -123,7 +114,6 @@ function ParsedDetail({ parsed, result }) {
           )}
         </Section>
       )}
-
       {/* Current position */}
       {parsed && (parsed.current_role || parsed.current_company || parsed.experience) && (
         <Section title="Current Position">
@@ -132,7 +122,6 @@ function ParsedDetail({ parsed, result }) {
           <InfoRow icon={<Clock size={13}/>}     label="Experience"  value={parsed.experience ? `${parsed.experience} years` : null}/>
         </Section>
       )}
-
       {/* Compensation */}
       {parsed && (parsed.current_ctc_annual || parsed.expected_ctc_annual || parsed.notice_period_days != null) && (
         <Section title="Compensation & Availability">
@@ -141,7 +130,6 @@ function ParsedDetail({ parsed, result }) {
           <InfoRow icon={<Clock size={13}/>}      label="Notice Period" value={fmtDays(parsed.notice_period_days)}/>
         </Section>
       )}
-
       {/* All skills */}
       {parsed?.skills?.length > 0 && (
         <Section title={`Skills (${parsed.skills.length})`} defaultOpen={false}>
@@ -152,7 +140,6 @@ function ParsedDetail({ parsed, result }) {
           </div>
         </Section>
       )}
-
       {/* Work experience */}
       {parsed?.work_experience?.length > 0 && (
         <Section title={`Work Experience (${parsed.work_experience.length})`} defaultOpen={false}>
@@ -172,7 +159,6 @@ function ParsedDetail({ parsed, result }) {
           </div>
         </Section>
       )}
-
       {/* Education */}
       {parsed?.education?.length > 0 && (
         <Section title={`Education (${parsed.education.length})`} defaultOpen={false}>
@@ -189,7 +175,6 @@ function ParsedDetail({ parsed, result }) {
           </div>
         </Section>
       )}
-
       {/* Certifications */}
       {parsed?.certifications?.length > 0 && (
         <Section title={`Certifications (${parsed.certifications.length})`} defaultOpen={false}>
@@ -202,7 +187,6 @@ function ParsedDetail({ parsed, result }) {
           </div>
         </Section>
       )}
-
       {/* Languages */}
       {parsed?.languages?.length > 0 && (
         <Section title="Languages" defaultOpen={false}>
@@ -215,14 +199,12 @@ function ParsedDetail({ parsed, result }) {
           </div>
         </Section>
       )}
-
       {/* Summary */}
       {parsed?.summary && (
         <Section title="Summary" defaultOpen={false}>
           <p className="text-[12px] text-[#374151] leading-relaxed pt-1">{parsed.summary}</p>
         </Section>
       )}
-
       {/* Companies history */}
       {parsed?.companies?.length > 0 && (
         <Section title="Companies History" defaultOpen={false}>
@@ -236,7 +218,6 @@ function ParsedDetail({ parsed, result }) {
     </div>
   );
 }
-
 /* ── Main panel ── */
 const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
   const [jobId, setJobId]     = useState("");
@@ -245,18 +226,15 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(false);
   const fileRef = useRef();
-
   const jobOpts = [
     { value: "", label: "— Select Job Requirement —" },
     ...jobs.map(j => ({ value: String(j.job_req_id), label: `${j.job_req_code || ""} — ${j.title}` })),
   ];
-
   const handleFile = useCallback((f) => {
     if (!f) return;
     if (!/\.(pdf|doc|docx)$/i.test(f.name)) { errorToast("Only PDF or DOCX files are supported"); return; }
     setFile(f); setResult(null);
   }, []);
-
   const handleCheck = useCallback(async () => {
     if (!jobId || !file) return;
     setLoading(true); setResult(null);
@@ -264,14 +242,11 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
     catch (err) { apiErrorToast(err, "Failed to parse resume"); }
     finally { setLoading(false); }
   }, [jobId, file]);
-
   const handleReset = useCallback(() => {
     setJobId(""); setFile(null); setResult(null);
     if (fileRef.current) fileRef.current.value = "";
   }, []);
-
   const parsed = result?.parsed;
-
   return (
     <div className="mb-5 rounded-xl overflow-hidden border-2 border-[#f18200] bg-white">
       {/* Header */}
@@ -284,7 +259,6 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
           </div>
         </div>
       </div>
-
       <div className={result ? "grid" : ""} style={result ? { gridTemplateColumns: "1fr 1.4fr" } : {}}>
         {/* Upload form */}
         <div className={`px-5 py-[18px] ${result ? "border-r border-gray-200" : ""}`}>
@@ -324,12 +298,10 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
             {(file || result) && <Btn variant="secondary" onClick={handleReset}>Reset</Btn>}
           </div>
         </div>
-
         {/* Dynamic parsed result */}
         {result && <ParsedDetail parsed={parsed} result={result}/>}
       </div>
     </div>
   );
 });
-
 export default QuickMatchPanel;

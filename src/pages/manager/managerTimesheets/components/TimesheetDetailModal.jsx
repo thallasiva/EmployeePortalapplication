@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { X } from "lucide-react";
 import { getAnyTimesheetDetail, reviewTimesheet } from "../../../../api/timesheet.api";
 import StatusBadge from "./StatusBadge";
 import { formatHours, formatDate } from "../utils";
-
 const INFO_KEYS = [
   ["Employee", (d) => d.employee_name],
   ["Week", (d) => `${d.week_start} – ${d.week_end}`],
@@ -13,7 +13,6 @@ const INFO_KEYS = [
   ["Reviewed At", (d) => formatDate(d.reviewed_at)],
   ["Manager Comment", (d) => d.comments || "—"],
 ];
-
 const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
   timesheetId,
   onClose,
@@ -24,14 +23,12 @@ const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
   const [comments, setComments] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
-
   useEffect(() => {
     getAnyTimesheetDetail(timesheetId)
       .then(setDetail)
       .catch(() => setErr("Failed to load"))
       .finally(() => setLoading(false));
   }, [timesheetId]);
-
   const handleReview = useCallback(
     async (decision) => {
       if (decision === "rejected" && !comments.trim()) {
@@ -51,9 +48,7 @@ const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
     },
     [timesheetId, comments, onReviewed, onClose]
   );
-
   const canReview = detail?.status === "pending";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -62,12 +57,12 @@ const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="text-gray-400 hover:text-gray-600"
+            aria-label="Close"
           >
-            ×
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
-
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading…</div>
         ) : !detail ? (
@@ -82,7 +77,6 @@ const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
                 </div>
               ))}
             </div>
-
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Work Log Entries</h3>
               <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -122,7 +116,6 @@ const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
                 </table>
               </div>
             </div>
-
             {canReview && (
               <div className="space-y-3 pt-2 border-t border-gray-100">
                 <label className="block text-xs font-semibold text-gray-600">
@@ -162,5 +155,4 @@ const TimesheetDetailModal = React.memo(function TimesheetDetailModal({
     </div>
   );
 });
-
 export default TimesheetDetailModal;

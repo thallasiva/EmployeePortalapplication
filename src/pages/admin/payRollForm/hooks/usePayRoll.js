@@ -10,11 +10,9 @@ import {
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { usePagination } from "../../../../components/Pagination";
 import { getFullName } from "../utils";
-
 export function usePayRoll() {
   const navigate = useNavigate();
   const now = new Date();
-
   const [employees, setEmployees] = useState([]);
   const [salaryStructures, setSalaryStructures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +25,6 @@ export function usePayRoll() {
   const [generating, setGenerating] = useState(false);
   const [salaryModal, setSalaryModal] = useState(null);
   const [saving, setSaving] = useState(false);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -44,9 +41,7 @@ export function usePayRoll() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => { loadData(); }, [loadData]);
-
   const enriched = useMemo(() =>
     employees.map((emp) => {
       const structure = salaryStructures
@@ -56,7 +51,6 @@ export function usePayRoll() {
     }),
     [employees, salaryStructures]
   );
-
   const filtered = useMemo(() => {
     let list = enriched;
     if (search.trim()) {
@@ -79,9 +73,7 @@ export function usePayRoll() {
     }
     return sorted;
   }, [enriched, search, sortBy]);
-
   const paginationData = usePagination(filtered);
-
   const handleSaveSalary = useCallback(async (employeeId, basic, breakdown) => {
     setSaving(true);
     try {
@@ -100,17 +92,14 @@ export function usePayRoll() {
         ctc: breakdown.ctc,
         effective_from: effectiveFrom
       };
-
       const existing = salaryStructures
         .filter((s) => s.employee_id === Number(employeeId))
         .sort((a, b) => new Date(b.effective_from) - new Date(a.effective_from))[0];
-
       if (existing) {
         await updateSalaryStructure(existing.id, payload);
       } else {
         await createSalaryStructure(payload);
       }
-
       successToast("Salary structure saved.");
       setSalaryModal(null);
       await loadData();
@@ -120,7 +109,6 @@ export function usePayRoll() {
       setSaving(false);
     }
   }, [salaryStructures, loadData]);
-
   const handleGenerateSlip = useCallback(async () => {
     if (!slipEmployee) return;
     setGenerating(true);
@@ -138,12 +126,10 @@ export function usePayRoll() {
       setGenerating(false);
     }
   }, [slipEmployee, slipMonth, slipYear, navigate]);
-
   const handleExport = useCallback((format) => {
     setExportOpen(false);
     successToast(`Exporting as ${format}…`);
   }, []);
-
   return {
     loading,
     search,

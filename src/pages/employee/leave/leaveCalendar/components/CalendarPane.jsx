@@ -3,7 +3,6 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fmt, avatarColor, initials } from "../utils";
-
 const CALENDAR_STYLES = `
   .react-calendar { width: 100%; border: none; font-family: inherit; }
   .react-calendar__navigation { height: 64px; margin-bottom: 0; border-bottom: 1px solid #e6edf5; }
@@ -17,7 +16,6 @@ const CALENDAR_STYLES = `
   .react-calendar__tile abbr { text-decoration: none; font-size: 13px; }
   .react-calendar__month-view__days__day--neighboringMonth { opacity: 0.35; }
 `;
-
 const CalendarPane = React.memo(function CalendarPane({
   selected,
   year,
@@ -44,7 +42,6 @@ const CalendarPane = React.memo(function CalendarPane({
           const d = fmt(date);
           const holiday = holidayByDate[d];
           const dayLeaves = leaveByDate[d] || [];
-
           return (
             <>
               {holiday && (
@@ -97,5 +94,4 @@ const CalendarPane = React.memo(function CalendarPane({
     </>
   );
 });
-
 export default CalendarPane;

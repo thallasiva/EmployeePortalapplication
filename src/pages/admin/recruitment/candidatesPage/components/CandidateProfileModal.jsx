@@ -6,13 +6,11 @@ import { DetailRow } from "../../shared";
 import { STATUS_OPTS } from "../constants";
 import MatchScoreWidget from "./MatchScoreWidget";
 import InterviewHistory from "./InterviewHistory";
-
 const CandidateProfileModal = React.memo(function CandidateProfileModal({
   detail, role, isAdmin, isTL, isHRMgr, isRecruiter,
   onClose, updateStatus
 }) {
   if (!detail) return null;
-
   const actionOpts = [
     { value: "Shortlisted", label: "Shortlist" },
     { value: "Schedule Interview", label: "Move to Next Round" },
@@ -25,7 +23,6 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
   const hrMgrOpts = reviewerOpts;
   const tlOpts = reviewerOpts;
   const adminOpts = STATUS_OPTS.map((s) => ({ value: s, label: s }));
-
   const footer = (
     <div className="flex items-center gap-2.5 w-full">
       {isRecruiter &&
@@ -48,11 +45,9 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
           <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={adminOpts} />
         </div>
       }
-
       <Btn variant="secondary" onClick={onClose}>Close</Btn>
     </div>
   );
-
   return (
     <Modal open={!!detail} onClose={onClose} title="Candidate Profile" width={680} footer={footer}>
       <div>
@@ -73,7 +68,6 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
             <div className="text-sm font-bold text-[#f18200]">{detail.candidate_code}</div>
           </div>
         </div>
-
         {detail.job_title &&
           <div className="px-3.5 py-2.5 bg-amber-50 rounded-lg mb-4 border-l-[3px] border-l-[#f18200]">
             <div className="text-[11px] text-amber-800 font-semibold">APPLIED FOR</div>
@@ -82,7 +76,6 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
             </div>
           </div>
         }
-
         <div className="grid grid-cols-2 gap-x-5">
           <DetailRow label="Total Experience" value={(detail.total_experience || 0) + " Years"} />
           <DetailRow label="Relevant Experience" value={(detail.relevant_experience || 0) + " Years"} />
@@ -94,7 +87,6 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
           <DetailRow label="State" value={detail.state} />
           <DetailRow label="Added" value={detail.created_at?.slice(0, 10)} />
         </div>
-
         {detail.skill_set &&
           <div className="mt-3">
             <div className="text-xs font-semibold text-gray-500 mb-2">SKILL SET</div>
@@ -105,9 +97,7 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
             </div>
           </div>
         }
-
         <MatchScoreWidget candidateId={detail.candidate_id} jobReqId={detail.job_req_id} />
-
         <InterviewHistory
           candidateId={detail.candidate_id}
           role={role}
@@ -117,5 +107,4 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
     </Modal>
   );
 });
-
 export default CandidateProfileModal;

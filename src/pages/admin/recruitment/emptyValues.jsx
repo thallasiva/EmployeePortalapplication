@@ -6,5 +6,4 @@ function emptyValues(fields)
     return acc;
   }, {});
 }
-
 export default emptyValues;

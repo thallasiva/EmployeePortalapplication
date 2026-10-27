@@ -3,18 +3,15 @@ import { Star } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import StarPicker from "./StarPicker";
-
 function ParameterRatingRow({ rating, mgRating, onRatingChange, onCommentChange, canReview }) {
   const handleStarChange = useCallback(
     (v) => onRatingChange(rating.parameter_key, v),
     [onRatingChange, rating.parameter_key]
   );
-
   const handleTextChange = useCallback(
     (e) => onCommentChange(rating.parameter_key, e.target.value),
     [onCommentChange, rating.parameter_key]
   );
-
   return (
     <div className={cssClass({ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 14px" })}>
       <p className={cssClass({ fontSize: 13, fontWeight: 600, color: "#1e293b", margin: "0 0 10px" })}>
@@ -71,5 +68,4 @@ function ParameterRatingRow({ rating, mgRating, onRatingChange, onCommentChange,
     </div>
   );
 }
-
 export default React.memo(ParameterRatingRow);

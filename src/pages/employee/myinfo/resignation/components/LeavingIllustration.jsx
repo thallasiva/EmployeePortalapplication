@@ -1,6 +1,5 @@
 import React from "react";
 import { BRAND } from "../constants";
-
 const LeavingIllustration = React.memo(function LeavingIllustration() {
   return (
     <svg viewBox="0 0 280 200" width="200" height="145" xmlns="http://www.w3.org/2000/svg">
@@ -30,5 +29,4 @@ const LeavingIllustration = React.memo(function LeavingIllustration() {
     </svg>
   );
 });
-
 export default LeavingIllustration;

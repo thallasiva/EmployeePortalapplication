@@ -8,7 +8,6 @@ import FilterBar from "./components/FilterBar";
 import ResignList from "./components/ResignList";
 import ReviewModal from "./components/ReviewModal";
 import { BRAND } from "./constants";
-
 export default function AdminResignations() {
   const {
     loading, error,
@@ -16,9 +15,7 @@ export default function AdminResignations() {
     reviewing, setReviewing,
     load, visible, counts, pagination,
   } = useResignations();
-
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = pagination;
-
   return (
     <div className={cssClass({ padding: "24px", fontFamily: "inherit", minHeight: "100vh", background: "#f5f7fb" })}>
       {/* Page heading */}
@@ -36,18 +33,15 @@ export default function AdminResignations() {
           </p>
         </div>
       </div>
-
       <StatsBar counts={counts} />
       <FilterBar search={search} filter={filter} onSearchChange={setSearch} onFilterChange={setFilter} />
       <ResignList loading={loading} error={error} visible={visible} paged={paged} onReview={setReviewing} />
-
       {total > 0 && (
         <div className="mt-4">
           <Pagination page={page} setPage={setPage} totalPages={totalPages}
             from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
         </div>
       )}
-
       {reviewing && (
         <ReviewModal
           row={reviewing}

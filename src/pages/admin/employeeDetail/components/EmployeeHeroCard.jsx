@@ -5,7 +5,6 @@ import { avatarDataUri } from "../../../../lib/placeholders";
 import { EmployeeStatusBadge } from "../../../../utils/employeeStatus";
 import { baseInp, inp } from "../constants";
 import Field from "./Field";
-
 const EmployeeHeroCard = React.memo(function EmployeeHeroCard({
   employee, editMode, form, formErrors, touched, set, touch,
 }) {
@@ -90,5 +89,4 @@ const EmployeeHeroCard = React.memo(function EmployeeHeroCard({
     </div>
   );
 });
-
 export default EmployeeHeroCard;

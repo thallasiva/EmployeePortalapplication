@@ -11,7 +11,6 @@ import MiniCalendar from './components/MiniCalendar';
 import UpcomingEvents from './components/UpcomingEvents';
 import CalendarLegend from './components/CalendarLegend';
 import AddEventModal from './components/AddEventModal';
-
 export default function Calendar() {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState({
@@ -22,9 +21,7 @@ export default function Calendar() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [clickedDate, setClickedDate] = useState(null);
-
   const { year, month } = currentDate;
-
   const {
     loading,
     filteredMap,
@@ -36,22 +33,18 @@ export default function Calendar() {
     fetchData,
     handleDeleteEvent,
   } = useCalendarData(year, month, typeFilter);
-
   const prevMonth = useCallback(() =>
     setCurrentDate(({ year, month }) =>
       month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 }
     ), []);
-
   const nextMonth = useCallback(() =>
     setCurrentDate(({ year, month }) =>
       month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 }
     ), []);
-
   const handleDayClick = useCallback((dateKey) => {
     setClickedDate(dateKey);
     setShowAddModal(true);
   }, []);
-
   return (
     <div className="min-h-screen bg-slate-50 pb-12">
       <StatsBar
@@ -61,7 +54,6 @@ export default function Calendar() {
         birthdaysThisMonth={birthdaysThisMonth}
         holidaysThisMonth={holidaysThisMonth}
       />
-
       <div className="flex gap-5 items-start">
         <div className="flex-1 min-w-0 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <CalendarHeader
@@ -95,7 +87,6 @@ export default function Calendar() {
           )}
           {viewMode === 'week' && <WeekView />}
         </div>
-
         <div className="w-64 shrink-0 space-y-4">
           <button
             type="button"
@@ -117,7 +108,6 @@ export default function Calendar() {
           <CalendarLegend typeFilter={typeFilter} onTypeFilterChange={setTypeFilter} />
         </div>
       </div>
-
       {showAddModal && (
         <AddEventModal
           defaultDate={clickedDate}

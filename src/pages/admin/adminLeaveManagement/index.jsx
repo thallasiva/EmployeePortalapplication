@@ -6,17 +6,14 @@ import CalendarTab    from "./components/CalendarTab";
 import RequestsTab    from "./components/RequestsTab";
 import BalancesTab    from "./components/BalancesTab";
 import LeaveTypesTab  from "./components/LeaveTypesTab";
-
 const AdminLeaveManagement = memo(() => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab    = searchParams.get("tab") || "calendar";
   const setTab = (t) => setSearchParams({ tab: t }, { replace: true });
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f8f9fb", padding: "24px 28px",
       fontFamily: "'Inter','Plus Jakarta Sans',system-ui,sans-serif" })}>
       <div className={cssClass({ maxWidth: 1280, margin: "0 auto" })}>
-
         {/* Page header */}
         <div className={cssClass({ marginBottom: 22 })}>
           <h1 className={cssClass({ margin: 0, fontSize: 22, fontWeight: 800, color: "#111827",
@@ -27,7 +24,6 @@ const AdminLeaveManagement = memo(() => {
             Calendar view · approve requests · manage balances · configure leave types
           </p>
         </div>
-
         {/* Tab bar */}
         <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #e9eaec", marginBottom: 24 })}>
           {TABS.map((t) => (
@@ -44,7 +40,6 @@ const AdminLeaveManagement = memo(() => {
             </button>
           ))}
         </div>
-
         {/* Active tab content */}
         <div>
           {tab === "calendar"  && <CalendarTab />}
@@ -56,6 +51,5 @@ const AdminLeaveManagement = memo(() => {
     </div>
   );
 });
-
 AdminLeaveManagement.displayName = "AdminLeaveManagement";
 export default AdminLeaveManagement;

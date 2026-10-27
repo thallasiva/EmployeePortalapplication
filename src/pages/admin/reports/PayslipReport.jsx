@@ -6,7 +6,6 @@ import {
   ReportAvatar,
   ReportStatusBadge } from
 "../../../component/reports/ReportsLayout";import { cssClass, joinClasses } from "../../../utils/classStyles";
-
 const MONTHS = [
 { value: 1, label: "January" }, { value: 2, label: "February" },
 { value: 3, label: "March" }, { value: 4, label: "April" },
@@ -14,14 +13,11 @@ const MONTHS = [
 { value: 7, label: "July" }, { value: 8, label: "August" },
 { value: 9, label: "September" }, { value: 10, label: "October" },
 { value: 11, label: "November" }, { value: 12, label: "December" }];
-
-
 function formatINR(val) {
   const n = Number(val);
   if (isNaN(n)) return "₹0";
   return "₹" + n.toLocaleString("en-IN");
 }
-
 export default function PayslipReport() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -29,7 +25,6 @@ export default function PayslipReport() {
   const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-
   useEffect(() => {
     setLoading(true);
     listPayslips({ month, year, limit: 500 }).
@@ -37,7 +32,6 @@ export default function PayslipReport() {
     catch(() => setPayslips([])).
     finally(() => setLoading(false));
   }, [month, year]);
-
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     if (!q) return payslips;
@@ -48,19 +42,14 @@ export default function PayslipReport() {
       (p.department_name ?? "").toLowerCase().includes(q)
     );
   }, [payslips, search]);
-
-
   const totalPayslips = payslips.length;
   const paidCount = payslips.filter((p) => p.status === "paid").length;
   const pendingCount = payslips.filter((p) => p.status !== "paid").length;
   const totalGross = payslips.reduce((sum, p) => sum + Number(p.gross_salary ?? p.net_pay ?? 0), 0);
-
   const yearOptions = [year - 1, year, year + 1];
-
   return (
     <div className="report-page">
       <ReportPageHeader title="Payslip Report" />
-
       {}
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
@@ -78,12 +67,10 @@ export default function PayslipReport() {
           </div>
         )}
       </div>
-
       {}
       <div className="report-table-section">
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <h3 className="font-semibold text-gray-800 text-sm flex-1">Payslips</h3>
-
           <div className="flex items-center gap-1.5 border border-gray-200 rounded px-2.5 h-9 bg-white">
             <Search size={14} className="text-gray-400" />
             <input
@@ -92,26 +79,20 @@ export default function PayslipReport() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="text-sm outline-none w-40" />
-
           </div>
-
           <select
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
             className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
-
             {MONTHS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
-
           <select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
             className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
-
             {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
-
         {loading ?
         <div className="flex items-center justify-center h-40 text-gray-400 text-sm">Loading payslips…</div> :
         filtered.length === 0 ?
@@ -119,7 +100,6 @@ export default function PayslipReport() {
             <FileText size={32} className="opacity-30" />
             <p className="text-sm">No payslips found for {MONTHS.find((m) => m.value === month)?.label} {year}.</p>
           </div> :
-
         <div className={cssClass({ overflowX: "auto" })}>
             <table className="report-data-table">
               <thead>
@@ -163,7 +143,6 @@ export default function PayslipReport() {
                         </button>
                       </td>
                     </tr>);
-
               })}
               </tbody>
             </table>
@@ -171,5 +150,4 @@ export default function PayslipReport() {
         }
       </div>
     </div>);
-
 }

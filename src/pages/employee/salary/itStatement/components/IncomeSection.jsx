@@ -3,9 +3,7 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { TSS, TN } from "../constants";
 import { ColHead, SecHdr, NoData } from "./TablePrimitives";
 import { ChevronDown } from "lucide-react";
-
 const tbl = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 const INCOME_ROWS = [
   { key: "basic", label: "Basic" },
   { key: "hra", label: "HRA" },
@@ -13,12 +11,10 @@ const INCOME_ROWS = [
   { key: "lta", label: "Lta" },
   { key: "telephone", label: "Telephone And Internet Expenses" },
 ];
-
 const DED_ROWS = [
   { key: "pf", label: "PF" },
   { key: "profTax", label: "Prof Tax" },
 ];
-
 /** Section A — Income */
 export const SectionA = React.memo(function SectionA({ open, onToggle, fiscalMonths, monthData, T }) {
   return (
@@ -51,7 +47,6 @@ export const SectionA = React.memo(function SectionA({ open, onToggle, fiscalMon
     </>
   );
 });
-
 /** Section B — Deductions */
 export const SectionB = React.memo(function SectionB({ open, onToggle, fiscalMonths, monthData, T }) {
   return (
@@ -84,7 +79,6 @@ export const SectionB = React.memo(function SectionB({ open, onToggle, fiscalMon
     </>
   );
 });
-
 /** Sections C & D — zero-data sections */
 export const SectionC = React.memo(function SectionC({ open, onToggle }) {
   return (
@@ -94,7 +88,6 @@ export const SectionC = React.memo(function SectionC({ open, onToggle }) {
     </>
   );
 });
-
 export const SectionD = React.memo(function SectionD({ open, onToggle }) {
   return (
     <>

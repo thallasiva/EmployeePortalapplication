@@ -4,7 +4,6 @@ import { useJoiningVerification } from "./hooks/useJoiningVerification";
 import CandidatesTable from "./components/CandidatesTable";
 import DetailModal from "./components/DetailModal";
 import { FILTERS } from "./constants";
-
 export default function JoiningVerification() {
   const {
     rows,
@@ -25,7 +24,6 @@ export default function JoiningVerification() {
     resend,
     closeDetail,
   } = useJoiningVerification();
-
   return (
     <div className="p-6 space-y-5">
       {/* Page header */}
@@ -48,7 +46,6 @@ export default function JoiningVerification() {
           <RefreshCw size={14} /> Refresh
         </button>
       </div>
-
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map(({ key, label }) => (
@@ -66,7 +63,6 @@ export default function JoiningVerification() {
           </button>
         ))}
       </div>
-
       {/* Table */}
       <CandidatesTable
         rows={rows}
@@ -74,7 +70,6 @@ export default function JoiningVerification() {
         onOpenDetail={openDetail}
         onResend={resend}
       />
-
       {/* Detail modal */}
       <DetailModal
         detailId={detailId}

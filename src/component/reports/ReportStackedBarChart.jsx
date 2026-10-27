@@ -1,15 +1,11 @@
 import React from "react";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 const LEAVE_SERIES = [
 { key: "annual", color: "#22c55e", name: "Annual" },
 { key: "casual", color: "#eab308", name: "Casual" },
 { key: "medical", color: "#1e293b", name: "Medical" },
 { key: "others", color: "#f97316", name: "Others" }];
-
-
 export default function ReportStackedBarChart({ data }) {
   const yMax = 100;
-
   return (
     <div className="report-chart-card">
       <div className="report-chart-card__header">
@@ -37,7 +33,6 @@ export default function ReportStackedBarChart({ data }) {
               <div
                 className={joinClasses("report-stacked-bars", cssClass(
                   { height: `${total / yMax * 100}%` }))}>
-
                 {LEAVE_SERIES.map((s) =>
                 <div
                   key={s.key}
@@ -46,14 +41,11 @@ export default function ReportStackedBarChart({ data }) {
                       height: total ? `${(row[s.key] || 0) / total * 100}%` : 0,
                       background: s.color
                     }))} />
-
                 )}
               </div>
               <span className="report-stacked-label">{row.label}</span>
             </div>);
-
         })}
       </div>
     </div>);
-
 }

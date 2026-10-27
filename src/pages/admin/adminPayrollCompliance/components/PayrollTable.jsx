@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 function PayrollTable({ cols, rows, emptyMsg = "No data" }) {
   if (!rows.length) {
     return (
@@ -55,5 +54,4 @@ function PayrollTable({ cols, rows, emptyMsg = "No data" }) {
     </div>
   );
 }
-
 export default React.memo(PayrollTable);

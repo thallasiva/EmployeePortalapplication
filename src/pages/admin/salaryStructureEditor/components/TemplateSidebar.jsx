@@ -1,6 +1,5 @@
 import React from "react";
 import { fmtINR } from "../../salary/salaryHelpers";
-
 const Row = React.memo(function Row({ label, value, color }) {
   return (
     <div
@@ -25,7 +24,6 @@ const Row = React.memo(function Row({ label, value, color }) {
     </div>
   );
 });
-
 const TemplateSidebar = React.memo(function TemplateSidebar({
   computed,
   previewCtc = 100000,
@@ -34,10 +32,8 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
   const earnings = components.filter((c) => c.category === "Earning");
   const deductions = components.filter((c) => c.category === "Deduction");
   const employer = components.filter((c) => c.category === "Employer Contribution");
-
   const fixedEarnings = earnings.filter((e) => (e.frequency || "Monthly") === "Monthly");
   const variableEarnings = earnings.filter((e) => (e.frequency || "Monthly") !== "Monthly");
-
   const totalFixed = fixedEarnings.reduce((s, c) => s + (c.monthly_amount || 0), 0);
   const totalVarMon = variableEarnings.reduce(
     (s, c) => s + Math.round((c.annual_amount || 0) / 12),
@@ -49,7 +45,6 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
   const empTotal = employer.reduce((s, c) => s + (c.annual_amount || 0), 0);
   const varAnnual = variableEarnings.reduce((s, c) => s + (c.annual_amount || 0), 0);
   const totalCtcAnn = previewCtc * 12;
-
   return (
     <div
       style={{
@@ -108,7 +103,6 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
             {fmtINR(net)}
           </p>
         </div>
-
         <div style={{ marginTop: 14 }}>
           <p
             style={{
@@ -147,7 +141,6 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
             {fmtINR(totalCtcAnn)}
           </p>
         </div>
-
         {components.length > 0 && (
           <div style={{ marginTop: 14, display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[
@@ -175,5 +168,4 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
     </div>
   );
 });
-
 export default TemplateSidebar;

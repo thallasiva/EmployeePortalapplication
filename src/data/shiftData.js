@@ -1,5 +1,3 @@
-
-
 export const SHIFT_DASHBOARD_DATA = {
   general: {
     id: "general",
@@ -20,12 +18,10 @@ export const SHIFT_DASHBOARD_DATA = {
     notices: [
     "Town hall meeting today at 4:00 PM in Conference Room A.",
     "General shift cab pickup points have been updated for this week."],
-
     metrics: [
     { label: "On-time arrivals (this month)", value: "18 / 20" },
     { label: "Avg. working hours", value: "8.9h" },
     { label: "Pending regularizations", value: "0" }]
-
   },
   mid: {
     id: "mid",
@@ -46,12 +42,10 @@ export const SHIFT_DASHBOARD_DATA = {
     notices: [
     "Mid shift overlaps with the General shift from 1 PM – 6 PM for handovers.",
     "Evening cab service is available after 9:30 PM."],
-
     metrics: [
     { label: "Handover overlap with General team", value: "5h" },
     { label: "On-time arrivals (this month)", value: "19 / 20" },
     { label: "Pending regularizations", value: "1" }]
-
   },
   night: {
     id: "night",
@@ -72,15 +66,12 @@ export const SHIFT_DASHBOARD_DATA = {
     notices: [
     "Night shift allowance is credited along with the monthly payroll.",
     "Security desk contact for night shift queries: Ext. 4521."],
-
     metrics: [
     { label: "Night shift allowance (this month)", value: "Rs. 4,500" },
     { label: "On-time arrivals (this month)", value: "20 / 20" },
     { label: "Pending regularizations", value: "0" }]
-
   }
 };
-
 export function getShiftDashboardData(shiftId) {
   return SHIFT_DASHBOARD_DATA[shiftId] || SHIFT_DASHBOARD_DATA.general;
 }

@@ -1,16 +1,15 @@
 import Btn from "./Btn";
 import Card from "./Card";
 import { useState } from "react";
+import { X } from "lucide-react";
 import { badgeColor } from "./data";
 import Badge from "./Badge";
-
 function CandidateProfile({ open,
     candidate,
     onClose })
 {
     const [activeTab, setActiveTab] = useState("overview");
     if (!open || !candidate) return null;
-
     const tabs = [
         { key: "overview", label: "Overview" },
         { key: "timeline", label: "Timeline" },
@@ -18,7 +17,6 @@ function CandidateProfile({ open,
         { key: "documents", label: "Documents" },
         { key: "notes", label: "Notes" },
     ];
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <div className="relative h-[90vh] w-full max-w-7xl overflow-hidden rounded-2xl bg-white shadow-2xl">
@@ -27,20 +25,18 @@ function CandidateProfile({ open,
                         <h2 className="text-2xl font-bold">
                             Candidate Performance
                         </h2>
-
                         <p className="text-sm text-blue-100">
                             Candidate Details & Interview Progress
                         </p>
                     </div>
-
                     <button
                         onClick={onClose}
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-2xl hover:bg-red-500"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 hover:bg-red-500"
+                        aria-label="Close"
                     >
-                        ×
+                        <X size={20} aria-hidden="true" />
                     </button>
                 </div>
-
                 <div className="mb-3 flex flex-wrap items-center gap-2 p-4">
                     {tabs.map((tab) => (
                         <button
@@ -52,7 +48,6 @@ function CandidateProfile({ open,
                         </button>
                     ))}
                 </div>
-
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-[300px_1fr] p-4">
                     <div className="rounded-md border-[0.5px] border-gray-200 bg-slate-50 p-4">
                         <div className="mb-4 flex items-center gap-4">
@@ -77,7 +72,6 @@ function CandidateProfile({ open,
                             <Btn small>Edit Candidate</Btn>
                         </div>
                     </div>
-
                     <div>
                         {activeTab === "overview" && (
                             <div className="grid gap-3">
@@ -100,7 +94,6 @@ function CandidateProfile({ open,
                                 </div>
                             </div>
                         )}
-
                         {activeTab === "timeline" && (
                             <Card title="Timeline">
                                 <div className="space-y-3 p-4 text-xs text-gray-700">
@@ -123,7 +116,6 @@ function CandidateProfile({ open,
                                 </div>
                             </Card>
                         )}
-
                         {activeTab === "interviews" && (
                             <Card title="Interviews">
                                 <div className="space-y-3 p-4 text-xs text-gray-700">
@@ -158,7 +150,6 @@ function CandidateProfile({ open,
                                 </div>
                             </Card>
                         )}
-
                         {activeTab === "documents" && (
                             <Card title="Documents">
                                 <div className="space-y-3 p-4 text-xs text-gray-700">
@@ -178,7 +169,6 @@ function CandidateProfile({ open,
                                 </div>
                             </Card>
                         )}
-
                         {activeTab === "notes" && (
                             <Card title="Notes">
                                 <div className="space-y-3 p-4 text-xs text-gray-700">
@@ -199,5 +189,4 @@ function CandidateProfile({ open,
         </div>
     );
 }
-
 export default CandidateProfile;

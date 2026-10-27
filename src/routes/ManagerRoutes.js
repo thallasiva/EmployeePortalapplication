@@ -2,7 +2,6 @@ import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { getHomePath, getStoredUser, isReportingManager } from "../data/auth";
 import LazyPage from "./LazyPage";
-
 const ManagerDashboard = lazy(() => import("../pages/manager/ManagerDashboard"));
 const TeamAttendance = lazy(() => import("../pages/manager/TeamAttendance"));
 const TeamLeaveRequests = lazy(() => import("../pages/manager/TeamLeaveRequests"));
@@ -13,13 +12,10 @@ const ManagerTimesheets = lazy(() => import("../pages/manager/ManagerTimesheets"
 const TeamResignations = lazy(() => import("../pages/manager/TeamResignations"));
 const ManagerHelpdesk = lazy(() => import("../pages/admin/helpdesk/HelpdeskAdmin"));
 const Recruitment = lazy(() => import("../pages/admin/Recruitment"));
-
 const Page = LazyPage;
-
 const ManagerRoutes = () =>
 {
   const user = getStoredUser();
-
   if (!user)
   return <Navigate to="/login" replace />;
   return (
@@ -36,7 +32,5 @@ const ManagerRoutes = () =>
       <Route path="recruitment" element={<Page><Recruitment /></Page>} />
       <Route path="*" element={<Navigate to="/manager" replace />} />
     </Routes>);
-
 };
-
 export default ManagerRoutes;

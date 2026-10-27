@@ -1,5 +1,4 @@
 import { memo } from "react";
-
 export const BADGE_COLORS = {
   green: "bg-green-100 text-green-700",
   red: "bg-red-100 text-red-700",
@@ -11,7 +10,6 @@ export const BADGE_COLORS = {
   teal: "bg-teal-100 text-teal-700",
   pink: "bg-pink-100 text-pink-700",
 };
-
 /**
  * Pill-shaped badge.
  * @param {'green'|'red'|'yellow'|'blue'|'gray'|'orange'|'purple'|'teal'|'pink'} color
@@ -24,5 +22,4 @@ const Badge = memo(function Badge({ children, color = "gray", className = "" })
     </span>
   );
 });
-
 export default Badge;

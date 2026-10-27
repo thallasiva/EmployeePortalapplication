@@ -4,7 +4,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { RESIGN_STATUS_CONFIG } from "../constants";
 import { fmtDate, empName } from "../utils";
 import ResignBadge from "./ResignBadge";
-
 const ResignCard = React.memo(function ResignCard({ r, isPrivileged }) {
   const cfg = RESIGN_STATUS_CONFIG[r.status] || RESIGN_STATUS_CONFIG.pending;
   return (
@@ -65,5 +64,4 @@ const ResignCard = React.memo(function ResignCard({ r, isPrivileged }) {
     </div>
   );
 });
-
 export default ResignCard;

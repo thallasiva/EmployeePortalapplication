@@ -7,23 +7,18 @@ import { BRAND, FILTERS } from "./constants";
 import { cssClass } from "../../../utils/classStyles";
 import ResignRow from "./components/ResignRow";
 import ReviewModal from "./components/ReviewModal";
-
 const TeamResignations = React.memo(function TeamResignations() {
   const { loading, error, search, setSearch, filter, setFilter, visible, pending, load } =
     useTeamResignations();
   const [reviewing, setReviewing] = useState(null);
-
   const handleDone = useCallback(() => { setReviewing(null); load(); }, [load]);
   const handleClose = useCallback(() => setReviewing(null), []);
-
   const { paged: pagedRes, page: resPage, setPage: setResPage, totalPages: resTotalPages,
     from: resFrom, to: resTo, total: resTotal, pageSize: resPageSize, setPageSize: setResPageSize,
   } = usePagination(visible);
-
   return (
     <div className={cssClass({ padding: "24px", fontFamily: "inherit", minHeight: "100vh", background: "#f5f7fb" })}>
       <ManagerTabs />
-
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 })}>
         <div className={cssClass({ width: 40, height: 40, borderRadius: 10, background: `${BRAND}15`,
           display: "flex", alignItems: "center", justifyContent: "center" })}>
@@ -41,7 +36,6 @@ const TeamResignations = React.memo(function TeamResignations() {
           </span>
         )}
       </div>
-
       <div className={cssClass({ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" })}>
         <div className={cssClass({ position: "relative", flex: 1, minWidth: 200 })}>
           <Search size={14} className={cssClass({ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" })} />
@@ -63,7 +57,6 @@ const TeamResignations = React.memo(function TeamResignations() {
           ))}
         </div>
       </div>
-
       {loading ? (
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8" })}>Loading…</div>
       ) : error ? (
@@ -86,12 +79,10 @@ const TeamResignations = React.memo(function TeamResignations() {
             pageSize={resPageSize} setPageSize={setResPageSize} />
         </div>
       )}
-
       {reviewing && (
         <ReviewModal row={reviewing} onClose={handleClose} onDone={handleDone} />
       )}
     </div>
   );
 });
-
 export default TeamResignations;

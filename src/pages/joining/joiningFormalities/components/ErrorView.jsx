@@ -1,6 +1,5 @@
 import React from "react";
 import { XCircle } from "lucide-react";
-
 const ErrorView = React.memo(function ErrorView({ error }) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -13,5 +12,4 @@ const ErrorView = React.memo(function ErrorView({ error }) {
     </div>
   );
 });
-
 export default ErrorView;

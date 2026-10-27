@@ -1,5 +1,4 @@
 import { CAT_ORDER } from "../constants";
-
 export const groupLinesByCategory = (lines) =>
   CAT_ORDER.reduce((acc, cat) => {
     acc[cat] = lines

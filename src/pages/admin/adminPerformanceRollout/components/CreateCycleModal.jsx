@@ -4,12 +4,10 @@ import { createAppraisalCycle } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
 import Modal from "./Modal";
 import CycleTypePicker from "./CycleTypePicker";
-
 const CreateCycleModal = React.memo(function CreateCycleModal({ onClose, onCreated }) {
   const [form, setForm] = useState({ fy_label: "", deadline: "", cycle_type: "yearly" });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-
   const submit = async () => {
     if (!form.fy_label.trim()) { setErr("Cycle name is required."); return; }
     setSaving(true); setErr("");
@@ -20,7 +18,6 @@ const CreateCycleModal = React.memo(function CreateCycleModal({ onClose, onCreat
     } catch (e) { setErr(e?.response?.data?.message || "Failed to create cycle."); }
     finally { setSaving(false); }
   };
-
   return (
     <Modal title="Create New Appraisal Cycle" onClose={onClose}>
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 14 })}>
@@ -51,5 +48,4 @@ const CreateCycleModal = React.memo(function CreateCycleModal({ onClose, onCreat
     </Modal>
   );
 });
-
 export default CreateCycleModal;

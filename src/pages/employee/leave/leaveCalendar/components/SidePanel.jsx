@@ -2,9 +2,7 @@ import React from "react";
 import { Search, Filter, FileText } from "lucide-react";
 import { MONTH_NAMES } from "../constants";
 import { avatarColor, initials, daysBetween } from "../utils";
-
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 const SidePanel = React.memo(function SidePanel({
   selected,
   selectedHoliday,
@@ -34,7 +32,6 @@ const SidePanel = React.memo(function SidePanel({
           </div>
         </div>
       )}
-
       <div className="p-3 border-b border-[#e6edf5]">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -52,7 +49,6 @@ const SidePanel = React.memo(function SidePanel({
           </button>
         </div>
       </div>
-
       {selectedLeaves.length > 0 && (
         <div className="border-b border-[#e6edf5] px-4 py-3 bg-blue-50/40">
           <p className="text-xs font-semibold text-blue-600 mb-2">
@@ -76,7 +72,6 @@ const SidePanel = React.memo(function SidePanel({
           </div>
         </div>
       )}
-
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#e6edf5]">
         <p className="text-[13px] font-semibold text-[#334155]">
           Leave Transactions ({monthLeaves.length})
@@ -85,13 +80,11 @@ const SidePanel = React.memo(function SidePanel({
           {MONTH_NAMES[month - 1]} {year}
         </span>
       </div>
-
       <div className="grid grid-cols-3 bg-[#f8fafc] border-b border-[#e6edf5]">
         <div className="px-4 py-2.5 text-[12px] font-medium text-[#64748b]">Employee</div>
         <div className="px-4 py-2.5 text-[12px] font-medium text-[#64748b]">Days</div>
         <div className="px-4 py-2.5 text-[12px] font-medium text-[#64748b]">From – To</div>
       </div>
-
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-40 text-sm text-gray-400">Loading…</div>
@@ -152,5 +145,4 @@ const SidePanel = React.memo(function SidePanel({
     </>
   );
 });
-
 export default SidePanel;

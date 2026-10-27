@@ -2,7 +2,6 @@
 export const BRAND = "#f18200";
 export const BRAND_SOFT = "#fff8f0";
 export const BRAND_HOVER = "#e07000";
-
 // ─── Dynamic variable tokens ───
 export const TEMPLATE_VARS = [
   "{{EmployeeName}}", "{{EmployeeId}}", "{{Department}}", "{{Designation}}",
@@ -11,19 +10,16 @@ export const TEMPLATE_VARS = [
   "{{JobTitle}}", "{{OfferDate}}", "{{JoiningDate}}", "{{Month}}",
   "{{Amount}}", "{{PolicyName}}", "{{DocumentName}}", "{{ExpiryDate}}",
 ];
-
 // ─── Template categories ───
 export const TEMPLATE_CATEGORIES = [
   "Recruitment","Leave","Attendance","Payroll","Expenses",
   "Travel","Exit Management","Learning","Performance",
   "Notifications","Security","General",
 ];
-
 // ─── Roles ───
 export const ROLES = [
   "Super Admin","HR Manager","Recruiter","Reporting Manager","Finance","Employee",
 ];
-
 // ─── Permission modules ───
 export const PERM_MODULES = [
   { name:"Recruitment",         desc:"Job postings, interviews, offers" },
@@ -39,7 +35,6 @@ export const PERM_MODULES = [
   { name:"Security",            desc:"Password reset, alerts, notifications" },
   { name:"Helpdesk",            desc:"Support tickets and responses" },
 ];
-
 // ─── Default permission matrix [module][role] ───
 export const DEFAULT_PERMS = [
   [true ,true ,true ,false,false,false],
@@ -55,7 +50,6 @@ export const DEFAULT_PERMS = [
   [true ,true ,true ,true ,true ,true ],
   [true ,true ,false,false,false,true ],
 ];
-
 // ─── Seed templates ───
 export const SEED_TEMPLATES = [
   { id:1, name:"Welcome Email",         category:"General",     subject:"Welcome to {{CompanyName}}, {{EmployeeName}}!",                status:"Active",   updated:"03 Aug 2026", body:"Dear {{EmployeeName}},\n\nWelcome to {{CompanyName}}! We are thrilled to have you on board as {{Designation}} in the {{Department}} department.\n\nYour reporting manager is {{ManagerName}}. Your joining date is {{JoiningDate}}.\n\nBest regards,\nHR Team" },
@@ -71,7 +65,6 @@ export const SEED_TEMPLATES = [
   { id:11,name:"Probation Reminder",    category:"Notifications",subject:"Probation Period Ending Soon – {{EmployeeName}}",            status:"Active",   updated:"25 Jul 2026", body:"Dear {{ManagerName}},\n\n{{EmployeeName}}'s probation period is ending on {{ExpiryDate}}.\n\nPlease complete the probation review and submit your recommendation.\n\nHR Team, {{CompanyName}}" },
   { id:12,name:"Document Expiry Alert", category:"Notifications",subject:"Document Expiry Alert – {{DocumentName}}",                   status:"Inactive", updated:"24 Jul 2026", body:"Dear {{EmployeeName}},\n\nYour document {{DocumentName}} is expiring on {{ExpiryDate}}.\n\nPlease upload the updated document at the earliest.\n\nHR Team" },
 ];
-
 // ─── Seed logs ───
 export const SEED_LOGS = [
   { id:1,  dt:"05 Aug 2026, 09:45 AM", to:"john.doe@natit.com",     subject:"Welcome to NAT IT, John Doe!",           module:"General",     status:"Sent",    error:"",                   retry:0 },
@@ -87,7 +80,6 @@ export const SEED_LOGS = [
   { id:11, dt:"04 Aug 2026, 03:00 PM", to:"anita.k@natit.com",      subject:"Work Anniversary – Happy 3rd Year!",     module:"General",     status:"Sent",    error:"",                   retry:0 },
   { id:12, dt:"04 Aug 2026, 02:00 PM", to:"deepak.r@natit.com",     subject:"Offer Letter from NAT IT",               module:"Recruitment", status:"Queued",  error:"",                   retry:0 },
 ];
-
 // ─── Seed schedules ───
 export const SEED_SCHEDULES = [
   { id:1, name:"Birthday Wishes",           desc:"Send birthday wishes to employees",    freq:"Daily at 09:00 AM",    cron:"0 9 * * *",  next:"06 Aug 2026, 09:00 AM", lastRun:"05 Aug 2026, 09:00 AM", active:true  },
@@ -99,9 +91,7 @@ export const SEED_SCHEDULES = [
   { id:7, name:"Training Reminder",         desc:"Remind about upcoming trainings",      freq:"Daily at 12:00 PM",    cron:"0 12 * * *", next:"06 Aug 2026, 12:00 PM", lastRun:"05 Aug 2026, 12:00 PM", active:true  },
   { id:8, name:"Contract Expiry Alert",     desc:"Alert before employee contract expiry",freq:"1st of every month",   cron:"0 9 1 * *",  next:"01 Sep 2026, 09:00 AM", lastRun:"01 Aug 2026, 09:00 AM", active:true  },
 ];
-
 export const FREQ_OPTIONS = ["Daily","Weekly","Monthly","Yearly","Custom Cron"];
-
 export const CAT_COLOR = {
   Recruitment:"purple", Leave:"green", Attendance:"blue", Payroll:"amber",
   Expenses:"amber", Travel:"blue", "Exit Management":"red", Learning:"purple",

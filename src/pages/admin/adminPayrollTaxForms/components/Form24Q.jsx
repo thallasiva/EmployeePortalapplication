@@ -4,17 +4,14 @@ import { ORANGE } from "../constants";
 import { fmtINR } from "../utils";
 import { useForm24QData } from "../hooks/useForm24QData";
 import Table from "./Table";
-
 const DUE_DATES = {
   "Q1 (Apr–Jun)": "31-Jul",
   "Q2 (Jul–Sep)": "31-Oct",
   "Q3 (Oct–Dec)": "31-Jan",
   "Q4 (Jan–Mar)": "31-May",
 };
-
 const Form24Q = React.memo(function Form24Q({ year }) {
   const { rows, loading } = useForm24QData(year);
-
   const cols = useMemo(
     () => [
       { key: "quarter", label: "Quarter" },
@@ -76,12 +73,10 @@ const Form24Q = React.memo(function Form24Q({ year }) {
     ],
     []
   );
-
   if (loading)
     return (
       <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>
     );
-
   return (
     <>
       <div className={cssClass({ marginBottom: 12, fontSize: 13, color: "#666" })}>
@@ -91,5 +86,4 @@ const Form24Q = React.memo(function Form24Q({ year }) {
     </>
   );
 });
-
 export default Form24Q;

@@ -4,7 +4,6 @@ export const fmtDate = (d) => {
     day: "2-digit", month: "short", year: "numeric",
   });
 };
-
 export const fmtDT = (d) => {
   if (!d) return "—";
   return new Date(d).toLocaleString("en-GB", {

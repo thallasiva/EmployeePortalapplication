@@ -1,13 +1,10 @@
 -- patch_joining_review_fix_mysql.sql
 -- MySQL-compatible version (no ADD COLUMN IF NOT EXISTS — uses information_schema checks)
 -- Run this in MySQL Workbench to fix the hr_remarks 500 error.
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- STEP 1: Add missing columns to joining_formalities (safe for re-run)
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS _tmp_add_joining_cols;
-
 DELIMITER $$
 CREATE PROCEDURE _tmp_add_joining_cols()
 BEGIN
@@ -15,38 +12,30 @@ BEGIN
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'joining_formalities' AND COLUMN_NAME = 'hr_remarks') THEN
     ALTER TABLE joining_formalities ADD COLUMN hr_remarks TEXT NULL;
   END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'joining_formalities' AND COLUMN_NAME = 'admin_employee_id') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_employee_id VARCHAR(50) NULL;
   END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'joining_formalities' AND COLUMN_NAME = 'admin_designation') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_designation VARCHAR(255) NULL;
   END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'joining_formalities' AND COLUMN_NAME = 'admin_reporting_to') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_reporting_to VARCHAR(255) NULL;
   END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'joining_formalities' AND COLUMN_NAME = 'admin_department') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_department VARCHAR(255) NULL;
   END IF;
 END$$
 DELIMITER ;
-
 CALL _tmp_add_joining_cols();
 DROP PROCEDURE IF EXISTS _tmp_add_joining_cols;
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- STEP 2: Recreate sp_joining_review (9 params + expires_at reset)
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_joining_review;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_review(
   IN p_invitation_id   INT,
@@ -67,7 +56,6 @@ BEGIN
     WHEN 'reject'          THEN 'rejected'
     ELSE p_decision
   END;
-
   UPDATE joining_invitations SET
     status = CASE p_decision
                WHEN 'approve'         THEN 'approved'
@@ -81,7 +69,6 @@ BEGIN
                  END,
     updated_at = NOW()
   WHERE id = p_invitation_id;
-
   UPDATE joining_formalities SET
     status             = v_jf_status,
     hr_remarks         = p_remarks,
@@ -93,7 +80,6 @@ BEGIN
     admin_department   = COALESCE(p_department,   admin_department),
     updated_at         = NOW()
   WHERE invitation_id = p_invitation_id;
-
   SELECT ji.*, jf.status AS formality_status, jf.hr_remarks AS review_remarks,
          jf.reviewed_at, jf.admin_employee_id, jf.admin_designation,
          jf.admin_reporting_to, jf.admin_department
@@ -102,13 +88,10 @@ BEGIN
   WHERE ji.id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- STEP 3: Recreate sp_joining_verify_token (returns hr_remarks)
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -129,5 +112,4 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 SELECT 'patch_joining_review_fix_mysql.sql applied successfully' AS result;

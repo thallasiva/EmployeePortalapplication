@@ -1,7 +1,6 @@
 import {
   CalendarHeart, Briefcase, Clock3, Moon, Gift, Flag,
 } from "lucide-react";
-
 export const TYPE_CONFIG = [
   {
     match: ["earned", "el", "annual"],

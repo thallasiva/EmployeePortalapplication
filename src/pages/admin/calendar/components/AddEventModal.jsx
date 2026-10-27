@@ -4,7 +4,6 @@ import { createCalendarEvent } from '../../../../api/calendar.api';
 import { errorToast, successToast } from '../../../../utils/ToastControllers';
 import { toYMD } from '../utils/calendarUtils';
 import { EVENT_TYPES, ADDABLE_TYPES } from '../constants/eventTypes';
-
 const AddEventModal = React.memo(function AddEventModal({ onClose, onSaved, defaultDate }) {
   const [form, setForm] = useState({
     title: '',
@@ -13,7 +12,6 @@ const AddEventModal = React.memo(function AddEventModal({ onClose, onSaved, defa
     description: '',
   });
   const [saving, setSaving] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim()) { errorToast('Title is required'); return; }
@@ -29,7 +27,6 @@ const AddEventModal = React.memo(function AddEventModal({ onClose, onSaved, defa
       setSaving(false);
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
@@ -96,5 +93,4 @@ const AddEventModal = React.memo(function AddEventModal({ onClose, onSaved, defa
     </div>
   );
 });
-
 export default AddEventModal;

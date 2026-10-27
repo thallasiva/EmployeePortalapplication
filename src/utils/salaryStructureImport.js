@@ -1,22 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const HEADER_ALIASES = {
   emp_code: ["employee code", "emp code", "emp_code", "employee_code", "code"],
   basic: ["basic", "basic salary"],
@@ -31,17 +12,13 @@ const HEADER_ALIASES = {
   ctc: ["ctc", "annual ctc"],
   effective_from: ["effective from", "effective_from", "effective date", "from date"]
 };
-
 const NUMERIC_FIELDS = [
 "basic", "hra", "conveyance", "medical_allowance", "special_allowance",
 "pf_employee", "pf_employer", "professional_tax", "income_tax", "ctc"];
-
-
 function splitCsvLine(line) {
   const cells = [];
   let current = "";
   let inQuotes = false;
-
   for (let i = 0; i < line.length; i += 1) {
     const char = line[i];
     if (inQuotes) {
@@ -67,23 +44,18 @@ function splitCsvLine(line) {
   cells.push(current);
   return cells.map((c) => c.trim());
 }
-
-
 function normalizeDate(value) {
   if (!value) return null;
   const trimmed = String(value).trim();
-
   if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(trimmed)) {
     const [y, m, d] = trimmed.split("-");
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
-
   const dmyMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
   if (dmyMatch) {
     const [, d, m, y] = dmyMatch;
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
-
   const parsed = new Date(trimmed);
   if (!Number.isNaN(parsed.getTime())) {
     const y = parsed.getFullYear();
@@ -91,61 +63,45 @@ function normalizeDate(value) {
     const d = String(parsed.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   }
-
   return null;
 }
-
 function toNumber(value) {
   if (value === undefined || value === null || value === "") return undefined;
   const cleaned = String(value).replace(/[,₹\s]/g, "");
   const num = Number(cleaned);
   return Number.isNaN(num) ? undefined : num;
 }
-
-
-
-
-
-
 export function parseSalaryStructureCsv(text) {
   const lines = String(text).
   split(/\r?\n/).
   map((l) => l.trim()).
   filter((l) => l.length > 0);
-
   if (lines.length < 2) {
     throw new Error("The file must contain a header row and at least one row.");
   }
-
   const headerCells = splitCsvLine(lines[0]).map((h) => h.toLowerCase());
   const columnIndex = {};
-
   Object.entries(HEADER_ALIASES).forEach(([field, aliases]) => {
     const idx = headerCells.findIndex((h) => aliases.includes(h));
     if (idx !== -1) columnIndex[field] = idx;
   });
-
   if (columnIndex.emp_code === undefined || columnIndex.effective_from === undefined) {
     throw new Error(
       'The file must have "Employee Code" and "Effective From" columns (a header row is required).'
     );
   }
-
   const items = [];
   const errors = [];
-
   for (let i = 1; i < lines.length; i += 1) {
     const cells = splitCsvLine(lines[i]);
     const empCode = cells[columnIndex.emp_code]?.trim();
     const rawDate = cells[columnIndex.effective_from]?.trim();
     if (!empCode && !rawDate) continue;
-
     const effectiveFrom = normalizeDate(rawDate);
     if (!empCode || !effectiveFrom) {
       errors.push(`Row ${i + 1}: could not read employee code/effective date ("${empCode || ""}", "${rawDate || ""}")`);
       continue;
     }
-
     const item = { emp_code: empCode, effective_from: effectiveFrom };
     NUMERIC_FIELDS.forEach((field) => {
       if (columnIndex[field] !== undefined) {
@@ -153,29 +109,21 @@ export function parseSalaryStructureCsv(text) {
         if (value !== undefined) item[field] = value;
       }
     });
-
     items.push(item);
   }
-
   if (items.length === 0) {
     throw new Error(errors[0] || "No valid rows were found in the file.");
   }
-
   return { items, errors };
 }
-
-
 export function buildSalaryStructureCsvTemplate() {
   const headers = [
   "Employee Code", "Basic", "HRA", "Conveyance", "Medical Allowance",
   "Special Allowance", "PF Employee", "PF Employer", "Professional Tax",
   "Income Tax", "CTC", "Effective From"];
-
   const sample = ["EMP00003", "25000", "10000", "1600", "1250", "5000", "1800", "1800", "200", "0", "60000", "2026-04-01"];
   return [headers.join(","), sample.join(",")].join("\r\n");
 }
-
-
 export function downloadSalaryStructureCsvTemplate(filename = "salary_structure_import_template.csv") {
   const a = document.createElement("a");
   a.href = "/templates/salary_structure_import_template.csv";

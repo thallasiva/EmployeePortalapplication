@@ -2,7 +2,6 @@ import React from "react";
 import { Save, Send } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const FormActions = React.memo(function FormActions({ saving, allRated, onSaveDraft, onSubmit }) {
   return (
     <div className={cssClass({ display: "flex", gap: 12, justifyContent: "flex-end" })}>
@@ -37,5 +36,4 @@ const FormActions = React.memo(function FormActions({ saving, allRated, onSaveDr
     </div>
   );
 });
-
 export default FormActions;

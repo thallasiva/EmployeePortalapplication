@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Star } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 function StarPicker({ value, onChange, disabled }) {
   const [hover, setHover] = useState(0);
   return (
@@ -23,5 +22,4 @@ function StarPicker({ value, onChange, disabled }) {
     </span>
   );
 }
-
 export default React.memo(StarPicker);

@@ -2,26 +2,22 @@ import React from "react";
 import { Users, TrendingUp, TrendingDown, Briefcase, Shield } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND, MONTHS } from "../constants";
-
 const EmployeeDetailsPanel = React.memo(function EmployeeDetailsPanel({
   employees, payslips, selected, isProcessed,
 }) {
   const totalEmp = employees.length;
   const selLabel = `${MONTHS[selected.month - 1]} ${selected.year}`;
-
   const additions = employees.filter((e) => {
     if (!e.date_of_joining) return false;
     const j = new Date(e.date_of_joining);
     return j.getMonth() + 1 === selected.month && j.getFullYear() === selected.year;
   }).length;
-
   const separations = employees.filter((e) => {
     const d = e.date_of_leaving || e.last_working_day;
     if (!d) return false;
     const dt = new Date(d);
     return dt.getMonth() + 1 === selected.month && dt.getFullYear() === selected.year;
   }).length;
-
   const stats = [
     { label: "New Joinees", value: additions,            icon: <TrendingUp size={14} color="#16a34a" />, bg: "#f0fdf4", border: "#bbf7d0", valColor: "#16a34a" },
     { label: "Separations", value: separations,          icon: <TrendingDown size={14} color="#dc2626" />, bg: "#fff1f2", border: "#fecdd3", valColor: "#dc2626" },
@@ -29,7 +25,6 @@ const EmployeeDetailsPanel = React.memo(function EmployeeDetailsPanel({
     { label: "Processed",   value: isProcessed(selected.month, selected.year) ? "Yes" : "No",
       icon: <Shield size={14} color="#7c3aed" />, bg: "#f5f3ff", border: "#ddd6fe", valColor: "#7c3aed" },
   ];
-
   return (
     <div className={cssClass({
       background: "#fff", border: "1px solid #e9eaec", borderRadius: 14,
@@ -37,7 +32,6 @@ const EmployeeDetailsPanel = React.memo(function EmployeeDetailsPanel({
     })}>
       <div className={cssClass({ fontWeight: 800, fontSize: 15, color: "#111827", marginBottom: 4 })}>Employee Details</div>
       <div className={cssClass({ fontSize: 12, color: "#9ca3af", marginBottom: 16 })}>Movement — {selLabel}</div>
-
       <div className={cssClass({
         background: "linear-gradient(135deg,#fff8f0,#fff3e6)",
         border: `1px solid ${BRAND}25`, borderRadius: 10, padding: "16px 18px",
@@ -54,7 +48,6 @@ const EmployeeDetailsPanel = React.memo(function EmployeeDetailsPanel({
           <div className={cssClass({ fontSize: 12, color: "#9ca3af", marginTop: 2 })}>Total Active Employees</div>
         </div>
       </div>
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 })}>
         {stats.map((s) => (
           <div key={s.label} className={cssClass({
@@ -72,5 +65,4 @@ const EmployeeDetailsPanel = React.memo(function EmployeeDetailsPanel({
     </div>
   );
 });
-
 export default EmployeeDetailsPanel;

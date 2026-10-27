@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { listEmployees } from "../../../../api/employee.api";
 import PayrollTable from "./PayrollTable";
-
 const cols = [
   { key: "emp_code", label: "Emp Code" },
   {
@@ -60,21 +59,17 @@ const cols = [
       ),
   },
 ];
-
 function PFKYCMapping() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     listEmployees({ status: "Active", limit: 500 })
       .then((r) => setRows(r.data || []))
       .finally(() => setLoading(false));
   }, []);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
   return <PayrollTable cols={cols} rows={rows} emptyMsg="No employees found" />;
 }
-
 export default React.memo(PFKYCMapping);

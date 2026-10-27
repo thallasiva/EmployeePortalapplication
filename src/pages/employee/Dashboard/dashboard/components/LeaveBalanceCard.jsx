@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const LeaveBalanceCard = React.memo(function LeaveBalanceCard({ loading, leaveBalance }) {
   return (
     <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20 })}>
@@ -41,5 +40,4 @@ const LeaveBalanceCard = React.memo(function LeaveBalanceCard({ loading, leaveBa
     </div>
   );
 });
-
 export default LeaveBalanceCard;

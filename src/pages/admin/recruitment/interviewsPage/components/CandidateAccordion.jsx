@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { LEVEL_ORDER } from "../constants";
 import RoundRow from "./RoundRow";
-
 const CandidateAccordion = React.memo(function CandidateAccordion({
   candidateName,
   jobTitle,
@@ -17,7 +16,6 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
   defaultOpen,
 }) {
   const [open, setOpen] = useState(defaultOpen || false);
-
   const candidateType = rounds[0]?.candidate_type || "External";
   const isExternal = candidateType === "External";
   const scheduledRounds = rounds.filter((r) => r.status === "Scheduled");
@@ -33,7 +31,6 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
   const nextRoundReady = lastIsSelected && recruiterFeedbackDone;
   const offerReady =
     selectedRounds.length > 0 && scheduledRounds.length === 0 && !rejectedRound && nextRoundReady;
-
   let pipelineLabel, pipelineColor, pipelineBg;
   if (rejectedRound) {
     pipelineLabel = "Rejected";
@@ -59,7 +56,6 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
     pipelineColor = "#6b7280";
     pipelineBg = "#f3f4f6";
   }
-
   return (
     <div className="border border-gray-200 rounded-[12px] overflow-hidden mb-2.5">
       <div
@@ -158,7 +154,6 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
                 onView={onView}
               />
             ))}
-
           {lastIsSelected &&
             scheduledRounds.length === 0 &&
             !rejectedRound &&
@@ -175,7 +170,6 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
                 </div>
               </div>
             )}
-
           {nextRoundReady && scheduledRounds.length === 0 && !rejectedRound && canRaiseOffer && (
             <div className="flex items-center gap-3 px-[18px] py-3 bg-[#fff7ed] border-t border-dashed border-[#fed7aa]">
               <div className="flex-1">
@@ -214,5 +208,4 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
     </div>
   );
 });
-
 export default CandidateAccordion;

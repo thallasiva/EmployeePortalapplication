@@ -1,21 +1,17 @@
 import { useState, useEffect } from "react";
 import { listSalaryStructures } from "../../../../api/payroll.api";
-
 export function useRevisionData() {
   const [revisions, setRevisions] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     listSalaryStructures({ limit: 500 })
       .then((r) => {
         const all = r.data || [];
-
         const map = {};
         all.forEach((s) => {
           if (!map[s.employee_id]) map[s.employee_id] = [];
           map[s.employee_id].push(s);
         });
-
         const result = [];
         Object.values(map).forEach((empStructs) => {
           const sorted = empStructs.sort(
@@ -49,13 +45,11 @@ export function useRevisionData() {
             });
           }
         });
-
         setRevisions(
           result.sort((a, b) => new Date(b.revision_date || 0) - new Date(a.revision_date || 0))
         );
       })
       .finally(() => setLoading(false));
   }, []);
-
   return { revisions, loading };
 }

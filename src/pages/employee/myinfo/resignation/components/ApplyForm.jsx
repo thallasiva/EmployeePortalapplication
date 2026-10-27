@@ -6,11 +6,9 @@ import { fmtDate, addDays, diffDays, todayStr } from "../utils";
 import FieldWrap, { fieldStyle, textareaStyle } from "./FieldWrap";
 import SectionHead from "./SectionHead";
 import NoticeSidebar from "./NoticeSidebar";
-
 const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onCancel, apiError }) {
   const fileRef = useRef();
   const today   = todayStr();
-
   const [form, setForm] = useState({
     start_date: today, end_date: "", reason: "",
     alternate_email: "", alternate_mobile: "", remarks: "",
@@ -18,15 +16,12 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
   const [file,     setFile]     = useState(null);
   const [touched,  setTouched]  = useState({});
   const [dragOver, setDragOver] = useState(false);
-
   const touch = (k) => setTouched((t) => ({ ...t, [k]: true }));
   const set   = (k, v) => { setForm((f) => ({ ...f, [k]: v })); touch(k); };
-
   const startD     = form.start_date || today;
   const tentative  = addDays(startD, NOTICE);
   const noticeDays = form.end_date ? Math.max(0, diffDays(startD, form.end_date)) : null;
   const shortfall  = form.end_date ? Math.max(0, NOTICE - (noticeDays ?? 0)) : null;
-
   const RULES = {
     start_date:       (v) => !v ? "Start date is required" : null,
     end_date:         (v) => !v ? "End date is required" : diffDays(startD, v) < 1 ? "End date must be after start date" : null,
@@ -34,22 +29,18 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
     alternate_email:  (v) => !v ? "Alternate email is required" : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "Enter a valid email" : null,
     alternate_mobile: (v) => !v ? "Alternate mobile is required" : !/^[0-9]{10,15}$/.test(v.replace(/\s/g, "")) ? "Enter a valid mobile number" : null,
   };
-
   const errors  = Object.fromEntries(Object.entries(RULES).map(([k, fn]) => [k, fn(form[k])]));
   const isValid = Object.values(errors).every((e) => !e);
-
   const handleSubmit = () => {
     setTouched(Object.fromEntries(Object.keys(RULES).map((k) => [k, true])));
     if (!isValid || saving) return;
     onSubmit(form, file);
   };
-
   const handleFileDrop = (e) => {
     e.preventDefault(); setDragOver(false);
     const f = e.dataTransfer.files?.[0];
     if (f) setFile(f);
   };
-
   return (
     <div className={cssClass({ maxWidth: 900, margin: "0 auto" })}>
       {/* Title */}
@@ -59,17 +50,14 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
           Company notice period policy is <strong className={cssClass({ color: "#374151" })}>{NOTICE} days</strong>. Your tentative LWD is auto-calculated from the start date.
         </p>
       </div>
-
       {apiError && (
         <div className={cssClass({ marginBottom: 16, padding: "12px 16px", background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 10, fontSize: 13, color: "#dc2626", display: "flex", gap: 8, alignItems: "center" })}>
           <AlertTriangle size={15} />{apiError}
         </div>
       )}
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 260px", gap: 20, alignItems: "start" })}>
         {/* Left form */}
         <div className={cssClass({ background: "#fff", borderRadius: 14, border: "1px solid #e2e8f0", boxShadow: "0 2px 12px rgba(0,0,0,0.04)", overflow: "hidden" })}>
-
           {/* Notice period dates */}
           <div className={cssClass({ padding: "22px 24px", borderBottom: "1px solid #f1f5f9" })}>
             <SectionHead>Notice Period Dates</SectionHead>
@@ -81,7 +69,6 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
                 <input type="date" value={form.end_date} min={addDays(form.start_date || today, 1)} onChange={(e) => set("end_date", e.target.value)} onBlur={() => touch("end_date")} className={cssClass(fieldStyle(touched.end_date && errors.end_date))} />
               </FieldWrap>
             </div>
-
             {noticeDays !== null && (
               <div className={cssClass({ marginTop: 12, display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderRadius: 10, background: shortfall === 0 ? "#f0fdf4" : "#fff7ed", border: `1.5px solid ${shortfall === 0 ? "#bbf7d0" : "#fed7aa"}` })}>
                 <div className={cssClass({ display: "flex", flexDirection: "column", alignItems: "center", padding: "4px 14px", borderRadius: 8, background: shortfall === 0 ? "#dcfce7" : "#ffedd5", minWidth: 60 })}>
@@ -100,7 +87,6 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
               </div>
             )}
           </div>
-
           {/* Reason */}
           <div className={cssClass({ padding: "22px 24px", borderBottom: "1px solid #f1f5f9" })}>
             <SectionHead>Reason for Resignation</SectionHead>
@@ -108,7 +94,6 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
               <textarea value={form.reason} placeholder="e.g. Better career opportunity, personal reasons, higher studies…" onChange={(e) => set("reason", e.target.value)} onBlur={() => touch("reason")} rows={4} className={cssClass(textareaStyle(touched.reason && errors.reason))} />
             </FieldWrap>
           </div>
-
           {/* Contact */}
           <div className={cssClass({ padding: "22px 24px", borderBottom: "1px solid #f1f5f9" })}>
             <SectionHead>Contact Details</SectionHead>
@@ -131,7 +116,6 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
               </FieldWrap>
             </div>
           </div>
-
           {/* Additional */}
           <div className={cssClass({ padding: "22px 24px" })}>
             <SectionHead>Additional Details</SectionHead>
@@ -163,7 +147,6 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
               )}
             </FieldWrap>
           </div>
-
           {/* Footer */}
           <div className={cssClass({ padding: "16px 24px", borderTop: "1px solid #f1f5f9", display: "flex", gap: 12, alignItems: "center", background: "#fafafa" })}>
             <button onClick={handleSubmit} disabled={saving} className={cssClass({ padding: "10px 28px", borderRadius: 8, fontWeight: 700, fontSize: 14, border: "none", cursor: saving ? "not-allowed" : "pointer", background: BRAND, color: "#fff", boxShadow: "0 2px 8px rgba(241,130,0,0.35)", opacity: saving ? 0.7 : 1 })}>
@@ -174,11 +157,9 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
             </button>
           </div>
         </div>
-
         <NoticeSidebar startDate={form.start_date} endDate={form.end_date} tentative={tentative} noticeDays={noticeDays} shortfall={shortfall} today={today} />
       </div>
     </div>
   );
 });
-
 export default ApplyForm;

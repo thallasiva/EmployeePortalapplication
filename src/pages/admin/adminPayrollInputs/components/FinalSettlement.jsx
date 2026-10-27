@@ -4,10 +4,8 @@ import { fmtINR } from "../utils/formatters";
 import { ORANGE } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
 import Table from "./Table";
-
 const FinalSettlement = React.memo(function FinalSettlement({ month, year }) {
   const { rows, loading } = useFinalSettlement(month, year);
-
   const cols = useMemo(() => [
     { key: "emp_code", label: "Emp Code" },
     {
@@ -55,14 +53,11 @@ const FinalSettlement = React.memo(function FinalSettlement({ month, year }) {
       ),
     },
   ], []);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   return (
     <Table cols={cols} rows={rows} emptyMsg="No separated employees found" />
   );
 });
-
 export default FinalSettlement;

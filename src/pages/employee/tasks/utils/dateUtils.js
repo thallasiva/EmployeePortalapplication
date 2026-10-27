@@ -1,5 +1,4 @@
 import { DAYS } from "../constants/taskConstants";
-
 export function getWeekBounds(offsetWeeks = 0) {
   const now = new Date();
   const day = now.getDay() || 7;
@@ -18,15 +17,12 @@ export function getWeekBounds(offsetWeeks = 0) {
     dates,
   };
 }
-
 export function fmt(date) {
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
-
 export function toDateStr(d) {
   return d instanceof Date ? d.toISOString().slice(0, 10) : String(d).slice(0, 10);
 }
-
 export function calcTimeDiff(start, end) {
   if (!start || !end) return null;
   const [sh, sm] = start.split(":").map(Number);
@@ -36,7 +32,6 @@ export function calcTimeDiff(start, end) {
   if (diff < 0) diff += 24 * 60;
   return parseFloat((diff / 60).toFixed(2));
 }
-
 export function calcDateDiff(start, end) {
   if (!start || !end) return null;
   const s = new Date(start),
@@ -45,7 +40,6 @@ export function calcDateDiff(start, end) {
   const diff = Math.round((e - s) / 86400000) + 1;
   return diff > 0 ? diff : null;
 }
-
 export function fmtDate(str) {
   if (!str) return "";
   const d = new Date(str);
@@ -53,7 +47,6 @@ export function fmtDate(str) {
     ? str
     : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 export function fmtDuration(hours) {
   if (hours == null || hours === "" || isNaN(Number(hours))) return "—";
   const totalMins = Math.round(Number(hours) * 60);

@@ -1,6 +1,5 @@
 import React from "react";
 import { Calendar } from "lucide-react";
-
 const ApplyEmptyIllustration = React.memo(function ApplyEmptyIllustration() {
   return (
     <div className="flex flex-col items-center justify-center h-full min-h-[280px] py-12">
@@ -9,5 +8,4 @@ const ApplyEmptyIllustration = React.memo(function ApplyEmptyIllustration() {
     </div>
   );
 });
-
 export default ApplyEmptyIllustration;

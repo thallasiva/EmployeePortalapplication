@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, Eye, Save, Trash2, Edit2, X, GripVertical, Copy, Type, Hash, Calendar, List, CheckSquare, Circle, AlignLeft, Upload, Star, ToggleLeft, ChevronDown, ArrowLeft, Check } from "lucide-react";
 import { getRolesForSelect } from "../../data/auth";
 import { formsApi } from "../../api/settings.api";
-
 const BRAND = "#f18200";
-
 const FIELD_TYPES = [
   { type: "text", label: "Text Input", icon: <Type size={14} />, desc: "Single line text" },
   { type: "number", label: "Number", icon: <Hash size={14} />, desc: "Numeric input" },
@@ -17,16 +15,13 @@ const FIELD_TYPES = [
   { type: "rating", label: "Rating", icon: <Star size={14} />, desc: "1–5 star rating" },
   { type: "toggle", label: "Yes/No", icon: <ToggleLeft size={14} />, desc: "Boolean toggle" },
 ];
-
 const CATS = ["HR", "Payroll", "Leave", "Attendance", "Performance", "Recruitment", "General"];
-
 const SEED_FORMS = [
   { id: 1, name: "Employee Onboarding Form", fields: 8, category: "HR", status: "Published", published: true, assignedRoles: [1, 2, 3], updated: "01 Aug 2026" },
   { id: 2, name: "Leave Request Form", fields: 5, category: "Leave", status: "Published", published: true, assignedRoles: [1, 2, 3, 4, 5], updated: "29 Jul 2026" },
   { id: 3, name: "Performance Review Form", fields: 12, category: "Performance", status: "Draft", published: false, assignedRoles: [1, 3], updated: "28 Jul 2026" },
   { id: 4, name: "Expense Claim Form", fields: 7, category: "General", status: "Published", published: true, assignedRoles: [1, 2, 4], updated: "25 Jul 2026" },
 ];
-
 let _nextId = 100;
 const newField = (type) =>
 {
@@ -40,7 +35,6 @@ const newField = (type) =>
     options: ["checkbox", "radio", "select"].includes(type) ? ["Option 1", "Option 2"] : [],
   };
 };
-
 /* ── Field edit panel ── */
 function FieldEditor({ field, onChange, onDelete })
 {
@@ -78,7 +72,6 @@ function FieldEditor({ field, onChange, onDelete })
     </div>
   );
 }
-
 /* ── Field preview ── */
 function FieldPreview({ field })
 {
@@ -117,7 +110,6 @@ function FieldPreview({ field })
     </div>
   );
 }
-
 /* ── Builder view ── */
 function BuilderView({ form, onBack, onSave })
 {
@@ -131,7 +123,6 @@ function BuilderView({ form, onBack, onSave })
     published: form.published ?? form.status === "Published",
     assignedRoles: form.assignedRoles ?? []
   });
-
   useEffect(() => {
     setMeta({
       name: form.name || "",
@@ -141,21 +132,17 @@ function BuilderView({ form, onBack, onSave })
       assignedRoles: form.assignedRoles ?? []
     });
   }, [form]);
-
   const addField = (type) =>
   {
     const f = newField(type);
     setFields(p => [...p, f]);
     setSelected(f.id);
   };
-
   const updateField = (updated) => setFields(p => p.map(f => f.id === updated.id ? updated : f));
   const deleteField = (id) => { setFields(p => p.filter(f => f.id !== id)); setSelected(null); };
   const cloneField = (f) => { const c = { ...f, id: _nextId++ }; setFields(p => [...p, c]); setSelected(c.id); };
-
   const roleOptions = getRolesForSelect();
   const selField = fields.find(f => f.id === selected);
-
   return (
     <div className="flex flex-col h-full">
       {/* Builder toolbar */}
@@ -183,7 +170,6 @@ function BuilderView({ form, onBack, onSave })
           </button>
         </div>
       </div>
-
       <div className="flex flex-1 overflow-hidden">
         {/* Left: field palette */}
         {mode === "build" && (
@@ -203,7 +189,6 @@ function BuilderView({ form, onBack, onSave })
             </div>
           </div>
         )}
-
         {/* Center: form canvas */}
         <div className="flex-1 overflow-y-auto bg-[#f8fafc] p-6">
           <div className="max-w-xl mx-auto bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 space-y-4">
@@ -232,7 +217,6 @@ function BuilderView({ form, onBack, onSave })
             ))}
           </div>
         </div>
-
         {/* Right: field editor and settings */}
         {mode === "build" && (
           <div className="w-72 bg-white border-l border-[#e2e8f0] overflow-y-auto shrink-0 p-4">
@@ -242,7 +226,6 @@ function BuilderView({ form, onBack, onSave })
             ) : (
               <p className="text-[12px] text-[#94a3b8] text-center py-8">Select a field to edit its properties</p>
             )}
-
             <div className="mt-6 pt-4 border-t border-[#e2e8f0]">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider">Form Settings</p>
@@ -277,20 +260,17 @@ function BuilderView({ form, onBack, onSave })
     </div>
   );
 }
-
 /* ── Main page ── */
 export default function FormBuilder()
 {
   const [forms, setForms] = useState(SEED_FORMS);
   const [editing, setEditing] = useState(null); // null = list view
   const [toast, setToast] = useState("");
-
   useEffect(() => {
     formsApi.list().then(data => {
       if (Array.isArray(data) && data.length > 0) setForms(data);
     }).catch(() => {});
   }, []);
-
   const handleSave = (data) =>
   {
     const payload = {
@@ -301,7 +281,6 @@ export default function FormBuilder()
       published: data.published ?? data.status === "Published",
       assignedRoles: data.assignedRoles || []
     };
-
     setForms((p) => p.find((f) => f.id === payload.id)
       ? p.map((f) => (f.id === payload.id ? { ...f, ...payload } : f))
       : [...p, payload]
@@ -310,7 +289,6 @@ export default function FormBuilder()
     setToast("Form saved successfully!");
     setTimeout(() => setToast(""), 3000);
   };
-
   if (editing !== null)
   {
     return (
@@ -319,7 +297,6 @@ export default function FormBuilder()
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {toast && (
@@ -327,7 +304,6 @@ export default function FormBuilder()
           <Check size={14} className="inline -mt-0.5" /> {toast}
         </div>
       )}
-
       {/* Header */}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -339,7 +315,6 @@ export default function FormBuilder()
           <Plus size={15} /> New Form
         </button>
       </div>
-
       {/* Summary */}
       <div className="px-6 pb-5 grid grid-cols-4 gap-4">
         {[
@@ -359,7 +334,6 @@ export default function FormBuilder()
           </div>
         ))}
       </div>
-
       {/* Forms list */}
       <div className="px-6 pb-10">
         <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">

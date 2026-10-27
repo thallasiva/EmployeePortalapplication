@@ -2,8 +2,7 @@ import { memo } from "react";
 import { DAYS, PROJECTS, MAX_DAILY_HOURS } from "../constants/taskConstants";
 import { fmt, fmtDuration } from "../utils/dateUtils";
 import { colTotal, rowTotal } from "../utils/timesheetUtils";
-import { Pencil } from "lucide-react";
-
+import { Pencil, X } from "lucide-react";
 const TimesheetGrid = memo(function TimesheetGrid({
   entries,
   dates,
@@ -91,7 +90,7 @@ const TimesheetGrid = memo(function TimesheetGrid({
                 <td className="px-2 py-2 text-center">
                   {entries.length > 1 && (
                     <button type="button" onClick={() => removeRow(row.id)}
-                      className="text-gray-300 hover:text-red-400 text-xl leading-none">×</button>
+                      className="text-gray-300 hover:text-red-400" aria-label="Remove timesheet row"><X size={16} aria-hidden="true" /></button>
                   )}
                 </td>
               )}
@@ -120,5 +119,4 @@ const TimesheetGrid = memo(function TimesheetGrid({
     </div>
   );
 });
-
 export default TimesheetGrid;

@@ -1,12 +1,10 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { MONTHS } from "../constants";
-
 function MonthBar({ month, year, onChange }) {
   const now = new Date();
   const years = [];
   for (let y = now.getFullYear() - 2; y <= now.getFullYear() + 1; y++) years.push(y);
-
   return (
     <div className={cssClass({ display: "flex", gap: 10, alignItems: "center", marginBottom: 20 })}>
       <select
@@ -30,5 +28,4 @@ function MonthBar({ month, year, onChange }) {
     </div>
   );
 }
-
 export default React.memo(MonthBar);

@@ -1,26 +1,17 @@
-
-
-
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listPayslips } from "../../api/payroll.api";
 import { listEmployees } from "../../api/employee.api";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 const ORANGE = "#f18200";
 const TABS = [
 { key: "ytd", label: "YTD Summary" },
 { key: "pf-ytd", label: "PF YTD Statement" },
 { key: "reimb", label: "Reimbursement Statement" }];
-
-
 const fmtINR = (v) =>
 "₹ " + Number(v || 0).toLocaleString("en-IN", { minimumFractionDigits: 0 });
-
 function Table({ cols, rows, emptyMsg = "No data" }) {
   if (!rows.length) return (
     <div className={cssClass({ textAlign: "center", padding: 60, color: "#aaa", fontSize: 14 })}>{emptyMsg}</div>);
-
   return (
     <div className={cssClass({ overflowX: "auto" })}>
       <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 13 })}>
@@ -50,21 +41,15 @@ function Table({ cols, rows, emptyMsg = "No data" }) {
         </tbody>
       </table>
     </div>);
-
 }
-
-
 function YTDSummary({ year }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
-
     listPayslips({ year, limit: 2000 }).
     then((r) => {
       const slips = r.data || [];
-
       const map = {};
       slips.forEach((s) => {
         if (!map[s.employee_id]) {
@@ -88,7 +73,6 @@ function YTDSummary({ year }) {
     }).
     finally(() => setLoading(false));
   }, [year]);
-
   const cols = [
   { key: "emp_code", label: "Emp Code" },
   { key: "employee_name", label: "Employee" },
@@ -100,8 +84,6 @@ function YTDSummary({ year }) {
     <span className={cssClass({ fontWeight: 700, color: ORANGE })}>{fmtINR(r.total_net)}</span>
   },
   { key: "total_lop", label: "Total LOP Days", right: true }];
-
-
   if (loading) return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   return (
     <>
@@ -110,14 +92,10 @@ function YTDSummary({ year }) {
       </div>
       <Table cols={cols} rows={rows} emptyMsg="No payslip data for this year" />
     </>);
-
 }
-
-
 function PFYTDStatement({ year }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -128,7 +106,6 @@ function PFYTDStatement({ year }) {
       const emps = empRes.data || [];
       const empMap = {};
       emps.forEach((e) => {empMap[e.employee_id] = e;});
-
       const map = {};
       slips.forEach((s) => {
         const b = Math.min(Number(s.basic || 0), 15000);
@@ -155,7 +132,6 @@ function PFYTDStatement({ year }) {
       setRows(Object.values(map));
     }).finally(() => setLoading(false));
   }, [year]);
-
   const cols = [
   { key: "emp_code", label: "Emp Code" },
   { key: "employee_name", label: "Employee" },
@@ -170,8 +146,6 @@ function PFYTDStatement({ year }) {
         {fmtINR(r.total_pf_employee + r.total_epf_employer + r.total_eps)}
       </span>
   }];
-
-
   if (loading) return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   return (
     <>
@@ -180,28 +154,20 @@ function PFYTDStatement({ year }) {
       </div>
       <Table cols={cols} rows={rows} emptyMsg="No PF data for this year" />
     </>);
-
 }
-
-
 function ReimbStatement({ month, year }) {
-
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     listPayslips({ month, year, limit: 500 }).
     then((r) => {
       const slips = r.data || [];
-
       setRows(slips.filter((s) => Number(s.allowances || 0) > 0));
     }).
     finally(() => setLoading(false));
   }, [month, year]);
-
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
   const cols = [
   { key: "emp_code", label: "Emp Code" },
   { key: "employee_name", label: "Employee" },
@@ -212,27 +178,19 @@ function ReimbStatement({ month, year }) {
   { key: "allowances", label: "Allowances / Reimbursements", right: true,
     render: (r) => <span className={cssClass({ fontWeight: 600, color: ORANGE })}>{fmtINR(r.allowances)}</span> },
   { key: "gross_earnings", label: "Gross", right: true, render: (r) => fmtINR(r.gross_earnings) }];
-
-
   if (loading) return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   return <Table cols={cols} rows={rows} emptyMsg="No reimbursement records for this month" />;
 }
-
-
 export default function AdminPayrollYTD() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "ytd";
-
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-
   const setTab = (t) => setSearchParams({ tab: t });
-
   const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const years = [];
   for (let y = now.getFullYear() - 2; y <= now.getFullYear() + 1; y++) years.push(y);
-
   return (
     <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
       <div className={cssClass({ marginBottom: 24 })}>
@@ -241,7 +199,6 @@ export default function AdminPayrollYTD() {
           Year-to-date earnings, PF contributions and reimbursements
         </p>
       </div>
-
       {}
       <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #eee", marginBottom: 24 })}>
         {TABS.map((t) =>
@@ -256,7 +213,6 @@ export default function AdminPayrollYTD() {
           {t.label}</button>
         )}
       </div>
-
       {}
       <div className={cssClass({ display: "flex", gap: 10, alignItems: "center", marginBottom: 20 })}>
         {tab === "reimb" &&
@@ -270,12 +226,10 @@ export default function AdminPayrollYTD() {
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
-
       <div className={cssClass({ background: "#fff", borderRadius: 10, border: "1px solid #eee", padding: 20, boxShadow: "0 1px 4px #0000000a" })}>
         {tab === "ytd" && <YTDSummary year={year} />}
         {tab === "pf-ytd" && <PFYTDStatement year={year} />}
         {tab === "reimb" && <ReimbStatement month={month} year={year} />}
       </div>
     </div>);
-
 }

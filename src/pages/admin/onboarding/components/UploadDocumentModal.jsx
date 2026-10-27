@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Upload, X } from "lucide-react";
 import { uploadDocument } from "../../../../api/document.api";
 import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
-
 const UploadDocumentModal = React.memo(function UploadDocumentModal({
   employee,
   onClose,
@@ -12,19 +11,16 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) { errorToast("Please select a file"); return; }
     if (!title.trim()) { errorToast("Please enter a document title"); return; }
-
     const fd = new FormData();
     fd.append("file", file);
     fd.append("title", title.trim());
     if (description.trim()) fd.append("description", description.trim());
     fd.append("employee_id", employee.employee_id);
     fd.append("visibility", "private");
-
     setUploading(true);
     try {
       await uploadDocument(fd);
@@ -37,7 +33,6 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
       setUploading(false);
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
@@ -56,7 +51,6 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
             <X size={18} />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -70,7 +64,6 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Description (optional)
@@ -83,7 +76,6 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               File <span className="text-red-500">*</span>
@@ -103,7 +95,6 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
               <p className="text-xs text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB</p>
             )}
           </div>
-
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -125,5 +116,4 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
     </div>
   );
 });
-
 export default UploadDocumentModal;

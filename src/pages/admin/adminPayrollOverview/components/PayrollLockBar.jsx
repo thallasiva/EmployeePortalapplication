@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { Lock, LockOpen, AlertTriangle } from "lucide-react";
 import { lockPayrollRun, unlockPayrollRun } from "../../../../api/payroll.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
-
 const BRAND = "#f18200";
-
 /**
  * Shows a coloured banner when a payroll run is locked/approved.
  * Props:
@@ -14,14 +12,11 @@ const BRAND = "#f18200";
  */
 export default function PayrollLockBar({ run, onRefresh, canUnlock }) {
   const [busy, setBusy] = useState(false);
-
   if (!run) return null;
-
   const isLocked = run.is_locked || run.review_status === "APPROVED";
   const color    = isLocked ? "#dc2626" : "#16a34a";
   const bg       = isLocked ? "#fff1f2" : "#f0fdf4";
   const border   = isLocked ? "#fecaca" : "#bbf7d0";
-
   const handleLock = async () => {
     setBusy(true);
     try {
@@ -32,7 +27,6 @@ export default function PayrollLockBar({ run, onRefresh, canUnlock }) {
       errorToast(e?.response?.data?.message || "Failed to lock");
     } finally { setBusy(false); }
   };
-
   const handleUnlock = async () => {
     if (!window.confirm("Unlock this payroll run? Salary records will become editable.")) return;
     setBusy(true);
@@ -44,7 +38,6 @@ export default function PayrollLockBar({ run, onRefresh, canUnlock }) {
       errorToast(e?.response?.data?.message || "Failed to unlock");
     } finally { setBusy(false); }
   };
-
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -61,7 +54,6 @@ export default function PayrollLockBar({ run, onRefresh, canUnlock }) {
             : "Payroll run is open — salary can still be modified"}
         </span>
       </div>
-
       {canUnlock && (
         isLocked ? (
           <button

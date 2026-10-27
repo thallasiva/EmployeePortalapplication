@@ -7,27 +7,21 @@ import { useEngageData } from "./hooks/useEngageData";
 import FilterSidebar from "./components/FilterSidebar";
 import FeedPanel from "./components/FeedPanel";
 import { TreePalm, ClipboardList, CalendarDays, Headphones, HeartHandshake, FilePen } from "lucide-react";
-
 const QUICK_LINKS = [
   { label: "Apply Leave",       path: "/employee/leave/apply",        emoji: <TreePalm size={14} /> },
   { label: "Leave Balance",     path: "/employee/leave/balance",      emoji: <ClipboardList size={14} /> },
   { label: "Holiday Calendar",  path: "/employee/leave/calendar",     emoji: <CalendarDays size={14} /> },
   { label: "Helpdesk",          path: "/employee/worklife/helpdesk",  emoji: <Headphones size={14} /> },
 ];
-
 const Engage = () => {
   const navigate = useNavigate();
   const greetingName = getUserGreetingName();
   const loggedUser = getLoggedInUser();
   const myName = loggedUser?.name || greetingName;
-
   const [activeFilter, setActiveFilter] = useState("all");
   const [search, setSearch] = useState("");
-
   const { employees, holidays, loading } = useEngageData();
-
   const allItems = useMemo(() => buildMockFeed(holidays), [holidays]);
-
   const visibleItems = useMemo(() => {
     let list = activeFilter === "all" ? allItems : allItems.filter((i) => i.section === activeFilter);
     if (search.trim()) {
@@ -38,17 +32,14 @@ const Engage = () => {
     }
     return list;
   }, [allItems, activeFilter, search]);
-
   const countFor = useCallback(
     (key) => (key === "all" ? allItems.length : allItems.filter((i) => i.section === key).length),
     [allItems]
   );
-
   const todayBirthdays = useMemo(
     () => employees.filter((e) => { const bd = anniversaryThisYear(e.birthday || e.dob); return bd && daysFromToday(bd) === 0; }),
     [employees]
   );
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -71,7 +62,6 @@ const Engage = () => {
               </p>
             </div>
           </div>
-
           <div className="flex gap-3">
             <button
               onClick={() => navigate("/employee/worklife/kudos")}
@@ -90,7 +80,6 @@ const Engage = () => {
           </div>
         </div>
       </div>
-
       {/* Main layout */}
       <div className="max-w-7xl mx-auto p-6 flex gap-6">
         <FilterSidebar
@@ -115,5 +104,4 @@ const Engage = () => {
     </div>
   );
 };
-
 export default Engage;

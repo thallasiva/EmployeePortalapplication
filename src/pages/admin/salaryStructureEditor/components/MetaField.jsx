@@ -1,5 +1,4 @@
 import React from "react";
-
 const MetaField = React.memo(function MetaField({ icon, label, value, badge }) {
   return (
     <div className="flex items-start gap-2 min-w-0">
@@ -17,5 +16,4 @@ const MetaField = React.memo(function MetaField({ icon, label, value, badge }) {
     </div>
   );
 });
-
 export default MetaField;

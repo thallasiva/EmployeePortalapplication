@@ -1,17 +1,4 @@
-
-
-
-
-
-
-
-
-
-
-
-
 let Sentry = null;
-
 export async function initSentry() {
   const dsn = process.env.REACT_APP_SENTRY_DSN;
   if (!dsn) {
@@ -20,26 +7,18 @@ export async function initSentry() {
     }
     return;
   }
-
   try {
     Sentry = await import("@sentry/react");
     Sentry.init({
       dsn,
       environment: process.env.NODE_ENV,
       release: process.env.REACT_APP_VERSION || "hrms@1.0.0",
-
-
       tracesSampleRate: process.env.NODE_ENV === "production" ? 0.2 : 1.0,
-
       replaysSessionSampleRate: 0.01,
       replaysOnErrorSampleRate: 1.0,
-
       integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true })],
-
-
-
       beforeSend(event) {
         if (process.env.NODE_ENV === "development") return null;
         return event;
@@ -50,8 +29,6 @@ export async function initSentry() {
     console.warn("[Sentry] @sentry/react not installed — run: npm install @sentry/react");
   }
 }
-
-
 export function captureError(error, context = {}) {
   if (Sentry) {
     Sentry.captureException(error, { extra: context });
@@ -59,8 +36,6 @@ export function captureError(error, context = {}) {
     console.error("[captureError]", error, context);
   }
 }
-
-
 export function setSentryUser(user) {
   if (!Sentry) return;
   if (user) {
@@ -69,8 +44,6 @@ export function setSentryUser(user) {
     Sentry.setUser(null);
   }
 }
-
-
 export function withSentryErrorBoundary(Component, fallback) {
   if (!Sentry) return Component;
   return Sentry.withErrorBoundary(Component, { fallback });

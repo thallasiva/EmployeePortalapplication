@@ -1,13 +1,11 @@
 import React from "react";
 import { fmt } from "../utils";
-
 const EntitlementCard = React.memo(function EntitlementCard({ item, color }) {
   const balance = item.annual - item.claimed;
   const usedPct = Math.min(Math.round(item.claimed / (item.annual || 1) * 100), 100);
   const r = 15.9;
   const circ = 2 * Math.PI * r;
   const dash = usedPct / 100 * circ;
-
   return (
     <div className="bg-white rounded-xl border border-[#e8eef5] p-5 flex items-center gap-5 hover:shadow-md transition-shadow">
       {}
@@ -21,7 +19,6 @@ const EntitlementCard = React.memo(function EntitlementCard({ item, color }) {
           {usedPct}%
         </span>
       </div>
-
       {}
       <div className="flex-1 min-w-0">
         <p className="text-[14px] font-bold text-[#1e293b]">{item.title}</p>
@@ -34,7 +31,6 @@ const EntitlementCard = React.memo(function EntitlementCard({ item, color }) {
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${usedPct}%`, background: color }} />
         </div>
       </div>
-
       {}
       <div className="text-right shrink-0 pl-4 border-l border-[#f1f5f9]">
         <p className="text-[11px] text-[#94a3b8] font-medium">Balance</p>
@@ -45,5 +41,4 @@ const EntitlementCard = React.memo(function EntitlementCard({ item, color }) {
     </div>
   );
 });
-
 export default EntitlementCard;

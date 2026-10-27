@@ -1,5 +1,4 @@
 import React from "react";
-
 const Field = React.memo(function Field({ label, required, error, children }) {
   return (
     <div className="emp-field">
@@ -12,5 +11,4 @@ const Field = React.memo(function Field({ label, required, error, children }) {
     </div>
   );
 });
-
 export default Field;

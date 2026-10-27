@@ -2,14 +2,11 @@ import React from "react";
 import { useStopSalary } from "../hooks/useStopSalary";
 import { cssClass } from "../../../../utils/classStyles";
 import { AlertTriangle } from "lucide-react";
-
 const StopSalary = React.memo(function StopSalary() {
   const { emps, stopped, loading, toggleStopped } = useStopSalary();
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   return (
     <>
       <div className={cssClass({
@@ -80,5 +77,4 @@ const StopSalary = React.memo(function StopSalary() {
     </>
   );
 });
-
 export default StopSalary;

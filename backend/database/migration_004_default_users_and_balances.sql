@@ -17,14 +17,11 @@
 --
 -- Safe to re-run (idempotent: truncates first, then re-inserts fixed rows).
 -- =====================================================================
-
 USE hrms_db;
-
 -- ---------------------------------------------------------------------
 -- 1. Truncate existing employee-related data
 -- ---------------------------------------------------------------------
 SET FOREIGN_KEY_CHECKS = 0;
-
 TRUNCATE TABLE leave_balances;
 TRUNCATE TABLE leave_requests;
 TRUNCATE TABLE attendance;
@@ -38,13 +35,10 @@ TRUNCATE TABLE team_members;
 TRUNCATE TABLE users;
 TRUNCATE TABLE employees;
 TRUNCATE TABLE holidays;
-
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- ---------------------------------------------------------------------
 -- 2. Default employees
 -- ---------------------------------------------------------------------
-
 -- Admin
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile, emp_job_title,
@@ -53,7 +47,6 @@ INSERT INTO employees (
   1, 'EMP00001', 'Admin', 'User', 'admin@yopmail.com', '9999999999', 'System Administrator',
   2, 3, 'Full-Time', 'Active', 'general', CURDATE()
 );
-
 -- Reporting Manager
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile, emp_job_title,
@@ -62,7 +55,6 @@ INSERT INTO employees (
   2, 'EMP00002', 'Reporting', 'Manager', 'manager@yopmail.com', '9999999998', 'Engineering Manager',
   1, 2, 'Full-Time', 'Active', 'general', CURDATE()
 );
-
 -- Employee - General Shift (reports to Reporting Manager)
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile, emp_job_title,
@@ -71,7 +63,6 @@ INSERT INTO employees (
   3, 'EMP00003', 'General', 'Shift Employee', 'employee.general@yopmail.com', '9999999997', 'Software Engineer',
   1, 1, 2, 'Full-Time', 'Active', 'general', CURDATE()
 );
-
 -- Employee - Mid Shift (reports to Reporting Manager)
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile, emp_job_title,
@@ -80,7 +71,6 @@ INSERT INTO employees (
   4, 'EMP00004', 'Mid', 'Shift Employee', 'employee.mid@yopmail.com', '9999999996', 'Software Engineer',
   1, 1, 2, 'Full-Time', 'Active', 'mid', CURDATE()
 );
-
 -- Employee - Night Shift (reports to Reporting Manager)
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile, emp_job_title,
@@ -89,7 +79,6 @@ INSERT INTO employees (
   5, 'EMP00005', 'Night', 'Shift Employee', 'employee.night@yopmail.com', '9999999995', 'Software Engineer',
   1, 1, 2, 'Full-Time', 'Active', 'night', CURDATE()
 );
-
 -- ---------------------------------------------------------------------
 -- 3. Login accounts (password hashes generated with bcryptjs, cost 10)
 --    admin@yopmail.com          -> Admin@123
@@ -102,7 +91,6 @@ INSERT INTO users (user_id, email, password_hash, role_id, employee_id, status) 
   (3, 'employee.general@yopmail.com', '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 3, 'Active'),
   (4, 'employee.mid@yopmail.com',     '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 4, 'Active'),
   (5, 'employee.night@yopmail.com',   '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 5, 'Active');
-
 -- ---------------------------------------------------------------------
 -- 4. Sample leave balances for the General Shift employee (employee_id = 3)
 --    Sick Leave (1), Earned Leave (2), Compensatory Off (4)
@@ -111,7 +99,6 @@ INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, g
   (3, 1, YEAR(CURDATE()), 0, 10, 2, 8),   -- Sick Leave: 10 granted, 2 availed, 8 remaining
   (3, 2, YEAR(CURDATE()), 0, 15, 3, 12),  -- Earned Leave: 15 granted, 3 availed, 12 remaining
   (3, 4, YEAR(CURDATE()), 0, 2, 0, 2);    -- Compensatory Off: 2 granted, 0 availed, 2 remaining
-
 -- ---------------------------------------------------------------------
 -- 5. Sample holiday calendar (shown on the employee Holiday Calendar page
 --    and the "Upcoming Holidays" card on the employee dashboard).

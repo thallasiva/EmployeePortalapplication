@@ -15,9 +15,7 @@
 --
 -- Password for all 3 logins: Natit@2024
 -- =====================================================================
-
 USE hrms_db;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 0. Clean up if re-running (idempotent)
 -- ─────────────────────────────────────────────────────────────────────
@@ -29,11 +27,9 @@ DELETE FROM leave_balances        WHERE employee_id IN (6,7,8);
 DELETE FROM users                 WHERE employee_id IN (6,7,8);
 DELETE FROM employees             WHERE employee_id IN (6,7,8);
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 1. Employees
 -- ─────────────────────────────────────────────────────────────────────
-
 -- 6: Project Manager  (reports to Tirumala Rao, employee_id=2)
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -48,7 +44,6 @@ INSERT INTO employees (
   'Full-Time', 'Active', 'general', '2020-06-01', 'new',
   'HY/HYD/NAT001/0006'
 );
-
 -- 7: Senior Software Engineer  (reports to Project Manager, employee_id=6)
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -63,7 +58,6 @@ INSERT INTO employees (
   'Full-Time', 'Active', 'general', '2021-03-15', 'new',
   'HY/HYD/NAT001/0007'
 );
-
 -- 8: Software Engineer  (reports to Project Manager, employee_id=6)
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -78,7 +72,6 @@ INSERT INTO employees (
   'Full-Time', 'Active', 'general', '2022-08-01', 'new',
   'HY/HYD/NAT001/0008'
 );
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 2. User login accounts  (password: Natit@2024)
 --    role_id: 2 = Employee  (PM is also Employee role here;
@@ -88,7 +81,6 @@ INSERT INTO users (user_id, email, password_hash, role_id, employee_id, status) 
   (6, 'arjun.naidu@yopmail.com',    '$2a$10$qqJZdvL7ZuS1m5ypmkPDcOaVIORNSFarEBpl9LP1yEGmKrTmY50DW', 2, 6, 'Active'),
   (7, 'kavitha.reddy@yopmail.com',  '$2a$10$qqJZdvL7ZuS1m5ypmkPDcOaVIORNSFarEBpl9LP1yEGmKrTmY50DW', 2, 7, 'Active'),
   (8, 'raviteja.mohan@yopmail.com', '$2a$10$qqJZdvL7ZuS1m5ypmkPDcOaVIORNSFarEBpl9LP1yEGmKrTmY50DW', 2, 8, 'Active');
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 3. Salary Structures
 --
@@ -117,7 +109,6 @@ INSERT INTO salary_structures (
 (7,  21000.00,  8400.00, 1600.00, 1050.00,  9950.00, 1800.00, 1800.00, 200.00, 0.00, 526800.00, '2026-04-01'),
 -- Software Engineer
 (8,  12500.00,  5000.00, 1600.00,  625.00,  5275.00, 1500.00, 1500.00, 150.00, 0.00, 312000.00, '2026-04-01');
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 4. Payslips — Apr, May, Jun 2026
 --
@@ -139,19 +130,15 @@ INSERT INTO payslips (
 (6, 4, 2026, 32500.00, 13000.00, 19500.00, 65000.00, 68550.00, 2000.00, 63000.00, 26.0, 26.0, 0.0, 'Paid'),
 (6, 5, 2026, 32500.00, 13000.00, 19500.00, 65000.00, 68550.00, 2000.00, 63000.00, 26.0, 26.0, 0.0, 'Paid'),
 (6, 6, 2026, 32500.00, 13000.00, 19500.00, 65000.00, 68550.00, 2000.00, 63000.00, 26.0, 26.0, 0.0, 'Paid'),
-
 -- Kavitha Reddy (Senior Software Engineer) — Apr / May / Jun 2026
 (7, 4, 2026, 21000.00,  8400.00, 12600.00, 42000.00, 43900.00, 2000.00, 40000.00, 26.0, 26.0, 0.0, 'Paid'),
 (7, 5, 2026, 21000.00,  8400.00, 12600.00, 42000.00, 43900.00, 2000.00, 40000.00, 26.0, 26.0, 0.0, 'Paid'),
 (7, 6, 2026, 21000.00,  8400.00, 12600.00, 42000.00, 43900.00, 2000.00, 40000.00, 26.0, 26.0, 0.0, 'Paid'),
-
 -- Ravi Teja Mohan (Software Engineer) — Apr / May / Jun 2026
 (8, 4, 2026, 12500.00,  5000.00,  7500.00, 25000.00, 26300.00, 1650.00, 23350.00, 26.0, 26.0, 0.0, 'Paid'),
 (8, 5, 2026, 12500.00,  5000.00,  7500.00, 25000.00, 26300.00, 1650.00, 23350.00, 26.0, 26.0, 0.0, 'Paid'),
 (8, 6, 2026, 12500.00,  5000.00,  7500.00, 25000.00, 26300.00, 1650.00, 23350.00, 26.0, 26.0, 0.0, 'Paid')
-
 ON DUPLICATE KEY UPDATE net_pay=VALUES(net_pay), gross_earnings=VALUES(gross_earnings), status=VALUES(status);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 5. Bank Details
 -- ─────────────────────────────────────────────────────────────────────
@@ -164,7 +151,6 @@ INSERT INTO employee_bank_details (
 (7, 'ICICI Bank',             '502NAT0000000007', 'ICIC0004522', 'ABCNA2345B', '101234500007', 'Savings', 'Hyderabad - Gachibowli Branch',  'Kavitha Reddy',  'Bank Transfer'),
 (8, 'State Bank of India',    '503NAT0000000008', 'SBIN0004523', 'ABCNA3456C', '101234500008', 'Savings', 'Hyderabad - Hitech City Branch', 'Ravi Teja Mohan','Bank Transfer')
 ON DUPLICATE KEY UPDATE bank_name=VALUES(bank_name), account_number=VALUES(account_number);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 6. Leave Balances (current year — all active leave types)
 -- ─────────────────────────────────────────────────────────────────────
@@ -174,7 +160,6 @@ FROM employees e
 CROSS JOIN leave_types lt
 WHERE e.employee_id IN (6,7,8) AND lt.annual_quota > 0
 ON DUPLICATE KEY UPDATE granted=VALUES(granted), balance=VALUES(balance);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- Done ✓
 --

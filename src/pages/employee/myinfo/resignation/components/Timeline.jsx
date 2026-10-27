@@ -2,13 +2,10 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import { fmtDT } from "../utils";
-
 const mkInitials = (name) =>
   (name || "").split(" ").map((w) => w[0] || "").join("").slice(0, 2).toUpperCase() || "—";
-
 const Timeline = React.memo(function Timeline({ resignation, profile }) {
   const empName = profile ? [profile.first_name, profile.last_name].filter(Boolean).join(" ") : "You";
-
   const events = [
     {
       name: empName, initials: mkInitials(empName), color: BRAND,
@@ -35,7 +32,6 @@ const Timeline = React.memo(function Timeline({ resignation, profile }) {
       time: resignation.updated_at, action: "Withdrew Application", remarks: null,
     }] : []),
   ].sort((a, b) => new Date(b.time) - new Date(a.time));
-
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 })}>
       <p className={cssClass({ margin: "0 0 16px", fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" })}>
@@ -68,5 +64,4 @@ const Timeline = React.memo(function Timeline({ resignation, profile }) {
     </div>
   );
 });
-
 export default Timeline;

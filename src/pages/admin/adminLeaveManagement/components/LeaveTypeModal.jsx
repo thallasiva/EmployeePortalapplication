@@ -2,7 +2,6 @@ import { memo, useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { B } from "../constants/leaveConstants";
 import Btn from "./Btn";
-
 const FormField = ({ k, label, type = "text", form, set, ...rest }) => (
   <div>
     <label className={cssClass({ display: "block", fontSize: 11, fontWeight: 600, color: "#6b7280", marginBottom: 5 })}>{label}</label>
@@ -16,12 +15,10 @@ const FormField = ({ k, label, type = "text", form, set, ...rest }) => (
     />
   </div>
 );
-
 const LeaveTypeModal = memo(({ initial, onClose, onSave }) => {
   const [form, setForm]   = useState({ ...initial });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.leave_type_name.trim()) { alert("Leave type name is required"); return; }
@@ -29,7 +26,6 @@ const LeaveTypeModal = memo(({ initial, onClose, onSave }) => {
     try { await onSave(form); }
     catch (e) { alert(e.message); setSaving(false); }
   };
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", zIndex: 9999,
       display: "flex", alignItems: "center", justifyContent: "center" })}>
@@ -72,6 +68,5 @@ const LeaveTypeModal = memo(({ initial, onClose, onSave }) => {
     </div>
   );
 });
-
 LeaveTypeModal.displayName = "LeaveTypeModal";
 export default LeaveTypeModal;

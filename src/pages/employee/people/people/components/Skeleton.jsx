@@ -1,5 +1,4 @@
 import React from "react";
-
 const Skeleton = React.memo(function Skeleton({ w = "100%", h = 14, r = 6, mb = 0 }) {
   return (
     <div
@@ -14,5 +13,4 @@ const Skeleton = React.memo(function Skeleton({ w = "100%", h = 14, r = 6, mb = 
     />
   );
 });
-
 export default Skeleton;

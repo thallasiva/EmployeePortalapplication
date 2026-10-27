@@ -1,9 +1,7 @@
 import React from "react";
 import { ChevronDown, X } from "lucide-react";
-
 /* ── Brand token ── */
 export const BRAND = "#f18200";
-
 /* ── Status badge ── */
 export function Badge({ children, color = "green" }) {
   const map = {
@@ -22,12 +20,10 @@ export function Badge({ children, color = "green" }) {
     </span>
   );
 }
-
 export function Dot({ color = "green" }) {
   const map = { green:"bg-emerald-500", red:"bg-red-500", amber:"bg-amber-400", blue:"bg-blue-500", gray:"bg-slate-400", orange:"bg-[#f18200]" };
   return <span className={`inline-block w-1.5 h-1.5 rounded-full ${map[color] || "bg-slate-400"}`} />;
 }
-
 /* ── Toggle switch ── */
 export function Toggle({ on, onToggle }) {
   return (
@@ -37,7 +33,6 @@ export function Toggle({ on, onToggle }) {
     </button>
   );
 }
-
 /* ── Buttons ── */
 export function Btn({ children, variant = "primary", size = "md", onClick, disabled, icon, type = "button" }) {
   const sizes = { sm:"h-[32px] px-3 text-[12px]", md:"h-[38px] px-4 text-[13px]", lg:"h-[42px] px-5 text-[14px]" };
@@ -55,7 +50,6 @@ export function Btn({ children, variant = "primary", size = "md", onClick, disab
     </button>
   );
 }
-
 /* ── Form input ── */
 export function Input({ label, required, error, ...props }) {
   return (
@@ -74,7 +68,6 @@ export function Input({ label, required, error, ...props }) {
     </div>
   );
 }
-
 /* ── Select ── */
 export function Select({ label, required, children, ...props }) {
   return (
@@ -92,7 +85,6 @@ export function Select({ label, required, children, ...props }) {
     </div>
   );
 }
-
 /* ── Section card ── */
 export function SectionCard({ title, subtitle, children, action, noPad }) {
   return (
@@ -110,7 +102,6 @@ export function SectionCard({ title, subtitle, children, action, noPad }) {
     </div>
   );
 }
-
 /* ── Confirm dialog ── */
 export function ConfirmDialog({ open = true, title, message, onConfirm, onCancel, danger }) {
   if (!open) return null;
@@ -131,7 +122,6 @@ export function ConfirmDialog({ open = true, title, message, onConfirm, onCancel
     </div>
   );
 }
-
 /* ── Toast ── */
 export function Toast({ message, type = "success", onClose }) {
   if (!message) return null;
@@ -147,7 +137,6 @@ export function Toast({ message, type = "success", onClose }) {
     </div>
   );
 }
-
 /* ── Pagination ── */
 export function Pagination({ page, totalPages, onPage }) {
   if (totalPages <= 1) return null;

@@ -1,7 +1,6 @@
 import React from "react";
 import { Lock, Unlock, Eye, RotateCcw } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 // One "locked/open" control tile (Attendance or Leave).
 export default function LockControlCard({ title, locked = true, lastUpdated, count, countLabel = "Records", onView, onReopen }) {
   const c = locked ? "#16a34a" : "#d97706";

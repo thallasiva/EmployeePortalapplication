@@ -1,5 +1,4 @@
 import React from 'react';
-
 const QuickStatCard = React.memo(function QuickStatCard({
   icon: Icon,
   value,
@@ -28,5 +27,4 @@ const QuickStatCard = React.memo(function QuickStatCard({
     </button>
   );
 });
-
 export default QuickStatCard;

@@ -3,7 +3,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import CycleTypeBadge from "./CycleTypeBadge";
-
 const AppraisalHeader = React.memo(function AppraisalHeader({ cycle }) {
   return (
     <div className={cssClass({
@@ -32,5 +31,4 @@ const AppraisalHeader = React.memo(function AppraisalHeader({ cycle }) {
     </div>
   );
 });
-
 export default AppraisalHeader;

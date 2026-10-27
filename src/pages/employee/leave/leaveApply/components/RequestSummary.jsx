@@ -1,6 +1,5 @@
 import React from "react";
 import { formatDate } from "../utils";
-
 const RequestSummary = React.memo(function RequestSummary({
   days,
   selectedColor,
@@ -13,7 +12,6 @@ const RequestSummary = React.memo(function RequestSummary({
       <p className="text-[12px] font-semibold text-[#94a3b8] uppercase tracking-wide mb-4">
         Request Summary
       </p>
-
       <div className="text-center mb-4">
         <div
           className="text-[48px] font-black leading-none"
@@ -25,7 +23,6 @@ const RequestSummary = React.memo(function RequestSummary({
           {days === 1 ? "Day" : "Days"} requested
         </div>
       </div>
-
       {fromDate && (
         <div className="space-y-2 text-[13px]">
           <div className="flex justify-between py-2 border-t border-[#f1f5f9]">
@@ -40,7 +37,6 @@ const RequestSummary = React.memo(function RequestSummary({
           )}
         </div>
       )}
-
       {selectedBalance && (
         <div
           className="mt-3 p-3 rounded-lg"
@@ -57,5 +53,4 @@ const RequestSummary = React.memo(function RequestSummary({
     </div>
   );
 });
-
 export default RequestSummary;

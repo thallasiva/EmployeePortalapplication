@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { ORANGE } from "../constants";
-
 const ToggleRow = React.memo(function ToggleRow({ label, desc, field, value, onToggle }) {
   return (
     <div
@@ -46,7 +45,6 @@ const ToggleRow = React.memo(function ToggleRow({ label, desc, field, value, onT
     </div>
   );
 });
-
 const PayrollSettings = React.memo(function PayrollSettings() {
   const [settings, setSettings] = useState({
     pfEnabled: true,
@@ -59,22 +57,18 @@ const PayrollSettings = React.memo(function PayrollSettings() {
     taxRegime: "new",
     emailPayslips: true,
   });
-
   const handleToggle = useCallback((field) => {
     setSettings((p) => ({ ...p, [field]: !p[field] }));
   }, []);
-
   const handleSelect = useCallback(
     (field) => (e) => {
       setSettings((p) => ({ ...p, [field]: Number(e.target.value) }));
     },
     []
   );
-
   const handleTaxRegime = useCallback((regime) => {
     setSettings((p) => ({ ...p, taxRegime: regime }));
   }, []);
-
   return (
     <div className={cssClass({ maxWidth: 640 })}>
       <div className={cssClass({ marginBottom: 20 })}>
@@ -103,7 +97,6 @@ const PayrollSettings = React.memo(function PayrollSettings() {
           onToggle={handleToggle}
         />
       </div>
-
       <div className={cssClass({ marginBottom: 20 })}>
         <h3 className={cssClass({ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a1a" })}>
           Payroll Cycle
@@ -157,7 +150,6 @@ const PayrollSettings = React.memo(function PayrollSettings() {
           </div>
         </div>
       </div>
-
       <div className={cssClass({ marginBottom: 20 })}>
         <h3 className={cssClass({ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a1a" })}>
           Tax Configuration
@@ -195,7 +187,6 @@ const PayrollSettings = React.memo(function PayrollSettings() {
           ))}
         </div>
       </div>
-
       <div className={cssClass({ marginBottom: 20 })}>
         <h3 className={cssClass({ margin: "0 0 8px", fontSize: 15, fontWeight: 700, color: "#1a1a1a" })}>
           Notifications
@@ -208,7 +199,6 @@ const PayrollSettings = React.memo(function PayrollSettings() {
           onToggle={handleToggle}
         />
       </div>
-
       <button
         className={cssClass({
           padding: "10px 24px",
@@ -226,5 +216,4 @@ const PayrollSettings = React.memo(function PayrollSettings() {
     </div>
   );
 });
-
 export default PayrollSettings;

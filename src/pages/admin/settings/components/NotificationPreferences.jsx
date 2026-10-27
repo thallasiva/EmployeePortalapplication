@@ -1,17 +1,14 @@
 import React from "react";
-
 const NOTIFICATION_ITEMS = [
   { key: 'leaveRequests',      label: 'Leave Requests',       description: 'New leave requests and approvals' },
   { key: 'performanceReviews', label: 'Performance Reviews',  description: 'Review cycles and deadlines' },
   { key: 'onboarding',         label: 'Onboarding',           description: 'Task assignments and progress' },
 ];
-
 const NotificationPreferences = React.memo(function NotificationPreferences({ notifications, toggleNotif }) {
   return (
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
       <h2 className="text-xl font-semibold text-slate-900">Notification Preferences</h2>
       <p className="mt-1 text-sm text-gray-500">Choose how you want to be notified</p>
-
       <div className="mt-6 space-y-6">
         {NOTIFICATION_ITEMS.map((item) => (
           <div key={item.key} className="grid gap-3 md:grid-cols-[1.6fr_1fr_1fr_1fr] items-center rounded-3xl border border-gray-200 bg-gray-50 p-4">
@@ -33,7 +30,6 @@ const NotificationPreferences = React.memo(function NotificationPreferences({ no
           </div>
         ))}
       </div>
-
       <div className="mt-6 flex justify-end">
         <button className="rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-600 transition">
           Save Changes
@@ -42,5 +38,4 @@ const NotificationPreferences = React.memo(function NotificationPreferences({ no
     </section>
   );
 });
-
 export default NotificationPreferences;

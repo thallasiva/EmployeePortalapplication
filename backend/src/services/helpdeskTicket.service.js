@@ -2,7 +2,6 @@ const BaseService = require('./base.service');
 const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
-
 class HelpdeskTicketService extends BaseService {
   constructor() {
     super('helpdesk_tickets', 'ticket_id', [
@@ -10,7 +9,6 @@ class HelpdeskTicketService extends BaseService {
     'status', 'assigned_to', 'forwarded_to_team', 'attachment_url']
     );
   }
-
   async list({ employee_id, status, priority, category, assigned_to, forwarded_to_team, search, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_helpdesk_tickets(?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -24,11 +22,9 @@ class HelpdeskTicketService extends BaseService {
       search ?? null,
       limit != null ? Number(limit) : null,
       limit != null ? Number(offset || 0) : null]
-
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async listTeam(managerId, { status, priority, category, search, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_team_helpdesk(?, ?, ?, ?, ?, ?, ?)',
@@ -40,22 +36,18 @@ class HelpdeskTicketService extends BaseService {
       search ?? null,
       limit != null ? Number(limit) : null,
       limit != null ? Number(offset || 0) : null]
-
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getDetails(id) {
     const results = await callProcedure('sp_get_ticket_with_comments(?)', [id]);
     const ticket = (results[0] ?? [])[0] ?? null;
     if (!ticket) return null;
     return { ...ticket, comments: results[1] ?? [] };
   }
-
   async updateStatus(id, status) {
     await callProcedure('sp_update_ticket_status(?, ?)', [id, status]);
     const ticket = await this.getDetails(id);
-
     if (ticket && status === 'Resolved') {
       notify.ticketResolved({
         reporterEmail: ticket.reporter_email || ticket.employee_email || null,
@@ -66,11 +58,9 @@ class HelpdeskTicketService extends BaseService {
     }
     return ticket;
   }
-
   async assign(id, assignedTo) {
     await callProcedure('sp_assign_ticket(?, ?)', [id, assignedTo]);
     const ticket = await this.getDetails(id);
-
     if (ticket && ticket.agent_email) {
       notify.ticketCreated({
         agentEmail: ticket.agent_email,
@@ -84,14 +74,12 @@ class HelpdeskTicketService extends BaseService {
     }
     return ticket;
   }
-
   async managerAction(managerId, ticketId, action, forwardedToTeam, comment) {
     const autoComment = action === 'approve' ?
     comment && comment.trim() ?
     `[Approved & Forwarded to ${forwardedToTeam}] ${comment.trim()}` :
     `Request approved and forwarded to ${forwardedToTeam}.` :
     `[Rejected] ${(comment || '').trim()}`;
-
     const { outs: out } = await callProcedureWithOuts('sp_manager_action_ticket(?, ?, ?, ?, ?, @ok, @msg)', [
     managerId, ticketId, action, forwardedToTeam || null, autoComment]
     );
@@ -102,7 +90,6 @@ class HelpdeskTicketService extends BaseService {
     }
     return this.getDetails(ticketId);
   }
-
   async closeTicket(employeeId, ticketId) {
     const { outs: out } = await callProcedureWithOuts('sp_close_ticket(?, ?, @ok, @msg)', [employeeId, ticketId]);
     if (!out.ok) {
@@ -113,7 +100,6 @@ class HelpdeskTicketService extends BaseService {
     }
     return this.getDetails(ticketId);
   }
-
   async reopenTicket(employeeId, ticketId, comment) {
     const reason = comment && comment.trim() ?
     comment.trim() :
@@ -127,11 +113,9 @@ class HelpdeskTicketService extends BaseService {
     }
     return this.getDetails(ticketId);
   }
-
   async addComment(ticketId, commentedBy, comment) {
     await callProcedure('sp_add_helpdesk_comment(?, ?, ?)', [ticketId, commentedBy, comment]);
     const ticket = await this.getDetails(ticketId);
-
     if (ticket && ticket.reporter_email && ticket.assigned_to !== commentedBy) {
       notify.ticketUpdated({
         reporterEmail: ticket.reporter_email || ticket.employee_email || null,
@@ -144,5 +128,4 @@ class HelpdeskTicketService extends BaseService {
     return ticket;
   }
 }
-
 module.exports = new HelpdeskTicketService();

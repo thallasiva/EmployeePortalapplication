@@ -5,7 +5,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import Btn from "./Btn";
 import StatusBadge from "./StatusBadge";
 import Toast from "./Toast";
-
 const TH = ({ children, right }) => (
   <th className={cssClass({ padding: "10px 14px", fontWeight: 700, fontSize: 11, color: "#9ca3af",
     textTransform: "uppercase", letterSpacing: ".06em", textAlign: right ? "right" : "left",
@@ -13,35 +12,28 @@ const TH = ({ children, right }) => (
     {children}
   </th>
 );
-
 const TD = ({ children, right }) => (
   <td className={cssClass({ padding: "11px 14px", fontSize: 13, color: "#374151", borderBottom: "1px solid #f5f5f5",
     textAlign: right ? "right" : "left", verticalAlign: "middle" })}>
     {children}
   </td>
 );
-
 const RequestsTab = memo(() => {
   const [rows, setRows]       = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus]   = useState("");
   const [toast, setToast]     = useState(null);
-
-
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
-
   const load = useCallback(async () => {
     setLoading(true);
     try { setRows((await listLeaveRequests({ status: status || undefined, limit: 500 })).data || []); }
     catch (e) { showToast(e.message, "error"); }
     finally { setLoading(false); }
   }, [status]);
-
   useEffect(() => { load(); }, [load]);
-
   const handleReview = async (id, decision, remarks = "") => {
     try {
       await reviewLeaveRequest(id, { decision, remarks });
@@ -49,7 +41,6 @@ const RequestsTab = memo(() => {
       load();
     } catch (e) { showToast(e.message, "error"); }
   };
-
   const pending = rows.filter((r) => r.status === "Pending");
   const history = rows.filter((r) => r.status !== "Pending");
   const approved = rows.filter((r) => r.status === "Approved").length;
@@ -60,11 +51,9 @@ const RequestsTab = memo(() => {
     { label: "Approved", value: approved, icon: CheckCircle2, color: "#16a34a", bg: "#f0fdf4" },
     { label: "Rejected", value: rejected, icon: XCircle, color: "#dc2626", bg: "#fef2f2" },
   ];
-
   return (
     <div className={cssClass({ display: "flex", flexDirection: "column", gap: 20 })}>
       <Toast {...(toast || { msg: null })} />
-
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 16, padding: "22px 24px", borderRadius: 16,
         background: "linear-gradient(135deg, #172033 0%, #25334b 100%)", boxShadow: "0 8px 24px rgba(15,23,42,.12)" })}>
         <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" })}>
@@ -89,7 +78,6 @@ const RequestsTab = memo(() => {
           ))}
         </div>
       </div>
-
       <div className={cssClass({ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" })}>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, color: "#64748b", fontSize: 13, fontWeight: 600 })}>
           <span className={cssClass({ width: 7, height: 7, borderRadius: "50%", background: "#f18200" })} />
@@ -101,9 +89,7 @@ const RequestsTab = memo(() => {
           {["Pending", "Approved", "Rejected", "Cancelled"].map((s) => <option key={s}>{s}</option>)}
         </select>
       </div>
-
       {loading && <div className={cssClass({ padding: 40, textAlign: "center", color: "#9ca3af" })}>Loading…</div>}
-
       {!loading && pending.length > 0 && (
         <div>
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 })}>
@@ -159,7 +145,6 @@ const RequestsTab = memo(() => {
           </div>
         </div>
       )}
-
       {!loading && history.length > 0 && (
         <div>
           <div className={cssClass({ fontSize: 13, fontWeight: 700, color: "#6b7280", marginBottom: 10 })}>
@@ -193,7 +178,6 @@ const RequestsTab = memo(() => {
           </div>
         </div>
       )}
-
       {!loading && rows.length === 0 && (
         <div className={cssClass({ textAlign: "center", padding: "56px 20px", border: "1px dashed #dbe1ea", borderRadius: 14, background: "#fff" })}>
           <div className={cssClass({ width: 44, height: 44, margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 13, background: "#fff7ed", color: "#f18200" })}>
@@ -203,11 +187,8 @@ const RequestsTab = memo(() => {
           <div className={cssClass({ marginTop: 4, color: "#94a3b8", fontSize: 12 })}>Try changing the status filter or check back later.</div>
         </div>
       )}
-
-
     </div>
   );
 });
-
 RequestsTab.displayName = "RequestsTab";
 export default RequestsTab;

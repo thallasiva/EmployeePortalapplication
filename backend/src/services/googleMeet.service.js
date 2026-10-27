@@ -9,9 +9,7 @@
  *   GOOGLE_REFRESH_TOKEN   (from OAuth2 playground for the organiser account)
  *   GOOGLE_ORGANIZER_EMAIL (calendar owner whose Meet link is created)
  */
-
 const https = require('https');
-
 function post(options, body) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
@@ -38,7 +36,6 @@ function post(options, body) {
     req.end();
   });
 }
-
 async function getAccessToken() {
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN } = process.env;
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REFRESH_TOKEN) {
@@ -50,28 +47,23 @@ async function getAccessToken() {
     refresh_token: GOOGLE_REFRESH_TOKEN,
     grant_type: 'refresh_token',
   }).toString();
-
   const data = await post({
     hostname: 'oauth2.googleapis.com',
     path: '/token',
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) },
   }, body);
-
   return data.access_token;
 }
-
 async function createGoogleMeetMeeting({ summary, startDateTime, endDateTime, candidateName, candidateEmail, timeZone = 'Asia/Kolkata' }) {
   const accessToken = await getAccessToken();
   const requestId = `hrms-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
   if (!summary || !startDateTime || !endDateTime) {
     throw new Error('Google Meet event requires a summary, start time, and end time.');
   }
   if (Number.isNaN(new Date(startDateTime).getTime()) || Number.isNaN(new Date(endDateTime).getTime())) {
     throw new Error(`Google Meet event has invalid timestamps: ${startDateTime} to ${endDateTime}`);
   }
-
   const event = {
     summary,
     description: `Interview scheduled via NAT IT HRMS Portal for ${candidateName}`,
@@ -88,12 +80,10 @@ async function createGoogleMeetMeeting({ summary, startDateTime, endDateTime, ca
       overrides: [{ method: 'email', minutes: 60 }, { method: 'popup', minutes: 15 }],
     },
   };
-
   const body = JSON.stringify(event);
   // Use 'primary' — works for the OAuth-authorized account regardless of email format
   const calId = 'primary';
   const path = `/calendar/v3/calendars/${calId}/events?conferenceDataVersion=1&sendUpdates=none`;
-
   const result = await post({
     hostname: 'www.googleapis.com',
     path,
@@ -104,13 +94,10 @@ async function createGoogleMeetMeeting({ summary, startDateTime, endDateTime, ca
       'Content-Length': Buffer.byteLength(body),
     },
   }, body);
-
   const joinUrl = result?.conferenceData?.entryPoints?.find(e => e.entryPointType === 'video')?.uri || result?.hangoutLink || '';
   const htmlLink = result?.htmlLink || '';
   const eventId = result?.id || '';
-
   if (!joinUrl) throw new Error('Google Meet link was not returned. Check that Google Meet is enabled for this calendar.');
   return { joinUrl, eventId, htmlLink };
 }
-
 module.exports = { createGoogleMeetMeeting };

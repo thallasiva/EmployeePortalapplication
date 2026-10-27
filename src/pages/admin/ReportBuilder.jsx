@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Plus, Download, Play, Save, Trash2, Edit2, X, Check, FileText, BarChart2, PieChart, Table2, Filter, ChevronDown, Eye, ArrowLeft } from "lucide-react";
 import { reportsApi } from "../../api/settings.api";
-
 const BRAND = "#f18200";
-
 const MODULES = {
   Employees: ["Name", "Employee ID", "Department", "Designation", "Email", "Phone", "Join Date", "Status", "Gender", "Location"],
   Attendance: ["Employee", "Date", "Check In", "Check Out", "Hours Worked", "Status", "Late By", "OT Hours"],
@@ -13,7 +11,6 @@ const MODULES = {
   Performance: ["Employee", "Review Period", "Rating", "Goals Met", "KPIs", "Reviewer", "Status"],
   Helpdesk: ["Ticket ID", "Employee", "Subject", "Category", "Priority", "Status", "Created", "Resolved"],
 };
-
 const FILTERS_FOR = {
   Employees: ["Department", "Designation", "Status", "Gender", "Location", "Join Date Range"],
   Attendance: ["Date Range", "Status", "Department", "Employee"],
@@ -23,26 +20,22 @@ const FILTERS_FOR = {
   Performance: ["Review Period", "Rating", "Department"],
   Helpdesk: ["Priority", "Status", "Category", "Date Range"],
 };
-
 const FORMATS = [
   { id: "table", label: "Table", icon: <Table2 size={14} /> },
   { id: "bar", label: "Bar Chart", icon: <BarChart2 size={14} /> },
   { id: "pie", label: "Pie Chart", icon: <PieChart size={14} /> },
 ];
-
 const SAVED_REPORTS = [
   { id: 1, name: "Monthly Headcount", module: "Employees", format: "table", updated: "01 Aug 2026" },
   { id: 2, name: "Leave Utilization", module: "Leave", format: "bar", updated: "29 Jul 2026" },
   { id: 3, name: "Payroll Summary", module: "Payroll", format: "table", updated: "28 Jul 2026" },
 ];
-
 const SAMPLE_ROWS = [
   ["EMP001", "Ravi Kumar", "Engineering", "Senior Dev", "Active", "Bangalore"],
   ["EMP002", "Priya Shah", "HR", "HR Manager", "Active", "Mumbai"],
   ["EMP003", "Arjun Mehta", "Finance", "Analyst", "Active", "Delhi"],
   ["EMP004", "Sneha Patel", "Marketing", "Executive", "On Leave", "Pune"],
 ];
-
 function MiniBarChart({ cols })
 {
   const bars = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"].map((m, i) => ({ m, v: 40 + Math.floor(Math.random() * 50) }));
@@ -60,7 +53,6 @@ function MiniBarChart({ cols })
     </div>
   );
 }
-
 function BuilderView({ report, onBack, onSave })
 {
   const [name, setName] = useState(report.name || "New Report");
@@ -70,21 +62,16 @@ function BuilderView({ report, onBack, onSave })
   const [format, setFormat] = useState(report.format || "table");
   const [ran, setRan] = useState(false);
   const [running, setRunning] = useState(false);
-
   const cols = MODULES[module] || [];
   const filts = FILTERS_FOR[module] || [];
-
   const toggleCol = (c) => setSelCols(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
   const toggleFilt = (f) => setSelFilts(p => p.includes(f) ? p.filter(x => x !== f) : [...p, f]);
-
   const runReport = () =>
   {
     setRunning(true);
     setTimeout(() => { setRunning(false); setRan(true); }, 1200);
   };
-
   const visibleRows = SAMPLE_ROWS.map(r => r.slice(0, selCols.length || 4));
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* Toolbar */}
@@ -105,7 +92,6 @@ function BuilderView({ report, onBack, onSave })
           </button>
         </div>
       </div>
-
       <div className="px-6 py-5 grid grid-cols-12 gap-5">
         {/* Config panel */}
         <div className="col-span-4 space-y-4">
@@ -121,7 +107,6 @@ function BuilderView({ report, onBack, onSave })
               ))}
             </div>
           </div>
-
           {/* Columns */}
           <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-4">
             <p className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-wider mb-3">Columns ({selCols.length})</p>
@@ -134,7 +119,6 @@ function BuilderView({ report, onBack, onSave })
               ))}
             </div>
           </div>
-
           {/* Filters */}
           <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-4">
             <p className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-wider mb-3">Filters</p>
@@ -147,7 +131,6 @@ function BuilderView({ report, onBack, onSave })
               ))}
             </div>
           </div>
-
           {/* Format */}
           <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-4">
             <p className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-wider mb-3">Output Format</p>
@@ -161,7 +144,6 @@ function BuilderView({ report, onBack, onSave })
             </div>
           </div>
         </div>
-
         {/* Preview panel */}
         <div className="col-span-8">
           <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
@@ -211,19 +193,16 @@ function BuilderView({ report, onBack, onSave })
     </div>
   );
 }
-
 export default function ReportBuilder()
 {
   const [reports, setReports] = useState(SAVED_REPORTS);
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState("");
-
   useEffect(() => {
     reportsApi.list().then(data => {
       if (Array.isArray(data) && data.length > 0) setReports(data);
     }).catch(() => {});
   }, []);
-
   const handleSave = async (data) => {
     try {
       if (data.id) {
@@ -242,13 +221,10 @@ export default function ReportBuilder()
     setEditing(null);
     setToast("Report saved!"); setTimeout(() => setToast(""), 3000);
   };
-
   if (editing !== null) return <BuilderView report={editing} onBack={() => setEditing(null)} onSave={handleSave} />;
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {toast && <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2"><Check size={15} />{toast}</div>}
-
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#fff8f0] border border-[#fed7aa] flex items-center justify-center">
@@ -264,7 +240,6 @@ export default function ReportBuilder()
           <Plus size={15} /> New Report
         </button>
       </div>
-
       <div className="px-6 pb-10">
         <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
           <div className="grid grid-cols-12 px-5 py-3 bg-[#f8fafc] border-b text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider">

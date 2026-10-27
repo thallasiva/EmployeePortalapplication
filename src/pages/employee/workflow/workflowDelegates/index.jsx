@@ -8,10 +8,8 @@ import TabBar from "./components/TabBar";
 import WorkflowRow from "./components/WorkflowRow";
 import DelegatedToMe from "./components/DelegatedToMe";
 import SaveFooter from "./components/SaveFooter";
-
 export default function WorkflowDelegates() {
   const [tab, setTab] = useState("mine");
-
   const {
     employees, loading, delegates, saving,
     oooFrom, oooTo,
@@ -19,11 +17,9 @@ export default function WorkflowDelegates() {
     myId, activeDelegates, configuredCount,
     applyOoo, handleChange, handleRemove, handleSaveAll,
   } = useWorkflowDelegates();
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       <PageHeader activeDelegates={activeDelegates} />
-
       <OooQuickSet
         oooFrom={oooFrom}
         oooTo={oooTo}
@@ -31,9 +27,7 @@ export default function WorkflowDelegates() {
         setOooTo={setOooTo}
         onApply={applyOoo}
       />
-
       <TabBar tab={tab} onTabChange={setTab} />
-
       {loading ? (
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8", fontSize: 14 })}>
           Loading employees…

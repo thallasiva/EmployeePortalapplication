@@ -1,6 +1,5 @@
 import React from "react";
 import { initials } from "../utils";
-
 const Avatar = React.memo(function Avatar({ name, color, size = 40 }) {
   return (
     <div
@@ -24,5 +23,4 @@ const Avatar = React.memo(function Avatar({ name, color, size = 40 }) {
     </div>
   );
 });
-
 export default Avatar;

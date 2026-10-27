@@ -1,6 +1,5 @@
 const BaseService = require('./base.service');
 const { callProcedure } = require('../config/db');
-
 class DocumentService extends BaseService {
   constructor() {
     super('documents', 'document_id', [
@@ -8,7 +7,6 @@ class DocumentService extends BaseService {
       'file_url', 'visibility', 'employee_id', 'uploaded_by',
     ]);
   }
-
   async list({ employee_id, category_id, visibility, search, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_documents(?, ?, ?, ?, ?, ?)',
@@ -23,11 +21,9 @@ class DocumentService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getDetails(id) {
     const results = await callProcedure('sp_get_document(?)', [id]);
     return (results[0] ?? [])[0] ?? null;
   }
 }
-
 module.exports = new DocumentService();

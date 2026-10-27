@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import { getEmployeeDashboardCounts } from "../../../api/timesheet.api";
 import { TABS, FILTER_STYLE } from "./constants/taskConstants";
 import StatCards from "./components/StatCards";
@@ -6,17 +7,14 @@ import MyTasksTab from "./components/MyTasksTab";
 import TimesheetTab from "./components/TimesheetTab";
 import TimesheetHistory from "./components/TimesheetHistory";
 import "./tasks.css";
-
 export default function Tasks() {
   const [activeTab, setActiveTab] = useState("tasks");
   const [tsView, setTsView] = useState("history");
   const [tsFilter, setTsFilter] = useState(null);
   const [counts, setCounts] = useState(null);
-
   useEffect(() => {
     getEmployeeDashboardCounts().then(setCounts).catch(() => {});
   }, []);
-
   const handleStatClick = (tab, filter = null) => {
     setActiveTab(tab);
     if (tab === "timesheets") {
@@ -24,7 +22,6 @@ export default function Tasks() {
       setTsView("history");
     }
   };
-
   const switchTab = (id) => {
     setActiveTab(id);
     if (id === "timesheets") {
@@ -32,11 +29,9 @@ export default function Tasks() {
       setTsView("history");
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-50 p-5 space-y-5">
       <StatCards counts={counts} onStatClick={handleStatClick} />
-
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="flex border-b border-gray-100 px-4 pt-1 items-center">
           {TABS.map((tab) => (
@@ -49,13 +44,12 @@ export default function Tasks() {
               {tab.label}
             </button>
           ))}
-
           {activeTab === "timesheets" && (
             <div className="ml-auto flex items-center gap-2 pb-1">
               {tsFilter && (
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${FILTER_STYLE[tsFilter] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
                   {tsFilter}
-                  <button onClick={() => setTsFilter(null)} className="hover:opacity-70 leading-none">×</button>
+                  <button type="button" onClick={() => setTsFilter(null)} className="hover:opacity-70 leading-none" aria-label="Clear timesheet filter"><X size={12} aria-hidden="true" /></button>
                 </span>
               )}
               <button
@@ -66,7 +60,6 @@ export default function Tasks() {
             </div>
           )}
         </div>
-
         <div className="p-4">
           {activeTab === "tasks" && <MyTasksTab />}
           {activeTab === "timesheets" && (

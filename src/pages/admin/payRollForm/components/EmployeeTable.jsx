@@ -1,7 +1,6 @@
 import React from "react";
 import { Pencil } from "lucide-react";
 import { getFullName, getInitials, formatDate, formatCurrency } from "../utils";
-
 const EmployeeTable = React.memo(function EmployeeTable({
   visible,
   loading,
@@ -102,5 +101,4 @@ const EmployeeTable = React.memo(function EmployeeTable({
     </div>
   );
 });
-
 export default EmployeeTable;

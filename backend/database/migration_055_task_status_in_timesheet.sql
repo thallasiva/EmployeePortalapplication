@@ -5,8 +5,6 @@
 -- approving a timesheet that contained a task failed.
 -- Run with: node src/database/runSql.js migration_055_task_status_in_timesheet.sql
 -- =============================================================
-
 ALTER TABLE employee_tasks
   MODIFY status ENUM('open', 'completed', 'in_timesheet') NOT NULL DEFAULT 'open';
-
 SELECT 'migration_055_task_status_in_timesheet done' AS status;

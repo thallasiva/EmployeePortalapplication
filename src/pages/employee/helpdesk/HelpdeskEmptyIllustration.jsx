@@ -1,6 +1,4 @@
 import React from "react";
-
-
 export default function HelpdeskEmptyIllustration() {
   return (
     <svg
@@ -11,7 +9,6 @@ export default function HelpdeskEmptyIllustration() {
       xmlns="http://www.w3.org/2000/svg"
       className="mx-auto text-slate-300"
       aria-hidden>
-
       <rect x="55" y="45" width="90" height="58" rx="4" stroke="currentColor" strokeWidth="1.5" />
       <path d="M55 55h90" stroke="currentColor" strokeWidth="1.5" />
       <circle cx="100" cy="78" r="10" stroke="currentColor" strokeWidth="1.5" />
@@ -20,7 +17,6 @@ export default function HelpdeskEmptyIllustration() {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round" />
-
       <rect x="28" y="62" width="28" height="32" rx="3" stroke="currentColor" strokeWidth="1.5" />
       <path d="M34 72h16M34 78h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
       <path d="M42 68l4-4 4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
@@ -33,5 +29,4 @@ export default function HelpdeskEmptyIllustration() {
       <circle cx="100" cy="26" r="1.5" fill="currentColor" />
       <circle cx="106" cy="26" r="1.5" fill="currentColor" />
     </svg>);
-
 }

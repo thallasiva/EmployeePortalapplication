@@ -4,7 +4,6 @@ import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { POLICIES } from "../constants";
 import { toJumpId } from "../utils";
-
 const PoliciesView = React.memo(function PoliciesView({
   joiningDocs, policyOpen, setPolicyOpen,
   policyDetailOpen, setPolicyDetailOpen,
@@ -14,11 +13,9 @@ const PoliciesView = React.memo(function PoliciesView({
     "employee-handbook": !!joiningDocs?.handbook_acknowledged,
     "privacy": !!joiningDocs?.privacy_policy_accepted
   };
-
   function togglePolicyDetail(id) {
     setPolicyDetailOpen((curr) => ({ ...curr, [id]: !curr[id] }));
   }
-
   return (
     <div className="-m-4 bg-[#f5f7fb] min-h-[calc(100vh-5rem)] p-4">
       <PanelTitle>Company Policies</PanelTitle>
@@ -33,13 +30,11 @@ const PoliciesView = React.memo(function PoliciesView({
               setPolicyDetailOpen((curr) => ({ ...curr, [policy.id]: true }));
             });
           }} />
-
         <div className="flex-1 p-2 max-h-[520px] overflow-y-auto" data-doc-scroll>
           {POLICIES.map((policy) => {
             const sectionOpen = !!policyOpen[policy.id];
             const detailOpen = !!policyDetailOpen[policy.id];
             const fileRow = { month: policy.title, text: policy.description, file: policy.file };
-
             return (
               <div key={policy.id} id={toJumpId(policy.id)} className="border border-[#dfe5ed] mb-2 bg-white">
                 <button type="button"
@@ -54,7 +49,6 @@ const PoliciesView = React.memo(function PoliciesView({
                   </h4>
                   <span className="text-[11px] text-[#a4afbf] shrink-0 ml-2">Last updated on {policy.date}</span>
                 </button>
-
                 {sectionOpen &&
                   <div className="px-3 py-2">
                     <button type="button" onClick={() => togglePolicyDetail(policy.id)} className="w-full text-left">
@@ -64,7 +58,6 @@ const PoliciesView = React.memo(function PoliciesView({
                       </p>
                       <p className="text-[12px] text-[#9ca8b8] mt-1 ml-4">{policy.description}</p>
                     </button>
-
                     {detailOpen &&
                       <div className="mt-2 ml-4">
                         <div className="border border-[#dfe5ed] h-8 px-3 text-[12px] inline-flex items-center gap-8 bg-white">
@@ -92,5 +85,4 @@ const PoliciesView = React.memo(function PoliciesView({
     </div>
   );
 });
-
 export default PoliciesView;

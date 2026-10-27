@@ -4,11 +4,8 @@
 -- Run AFTER migration_039_resume_parser_tables.sql
 -- Naming convention: sp_rec_<entity>_<action>
 -- =====================================================================
-
 USE hrms_db;
-
 DELIMITER $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_log_parser
 -- Inserts one row into rec_resume_parser_logs.
@@ -37,10 +34,8 @@ BEGIN
     (p_candidate_id, p_filename, p_file_size_bytes, p_mime_type,
      p_parsed_by, p_status, p_error_message, p_raw_text_length,
      p_fields_found, p_duration_ms);
-
   SET p_log_id = LAST_INSERT_ID();
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_check_duplicate_candidate
 -- Returns existing candidate rows matching email OR resume_hash.
@@ -77,7 +72,6 @@ BEGIN
     )
   ORDER BY c.created_at DESC;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_save_candidate_skills
 -- Replaces all resume-sourced skills for a candidate.
@@ -94,23 +88,18 @@ BEGIN
   DECLARE v_i   INT DEFAULT 0;
   DECLARE v_len INT DEFAULT 0;
   DECLARE v_skill VARCHAR(200);
-
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   START TRANSACTION;
-
   -- Remove old resume-parsed skills for this candidate
   DELETE FROM rec_candidate_skills
   WHERE candidate_id = p_candidate_id
     AND source = 'resume';
-
   -- Insert fresh set
   SET v_len = JSON_LENGTH(p_skills_json);
-
   WHILE v_i < v_len DO
     SET v_skill = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_skills_json, CONCAT('$[', v_i, ']'))));
     IF v_skill IS NOT NULL AND v_skill <> '' AND CHAR_LENGTH(v_skill) <= 200 THEN
@@ -119,15 +108,12 @@ BEGIN
     END IF;
     SET v_i = v_i + 1;
   END WHILE;
-
   COMMIT;
-
   -- Return count of skills saved
   SELECT COUNT(*) AS skills_saved
   FROM rec_candidate_skills
   WHERE candidate_id = p_candidate_id AND source = 'resume';
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_save_candidate_education
 -- Replaces all education rows for a candidate.
@@ -145,24 +131,18 @@ BEGIN
   DECLARE v_degree      VARCHAR(300);
   DECLARE v_institution VARCHAR(300);
   DECLARE v_year        SMALLINT;
-
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   START TRANSACTION;
-
   DELETE FROM rec_candidate_education WHERE candidate_id = p_candidate_id;
-
   SET v_len = JSON_LENGTH(p_edu_json);
-
   WHILE v_i < v_len DO
     SET v_degree      = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_edu_json, CONCAT('$[', v_i, '].degree'))));
     SET v_institution = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_edu_json, CONCAT('$[', v_i, '].institution'))));
     SET v_year        = CAST(JSON_EXTRACT(p_edu_json, CONCAT('$[', v_i, '].year')) AS SIGNED);
-
     IF v_degree IS NOT NULL AND v_degree <> '' AND v_degree <> 'null' THEN
       INSERT INTO rec_candidate_education (candidate_id, degree, institution, year_of_pass)
       VALUES (
@@ -172,17 +152,13 @@ BEGIN
         NULLIF(v_year, 0)
       );
     END IF;
-
     SET v_i = v_i + 1;
   END WHILE;
-
   COMMIT;
-
   SELECT COUNT(*) AS education_saved
   FROM rec_candidate_education
   WHERE candidate_id = p_candidate_id;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_save_candidate_experience
 -- Replaces all experience rows for a candidate.
@@ -214,19 +190,14 @@ BEGIN
   DECLARE v_ey         SMALLINT;
   DECLARE v_current    TINYINT(1);
   DECLARE v_desc       TEXT;
-
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   START TRANSACTION;
-
   DELETE FROM rec_candidate_experience WHERE candidate_id = p_candidate_id;
-
   SET v_len = JSON_LENGTH(p_exp_json);
-
   WHILE v_i < v_len DO
     SET v_company = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].company_name'))));
     SET v_desig   = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].designation'))));
@@ -236,7 +207,6 @@ BEGIN
     SET v_ey      = CAST(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].end_year'))    AS SIGNED);
     SET v_current = CAST(COALESCE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].is_current')), 0) AS SIGNED);
     SET v_desc    = JSON_UNQUOTE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].description')));
-
     IF v_company IS NOT NULL AND v_company <> '' AND v_company <> 'null' THEN
       INSERT INTO rec_candidate_experience
         (candidate_id, company_name, designation, start_month, start_year,
@@ -253,17 +223,13 @@ BEGIN
         NULLIF(v_desc, 'null')
       );
     END IF;
-
     SET v_i = v_i + 1;
   END WHILE;
-
   COMMIT;
-
   SELECT COUNT(*) AS experience_saved
   FROM rec_candidate_experience
   WHERE candidate_id = p_candidate_id;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_update_candidate_parse_status
 -- Updates parse_status and enriched fields on rec_candidates after
@@ -291,10 +257,8 @@ BEGIN
     current_designation  = p_current_designation,
     updated_at           = CURRENT_TIMESTAMP
   WHERE candidate_id = p_candidate_id;
-
   SELECT ROW_COUNT() AS rows_affected;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_get_candidate_skills
 -- Returns all skills for a candidate.
@@ -309,7 +273,6 @@ BEGIN
   WHERE candidate_id = p_candidate_id
   ORDER BY source DESC, skill_name ASC;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_get_candidate_education
 -- ─────────────────────────────────────────────────────────────────────
@@ -323,7 +286,6 @@ BEGIN
   WHERE candidate_id = p_candidate_id
   ORDER BY year_of_pass DESC;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_get_candidate_experience
 -- ─────────────────────────────────────────────────────────────────────
@@ -339,7 +301,6 @@ BEGIN
   WHERE candidate_id = p_candidate_id
   ORDER BY is_current DESC, start_year DESC, start_month DESC;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────
 -- sp_rec_get_parser_logs
 -- Returns parser log rows for a candidate or all recent logs.
@@ -352,7 +313,6 @@ CREATE PROCEDURE sp_rec_get_parser_logs(
 )
 BEGIN
   SET p_limit = COALESCE(p_limit, 50);
-
   IF p_candidate_id IS NOT NULL THEN
     SELECT log_id, candidate_id, filename, file_size_bytes, mime_type,
            parsed_by, status, error_message, raw_text_length,
@@ -370,5 +330,4 @@ BEGIN
     LIMIT p_limit;
   END IF;
 END $$
-
 DELIMITER ;

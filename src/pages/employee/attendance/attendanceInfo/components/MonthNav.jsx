@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Coffee, LogIn, LogOut, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { checkIn, checkOut, breakStart, breakEnd } from "../../../../../api/attendance.api";
-
 /* ─── helpers ─── */
 function fmt(t) {
   if (!t) return null;
@@ -10,12 +9,10 @@ function fmt(t) {
   const [h, m] = time.split(":").map(Number);
   return `${((h % 12) || 12)}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 }
-
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
 ];
-
 /** Map raw API/DB messages to friendly ones */
 function friendlyError(raw = "", action) {
   const r = raw.toLowerCase();
@@ -37,14 +34,12 @@ function friendlyError(raw = "", action) {
   if (raw.trim()) return raw.charAt(0).toUpperCase() + raw.slice(1);
   return `Could not complete ${action}. Please try again.`;
 }
-
 /* ─── Mini toast component ─── */
 function Toast({ msg, type, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 4000);
     return () => clearTimeout(t);
   }, [onClose]);
-
   const isSuccess = type === "success";
   return (
     <div style={{
@@ -68,23 +63,19 @@ function Toast({ msg, type, onClose }) {
     </div>
   );
 }
-
 /* ─── Main component ─── */
 export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth, onTodayRefresh }) {
   const [loading, setLoading] = useState(false);
   const [toast, setToast]     = useState(null); // { msg, type }
-
   const checkInTime  = today ? fmt(today.check_in)  : null;
   const checkOutTime = today ? fmt(today.check_out) : null;
   const isOnBreak    = today?.is_on_break === 1 || today?.is_on_break === true;
   const hasCheckedIn  = !!checkInTime;
   const hasCheckedOut = !!checkOutTime;
   const breakMins     = today?.break_minutes || 0;
-
   function showToast(msg, type = "success") {
     setToast({ msg, type });
   }
-
   async function punch(apiFn, action, successMsg) {
     setToast(null);
     setLoading(true);
@@ -99,14 +90,11 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
       setLoading(false);
     }
   }
-
   const now = new Date();
   const timeNow = fmt(`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`);
-
   return (
     <div style={{ background: "#fff", borderBottom: "2px solid #f18200", position: "sticky", top: 0, zIndex: 30, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-
         {/* ── Brand + month nav ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "#f18200", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -127,10 +115,8 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
             </div>
           </div>
         </div>
-
         {/* ── Right side: status pill + action buttons ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-
           {/* IN / BREAK / OUT time pill */}
           {hasCheckedIn && (
             <div style={{ display: "flex", alignItems: "center", gap: 0, border: "1.5px solid #e2e8f0", borderRadius: 10, overflow: "hidden", fontSize: 13 }}>
@@ -139,7 +125,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>IN</span>
                 <span style={{ fontWeight: 800, color: "#16a34a" }}>{checkInTime}</span>
               </div>
-
               {breakMins > 0 && (
                 <>
                   <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
@@ -149,7 +134,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
                   </div>
                 </>
               )}
-
               {isOnBreak && !hasCheckedOut && (
                 <>
                   <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
@@ -159,7 +143,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
                   </div>
                 </>
               )}
-
               {hasCheckedOut && (
                 <>
                   <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
@@ -172,7 +155,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
               )}
             </div>
           )}
-
           {/* Action buttons */}
           {!hasCheckedIn && !hasCheckedOut && (
             <button
@@ -183,7 +165,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
               <LogIn size={15} /> {loading ? "Checking in…" : "Check In"}
             </button>
           )}
-
           {hasCheckedIn && !hasCheckedOut && !isOnBreak && (
             <>
               <button
@@ -202,7 +183,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
               </button>
             </>
           )}
-
           {hasCheckedIn && !hasCheckedOut && isOnBreak && (
             <button
               onClick={() => punch(breakEnd, "end break", "Break ended — welcome back!")}
@@ -212,7 +192,6 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
               <Coffee size={14} /> {loading ? "Please wait…" : "End Break"}
             </button>
           )}
-
           {hasCheckedIn && hasCheckedOut && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, background: "#f8fafc", border: "1.5px solid #e2e8f0", color: "#64748b", fontSize: 13, fontWeight: 600 }}>
               <CheckCircle2 size={14} color="#16a34a" />
@@ -221,12 +200,10 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
           )}
         </div>
       </div>
-
       {/* Toast notification */}
       {toast && (
         <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />
       )}
-
       <style>{`
         @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }

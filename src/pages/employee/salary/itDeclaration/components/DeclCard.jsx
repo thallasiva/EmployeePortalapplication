@@ -2,7 +2,6 @@ import React from "react";
 import { ChevronRight, Check } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmt } from "../utils/formatters";
-
 function DeclCard({ icon, title, declared, onClick, locked }) {
   const hasDeclared = !!declared;
   return (
@@ -72,5 +71,4 @@ function DeclCard({ icon, title, declared, onClick, locked }) {
     </button>
   );
 }
-
 export default React.memo(DeclCard);

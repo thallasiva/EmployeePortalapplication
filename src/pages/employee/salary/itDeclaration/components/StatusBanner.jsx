@@ -1,11 +1,9 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { STATUS_CFG } from "../constants";
-
 function StatusBanner({ declaration, status, onEditResubmit }) {
   const statusCfg = STATUS_CFG[status] || null;
   if (!statusCfg) return null;
-
   return (
     <div className={cssClass({ background: statusCfg.bg, border: `1px solid ${statusCfg.color}30`, borderRadius: 10,
       padding: "12px 18px", display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20 })}>
@@ -31,5 +29,4 @@ function StatusBanner({ declaration, status, onEditResubmit }) {
     </div>
   );
 }
-
 export default React.memo(StatusBanner);

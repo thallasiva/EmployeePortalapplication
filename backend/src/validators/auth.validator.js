@@ -1,13 +1,4 @@
 const Joi = require('joi');
-
-
-
-
-
-
-
-
-
 const strongPassword = Joi.string().
 min(8).
 max(100).
@@ -19,7 +10,6 @@ messages({
   'string.pattern.name': 'Password must contain at least one {#name}',
   'string.min': 'Password must be at least 8 characters'
 });
-
 const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: strongPassword.required(),
@@ -31,30 +21,24 @@ const registerSchema = Joi.object({
   designationId: Joi.number().integer().allow(null),
   empJobTitle: Joi.string().max(100).allow('', null)
 });
-
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required()
 });
-
 const refreshSchema = Joi.object({
   refreshToken: Joi.string().required()
 });
-
 const forgotPasswordSchema = Joi.object({
   email: Joi.string().email().required()
 });
-
 const resetPasswordSchema = Joi.object({
   token: Joi.string().required(),
   newPassword: strongPassword.required()
 });
-
 const changePasswordSchema = Joi.object({
   currentPassword: Joi.string().required(),
   newPassword: strongPassword.required()
 });
-
 module.exports = {
   registerSchema,
   loginSchema,

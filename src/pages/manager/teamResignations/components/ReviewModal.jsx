@@ -1,15 +1,13 @@
 import React, { useState, useCallback } from "react";
-import { LogOut, CheckCircle2, XCircle } from "lucide-react";
+import { LogOut, CheckCircle2, XCircle, X } from "lucide-react";
 import apiClient from "../../../../api/client";
 import { fmtDate } from "../utils/formatters";
 import { BRAND } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
-
 const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
   const [remarks, setRemarks] = useState("");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState(null);
-
   const submit = useCallback(async (act) => {
     setSaving(true);
     setErr(null);
@@ -24,13 +22,11 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
       setSaving(false);
     }
   }, [row.resignation_id, remarks, onDone]);
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16 })}>
       <div className={cssClass({ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 520,
         boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto" })}>
-
         <div className={cssClass({ padding: "18px 24px", borderBottom: "1px solid #f1f5f9",
           background: "linear-gradient(135deg,#fff7ed,#fff)",
           display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0 })}>
@@ -42,10 +38,9 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             <p className={cssClass({ margin: 0, fontSize: 15, fontWeight: 800, color: "#1e293b" })}>Review Resignation</p>
             <p className={cssClass({ margin: 0, fontSize: 12, color: "#94a3b8" })}>{row.employee_name}</p>
           </div>
-          <button onClick={onClose} className={cssClass({ marginLeft: "auto", background: "none", border: "none",
-            cursor: "pointer", color: "#94a3b8", fontSize: 20, lineHeight: 1 })}>×</button>
+          <button onClick={onClose} aria-label="Close" className={cssClass({ marginLeft: "auto", background: "none", border: "none",
+            cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center" })}><X size={18} aria-hidden="true" /></button>
         </div>
-
         <div className={cssClass({ padding: "14px 24px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9",
           display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 })}>
           {[
@@ -62,13 +57,11 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             </div>
           ))}
         </div>
-
         <div className={cssClass({ padding: "16px 24px", borderBottom: "1px solid #f1f5f9" })}>
           <p className={cssClass({ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: BRAND,
             textTransform: "uppercase", letterSpacing: "0.06em" })}>Reason for Resignation</p>
           <p className={cssClass({ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.6 })}>{row.reason}</p>
         </div>
-
         <div className={cssClass({ padding: "14px 24px", borderBottom: "1px solid #f1f5f9",
           display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 })}>
           <div>
@@ -80,7 +73,6 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             <p className={cssClass({ margin: 0, fontSize: 13, fontWeight: 600, color: "#1e293b" })}>{row.alternate_mobile || "—"}</p>
           </div>
         </div>
-
         <div className={cssClass({ padding: "16px 24px", borderBottom: "1px solid #f1f5f9" })}>
           <label className={cssClass({ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 })}>
             Your Comments{" "}
@@ -96,13 +88,11 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
               fontFamily: "inherit", resize: "vertical", outline: "none" })}
           />
         </div>
-
         {err && (
           <div className={cssClass({ padding: "10px 24px", background: "#fef2f2", borderBottom: "1px solid #fecaca" })}>
             <p className={cssClass({ margin: 0, fontSize: 13, color: "#dc2626" })}>{err}</p>
           </div>
         )}
-
         <div className={cssClass({ padding: "16px 24px", display: "flex", gap: 10 })}>
           <button onClick={() => submit("rm_approved")} disabled={saving} className={cssClass(
             { flex: 1, padding: "11px", borderRadius: 9, fontWeight: 700, fontSize: 14,
@@ -128,5 +118,4 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
     </div>
   );
 });
-
 export default ReviewModal;

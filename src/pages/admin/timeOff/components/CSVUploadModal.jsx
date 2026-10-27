@@ -6,7 +6,6 @@ import { B } from "../constants";
 import { downloadTemplate, parseCSVText } from "../utils/csvUtils";
 import Btn from "./Btn";
 import CSVPreviewTable from "./CSVPreviewTable";
-
 const COLUMNS = [
   { col: "holiday_name",  note: "required" },
   { col: "holiday_date",  note: "YYYY-MM-DD, required" },
@@ -14,13 +13,11 @@ const COLUMNS = [
   { col: "location",      note: "optional" },
   { col: "is_restricted", note: "0 or 1" },
 ];
-
 const CSVUploadModal = React.memo(({ onClose, onImported }) => {
   const fileRef = useRef();
   const [preview, setPreview] = useState(null);
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
-
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -32,7 +29,6 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
     };
     reader.readAsText(file);
   };
-
   const handleImport = async () => {
     if (!preview?.length) return;
     setLoading(true);
@@ -41,13 +37,11 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
       onImported(result.imported || preview.length);
     } catch (e) { setError(e.message); setLoading(false); }
   };
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 9999,
       display: "flex", alignItems: "center", justifyContent: "center" })}>
       <div className={cssClass({ background: "#fff", borderRadius: 16, padding: 28, width: 580,
         maxHeight: "85vh", overflow: "auto", boxShadow: "0 12px 48px #0003" })}>
-
         {/* title */}
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 })}>
           <div className={cssClass({ fontSize: 17, fontWeight: 800, color: "#111827" })}>
@@ -55,7 +49,6 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
           </div>
           <Btn variant="cancel" size="sm" onClick={onClose} aria-label="Close"><X size={14} /></Btn>
         </div>
-
         {/* download template banner */}
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between",
           background: "#fff8f0", border: "1px solid #fed7aa", borderRadius: 10,
@@ -74,7 +67,6 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
             ⬇ Download Template
           </button>
         </div>
-
         {/* column reference */}
         <div className={cssClass({ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8,
           padding: "10px 14px", marginBottom: 16 })}>
@@ -89,7 +81,6 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
             ))}
           </div>
         </div>
-
         {/* drop zone */}
         <div onClick={() => fileRef.current.click()}
           className={cssClass({ border: `2px dashed ${preview ? B : "#d1d5db"}`,
@@ -103,16 +94,13 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
           <input ref={fileRef} type="file" accept=".csv" onChange={handleFile}
             className={cssClass({ display: "none" })} />
         </div>
-
         {error && (
           <div className={cssClass({ background: "#fff1f2", border: "1px solid #fca5a5", borderRadius: 8,
             padding: "10px 14px", fontSize: 12, color: "#dc2626", marginBottom: 14 })}>
             {error}
           </div>
         )}
-
         {preview && <CSVPreviewTable preview={preview} />}
-
         <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 10 })}>
           <Btn variant="cancel" onClick={onClose}>Cancel</Btn>
           {preview && (
@@ -125,6 +113,5 @@ const CSVUploadModal = React.memo(({ onClose, onImported }) => {
     </div>
   );
 });
-
 CSVUploadModal.displayName = "CSVUploadModal";
 export default CSVUploadModal;

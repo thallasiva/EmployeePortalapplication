@@ -1,5 +1,4 @@
 import React from "react";
-
 export function RegularizationEmptyIllustration() {
   return (
     <svg
@@ -10,9 +9,7 @@ export function RegularizationEmptyIllustration() {
       aria-hidden
     >
       <rect x="70" y="30" width="60" height="50" rx="4" fill="#e8f4fc" stroke="#b3d9f2" strokeWidth="1.5" />
-      <text x="100" y="58" textAnchor="middle" fill="#5dade2" fontSize="20" fontWeight="bold">
-        ×
-      </text>
+      <path d="M96 51l8 8m0-8l-8 8" stroke="#5dade2" strokeWidth="2" strokeLinecap="round" />
       <rect x="30" y="55" width="45" height="32" rx="3" fill="#f0f0f0" stroke="#ddd" />
       <circle cx="52" cy="68" r="6" fill="#aed6f1" />
       <ellipse cx="130" y="50" rx="22" ry="14" fill="#e8f4fc" stroke="#b3d9f2" />
@@ -20,7 +17,6 @@ export function RegularizationEmptyIllustration() {
     </svg>
   );
 }
-
 export function GenericEmptyIllustration() {
   return (
     <svg

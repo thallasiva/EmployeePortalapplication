@@ -5,7 +5,6 @@ import ITHeader from "./components/ITHeader";
 import SettingsTab from "./components/SettingsTab";
 import StatsBar from "./components/StatsBar";
 import SubmissionsPanel from "./components/SubmissionsPanel";
-
 export default function AdminITDeclaration() {
   const {
     cycle, loading, toggling, tab, setTab,
@@ -13,12 +12,10 @@ export default function AdminITDeclaration() {
     isActive, visible, stats, pagination,
     load, handleToggle,
   } = useITDeclaration();
-
   const {
     paged, page, setPage, totalPages,
     from, to, total, pageSize, setPageSize,
   } = pagination;
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       <ITHeader
@@ -28,7 +25,6 @@ export default function AdminITDeclaration() {
         setTab={setTab}
         submittedCount={stats.submitted + stats.approved}
       />
-
       {tab === "settings" && (
         <SettingsTab
           cycle={cycle}
@@ -37,7 +33,6 @@ export default function AdminITDeclaration() {
           onToggle={handleToggle}
         />
       )}
-
       {tab === "submissions" && (
         <>
           <StatsBar stats={stats} />

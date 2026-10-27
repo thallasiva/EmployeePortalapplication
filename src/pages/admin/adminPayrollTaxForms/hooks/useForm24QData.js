@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { listPayslips } from "../../../../api/payroll.api";
-
 const QUARTERS = {
   Q1: { label: "Q1 (Apr–Jun)", months: [4, 5, 6] },
   Q2: { label: "Q2 (Jul–Sep)", months: [7, 8, 9] },
   Q3: { label: "Q3 (Oct–Dec)", months: [10, 11, 12] },
   Q4: { label: "Q4 (Jan–Mar)", months: [1, 2, 3] },
 };
-
 export function useForm24QData(year) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     listPayslips({ year, limit: 2000 })
@@ -35,6 +32,5 @@ export function useForm24QData(year) {
       })
       .finally(() => setLoading(false));
   }, [year]);
-
   return { rows, loading };
 }

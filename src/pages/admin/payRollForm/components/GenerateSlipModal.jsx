@@ -1,7 +1,6 @@
 import React from "react";
 import { MONTH_OPTIONS, getYearOptions } from "../constants";
 import { getFullName } from "../utils";
-
 const GenerateSlipModal = React.memo(function GenerateSlipModal({
   slipEmployee,
   slipMonth,
@@ -60,5 +59,4 @@ const GenerateSlipModal = React.memo(function GenerateSlipModal({
     </div>
   );
 });
-
 export default GenerateSlipModal;

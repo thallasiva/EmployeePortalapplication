@@ -1,13 +1,11 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const TABS_DEF = [
   { key: "apply",   label: "Apply" },
   { key: "pending", label: "Pending" },
   { key: "history", label: "History" },
 ];
-
 const ResignationTabs = React.memo(function ResignationTabs({ active, onChange, pendingCount }) {
   return (
     <div className={cssClass({
@@ -44,5 +42,4 @@ const ResignationTabs = React.memo(function ResignationTabs({ active, onChange, 
     </div>
   );
 });
-
 export default ResignationTabs;

@@ -1,6 +1,5 @@
 export const BRAND  = "#f18200";
 export const NOTICE = 90;
-
 export const STATUS_CFG = {
   pending:     { color: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "Awaiting Manager" },
   rm_approved: { color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe", label: "Manager Approved" },

@@ -5,18 +5,15 @@ import { fmtDate, fmtDT } from "../utils/formatters";
 import { BRAND, STATUS_CFG } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
 import Avatar from "./Avatar";
-
 const ResignRow = React.memo(function ResignRow({ row, onReview }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = STATUS_CFG[row.status] || STATUS_CFG.pending;
   const attachUrl = row.attachment_path
     ? `${apiClient.defaults.baseURL}/resignations/my/${row.resignation_id}/attachment`
     : null;
-
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
       boxShadow: "0 1px 6px rgba(0,0,0,0.04)", overflow: "hidden" })}>
-
       <div onClick={() => setExpanded((e) => !e)}
         className={cssClass({ padding: "14px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" })}>
         <Avatar name={row.employee_name} />
@@ -48,7 +45,6 @@ const ResignRow = React.memo(function ResignRow({ row, onReview }) {
         <ChevronDown size={16} color="#94a3b8"
           className={cssClass({ transform: expanded ? "rotate(180deg)" : "none", transition: "0.2s", flexShrink: 0 })} />
       </div>
-
       {expanded && (
         <div className={cssClass({ borderTop: "1px solid #f1f5f9" })}>
           <div className={cssClass({ padding: "16px 20px", display: "grid",
@@ -70,7 +66,6 @@ const ResignRow = React.memo(function ResignRow({ row, onReview }) {
               </div>
             ))}
           </div>
-
           {row.manager_remarks && (
             <div className={cssClass({ padding: "12px 20px", background: "#f0fdf4",
               borderBottom: "1px solid #f1f5f9", display: "flex", gap: 8 })}>
@@ -81,7 +76,6 @@ const ResignRow = React.memo(function ResignRow({ row, onReview }) {
               </div>
             </div>
           )}
-
           {attachUrl && (
             <div className={cssClass({ padding: "10px 20px", borderBottom: "1px solid #f1f5f9",
               display: "flex", alignItems: "center", gap: 8 })}>
@@ -92,7 +86,6 @@ const ResignRow = React.memo(function ResignRow({ row, onReview }) {
               </a>
             </div>
           )}
-
           <div className={cssClass({ padding: "12px 20px", display: "flex", justifyContent: "flex-end" })}>
             {row.status === "pending" ? (
               <button onClick={() => onReview(row)} className={cssClass(
@@ -112,5 +105,4 @@ const ResignRow = React.memo(function ResignRow({ row, onReview }) {
     </div>
   );
 });
-
 export default ResignRow;

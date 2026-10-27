@@ -2,7 +2,6 @@ import React from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { dash, mask } from "../utils";
-
 const Field = React.memo(function Field({ label, value, masked, show, onToggle, color }) {
   return (
     <div className={cssClass({ marginBottom: 16 })}>
@@ -20,5 +19,4 @@ const Field = React.memo(function Field({ label, value, masked, show, onToggle, 
     </div>
   );
 });
-
 export default Field;

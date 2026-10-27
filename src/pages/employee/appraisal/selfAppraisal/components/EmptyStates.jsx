@@ -3,7 +3,6 @@ import { Lock } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import CycleTypeBadge from "./CycleTypeBadge";
-
 export const NoActiveAppraisal = React.memo(function NoActiveAppraisal() {
   return (
     <div className={cssClass({
@@ -27,7 +26,6 @@ export const NoActiveAppraisal = React.memo(function NoActiveAppraisal() {
     </div>
   );
 });
-
 export const NotEnrolled = React.memo(function NotEnrolled({ cycle }) {
   return (
     <div className={cssClass({

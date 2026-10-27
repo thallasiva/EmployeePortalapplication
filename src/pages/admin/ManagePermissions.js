@@ -4,7 +4,6 @@ import ManageAllTab from '../../component/managePermissions/ManageAllTab';
 import ManageDetailsTab from '../../component/managePermissions/ManageDetailsTab';
 import ManageSalariesTab from '../../component/managePermissions/ManageSalariesTab';
 import ManageTimeOffTab from '../../component/managePermissions/ManageTimeOffTab';
-
 const permissionTabs = [
   { id: 'manage-details', label: 'Manage Details' },
   { id: 'manage-time-off', label: 'Manage Time Off' },
@@ -12,7 +11,6 @@ const permissionTabs = [
   { id: 'manage-all', label: 'Manage All' },
   { id: 'manage-all-secondary', label: 'Manage All' },
 ];
-
 const initialPermissions = {
   'manage-details': {
     basicInformation: {
@@ -60,7 +58,6 @@ const initialPermissions = {
     globalSettings: true,
   },
 };
-
 const tabComponents = {
   'manage-details': ManageDetailsTab,
   'manage-time-off': ManageTimeOffTab,
@@ -68,7 +65,6 @@ const tabComponents = {
   'manage-all': ManageAllTab,
   'manage-all-secondary': ManageAllTab,
 };
-
 const formatRoleName = (slug) =>
 {
   return slug
@@ -76,7 +72,6 @@ const formatRoleName = (slug) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
 };
-
 const ManagePermissions = () =>
 {
   const navigate = useNavigate();
@@ -84,11 +79,9 @@ const ManagePermissions = () =>
   const { roleSlug = '' } = useParams();
   const [activeTab, setActiveTab] = useState('manage-details');
   const [permissions, setPermissions] = useState(initialPermissions);
-
   const role = location.state?.role;
   const roleCategory = location.state?.roleCategory || 'Manage';
   const roleName = role?.title || formatRoleName(roleSlug);
-
   const handleToggle = (tabId, rowKey, field) =>
   {
     setPermissions((current) => ({
@@ -104,9 +97,7 @@ const ManagePermissions = () =>
       },
     }));
   };
-
   const ActiveComponent = tabComponents[activeTab];
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -122,7 +113,6 @@ const ManagePermissions = () =>
           Back
         </button>
       </div>
-
       <div className="inline-flex overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap">
           {permissionTabs.map((tab) => (
@@ -140,7 +130,6 @@ const ManagePermissions = () =>
           ))}
         </div>
       </div>
-
       <ActiveComponent
         values={permissions[activeTab]}
         onToggle={(rowKey, field) => handleToggle(activeTab, rowKey, field)}
@@ -148,5 +137,4 @@ const ManagePermissions = () =>
     </div>
   );
 };
-
 export default ManagePermissions;

@@ -1,8 +1,6 @@
 -- Patch: move remaining runtime backend SQL into stored procedures.
 -- Run this file once in MySQL Workbench 8 before using the updated backend.
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_check_role_permission $$
 CREATE PROCEDURE sp_check_role_permission(
   IN p_role_id INT,
@@ -17,7 +15,6 @@ BEGIN
     AND p.module = p_module
     AND p.action = p_action;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_insert_salary_audit_log $$
 CREATE PROCEDURE sp_insert_salary_audit_log(
   IN p_user_id INT,
@@ -34,7 +31,6 @@ BEGIN
   VALUES
     (p_user_id, p_employee_id, p_action, p_resource, p_ip_address, p_user_agent, p_status);
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_leave_email_pair $$
 CREATE PROCEDURE sp_get_leave_email_pair(IN p_employee_id INT)
 BEGIN
@@ -48,7 +44,6 @@ BEGIN
   WHERE e.employee_id = p_employee_id
   LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_employee_display_name $$
 CREATE PROCEDURE sp_get_employee_display_name(IN p_employee_id INT)
 BEGIN
@@ -57,7 +52,6 @@ BEGIN
   WHERE employee_id = p_employee_id
   LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_change_employee_role $$
 CREATE PROCEDURE sp_change_employee_role(
   IN p_employee_id INT,
@@ -65,23 +59,18 @@ CREATE PROCEDURE sp_change_employee_role(
 )
 BEGIN
   DECLARE v_user_id INT DEFAULT NULL;
-
   SELECT user_id INTO v_user_id
   FROM users
   WHERE employee_id = p_employee_id
   LIMIT 1;
-
   IF v_user_id IS NULL THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No user account linked to this employee';
   END IF;
-
   UPDATE users
   SET role_id = p_role_id
   WHERE employee_id = p_employee_id;
-
   SELECT 1 AS changed;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_list_roles_basic $$
 CREATE PROCEDURE sp_list_roles_basic()
 BEGIN
@@ -89,7 +78,6 @@ BEGIN
   FROM roles
   ORDER BY role_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_list_employees_with_roles $$
 CREATE PROCEDURE sp_list_employees_with_roles()
 BEGIN
@@ -104,7 +92,6 @@ BEGIN
   WHERE e.employee_status = 'Active'
   ORDER BY e.first_name, e.last_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_rec_list_active_recruiters $$
 CREATE PROCEDURE sp_rec_list_active_recruiters()
 BEGIN
@@ -121,7 +108,6 @@ BEGIN
     AND e.employee_status = 'Active'
   ORDER BY e.first_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_rec_get_recruiter_notification_targets $$
 CREATE PROCEDURE sp_rec_get_recruiter_notification_targets(IN p_recruiter_ids JSON)
 BEGIN
@@ -135,7 +121,6 @@ BEGIN
   ) ids ON ids.employee_id = e.employee_id
   WHERE e.employee_status = 'Active';
 END $$
-
 DROP PROCEDURE IF EXISTS sp_rec_set_interview_join_url $$
 CREATE PROCEDURE sp_rec_set_interview_join_url(
   IN p_interview_id INT,
@@ -145,10 +130,8 @@ BEGIN
   UPDATE rec_interviews
   SET teams_join_url = p_join_url
   WHERE interview_id = p_interview_id;
-
   SELECT ROW_COUNT() AS affected;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_rec_get_candidate_match_inputs $$
 CREATE PROCEDURE sp_rec_get_candidate_match_inputs(IN p_candidate_id INT)
 BEGIN
@@ -156,7 +139,6 @@ BEGIN
   FROM rec_candidates
   WHERE candidate_id = p_candidate_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_rec_get_job_match_inputs $$
 CREATE PROCEDURE sp_rec_get_job_match_inputs(IN p_job_req_id INT)
 BEGIN
@@ -164,7 +146,6 @@ BEGIN
   FROM rec_job_requests
   WHERE job_req_id = p_job_req_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_rec_get_recruiter_team_lead $$
 CREATE PROCEDURE sp_rec_get_recruiter_team_lead(IN p_recruiter_id INT)
 BEGIN
@@ -177,7 +158,6 @@ BEGIN
   WHERE r.employee_id = p_recruiter_id
   LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_joining_update_formality_documents $$
 CREATE PROCEDURE sp_joining_update_formality_documents(
   IN p_invitation_id INT,
@@ -189,13 +169,11 @@ BEGIN
   SET aadhar_doc_url = COALESCE(p_aadhar_doc_url, aadhar_doc_url),
       pan_doc_url = COALESCE(p_pan_doc_url, pan_doc_url)
   WHERE invitation_id = p_invitation_id;
-
   SELECT aadhar_doc_url, pan_doc_url
   FROM joining_formalities
   WHERE invitation_id = p_invitation_id
   LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_joining_get_employee_id_by_code $$
 CREATE PROCEDURE sp_joining_get_employee_id_by_code(IN p_emp_code VARCHAR(100))
 BEGIN
@@ -204,7 +182,6 @@ BEGIN
   WHERE emp_code = p_emp_code
   LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_joining_sync_identity_documents $$
 CREATE PROCEDURE sp_joining_sync_identity_documents(
   IN p_employee_id INT,
@@ -214,17 +191,14 @@ CREATE PROCEDURE sp_joining_sync_identity_documents(
 )
 BEGIN
   DECLARE v_category_id INT DEFAULT NULL;
-
   SELECT category_id INTO v_category_id
   FROM document_categories
   WHERE category_name = 'Identity Documents'
   LIMIT 1;
-
   IF v_category_id IS NULL THEN
     INSERT INTO document_categories (category_name) VALUES ('Identity Documents');
     SET v_category_id = LAST_INSERT_ID();
   END IF;
-
   IF p_aadhar_doc_url IS NOT NULL AND p_aadhar_doc_url <> '' THEN
     INSERT INTO documents
       (title, category_id, file_type, file_size, file_url, visibility, employee_id, uploaded_by)
@@ -232,7 +206,6 @@ BEGIN
       ('Aadhaar Card', v_category_id, UPPER(SUBSTRING_INDEX(p_aadhar_doc_url, '.', -1)), '', p_aadhar_doc_url, 'employee', p_employee_id, p_uploaded_by)
     ON DUPLICATE KEY UPDATE file_url = VALUES(file_url);
   END IF;
-
   IF p_pan_doc_url IS NOT NULL AND p_pan_doc_url <> '' THEN
     INSERT INTO documents
       (title, category_id, file_type, file_size, file_url, visibility, employee_id, uploaded_by)
@@ -240,10 +213,8 @@ BEGIN
       ('PAN Card', v_category_id, UPPER(SUBSTRING_INDEX(p_pan_doc_url, '.', -1)), '', p_pan_doc_url, 'employee', p_employee_id, p_uploaded_by)
     ON DUPLICATE KEY UPDATE file_url = VALUES(file_url);
   END IF;
-
   SELECT v_category_id AS category_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_joining_get_my_documents $$
 CREATE PROCEDURE sp_joining_get_my_documents(IN p_employee_id INT)
 BEGIN
@@ -258,5 +229,4 @@ BEGIN
   ORDER BY jf.updated_at DESC
   LIMIT 1;
 END $$
-
 DELIMITER ;

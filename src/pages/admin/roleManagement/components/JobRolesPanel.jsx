@@ -3,29 +3,23 @@ import { Search, Briefcase, ChevronDown, ChevronRight, CheckCircle, ArrowRight }
 import apiClient from "../../../../api/client";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { JOB_ROLES } from "../constants";
-
 const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignationSaved, onEmployeesRefresh }) {
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState({ Management: true, "Software Development": true });
   const [pickedDesig, setPickedDesig] = useState(null);
   const [savingDesig, setSavingDesig] = useState(false);
-
   useEffect(() => {
     setPickedDesig(selected?.emp_job_title || selected?.designation_name || null);
     setQ("");
   }, [selected?.employee_id]);
-
   const toggle = (cat) => setExpanded((p) => ({ ...p, [cat]: !p[cat] }));
-
   const filtered = q.trim()
     ? JOB_ROLES
         .map((g) => ({ ...g, roles: g.roles.filter((r) => r.toLowerCase().includes(q.toLowerCase())) }))
         .filter((g) => g.roles.length)
     : JOB_ROLES;
-
   const currentDesig = selected?.emp_job_title || selected?.designation_name || null;
   const changed = pickedDesig && pickedDesig !== currentDesig;
-
   async function saveDesignation() {
     if (!selected || !pickedDesig || !changed) return;
     setSavingDesig(true);
@@ -40,7 +34,6 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
       setSavingDesig(false);
     }
   }
-
   return (
     <div
       className="border border-gray-200 rounded-xl overflow-hidden bg-white flex flex-col"
@@ -56,7 +49,6 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
             119 roles
           </span>
         </div>
-
         {selected ? (
           <div className="text-[11px] text-gray-500 mb-2">
             Current:{" "}
@@ -67,7 +59,6 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
             Select an employee to change designation
           </div>
         )}
-
         <div className="relative">
           <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -78,7 +69,6 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
           />
         </div>
       </div>
-
       <div className="overflow-y-auto flex-1">
         {filtered.length === 0 && (
           <div className="p-6 text-center text-[12px] text-gray-400">No roles match</div>
@@ -104,7 +94,6 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
                   <ChevronRight size={12} className="text-gray-400 shrink-0" />
                 )}
               </button>
-
               {open && (
                 <div className="pb-1">
                   {group.roles.map((role) => {
@@ -152,7 +141,6 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
           );
         })}
       </div>
-
       {selected && (
         <div className="px-3 py-3 border-t border-gray-100 bg-gray-50 shrink-0">
           {pickedDesig && (
@@ -176,5 +164,4 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
     </div>
   );
 });
-
 export default JobRolesPanel;

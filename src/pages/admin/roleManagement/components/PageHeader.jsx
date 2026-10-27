@@ -1,6 +1,5 @@
 import React from "react";
 import { ShieldCheck } from "lucide-react";
-
 const PageHeader = React.memo(function PageHeader() {
   return (
     <div className="mb-6">
@@ -18,5 +17,4 @@ const PageHeader = React.memo(function PageHeader() {
     </div>
   );
 });
-
 export default PageHeader;

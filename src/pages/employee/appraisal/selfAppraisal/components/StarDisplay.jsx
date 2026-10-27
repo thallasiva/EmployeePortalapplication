@@ -2,7 +2,6 @@ import React from "react";
 import { Star } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const StarDisplay = React.memo(function StarDisplay({ value, color = BRAND, size = 16 }) {
   return (
     <span className={cssClass({ display: "flex", alignItems: "center", gap: 3 })}>
@@ -22,5 +21,4 @@ const StarDisplay = React.memo(function StarDisplay({ value, color = BRAND, size
     </span>
   );
 });
-
 export default StarDisplay;

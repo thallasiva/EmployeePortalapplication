@@ -1,5 +1,4 @@
 import { gridClass, inputClass, labelTextClass } from "./data";
-
 function FieldGrid({ fields, columns = 3, readOnly = false })
 {
   return (
@@ -13,5 +12,4 @@ function FieldGrid({ fields, columns = 3, readOnly = false })
     </div>
   );
 }
-
 export default FieldGrid;

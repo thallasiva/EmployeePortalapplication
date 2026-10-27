@@ -2,7 +2,6 @@ import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { B } from "../constants/leaveConstants";
 import { fmt } from "../utils/leaveUtils";
-
 const BalancesTable = memo(({ filtered, leaveTypes, totals, setEditing }) => (
   <div className={cssClass({ overflowX: "auto", border: "1px solid #e9eaec", borderRadius: 12 })}>
     <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 12 })}>
@@ -38,7 +37,6 @@ const BalancesTable = memo(({ filtered, leaveTypes, totals, setEditing }) => (
           <th /><th />
         </tr>
       </thead>
-
       <tbody>
         {filtered.map((emp, idx) => {
           const totalAv  = emp.balances.reduce((s, b) => s + b.availed, 0);
@@ -72,7 +70,6 @@ const BalancesTable = memo(({ filtered, leaveTypes, totals, setEditing }) => (
             </tr>
           );
         })}
-
         {/* Totals row */}
         <tr className={cssClass({ background: "#f9fafb", fontWeight: 700 })}>
           <td className={cssClass({ padding: "9px 14px", position: "sticky", left: 0, background: "#f9fafb", color: "#374151", fontSize: 12 })}>
@@ -99,6 +96,5 @@ const BalancesTable = memo(({ filtered, leaveTypes, totals, setEditing }) => (
     </table>
   </div>
 ));
-
 BalancesTable.displayName = "BalancesTable";
 export default BalancesTable;

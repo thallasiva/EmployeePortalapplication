@@ -1,10 +1,8 @@
 import React from "react";
 import { CheckCircle, FileText, ExternalLink } from "lucide-react";
 import { Sec } from "./SharedUI";
-
 const API_BASE =
   process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
-
 const DocumentsSection = React.memo(function DocumentsSection({ detail }) {
   return (
     <Sec icon={FileText} title="Document Acknowledgments & Uploads">
@@ -38,7 +36,6 @@ const DocumentsSection = React.memo(function DocumentsSection({ detail }) {
           </div>
         </div>
       </div>
-
       <p className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide mb-2 mt-3">
         Uploaded Documents
       </p>
@@ -91,5 +88,4 @@ const DocumentsSection = React.memo(function DocumentsSection({ detail }) {
     </Sec>
   );
 });
-
 export default DocumentsSection;

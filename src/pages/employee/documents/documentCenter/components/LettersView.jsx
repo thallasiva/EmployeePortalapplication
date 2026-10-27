@@ -5,7 +5,6 @@ import JumpList from "./JumpList";
 import { EmptyDocIllustration } from "./Illustrations";
 import { LETTER_SECTIONS } from "../constants";
 import { toJumpId } from "../utils";
-
 const LettersView = React.memo(function LettersView({
   letterSectionOpen, setLetterSectionOpen, jumpToSection
 }) {
@@ -20,7 +19,6 @@ const LettersView = React.memo(function LettersView({
             if (!section) return;
             jumpToSection(section.id, () => setLetterSectionOpen((curr) => ({ ...curr, [section.id]: true })));
           }} />
-
         <div className="flex-1 p-2 max-h-[520px] overflow-y-auto" data-doc-scroll>
           {LETTER_SECTIONS.map((section) => (
             <div key={section.id} id={toJumpId(section.id)} className="border border-[#dfe5ed] mb-2 bg-white">
@@ -48,5 +46,4 @@ const LettersView = React.memo(function LettersView({
     </div>
   );
 });
-
 export default LettersView;

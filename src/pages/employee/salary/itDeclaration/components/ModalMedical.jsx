@@ -4,7 +4,6 @@ import { MED_ITEMS } from "../constants";
 import { fmt } from "../utils/formatters";
 import Modal from "./Modal";
 import AmtRow from "./AmtRow";
-
 function ModalMedical({ values, setValues, onClose }) {
   const total = MED_ITEMS.reduce((s, item) => s + (Number(values[item.key]) || 0), 0);
   const selStyle = {
@@ -12,7 +11,6 @@ function ModalMedical({ values, setValues, onClose }) {
     fontSize: 12, outline: "none", color: "#1e293b", background: "#fff",
     cursor: "pointer"
   };
-
   return (
     <Modal
       title="Medical & Health Benefits (Sec. 80D)"
@@ -33,7 +31,6 @@ function ModalMedical({ values, setValues, onClose }) {
           <span className={cssClass({ fontWeight: 700 })}>Medical Benefits</span>
         </div>
       </div>
-
       {MED_ITEMS.map((item) => (
         <div key={item.key}>
           {item.hasAge ? (
@@ -110,5 +107,4 @@ function ModalMedical({ values, setValues, onClose }) {
     </Modal>
   );
 }
-
 export default React.memo(ModalMedical);

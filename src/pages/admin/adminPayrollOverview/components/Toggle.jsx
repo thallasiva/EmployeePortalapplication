@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const Toggle = React.memo(function Toggle({ on, onChange }) {
   return (
     <div
@@ -21,5 +20,4 @@ const Toggle = React.memo(function Toggle({ on, onChange }) {
     </div>
   );
 });
-
 export default Toggle;

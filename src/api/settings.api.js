@@ -1,7 +1,5 @@
 import client from './client';
-
 const BASE = '/settings';
-
 /* ═══════════════════════════════
    SMTP
 ═══════════════════════════════ */
@@ -10,7 +8,6 @@ export const smtpApi = {
   save: (data) => client.put(`${BASE}/smtp`, data).then(r => r.data?.data),
   test: ()     => client.post(`${BASE}/smtp/test`).then(r => r.data?.data),
 };
-
 /* ═══════════════════════════════
    EMAIL TEMPLATES
 ═══════════════════════════════ */
@@ -22,7 +19,6 @@ export const emailTemplatesApi = {
   delete: (id)          => client.delete(`${BASE}/email-templates/${id}`),
   clone:  (id)          => client.post(`${BASE}/email-templates/${id}/clone`).then(r => r.data?.data),
 };
-
 /* ═══════════════════════════════
    EMAIL LOGS
 ═══════════════════════════════ */
@@ -31,7 +27,6 @@ export const emailLogsApi = {
   stats: ()            => client.get(`${BASE}/email-logs/stats`).then(r => r.data?.data || {}),
   retry: (id)          => client.post(`${BASE}/email-logs/${id}/retry`).then(r => r.data?.data),
 };
-
 /* ═══════════════════════════════
    EMAIL SCHEDULES
 ═══════════════════════════════ */
@@ -42,7 +37,6 @@ export const emailSchedulesApi = {
   toggle: (id)         => client.patch(`${BASE}/email-schedules/${id}/toggle`).then(r => r.data?.data),
   delete: (id)         => client.delete(`${BASE}/email-schedules/${id}`),
 };
-
 /* ═══════════════════════════════
    EMAIL PERMISSIONS
 ═══════════════════════════════ */
@@ -50,7 +44,6 @@ export const emailPermissionsApi = {
   get:  ()     => client.get(`${BASE}/email-permissions`).then(r => r.data?.data || {}),
   save: (data) => client.put(`${BASE}/email-permissions`, data).then(r => r.data?.data),
 };
-
 /* ═══════════════════════════════
    MENU PERMISSIONS
 ═══════════════════════════════ */
@@ -58,7 +51,6 @@ export const menuPermissionsApi = {
   get:  ()     => client.get(`${BASE}/menu-permissions`).then(r => r.data?.data || {}),
   save: (data) => client.put(`${BASE}/menu-permissions`, data).then(r => r.data?.data),
 };
-
 /* ═══════════════════════════════
    FORM BUILDER
 ═══════════════════════════════ */
@@ -69,7 +61,6 @@ export const formsApi = {
   update: (id, data) => client.put(`${BASE}/forms/${id}`, data).then(r => r.data?.data),
   delete: (id)       => client.delete(`${BASE}/forms/${id}`),
 };
-
 /* ═══════════════════════════════
    DASHBOARD BUILDER
 ═══════════════════════════════ */
@@ -80,7 +71,6 @@ export const dashboardsApi = {
   update: (id, data) => client.put(`${BASE}/dashboards/${id}`, data).then(r => r.data?.data),
   delete: (id)       => client.delete(`${BASE}/dashboards/${id}`),
 };
-
 /* ═══════════════════════════════
    REPORT BUILDER
 ═══════════════════════════════ */
@@ -91,7 +81,6 @@ export const reportsApi = {
   update: (id, data) => client.put(`${BASE}/reports/${id}`, data).then(r => r.data?.data),
   delete: (id)       => client.delete(`${BASE}/reports/${id}`),
 };
-
 /* ═══════════════════════════════
    NOTIFICATIONS
 ═══════════════════════════════ */

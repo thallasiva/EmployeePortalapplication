@@ -15,7 +15,6 @@ export const DESIGNATION_LIST = [
   "Graphic Designer", "Content Writer", "Operations Executive", "Operations Manager",
   "CEO", "CTO", "COO", "CFO", "Director", "Vice President (VP)",
 ].map((d) => ({ value: d, label: d }));
-
 export const DEPARTMENT_LIST = [
   "Engineering", "Information Technology (IT)", "Software Development", "Product Development",
   "Product Management", "Quality Assurance (QA)", "Testing", "DevOps", "Cloud Operations",
@@ -26,7 +25,6 @@ export const DEPARTMENT_LIST = [
   "Research & Development (R&D)", "Project Management Office (PMO)", "Training & Development",
   "Facilities Management", "Corporate Communications", "Executive Management",
 ].map((d) => ({ value: d, label: d }));
-
 export const STATUS = {
   pending: { cls: "bg-gray-100 text-gray-600", label: "Not Submitted" },
   submitted: { cls: "bg-amber-100 text-amber-700", label: "Submitted" },
@@ -35,7 +33,6 @@ export const STATUS = {
   changes_requested: { cls: "bg-red-100 text-red-700", label: "Changes Requested" },
   rejected: { cls: "bg-red-100 text-red-700", label: "Rejected" },
 };
-
 export const FILTERS = [
   { key: "all", label: "All" },
   { key: "pending_verification", label: "Pending Review" },

@@ -1,7 +1,6 @@
 export function computeFromCTC(ctcMonthly) {
   ctcMonthly = Number(ctcMonthly) || 0;
   if (!ctcMonthly) return {};
-
   const basic_m = Math.round(ctcMonthly * 0.5);
   const hra_m = Math.round(basic_m * 0.4);
   const tel_m = 1500;
@@ -11,7 +10,6 @@ export function computeFromCTC(ctcMonthly) {
   const gross_m = ctcMonthly - pf_m - sb_m;
   const spl_m = gross_m - (basic_m + hra_m + tel_m + lta_m);
   const grat_m = Math.round(basic_m * 0.0481);
-
   return {
     basic: basic_m * 12,
     hra: hra_m * 12,
@@ -27,7 +25,6 @@ export function computeFromCTC(ctcMonthly) {
     ctcMonthly
   };
 }
-
 export function numToWords(n) {
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
     "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
@@ -44,7 +41,6 @@ export function numToWords(n) {
   if (rest) r += (rest < 20 ? ones[rest] : tens[Math.floor(rest / 10)] + (rest % 10 ? " " + ones[rest % 10] : "")) + " ";
   return r.trim() + " Rupees Only";
 }
-
 export function fmt(v) {
   if (v === null || v === undefined || v === "") return "—";
   const n = Number(v);
@@ -52,7 +48,6 @@ export function fmt(v) {
   if (n === 0) return "—";
   return "Rs." + n.toLocaleString("en-IN", { minimumFractionDigits: 2 });
 }
-
 export function fmtM(annualVal) {
   const m = Math.round((Number(annualVal) || 0) / 12);
   if (m === 0) return "—";

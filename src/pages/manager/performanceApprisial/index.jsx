@@ -6,14 +6,11 @@ import { BRAND } from "./constants";
 import { fmtDate } from "./utils";
 import { usePerformanceAppraisal } from "./hooks/usePerformanceAppraisal";
 import MemberCard from "./components/MemberCard";
-
 function PerformanceApprisial() {
   const { loading, cycle, team, submitted, pending, isActive, load } = usePerformanceAppraisal();
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       <ManagerTabs />
-
       <div className={cssClass({ marginBottom: 20 })}>
         <h1 className={cssClass({ fontSize: 20, fontWeight: 700, color: "#1e293b", margin: "0 0 4px" })}>
           Performance Appraisal
@@ -22,7 +19,6 @@ function PerformanceApprisial() {
           {cycle ? `${cycle.fy_label} · Deadline: ${fmtDate(cycle.deadline)}` : "Loading cycle…"}
         </p>
       </div>
-
       {!loading && (!cycle || !isActive) && (
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 40, textAlign: "center" })}>
           <Lock size={48} className={cssClass({ color: "#cbd5e1", marginBottom: 12 })} />
@@ -35,7 +31,6 @@ function PerformanceApprisial() {
           </p>
         </div>
       )}
-
       {loading ? (
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8" })}>
           Loading team appraisals…
@@ -61,7 +56,6 @@ function PerformanceApprisial() {
               <RefreshCw size={13} />Refresh
             </button>
           </div>
-
           {submitted.length > 0 && (
             <>
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 })}>
@@ -75,7 +69,6 @@ function PerformanceApprisial() {
               ))}
             </>
           )}
-
           {pending.length > 0 && (
             <>
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, margin: "20px 0 10px" })}>
@@ -89,7 +82,6 @@ function PerformanceApprisial() {
               ))}
             </>
           )}
-
           {team.length === 0 && (
             <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
               padding: 48, textAlign: "center" })}>
@@ -104,5 +96,4 @@ function PerformanceApprisial() {
     </div>
   );
 }
-
 export default React.memo(PerformanceApprisial);

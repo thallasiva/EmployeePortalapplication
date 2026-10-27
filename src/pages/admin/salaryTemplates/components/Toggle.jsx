@@ -1,6 +1,5 @@
 import React from "react";
 import { Check, X } from "lucide-react";
-
 const Toggle = React.memo(function Toggle({ value, onChange, label }) {
   return (
     <button
@@ -11,11 +10,9 @@ const Toggle = React.memo(function Toggle({ value, onChange, label }) {
       "bg-green-50 border-green-300 text-green-700" :
       "bg-gray-50 border-gray-200 text-gray-500"}`
       }>
-
       {value ? <Check size={12} /> : <X size={12} />}
       {label}
     </button>
   );
 });
-
 export default Toggle;

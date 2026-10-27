@@ -4,17 +4,14 @@ import {
 } from "lucide-react";
 import { Row, Sec, TblHead } from "./SharedUI";
 import { fmt, parse } from "../utils";
-
 const API_BASE =
   process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
-
 /** Resolve a URL that may be a base64 data-URL or a relative server path */
 function resolveUrl(url) {
   if (!url) return null;
   if (url.startsWith("data:") || url.startsWith("http")) return url;
   return `${API_BASE}${url}`;
 }
-
 const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ detail }) {
   return (
     <>
@@ -27,7 +24,6 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
           />
         </Sec>
       )}
-
       <Sec icon={User} title="Personal Information">
         <Row label="Full Name" value={detail.full_name} />
         <Row label="Date of Birth" value={fmt(detail.dob)} />
@@ -41,7 +37,6 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
         <Row label="Joining Date" value={fmt(detail.joining_date_text)} />
         <Row label="Designation (letter)" value={detail.designation_text} />
       </Sec>
-
       {parse(detail.education_json).length > 0 && (
         <Sec icon={FileCheck} title="Education Details">
           <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -61,7 +56,6 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
           </div>
         </Sec>
       )}
-
       {parse(detail.references_json).length > 0 && (
         <Sec icon={User} title="References">
           <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -81,7 +75,6 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
           </div>
         </Sec>
       )}
-
       <Sec icon={Shield} title="PF Declaration (Form 11)">
         <Row label="Employee Name" value={detail.pf_employee_name} />
         <Row label="Date of Birth" value={fmt(detail.pf_date_of_birth)} />
@@ -103,7 +96,6 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
         <Row label="Educational Qual." value={detail.pf_educational_qualification} />
         <Row label="Specially Abled" value={detail.pf_specially_abled} />
       </Sec>
-
       <Sec icon={Landmark} title="Bank Details">
         <Row label="Bank Name" value={detail.bank_name} />
         <Row label="Account Holder" value={detail.account_holder_name} />
@@ -114,7 +106,6 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
         <Row label="IFSC Code" value={detail.ifsc_code} />
         <Row label="Branch" value={detail.branch_details} />
       </Sec>
-
       {detail.signature_url && (
         <Sec icon={PenLine} title="Employee Signature">
           <img
@@ -127,5 +118,4 @@ const PersonalStatutorySection = React.memo(function PersonalStatutorySection({ 
     </>
   );
 });
-
 export default PersonalStatutorySection;

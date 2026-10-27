@@ -1,9 +1,7 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { SecHdr } from "./TablePrimitives";
-
 const tbl = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 /** Section F — HRA Exemption */
 export const SectionF = React.memo(function SectionF({ open, onToggle, hraExemption, T, showHRA, setShowHRA }) {
   return (
@@ -44,7 +42,6 @@ export const SectionF = React.memo(function SectionF({ open, onToggle, hraExempt
     </>
   );
 });
-
 /** Section G — Income from Previous Employer */
 export const SectionG = React.memo(function SectionG({ open, onToggle, prevEmployerInc }) {
   const rows = ["TOTAL INCOME", "INCOME TAX", "PROFESSIONAL TAX", "PROVIDENT FUND"];

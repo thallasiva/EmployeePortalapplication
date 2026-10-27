@@ -18,13 +18,10 @@
  * Output: prints a report to the console AND writes hrms-test-report.html
  * (open it in a browser) plus hrms-test-report.json.
  */
-
 const fs = require('fs');
-
 const BASE = process.env.API_BASE || 'http://localhost:5000';
 const EMAIL = process.argv[2] || process.env.APP_EMAIL;
 const PASSWORD = process.argv[3] || process.env.APP_PASSWORD;
-
 // Every test case = one read-only endpoint, grouped by module.
 const ENDPOINTS = [
   ['Core',        'Employees',              '/api/employees?limit=5'],
@@ -75,7 +72,6 @@ const ENDPOINTS = [
   ['Settings',    'Audit Logs',             '/api/audit-logs'],
   ['Settings',    'System Health',          '/api/system-health'],
 ];
-
 function classify(status) {
   if (status >= 200 && status < 300) return 'PASS';
   if (status === 401) return 'AUTH';        // not logged in / token issue
@@ -86,7 +82,6 @@ function classify(status) {
   if (status >= 500) return 'BROKEN (500)';
   return 'OTHER ' + status;
 }
-
 async function login() {
   const r = await fetch(`${BASE}/api/auth/login`, {
     method: 'POST',
@@ -105,7 +100,6 @@ async function login() {
   }
   return token;
 }
-
 async function hit(token, path) {
   const t = Date.now();
   try {
@@ -123,7 +117,6 @@ async function hit(token, path) {
     return { status: 0, ms: Date.now() - t, msg: String(e.message || e).slice(0, 120) };
   }
 }
-
 (async () => {
   console.log(`\n  HRMS Smoke Test  →  ${BASE}\n  ${'='.repeat(60)}`);
   if (!EMAIL || !PASSWORD) {
@@ -133,7 +126,6 @@ async function hit(token, path) {
   let token;
   try { token = await login(); console.log('  ✓ Logged in as', EMAIL, '\n'); }
   catch (e) { console.error('  ✗', e.message); process.exit(1); }
-
   const results = [];
   for (const [mod, name, path] of ENDPOINTS) {
     const r = await hit(token, path);
@@ -142,7 +134,6 @@ async function hit(token, path) {
     const mark = verdict === 'PASS' ? '✓' : verdict.startsWith('BROKEN') || verdict === 'NO RESPONSE' ? '✗' : '•';
     console.log(`  ${mark} [${String(r.status).padStart(3)}] ${name.padEnd(22)} ${verdict}${r.msg ? '  — ' + r.msg : ''}`);
   }
-
   const by = (v) => results.filter(r => r.verdict === v).length;
   const broken = results.filter(r => r.verdict.startsWith('BROKEN') || r.verdict === 'NO RESPONSE');
   console.log(`\n  ${'='.repeat(60)}`);
@@ -156,7 +147,6 @@ async function hit(token, path) {
     console.log(`\n  ⚠ BROKEN — need attention:`);
     for (const b of broken) console.log(`    ✗ ${b.name}  (${b.status})  ${b.path}  ${b.msg}`);
   }
-
   // Write JSON + HTML report
   fs.writeFileSync('hrms-test-report.json', JSON.stringify(results, null, 2));
   const rows = results.map(r => {

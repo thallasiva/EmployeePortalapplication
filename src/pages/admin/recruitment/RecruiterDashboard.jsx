@@ -6,26 +6,21 @@ import Stat from "./Stat";
 import { statGridClass } from "./data";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
-
 function RecruiterDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     getDashboard()
       .then(setData)
       .catch(err => apiErrorToast(err, "Failed to load dashboard"))
       .finally(() => setLoading(false));
   }, []);
-
   const s = data?.stats || {};
-
   if (loading) return (
     <div className="flex items-center justify-center gap-2.5 p-[60px] text-gray-500">
       <Loader2 size={20} /> Loading dashboard…
     </div>
   );
-
   return (
     <>
       <div className={statGridClass}>
@@ -34,7 +29,6 @@ function RecruiterDashboard() {
         <Stat icon={CalendarCheck} label="In Interview"      value={s.my_in_interview ?? "—"} note="Scheduled" tone="green" />
         <Stat icon={FileCheck}    label="Shortlisted"        value={s.my_shortlisted  ?? "—"} note="Pending offer" tone="red" />
       </div>
-
       {data?.assignedJobs?.length > 0 && (
         <Card title="My Assigned Jobs">
           <DataTable
@@ -49,7 +43,6 @@ function RecruiterDashboard() {
           />
         </Card>
       )}
-
       {data?.upcomingInterviews?.length > 0 && (
         <Card title="Upcoming Interviews (Next 7 Days)">
           <DataTable
@@ -67,5 +60,4 @@ function RecruiterDashboard() {
     </>
   );
 }
-
 export default RecruiterDashboard;

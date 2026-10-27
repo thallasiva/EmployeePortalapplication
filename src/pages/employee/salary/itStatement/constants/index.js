@@ -1,9 +1,7 @@
 export const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 export const FISCAL_ORDER = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2];
-
 export const NEW_SLABS = [[400000, 0], [400000, 0.05], [400000, 0.10], [400000, 0.15], [400000, 0.20], [Infinity, 0.30]];
 export const OLD_SLABS = [[250000, 0], [250000, 0.05], [500000, 0.20], [Infinity, 0.30]];
-
 export const SECTION_MAP = {
   exemption: [
     { old: "Section 10(5)", new25: "Section 11 (Sch III (8))", desc: "Travel concession or assistance (LTA/LTC)", key: "lta" },
@@ -61,7 +59,6 @@ export const SECTION_MAP = {
     { old: "Form 12BB", new25: "Form 124", desc: "Employee declaration", key: "basic" },
   ],
 };
-
 export const GROUPS = [
   { key: "exemption", label: "EXEMPTION", color: "#1565c0", bg: "#e8f0fe" },
   { key: "deduction", label: "DEDUCTION", color: "#6a1b9a", bg: "#f3e5f5" },
@@ -69,7 +66,6 @@ export const GROUPS = [
   { key: "tds", label: "TDS", color: "#e65100", bg: "#fff3e0" },
   { key: "forms", label: "FORMS", color: "#37474f", bg: "#eceff1" },
 ];
-
 // Table style constants shared across table components
 export const TH = { padding: "8px 12px", fontSize: 11, fontWeight: 700, color: "#475569", borderBottom: "1px solid #d5dbe3", whiteSpace: "nowrap", background: "#e8f4fa" };
 export const TS = { padding: "7px 12px", fontSize: 12, borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" };

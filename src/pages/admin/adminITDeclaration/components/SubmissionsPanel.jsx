@@ -3,9 +3,7 @@ import { RefreshCw, Users } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import Pagination from "../../../../components/Pagination";
 import EmpRow from "./EmpRow";
-
 const TABLE_HEADERS = ["Employee", "Job Title", "Status", "Total Declared", "Submitted", "Actions", ""];
-
 const SubmissionsPanel = React.memo(function SubmissionsPanel({
   loading, visible, search, filter,
   onSearchChange, onFilterChange, onRefresh,
@@ -37,7 +35,6 @@ const SubmissionsPanel = React.memo(function SubmissionsPanel({
           <RefreshCw size={13} /> Refresh
         </button>
       </div>
-
       {/* Body */}
       {loading ? (
         <div className={cssClass({ padding: 48, textAlign: "center", color: "#94a3b8" })}>Loading…</div>
@@ -71,5 +68,4 @@ const SubmissionsPanel = React.memo(function SubmissionsPanel({
     </div>
   );
 });
-
 export default SubmissionsPanel;

@@ -3,7 +3,6 @@ import { ChevronRight, Upload } from "lucide-react";
 import { joinClasses } from "../../../../utils/classStyles";
 import { cssClass } from "../../../../utils/classStyles";
 import { daysSince, progressFromDays, formatDate, initials } from "../utils";
-
 const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
   emp,
   onUpload,
@@ -11,7 +10,6 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
 }) {
   const days = daysSince(emp.date_of_joining);
   const progress = progressFromDays(days);
-
   return (
     <div className="onboarding-card">
       <div className="onboarding-card__top">
@@ -38,7 +36,6 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
           </button>
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-5 text-sm text-slate-500">
         <div>
           <p className="font-medium text-slate-900">Start Date</p>
@@ -57,7 +54,6 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
           <p className="mt-1">{progress}%</p>
         </div>
       </div>
-
       <div className="onboarding-progress-bar">
         <div
           className={joinClasses(
@@ -66,7 +62,6 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
           )}
         />
       </div>
-
       <button
         type="button"
         className="onboarding-view-checklist"
@@ -77,5 +72,4 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
     </div>
   );
 });
-
 export default ActiveOnboardingCard;

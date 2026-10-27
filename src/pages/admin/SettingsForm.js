@@ -1,6 +1,5 @@
 import React from "react";
 import PasswordInput from "../../component/PasswordInput";
-
 export default function SettingsForm() {
   return (
     <div className="space-y-4">
@@ -16,29 +15,21 @@ export default function SettingsForm() {
               Your password needs to be at least 8 characters long.
             </p>
           </div>
-
           <div className="p-4 space-y-3">
             <PasswordInput
               placeholder="Current Password"
               inputClassName="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none" />
-
-
             <PasswordInput
               placeholder="New Password"
               inputClassName="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none" />
-
-
             <PasswordInput
               placeholder="Repeat Password"
               inputClassName="w-full h-[46px] px-4 border border-gray-300 rounded text-[14px] outline-none" />
-
-
             <button className="mt-2 bg-brand hover:bg-brand text-white font-semibold text-[15px] px-5 h-[44px] rounded shadow">
               Change My Password
             </button>
           </div>
         </div>
-
         {}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-200">
@@ -49,7 +40,6 @@ export default function SettingsForm() {
               You will receive information across the whole company.
             </p>
           </div>
-
           <div className="p-4 space-y-5">
             {[
             {
@@ -75,14 +65,12 @@ export default function SettingsForm() {
                 </div>
               </label>
             )}
-
             <button className="mt-3 bg-brand hover:bg-brand text-white font-semibold text-[15px] px-5 h-[44px] rounded shadow">
               Update Notification Settings
             </button>
           </div>
         </div>
       </div>
-
       {}
       <div className="mt-5 bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-200">
@@ -93,7 +81,6 @@ export default function SettingsForm() {
             You will receive notifications only for Team Leads.
           </p>
         </div>
-
         <div className="p-4 space-y-6">
           {[
           {
@@ -127,12 +114,10 @@ export default function SettingsForm() {
               </div>
             </label>
           )}
-
           <button className="mt-2 bg-brand hover:bg-brand text-white font-semibold text-[15px] px-5 h-[44px] rounded shadow">
             Update Notification Settings
           </button>
         </div>
       </div>
     </div>);
-
 }

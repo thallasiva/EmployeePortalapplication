@@ -6,13 +6,11 @@ import { BRAND } from "../constants";
 import { fmtDate } from "../utils";
 import StatusBadge from "./StatusBadge";
 import ParameterRatingRow from "./ParameterRatingRow";
-
 function MemberCard({ member, appraisalId, onSaved }) {
   const [open, setOpen] = useState(false);
   const [mgRatings, setMgRatings] = useState({});
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
-
   useEffect(() => {
     const map = {};
     (member.ratings || []).forEach((r) => {
@@ -23,17 +21,14 @@ function MemberCard({ member, appraisalId, onSaved }) {
     });
     setMgRatings(map);
   }, [member.ratings]);
-
   const hasSubmission = member.appraisal_status === "submitted" || member.appraisal_status === "approved";
   const hasDraft = member.appraisal_status === "draft";
   const canReview = hasSubmission;
   const canExpand = hasSubmission || hasDraft;
-
   const notify = useCallback((msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 2500);
   }, []);
-
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
@@ -50,25 +45,20 @@ function MemberCard({ member, appraisalId, onSaved }) {
     }
     setSaving(false);
   }, [member.ratings, mgRatings, appraisalId, onSaved, notify]);
-
   const handleRatingChange = useCallback((key, v) => {
     setMgRatings((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), manager_rating: v } }));
   }, []);
-
   const handleCommentChange = useCallback((key, value) => {
     setMgRatings((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), manager_comments: value } }));
   }, []);
-
   const avgSelf = useMemo(() => {
     if (!member.ratings?.length) return null;
     return (member.ratings.reduce((s, r) => s + (r.self_rating || 0), 0) / member.ratings.length).toFixed(1);
   }, [member.ratings]);
-
   const initials = useMemo(
     () => (member.employee_name || "?").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase(),
     [member.employee_name]
   );
-
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden", marginBottom: 12 })}>
       {toast && (
@@ -80,7 +70,6 @@ function MemberCard({ member, appraisalId, onSaved }) {
           {toast.msg}
         </div>
       )}
-
       <button type="button" onClick={() => canExpand && setOpen((o) => !o)}
         className={cssClass({ width: "100%", display: "flex", alignItems: "center", padding: "14px 18px",
           background: "none", border: "none", cursor: canExpand ? "pointer" : "default", textAlign: "left", gap: 14 })}>
@@ -119,7 +108,6 @@ function MemberCard({ member, appraisalId, onSaved }) {
           </div>
         )}
       </button>
-
       {!canReview && (
         <div className={cssClass({ padding: "0 18px 12px" })}>
           <p className={cssClass({ fontSize: 12, color: "#94a3b8", margin: 0, fontStyle: "italic" })}>
@@ -129,7 +117,6 @@ function MemberCard({ member, appraisalId, onSaved }) {
           </p>
         </div>
       )}
-
       {open && canExpand && (
         <div className={cssClass({ borderTop: "1px solid #f1f5f9", padding: "16px 18px" })}>
           <p className={cssClass({ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase",
@@ -174,5 +161,4 @@ function MemberCard({ member, appraisalId, onSaved }) {
     </div>
   );
 }
-
 export default React.memo(MemberCard);

@@ -7,8 +7,6 @@ import ReportDonutPanel from "../../../component/reports/ReportDonutPanel";
 import Card from "./Card";
 import Stat from "./Stat";
 import { getDashboard, getPipelineReport, listRecruiters } from "../../../api/recruitment.api";
-
-
 const STATUS_COLORS = {
   "new": "#2563eb",
   "applied": "#2563eb",
@@ -26,26 +24,18 @@ const STATUS_COLORS = {
   "in progress": "#64748b"
 };
 const FALLBACK_COLORS = ["#2563eb", "#f59e0b", "#8b5cf6", "#22c55e", "#0ea5e9", "#ef4444", "#64748b", "#f97316"];
-
 function statusColor(status, idx) {
   return STATUS_COLORS[(status || "").toLowerCase()] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
 }
-
-
 const SRC_COLORS = ["#3b82f6", "#a855f7", "#14b8a6", "#f59e0b", "#ef4444", "#22c55e", "#64748b", "#f97316"];
-
-
 function fmt(n) {return n == null ? "—" : Number(n).toLocaleString();}
 function fmtDays(n) {return n == null ? "—" : `${Math.round(n)} days`;}
-
 function LoadingRow() {
   return (
     <div className="flex items-center justify-center py-12 text-gray-400 gap-2 text-sm">
       <RefreshCw size={16} className="animate-spin" /> Loading…
     </div>);
-
 }
-
 function SectionCard({ title, subtitle, children }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -55,18 +45,13 @@ function SectionCard({ title, subtitle, children }) {
       </div>
       <div className="p-5">{children}</div>
     </div>);
-
 }
-
-
 function ReportsTab() {
   const [dash, setDash] = useState(null);
   const [report, setReport] = useState(null);
   const [recruiters, setRecruiters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [repLoading, setRepLoading] = useState(false);
-
-
   const [fromDate, setFromDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 90);
@@ -74,8 +59,6 @@ function ReportsTab() {
   });
   const [toDate, setToDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [recruiterId, setRecruiterId] = useState("");
-
-
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -91,8 +74,6 @@ function ReportsTab() {
     catch(console.error).
     finally(() => setLoading(false));
   }, []);
-
-
   const applyFilter = () => {
     setRepLoading(true);
     getPipelineReport({ fromDate, toDate, recruiterId: recruiterId || undefined }).
@@ -100,20 +81,16 @@ function ReportsTab() {
     catch(console.error).
     finally(() => setRepLoading(false));
   };
-
-
   const pipelineSegments = (dash?.candidatePipeline || []).map((r, i) => ({
     name: r.status,
     value: Number(r.count),
     color: statusColor(r.status, i)
   }));
-
   const funnelSegments = (report?.funnel || []).map((r, i) => ({
     name: r.status,
     value: Number(r.count),
     color: statusColor(r.status, i)
   }));
-
   const offerSegments = (() => {
     const pending = Number(dash?.stats?.offers_pending || 0);
     const accepted = Number(dash?.stats?.offers_accepted || 0);
@@ -122,13 +99,10 @@ function ReportsTab() {
     { name: "Accepted", value: accepted, color: "#22c55e" }].
     filter((s) => s.value > 0);
   })();
-
   const stats = dash?.stats || {};
   const tth = report?.timeToHire || {};
-
   return (
     <div className="space-y-5">
-
       {}
       <Card title="Recruitment Overview">
         {loading ? <LoadingRow /> :
@@ -140,7 +114,6 @@ function ReportsTab() {
           </div>
         }
       </Card>
-
       {}
       {!loading &&
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -150,7 +123,6 @@ function ReportsTab() {
           <Stat icon={Clock} label="Avg. Time to Hire" value={fmtDays(tth.avg_days_to_hire)} note={tth.min_days != null ? `Min ${Math.round(tth.min_days)}d / Max ${Math.round(tth.max_days)}d` : "No accepted offers yet"} tone="brand" />
         </div>
       }
-
       {}
       <div className="flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <div>
@@ -183,57 +155,45 @@ function ReportsTab() {
           Apply
         </button>
       </div>
-
       {}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-
         {}
         <SectionCard title="Candidate Pipeline" subtitle="All-time distribution by status">
           {loading ? <LoadingRow /> : pipelineSegments.length === 0 ?
           <p className="py-8 text-center text-sm text-gray-400">No candidates yet</p> :
-
           <ReportDonutPanel
             title="" showSelect={false}
             segments={pipelineSegments}
             centerLabel="Total"
             centerValue={pipelineSegments.reduce((s, x) => s + x.value, 0).toString()} />
-
           }
         </SectionCard>
-
         {}
         <SectionCard title="Pipeline Funnel (Selected Period)" subtitle={`${fromDate} – ${toDate}`}>
           {repLoading ? <LoadingRow /> : funnelSegments.length === 0 ?
           <p className="py-8 text-center text-sm text-gray-400">No data for selected range</p> :
-
           <ReportDonutPanel
             title="" showSelect={false}
             segments={funnelSegments}
             centerLabel="Total"
             centerValue={funnelSegments.reduce((s, x) => s + x.value, 0).toString()} />
-
           }
         </SectionCard>
-
         {}
         <SectionCard title="Offer Status" subtitle="Released vs accepted">
           {loading ? <LoadingRow /> : offerSegments.length === 0 ?
           <p className="py-8 text-center text-sm text-gray-400">No offers yet</p> :
-
           <ReportDonutPanel
             title="" showSelect={false}
             segments={offerSegments}
             centerLabel="Offers"
             centerValue={offerSegments.reduce((s, x) => s + x.value, 0).toString()} />
-
           }
         </SectionCard>
-
         {}
         <SectionCard title="Candidate Source Breakdown" subtitle={`${fromDate} – ${toDate}`}>
           {repLoading ? <LoadingRow /> : !report?.sourceBreakdown?.length ?
           <p className="py-8 text-center text-sm text-gray-400">No source data for selected range</p> :
-
           <div className="space-y-2.5">
               {report.sourceBreakdown.map((s, i) => {
               const pct = report.sourceBreakdown.reduce((t, x) => t + Number(x.count), 0);
@@ -248,19 +208,15 @@ function ReportsTab() {
                       <div className="h-2 rounded-full" style={{ width: `${bar}%`, background: SRC_COLORS[i % SRC_COLORS.length] }} />
                     </div>
                   </div>);
-
             })}
             </div>
           }
         </SectionCard>
-
       </div>
-
       {}
       <SectionCard title="Recruiter Performance" subtitle="Last 30 days">
         {loading ? <LoadingRow /> : !dash?.recruiterPerf?.length ?
         <p className="py-8 text-center text-sm text-gray-400">No recruiters found</p> :
-
         <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -285,9 +241,6 @@ function ReportsTab() {
           </div>
         }
       </SectionCard>
-
     </div>);
-
 }
-
 export default ReportsTab;

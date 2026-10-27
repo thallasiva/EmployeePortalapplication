@@ -1,9 +1,7 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const TeamsComparison = React.memo(function TeamsComparison({ allTeams }) {
   if (!allTeams.length) return null;
-
   return (
     <section className="teams-comparison">
       <h2 className="teams-comparison__title">Team Comparison</h2>
@@ -32,5 +30,4 @@ const TeamsComparison = React.memo(function TeamsComparison({ allTeams }) {
     </section>
   );
 });
-
 export default TeamsComparison;

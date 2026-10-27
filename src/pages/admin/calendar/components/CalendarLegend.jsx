@@ -1,7 +1,6 @@
 import React from 'react';
 import { cssClass, joinClasses } from '../../../../utils/classStyles';
 import { EVENT_TYPES } from '../constants/eventTypes';
-
 const CalendarLegend = React.memo(function CalendarLegend({ typeFilter, onTypeFilterChange }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
@@ -28,5 +27,4 @@ const CalendarLegend = React.memo(function CalendarLegend({ typeFilter, onTypeFi
     </div>
   );
 });
-
 export default CalendarLegend;

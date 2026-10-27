@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { SIDEBAR } from "../constants";
-
 const MyInfoSidebar = React.memo(function MyInfoSidebar({ activeSection, onSelect }) {
   return (
     <div className={cssClass({ width: 200, flexShrink: 0, background: "#fff", borderRight: "1px solid #e2e8f0", padding: "20px 0", position: "sticky", top: 0, height: "100vh", overflowY: "auto" })}>
@@ -24,5 +23,4 @@ const MyInfoSidebar = React.memo(function MyInfoSidebar({ activeSection, onSelec
     </div>
   );
 });
-
 export default MyInfoSidebar;

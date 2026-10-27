@@ -1,46 +1,23 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReviewType from './ReviewType';
-
 export default function Review()
 {
-
   const tabsMenu = [
   { id: 1, tabName: "Overview" },
   { id: 2, tabName: "Review Types" }];
-
   const [selectedTab, setSelectedTab] = useState("Overview");
   const reviews = [
   { employee: 'Linda Craver', from: '05 Dec 2019', to: '07 Dec 2019', status: 'In Progress' },
   { employee: 'Jenni Sims', from: '05 Dec 2019', to: '07 Dec 2019', status: 'Completed' }];
-
-
   const navigate = useNavigate();
-
   const setSelectedTabData = (selected) =>
   {
     console.log("selected", selected);
     setSelectedTab(selected);
   };
-
   return (
-
     <div className="space-y-6">
-
       <div className="flex justify-between items-center">
         <div className="flex bg-white rounded-xl shadow overflow-hidden">
           {
@@ -49,23 +26,18 @@ export default function Review()
           "selected px-6 py-2" :
           "notSelected px-6 py-2"}`
           } key={item.id}
-
           onClick={() => setSelectedTabData(item.tabName)}>
              {item.tabName}</button>
           )
           }
         </div>
-
         <button className="bg-brand text-white px-4 py-2 rounded-lg" onClick={() => navigate('/dashboard/create-review')}>Create Review</button>
       </div>
       {}
       <div className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
         <span className="text-gray-500">Home / Reviews</span>
-
       </div>
-
       {}
-
       {
       selectedTab === 'Overview' &&
       <div className="bg-white rounded-xl shadow overflow-hidden">
@@ -93,7 +65,6 @@ export default function Review()
                   'border-brand text-brand' :
                   'border-orange-500 text-orange-500'}`
                   }>
-
                         {item.status}
                       </span>
                     </td>
@@ -106,53 +77,10 @@ export default function Review()
               </tbody>
             </table>
           </div>
-
       }
-
        {
       selectedTab === 'Review Types' &&
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <ReviewType />
-
       }
-
     </div>);
-
 }

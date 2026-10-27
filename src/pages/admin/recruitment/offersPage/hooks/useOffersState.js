@@ -8,7 +8,6 @@ import { apiErrorToast, successToast, errorToast } from "../../../../../utils/To
 import { BLANK_OFFER } from "../constants";
 import { computeFromCTC, numToWords } from "../utils/ctcUtils";
 import { buildChecks } from "../utils/buildChecks";
-
 export function useOffersState(role) {
   const [offers, setOffers] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -30,10 +29,8 @@ export function useOffersState(role) {
   const [onboardEffDate, setOnboardEffDate] = useState("");
   const [onboarding, setOnboarding] = useState(false);
   const tableRef = useRef(null);
-
   const isAdmin = role === 1;
   const canCreate = isAdmin;
-
   const loadOffers = useCallback(async () => {
     setLoading(true);
     try {
@@ -43,19 +40,15 @@ export function useOffersState(role) {
       apiErrorToast(err, "Failed to load offers");
     } finally { setLoading(false); }
   }, [filterStatus, search]);
-
   useEffect(() => { loadOffers(); }, [loadOffers]);
-
   useEffect(() => {
     listCandidates({ status: "Shortlisted", limit: 200 }).then((r) => setCandidates(r.data ?? [])).catch(() => {});
     listJobs({ limit: 200 }).then((r) => setJobs(r.data ?? [])).catch(() => {});
   }, []);
-
   const selectFilter = useCallback((val) => {
     setFilterStatus(val);
     setTimeout(() => tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   }, []);
-
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     let next = { ...form, [name]: value };
@@ -78,7 +71,6 @@ export function useOffersState(role) {
     if (name === "ctcInput") setComputed(computeFromCTC(value));
     setForm(next);
   }, [form, candidates, jobs]);
-
   const closeCreateForm = useCallback(() => {
     setOfferOpen(false);
     setStep("form");
@@ -86,7 +78,6 @@ export function useOffersState(role) {
     setComputed({});
     setChecks([]);
   }, []);
-
   const handleCreate = useCallback(async (e) => {
     e.preventDefault();
     if (!form.candidateId || !form.jobReqId || !form.designation || !form.ctcInput || !form.dateOfJoining) {
@@ -118,7 +109,6 @@ export function useOffersState(role) {
       apiErrorToast(err, "Failed to create offer");
     } finally { setSaving(false); }
   }, [form, computed, step, candidates, closeCreateForm, loadOffers]);
-
   const openDetail = useCallback((row) => {
     setDetail(row);
     setJoiningInv(null);
@@ -126,9 +116,7 @@ export function useOffersState(role) {
       getJoiningByOffer(row.offer_id).then((inv) => setJoiningInv(inv || null)).catch(() => {});
     }
   }, []);
-
   const closeDetail = useCallback(() => { setDetail(null); setJoiningInv(null); }, []);
-
   const handleRelease = useCallback(async (offerId) => {
     setActing(true);
     try {
@@ -140,7 +128,6 @@ export function useOffersState(role) {
     } catch (err) { apiErrorToast(err, "Failed to release offer"); }
     finally { setActing(false); }
   }, [loadOffers]);
-
   const handleResend = useCallback(async () => {
     if (!joiningInv) return;
     setResending(true);
@@ -150,13 +137,11 @@ export function useOffersState(role) {
     } catch (err) { apiErrorToast(err, "Failed to resend invitation"); }
     finally { setResending(false); }
   }, [joiningInv]);
-
   const copyJoiningLink = useCallback(() => {
     if (!joiningInv?.token) return;
     const url = `${window.location.origin}/joining/${joiningInv.token}`;
     navigator.clipboard.writeText(url).then(() => successToast("Link copied!")).catch(err => apiErrorToast(err, "Copy failed"));
   }, [joiningInv]);
-
   const handleRespond = useCallback(async (offerId, response) => {
     setActing(true);
     try {
@@ -167,7 +152,6 @@ export function useOffersState(role) {
     } catch (err) { apiErrorToast(err, "Failed to update offer"); }
     finally { setActing(false); }
   }, [loadOffers]);
-
   const handleStartOnboarding = useCallback(async () => {
     if (!onboardEffDate) { errorToast("Please select an effective date"); return; }
     setOnboarding(true);
@@ -185,7 +169,6 @@ export function useOffersState(role) {
     } catch (err) { apiErrorToast(err, "Failed to start onboarding"); }
     finally { setOnboarding(false); }
   }, [detail, onboardEffDate, loadOffers]);
-
   const visible = useMemo(() => offers.filter((o) => {
     const q = search.toLowerCase();
     return (
@@ -195,7 +178,6 @@ export function useOffersState(role) {
       (!filterStatus || o.status === filterStatus)
     );
   }), [offers, search, filterStatus]);
-
   return {
     offers, candidates, jobs, loading, search, setSearch,
     filterStatus, setFilterStatus, selectFilter, loadOffers, visible, tableRef,

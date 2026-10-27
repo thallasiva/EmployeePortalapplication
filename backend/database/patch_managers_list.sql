@@ -1,7 +1,5 @@
 USE hrms_db;
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_get_managers_list $$
 CREATE PROCEDURE sp_get_managers_list ()
 BEGIN
@@ -17,5 +15,4 @@ BEGIN
    WHERE mgr.employee_status='Active'
    ORDER BY mgr.first_name;
 END $$
-
 DELIMITER ;

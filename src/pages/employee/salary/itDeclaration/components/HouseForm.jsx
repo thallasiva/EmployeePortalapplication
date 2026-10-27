@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmtDec } from "../utils/formatters";
-
 function HouseForm({ house, onChange }) {
   const setField = (k, v) => onChange({ ...house, [k]: v });
   const net =
@@ -10,7 +9,6 @@ function HouseForm({ house, onChange }) {
     Number(house.unrealizedRent || 0);
   const stdDed = Math.round(Math.max(net, 0) * 0.3);
   const incLoss = net - stdDed - Number(house.homeLoanInterest || 0);
-
   const fieldStyle = {
     width: "100%", padding: "8px 10px", border: "1px solid #e2e8f0",
     borderRadius: 6, fontSize: 12, outline: "none", background: "#fff",
@@ -25,7 +23,6 @@ function HouseForm({ house, onChange }) {
     display: "flex", justifyContent: "space-between", alignItems: "center",
     padding: "8px 0", borderBottom: "1px solid #f1f5f9", fontSize: 12, color: "#475569", gap: 8
   };
-
   return (
     <div className={cssClass({ padding: "2px 0" })}>
       <div className={cssClass(rowStyle)}>
@@ -93,5 +90,4 @@ function HouseForm({ house, onChange }) {
     </div>
   );
 }
-
 export default React.memo(HouseForm);

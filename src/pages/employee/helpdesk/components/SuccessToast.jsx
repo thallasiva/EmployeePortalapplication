@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { CheckCircle, X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 /**
  * Floating success notification shown after a ticket is submitted.
  * Single responsibility: display + dismiss only.
@@ -33,5 +32,4 @@ const SuccessToast = memo(function SuccessToast({ onDismiss }) {
     </div>
   );
 });
-
 export default SuccessToast;

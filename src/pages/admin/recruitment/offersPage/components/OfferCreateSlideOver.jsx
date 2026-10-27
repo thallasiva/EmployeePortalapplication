@@ -4,12 +4,10 @@ import CtcTableRow from "./CtcTableRow";
 import OfferReleaseReview from "./OfferReleaseReview";
 import { fmt } from "../utils/ctcUtils";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-
 const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
   open, onClose, form, computed, candidates, jobs, step, checks, saving, onChange, onSubmit, onBack
 }) {
   const hasFail = checks.some((ck) => ck.status === "fail");
-
   const footer = step === "form" ? (
     <>
       <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
@@ -23,7 +21,6 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
       </Btn>
     </>
   );
-
   return (
     <SlideOver
       open={open}
@@ -31,7 +28,6 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
       title={step === "form" ? "Release Offer Letter" : "Pre-Release Validation"}
       width={580}
       footer={footer}>
-
       <form onSubmit={onSubmit} className={step !== "form" ? "hidden" : ""}>
         <Field label="Candidate" required>
           <select name="candidateId" value={form.candidateId} onChange={onChange}
@@ -45,7 +41,6 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
             ))}
           </select>
         </Field>
-
         <TwoColGrid>
           <Field label="Job Position" required>
             <select name="jobReqId" value={form.jobReqId} onChange={onChange}
@@ -60,7 +55,6 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
               placeholder="e.g. Senior Developer" readOnly={!!form.candidateId} />
           </Field>
         </TwoColGrid>
-
         <TwoColGrid>
           <Field label="Date of Joining" required>
             <Input type="date" name="dateOfJoining" value={form.dateOfJoining} onChange={onChange} />
@@ -84,7 +78,6 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
             })()}
           </Field>
         </TwoColGrid>
-
         {computed.ctc > 0 && (
           <TwoColGrid>
             <Field label="Variable Pay %">
@@ -107,7 +100,6 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
             </Field>
           </TwoColGrid>
         )}
-
         {computed.ctc > 0 && (
           <div className="mt-4 border border-gray-200 rounded-xl overflow-hidden">
             <div className="bg-[#1e3a5f] px-4 py-2.5 grid grid-cols-3">
@@ -138,12 +130,10 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
           </div>
         )}
       </form>
-
       {step === "review" && (
         <OfferReleaseReview form={form} computed={computed} candidates={candidates} checks={checks} />
       )}
     </SlideOver>
   );
 });
-
 export default OfferCreateSlideOver;

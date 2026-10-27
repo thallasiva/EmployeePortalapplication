@@ -1,5 +1,3 @@
-
-
 export const REVIEW_NAV_SECTIONS = [
 {
   id: "attendance",
@@ -10,7 +8,6 @@ export const REVIEW_NAV_SECTIONS = [
     label: "Attendance Regularization",
     dataType: "regularization"
   }]
-
 },
 {
   id: "custom-workflows",
@@ -21,7 +18,6 @@ export const REVIEW_NAV_SECTIONS = [
     label: "Request Hub",
     dataType: "coming-soon"
   }]
-
 },
 {
   id: "empinfo",
@@ -42,7 +38,6 @@ export const REVIEW_NAV_SECTIONS = [
     label: "Helpdesk",
     dataType: "helpdesk"
   }]
-
 },
 {
   id: "leave",
@@ -68,7 +63,6 @@ export const REVIEW_NAV_SECTIONS = [
     label: "Restricted Holiday",
     dataType: "coming-soon"
   }]
-
 },
 {
   id: "letter",
@@ -79,7 +73,6 @@ export const REVIEW_NAV_SECTIONS = [
     label: "Letter Signature Approval",
     dataType: "coming-soon"
   }]
-
 },
 {
   id: "payroll",
@@ -90,12 +83,8 @@ export const REVIEW_NAV_SECTIONS = [
     label: "Reimbursement Claim",
     dataType: "coming-soon"
   }]
-
 }];
-
-
 export const DEFAULT_REVIEW_ITEM_ID = "leave";
-
 export function findReviewNavItem(itemId) {
   for (const section of REVIEW_NAV_SECTIONS) {
     const item = section.items.find((i) => i.id === itemId);
@@ -103,7 +92,6 @@ export function findReviewNavItem(itemId) {
   }
   return null;
 }
-
 export function getAllReviewItems() {
   return REVIEW_NAV_SECTIONS.flatMap((s) => s.items);
 }

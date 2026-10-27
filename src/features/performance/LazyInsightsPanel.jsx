@@ -10,7 +10,6 @@ const LazyInsightsPanel = () => (
         <p className="text-sm text-slate-600">This panel was fetched only when the showcase opened.</p>
       </div>
     </div>
-
     <ul className="space-y-2 text-sm text-slate-700">
       <li>Code splitting keeps the initial bundle smaller.</li>
       <li>Suspense shows a friendly fallback during loading.</li>
@@ -18,5 +17,4 @@ const LazyInsightsPanel = () => (
     </ul>
   </div>
 );
-
 export default LazyInsightsPanel;

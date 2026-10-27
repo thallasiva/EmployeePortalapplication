@@ -4,7 +4,6 @@ import { fmtDate } from "../utils";
 import Field from "./Field";
 import InfoCard from "./InfoCard";
 import { Grid, SectionLabel } from "./Grid";
-
 const AssetsSection = React.memo(function AssetsSection({ e }) {
   return (
     <div id="section-assets" className={cssClass({ marginTop: 8 })}>
@@ -29,5 +28,4 @@ const AssetsSection = React.memo(function AssetsSection({ e }) {
     </div>
   );
 });
-
 export default AssetsSection;

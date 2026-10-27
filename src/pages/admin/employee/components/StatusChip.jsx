@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { getEmployeeStatus } from "../../../../utils/employeeStatus";
-
 const StatusChip = React.memo(function StatusChip({ employee, size = "sm" }) {
   const { label, bg, color, border } = getEmployeeStatus(employee);
   const px = size === "sm" ? "6px 10px" : "3px 8px";
@@ -23,5 +22,4 @@ const StatusChip = React.memo(function StatusChip({ employee, size = "sm" }) {
     </span>
   );
 });
-
 export default StatusChip;

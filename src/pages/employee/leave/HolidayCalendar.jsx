@@ -12,22 +12,17 @@ import {
 "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
 import { listHolidays } from "../../../api/holiday.api";
-
 const MONTH_INDEX = {
   JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
   JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11
 };
-
 const MONTH_KEYS = Object.keys(MONTH_INDEX);
-
 function emptyMonthMap() {
   return MONTH_KEYS.reduce((acc, month) => {
     acc[month] = [];
     return acc;
   }, {});
 }
-
-
 function groupHolidaysByMonth(rows) {
   const grouped = emptyMonthMap();
   (rows || []).forEach((row) => {
@@ -47,7 +42,6 @@ function groupHolidaysByMonth(rows) {
   });
   return grouped;
 }
-
 const ICON_THEMES = [
 {
   match: /new year/i,
@@ -79,20 +73,15 @@ const ICON_THEMES = [
   icon: Sparkles,
   classes: "bg-amber-50 text-amber-600"
 }];
-
-
 const DEFAULT_THEME = { icon: CalendarHeart, classes: "bg-brand-50 text-brand" };
-
 function getHolidayTheme(name) {
   return ICON_THEMES.find((theme) => theme.match.test(name)) || DEFAULT_THEME;
 }
-
 export default function HolidayCalendar()
 {
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [holidays, setHolidays] = useState(emptyMonthMap());
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -111,39 +100,30 @@ export default function HolidayCalendar()
       cancelled = true;
     };
   }, [year]);
-
   const monthNames = MONTH_KEYS;
-
   const totalHolidays = useMemo(
     () => monthNames.reduce((sum, month) => sum + (holidays[month]?.length || 0), 0),
     [holidays, monthNames]
   );
-
   const upcomingHoliday = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const allHolidays = monthNames.flatMap((month) =>
     (holidays[month] || []).map((holiday) => ({
       ...holiday,
       month
     }))
     );
-
     const upcoming = allHolidays.
     filter((holiday) => holiday.dateObj >= today).
     sort((a, b) => a.dateObj - b.dateObj)[0];
-
     if (!upcoming) return null;
-
     const diffDays = Math.round((upcoming.dateObj - today) / (1000 * 60 * 60 * 24));
     return { ...upcoming, diffDays };
   }, [holidays, monthNames]);
-
   return (
     <div className="min-h-screen bg-[#f5f7fb] p-6">
             {}
-
             <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-brand to-brand-600 p-6 text-white shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
@@ -160,15 +140,12 @@ export default function HolidayCalendar()
                             </p>
                         </div>
                     </div>
-
                     <YearPicker
             value={year}
             onChange={setYear}
             showIcon={false}
             selectClassName="h-[40px] w-[120px] border border-white/30 rounded-lg bg-white/15 text-white px-3 text-[14px] font-medium outline-none focus:ring-2 focus:ring-white/40 [&>option]:text-gray-800" />
-
                 </div>
-
                 {upcomingHoliday &&
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl bg-white/10 px-4 py-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/15">
@@ -190,9 +167,7 @@ export default function HolidayCalendar()
                     </div>
         }
             </div>
-
             {}
-
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {monthNames.map((month) =>
         <div
@@ -208,19 +183,7 @@ export default function HolidayCalendar()
               transition-shadow
               hover:shadow-md
             ">
-
-
-
-
-
-
-
-
-
-
-
                         {}
-
                         <div className="mb-5 flex items-center justify-between">
                             <h2 className="text-[14px] font-semibold text-[#64748b]">
                                 {month} {year}
@@ -231,9 +194,7 @@ export default function HolidayCalendar()
                                 </span>
             }
                         </div>
-
                         {}
-
                         {holidays[month].length > 0 ?
           <div className="space-y-3">
                                 {holidays[month].map((holiday, index) => {
@@ -243,39 +204,29 @@ export default function HolidayCalendar()
                 <div
                   key={index}
                   className="flex items-center gap-3 rounded-lg p-2 -mx-2 transition-colors hover:bg-[#f8fafc]">
-
                                             {}
-
                                             <div
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${theme.classes}`}>
-
                                                 <Icon size={18} />
                                             </div>
-
                                             {}
-
                                             <div className="min-w-[32px] text-center">
                                                 <h3 className="text-[20px] leading-none font-semibold text-[#334155]">
                                                     {holiday.date}
                                                 </h3>
-
                                                 <p className="text-[11px] text-[#94a3b8] mt-1">
                                                     {holiday.day}
                                                 </p>
                                             </div>
-
                                             {}
-
                                             <div className="min-w-0">
                                                 <p className="truncate text-[14px] text-[#475569]">
                                                     {holiday.name}
                                                 </p>
                                             </div>
                                         </div>);
-
             })}
                             </div> :
-
           <div className="h-[160px] flex flex-col items-center justify-center gap-2">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f5f9]">
                                     <CalendarDays size={18} className="text-[#c0cad5]" />
@@ -289,5 +240,4 @@ export default function HolidayCalendar()
         )}
             </div>
         </div>);
-
 }

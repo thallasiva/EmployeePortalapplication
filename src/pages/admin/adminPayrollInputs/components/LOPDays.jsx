@@ -3,10 +3,8 @@ import { useLOPDays } from "../hooks/useLOPDays";
 import { fmtINR } from "../utils/formatters";
 import { cssClass } from "../../../../utils/classStyles";
 import Table from "./Table";
-
 const LOPDays = React.memo(function LOPDays({ month, year }) {
   const { rows, loading, totalLOP } = useLOPDays(month, year);
-
   const cols = useMemo(() => [
     { key: "emp_code", label: "Emp Code" },
     { key: "employee_name", label: "Employee Name" },
@@ -34,11 +32,9 @@ const LOPDays = React.memo(function LOPDays({ month, year }) {
     },
     { key: "net_pay", label: "Net Pay", right: true, render: (r) => fmtINR(r.net_pay) },
   ], []);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   return (
     <>
       <Table cols={cols} rows={rows} emptyMsg="No payslip data for this month" />
@@ -51,5 +47,4 @@ const LOPDays = React.memo(function LOPDays({ month, year }) {
     </>
   );
 });
-
 export default LOPDays;

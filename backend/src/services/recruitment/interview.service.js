@@ -2,20 +2,15 @@ const { callProcedure } = require('../../config/db');
 const BaseService = require('../base.service');
 const ApiError = require('../../utils/ApiError');
 const notify = require('../mailNotify.service');
-
 class InterviewService extends BaseService {
   constructor() {
     super('rec_interviews', 'interview_id');
   }
-
-
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
     const results = await callProcedure('sp_rec_get_recruiter_team_lead(?)', [recruiterId]);
     return (results[0] ?? [])[0] ?? {};
   }
-
-
   async _getHRManagerForCandidate(candidateId) {
     if (!candidateId) return {};
     const res = await callProcedure('sp_rec_get_candidate(?)', [candidateId]);
@@ -24,7 +19,6 @@ class InterviewService extends BaseService {
     const recruiterId = cand.recruiter_id || cand.recruiter_employee_id || null;
     return this._getRecruiterTL(recruiterId);
   }
-
   async list({ candidateId, jobReqId, level, status, search, roleId, recEmpId, limit = 20, offset = 0 } = {}) {
     const results = await callProcedure(
       'sp_rec_list_interviews(?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -32,14 +26,12 @@ class InterviewService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getById(interviewId) {
     const results = await callProcedure('sp_rec_get_interview(?)', [interviewId]);
     const row = (results[0] ?? [])[0];
     if (!row) throw new ApiError(404, 'Interview not found');
     return row;
   }
-
   async schedule(data, scheduledBy, ip) {
     const results = await callProcedure(
       'sp_rec_schedule_interview(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @interview_id, @interview_code)',
@@ -60,11 +52,8 @@ class InterviewService extends BaseService {
       data.teamsEnd || null,
       scheduledBy,
       ip]
-
     );
     const row = (results[0] ?? [])[0];
-
-
     if (row) {
       const candidateEmail = row.candidate_email || '';
       const candidateName = row.candidate_name || 'Candidate';
@@ -75,8 +64,6 @@ class InterviewService extends BaseService {
       const interviewType = row.interview_type || '';
       const interviewer = row.interviewer || '';
       const scheduledByName = row.scheduled_by_name || '';
-
-
       // For online meeting types (GoogleMeet/Zoom/Teams), skip the basic email here —
       // the controller setImmediate sends a richer invite WITH the meeting link.
       const onlineMeetingTypes = ["Teams", "GoogleMeet", "Zoom"];
@@ -88,8 +75,6 @@ class InterviewService extends BaseService {
           interviewDate, interviewTime, interviewType, interviewer
         });
       }
-
-
       if (data.candidateId) {
         this._getHRManagerForCandidate(data.candidateId).then(({ tl_email: tlEmail, tl_name: tlName }) => {
           if (tlEmail) {
@@ -103,10 +88,8 @@ class InterviewService extends BaseService {
         }).catch(() => {});
       }
     }
-
     return row;
   }
-
   async submitFeedback(interviewId, { feedbackStatus, feedbackComments, shortlisted }, submittedBy, ip) {
     const actionMap = {
       'Shortlist': { feedbackStatus: 'Selected', shortlisted: true, candidateStatus: 'Shortlisted' },
@@ -115,13 +98,11 @@ class InterviewService extends BaseService {
     };
     const action = actionMap[feedbackStatus];
     if (!action) throw new ApiError(400, 'Invalid interview feedback action');
-
     const results = await callProcedure(
       'sp_rec_submit_feedback(?, ?, ?, ?, ?, ?)',
       [interviewId, action.feedbackStatus, feedbackComments || null, action.shortlisted ? 1 : 0, submittedBy, ip]
     );
     const row = (results[0] ?? [])[0];
-
     if (row) {
       // The legacy procedure applies a level-based default. Override it with
       // the explicit decision selected by the reviewer.
@@ -132,15 +113,11 @@ class InterviewService extends BaseService {
       const level = row.level || '';
       const interviewer = row.interviewer || '';
       const candidateId = row.candidate_id || null;
-
-
       if (email) {
         if (action.candidateStatus === 'Rejected') {
           notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
         }
       }
-
-
       if (candidateId) {
         this._getHRManagerForCandidate(candidateId).then(({ tl_email: tlEmail, tl_name: tlName }) => {
           if (tlEmail) {
@@ -158,10 +135,8 @@ class InterviewService extends BaseService {
         }).catch(() => {});
       }
     }
-
     return row;
   }
-
   async submitRecruiterFeedback(interviewId, { feedbackStatus, feedbackComments }, submittedBy, ip) {
     const results = await callProcedure(
       'sp_rec_submit_recruiter_feedback(?, ?, ?, ?, ?)',
@@ -169,15 +144,12 @@ class InterviewService extends BaseService {
     );
     return (results[0] ?? [])[0];
   }
-
   async setJoinUrl(interviewId, joinUrl) {
     await callProcedure('sp_rec_set_interview_join_url(?, ?)', [interviewId, joinUrl]);
   }
-
   async setZoomMeetingDetails(interviewId, meetingId, joinUrl) {
     await callProcedure('sp_rec_set_zoom_meeting_details(?, ?, ?)', [interviewId, meetingId, joinUrl]);
   }
-
   async cancel(interviewId, cancelledBy, ip) {
     const results = await callProcedure(
       'sp_rec_cancel_interview(?, ?, ?)',
@@ -186,5 +158,4 @@ class InterviewService extends BaseService {
     return (results[0] ?? [])[0];
   }
 }
-
 module.exports = new InterviewService();

@@ -1,7 +1,6 @@
 import React from "react";
 import { CalendarDays } from "lucide-react";
 import RequestCard from "./RequestCard";
-
 const PendingTab = React.memo(function PendingTab({
   loadingList,
   pendingRequests,
@@ -32,5 +31,4 @@ const PendingTab = React.memo(function PendingTab({
     </div>
   );
 });
-
 export default PendingTab;

@@ -2,7 +2,6 @@ import React from "react";
 import { Search } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { FILTERS } from "../constants";
-
 const FilterBar = React.memo(function FilterBar({ search, filter, onSearchChange, onFilterChange }) {
   return (
     <div className={cssClass({ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" })}>
@@ -31,5 +30,4 @@ const FilterBar = React.memo(function FilterBar({ search, filter, onSearchChange
     </div>
   );
 });
-
 export default FilterBar;

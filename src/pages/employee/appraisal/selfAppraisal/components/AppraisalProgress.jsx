@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const AppraisalProgress = React.memo(function AppraisalProgress({ rated, total, avgRating }) {
   return (
     <div className={cssClass({
@@ -33,5 +32,4 @@ const AppraisalProgress = React.memo(function AppraisalProgress({ rated, total, 
     </div>
   );
 });
-
 export default AppraisalProgress;

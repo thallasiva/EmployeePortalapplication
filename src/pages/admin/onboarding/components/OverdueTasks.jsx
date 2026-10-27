@@ -1,5 +1,4 @@
 import React from "react";
-
 const OverdueTasks = React.memo(function OverdueTasks({ overdueTasks }) {
   if (!overdueTasks.length) return null;
   return (
@@ -26,5 +25,4 @@ const OverdueTasks = React.memo(function OverdueTasks({ overdueTasks }) {
     </section>
   );
 });
-
 export default OverdueTasks;

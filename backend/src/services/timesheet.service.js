@@ -1,13 +1,5 @@
-
-
-
-
-
 const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
-
-
 function isoWeekBounds(dateStr) {
   const d = new Date(dateStr);
   const day = d.getUTCDay() || 7;
@@ -15,13 +7,9 @@ function isoWeekBounds(dateStr) {
   const sun = new Date(mon);sun.setUTCDate(mon.getUTCDate() + 6);
   return { weekStart: mon.toISOString().slice(0, 10), weekEnd: sun.toISOString().slice(0, 10) };
 }
-
 function toDateStr(d) {
   return d instanceof Date ? d.toISOString().slice(0, 10) : String(d).slice(0, 10);
 }
-
-
-
 async function createTask({
   employee_id, task_name, project_name = '', description = '',
   start_date = null, end_date = null, start_time = null, end_time = null,
@@ -35,17 +23,14 @@ async function createTask({
   );
   return getTaskById(out.task_id);
 }
-
 async function getTaskById(task_id) {
   const results = await callProcedure('sp_get_task(?)', [task_id]);
   return (results[0] ?? results)[0] ?? null;
 }
-
 async function listMyTasks(employee_id) {
   const results = await callProcedure('sp_list_my_tasks(?)', [employee_id]);
   return results[0] ?? results;
 }
-
 async function updateTask(task_id, employee_id, fields) {
   const allowed = ['task_name', 'project_name', 'description', 'status',
   'start_date', 'end_date', 'start_time', 'end_time', 'duration_hours'];
@@ -64,14 +49,10 @@ async function updateTask(task_id, employee_id, fields) {
   );
   return getTaskById(task_id);
 }
-
 async function deleteTask(task_id, employee_id) {
   const { outs: out } = await callProcedureWithOuts('sp_delete_task(?, ?, @affected)', [task_id, employee_id]);
   if (!out.affected) throw ApiError.notFound('Task not found');
 }
-
-
-
 // All employees' tasks, for the admin Task report.
 async function listAllTasks({ limit = 500 } = {}) {
   const max = Math.min(1000, Math.max(1, parseInt(limit, 10) || 500));
@@ -84,32 +65,25 @@ async function listAllTasks({ limit = 500 } = {}) {
     [max]
   );
 }
-
 async function getOrCreateWeeklyTimesheet(employee_id, weekStart, weekEnd) {
   const { outs: out } = await callProcedureWithOuts('sp_get_weekly_timesheet(?, ?, ?, @ts_id)', [employee_id, weekStart, weekEnd]);
   const results = await callProcedure('sp_get_timesheet(?)', [out.ts_id]);
   return (results[0] ?? [])[0] ?? null;
 }
-
 async function getMyTimesheets(employee_id) {
   const results = await callProcedure('sp_get_my_timesheets(?)', [employee_id]);
   return results[0] ?? [];
 }
-
 async function getTimesheetById(timesheet_id) {
   const results = await callProcedure('sp_get_timesheet(?)', [timesheet_id]);
   return (results[0] ?? [])[0] ?? null;
 }
-
 async function getTimesheetEntries(timesheet_id) {
   const results = await callProcedure('sp_get_timesheet_entries(?)', [timesheet_id]);
   return results[0] ?? [];
 }
-
-
 async function saveEntries(employee_id, weekDateStr, entries) {
   const { weekStart, weekEnd } = isoWeekBounds(weekDateStr);
-
   const sanitised = entries.map((e) => ({
     task_id: e.task_id || null,
     project_name: e.project_name || '',
@@ -120,7 +94,6 @@ async function saveEntries(employee_id, weekDateStr, entries) {
     end_time: e.end_time || null,
     duration_hours: parseFloat(e.duration_hours) || 0
   }));
-
   const { outs: out } = await callProcedureWithOuts(
     'sp_save_timesheet_entries(?, ?, ?, ?, @ts_id, @ok, @msg)',
     [employee_id, weekStart, weekEnd, JSON.stringify(sanitised)]
@@ -129,27 +102,19 @@ async function saveEntries(employee_id, weekDateStr, entries) {
   if (!ok) throw ApiError.badRequest(msg || 'Failed to save timesheet entries');
   return getTimesheetById(ts_id);
 }
-
-
 async function submitTimesheet(employee_id, timesheet_id) {
   const { outs: out } = await callProcedureWithOuts('sp_submit_timesheet(?, ?, @ok, @msg)', [employee_id, timesheet_id]);
   if (!out.ok) throw ApiError.badRequest(out.msg || 'Cannot submit timesheet');
   return getTimesheetById(timesheet_id);
 }
-
-
 async function listManagerTimesheets(manager_employee_id, { status } = {}) {
   const results = await callProcedure('sp_list_manager_timesheets(?, ?)', [manager_employee_id, status ?? null]);
   return results[0] ?? [];
 }
-
-
 async function listAllTimesheets({ status, employee_id } = {}) {
   const results = await callProcedure('sp_list_all_timesheets(?, ?)', [status ?? null, employee_id ?? null]);
   return results[0] ?? [];
 }
-
-
 async function reviewTimesheet(timesheet_id, { decision, reviewed_by, comments = '' }) {
   const { outs: out } = await callProcedureWithOuts('sp_review_timesheet(?, ?, ?, ?, @ok, @msg)', [
   timesheet_id, decision, reviewed_by, comments]
@@ -161,29 +126,21 @@ async function reviewTimesheet(timesheet_id, { decision, reviewed_by, comments =
   }
   return getTimesheetById(timesheet_id);
 }
-
-
-
 async function createExtraWorkRequest({ employee_id, timesheet_id, work_date, task_name, extra_hours, reason }) {
-
   const results = await callProcedure('sp_create_extra_work_request(?, ?, ?, ?, ?, ?, @id)', [
   employee_id, timesheet_id || null, toDateStr(work_date), task_name, extra_hours, reason]
   );
   return (results[0] ?? [])[0] ?? null;
 }
-
 async function listExtraWorkRequests(employee_id) {
   const results = await callProcedure('sp_list_extra_work_requests(?)', [employee_id]);
   return results[0] ?? [];
 }
-
 async function listManagerExtraWork(manager_employee_id) {
   const results = await callProcedure('sp_list_manager_extra_work(?)', [manager_employee_id]);
   return results[0] ?? [];
 }
-
 async function reviewExtraWork(extra_work_id, { decision, reviewed_by, manager_notes = '' }) {
-
   const { results, outs: out } = await callProcedureWithOuts('sp_review_extra_work(?, ?, ?, ?, @ok, @msg)', [
   extra_work_id, decision, reviewed_by, manager_notes]
   );
@@ -194,9 +151,6 @@ async function reviewExtraWork(extra_work_id, { decision, reviewed_by, manager_n
   }
   return (results[0] ?? [])[0] ?? null;
 }
-
-
-
 async function employeeDashboardCounts(employee_id) {
   const results = await callProcedure('sp_employee_timesheet_counts(?)', [employee_id]);
   const row = (results[0] ?? [])[0] ?? {};
@@ -209,7 +163,6 @@ async function employeeDashboardCounts(employee_id) {
     rejectedWeeks: Number(row.rejected || 0)
   };
 }
-
 async function managerDashboardCounts(manager_employee_id) {
   const results = await callProcedure('sp_manager_timesheet_counts(?)', [manager_employee_id]);
   const row = (results[0] ?? [])[0] ?? {};
@@ -219,7 +172,6 @@ async function managerDashboardCounts(manager_employee_id) {
     rejectedTimesheets: Number(row.rejected || 0)
   };
 }
-
 async function adminDashboardCounts() {
   const results = await callProcedure('sp_admin_timesheet_counts()');
   const ts = (results[0] ?? [])[0] ?? {};
@@ -233,21 +185,17 @@ async function adminDashboardCounts() {
     rejectedTimesheets: Number(ts.rejected || 0)
   };
 }
-
-
 async function managerFullDashboard(manager_employee_id) {
   const results = await callProcedure('sp_manager_full_dashboard(?)', [manager_employee_id]);
   const teamMembers = results[0] ?? [];
   const attendanceRows = results[1] ?? [];
   const tsCounts = (results[2] ?? [])[0] ?? {};
   const recentActivities = results[3] ?? [];
-
   const attMap = {};
   attendanceRows.forEach((a) => {attMap[a.employee_id] = a;});
   const present = attendanceRows.filter((a) => a.status === 'present').length;
   const late = attendanceRows.filter((a) => a.status === 'late').length;
   const absent = teamMembers.length - present;
-
   const team = teamMembers.map((m) => ({
     ...m,
     attendance_status: attMap[m.employee_id]?.status || 'absent',
@@ -256,7 +204,6 @@ async function managerFullDashboard(manager_employee_id) {
     work_hours: attMap[m.employee_id]?.work_hours || null,
     late_by_minutes: attMap[m.employee_id]?.late_by_minutes || 0
   }));
-
   return {
     summary: {
       totalTeam: teamMembers.length,
@@ -271,17 +218,12 @@ async function managerFullDashboard(manager_employee_id) {
     recentActivities
   };
 }
-
 module.exports = {
-
   createTask, getTaskById, listMyTasks, listAllTasks, updateTask, deleteTask,
-
   getOrCreateWeeklyTimesheet, getMyTimesheets, getTimesheetById,
   getTimesheetEntries, saveEntries, submitTimesheet,
   listManagerTimesheets, listAllTimesheets, reviewTimesheet,
-
   createExtraWorkRequest, listExtraWorkRequests, listManagerExtraWork, reviewExtraWork,
-
   employeeDashboardCounts, managerDashboardCounts, adminDashboardCounts,
   managerFullDashboard
 };

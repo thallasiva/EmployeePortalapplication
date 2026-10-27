@@ -3,21 +3,18 @@ import { Search, ChevronRight, Navigation } from "lucide-react";
 import { CATEGORIES } from "../constants/categories";
 import { BRAND, BRAND_BORDER, BRAND_LIGHT } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
-
 /**
  * The landing screen of the Helpdesk — shows the category list and a search bar.
  * Single responsibility: browse + search categories, fire onSelectCategory.
  */
 const HomeView = memo(function HomeView({ onSelectCategory }) {
   const [search, setSearch] = useState("");
-
   const filtered = search.trim()
     ? CATEGORIES.filter((c) =>
         c.label.toLowerCase().includes(search.toLowerCase()) ||
         c.topics.some((t) => t.label.toLowerCase().includes(search.toLowerCase()))
       )
     : CATEGORIES;
-
   return (
     <div className={cssClass({ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "auto" })}>
       {/* Hero search */}
@@ -39,7 +36,6 @@ const HomeView = memo(function HomeView({ onSelectCategory }) {
           />
         </div>
       </div>
-
       {/* Category list */}
       <div className={cssClass({ flex: 1, background: "#fff", padding: "22px 28px" })}>
         <p className={cssClass({ fontSize: 13, color: BRAND, margin: "0 0 20px" })}>
@@ -76,5 +72,4 @@ const HomeView = memo(function HomeView({ onSelectCategory }) {
     </div>
   );
 });
-
 export default HomeView;

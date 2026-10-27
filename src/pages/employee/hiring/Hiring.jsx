@@ -6,18 +6,15 @@ import MyReferrals from "./MyReferrals";
 import AppliedJobs from "./AppliedJobs";
 import { INTERNAL_JOBS } from "../../../data/hiringFilters";
 import "./hiring.css";
-
 const HEADER_TABS = [
   { id: "jobs", label: "Jobs" },
   { id: "referrals", label: "My Referrals" },
   { id: "applied", label: "Applied Jobs" },
 ];
-
 const SUB_TABS = [
   { id: "internal", label: "INTERNAL JOBS" },
   { id: "referral", label: "OPEN FOR REFERRAL" },
 ];
-
 export default function Hiring() {
   const [headerTab, setHeaderTab] = useState("jobs");
   const [subTab, setSubTab] = useState("internal");
@@ -25,19 +22,16 @@ export default function Hiring() {
   const [dateAdded, setDateAdded] = useState("anytime");
   const [departments, setDepartments] = useState([]);
   const [locations, setLocations] = useState([]);
-
   const toggleDepartment = (dept) => {
     setDepartments((prev) =>
       prev.includes(dept) ? prev.filter((d) => d !== dept) : [...prev, dept]
     );
   };
-
   const toggleLocation = (loc) => {
     setLocations((prev) =>
       prev.includes(loc) ? prev.filter((l) => l !== loc) : [...prev, loc]
     );
   };
-
   const filteredJobs = useMemo(() => {
     const q = search.trim().toLowerCase();
     return INTERNAL_JOBS.filter((job) => {
@@ -56,9 +50,7 @@ export default function Hiring() {
       return true;
     });
   }, [search, departments, locations]);
-
   const goToJobs = () => setHeaderTab("jobs");
-
   return (
     <div className="hiring-portal">
       <header className="hiring-header">
@@ -76,10 +68,7 @@ export default function Hiring() {
             </button>
           ))}
         </nav>
-
-
       </header>
-
       {headerTab === "jobs" && (
         <div className="hiring-subnav">
           {SUB_TABS.map((tab) => (
@@ -96,7 +85,6 @@ export default function Hiring() {
           ))}
         </div>
       )}
-
       {headerTab === "jobs" && (
         <div className="hiring-body">
           <HiringFilters
@@ -107,7 +95,6 @@ export default function Hiring() {
             locations={locations}
             onLocationToggle={toggleLocation}
           />
-
           <main className="hiring-main">
             <div className="hiring-search-wrap">
               <input
@@ -119,13 +106,11 @@ export default function Hiring() {
               />
               <Search size={18} className="hiring-search__icon" />
             </div>
-
             <div className="hiring-results">
               <div className="hiring-results__header">
                 <span>Job details</span>
                 <span>Posted</span>
               </div>
-
               <div className="hiring-results__body">
                 {filteredJobs.length === 0 ? (
                   <HiringEmptyState />
@@ -147,11 +132,9 @@ export default function Hiring() {
           </main>
         </div>
       )}
-
       {headerTab === "referrals" && (
         <MyReferrals onReferCandidate={goToJobs} />
       )}
-
       {headerTab === "applied" && (
         <AppliedJobs onApplyForJob={goToJobs} />
       )}

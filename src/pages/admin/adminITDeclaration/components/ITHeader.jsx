@@ -2,7 +2,6 @@ import React from "react";
 import { FileText } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const ITHeader = React.memo(function ITHeader({ cycle, isActive, tab, setTab, submittedCount }) {
   return (
     <div className={cssClass({
@@ -36,5 +35,4 @@ const ITHeader = React.memo(function ITHeader({ cycle, isActive, tab, setTab, su
     </div>
   );
 });
-
 export default ITHeader;

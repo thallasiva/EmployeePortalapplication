@@ -1,7 +1,6 @@
 import React from "react";
 import { Lock } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 function LockedBanner() {
   return (
     <div className={cssClass({ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 18px",
@@ -14,5 +13,4 @@ function LockedBanner() {
     </div>
   );
 }
-
 export default React.memo(LockedBanner);

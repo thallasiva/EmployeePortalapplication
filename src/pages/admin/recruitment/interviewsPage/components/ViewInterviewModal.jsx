@@ -1,6 +1,5 @@
 import React from "react";
 import { Modal, DetailRow, Btn } from "../shared";
-
 const ViewInterviewModal = React.memo(function ViewInterviewModal({
   viewIv,
   canFeedback,
@@ -85,5 +84,4 @@ const ViewInterviewModal = React.memo(function ViewInterviewModal({
     </Modal>
   );
 });
-
 export default ViewInterviewModal;

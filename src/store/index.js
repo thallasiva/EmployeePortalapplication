@@ -12,7 +12,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import referenceDataReducer from "./slices/referenceDataSlice";
 import notificationsReducer from "./slices/notificationsSlice";
-
 export const store = configureStore({
   reducer: {
     referenceData: referenceDataReducer,
@@ -27,5 +26,4 @@ export const store = configureStore({
     }),
   devTools: process.env.NODE_ENV !== "production",
 });
-
 export default store;

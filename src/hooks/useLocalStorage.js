@@ -1,6 +1,4 @@
-
 import { useCallback, useState } from "react";
-
 export function useLocalStorage(key, initialValue) {
   const [stored, setStored] = useState(() => {
     try {
@@ -10,7 +8,6 @@ export function useLocalStorage(key, initialValue) {
       return initialValue;
     }
   });
-
   const setValue = useCallback((value) => {
     try {
       const toStore = value instanceof Function ? value(stored) : value;
@@ -20,13 +17,11 @@ export function useLocalStorage(key, initialValue) {
       console.warn("[useLocalStorage] write failed:", key, err);
     }
   }, [key, stored]);
-
   const remove = useCallback(() => {
     try {
       window.localStorage.removeItem(key);
       setStored(initialValue);
     } catch {}
   }, [key, initialValue]);
-
   return [stored, setValue, remove];
 }

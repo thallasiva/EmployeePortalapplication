@@ -1,6 +1,5 @@
 import React from "react";
 import PendingEmptyIllustration from "./PendingEmptyIllustration";
-
 const PendingTab = React.memo(function PendingTab({ pendingItems }) {
   return (
     <div className="flex-1 bg-white border border-slate-200 rounded-lg">
@@ -29,5 +28,4 @@ const PendingTab = React.memo(function PendingTab({ pendingItems }) {
     </div>
   );
 });
-
 export default PendingTab;

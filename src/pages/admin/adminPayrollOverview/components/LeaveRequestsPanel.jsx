@@ -2,7 +2,6 @@ import React from "react";
 import { CalendarClock } from "lucide-react";
 import Card from "./Card";
 import { cssClass } from "../../../../utils/classStyles";
-
 // rows = [{ employee_name, leave_type_name, days, status }]
 export default function LeaveRequestsPanel({ rows = [], onViewAll }) {
   return (

@@ -2,7 +2,6 @@ import React from "react";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import Card from "./Card";
 import { cssClass } from "../../../../utils/classStyles";
-
 export default function ExceptionsPanel({ items = [], total = 0, onViewAll }) {
   return (
     <Card

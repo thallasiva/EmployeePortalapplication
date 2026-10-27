@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { getEmployeeDirectory } from "../../../../../api/employee.api";
 import { listHolidays } from "../../../../../api/holiday.api";
-
 export function useEngageData() {
   const [employees, setEmployees] = useState([]);
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const yr = new Date().getFullYear();
     setLoading(true);
@@ -22,6 +20,5 @@ export function useEngageData() {
       setHolidays(arr(hol));
     }).finally(() => setLoading(false));
   }, []);
-
   return { employees, holidays, loading };
 }

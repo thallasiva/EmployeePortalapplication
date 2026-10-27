@@ -10,5 +10,4 @@ function Card({ title, action, children })
     </section>
   );
 }
-
 export default Card;

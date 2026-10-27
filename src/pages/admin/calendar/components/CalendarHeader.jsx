@@ -1,7 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { EVENT_TYPES, MONTHS } from '../constants/eventTypes';
-
 const CalendarHeader = React.memo(function CalendarHeader({
   typeFilter,
   onTypeFilterChange,
@@ -24,7 +23,6 @@ const CalendarHeader = React.memo(function CalendarHeader({
           <option key={key} value={key}>{cfg.label}</option>
         ))}
       </select>
-
       <div className="flex items-center gap-2 ml-auto">
         <button type="button" onClick={onPrevMonth} className="p-1.5 hover:bg-slate-100 rounded-lg">
           <ChevronLeft size={16} />
@@ -36,7 +34,6 @@ const CalendarHeader = React.memo(function CalendarHeader({
           <ChevronRight size={16} />
         </button>
       </div>
-
       <div className="flex border border-slate-200 rounded-lg overflow-hidden text-sm">
         {['month', 'week', 'list'].map((v) => (
           <button
@@ -54,5 +51,4 @@ const CalendarHeader = React.memo(function CalendarHeader({
     </div>
   );
 });
-
 export default CalendarHeader;

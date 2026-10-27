@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import { CycleTypeBadge } from "./Badges";
-
 const ActiveRolloutBanner = React.memo(function ActiveRolloutBanner({ activeCycle, onStopRollout, onStartRollout }) {
   if (activeCycle) {
     return (
@@ -28,7 +27,6 @@ const ActiveRolloutBanner = React.memo(function ActiveRolloutBanner({ activeCycl
       </div>
     );
   }
-
   return (
     <div className={cssClass({ background: "#fafafa", border: "1.5px dashed #e2e8f0", borderRadius: 12, padding: "12px 18px", marginBottom: 22, display: "flex", alignItems: "center", gap: 12 })}>
       <AlertCircle size={18} className={cssClass({ color: "#94a3b8", flexShrink: 0 })} />
@@ -43,5 +41,4 @@ const ActiveRolloutBanner = React.memo(function ActiveRolloutBanner({ activeCycl
     </div>
   );
 });
-
 export default ActiveRolloutBanner;

@@ -3,7 +3,6 @@ import Card from "./Card";
 import { footerActionsClass, OFFER_ROWS, ONBOARDING_ROWS } from "./data";
 import DataTable from "./DataTable";
 import FieldGrid from "./FieldGrid";
-
 function OffersTab()
 {
   return (
@@ -23,7 +22,5 @@ function OffersTab()
         <DataTable columns={["Candidate", "Current Status of Employee", "Effective Date", "Onboard", "Review Forms Submitted"]} rows={ONBOARDING_ROWS} />
       </Card>
     </>);
-
 }
-
 export default OffersTab;

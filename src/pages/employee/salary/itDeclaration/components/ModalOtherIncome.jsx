@@ -2,7 +2,6 @@ import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import Modal from "./Modal";
-
 function ModalOtherIncome({ incomes, setIncomes, onClose }) {
   const list = incomes.length ? incomes : [{ particulars: "", amount: 0 }];
   const addIncome = () => setIncomes((prev) => [...prev, { particulars: "", amount: 0 }]);
@@ -10,12 +9,10 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
   const update = (i, k, v) =>
     setIncomes((prev) => prev.map((x, idx) => (idx === i ? { ...x, [k]: v } : x)));
   const total = list.reduce((s, r) => s + (Number(r.amount) || 0), 0);
-
   const inp = {
     padding: "7px 10px", border: "1px solid #d1d5db", borderRadius: 4,
     fontSize: 13, outline: "none", fontFamily: "inherit", background: "#fff"
   };
-
   return (
     <Modal
       title="Other Sources of Income"
@@ -36,7 +33,6 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
           Amount declared under 153(2)(a)/153(2)(b) would be auto considered under Other Income
         </div>
       </div>
-
       {}
       {list.map((inc, i) => (
         <div key={i}>
@@ -52,7 +48,6 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
               </button>
             )}
           </div>
-
           {}
           <div className={cssClass({ padding: "16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 })}>
             <div>
@@ -76,7 +71,6 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
           </div>
         </div>
       ))}
-
       {}
       <div className={cssClass({ padding: "8px 16px 4px" })}>
         <button type="button" onClick={addIncome} className={cssClass(
@@ -88,5 +82,4 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
     </Modal>
   );
 }
-
 export default React.memo(ModalOtherIncome);

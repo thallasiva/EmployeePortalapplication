@@ -1,27 +1,10 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
 let purify = null;
 try {
-
-
   purify = require("dompurify");
   if (purify.default) purify = purify.default;
 } catch {
   purify = null;
 }
-
-
 const ALLOWED_TAGS = new Set([
 "p", "br", "b", "i", "u", "strong", "em", "span", "div", "ul", "ol", "li",
 "h1", "h2", "h3", "h4", "h5", "h6", "a", "table", "thead", "tbody", "tr", "th", "td",
@@ -29,10 +12,8 @@ const ALLOWED_TAGS = new Set([
 );
 const ALLOWED_ATTRS = new Set(["href", "title", "class", "id", "target", "rel"]);
 const SAFE_PROTOCOLS = /^(https?|mailto):/i;
-
 function fallbackSanitize(dirty) {
   const doc = new DOMParser().parseFromString(dirty, "text/html");
-
   function clean(node) {
     const toRemove = [];
     node.childNodes.forEach((child) => {
@@ -42,7 +23,6 @@ function fallbackSanitize(dirty) {
           toRemove.push(child);
           return;
         }
-
         Array.from(child.attributes).forEach((attr) => {
           if (!ALLOWED_ATTRS.has(attr.name)) {
             child.removeAttribute(attr.name);
@@ -50,7 +30,6 @@ function fallbackSanitize(dirty) {
             child.removeAttribute("href");
           }
         });
-
         if (tag === "a") {
           child.setAttribute("rel", "noopener noreferrer");
           if (!child.hasAttribute("target")) child.setAttribute("target", "_blank");
@@ -62,17 +41,9 @@ function fallbackSanitize(dirty) {
     });
     toRemove.forEach((n) => n.parentNode?.removeChild(n));
   }
-
   clean(doc.body);
   return doc.body.innerHTML;
 }
-
-
-
-
-
-
-
 export function sanitize(dirty, opts = {}) {
   if (!dirty) return "";
   if (purify) {
@@ -85,44 +56,23 @@ export function sanitize(dirty, opts = {}) {
   }
   return fallbackSanitize(String(dirty));
 }
-
-
-
-
-
 export function safeHtml(dirty, opts) {
   return { __html: sanitize(dirty, opts) };
 }
-
-
 export function stripHtml(dirty) {
   if (!dirty) return "";
   const doc = new DOMParser().parseFromString(dirty, "text/html");
   return doc.body.textContent || "";
 }
-
-
-
-
-
 export function escapeHtml(value) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
   return String(value ?? '').replace(/[&<>"']/g, (c) => map[c]);
 }
-
-
-
-
-
-
 export function suppressConsoleLogs() {
   if (process.env.NODE_ENV === 'production') {
     const noop = () => {};
-
     window.console.log = noop;
     window.console.debug = noop;
     window.console.info = noop;
-
-
   }
 }

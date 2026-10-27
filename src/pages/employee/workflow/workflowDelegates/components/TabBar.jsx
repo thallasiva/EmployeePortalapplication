@@ -1,12 +1,10 @@
 import React from "react";
 import { GitBranch, Users } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const TABS = [
   { key: "mine", label: "My Delegates", icon: <GitBranch size={14} /> },
   { key: "delegated", label: "Delegated to Me", icon: <Users size={14} /> },
 ];
-
 const TabBar = React.memo(function TabBar({ tab, onTabChange }) {
   return (
     <div className={cssClass({ display: "flex", gap: 4, marginBottom: 20 })}>
@@ -32,5 +30,4 @@ const TabBar = React.memo(function TabBar({ tab, onTabChange }) {
     </div>
   );
 });
-
 export default TabBar;

@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { TICKET_STATUS_CONFIG } from "../constants";
-
 const TicketBadge = React.memo(function TicketBadge({ status }) {
   const cfg = TICKET_STATUS_CONFIG[status] || { bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" };
   return (
@@ -14,5 +13,4 @@ const TicketBadge = React.memo(function TicketBadge({ status }) {
     </span>
   );
 });
-
 export default TicketBadge;

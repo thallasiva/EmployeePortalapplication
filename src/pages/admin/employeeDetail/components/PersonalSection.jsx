@@ -7,7 +7,6 @@ import SectionHead from "./SectionHead";
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
 import Row from "./Row";
-
 const PersonalSection = React.memo(function PersonalSection({
   employee, editMode, form, set,
 }) {
@@ -36,5 +35,4 @@ const PersonalSection = React.memo(function PersonalSection({
     </div>
   );
 });
-
 export default PersonalSection;

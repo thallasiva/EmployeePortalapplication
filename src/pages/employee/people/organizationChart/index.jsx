@@ -5,24 +5,20 @@ import { useOrgChart } from "./hooks/useOrgChart";
 import OrgToolbar from "./components/OrgToolbar";
 import Legend from "./components/Legend";
 import OrgCanvas from "./components/OrgCanvas";
-
 const OrganizationChart = React.memo(function OrganizationChart() {
   const [search, setSearch] = useState("");
   const [zoom, setZoom] = useState(100);
   const [expandedLevels, setExpandedLevels] = useState(0);
-
   const {
     selfEmp, selfId, manager, team,
     ancestorChain, depts, selfDirectReports,
     loading, error,
   } = useOrgChart();
-
   const visibleAncestors = useMemo(
     () => ancestorChain.slice(Math.max(0, ancestorChain.length - expandedLevels)),
     [ancestorChain, expandedLevels],
   );
   const canExpandMore = expandedLevels < ancestorChain.length;
-
   const onExpand = useCallback(
     () => setExpandedLevels((l) => Math.min(l + 1, ancestorChain.length)),
     [ancestorChain.length],
@@ -32,7 +28,6 @@ const OrganizationChart = React.memo(function OrganizationChart() {
   const onZoomIn = useCallback(() => setZoom((z) => Math.min(160, z + 10)), []);
   const onZoomOut = useCallback(() => setZoom((z) => Math.max(40, z - 10)), []);
   const onZoomReset = useCallback(() => setZoom(100), []);
-
   return (
     <div className={cssClass({
       height: "calc(100vh - 4.25rem)", background: "#f5f7fb",
@@ -48,9 +43,7 @@ const OrganizationChart = React.memo(function OrganizationChart() {
         onZoomOut={onZoomOut}
         onZoomReset={onZoomReset}
       />
-
       {!loading && !error && <Legend depts={depts} />}
-
       <OrgCanvas
         loading={loading}
         error={error}
@@ -68,12 +61,11 @@ const OrganizationChart = React.memo(function OrganizationChart() {
         zoom={zoom}
         search={search}
       />
-
       <p className={cssClass({ fontSize: 10, color: "#94a3b8", textAlign: "center", margin: "6px 0 0", flexShrink: 0 })}>
         {manager ? (
           <>
             Click <strong>View Reporting Manager</strong> to navigate up ·{" "}
-            Use <strong>+</strong> / <strong>−</strong> to expand or collapse the upper hierarchy
+            Use the expand and collapse controls to navigate the upper hierarchy
           </>
         ) : (
           <>Your team is shown below your card</>
@@ -82,5 +74,4 @@ const OrganizationChart = React.memo(function OrganizationChart() {
     </div>
   );
 });
-
 export default OrganizationChart;

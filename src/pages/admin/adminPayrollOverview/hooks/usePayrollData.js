@@ -6,7 +6,6 @@ import { listEmployees } from "../../../../api/employee.api";
 import { listAttendance } from "../../../../api/attendance.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { MONTHS } from "../constants";
-
 export function usePayrollData(selected) {
   const [payslips, setPayslips] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -14,7 +13,6 @@ export function usePayrollData(selected) {
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -36,14 +34,12 @@ export function usePayrollData(selected) {
       setLoading(false);
     }
   }, [selected.month, selected.year]);
-
   useEffect(() => { load(); }, [load]);
-
   const handleProcess = useCallback(async () => {
     setProcessing(true);
     try {
       await runPayroll({ month: selected.month, year: selected.year });
-      successToast(`✅ Payroll processed for ${MONTHS[selected.month - 1]} ${selected.year}. Payslips are ready for review.`);
+      successToast(`Payroll processed for ${MONTHS[selected.month - 1]} ${selected.year}. Payslips are ready for review.`);
       load();
     } catch (e) {
       apiErrorToast(e, "process payroll");
@@ -51,6 +47,5 @@ export function usePayrollData(selected) {
       setProcessing(false);
     }
   }, [selected, load]);
-
   return { payslips, employees, attendanceRows, runs, loading, processing, handleProcess, load };
 }

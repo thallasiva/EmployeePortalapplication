@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import apiClient from "../../../../api/client";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
 import { ROLE_COLORS } from "../constants";
-
 export function useRoleManagement() {
   const [employees, setEmployees] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -11,24 +10,20 @@ export function useRoleManagement() {
   const [pickedRole, setPickedRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   const loadEmployees = useCallback(async () => {
     const r = await apiClient.get("/employees/with-roles");
     setEmployees(r?.data?.data ?? []);
   }, []);
-
   useEffect(() => {
     Promise.all([
       loadEmployees(),
       apiClient.get("/employees/roles/list").then((r) => setRoles(r?.data?.data ?? []))
     ]).catch(() => {}).finally(() => setLoading(false));
   }, [loadEmployees]);
-
   const selectEmployee = useCallback((emp) => {
     setSelected(emp);
     setPickedRole(emp.role_id ?? null);
   }, []);
-
   const handleDesignationSaved = useCallback((employeeId, newTitle) => {
     setEmployees((prev) =>
       prev.map((e) =>
@@ -43,7 +38,6 @@ export function useRoleManagement() {
         : prev
     );
   }, []);
-
   const handleSave = useCallback(async () => {
     if (!selected || !pickedRole) return;
     if (pickedRole === (selected.role_id ?? null)) {
@@ -62,7 +56,6 @@ export function useRoleManagement() {
       setSaving(false);
     }
   }, [selected, pickedRole, loadEmployees]);
-
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return employees.filter((e) => {
@@ -75,17 +68,14 @@ export function useRoleManagement() {
       );
     });
   }, [employees, search]);
-
   const getRoleLabel = useCallback(
     (roleId) => roles.find((r) => r.role_id === roleId)?.role_name || "—",
     [roles]
   );
-
   const getRoleStyle = useCallback(
     (roleId) => ROLE_COLORS[roleId] || ROLE_COLORS[2],
     []
   );
-
   return {
     employees,
     roles,

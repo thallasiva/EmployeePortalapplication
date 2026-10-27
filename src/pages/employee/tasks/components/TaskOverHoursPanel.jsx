@@ -2,7 +2,6 @@ import { memo } from "react";
 import { fmtDuration } from "../utils/dateUtils";
 import { MAX_DAILY_HOURS } from "../constants/taskConstants";
 import { AlertTriangle, Ban, Zap } from "lucide-react";
-
 const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
   isOverHours,
   exceedsWithExisting,
@@ -30,7 +29,6 @@ const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
       </div>
     );
   }
-
   if (exceedsWithExisting) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 space-y-2">
@@ -64,8 +62,6 @@ const TaskOverHoursPanel = memo(function TaskOverHoursPanel({
       </div>
     );
   }
-
   return null;
 });
-
 export default TaskOverHoursPanel;

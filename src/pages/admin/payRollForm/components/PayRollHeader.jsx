@@ -1,6 +1,5 @@
 import React from "react";
 import { ChevronDown, Download, Plus } from "lucide-react";
-
 const PayRollHeader = React.memo(function PayRollHeader({
   exportOpen,
   onToggleExport,
@@ -61,5 +60,4 @@ const PayRollHeader = React.memo(function PayRollHeader({
     </div>
   );
 });
-
 export default PayRollHeader;

@@ -4,13 +4,11 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { getStoredUser, isAdmin, isReportingManager } from "../../../../../data/auth";
 import { TABS, showTabs } from "../constants";
 import PanelRouter from "./PanelRouter";
-
 const ReviewMain = React.memo(function ReviewMain({
   activeItem, statusFilter, onStatusFilter, search, onSearch,
 }) {
   const user = getStoredUser();
   const isPrivileged = isAdmin(user) || isReportingManager(user);
-
   return (
     <main className={cssClass({ flex: 1, padding: "24px 28px", minWidth: 0, background: "#f8fafc" })}>
       {/* Header */}
@@ -25,7 +23,6 @@ const ReviewMain = React.memo(function ReviewMain({
             : " · Your requests"}
         </p>
       </div>
-
       {/* Toolbar */}
       {activeItem?.dataType !== "coming-soon" && (
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" })}>
@@ -54,7 +51,6 @@ const ReviewMain = React.memo(function ReviewMain({
               })}
             </div>
           )}
-
           <div className={cssClass({ display: "flex", alignItems: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "0 12px", gap: 8, height: 38, minWidth: 220 })}>
             <Search size={14} className={cssClass({ color: "#94a3b8", flexShrink: 0 })} />
             <input
@@ -67,7 +63,6 @@ const ReviewMain = React.memo(function ReviewMain({
           </div>
         </div>
       )}
-
       {/* Panel */}
       <div className={cssClass({
         background: "#fff",
@@ -85,5 +80,4 @@ const ReviewMain = React.memo(function ReviewMain({
     </main>
   );
 });
-
 export default ReviewMain;

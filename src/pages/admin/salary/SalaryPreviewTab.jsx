@@ -3,7 +3,6 @@ import { RefreshCw, Eye } from "lucide-react";
 import { computeCTC } from "../../../api/salaryComponent.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
 import { fmtINR } from "./salaryHelpers";
-
 function Section({ title, items, colorClass }) {
   const total = items.reduce((s, c) => s + (c.monthly_amount || 0), 0);
   return (
@@ -27,14 +26,11 @@ function Section({ title, items, colorClass }) {
         </div>
       }
     </div>);
-
 }
-
 export default function SalaryPreviewTab({ structureId }) {
   const [ctcM, setCtcM] = useState(100000);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const compute = useCallback(async () => {
     if (!structureId || ctcM < 1000) return;
     setLoading(true);
@@ -42,9 +38,7 @@ export default function SalaryPreviewTab({ structureId }) {
     catch (err) { apiErrorToast(err, "compute salary preview"); } finally
     {setLoading(false);}
   }, [structureId, ctcM]);
-
   useEffect(() => {compute();}, [compute]);
-
   const components = result?.components ?? [];
   const earnings = components.filter((c) => c.category === "Earning");
   const deductions = components.filter((c) => c.category === "Deduction");
@@ -52,7 +46,6 @@ export default function SalaryPreviewTab({ structureId }) {
   const totalE = earnings.reduce((s, c) => s + (c.monthly_amount || 0), 0);
   const totalD = deductions.reduce((s, c) => s + (c.monthly_amount || 0), 0);
   const net = Math.max(0, totalE - totalD);
-
   return (
     <div className="p-5">
       {}
@@ -65,7 +58,6 @@ export default function SalaryPreviewTab({ structureId }) {
             type="number" value={ctcM} min={1000}
             onChange={(e) => setCtcM(Number(e.target.value))}
             className="pl-7 pr-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-400 w-36" />
-
         </div>
         <span className="text-xs text-gray-400">Annual: ₹{(ctcM * 12).toLocaleString("en-IN")}</span>
         <button onClick={compute}
@@ -74,29 +66,24 @@ export default function SalaryPreviewTab({ structureId }) {
         </button>
         {loading && <span className="text-xs text-indigo-400 animate-pulse">Computing…</span>}
       </div>
-
       {!result ?
       <div className="text-center py-12 text-gray-400 text-sm">
           {loading ? "Computing…" : !structureId ? "Save the structure first to preview calculations." : "Enter CTC above and click Recalculate."}
         </div> :
-
       <div className="grid grid-cols-2 gap-10">
           {}
           <div className="space-y-6">
             <Section title="Earnings" items={earnings} colorClass="text-green-700" />
             <Section title="Deductions" items={deductions} colorClass="text-red-700" />
-
             {}
             <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-xl px-4 py-3">
               <span className="font-semibold text-green-800">Net Salary (Take Home)</span>
               <span className="text-lg font-bold text-green-700">{fmtINR(net)}</span>
             </div>
           </div>
-
           {}
           <div className="space-y-6">
             <Section title="Employer Contributions" items={employer} colorClass="text-blue-700" />
-
             {}
             <div className="bg-[#1e3a5f] text-white rounded-2xl p-5 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-4">CTC Summary (Annual)</p>
@@ -119,5 +106,4 @@ export default function SalaryPreviewTab({ structureId }) {
         </div>
       }
     </div>);
-
 }

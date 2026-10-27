@@ -3,7 +3,6 @@ import { ChevronDown, ChevronRight, Search, Download } from "lucide-react";
 import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { toJumpId } from "../utils";
-
 const PayslipsView = React.memo(function PayslipsView({
   payslipByYear, payslipYearOpen, setPayslipYearOpen,
   payslipMonthOpen, togglePayslipMonth,
@@ -16,7 +15,6 @@ const PayslipsView = React.memo(function PayslipsView({
         <JumpList
           items={["2026", "2025", "2024"]}
           onJump={(item) => jumpToSection(item, () => setPayslipYearOpen((curr) => ({ ...curr, [item]: true })))} />
-
         <div className="flex-1 p-2 max-h-[520px] overflow-y-auto" data-doc-scroll>
           {Object.entries(payslipByYear).map(([year, rows]) => (
             <div key={year} id={toJumpId(year)} className="border border-[#dfe5ed] mb-2 bg-white">
@@ -28,7 +26,6 @@ const PayslipsView = React.memo(function PayslipsView({
                   {year}
                 </span>
               </button>
-
               {payslipYearOpen[year] &&
                 <div>
                   {rows.length === 0 ? (
@@ -48,7 +45,6 @@ const PayslipsView = React.memo(function PayslipsView({
                           </div>
                           <span className="text-[11px] text-[#a4afbf] shrink-0 ml-2">Last updated on {row.date}</span>
                         </button>
-
                         {monthOpen && row.file &&
                           <div className="px-3 pb-3 ml-5">
                             <div className="border border-[#dfe5ed] h-8 px-3 text-[12px] inline-flex items-center gap-8 bg-white">
@@ -78,5 +74,4 @@ const PayslipsView = React.memo(function PayslipsView({
     </div>
   );
 });
-
 export default PayslipsView;

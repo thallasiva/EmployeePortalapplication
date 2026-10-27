@@ -4,10 +4,8 @@ import { fmtINR } from "../utils/formatters";
 import { ORANGE } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
 import Table from "./Table";
-
 const OvertimeRegister = React.memo(function OvertimeRegister({ month, year }) {
   const { rows, loading } = useOvertimeRegister(month, year);
-
   const cols = useMemo(() => [
     { key: "emp_code", label: "Emp Code" },
     { key: "employee_name", label: "Employee" },
@@ -35,14 +33,11 @@ const OvertimeRegister = React.memo(function OvertimeRegister({ month, year }) {
     },
     { key: "net_pay", label: "Net Pay", right: true, render: (r) => fmtINR(r.net_pay) },
   ], []);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   return (
     <Table cols={cols} rows={rows} emptyMsg="No payslip data for this month" />
   );
 });
-
 export default OvertimeRegister;

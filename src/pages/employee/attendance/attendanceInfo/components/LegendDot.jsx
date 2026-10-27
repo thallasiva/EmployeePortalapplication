@@ -1,5 +1,4 @@
 import React from "react";
-
 const LegendDot = React.memo(function LegendDot({ color, label }) {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -8,5 +7,4 @@ const LegendDot = React.memo(function LegendDot({ color, label }) {
     </span>
   );
 });
-
 export default LegendDot;

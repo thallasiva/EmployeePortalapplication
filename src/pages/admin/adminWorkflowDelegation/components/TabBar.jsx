@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
-
 const TabBar = React.memo(function TabBar({ tabs, activeTab, setActiveTab, stats }) {
   return (
     <div className={cssClass({
@@ -43,5 +42,4 @@ const TabBar = React.memo(function TabBar({ tabs, activeTab, setActiveTab, stats
     </div>
   );
 });
-
 export default TabBar;

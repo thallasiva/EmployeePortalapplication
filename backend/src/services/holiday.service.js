@@ -1,12 +1,10 @@
 const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
 function toDateStr(val) {
   if (!val) return null;
   if (/^\d{4}-\d{2}-\d{2}$/.test(String(val))) return String(val);
   return new Date(val).toISOString().slice(0, 10);
 }
-
 class HolidayService {
   async list({ year, holiday_calendar, shift, location, limit, offset } = {}) {
     const results = await callProcedure(
@@ -24,17 +22,14 @@ class HolidayService {
     const countSet = Array.isArray(results[1]) ? results[1] : [];
     return { rows: rowsSet, total: countSet[0]?.total ?? rowsSet.length };
   }
-
   async listLocations() {
     const results = await callProcedure('sp_list_holiday_locations()', []);
     return (Array.isArray(results[0]) ? results[0] : []).map((r) => r.location);
   }
-
   async getById(id) {
     const results = await callProcedure('sp_get_holiday_by_id(?)', [id]);
     return (results[0] ?? [])[0] || null;
   }
-
   async create(data) {
     const { outs: out } = await callProcedureWithOuts(
       'sp_create_holiday(?, ?, ?, ?, ?, ?, @p_holiday_id)',
@@ -49,7 +44,6 @@ class HolidayService {
     );
     return { holiday_id: out.p_holiday_id };
   }
-
   async update(id, data) {
     await callProcedure(
       'sp_update_holiday(?, ?, ?, ?, ?, ?, ?)',
@@ -65,19 +59,15 @@ class HolidayService {
     );
     return { updated: true };
   }
-
   async delete(id) {
     await callProcedure('sp_delete_holiday(?)', [Number(id)]);
     return { deleted: true };
   }
-
   async bulkCreate(holidays) {
     const entries = (holidays || []).filter((h) => h.holiday_name && h.holiday_date);
     if (entries.length === 0) throw ApiError.badRequest('No valid holiday rows to import');
-
     const VALID_SHIFTS = ['general', 'mid', 'night'];
     let imported = 0;
-
     for (const h of entries) {
       const shift = VALID_SHIFTS.includes((h.shift || '').toLowerCase()) ? h.shift.toLowerCase() : 'general';
       await callProcedure('sp_import_holiday(?, ?, ?, ?, ?, ?)', [
@@ -90,9 +80,7 @@ class HolidayService {
       ]);
       imported++;
     }
-
     return { imported };
   }
 }
-
 module.exports = new HolidayService();

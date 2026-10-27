@@ -1,7 +1,6 @@
 import React from "react";
 import { STATUS_STYLES } from "../constants";
 import { formatDate } from "../utils";
-
 const RequestCard = React.memo(function RequestCard({ row, onCancel, cancelling }) {
   const st = STATUS_STYLES[row.status] || STATUS_STYLES.Pending;
   return (
@@ -15,7 +14,6 @@ const RequestCard = React.memo(function RequestCard({ row, onCancel, cancelling 
           {row.status}
         </span>
       </div>
-
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[13px] text-[#64748b]">
         <span>
           <strong className="text-[#374151]">From:</strong>{" "}
@@ -42,7 +40,6 @@ const RequestCard = React.memo(function RequestCard({ row, onCancel, cancelling 
           </span>
         )}
       </div>
-
       {row.status === "Pending" && (
         <div className="mt-3">
           <button
@@ -58,5 +55,4 @@ const RequestCard = React.memo(function RequestCard({ row, onCancel, cancelling 
     </div>
   );
 });
-
 export default RequestCard;

@@ -6,16 +6,13 @@
  *   cd backend\database
  *   node deploy_procedures.js
  */
-
 const mysql = require('mysql2/promise');
 const fs    = require('fs');
 const path  = require('path');
-
 if (!process.env.PROD_DB_PASSWORD) {
   console.error('Set PROD_DB_PASSWORD (the production DB password is no longer stored in this file).');
   process.exit(1);
 }
-
 const DB_CONFIG = {
   host:     'hrms.c02gczm2cgx8.us-east-1.rds.amazonaws.com',
   port:     4306,
@@ -25,15 +22,12 @@ const DB_CONFIG = {
   multipleStatements: false,
   connectTimeout: 30000,
 };
-
 const SQL_FILE = path.join(__dirname, 'all_procedures.sql');
-
 function parseStatements(sqlContent) {
   // The file uses $$ as terminator (no DELIMITER declaration at top).
   // Split the whole file on $$ to get individual statements.
   const chunks = sqlContent.split('$$');
   const statements = [];
-
   for (const chunk of chunks) {
     // Drop DELIMITER directives (client-side only) and leading comment lines, but keep the
     // statement underneath them — skipping any chunk that merely starts with a comment
@@ -44,32 +38,24 @@ function parseStatements(sqlContent) {
       .replace(/^(\s*--[^\n]*\n)+/, '')
       .trim();
     if (!stmt || stmt.startsWith('--') || stmt.length < 10) continue;
-
     // Remove standalone USE statements (we're already on the right DB)
     if (/^\s*USE\s+\w+\s*;?\s*$/i.test(stmt)) continue;
-
     // Remove pure comment blocks
     const noComments = stmt.replace(/--[^\n]*/g, '').trim();
     if (!noComments) continue;
-
     statements.push(stmt);
   }
-
   return statements;
 }
-
 async function main() {
   if (!fs.existsSync(SQL_FILE)) {
     console.error(`ERROR: ${SQL_FILE} not found.`);
     process.exit(1);
   }
-
   const sqlContent = fs.readFileSync(SQL_FILE, 'utf8');
   console.log(`Read all_procedures.sql (${sqlContent.length.toLocaleString()} bytes)`);
-
   const statements = parseStatements(sqlContent);
   console.log(`Found ${statements.length} statements to execute\n`);
-
   console.log(`Connecting to ${DB_CONFIG.host}:${DB_CONFIG.port} ...`);
   let conn;
   try {
@@ -79,10 +65,8 @@ async function main() {
     console.error(`Connection failed: ${err.message}`);
     process.exit(1);
   }
-
   let success = 0, errors = 0;
   const failed = [];
-
   for (let i = 0; i < statements.length; i++) {
     const stmt = statements[i];
     try {
@@ -104,7 +88,6 @@ async function main() {
       }
     }
   }
-
   // Verify count
   let dbCount = '?';
   try {
@@ -114,20 +97,16 @@ async function main() {
     );
     dbCount = rows[0].cnt;
   } catch (_) {}
-
   await conn.end();
-
   console.log('\n' + '='.repeat(60));
   console.log('DEPLOYMENT COMPLETE');
   console.log(`  Procedures created successfully : ${success}`);
   console.log(`  Errors                         : ${errors}`);
   console.log(`  Procedures in DB (verified)    : ${dbCount}`);
   console.log('='.repeat(60));
-
   if (failed.length) {
     console.log(`\nFailed (${failed.length}):`);
     failed.forEach(f => console.log(`  - ${f.name}: ${f.error}`));
   }
 }
-
 main().catch(err => { console.error(err); process.exit(1); });

@@ -10,7 +10,6 @@ import JobsPeriodTabs from "./components/JobsPeriodTabs";
 import JobsFilters from "./components/JobsFilters";
 import JobDetailModal from "./components/JobDetailModal";
 import AssignRecruiterModal from "./components/AssignRecruiterModal";
-
 function JobsPage({ role }) {
   const navigate = useNavigate();
   const isAdmin = role === 1;
@@ -18,7 +17,6 @@ function JobsPage({ role }) {
   const canCreate = isAdmin || isTL;
   const canAssign = isAdmin || isTL;
   const canClose = isAdmin || isTL;
-
   const {
     totalCount, recruiters, loading, search, setSearch,
     filterStatus, setFilterStatus, period, setPeriod,
@@ -27,12 +25,10 @@ function JobsPage({ role }) {
     openAssign, closeAssign, handleAssign, handleClose,
     visibleJobs, periodCounts, totalOpen, totalCompleted,
   } = useJobsPage();
-
   const columns = useMemo(
     () => makeColumns({ canAssign, canClose, setDetailJob, openAssign, handleClose }),
     [canAssign, canClose, setDetailJob, openAssign, handleClose]
   );
-
   return (
     <div>
       <PageHeader
@@ -50,13 +46,11 @@ function JobsPage({ role }) {
           ) : null
         }
       />
-
       <JobsStatCards
         totalCount={totalCount}
         totalOpen={totalOpen}
         totalCompleted={totalCompleted}
       />
-
       <Card style={{ padding: 0 }}>
         <JobsPeriodTabs period={period} setPeriod={setPeriod} periodCounts={periodCounts} />
         <JobsFilters
@@ -75,7 +69,6 @@ function JobsPage({ role }) {
           <Table columns={columns} data={visibleJobs} onRowClick={(row) => setDetailJob(row)} />
         )}
       </Card>
-
       <JobDetailModal
         detailJob={detailJob}
         onClose={() => setDetailJob(null)}
@@ -96,5 +89,4 @@ function JobsPage({ role }) {
     </div>
   );
 }
-
 export default React.memo(JobsPage);

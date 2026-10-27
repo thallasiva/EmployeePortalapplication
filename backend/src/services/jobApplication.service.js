@@ -1,7 +1,6 @@
 const BaseService = require('./base.service');
 const { callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
 class JobApplicationService extends BaseService {
   constructor() {
     super('job_applications', 'application_id', [
@@ -9,7 +8,6 @@ class JobApplicationService extends BaseService {
       'status', 'source', 'applicant_employee_id',
     ]);
   }
-
   async list({ job_id, status, search, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_job_applications(?, ?, ?, ?, ?)',
@@ -23,12 +21,10 @@ class JobApplicationService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getDetails(id) {
     const results = await callProcedure('sp_get_job_application(?)', [id]);
     return (results[0] ?? [])[0] ?? null;
   }
-
   async updateStatus(id, status) {
     const exists = await this.existsById(id);
     if (!exists) throw ApiError.notFound('Application not found');
@@ -36,5 +32,4 @@ class JobApplicationService extends BaseService {
     return this.getDetails(id);
   }
 }
-
 module.exports = new JobApplicationService();

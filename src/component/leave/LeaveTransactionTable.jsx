@@ -1,6 +1,5 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-
 function DateSessionCell({ date, session }) {
   if (!session) {
     return <span>{date}</span>;
@@ -12,7 +11,6 @@ function DateSessionCell({ date, session }) {
     </div>
   );
 }
-
 export default function LeaveTransactionTable({ transactions }) {
   const columns = [
     "Transaction type",
@@ -24,7 +22,6 @@ export default function LeaveTransactionTable({ transactions }) {
     "Remarks",
     "Expiry Date",
   ];
-
   return (
     <table className="w-full border-collapse text-[13px] min-w-[900px]">
       <thead>

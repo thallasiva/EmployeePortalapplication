@@ -1,5 +1,3 @@
-
-
 export const POSITION_TYPES = ['Contract', 'Contract to Hire', 'Direct Hire'];
 export const BUSINESS_UNITS = ['Nat IT', 'Natsoft'];
 export const ASSIGNMENT_STATUSES = ['Open', 'Closed', 'Completed', 'Hold'];
@@ -8,7 +6,6 @@ export const INTERVIEW_LEVELS = ['Round 1', 'Round 2', 'Round 3', 'HR', 'Final']
 export const INTERVIEW_TYPES = ['Video Call', 'Phone', 'In-Person', 'Teams', 'GoogleMeet', 'Zoom'];
 export const FEEDBACK_STATUSES = ['Shortlist', 'Move to Next Round', 'Reject / Drop'];
 export const GENDERS = ['Male', 'Female', 'Other'];
-
 export const CANDIDATE_STATUSES = {
   'Work in Progress': { color: '#1d4ed8', bg: '#dbeafe', label: 'Work in Progress' },
   'Schedule Interview': { color: '#7c3aed', bg: '#ede9fe', label: 'Schedule Interview' },
@@ -21,13 +18,10 @@ export const CANDIDATE_STATUSES = {
   'Joining Formalities': { color: '#0891b2', bg: '#cffafe', label: 'Joining Formalities' },
   'Onboarded': { color: '#166534', bg: '#dcfce7', label: 'Onboarded' }
 };
-
 export const MOCK_RECRUITERS = [
 { id: 21, name: 'Sarah Johnson', email: 'teamlead@yopmail.com', role: 'Team Lead' },
 { id: 22, name: 'Mike Williams', email: 'recruiter1@yopmail.com', role: 'Recruiter' },
 { id: 23, name: 'Emily Chen', email: 'recruiter2@yopmail.com', role: 'Recruiter' }];
-
-
 export const MOCK_JOBS = [
 {
   id: 'JOB001', title: 'Java Developer', client: 'ABC Ltd', company: 'Nat IT',
@@ -69,8 +63,6 @@ export const MOCK_JOBS = [
   skills: ['Figma', 'Adobe XD', 'Prototyping'],
   assignedRecruiters: [], createdDate: '2026-06-12', totalCandidates: 1
 }];
-
-
 export const MOCK_CANDIDATES = [
 {
   id: 'CAN001', jobId: 'JOB001', recruiterId: 22,
@@ -132,8 +124,6 @@ export const MOCK_CANDIDATES = [
   status: 'Onboarded', source: 'LinkedIn', resumeFile: 'priya_s_resume.pdf',
   addedDate: '2026-05-20'
 }];
-
-
 export const MOCK_INTERVIEWS = [
 {
   id: 'INT001', candidateId: 'CAN001', jobId: 'JOB001',
@@ -173,8 +163,6 @@ export const MOCK_INTERVIEWS = [
   feedbackStatus: null, feedbackComments: '',
   shortlisted: false
 }];
-
-
 export const MOCK_OFFERS = [
 {
   id: 'OFF001', candidateId: 'CAN001', jobId: 'JOB001',
@@ -202,8 +190,6 @@ export const MOCK_OFFERS = [
   offerStatus: 'Offer Accepted',
   sentDate: '2026-06-15', respondedDate: '2026-06-16'
 }];
-
-
 export const MOCK_ONBOARDING = [
 {
   id: 'ONB001', candidateId: 'CAN004', offerId: 'OFF002',
@@ -227,8 +213,6 @@ export const MOCK_ONBOARDING = [
   hrVerified: true, effectiveDate: '2026-05-01',
   status: 'Onboarded'
 }];
-
-
 export function getCandidateName(id) {
   return MOCK_CANDIDATES.find((c) => c.id === id)?.name || id;
 }

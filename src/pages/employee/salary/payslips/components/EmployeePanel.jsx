@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { MONTH_NAMES } from "../constants";
 import { fmtAmt } from "../utils";
-
 const EmployeePanel = React.memo(function EmployeePanel({
   user,
   payslip,
@@ -26,7 +25,6 @@ const EmployeePanel = React.memo(function EmployeePanel({
   const pfNo = empProfile?.pf_number || bankDetails?.pf_number || "—";
   const netPay = Number(payslip?.net_salary ?? payslip?.net_pay ?? 0);
   const monthLabel = month ? `${MONTH_NAMES[Number(month) - 1]} ${year}` : "—";
-
   return (
     <div className={cssClass({ background: "#fffde7", border: "1px solid #e8e1a0", borderRadius: 8, padding: 16, minWidth: 220 })}>
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 })}>
@@ -65,5 +63,4 @@ const EmployeePanel = React.memo(function EmployeePanel({
     </div>
   );
 });
-
 export default EmployeePanel;

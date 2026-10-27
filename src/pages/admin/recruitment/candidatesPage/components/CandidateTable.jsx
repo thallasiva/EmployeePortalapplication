@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
-import { Eye, Loader2 } from "lucide-react";
+import { Eye, Loader2, X } from "lucide-react";
 import { Card, Btn, Select, Table, SearchBar } from "../../shared";
 import CandidateStatusBadge from "../../../../../features/recruitment/components/CandidateStatusBadge";
 import { NO_NEXT_STATUSES, STATUS_OPTS } from "../constants";
-
 const CandidateTable = React.memo(function CandidateTable({
   loading, filtered, jobs, search, filterJob, filterStatus,
   isRecruiter, isHRMgr, isTL,
@@ -14,12 +13,10 @@ const CandidateTable = React.memo(function CandidateTable({
     { value: "", label: "All Jobs" },
     ...jobs.map((j) => ({ value: String(j.job_req_id), label: j.title }))
   ], [jobs]);
-
   const statusOpts = useMemo(() => [
     { value: "", label: "All Statuses" },
     ...STATUS_OPTS.map((s) => ({ value: s, label: s }))
   ], []);
-
   const columns = useMemo(() => [
     { header: "ID", key: "candidate_code", width: 90 },
     { header: "Name", key: "name", render: (v, row) =>
@@ -42,14 +39,10 @@ const CandidateTable = React.memo(function CandidateTable({
     { header: "Source", key: "source" },
     { header: "", key: "candidate_id", width: 180, render: (_, row) =>
       <div className="flex gap-1 flex-wrap">
-
-
-
         <Btn size="sm" variant="ghost" icon={<Eye size={14} />} onClick={(e) => { e.stopPropagation(); setDetail(row); }}>View</Btn>
       </div>
     }
   ], [isTL, setDetail, updateStatus]);
-
   return (
     <div ref={tableRef} className="scroll-mt-4">
       <Card style={{ padding: 0 }}>
@@ -59,10 +52,10 @@ const CandidateTable = React.memo(function CandidateTable({
           <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} options={statusOpts} />
           <div className="ml-auto flex items-center gap-2">
             {filterStatus &&
-              <span onClick={() => setFilterStatus("")}
-                className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-[#f18200] border border-orange-200 cursor-pointer">
-                {filterStatus} ×
-              </span>
+              <button type="button" onClick={() => setFilterStatus("")}
+                className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-[#f18200] border border-orange-200 cursor-pointer inline-flex items-center gap-1">
+                {filterStatus} <X size={12} aria-hidden="true" />
+              </button>
             }
             <span className="text-xs text-gray-500">
               {loading ? "Loading..." : filtered.length + " candidate" + (filtered.length !== 1 ? "s" : "")}
@@ -80,5 +73,4 @@ const CandidateTable = React.memo(function CandidateTable({
     </div>
   );
 });
-
 export default CandidateTable;

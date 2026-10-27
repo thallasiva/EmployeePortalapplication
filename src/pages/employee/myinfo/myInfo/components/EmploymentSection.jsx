@@ -5,7 +5,6 @@ import Field from "./Field";
 import InfoCard from "./InfoCard";
 import { Grid } from "./Grid";
 import ResignationStatus from "./ResignationStatus";
-
 const EmploymentSection = React.memo(function EmploymentSection({ e, resignation, resignBtn, onWithdraw, withdrawing }) {
   return (
     <div id="section-employment" className={cssClass({ marginTop: 8 })}>
@@ -28,5 +27,4 @@ const EmploymentSection = React.memo(function EmploymentSection({ e, resignation
     </div>
   );
 });
-
 export default EmploymentSection;

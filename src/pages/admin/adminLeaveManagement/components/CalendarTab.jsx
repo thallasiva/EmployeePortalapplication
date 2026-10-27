@@ -9,7 +9,6 @@ import CalendarControls from "./CalendarControls";
 import CalendarMonthView from "./CalendarMonthView";
 import CalendarWeekView from "./CalendarWeekView";
 import CalendarYearView from "./CalendarYearView";
-
 const CalendarTab = memo(() => {
   const [view, setView]           = useState("month");
   const [cursor, setCursor]       = useState(new Date());
@@ -20,7 +19,6 @@ const CalendarTab = memo(() => {
   const [shift, setShift]         = useState("general");
   const [holidays, setHolidays]   = useState([]);
   const [loading, setLoading]     = useState(true);
-
   useEffect(() => {
     Promise.all([
       listLeaveRequests({ status: "Approved", limit: 2000 }),
@@ -34,31 +32,25 @@ const CalendarTab = memo(() => {
       setHolidays(Array.isArray(hols) ? hols : []);
     }).finally(() => setLoading(false));
   }, []);
-
   const shiftHolidays = useMemo(() =>
     holidays.filter((h) => h.shift === shift),
     [holidays, shift],
   );
-
   const getHolidaysOnDay = (date) => shiftHolidays.filter((h) => {
     const hd = new Date(h.holiday_date); hd.setHours(0, 0, 0, 0);
     const d2 = new Date(date);           d2.setHours(0, 0, 0, 0);
     return hd.getTime() === d2.getTime();
   });
-
   const currentShiftDef = CALENDAR_SHIFTS.find((s) => s.key === shift);
-
   const ltColorMap = useMemo(() => {
     const m = {};
     leaveTypes.forEach((lt, i) => { m[lt.leave_type_id] = LEAVE_COLORS[i % LEAVE_COLORS.length]; });
     return m;
   }, [leaveTypes]);
-
   const filtered = useMemo(() =>
     empFilter ? requests.filter((r) => String(r.employee_id) === String(empFilter)) : requests,
     [requests, empFilter],
   );
-
   const navigateDelta = (delta) => {
     const d = new Date(cursor);
     if (view === "month")     d.setMonth(d.getMonth() + delta);
@@ -66,7 +58,6 @@ const CalendarTab = memo(() => {
     else                      d.setFullYear(d.getFullYear() + delta);
     setCursor(d);
   };
-
   const rangeLabel = (() => {
     if (view === "month") return `${MON[cursor.getMonth()]} ${cursor.getFullYear()}`;
     if (view === "week") {
@@ -77,13 +68,11 @@ const CalendarTab = memo(() => {
     }
     return String(cursor.getFullYear());
   })();
-
   const leavesOnDay = (date) => filtered.filter((r) => {
     const f = new Date(r.from_date); f.setHours(0, 0, 0, 0);
     const t = new Date(r.to_date);   t.setHours(23, 59, 59, 999);
     return date >= f && date <= t;
   });
-
   return (
     <div>
       {/* Shift tabs */}
@@ -121,7 +110,6 @@ const CalendarTab = memo(() => {
           <strong className={cssClass({ marginLeft: 4, color: currentShiftDef.color })}>{currentShiftDef.label} shift</strong>
         </div>
       </div>
-
       {/* View / nav / filter controls */}
       <CalendarControls
         view={view} setView={setView}
@@ -133,7 +121,6 @@ const CalendarTab = memo(() => {
         leaveTypes={leaveTypes}
         currentShiftDef={currentShiftDef}
       />
-
       {/* Calendar body */}
       {loading ? (
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#9ca3af" })}>Loading leave calendar…</div>
@@ -147,7 +134,6 @@ const CalendarTab = memo(() => {
           {view === "year"  && <CalendarYearView  cursor={cursor} filtered={filtered} shiftHolidays={shiftHolidays} currentShiftDef={currentShiftDef} />}
         </div>
       )}
-
       {/* Footer note */}
       <div className={cssClass({
         marginTop: 14, padding: "10px 16px", borderRadius: 8,
@@ -166,6 +152,5 @@ const CalendarTab = memo(() => {
     </div>
   );
 });
-
 CalendarTab.displayName = "CalendarTab";
 export default CalendarTab;

@@ -5,7 +5,6 @@ import CtcTableRow from "./CtcTableRow";
 import { fmt, fmtM } from "../utils/ctcUtils";
 import { OFFER_CLS } from "../constants";
 import { downloadOfferDocx } from "../../../../../api/recruitment.api";
-
 const OfferDetailSlideOver = React.memo(function OfferDetailSlideOver({
   detail, joiningInv, isAdmin, acting, resending,
   onClose, onRelease, onRespond, onResend, onCopyLink, onStartOnboarding
@@ -45,7 +44,6 @@ const OfferDetailSlideOver = React.memo(function OfferDetailSlideOver({
       <Btn variant="secondary" onClick={onClose}>Close</Btn>
     </div>
   );
-
   return (
     <SlideOver open={!!detail} onClose={onClose} title="Offer Details" width={580} footer={footer}>
       <div className="space-y-1 mb-5">
@@ -59,7 +57,6 @@ const OfferDetailSlideOver = React.memo(function OfferDetailSlideOver({
           </span>
         } />
       </div>
-
       <div className="border border-gray-200 rounded-xl overflow-hidden mb-5">
         <div className="bg-[#1e3a5f] px-4 py-2.5 grid grid-cols-3">
           <span className="text-white text-[12px] font-semibold">Component</span>
@@ -83,7 +80,6 @@ const OfferDetailSlideOver = React.memo(function OfferDetailSlideOver({
             monthly={fmtM(row.v)} annual={fmt(Number(row.v) || 0)} highlight={row.highlight} />
         ))}
       </div>
-
       {(detail.status === "Released" || detail.status === "Accepted") && (
         <div className="bg-indigo-50 rounded-xl p-4">
           <p className="text-[13px] font-semibold text-indigo-700 mb-2">Joining Invitation</p>
@@ -108,5 +104,4 @@ const OfferDetailSlideOver = React.memo(function OfferDetailSlideOver({
     </SlideOver>
   );
 });
-
 export default OfferDetailSlideOver;

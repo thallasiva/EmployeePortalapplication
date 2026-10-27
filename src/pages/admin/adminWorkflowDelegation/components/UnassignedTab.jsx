@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import { Btn } from "./SharedUI";
 import ManagerSelect from "./ManagerSelect";
-
 const UnassignedTab = React.memo(function UnassignedTab({
   unassigned,
   managers,
@@ -45,14 +44,12 @@ const UnassignedTab = React.memo(function UnassignedTab({
           </div>
         </div>
       )}
-
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 })}>
         <AlertTriangle size={18} color="#f59e0b" />
         <div className={cssClass({ fontSize: 16, fontWeight: 700, color: "#111827" })}>
           Employees Without Reporting Manager ({unassigned.length})
         </div>
       </div>
-
       {unassigned.length === 0 ? (
         <div className={cssClass({
           background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12,
@@ -124,5 +121,4 @@ const UnassignedTab = React.memo(function UnassignedTab({
     </div>
   );
 });
-
 export default UnassignedTab;

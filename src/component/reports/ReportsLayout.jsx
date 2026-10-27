@@ -4,7 +4,6 @@ import { REPORT_NAV } from "../../data/reportsData";
 import LazyPage from "../../routes/LazyPage";
 import "./reports.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 import { ChevronDown } from "lucide-react";
-
 const ProjectReport = lazy(() => import("../../pages/admin/reports/ProjectReport"));
 const TaskReport = lazy(() => import("../../pages/admin/reports/TaskReport"));
 const EmployeeReport = lazy(() => import("../../pages/admin/reports/EmployeeReport"));
@@ -15,11 +14,9 @@ const DownloadReports = lazy(() => import("../../pages/admin/reports/DownloadRep
 const PayslipReport = lazy(() => import("../../pages/admin/reports/PayslipReport"));
 const UserReport = lazy(() => import("../../pages/admin/reports/UserReport"));
 const EmptyStateReport = lazy(() => import("../../pages/admin/reports/EmptyStateReport"));
-
 const ReportRoute = ({ children }) => (
   <LazyPage label="Loading report...">{children}</LazyPage>
 );
-
 export default function ReportsLayout() {
   return (
     <div className="reports-hub">
@@ -32,13 +29,11 @@ export default function ReportsLayout() {
             className={({ isActive }) =>
             `reports-header-tabs__link${isActive ? " active" : ""}`
             }>
-
               {item.label}
             </NavLink>
           )}
         </nav>
       </header>
-
       <div className="reports-content">
         <Routes>
           <Route index element={<Navigate to="daily" replace />} />
@@ -58,35 +53,27 @@ export default function ReportsLayout() {
         </Routes>
       </div>
     </div>);
-
 }
-
 export function ReportPageHeader({ title }) {
   return (
     <div className="report-header">
       <div>
         <h1 className="report-header__title">{title}</h1>
-
       </div>
       <button type="button" className="report-header__export">
         Export
         <span className="report-header__export-arrow"><ChevronDown size={12} /></span>
       </button>
     </div>);
-
 }
-
 export function ReportAvatar({ name, size = "md" }) {
   return (
     <span
       className={joinClasses(`report-avatar report-avatar--${size}`, cssClass(
         { backgroundColor: getAvatarColor(name) }))}>
-
       {getInitials(name)}
     </span>);
-
 }
-
 function getInitials(name) {
   return name.
   split(" ").
@@ -95,7 +82,6 @@ function getInitials(name) {
   slice(0, 2).
   toUpperCase();
 }
-
 function getAvatarColor(name) {
   const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6"];
   let hash = 0;
@@ -104,7 +90,6 @@ function getAvatarColor(name) {
   }
   return colors[Math.abs(hash) % colors.length];
 }
-
 export function ReportStatCard({ label, value, trend, positive, barColor, barWidth }) {
   return (
     <div className="report-stat-card">
@@ -121,9 +106,7 @@ export function ReportStatCard({ label, value, trend, positive, barColor, barWid
         </p>
       }
     </div>);
-
 }
-
 export function ReportIconStatCard({ label, value, icon, color, trend, fraction }) {
   return (
     <div className="report-icon-stat">
@@ -134,7 +117,6 @@ export function ReportIconStatCard({ label, value, icon, color, trend, fraction 
         </div>
         {fraction ?
         <span className="report-icon-stat__fraction">{fraction}</span> :
-
         <span className={joinClasses("report-icon-stat__icon", cssClass({ background: color }))}>
             {icon}
           </span>
@@ -142,9 +124,7 @@ export function ReportIconStatCard({ label, value, icon, color, trend, fraction 
       </div>
       {trend && <p className="report-icon-stat__trend">~ {trend}</p>}
     </div>);
-
 }
-
 export function ReportTableToolbar({ title, filters = true }) {
   return (
     <>
@@ -172,9 +152,7 @@ export function ReportTableToolbar({ title, filters = true }) {
         }
       </div>
     </>);
-
 }
-
 export function ReportPriorityBadge({ priority }) {
   const cls = {
     Low: "report-priority--low",
@@ -186,9 +164,7 @@ export function ReportPriorityBadge({ priority }) {
       <span className="report-priority__dot" />
       {priority}
     </span>);
-
 }
-
 export function ReportStatusBadge({ status }) {
   const cls = {
     Active: "report-status--active",

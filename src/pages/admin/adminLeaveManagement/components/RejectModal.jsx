@@ -2,10 +2,8 @@ import { memo, useState } from "react";
 import { X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import Btn from "./Btn";
-
 const RejectModal = memo(({ onConfirm, onClose }) => {
   const [remarks, setRemarks] = useState("");
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", zIndex: 9999,
       display: "flex", alignItems: "center", justifyContent: "center" })}>
@@ -31,6 +29,5 @@ const RejectModal = memo(({ onConfirm, onClose }) => {
     </div>
   );
 });
-
 RejectModal.displayName = "RejectModal";
 export default RejectModal;

@@ -6,7 +6,6 @@ import { listEmployees } from "../../../../api/employee.api";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import { CycleTypeBadge, StatusBadge } from "./Badges";
-
 const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCycleUpdated, onDisable, onNew }) {
   const [selectedCycleId, setSelectedCycleId] = useState(() => {
     const active = cycles.find((c) => c.status === "active");
@@ -20,14 +19,12 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
   const [loadingEmps, setLoadingEmps] = useState(false);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-
   useEffect(() => {
     setRolloutType(selectedCycle?.rollout_type || "all");
     setSelected([]);
     setEmpSearch("");
     setErr("");
   }, [selectedCycleId]);
-
   useEffect(() => {
     if (rolloutType !== "selected" || selectedCycle?.status === "active") return;
     setLoadingEmps(true);
@@ -36,13 +33,11 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
       .catch(() => {})
       .finally(() => setLoadingEmps(false));
   }, [rolloutType, selectedCycleId, selectedCycle?.status]);
-
   const filteredEmps = employees.filter((e) =>
     `${e.first_name} ${e.last_name} ${e.emp_code || ""}`.toLowerCase().includes(empSearch.toLowerCase())
   );
   const toggleEmp = (id) => setSelected((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
   const toggleAll = () => setSelected(selected.length === filteredEmps.length ? [] : filteredEmps.map((e) => e.employee_id));
-
   const handleRollout = async () => {
     if (rolloutType === "selected" && selected.length === 0) { setErr("Select at least one employee."); return; }
     setSaving(true); setErr("");
@@ -55,9 +50,7 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
     } catch (e) { setErr(e?.response?.data?.message || "Rollout failed."); }
     finally { setSaving(false); }
   };
-
   const isActive = selectedCycle?.status === "active";
-
   return (
     <div className={cssClass({ display: "flex", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden", minHeight: 480 })}>
       {/* Cycle list sidebar */}
@@ -82,7 +75,6 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
           ))
         }
       </div>
-
       {/* Cycle detail panel */}
       {!selectedCycle
         ? <div className={cssClass({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8" })}>Select a cycle</div>
@@ -98,7 +90,6 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
                 <StatusBadge status={selectedCycle.status} />
               </div>
             </div>
-
             <div className={cssClass({ padding: "22px 24px" })}>
               {isActive && (
                 <div className={cssClass({ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 10, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 })}>
@@ -115,7 +106,6 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
                   </button>
                 </div>
               )}
-
               {!isActive && (
                 <>
                   <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 })}>
@@ -134,7 +124,6 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
                       </button>
                     ))}
                   </div>
-
                   {rolloutType === "selected" && (
                     <div className={cssClass({ marginBottom: 20 })}>
                       <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 })}>
@@ -182,7 +171,6 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
                       </div>
                     </div>
                   )}
-
                   {err && <p className={cssClass({ color: "#dc2626", fontSize: 13, margin: "0 0 12px" })}>{err}</p>}
                   <button onClick={handleRollout} disabled={saving}
                     className={cssClass({ padding: "11px 26px", background: "#16a34a", color: "#fff", border: "none", borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", gap: 7 })}>
@@ -205,5 +193,4 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
     </div>
   );
 });
-
 export default RolloutSettingsTab;

@@ -1,10 +1,5 @@
 const mysql = require('mysql2/promise');
 const { db } = require('./env');
-
-
-
-
-
 const pool = mysql.createPool({
   host: db.host,
   port: db.port,
@@ -16,36 +11,14 @@ const pool = mysql.createPool({
   queueLimit: 0,
   dateStrings: true
 });
-
-
-
-
-
-
 async function query(sql, params = []) {
   const [rows] = await pool.query(sql, params);
   return rows;
 }
-
-
-
-
-
-
-
-
-
-
 async function callProcedure(name, params = []) {
   const [results] = await pool.query(`CALL ${name}`, params);
-
   return results;
 }
-
-
-
-
-
 async function withTransaction(fn) {
   const conn = await pool.getConnection();
   try {
@@ -60,19 +33,6 @@ async function withTransaction(fn) {
     conn.release();
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Calls a procedure with OUT params (e.g. 'sp_x(?, @ok, @msg)') and reads them back.
 // Session variables are per-connection, so the CALL and the SELECT must share one
 // connection — reading @vars through the pool can hit another request's session.
@@ -88,11 +48,9 @@ async function callProcedureWithOuts(call, params = []) {
     conn.release();
   }
 }
-
 async function testConnection() {
   const conn = await pool.getConnection();
   await conn.ping();
   conn.release();
 }
-
 module.exports = { pool, query, callProcedure, callProcedureWithOuts, withTransaction, testConnection };

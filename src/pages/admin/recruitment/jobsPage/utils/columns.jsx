@@ -1,7 +1,6 @@
 import React from "react";
 import { Eye, UserPlus, XCircle } from "lucide-react";
 import { Btn, StatusBadge } from "../shared";
-
 export function makeColumns({ canAssign, canClose, setDetailJob, openAssign, handleClose }) {
   return [
     { header: "Job ID", key: "job_req_code", width: 90 },

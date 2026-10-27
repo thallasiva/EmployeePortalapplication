@@ -4,11 +4,9 @@ import { listEmployees } from "../../api/employee.api";
 import { getDepartmentName } from "../../utils/employeeDisplay";
 import { avatarDataUri } from "../../lib/placeholders";
 import { EmployeeStatusBadge } from "../../utils/employeeStatus";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 const AVATAR_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6", "#22c55e"];
 function initials(name = "") {return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "?";}
 function avatarColor(name = "") {let h = 0;for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];}
-
 function TeamCard({ team, members }) {
   const [open, setOpen] = useState(true);
   return (
@@ -26,7 +24,6 @@ function TeamCard({ team, members }) {
         </div>
         {open ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
       </button>
-
       {open &&
       <div className="border-t border-gray-100">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
@@ -56,27 +53,22 @@ function TeamCard({ team, members }) {
                   }
                   </div>
                 </div>);
-
           })}
           </div>
         </div>
       }
     </div>);
-
 }
-
 export default function EmployeeProfile() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
   useEffect(() => {
     listEmployees({ limit: 500 }).
     then(({ data }) => setEmployees(data || [])).
     catch(() => {}).
     finally(() => setLoading(false));
   }, []);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return employees;
@@ -85,7 +77,6 @@ export default function EmployeeProfile() {
     some((v) => (v || "").toLowerCase().includes(q))
     );
   }, [employees, search]);
-
   const groups = useMemo(() => {
     const map = {};
     filtered.forEach((emp) => {
@@ -95,7 +86,6 @@ export default function EmployeeProfile() {
     });
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -110,18 +100,14 @@ export default function EmployeeProfile() {
           placeholder="Search employees…"
           value={search}
           onChange={(e) => setSearch(e.target.value)} />
-
       </div>
-
       {loading ?
       <div className="py-12 text-center text-sm text-gray-400">Loading employees…</div> :
       groups.length === 0 ?
       <div className="py-12 text-center text-sm text-gray-400">No employees found.</div> :
-
       groups.map(([team, members]) =>
       <TeamCard key={team} team={team} members={members} />
       )
       }
     </div>);
-
 }

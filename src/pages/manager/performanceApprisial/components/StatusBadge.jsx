@@ -1,13 +1,11 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const STATUS_CONFIG = {
   submitted: { bg: "#dcfce7", color: "#15803d", label: "Submitted" },
   draft: { bg: "#fef9c3", color: "#ca8a04", label: "Draft" },
   not_started: { bg: "#f1f5f9", color: "#64748b", label: "Not Started" },
   approved: { bg: "#dbeafe", color: "#1d4ed8", label: "Approved" },
 };
-
 function StatusBadge({ status }) {
   const cfg = STATUS_CONFIG[status] || { bg: "#f1f5f9", color: "#64748b", label: status || "Pending" };
   return (
@@ -21,5 +19,4 @@ function StatusBadge({ status }) {
     </span>
   );
 }
-
 export default React.memo(StatusBadge);

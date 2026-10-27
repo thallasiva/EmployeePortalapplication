@@ -1,20 +1,15 @@
 import React from "react";
 import { Check } from "lucide-react";
-
 const Section = ({ title, children }) =>
 <div className="mb-6">
     <h3 className="text-[13px] font-bold text-amber-800 uppercase tracking-wide border-b border-amber-200 pb-1 mb-3">{title}</h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">{children}</div>
   </div>;
-
-
 const Field = ({ label, value }) =>
 <div>
     <span className="text-[11px] text-gray-400 uppercase tracking-wide">{label}</span>
     <p className="text-[13px] text-gray-800 font-medium mt-0.5">{value || <span className="text-gray-300 italic">—</span>}</p>
   </div>;
-
-
 const TableSection = ({ title, rows, cols }) => rows && rows.length > 0 &&
 <div className="mb-6">
     <h3 className="text-[13px] font-bold text-amber-800 uppercase tracking-wide border-b border-amber-200 pb-1 mb-3">{title}</h3>
@@ -35,18 +30,14 @@ const TableSection = ({ title, rows, cols }) => rows && rows.length > 0 &&
       </table>
     </div>
   </div>;
-
-
 export default function ReviewSubmitTab({ form }) {
   const tlTotal = (form.termLifeNominees || []).reduce((s, n) => s + (Number(n.shareAmount) || 0), 0);
   const gTotal = (form.gratuityNominees || []).reduce((s, n) => s + (Number(n.sharePercentage) || 0), 0);
   const iTotal = (form.insNominees || []).reduce((s, n) => s + (Number(n.shareAmount) || 0), 0);
-
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       <h2 className="text-[16px] font-bold text-gray-800 mb-1">Review & Submit</h2>
       <p className="text-[12px] text-gray-400 mb-6">Please review all your information before submitting.</p>
-
       {}
       <Section title="Employment Details">
         <Field label="Employee ID" value={form.employeeId} />
@@ -54,7 +45,6 @@ export default function ReviewSubmitTab({ form }) {
         <Field label="Reporting To" value={form.reportingTo} />
         <Field label="Department" value={form.department} />
       </Section>
-
       {}
       <Section title="Personal Information">
         <Field label="Full Name" value={form.fullName} />
@@ -67,7 +57,6 @@ export default function ReviewSubmitTab({ form }) {
         <Field label="Present Address" value={form.presentAddress} />
         <Field label="Permanent Address" value={form.permanentAddress} />
       </Section>
-
       {}
       <TableSection title="Education Details" rows={form.education}
       cols={[
@@ -76,7 +65,6 @@ export default function ReviewSubmitTab({ form }) {
       { key: "specialization", label: "Specialization" },
       { key: "year", label: "Year" }]
       } />
-
       {}
       <TableSection title="References" rows={form.references}
       cols={[
@@ -85,7 +73,6 @@ export default function ReviewSubmitTab({ form }) {
       { key: "relationship", label: "Relationship" },
       { key: "contact", label: "Contact" }]
       } />
-
       {}
       <Section title="Bank Details">
         <Field label="Bank Name" value={form.bankName} />
@@ -94,7 +81,6 @@ export default function ReviewSubmitTab({ form }) {
         <Field label="IFSC Code" value={form.ifscCode} />
         <Field label="Branch Details" value={form.branchDetails} />
       </Section>
-
       {}
       <Section title="Term Life Insurance — Employee Details">
         <Field label="Employee Name" value={form.tlEmployeeName} />
@@ -117,7 +103,6 @@ export default function ReviewSubmitTab({ form }) {
           Total Share: {tlTotal}% {tlTotal === 100 ? <Check size={13} className="inline -mt-0.5" /> : "(must equal 100%)"}
         </p>
       }
-
       {}
       <Section title="Gratuity — Employee Details">
         <Field label="Full Name & Permanent Address" value={form.gratuityEmployeeIntroName} />
@@ -149,7 +134,6 @@ export default function ReviewSubmitTab({ form }) {
           )}
         </div>
       </div>
-
       {}
       <Section title="Group Personal Accidental Insurance — Employee Details">
         <Field label="Employee Name" value={form.insEmployeeName} />
@@ -172,7 +156,6 @@ export default function ReviewSubmitTab({ form }) {
           Total Share: {iTotal}% {iTotal === 100 ? <Check size={13} className="inline -mt-0.5" /> : "(must equal 100%)"}
         </p>
       }
-
       {}
       <Section title="PF Declaration (Form 11) — Personal Details">
         <Field label="Employee Name" value={form.pfEmployeeName} />
@@ -203,19 +186,16 @@ export default function ReviewSubmitTab({ form }) {
         <Field label="Has PAN" value={form.pfDoHavePan} />
         {form.pfDoHavePan === "Yes" && <Field label="PAN No" value={form.pfPan} />}
       </Section>
-
       {}
       <Section title="Acknowledgements">
         <Field label="Employee Handbook" value={form.handbookAcknowledged ? "Acknowledged" : "Not yet acknowledged"} />
         <Field label="HR Policy Manual" value={form.hrPolicyAcknowledged ? "Acknowledged" : "Not yet acknowledged"} />
         <Field label="PF Declaration" value={form.pfDeclarationAccepted ? "Accepted" : "Not yet accepted"} />
       </Section>
-
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2">
         <p className="text-[12px] text-amber-700 font-medium">
           <Check size={14} className="inline -mt-0.5" /> By clicking <strong>Submit Formalities</strong>, you confirm that all information provided is true and accurate to the best of your knowledge.
         </p>
       </div>
     </div>);
-
 }

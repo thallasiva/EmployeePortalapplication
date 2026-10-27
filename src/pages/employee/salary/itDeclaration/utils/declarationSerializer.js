@@ -1,9 +1,7 @@
 import { SEC123_ITEMS, CH8_ITEMS, MED_ITEMS } from "../constants";
 import { countMonths } from "./hraHelpers";
-
 export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, selfOccupied, incomes, tcsTds }) {
   const items = [];
-
   SEC123_ITEMS.forEach((it) => {
     const amt = Number(vals123[it.label]) || 0;
     if (amt)
@@ -14,7 +12,6 @@ export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, self
         declared_amount: amt,
       });
   });
-
   CH8_ITEMS.forEach((it) => {
     const amt = Number(valsCh8[it.label]) || 0;
     if (amt)
@@ -25,7 +22,6 @@ export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, self
         declared_amount: amt,
       });
   });
-
   const hraHouses = hraData.houses || [];
   const totalHRA = hraHouses.reduce(
     (s, h) => s + (Number(h.monthlyRent) || 0) * countMonths(h.from, h.to),
@@ -39,7 +35,6 @@ export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, self
       declared_amount: totalHRA,
     });
   }
-
   MED_ITEMS.forEach((it) => {
     const amt = Number(medVals[it.key]) || 0;
     if (amt)
@@ -50,7 +45,6 @@ export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, self
         declared_amount: amt,
       });
   });
-
   const houseLoss = houseData.reduce((s, h) => {
     const net =
       Number(h.annualValue || 0) -
@@ -68,7 +62,6 @@ export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, self
         Math.min(Number(selfOccupied.interest || 0), 200000),
     });
   }
-
   incomes.forEach((inc) => {
     const amt = Number(inc.amount) || 0;
     if (amt && inc.particulars)
@@ -79,15 +72,12 @@ export function buildItems({ vals123, valsCh8, hraData, medVals, houseData, self
         declared_amount: amt,
       });
   });
-
   if (tcsTds.tcs > 0)
     items.push({ section_key: "TCS", section_label: "TCS Deduction", sub_label: "TCS", declared_amount: Number(tcsTds.tcs) });
   if (tcsTds.tds > 0)
     items.push({ section_key: "TDS", section_label: "TDS Deduction", sub_label: "TDS", declared_amount: Number(tcsTds.tds) });
-
   return items;
 }
-
 export function loadStateFromItems(items) {
   const v123 = {},
     vCh8 = {},
@@ -97,7 +87,6 @@ export function loadStateFromItems(items) {
     selfOcc = {},
     incs = [{ particulars: "", amount: 0 }],
     tcs = { tcs: 0, tds: 0 };
-
   items.forEach((it) => {
     if (it.section_key === "80C") v123[it.sub_label] = it.declared_amount;
     else if (it.section_key === "CH8") vCh8[it.sub_label] = it.declared_amount;
@@ -121,9 +110,7 @@ export function loadStateFromItems(items) {
     } else if (it.section_key === "TCS") tcs.tcs = it.declared_amount;
     else if (it.section_key === "TDS") tcs.tds = it.declared_amount;
   });
-
   if (incs.length === 0) incs = [{ particulars: "", amount: 0 }];
-
   return {
     vals123: v123,
     valsCh8: vCh8,

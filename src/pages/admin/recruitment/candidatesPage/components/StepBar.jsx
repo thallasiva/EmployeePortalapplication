@@ -1,7 +1,6 @@
 import React from "react";
 import { STEPS } from "../constants";
 import { Check } from "lucide-react";
-
 const StepBar = React.memo(function StepBar({ step }) {
   return (
     <div className="flex items-center justify-center mb-5">
@@ -27,5 +26,4 @@ const StepBar = React.memo(function StepBar({ step }) {
     </div>
   );
 });
-
 export default StepBar;

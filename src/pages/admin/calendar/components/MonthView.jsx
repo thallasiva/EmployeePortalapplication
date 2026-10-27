@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { DAYS } from '../constants/eventTypes';
 import { buildMonthGrid } from '../utils/calendarUtils';
 import EventChip from './EventChip';
-
 const MonthView = React.memo(function MonthView({
   year,
   month,
@@ -15,7 +14,6 @@ const MonthView = React.memo(function MonthView({
   const todayDay = today.getDate();
   const isCurrentMonthView =
     today.getFullYear() === year && today.getMonth() + 1 === month;
-
   return (
     <div>
       <div className="grid grid-cols-7 border-b border-slate-100">
@@ -28,7 +26,6 @@ const MonthView = React.memo(function MonthView({
           </div>
         ))}
       </div>
-
       {grid.map((week, wi) => (
         <div key={wi} className="grid grid-cols-7 border-b border-slate-100 last:border-b-0">
           {week.map((cell, di) => {
@@ -37,7 +34,6 @@ const MonthView = React.memo(function MonthView({
               : null;
             const dayEvents = key ? filteredMap[key] || [] : [];
             const isToday = isCurrentMonthView && cell.current && cell.day === todayDay;
-
             return (
               <div
                 key={di}
@@ -80,5 +76,4 @@ const MonthView = React.memo(function MonthView({
     </div>
   );
 });
-
 export default MonthView;

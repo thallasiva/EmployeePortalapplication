@@ -12,7 +12,6 @@ export function mapAttendanceRow(row) {
     lateBy: row.late_by_minutes ? `${row.late_by_minutes} min` : null,
   };
 }
-
 export function getInitials(name) {
   return name
     .split(" ")

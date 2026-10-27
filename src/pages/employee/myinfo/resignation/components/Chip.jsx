@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const Chip = React.memo(function Chip({ label, value, sub, color, icon: Icon }) {
   return (
     <div className={cssClass({
@@ -19,5 +18,4 @@ const Chip = React.memo(function Chip({ label, value, sub, color, icon: Icon }) 
     </div>
   );
 });
-
 export default Chip;

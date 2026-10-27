@@ -8,21 +8,16 @@ import Arrears from "./components/Arrears";
 import OvertimeRegister from "./components/OvertimeRegister";
 import FinalSettlement from "./components/FinalSettlement";
 import StopSalary from "./components/StopSalary";
-
 const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "lop";
-
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-
   const setTab = useCallback((t) => setSearchParams({ tab: t }), [setSearchParams]);
   const handleMonthYearChange = useCallback((m, y) => { setMonth(m); setYear(y); }, []);
-
   const needsMonth = ["lop", "overtime", "settlement"].includes(tab);
   const needsYear = ["arrears"].includes(tab);
-
   return (
     <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
       <div className={cssClass({ marginBottom: 24 })}>
@@ -33,7 +28,6 @@ const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
           Manage LOP days, overtime, arrears and salary holds
         </p>
       </div>
-
       <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #eee", marginBottom: 24, flexWrap: "wrap" })}>
         {TABS.map((t) => (
           <button
@@ -51,11 +45,9 @@ const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
           </button>
         ))}
       </div>
-
       {(needsMonth || needsYear) && (
         <MonthBar month={month} year={year} onChange={handleMonthYearChange} />
       )}
-
       <div className={cssClass({ background: "#fff", borderRadius: 10, border: "1px solid #eee", padding: 20, boxShadow: "0 1px 4px #0000000a" })}>
         {tab === "lop" && <LOPDays month={month} year={year} />}
         {tab === "arrears" && <Arrears year={year} />}
@@ -66,5 +58,4 @@ const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
     </div>
   );
 });
-
 export default AdminPayrollInputs;

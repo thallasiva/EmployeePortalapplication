@@ -6,7 +6,6 @@ import PayslipTab from "./components/PayslipTab";
 import CtcPayslipTab from "./components/CtcPayslipTab";
 import ReimbPayslipTab from "./components/ReimbPayslipTab";
 import { TABS, MONTH_NAMES } from "./constants";
-
 export default function Payslips() {
   const {
     activeTab,
@@ -26,9 +25,7 @@ export default function Payslips() {
     handleDownload,
     handleMonthYearChange,
   } = usePayslips();
-
   const monthLabel = `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
@@ -39,7 +36,6 @@ export default function Payslips() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* ── Page Header ── */}
@@ -50,7 +46,6 @@ export default function Payslips() {
             View and download your monthly payslips &amp; CTC breakdown
           </p>
         </div>
-
         {/* Controls row */}
         <div className="flex items-center gap-3">
           {/* Month selector */}
@@ -68,7 +63,6 @@ export default function Payslips() {
             </select>
             <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
           </div>
-
           {/* Download button */}
           <button
             type="button"
@@ -85,7 +79,6 @@ export default function Payslips() {
           </button>
         </div>
       </div>
-
       {/* ── Tab Bar ── */}
       <div className="px-6 pb-4">
         <div className="flex gap-1 bg-white rounded-xl border border-[#e8eef5] p-1 w-fit">
@@ -105,7 +98,6 @@ export default function Payslips() {
           ))}
         </div>
       </div>
-
       {/* ── Content Area ── */}
       <div className="px-6 pb-8">
         <div className="flex gap-4 items-start">
@@ -128,7 +120,6 @@ export default function Payslips() {
                 </span>
               )}
             </div>
-
             <div className="p-5">
               {activeTab === "payslip" && (
                 <PayslipTab payslip={currentPayslip} structure={structure} empProfile={empProfile} />
@@ -139,7 +130,6 @@ export default function Payslips() {
               {activeTab === "reimb" && <ReimbPayslipTab />}
             </div>
           </div>
-
           {/* Sidebar panel */}
           <div className="flex flex-col gap-2">
             {!showInfo ? (
@@ -163,7 +153,6 @@ export default function Payslips() {
             )}
           </div>
         </div>
-
         {/* Footer note */}
         <p className="text-center mt-4 text-[12px] text-[#94a3b8]">
           Showing payslip for <strong className="text-[#64748b]">{monthLabel}</strong>

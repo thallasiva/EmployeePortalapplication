@@ -2,13 +2,11 @@ import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, Sun, Moon, Sunset } from "lucide-react";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
 import { getShiftForUser } from "../../../data/auth";
-
 const SHIFTS = {
   general: { id: "general", name: "General Shift", time: "09:00 AM – 06:00 PM", break: "1h lunch", icon: Sun,  color: "text-amber-500",  bg: "bg-amber-50",  ring: "ring-amber-300",  badge: "bg-amber-100 text-amber-800" },
   mid:     { id: "mid",     name: "Mid Shift",     time: "01:00 PM – 10:00 PM", break: "1h dinner",  icon: Sunset, color: "text-indigo-500", bg: "bg-indigo-50", ring: "ring-indigo-300", badge: "bg-indigo-100 text-indigo-800" },
   night:   { id: "night",  name: "Night Shift",   time: "10:00 PM – 07:00 AM", break: "1h break",  icon: Moon,  color: "text-slate-500",  bg: "bg-slate-50",  ring: "ring-slate-300",  badge: "bg-slate-100 text-slate-700" },
 };
-
 function getWeekStart(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -17,7 +15,6 @@ function getWeekStart(date) {
   d.setHours(12, 0, 0, 0);
   return d;
 }
-
 function buildWeekRoster(weekStart, userShift) {
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(weekStart);
@@ -35,30 +32,23 @@ function buildWeekRoster(weekStart, userShift) {
     };
   });
 }
-
 export default function ShiftRoster() {
   const user = getLoggedInUser();
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
-
   const userShift = useMemo(() => {
     const shiftId = getShiftForUser(user);
     return SHIFTS[shiftId] || SHIFTS.general;
   }, []);
-
   const week = useMemo(() => buildWeekRoster(weekStart, userShift), [weekStart, userShift]);
-
   const weekLabel = `${week[0].dateNum} ${week[0].month} – ${week[6].dateNum} ${week[6].month} ${weekStart.getFullYear()}`;
   const goWeek = (delta) => {
     const next = new Date(weekStart);
     next.setDate(next.getDate() + delta * 7);
     setWeekStart(getWeekStart(next));
   };
-
   const todayEntry = week.find((d) => d.isToday);
   const currentShift = todayEntry && !todayEntry.isWeekend ? userShift : null;
-
   const ShiftIcon = userShift.icon;
-
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -80,7 +70,6 @@ export default function ShiftRoster() {
           </button>
         </div>
       </div>
-
       {/* Assigned shift card */}
       <div className={`flex items-center gap-5 ${userShift.bg} border border-${userShift.id === 'general' ? 'amber' : userShift.id === 'mid' ? 'indigo' : 'slate'}-200 rounded-2xl p-5 shadow-sm`}>
         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${userShift.bg} ring-2 ${userShift.ring}`}>
@@ -95,7 +84,6 @@ export default function ShiftRoster() {
           Active
         </span>
       </div>
-
       {/* Week grid */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
         <h2 className="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -130,7 +118,6 @@ export default function ShiftRoster() {
           ))}
         </div>
       </div>
-
       {/* Today's shift details */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
         <h2 className="text-base font-semibold text-slate-800 mb-3">Today's shift details</h2>

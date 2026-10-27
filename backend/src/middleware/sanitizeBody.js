@@ -1,37 +1,11 @@
 'use strict';
-
-
-
-
-
-
-
-
-
-
-
-
-
 const TAG_REGEX = /<[^>]*>/g;
 const NULL_REGEX = /\0/g;
-
-
-
-
-
-
 function cleanString(value) {
   return value.
   replace(NULL_REGEX, '').
   replace(TAG_REGEX, '');
 }
-
-
-
-
-
-
-
 function sanitizeNode(node) {
   if (node === null || node === undefined) return node;
   if (typeof node === 'string') return cleanString(node);
@@ -43,19 +17,12 @@ function sanitizeNode(node) {
     }
     return out;
   }
-
   return node;
 }
-
-
-
-
-
 function sanitizeBody(req, _res, next) {
   if (req.body && typeof req.body === 'object') {
     req.body = sanitizeNode(req.body);
   }
   next();
 }
-
 module.exports = sanitizeBody;

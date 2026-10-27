@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const SaveFooter = React.memo(function SaveFooter({ saving, configuredCount, onSave }) {
   return (
     <div
@@ -31,5 +30,4 @@ const SaveFooter = React.memo(function SaveFooter({ saving, configuredCount, onS
     </div>
   );
 });
-
 export default SaveFooter;

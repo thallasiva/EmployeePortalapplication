@@ -3,12 +3,10 @@ import { Download, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cssClass } from "../../../../utils/classStyles";
 import { downloadEmployeeCsvTemplate } from "../../../../utils/employeeCsvImport";
-
 const TABS = [
   { id: 1, tabName: "All" },
   { id: 2, tabName: "Teams" },
 ];
-
 const EmployeeToolbar = React.memo(function EmployeeToolbar({
   selectedTab,
   onSelectTab,
@@ -17,7 +15,6 @@ const EmployeeToolbar = React.memo(function EmployeeToolbar({
   onCsvExport,
 }) {
   const navigate = useNavigate();
-
   return (
     <div className="flex justify-between items-center flex-wrap gap-3">
       <div className="flex bg-white rounded-xl shadow overflow-hidden">
@@ -81,5 +78,4 @@ const EmployeeToolbar = React.memo(function EmployeeToolbar({
     </div>
   );
 });
-
 export default EmployeeToolbar;

@@ -6,7 +6,6 @@ import PayRollHeader from "./components/PayRollHeader";
 import TableFilters from "./components/TableFilters";
 import EmployeeTable from "./components/EmployeeTable";
 import GenerateSlipModal from "./components/GenerateSlipModal";
-
 const PayRollForm = React.memo(function PayRollForm() {
   const {
     loading,
@@ -32,7 +31,6 @@ const PayRollForm = React.memo(function PayRollForm() {
     handleGenerateSlip,
     handleExport
   } = usePayRoll();
-
   const {
     paged: visible,
     page,
@@ -44,7 +42,6 @@ const PayRollForm = React.memo(function PayRollForm() {
     pageSize,
     setPageSize
   } = paginationData;
-
   return (
     <div className="admin-dash">
       <PayRollHeader
@@ -53,7 +50,6 @@ const PayRollForm = React.memo(function PayRollForm() {
         onExport={handleExport}
         onAddSalary={() => setSalaryModal({})}
       />
-
       <div className="admin-dash-card">
         <TableFilters
           search={search}
@@ -68,7 +64,6 @@ const PayRollForm = React.memo(function PayRollForm() {
           onEditSalary={setSalaryModal}
         />
       </div>
-
       <Pagination
         page={page}
         setPage={setPage}
@@ -79,7 +74,6 @@ const PayRollForm = React.memo(function PayRollForm() {
         pageSize={pageSize}
         setPageSize={setPageSize}
       />
-
       {slipEmployee && (
         <GenerateSlipModal
           slipEmployee={slipEmployee}
@@ -92,7 +86,6 @@ const PayRollForm = React.memo(function PayRollForm() {
           onGenerate={handleGenerateSlip}
         />
       )}
-
       {salaryModal && (
         <AddSalaryModal
           employees={enriched}
@@ -105,5 +98,4 @@ const PayRollForm = React.memo(function PayRollForm() {
     </div>
   );
 });
-
 export default PayRollForm;

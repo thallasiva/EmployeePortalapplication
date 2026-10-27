@@ -1,20 +1,15 @@
 const { query, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
 // Admin and HR Manager see organisation-wide reports; a Reporting Manager sees their direct reports.
 const REPORT_ROLES = ['Admin', 'HR Manager'];
 const FEEDBACK_TYPES = ['Positive', 'Constructive', 'Developmental'];
-
 const NAME = (alias) => `TRIM(CONCAT_WS(' ', ${alias}.first_name, ${alias}.last_name))`;
-
 const canSeeReports = (user) => REPORT_ROLES.includes(user?.roleName);
 const isManager = (user) => user?.roleName === 'Reporting Manager';
-
 function requireEmployee(user) {
   if (!user?.employeeId) throw ApiError.badRequest('Your login is not linked to an employee record');
   return Number(user.employeeId);
 }
-
 async function assertActiveEmployees(ids) {
   const rows = await query(
     `SELECT employee_id FROM employees WHERE employee_id IN (?) AND (employee_status IS NULL OR employee_status = 'Active')`,
@@ -22,7 +17,6 @@ async function assertActiveEmployees(ids) {
   );
   if (rows.length !== ids.length) throw ApiError.badRequest('One or more selected employees are not active');
 }
-
 async function assertCategory(categoryId, type) {
   if (!categoryId) return;
   const rows = await query(
@@ -31,9 +25,7 @@ async function assertCategory(categoryId, type) {
   );
   if (!rows.length) throw ApiError.badRequest('Selected category is not available');
 }
-
 /* ---------- Categories ---------- */
-
 async function listCategories({ type, includeInactive }) {
   const where = [];
   const params = [];
@@ -50,7 +42,6 @@ async function listCategories({ type, includeInactive }) {
     params
   );
 }
-
 async function createCategory(data) {
   const exists = await query(
     'SELECT category_id FROM kudos_categories WHERE category_type = ? AND category_name = ?',
@@ -63,7 +54,6 @@ async function createCategory(data) {
   );
   return (await query('SELECT * FROM kudos_categories WHERE category_id = ?', [result.insertId]))[0];
 }
-
 async function updateCategory(id, data) {
   const current = (await query('SELECT * FROM kudos_categories WHERE category_id = ?', [id]))[0];
   if (!current) throw ApiError.notFound('Category not found');
@@ -79,14 +69,11 @@ async function updateCategory(id, data) {
   );
   return (await query('SELECT * FROM kudos_categories WHERE category_id = ?', [id]))[0];
 }
-
 async function deleteCategory(id) {
   const result = await query('DELETE FROM kudos_categories WHERE category_id = ?', [id]);
   if (!result.affectedRows) throw ApiError.notFound('Category not found');
 }
-
 /* ---------- People picker ---------- */
-
 async function listRecipients(user, { search, teamOnly }) {
   const me = requireEmployee(user);
   const where = [`(e.employee_status IS NULL OR e.employee_status = 'Active')`, 'e.employee_id <> ?'];
@@ -109,9 +96,7 @@ async function listRecipients(user, { search, teamOnly }) {
     [me, ...params]
   );
 }
-
 /* ---------- Summary ---------- */
-
 async function getSummary(user) {
   const me = requireEmployee(user);
   const [row] = await query(
@@ -135,9 +120,7 @@ async function getSummary(user) {
   );
   return { ...row, by_category: byCategory };
 }
-
 /* ---------- Kudos ---------- */
-
 const KUDOS_SELECT = `
   SELECT k.kudos_id, k.message, k.is_public, k.created_at,
          k.from_employee_id, ${NAME('ef')} AS from_name, ef.profile_photo AS from_photo,
@@ -149,12 +132,10 @@ const KUDOS_SELECT = `
     JOIN employees et ON et.employee_id = k.to_employee_id
     LEFT JOIN departments d ON d.department_id = et.department_id
     LEFT JOIN kudos_categories c ON c.category_id = k.category_id`;
-
 async function listKudos(user, { scope = 'received', categoryId, departmentId, months, limit, offset }) {
   const me = requireEmployee(user);
   const where = [];
   const params = [];
-
   if (scope === 'received') { where.push('k.to_employee_id = ?'); params.push(me); }
   else if (scope === 'sent') { where.push('k.from_employee_id = ?'); params.push(me); }
   else if (scope === 'team') {
@@ -166,11 +147,9 @@ async function listKudos(user, { scope = 'received', categoryId, departmentId, m
   } else {
     throw ApiError.badRequest('Invalid scope');
   }
-
   if (categoryId) { where.push('k.category_id = ?'); params.push(categoryId); }
   if (departmentId) { where.push('et.department_id = ?'); params.push(departmentId); }
   if (months) { where.push('k.created_at >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)'); params.push(Number(months)); }
-
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const rows = await query(`${KUDOS_SELECT} ${whereSql} ORDER BY k.created_at DESC LIMIT ? OFFSET ?`, [...params, limit, offset]);
   const [{ total }] = await query(
@@ -179,7 +158,6 @@ async function listKudos(user, { scope = 'received', categoryId, departmentId, m
   );
   return { rows, total };
 }
-
 async function topRecognised({ months = 3, limit = 5 }) {
   return query(
     `SELECT et.employee_id, ${NAME('et')} AS name, COUNT(*) AS total
@@ -191,14 +169,12 @@ async function topRecognised({ months = 3, limit = 5 }) {
     [Number(months), Number(limit)]
   );
 }
-
 async function giveKudos(user, { to_employee_ids, category_id, message, is_public }) {
   const me = requireEmployee(user);
   const ids = [...new Set(to_employee_ids.map(Number))];
   if (ids.includes(me)) throw ApiError.badRequest('You cannot give kudos to yourself');
   await assertActiveEmployees(ids);
   await assertCategory(category_id, 'kudos');
-
   await withTransaction(async (conn) => {
     for (const id of ids) {
       await conn.query(
@@ -209,14 +185,11 @@ async function giveKudos(user, { to_employee_ids, category_id, message, is_publi
   });
   return { sent: ids.length };
 }
-
 /* ---------- Feedback ---------- */
-
 async function listFeedback(user, { scope = 'received', type, limit, offset }) {
   const me = requireEmployee(user);
   const where = [];
   const params = [];
-
   if (scope === 'received') { where.push('f.to_employee_id = ?'); params.push(me); }
   else if (scope === 'sent') { where.push('f.from_employee_id = ?'); params.push(me); }
   else if (scope === 'team') {
@@ -226,7 +199,6 @@ async function listFeedback(user, { scope = 'received', type, limit, offset }) {
     throw ApiError.badRequest('Invalid scope');
   }
   if (type) { where.push('f.feedback_type = ?'); params.push(type); }
-
   const whereSql = `WHERE ${where.join(' AND ')}`;
   const rows = await query(
     `SELECT f.feedback_id, f.feedback_type, f.message, f.is_anonymous, f.created_at, f.request_id,
@@ -250,21 +222,18 @@ async function listFeedback(user, { scope = 'received', type, limit, offset }) {
     `SELECT COUNT(*) AS total FROM employee_feedback f JOIN employees et ON et.employee_id = f.to_employee_id ${whereSql}`,
     params
   );
-
   // Anonymous feedback hides the author from everyone except the author.
   const masked = rows.map((r) => (r.is_anonymous && Number(r.from_employee_id) !== me
     ? { ...r, from_employee_id: null, from_name: 'Anonymous', from_designation: null, from_is_manager: 0 }
     : r));
   return { rows: masked, total };
 }
-
 async function giveFeedback(user, { to_employee_id, feedback_type, category_id, message, is_anonymous, request_id }) {
   const me = requireEmployee(user);
   const to = Number(to_employee_id);
   if (to === me) throw ApiError.badRequest('You cannot give feedback to yourself');
   await assertActiveEmployees([to]);
   await assertCategory(category_id, 'feedback');
-
   return withTransaction(async (conn) => {
     if (request_id) {
       const [reqRows] = await conn.query(
@@ -289,9 +258,7 @@ async function giveFeedback(user, { to_employee_id, feedback_type, category_id, 
     return { feedback_id: result.insertId };
   });
 }
-
 /* ---------- Feedback requests ---------- */
-
 async function listRequests(user, { scope = 'incoming', status }) {
   const me = requireEmployee(user);
   const where = [scope === 'outgoing' ? 'r.requester_employee_id = ?' : 'r.reviewer_employee_id = ?'];
@@ -312,7 +279,6 @@ async function listRequests(user, { scope = 'incoming', status }) {
     params
   );
 }
-
 async function requestFeedback(user, { reviewer_employee_ids, topic, message }) {
   const me = requireEmployee(user);
   const ids = [...new Set(reviewer_employee_ids.map(Number))];
@@ -328,7 +294,6 @@ async function requestFeedback(user, { reviewer_employee_ids, topic, message }) 
   });
   return { sent: ids.length };
 }
-
 async function declineRequest(user, id) {
   const me = requireEmployee(user);
   const result = await query(
@@ -337,9 +302,7 @@ async function declineRequest(user, id) {
   );
   if (!result.affectedRows) throw ApiError.notFound('Pending request not found');
 }
-
 /* ---------- Team (Reporting Manager) ---------- */
-
 async function getTeam(user) {
   const me = requireEmployee(user);
   return query(
@@ -356,9 +319,7 @@ async function getTeam(user) {
     [me, me]
   );
 }
-
 /* ---------- Reports (HR Manager / Admin) ---------- */
-
 async function getReport(user, { months = 6, departmentId, type }) {
   if (!canSeeReports(user)) throw ApiError.forbidden('Reports are available to HR and Admin');
   const m = Math.min(Math.max(Number(months) || 6, 1), 24);
@@ -367,7 +328,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
   const typeF = type ? 'AND f.feedback_type = ?' : '';
   const dp = departmentId ? [departmentId] : [];
   const tp = type ? [type] : [];
-
   const [totals] = await query(
     `SELECT
        (SELECT COUNT(*) FROM employees e WHERE (e.employee_status IS NULL OR e.employee_status = 'Active') ${departmentId ? 'AND e.department_id = ?' : ''}) AS employees,
@@ -380,7 +340,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
        (SELECT COUNT(*) FROM feedback_requests r WHERE r.created_at >= DATE_SUB(CURDATE(), INTERVAL ? MONTH) AND r.status = 'completed') AS requests_completed`,
     [...dp, m, ...dp, m, ...dp, ...tp, m, m]
   );
-
   const [participation] = await query(
     `SELECT COUNT(DISTINCT p.employee_id) AS active_people FROM (
         SELECT k.from_employee_id AS employee_id FROM kudos k WHERE k.created_at >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
@@ -391,7 +350,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
      WHERE (et.employee_status IS NULL OR et.employee_status = 'Active') ${deptK}`,
     [m, m, m, m, ...dp]
   );
-
   const byType = await query(
     `SELECT f.feedback_type, COUNT(*) AS total
        FROM employee_feedback f JOIN employees et ON et.employee_id = f.to_employee_id
@@ -399,7 +357,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
       GROUP BY f.feedback_type`,
     [m, ...dp, ...tp]
   );
-
   const kudosTrend = await query(
     `SELECT DATE_FORMAT(k.created_at, '%Y-%m') AS month, COUNT(*) AS total
        FROM kudos k JOIN employees et ON et.employee_id = k.to_employee_id
@@ -414,7 +371,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
       GROUP BY month`,
     [m - 1, ...dp, ...tp]
   );
-
   const byDepartment = await query(
     `SELECT d.department_id, d.department_name,
             (SELECT COUNT(*) FROM kudos k JOIN employees et ON et.employee_id = k.to_employee_id
@@ -429,7 +385,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
       ORDER BY kudos DESC, d.department_name`,
     [m, m, ...tp, m, ...dp]
   );
-
   const byEmployee = await query(
     `SELECT et.employee_id, ${NAME('et')} AS name, et.emp_code, d.department_name,
             SUM(f.feedback_type = 'Positive') AS positive,
@@ -445,7 +400,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
       LIMIT 200`,
     [m, ...dp, ...tp]
   );
-
   const lowRecognition = await query(
     `SELECT e.employee_id, ${NAME('e')} AS name, d.department_name,
             (SELECT MAX(k.created_at) FROM kudos k WHERE k.to_employee_id = e.employee_id) AS last_kudos_at
@@ -456,7 +410,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
       LIMIT 10`,
     dp
   );
-
   // Fill every month in the window so charts have no gaps.
   const trend = [];
   const now = new Date();
@@ -469,7 +422,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
       feedback: Number(feedbackTrend.find((r) => r.month === key)?.total || 0)
     });
   }
-
   return {
     months: m,
     totals: { ...totals, active_people: participation.active_people },
@@ -481,7 +433,6 @@ async function getReport(user, { months = 6, departmentId, type }) {
     top_recognised: await topRecognised({ months: m, limit: 5 })
   };
 }
-
 module.exports = {
   FEEDBACK_TYPES,
   canSeeReports,

@@ -1,5 +1,4 @@
 const { callProcedure } = require("../../config/db");
-
 class DashboardService {
   async adminDashboard() {
     const results = await callProcedure("sp_rec_admin_dashboard()", []);
@@ -11,7 +10,6 @@ class DashboardService {
       shortlistedCandidates: results[4] ?? [],
     };
   }
-
   async recruiterDashboard(recruiterEmpId) {
     const results = await callProcedure("sp_rec_recruiter_dashboard(?)", [recruiterEmpId]);
     return {
@@ -20,7 +18,6 @@ class DashboardService {
       upcomingInterviews: results[2] ?? [],
     };
   }
-
   async pipelineReport({ fromDate, toDate, recruiterId } = {}) {
     const results = await callProcedure(
       "sp_rec_pipeline_report(?, ?, ?)",
@@ -33,5 +30,4 @@ class DashboardService {
     };
   }
 }
-
 module.exports = new DashboardService();

@@ -1,7 +1,6 @@
 import React from "react";
 import { Plus, RefreshCw } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const TeamsHeader = React.memo(function TeamsHeader({
   search,
   onSearchChange,
@@ -60,5 +59,4 @@ const TeamsHeader = React.memo(function TeamsHeader({
     </div>
   );
 });
-
 export default TeamsHeader;

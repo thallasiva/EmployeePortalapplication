@@ -2,20 +2,16 @@ import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { DAYS, LEAVE_COLORS, B, BL } from "../constants/leaveConstants";
 import { Star } from "lucide-react";
-
 const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentShiftDef, ltColorMap }) => {
   const year  = cursor.getFullYear();
   const month = cursor.getMonth();
   const firstDay  = new Date(year, month, 1).getDay();
   const daysCount = new Date(year, month + 1, 0).getDate();
-
   const cells = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysCount; d++) cells.push(new Date(year, month, d));
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   return (
     <div>
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 4 })}>
@@ -26,7 +22,6 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
           </div>
         ))}
       </div>
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 })}>
         {cells.map((date, i) => {
           if (!date) return <div key={`e${i}`} />;
@@ -35,7 +30,6 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
           const isWeekend  = date.getDay() === 0 || date.getDay() === 6;
           const dayHolidays = getHolidaysOnDay(date);
           const isHol      = dayHolidays.length > 0;
-
           return (
             <div key={date.getDate()} className={cssClass({
               minHeight: 80, borderRadius: 8, padding: "6px 7px",
@@ -50,7 +44,6 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
                   <span className={cssClass({ fontSize: 9, fontWeight: 800, color: currentShiftDef.color, display: "inline-flex" })}><Star size={9} fill="currentColor" /></span>
                 )}
               </div>
-
               {dayHolidays.map((h, hi) => (
                 <div key={hi} title={h.holiday_name} className={cssClass({
                   fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, marginBottom: 2,
@@ -60,7 +53,6 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
                   {h.holiday_name}
                 </div>
               ))}
-
               {leaves.slice(0, Math.max(0, 3 - dayHolidays.length)).map((r, ri) => {
                 const c = ltColorMap[r.leave_type_id] || LEAVE_COLORS[0];
                 return (
@@ -72,7 +64,6 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
                   </div>
                 );
               })}
-
               {leaves.length > 3 - dayHolidays.length && (
                 <div className={cssClass({ fontSize: 9, color: "#9ca3af", fontWeight: 600 })}>
                   +{leaves.length - (3 - dayHolidays.length)} more
@@ -85,6 +76,5 @@ const CalendarMonthView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, current
     </div>
   );
 });
-
 CalendarMonthView.displayName = "CalendarMonthView";
 export default CalendarMonthView;

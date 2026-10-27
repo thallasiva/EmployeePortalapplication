@@ -2,7 +2,6 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toISODateString } from "../../../../../lib/dateUtils";
 import { WEEKDAYS } from "../constants";
-
 const STATUS_STYLES = {
   P:   { bg: "bg-emerald-50",  border: "border-emerald-200", dot: "bg-emerald-500",  text: "text-emerald-700",  badge: "bg-emerald-100 text-emerald-700" },
   "P:A": { bg: "bg-amber-50", border: "border-amber-200",   dot: "bg-amber-400",    text: "text-amber-700",    badge: "bg-amber-100 text-amber-700" },
@@ -11,17 +10,14 @@ const STATUS_STYLES = {
   L:   { bg: "bg-purple-50",  border: "border-purple-200",  dot: "bg-purple-400",   text: "text-purple-700",   badge: "bg-purple-100 text-purple-700" },
   WO:  { bg: "bg-slate-50",   border: "border-slate-150",   dot: "bg-slate-300",    text: "text-slate-400",    badge: "bg-slate-100 text-slate-500" },
 };
-
 const getStyle = (record) => {
   if (record.isWeekend || record.isHoliday) return STATUS_STYLES.WO;
   return STATUS_STYLES[record.status?.code] || {};
 };
-
 const AttendanceCalendar = React.memo(function AttendanceCalendar({
   grid, dayMap, monthLabel, selectedIso, today, onSelectDay, onPrevMonth, onNextMonth
 }) {
   const todayIso = toISODateString(today);
-
   return (
     <div className="xl:col-span-7 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
       {/* Header */}
@@ -42,7 +38,6 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
           <ChevronRight size={18} />
         </button>
       </div>
-
       <div className="p-4 flex-1">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 mb-2">
@@ -52,12 +47,10 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
             </div>
           ))}
         </div>
-
         {/* Day grid */}
         <div className="grid grid-cols-7 gap-1.5">
           {grid.map((date, idx) => {
             if (!date) return <div key={`e-${idx}`} />;
-
             const record = dayMap.get(toISODateString(date));
             const iso = record?.iso || toISODateString(date);
             const isSelected = selectedIso === iso;
@@ -67,7 +60,6 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
             const isWeekendOrHoliday = record?.isWeekend || record?.isHoliday;
             const workedMins = record?.status?.workMinutes ?? 0;
             const needsReg = !isWeekendOrHoliday && !record?.pending && workedMins > 0 && workedMins < 360;
-
             return (
               <button
                 key={iso}
@@ -92,26 +84,22 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
                 >
                   {record?.day ?? date.getDate()}
                 </span>
-
                 {/* Status badge */}
                 {code && !isWeekendOrHoliday && (
                   <span className={`mt-auto text-[9px] font-bold px-1.5 py-0.5 rounded-md self-start ${style.badge || "bg-slate-100 text-slate-500"}`}>
                     {code}
                   </span>
                 )}
-
                 {/* Weekend / Holiday label */}
                 {isWeekendOrHoliday && (
                   <span className="mt-auto text-[9px] font-semibold text-slate-300 self-start">
                     {record?.isHoliday ? "HOL" : "OFF"}
                   </span>
                 )}
-
                 {/* Regularization dot */}
                 {needsReg && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-white" title="Eligible for regularization" />
                 )}
-
                 {/* Today ring */}
                 {isToday && !isSelected && (
                   <span className="absolute inset-0 rounded-xl ring-2 ring-orange-300 pointer-events-none" />
@@ -120,7 +108,6 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
             );
           })}
         </div>
-
         {/* Legend */}
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4 pt-3 border-t border-slate-100">
           {[
@@ -141,5 +128,4 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
     </div>
   );
 });
-
 export default AttendanceCalendar;

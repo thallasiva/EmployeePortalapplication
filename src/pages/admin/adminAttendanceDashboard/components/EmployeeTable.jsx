@@ -5,7 +5,6 @@ import {
 } from "../../../../data/adminAttendanceData";
 import { getInitials } from "../utils";
 import { Clock } from "lucide-react";
-
 const EmployeeTable = React.memo(function EmployeeTable({ employees, onRegularize }) {
   if (employees.length === 0) {
     return (
@@ -14,10 +13,8 @@ const EmployeeTable = React.memo(function EmployeeTable({ employees, onRegulariz
       </p>
     );
   }
-
   const canRegularize = (emp) =>
     emp.status !== "absent" && emp.status !== "leave";
-
   return (
     <div className="overflow-x-auto">
       <table className="admin-att-table w-full">
@@ -94,5 +91,4 @@ const EmployeeTable = React.memo(function EmployeeTable({ employees, onRegulariz
     </div>
   );
 });
-
 export default EmployeeTable;

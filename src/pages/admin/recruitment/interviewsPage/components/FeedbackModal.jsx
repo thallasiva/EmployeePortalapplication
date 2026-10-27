@@ -1,7 +1,6 @@
 import React from "react";
 import { Modal, Field, Input, Select, Textarea, Btn } from "../shared";
 import { FEEDBACK_STATUSES } from "../mockData";
-
 export const HrFeedbackModal = React.memo(function HrFeedbackModal({
   fbOpen,
   fb,
@@ -75,7 +74,6 @@ export const HrFeedbackModal = React.memo(function HrFeedbackModal({
     </Modal>
   );
 });
-
 export const RecruiterFeedbackModal = React.memo(function RecruiterFeedbackModal({
   fbRecruiterOpen,
   fbRecruiter,

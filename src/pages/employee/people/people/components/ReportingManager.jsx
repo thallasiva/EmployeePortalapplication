@@ -3,7 +3,6 @@ import { Crown, Mail } from "lucide-react";
 import { BRAND } from "../constants";
 import Avatar from "./Avatar";
 import SectionLabel from "./SectionLabel";
-
 const ReportingManager = React.memo(function ReportingManager({ manager }) {
   return (
     <div className="bg-white rounded-[14px] border border-slate-200 p-5 flex-1">
@@ -44,5 +43,4 @@ const ReportingManager = React.memo(function ReportingManager({ manager }) {
     </div>
   );
 });
-
 export default ReportingManager;

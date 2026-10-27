@@ -1,6 +1,5 @@
 import React from "react";
 import EmpCard from "./EmpCard";
-
 const SelfRootView = React.memo(function SelfRootView({ self, directReports, search }) {
   return (
     <div className="org-tree">
@@ -21,5 +20,4 @@ const SelfRootView = React.memo(function SelfRootView({ self, directReports, sea
     </div>
   );
 });
-
 export default SelfRootView;

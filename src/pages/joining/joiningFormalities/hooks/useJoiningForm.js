@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import { verifyJoiningToken, getJoiningForm, saveJoiningFormalities } from "../../../../api/joining.api";
 import { INITIAL_FORM } from "../constants";
 import { validateTab, buildPayload, hydrateFormFromSaved } from "../utils/formUtils";
-
 export function useJoiningForm() {
   const { token } = useParams();
   const [inv, setInv] = useState(null);
@@ -15,12 +14,10 @@ export function useJoiningForm() {
   const [visited, setVisited] = useState(new Set([0]));
   const [validErrs, setValidErrs] = useState([]);
   const [form, setForm] = useState(INITIAL_FORM);
-
   const set = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setForm((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
   }, []);
-
   useEffect(() => {
     if (!token) {
       setError("No invitation token found in URL.");
@@ -63,13 +60,11 @@ export function useJoiningForm() {
       )
       .finally(() => setLoading(false));
   }, [token]);
-
   const saveDraft = useCallback(async () => {
     try {
       await saveJoiningFormalities(buildPayload(form, token, false));
     } catch {}
   }, [form, token]);
-
   const goTo = useCallback(
     async (idx) => {
       if (idx > tab) {
@@ -88,7 +83,6 @@ export function useJoiningForm() {
     },
     [tab, form, saveDraft]
   );
-
   const handleSubmit = useCallback(async () => {
     const allErrs = [6, 5, 4, 3, 2, 1, 0].flatMap((t) => validateTab(t, form));
     if (!form.handbookAcknowledged) allErrs.unshift("Please acknowledge the Employee Handbook.");
@@ -108,7 +102,6 @@ export function useJoiningForm() {
       setSaving(false);
     }
   }, [form, token]);
-
   return {
     inv, loading, error, tab, saving, submitted, visited, validErrs,
     form, set, setForm, goTo, handleSubmit

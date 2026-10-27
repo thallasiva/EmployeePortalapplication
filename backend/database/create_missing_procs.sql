@@ -2,14 +2,11 @@
 -- Missing Stored Procedures for HRMS Production
 -- Run against hrms_db on RDS
 -- =====================================================================
-
 DROP PROCEDURE IF EXISTS sp_dashboard_stats;
 DROP PROCEDURE IF EXISTS sp_attendance_dashboard;
 DROP PROCEDURE IF EXISTS sp_rec_admin_dashboard;
 DROP PROCEDURE IF EXISTS sp_joining_list_pending;
-
 DELIMITER $$
-
 CREATE PROCEDURE sp_dashboard_stats()
 BEGIN
   SELECT
@@ -29,12 +26,10 @@ BEGIN
          AND emp_exit_date IS NOT NULL
          AND emp_exit_date >= CURDATE())                                               AS upcoming_exits;
 END$$
-
 CREATE PROCEDURE sp_attendance_dashboard(IN p_date DATE)
 BEGIN
   DECLARE v_date DATE;
   SET v_date = COALESCE(p_date, CURDATE());
-
   SELECT
     (SELECT COUNT(*) FROM attendance WHERE attendance_date = v_date AND status = 'present')  AS present_count,
     (SELECT COUNT(*) FROM attendance WHERE attendance_date = v_date AND status = 'absent')   AS absent_count,
@@ -46,7 +41,6 @@ BEGIN
        WHERE attendance_date = v_date AND status IN ('present','late','half_day'))            AS checked_in,
     v_date AS attendance_date;
 END$$
-
 CREATE PROCEDURE sp_rec_admin_dashboard()
 BEGIN
   -- RS0: Stats
@@ -60,13 +54,11 @@ BEGIN
     (SELECT COUNT(*) FROM job_applications WHERE status='Rejected')    AS rejected,
     (SELECT COUNT(*) FROM job_applications
        WHERE MONTH(applied_on)=MONTH(CURDATE()) AND YEAR(applied_on)=YEAR(CURDATE())) AS applications_this_month;
-
   -- RS1: Pipeline by status
   SELECT status, COUNT(*) AS count
   FROM job_applications
   GROUP BY status
   ORDER BY FIELD(status,'Applied','Shortlisted','Interview','Offered','Hired','Rejected');
-
   -- RS2: Recruiter performance
   SELECT
     COALESCE(CONCAT(e.first_name,' ',e.last_name),'Unknown') AS recruiter_name,
@@ -78,7 +70,6 @@ BEGIN
   GROUP BY j.created_by, recruiter_name
   ORDER BY jobs_posted DESC
   LIMIT 10;
-
   -- RS3: Recent open jobs
   SELECT
     j.job_id, j.title,
@@ -92,7 +83,6 @@ BEGIN
   GROUP BY j.job_id, j.title, d.name, j.location, j.employment_type, j.status, j.posted_on, j.closing_date
   ORDER BY j.posted_on DESC
   LIMIT 10;
-
   -- RS4: Recently shortlisted candidates
   SELECT
     ja.application_id, ja.applicant_name, ja.email, ja.status,
@@ -103,7 +93,6 @@ BEGIN
   ORDER BY ja.applied_on DESC
   LIMIT 10;
 END$$
-
 CREATE PROCEDURE sp_joining_list_pending(
   IN p_status  VARCHAR(50),
   IN p_search  VARCHAR(255),
@@ -115,7 +104,6 @@ BEGIN
   DECLARE v_offset INT DEFAULT 0;
   SET v_limit  = COALESCE(p_limit, 20);
   SET v_offset = COALESCE(p_offset, 0);
-
   SELECT
     ji.id             AS invitation_id,
     ji.candidate_id,
@@ -141,7 +129,6 @@ BEGIN
          OR ji.job_title       LIKE CONCAT('%', p_search, '%'))
   ORDER BY ji.created_at DESC
   LIMIT v_limit OFFSET v_offset;
-
   SELECT COUNT(*) AS total
   FROM joining_invitations ji
   WHERE
@@ -151,5 +138,4 @@ BEGIN
          OR ji.candidate_email LIKE CONCAT('%', p_search, '%')
          OR ji.job_title       LIKE CONCAT('%', p_search, '%'));
 END$$
-
 DELIMITER ;

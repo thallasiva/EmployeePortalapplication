@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Pencil, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import StructureDetail from "./StructureDetail";
-
 const StructureCard = React.memo(function StructureCard({
   s,
   allComponents,
@@ -11,7 +10,6 @@ const StructureCard = React.memo(function StructureCard({
 }) {
   const [open, setOpen] = useState(false);
   const toggleOpen = useCallback(() => setOpen((o) => !o), []);
-
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3.5">
@@ -56,5 +54,4 @@ const StructureCard = React.memo(function StructureCard({
     </div>
   );
 });
-
 export default StructureCard;

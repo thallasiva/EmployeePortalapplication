@@ -5,15 +5,12 @@ import { reviewDeclaration, reviewProof, adminDownloadProofUrl } from "../../../
 import { BRAND, DECL_STATUS, PROOF_STATUS, fmt, fmtDate } from "../constants";
 import Badge from "./Badge";
 import ReviewModal from "./ReviewModal";
-
 const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState(null);
-
   const decl = row.declaration;
   const status = decl?.status || "not_started";
   const total = row.items?.reduce((s, i) => s + Number(i.declared_amount || 0), 0) || 0;
-
   return (
     <>
       <tr onClick={() => setOpen((o) => !o)}
@@ -51,7 +48,6 @@ const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
             : <ChevronDown size={14} className={cssClass({ color: "#94a3b8" })} />}
         </td>
       </tr>
-
       {open && (
         <tr className={cssClass({ background: "#f8fafc" })}>
           <td colSpan={7} className={cssClass({ padding: "0 16px 16px 32px" })}>
@@ -63,7 +59,6 @@ const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
                   <strong>Admin remarks:</strong> {decl.admin_remarks}
                 </div>
               )}
-
               {row.items?.length > 0 && (
                 <div className={cssClass({ marginBottom: 14 })}>
                   <p className={cssClass({ fontSize: 11, fontWeight: 700, color: "#94a3b8",
@@ -88,7 +83,6 @@ const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
                   </div>
                 </div>
               )}
-
               {row.proofs?.length > 0 && (
                 <div>
                   <p className={cssClass({ fontSize: 11, fontWeight: 700, color: "#94a3b8",
@@ -143,7 +137,6 @@ const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
                   </div>
                 </div>
               )}
-
               {!row.items?.length && !row.proofs?.length && (
                 <p className={cssClass({ color: "#94a3b8", fontSize: 13, margin: 0 })}>
                   No declaration submitted yet.
@@ -153,7 +146,6 @@ const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
           </td>
         </tr>
       )}
-
       {modal?.type === "decl" && (
         <ReviewModal title={`Review: ${row.employee_name}`} onClose={() => setModal(null)}
           onSubmit={async (st, rm) => {
@@ -171,5 +163,4 @@ const EmpRow = React.memo(function EmpRow({ row, onRefresh }) {
     </>
   );
 });
-
 export default EmpRow;

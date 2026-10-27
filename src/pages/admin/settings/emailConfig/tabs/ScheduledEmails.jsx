@@ -2,29 +2,22 @@ import React, { useState, useEffect, useCallback } from "react";
 import { CalendarClock, Plus, Edit2, Trash2, Play, Pause, Loader2, Clock, CheckCircle2, XCircle, Repeat, CalendarDays, CalendarRange, Target, Settings2, X, Mail } from "lucide-react";
 import { emailSchedulesApi, emailTemplatesApi } from "../../../../../api/settings.api";
 import { Btn, Toggle, Toast, ConfirmDialog } from "../components/SharedUI";
-
 const FREQ_OPTS  = ["Daily","Weekly","Monthly","Yearly","Custom Cron"];
 const DAYS_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const FREQ_EMOJI = { Daily: <Repeat size={20} />, Weekly: <CalendarDays size={20} />, Monthly: <CalendarRange size={20} />, Yearly: <Target size={20} />, "Custom Cron": <Settings2 size={20} /> };
-
 const BLANK = { name:"", freq:"Daily", send_time:"08:00", template_name:"", recipient:"", cron_expr:"", status:"Active" };
-
 function ScheduleModal({ open, onClose, onSave, initial, templates }) {
   const [form, setForm] = useState(initial || BLANK);
   const [days, setDays] = useState([]);
   const [saving, setSaving] = useState(false);
-
   useEffect(() => { if (open) { setForm(initial || BLANK); setDays([]); } }, [open, initial]);
-
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const toggleDay = d => setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
-
   const handleSave = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
     try { await onSave(form); onClose(); } catch {} finally { setSaving(false); }
   };
-
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -43,7 +36,6 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
                 className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
             </div>
           ))}
-
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Frequency</label>
             <select value={form.freq} onChange={e => set("freq", e.target.value)}
@@ -51,7 +43,6 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               {FREQ_OPTS.map(o => <option key={o}>{o}</option>)}
             </select>
           </div>
-
           {form.freq === "Weekly" && (
             <div>
               <label className="text-[12px] font-semibold text-[#475569] mb-2 block">Days</label>
@@ -65,7 +56,6 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               </div>
             </div>
           )}
-
           {(form.freq === "Monthly" || form.freq === "Yearly") && (
             <div>
               <label className="text-[12px] font-semibold text-[#475569] mb-1 block">{form.freq === "Yearly" ? "Date (MM-DD)" : "Day of Month"}</label>
@@ -75,7 +65,6 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
                 className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
             </div>
           )}
-
           {form.freq === "Custom Cron" && (
             <div>
               <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Cron Expression</label>
@@ -85,13 +74,11 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               <p className="text-[11px] text-[#94a3b8] mt-1">min hour day month weekday</p>
             </div>
           )}
-
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Send Time</label>
             <input type="time" value={form.send_time} onChange={e => set("send_time", e.target.value)}
               className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
           </div>
-
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Template</label>
             <select value={form.template_name} onChange={e => set("template_name", e.target.value)}
@@ -100,14 +87,12 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               {templates.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
             </select>
           </div>
-
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Recipient</label>
             <input value={form.recipient} onChange={e => set("recipient", e.target.value)}
               placeholder="all-employees, finance@company.com"
               className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
           </div>
-
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Status</label>
             <select value={form.status} onChange={e => set("status", e.target.value)}
@@ -126,7 +111,6 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
     </div>
   );
 }
-
 export default function ScheduledEmails() {
   const [schedules, setSchedules] = useState([]);
   const [templates, setTemplates] = useState([]);
@@ -134,9 +118,7 @@ export default function ScheduledEmails() {
   const [modal, setModal] = useState({ open: false, item: null });
   const [confirm, setConfirm] = useState(null);
   const [toast, setToast] = useState(null);
-
   const showToast = (message, type = "success") => { setToast({ message, type }); setTimeout(() => setToast(null), 3000); };
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -149,9 +131,7 @@ export default function ScheduledEmails() {
     } catch { showToast("Failed to load", "error"); }
     finally { setLoading(false); }
   }, []);
-
   useEffect(() => { load(); }, [load]);
-
   const handleSave = async (form) => {
     if (modal.item?.id) {
       await emailSchedulesApi.update(modal.item.id, form);
@@ -162,20 +142,16 @@ export default function ScheduledEmails() {
     }
     load();
   };
-
   const handleToggle = async (id) => {
     try { await emailSchedulesApi.toggle(id); load(); }
     catch { showToast("Toggle failed", "error"); }
   };
-
   const handleDelete = async (id) => {
     try { await emailSchedulesApi.delete(id); showToast("Deleted"); load(); }
     catch { showToast("Delete failed", "error"); }
   };
-
   const active = schedules.filter(s => s.status === "Active").length;
   const paused = schedules.filter(s => s.status === "Paused").length;
-
   return (
     <div className="space-y-5">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
@@ -184,7 +160,6 @@ export default function ScheduledEmails() {
       )}
       <ScheduleModal open={modal.open} onClose={() => setModal({ open: false, item: null })}
         onSave={handleSave} initial={modal.item} templates={templates} />
-
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
@@ -198,13 +173,11 @@ export default function ScheduledEmails() {
           </div>
         ))}
       </div>
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-[13px] text-[#64748b]">Automate recurring email campaigns and reminders</p>
         <Btn icon={<Plus size={14} />} onClick={() => setModal({ open: true, item: null })}>New Schedule</Btn>
       </div>
-
       {/* Schedule cards */}
       {loading ? (
         <div className="flex items-center justify-center h-40">

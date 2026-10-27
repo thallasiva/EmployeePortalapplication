@@ -1,7 +1,6 @@
 import React from "react";
 import { XCircle } from "lucide-react";
 import { Modal, Btn, StatusBadge, DetailRow } from "../shared";
-
 function JobDetailModal({ detailJob, onClose, canClose, handleClose }) {
   return (
     <Modal
@@ -83,5 +82,4 @@ function JobDetailModal({ detailJob, onClose, canClose, handleClose }) {
     </Modal>
   );
 }
-
 export default React.memo(JobDetailModal);

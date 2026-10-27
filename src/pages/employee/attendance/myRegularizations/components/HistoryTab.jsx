@@ -1,7 +1,6 @@
 import React from "react";
 import { REGULARIZATION_HISTORY } from "../../../../../data/regularizations";
 import HistoryCard from "./HistoryCard";
-
 const HistoryTab = React.memo(function HistoryTab({ expandedId, onToggle, onViewDetails }) {
   return (
     <div className="flex-1 space-y-3 overflow-y-auto pb-4">
@@ -17,5 +16,4 @@ const HistoryTab = React.memo(function HistoryTab({ expandedId, onToggle, onView
     </div>
   );
 });
-
 export default HistoryTab;

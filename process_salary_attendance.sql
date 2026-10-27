@@ -7,30 +7,23 @@
 --         payable  = per_day * paid_days      (days actually worked/paid)
 --         lop_deduct = monthly_gross - payable
 -- ============================================================================
-
 SET @working_days := 21;                                   -- fixed working days
 SET @month := MONTH(CURDATE() - INTERVAL 1 MONTH);         -- previous month
 SET @year  := YEAR (CURDATE() - INTERVAL 1 MONTH);
 -- To pin a specific month, uncomment: SET @month := 8; SET @year := 2026;
-
 SELECT
     e.emp_code,
     CONCAT(e.first_name,' ',COALESCE(e.last_name,''))        AS employee_name,
     d.department_name,
-
     ROUND(COALESCE(sal.ctc_annual, e.ctc)/12, 2)             AS monthly_gross,
     @working_days                                            AS working_days,
-
     -- paid days from attendance (present/late/weekend/holiday/leave + 0.5*half)
     COALESCE(att.paid_days, 0)                               AS days_worked,
     (@working_days - COALESCE(att.paid_days, 0))             AS lop_days,
-
     ROUND(COALESCE(sal.ctc_annual, e.ctc)/12/@working_days, 2)               AS per_day_rate,
-
     -- processed (prorated) pay
     ROUND(COALESCE(sal.ctc_annual, e.ctc)/12/@working_days
           * COALESCE(att.paid_days, 0), 0)                   AS payable_salary,
-
     -- loss-of-pay deduction
     ROUND(COALESCE(sal.ctc_annual, e.ctc)/12
           - COALESCE(sal.ctc_annual, e.ctc)/12/@working_days

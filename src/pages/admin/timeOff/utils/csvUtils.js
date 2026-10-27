@@ -31,7 +31,6 @@ export function downloadTemplate() {
   a.click();
   URL.revokeObjectURL(url);
 }
-
 export function parseCSVText(text) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return { error: "CSV must have a header row and at least one data row." };

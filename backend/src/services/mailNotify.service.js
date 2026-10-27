@@ -1,40 +1,13 @@
 'use strict';
-
-
-
-
-
-
-
-
-
-
-
-
 const { sendMail, sendMailNow, sendBulk } = require('./email.service');
 const T = require('./email/mailTemplates');
 const { email: emailCfg } = require('../config/env');
-
-
-
-
-
-
 function fire(fn) {
   Promise.resolve().then(fn).catch((err) => {
     console.error('[mailNotify] Uncaught error (non-fatal):', err.message);
   });
 }
-
 function adminEmail() {return emailCfg.adminAlert || null;}
-
-
-
-
-
-
-
-
 exports.employeeInvite = ({ name, email, tempPassword, role, department }) => {
   if (!email) return;
   fire(async () => {
@@ -42,10 +15,6 @@ exports.employeeInvite = ({ name, email, tempPassword, role, department }) => {
     await sendMailNow({ to: email, ...tpl, template: 'auth/invite', priority: 'high' });
   });
 };
-
-
-
-
 exports.accountLocked = ({ name, email, minutes }) => {
   if (!email) return;
   fire(async () => {
@@ -53,10 +22,6 @@ exports.accountLocked = ({ name, email, minutes }) => {
     await sendMailNow({ to: email, ...tpl, template: 'auth/account-locked', priority: 'critical' });
   });
 };
-
-
-
-
 exports.passwordChanged = ({ name, email }) => {
   if (!email) return;
   fire(async () => {
@@ -64,10 +29,6 @@ exports.passwordChanged = ({ name, email }) => {
     await sendMail({ to: email, ...tpl, template: 'auth/password-changed', priority: 'high' });
   });
 };
-
-
-
-
 exports.forgotPassword = ({ name, email, resetUrl, expiresIn }) => {
   if (!email) return;
   fire(async () => {
@@ -75,10 +36,6 @@ exports.forgotPassword = ({ name, email, resetUrl, expiresIn }) => {
     await sendMailNow({ to: email, ...tpl, template: 'auth/forgot-password', priority: 'critical' });
   });
 };
-
-
-
-
 exports.loginAlert = ({ name, email, ip, device, time }) => {
   if (!email) return;
   fire(async () => {
@@ -86,14 +43,6 @@ exports.loginAlert = ({ name, email, ip, device, time }) => {
     await sendMail({ to: email, ...tpl, template: 'auth/login-alert', priority: 'high' });
   });
 };
-
-
-
-
-
-
-
-
 exports.employeeCreated = ({ name, email, empCode, role, department, joiningDate }) => {
   if (!email) return;
   fire(async () => {
@@ -101,10 +50,6 @@ exports.employeeCreated = ({ name, email, empCode, role, department, joiningDate
     await sendMail({ to: email, ...tpl, template: 'employee/created', priority: 'high' });
   });
 };
-
-
-
-
 exports.employeeDeactivated = ({ name, email, reason }) => {
   if (!email) return;
   fire(async () => {
@@ -112,15 +57,6 @@ exports.employeeDeactivated = ({ name, email, reason }) => {
     await sendMail({ to: email, ...tpl, template: 'employee/deactivated', priority: 'high' });
   });
 };
-
-
-
-
-
-
-
-
-
 exports.leaveApplied = (data) => {
   if (!data.managerEmail) return;
   const { leaveRequestId } = data;
@@ -134,10 +70,6 @@ exports.leaveApplied = (data) => {
     await sendMail({ to: data.managerEmail, ...tpl, template: 'leave/applied', priority: 'high' });
   });
 };
-
-
-
-
 exports.leaveApproved = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -145,10 +77,6 @@ exports.leaveApproved = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'leave/approved', priority: 'high' });
   });
 };
-
-
-
-
 exports.leaveRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -156,10 +84,6 @@ exports.leaveRejected = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'leave/rejected', priority: 'high' });
   });
 };
-
-
-
-
 exports.leaveCancelled = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -167,16 +91,6 @@ exports.leaveCancelled = (data) => {
     await sendMail({ to: data.managerEmail, ...tpl, template: 'leave/cancelled', priority: 'medium' });
   });
 };
-
-
-
-
-
-
-
-
-
-
 exports.missingCheckInBulk = (employees, date) => {
   fire(async () => {
     const jobs = employees.
@@ -189,10 +103,6 @@ exports.missingCheckInBulk = (employees, date) => {
     console.info(`[mailNotify] Missing check-in alerts queued: ${jobs.length}`);
   });
 };
-
-
-
-
 exports.missingCheckOutBulk = (employees, date) => {
   fire(async () => {
     const jobs = employees.
@@ -205,10 +115,6 @@ exports.missingCheckOutBulk = (employees, date) => {
     console.info(`[mailNotify] Missing check-out alerts queued: ${jobs.length}`);
   });
 };
-
-
-
-
 exports.attendanceRegularizationRequest = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -216,10 +122,6 @@ exports.attendanceRegularizationRequest = (data) => {
     await sendMail({ to: data.managerEmail, ...tpl, template: 'attendance/reg-request', priority: 'high' });
   });
 };
-
-
-
-
 exports.attendanceRegularized = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -227,10 +129,6 @@ exports.attendanceRegularized = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'attendance/regularized', priority: 'high' });
   });
 };
-
-
-
-
 exports.attendanceRegularizationRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -238,14 +136,6 @@ exports.attendanceRegularizationRejected = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'attendance/reg-rejected', priority: 'high' });
   });
 };
-
-
-
-
-
-
-
-
 exports.payslipReleased = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -256,11 +146,6 @@ exports.payslipReleased = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'payroll/payslip', priority: 'medium' });
   });
 };
-
-
-
-
-
 exports.payslipReleasedBulk = (payslips) => {
   fire(async () => {
     const BATCH = 50;
@@ -279,10 +164,6 @@ exports.payslipReleasedBulk = (payslips) => {
     console.info(`[mailNotify] Payslip notifications queued: ${payslips.length}`);
   });
 };
-
-
-
-
 exports.salaryRevised = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -290,14 +171,6 @@ exports.salaryRevised = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'payroll/salary-revised', priority: 'high' });
   });
 };
-
-
-
-
-
-
-
-
 exports.applicationAcknowledgment = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -305,10 +178,6 @@ exports.applicationAcknowledgment = (data) => {
     await sendMail({ to: data.candidateEmail, ...tpl, template: 'recruitment/ack', priority: 'medium' });
   });
 };
-
-
-
-
 exports.candidateShortlisted = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -316,10 +185,6 @@ exports.candidateShortlisted = (data) => {
     await sendMail({ to: data.candidateEmail, ...tpl, template: 'recruitment/shortlisted', priority: 'high' });
   });
 };
-
-
-
-
 exports.candidateRejected = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -327,10 +192,6 @@ exports.candidateRejected = (data) => {
     await sendMail({ to: data.candidateEmail, ...tpl, template: 'recruitment/rejected', priority: 'medium' });
   });
 };
-
-
-
-
 exports.offerLetter = (data) => {
   if (!data.candidateEmail) return;
   fire(async () => {
@@ -338,10 +199,6 @@ exports.offerLetter = (data) => {
     await sendMail({ to: data.candidateEmail, ...tpl, template: 'recruitment/offer-letter', priority: 'high' });
   });
 };
-
-
-
-
 exports.offerAccepted = (data) => {
   if (!data.recruiterEmail) return;
   fire(async () => {
@@ -349,10 +206,6 @@ exports.offerAccepted = (data) => {
     await sendMail({ to: data.recruiterEmail, ...tpl, template: 'recruitment/offer-accepted', priority: 'high' });
   });
 };
-
-
-
-
 exports.offerRejected = (data) => {
   if (!data.recruiterEmail) return;
   fire(async () => {
@@ -360,14 +213,6 @@ exports.offerRejected = (data) => {
     await sendMail({ to: data.recruiterEmail, ...tpl, template: 'recruitment/offer-rejected', priority: 'high' });
   });
 };
-
-
-
-
-
-
-
-
 exports.resignationSubmitted = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -375,10 +220,6 @@ exports.resignationSubmitted = (data) => {
     await sendMail({ to: data.managerEmail, ...tpl, template: 'resignation/submitted', priority: 'high' });
   });
 };
-
-
-
-
 exports.resignationApproved = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -386,10 +227,6 @@ exports.resignationApproved = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'resignation/approved', priority: 'high' });
   });
 };
-
-
-
-
 exports.resignationRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -397,14 +234,6 @@ exports.resignationRejected = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'resignation/rejected', priority: 'high' });
   });
 };
-
-
-
-
-
-
-
-
 exports.ticketCreated = (data) => {
   if (!data.agentEmail) return;
   fire(async () => {
@@ -412,10 +241,6 @@ exports.ticketCreated = (data) => {
     await sendMail({ to: data.agentEmail, ...tpl, template: 'helpdesk/created', priority: 'high' });
   });
 };
-
-
-
-
 exports.ticketResolved = (data) => {
   if (!data.reporterEmail) return;
   fire(async () => {
@@ -423,10 +248,6 @@ exports.ticketResolved = (data) => {
     await sendMail({ to: data.reporterEmail, ...tpl, template: 'helpdesk/resolved', priority: 'medium' });
   });
 };
-
-
-
-
 exports.ticketUpdated = (data) => {
   if (!data.reporterEmail) return;
   fire(async () => {
@@ -434,11 +255,6 @@ exports.ticketUpdated = (data) => {
     await sendMail({ to: data.reporterEmail, ...tpl, template: 'helpdesk/updated', priority: 'medium' });
   });
 };
-
-
-
-
-
 exports.timesheetSubmitted = (data) => {
   if (!data.managerEmail) return;
   fire(async () => {
@@ -446,7 +262,6 @@ exports.timesheetSubmitted = (data) => {
     await sendMail({ to: data.managerEmail, ...tpl, template: 'timesheet/submitted', priority: 'high' });
   });
 };
-
 exports.timesheetApproved = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -454,7 +269,6 @@ exports.timesheetApproved = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'timesheet/approved', priority: 'medium' });
   });
 };
-
 exports.timesheetRejected = (data) => {
   if (!data.employeeEmail) return;
   fire(async () => {
@@ -462,7 +276,6 @@ exports.timesheetRejected = (data) => {
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'timesheet/rejected', priority: 'high' });
   });
 };
-
 exports.timesheetReminderBulk = (employees, weekLabel) => {
   fire(async () => {
     const jobs = employees.
@@ -474,15 +287,6 @@ exports.timesheetReminderBulk = (employees, weekLabel) => {
     if (jobs.length) await sendBulk(jobs);
   });
 };
-
-
-
-
-
-
-
-
-
 exports.documentExpiryBulk = (docs) => {
   fire(async () => {
     const jobs = docs.
@@ -500,11 +304,6 @@ exports.documentExpiryBulk = (docs) => {
     console.info(`[mailNotify] Document expiry alerts queued: ${jobs.length}`);
   });
 };
-
-
-
-
-
 exports.emailDeliveryFailed = (data) => {
   const to = adminEmail();
   if (!to) return;
@@ -513,15 +312,6 @@ exports.emailDeliveryFailed = (data) => {
     await sendMailNow({ to, ...tpl, template: 'admin/delivery-failed', priority: 'critical' });
   });
 };
-
-
-
-
-
-
-
-
-
 exports.recruiterAssigned = (recruiters) => {
   if (!Array.isArray(recruiters) || !recruiters.length) return;
   fire(async () => {
@@ -543,12 +333,6 @@ exports.recruiterAssigned = (recruiters) => {
     console.info(`[mailNotify] Recruiter assignment emails sent: ${jobs.length}`);
   });
 };
-
-
-
-
-
-
 exports.candidateSubmittedToHR = ({ hrEmail, hrName, recruiterName, candidateName, jobTitle, candidateCode }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -556,8 +340,6 @@ exports.candidateSubmittedToHR = ({ hrEmail, hrName, recruiterName, candidateNam
     await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/candidate-submitted-hr', priority: 'high' });
   });
 };
-
-
 exports.candidateStatusToRecruiter = ({ recruiterEmail, recruiterName, candidateName, jobTitle, status }) => {
   if (!recruiterEmail) return;
   fire(async () => {
@@ -565,8 +347,6 @@ exports.candidateStatusToRecruiter = ({ recruiterEmail, recruiterName, candidate
     await sendMail({ to: recruiterEmail, ...tpl, template: 'recruitment/candidate-status-recruiter', priority: 'high' });
   });
 };
-
-
 exports.interviewScheduledCandidate = ({ candidateEmail, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer }) => {
   if (!candidateEmail) return;
   fire(async () => {
@@ -574,8 +354,6 @@ exports.interviewScheduledCandidate = ({ candidateEmail, candidateName, jobTitle
     await sendMailNow({ to: candidateEmail, ...tpl, template: 'recruitment/interview-scheduled-candidate', priority: 'high' });
   });
 };
-
-
 exports.interviewScheduledHR = ({ hrEmail, hrName, candidateName, jobTitle, level, interviewDate, interviewTime, interviewType, interviewer, scheduledByName }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -583,8 +361,6 @@ exports.interviewScheduledHR = ({ hrEmail, hrName, candidateName, jobTitle, leve
     await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/interview-scheduled-hr', priority: 'high' });
   });
 };
-
-
 exports.interviewFeedbackToHR = ({ hrEmail, hrName, candidateName, jobTitle, level, feedbackStatus, feedbackComments, interviewerName }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -592,8 +368,6 @@ exports.interviewFeedbackToHR = ({ hrEmail, hrName, candidateName, jobTitle, lev
     await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/interview-feedback-hr', priority: 'high' });
   });
 };
-
-
 exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) => {
   const to = adminEmail();
   if (!to) return;
@@ -602,8 +376,6 @@ exports.candidateSelectedAdmin = ({ candidateName, jobTitle, recruiterName }) =>
     await sendMail({ to, ...tpl, template: 'recruitment/candidate-selected-admin', priority: 'high' });
   });
 };
-
-
 exports.offerReleasedToHR = ({ hrEmail, hrName, candidateName, jobTitle, ctc, dateOfJoining }) => {
   if (!hrEmail) return;
   fire(async () => {
@@ -611,8 +383,6 @@ exports.offerReleasedToHR = ({ hrEmail, hrName, candidateName, jobTitle, ctc, da
     await sendMail({ to: hrEmail, ...tpl, template: 'recruitment/offer-released-hr', priority: 'high' });
   });
 };
-
-
 exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => {
   const to = adminEmail();
   if (!to) return;
@@ -621,11 +391,6 @@ exports.offerAcceptedAdmin = ({ candidateName, jobTitle, dateOfJoining }) => {
     await sendMail({ to, ...tpl, template: 'recruitment/offer-accepted-admin', priority: 'high' });
   });
 };
-
-
-
-
-
 exports.joiningInvitation = ({
   candidateName, candidateEmail, jobTitle, joiningUrl, expiresAt,
   ctc, ctcInWords, dateOfJoining, offerCode,
@@ -647,7 +412,6 @@ exports.joiningInvitation = ({
     await sendMailNow({ to: candidateEmail, ...tpl, attachments, template: 'joining/invitation', priority: 'critical' });
   });
 };
-
 exports.joiningSubmitted = ({ candidateName, candidateEmail, jobTitle }) => {
   const hrEmail = adminEmail();
   if (!hrEmail) return;
@@ -656,7 +420,6 @@ exports.joiningSubmitted = ({ candidateName, candidateEmail, jobTitle }) => {
     await sendMail({ to: hrEmail, ...tpl, template: 'joining/submitted-hr', priority: 'high' });
   });
 };
-
 exports.joiningApproved = ({ candidateName, candidateEmail, jobTitle }) => {
   if (!candidateEmail) return;
   fire(async () => {
@@ -664,7 +427,6 @@ exports.joiningApproved = ({ candidateName, candidateEmail, jobTitle }) => {
     await sendMailNow({ to: candidateEmail, ...tpl, template: 'joining/approved', priority: 'critical' });
   });
 };
-
 exports.joiningChangesRequested = ({ candidateName, candidateEmail, jobTitle, remarks, changesFields }) => {
   if (!candidateEmail) return;
   fire(async () => {
@@ -672,7 +434,6 @@ exports.joiningChangesRequested = ({ candidateName, candidateEmail, jobTitle, re
     await sendMailNow({ to: candidateEmail, ...tpl, template: 'joining/changes-requested', priority: 'critical' });
   });
 };
-
 exports.joiningRejected = ({ candidateName, candidateEmail, jobTitle, remarks }) => {
   if (!candidateEmail) return;
   fire(async () => {

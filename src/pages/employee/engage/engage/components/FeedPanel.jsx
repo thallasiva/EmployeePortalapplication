@@ -2,7 +2,6 @@ import React from "react";
 import { SECTIONS } from "../constants";
 import ActivityCard from "./ActivityCard";
 import { Inbox } from "lucide-react";
-
 const FeedPanel = React.memo(function FeedPanel({
   loading, visibleItems, activeFilter, search, navigate,
 }) {
@@ -16,7 +15,6 @@ const FeedPanel = React.memo(function FeedPanel({
           </span>
         </h2>
       </div>
-
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((n) => (
@@ -41,5 +39,4 @@ const FeedPanel = React.memo(function FeedPanel({
     </div>
   );
 });
-
 export default FeedPanel;

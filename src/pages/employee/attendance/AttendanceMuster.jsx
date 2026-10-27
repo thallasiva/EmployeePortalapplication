@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Download, Info, CircleDot } from "lucide-react";
 import { YearPicker } from "../../../component/YearPicker";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
-
 const MONTHS = [
   "January",
   "February",
@@ -17,7 +16,6 @@ const MONTHS = [
   "November",
   "December",
 ];
-
 const LEGEND = [
   { code: "P", label: "Present", className: "bg-emerald-500" },
   { code: "A", label: "Absent", className: "bg-red-500" },
@@ -26,15 +24,12 @@ const LEGEND = [
   { code: "WO", label: "Week Off", className: "bg-slate-400" },
   { code: "HD", label: "Half Day", className: "bg-amber-500" },
 ];
-
 function getDaysInMonth(year, monthIndex) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
-
 function buildMuster(year, monthIndex) {
   const days = getDaysInMonth(year, monthIndex);
   const rows = [];
-
   for (let day = 1; day <= days; day += 1) {
     const date = new Date(year, monthIndex, day);
     const dow = date.getDay();
@@ -43,7 +38,6 @@ function buildMuster(year, monthIndex) {
     else if (day === 1 && monthIndex === 4) code = "H";
     else if (day % 17 === 0) code = "L";
     else if (day % 23 === 0) code = "A";
-
     rows.push({
       day,
       weekday: date.toLocaleDateString("en-GB", { weekday: "short" }),
@@ -58,10 +52,8 @@ function buildMuster(year, monthIndex) {
       code,
     });
   }
-
   return rows;
 }
-
 const codeBadge = (code) => {
   const item = LEGEND.find((l) => l.code === code) || LEGEND[0];
   return (
@@ -73,18 +65,15 @@ const codeBadge = (code) => {
     </span>
   );
 };
-
 export default function AttendanceMuster() {
   const user = getLoggedInUser();
   const now = new Date();
   const [year, setYear] = useState(String(now.getFullYear()));
   const [monthIndex, setMonthIndex] = useState(now.getMonth());
-
   const muster = useMemo(
     () => buildMuster(Number(year), monthIndex),
     [year, monthIndex]
   );
-
   const summary = useMemo(() => {
     const counts = { P: 0, A: 0, L: 0, H: 0, WO: 0, HD: 0 };
     muster.forEach((r) => {
@@ -92,7 +81,6 @@ export default function AttendanceMuster() {
     });
     return counts;
   }, [muster]);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -104,7 +92,6 @@ export default function AttendanceMuster() {
             {user?.name || "Employee"} · Muster roll
           </p>
         </div>
-
         <div className="flex flex-wrap items-center gap-3">
           <select
             value={monthIndex}
@@ -127,7 +114,6 @@ export default function AttendanceMuster() {
           </button>
         </div>
       </div>
-
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {LEGEND.map((item) => (
           <div
@@ -144,7 +130,6 @@ export default function AttendanceMuster() {
           </div>
         ))}
       </div>
-
       <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-brand-50 border border-brand-100 rounded-lg text-sm text-slate-700">
         <Info size={18} className="text-brand shrink-0" />
         <span>
@@ -152,7 +137,6 @@ export default function AttendanceMuster() {
           Select month and year from the calendar controls above.
         </span>
       </div>
-
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[32rem] overflow-y-auto">
           <table className="w-full text-sm">
@@ -172,7 +156,6 @@ export default function AttendanceMuster() {
                   new Date(Number(year), monthIndex, row.day)
                 );
                 const isToday = iso === toISODateString(new Date());
-
                 return (
                   <tr
                     key={row.day}

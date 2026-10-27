@@ -1,9 +1,7 @@
 import { API_BASE_URL } from "../../../../../api/client";
-
 export function toJumpId(value) {
   return `jump-${String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
-
 export function scrollElementIntoContainer(el) {
   const container = el.closest("[data-doc-scroll]");
   if (container) {
@@ -17,7 +15,6 @@ export function scrollElementIntoContainer(el) {
   }
   el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
-
 export function docFileUrl(relPath) {
   if (!relPath) return "#";
   const base = API_BASE_URL.replace(/\/api\/?$/, "");

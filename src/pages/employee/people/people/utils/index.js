@@ -1,26 +1,21 @@
 import { PALETTE } from "../constants";
-
 export function deptColor(deptId) {
   if (deptId == null) return "#94a3b8";
   return PALETTE[Number(deptId) % PALETTE.length];
 }
-
 export function fullName(emp) {
   return [emp.first_name, emp.last_name].filter(Boolean).join(" ") || emp.emp_code || "—";
 }
-
 export function initials(name) {
   const p = (name || "?").trim().split(/\s+/);
   return ((p[0]?.[0] ?? "") + (p[1]?.[0] ?? "")).toUpperCase() || "?";
 }
-
 export function fmtDate(d) {
   if (!d || d === "—") return "—";
   try {
     return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   } catch { return d; }
 }
-
 export function normalize(emp) {
   return {
     id: emp.employee_id,

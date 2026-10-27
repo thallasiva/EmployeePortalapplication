@@ -3,18 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import AccountRole from './AccountRole';
 import LeadershipRole from './LeadershipRole';
 import { PLACEHOLDER_AVATAR } from '../../lib/placeholders';
-
 const tabs = [
 'Account Roles',
 'Leadership Roles'];
-
-
 export default function Manage()
 {
   const navigate = useNavigate();
-
   const [active, setActive] = useState('Account Roles');
-
   const roles = [
   {
     title: 'Super Admin',
@@ -36,8 +31,6 @@ export default function Manage()
     description: 'Team Members have the most limited access – most people should have this role.',
     image: PLACEHOLDER_AVATAR
   }];
-
-
   const handleViewPermission = (role) =>
   {
     const roleSlug = role.title.toLowerCase().replace(/\s+/g, '-');
@@ -48,23 +41,17 @@ export default function Manage()
       }
     });
   };
-
   const renderTab = () =>
   {
     switch (active) {
-
       case "Account Roles":
         return <AccountRole roles={roles} onViewPermission={handleViewPermission} />;
-
       case "Leadership Roles":
         return <LeadershipRole roles={roles} onViewPermission={handleViewPermission} />;
-
-
       default:
         return <div>No Data</div>;
     }
   };
-
   return (
     <div className="space-y-6">
       {}
@@ -72,7 +59,6 @@ export default function Manage()
         <span className="text-gray-500">Home / Manage</span>
         <h2 className="font-semibold">Manage</h2>
       </div>
-
       {}
       <div className="flex w-fit bg-white rounded-xl shadow overflow-hidden">
         {tabs.map((tab) =>
@@ -83,14 +69,11 @@ export default function Manage()
           'bg-brand text-white' :
           'bg-white text-gray-700 hover:bg-gray-100'}`
           }>
-
             {tab}
           </button>
         )}
       </div>
-
       {}
       {renderTab()}
     </div>);
-
 }

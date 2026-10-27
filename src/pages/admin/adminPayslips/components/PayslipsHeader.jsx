@@ -1,7 +1,6 @@
 import React from "react";
 import { Mail, Upload } from "lucide-react";
 import { MONTH_OPTIONS, getYearOptions } from "../constants/payslipOptions";
-
 const PayslipsHeader = React.memo(function PayslipsHeader({
   month,
   year,
@@ -41,7 +40,6 @@ const PayslipsHeader = React.memo(function PayslipsHeader({
           </select>
         </div>
       </div>
-
       <div className="mt-5 flex flex-wrap gap-3">
         <button
           type="button"
@@ -64,5 +62,4 @@ const PayslipsHeader = React.memo(function PayslipsHeader({
     </div>
   );
 });
-
 export default PayslipsHeader;

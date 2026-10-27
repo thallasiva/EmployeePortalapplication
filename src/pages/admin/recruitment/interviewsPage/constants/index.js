@@ -1,5 +1,4 @@
 export { INTERVIEW_LEVELS, INTERVIEW_TYPES, FEEDBACK_STATUSES } from "../mockData";
-
 export const BLANK_INT = {
   candidateId: "",
   jobReqId: "",
@@ -17,17 +16,13 @@ export const BLANK_INT = {
   teamsEnd: "",
   notes: "",
 };
-
 export const BLANK_FB = { feedbackStatus: "", feedbackComments: "", shortlisted: false };
-
 export const LEVEL_ORDER = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
-
 export const STATUS_CLS = {
   Scheduled: "bg-blue-100 text-blue-700",
   Completed: "bg-[#fff7ed] text-[#f18200]",
   Cancelled: "bg-red-100 text-red-600",
 };
-
 export const FB_CLS = {
   Selected: "bg-[#fff7ed] text-[#f18200]",
   "Not Selected": "bg-red-100 text-red-600",

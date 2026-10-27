@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { fmtINR, pct } from "../utils";
-
 const ProgressRow = React.memo(function ProgressRow({ label, value, total, color, sub }) {
   const p = pct(value, total);
   return (
@@ -27,5 +26,4 @@ const ProgressRow = React.memo(function ProgressRow({ label, value, total, color
     </div>
   );
 });
-
 export default ProgressRow;

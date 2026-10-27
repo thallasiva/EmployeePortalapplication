@@ -1,6 +1,5 @@
 import { Clock, CheckCircle2, XCircle } from "lucide-react";
 import React from "react";
-
 export const SEC123_ITEMS = [
   { section: "123", label: "5 Years of Fixed Deposit in Scheduled Bank", max: "1,50,000.00" },
   { section: "123", label: "Children Tuition Fees", max: "1,50,000.00" },
@@ -24,7 +23,6 @@ export const SEC123_ITEMS = [
   { section: "123", label: "Sukanya Samriddhi Yojana", max: "1,50,000.00" },
   { section: "123", label: "Unit Linked Insurance Premium (ULIP)", max: "1,50,000.00" },
 ];
-
 export const CH8_ITEMS = [
   { section: "130", label: "Additional Interest on housing loan borrowed as on 1st Apr 2016", max: "50,000.00" },
   { section: "131", label: "Additional Interest on Housing loan borrowed as on 1st Apr 2019", max: "1,50,000.00" },
@@ -48,7 +46,6 @@ export const CH8_ITEMS = [
   { section: "154", label: "Permanent Physical Disability (Above 80%)", max: "1,25,000.00" },
   { section: "154", label: "Permanent Physical Disability (Between 40% - 80%)", max: "75,000.00" },
 ];
-
 export const MED_ITEMS = [
   { key: "checkupParents", section: "80D", label: "Preventive Health Checkup - Dependant Parents", max: "5,000.00" },
   { key: "medBillsSenior", section: "80D", label: "Medical Bills - Senior Citizen (>60)", max: "50,000.00" },
@@ -56,11 +53,8 @@ export const MED_ITEMS = [
   { key: "medInsParents", section: "80D", label: "Medical Insurance Premium - Dependant Parents", max: "50,000.00", hasParentAge: true },
   { key: "preventiveCheckup", section: "80D", label: "Preventive Health Check-up", max: "5,000.00" },
 ];
-
 export const MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
 export const LANDLORD_RELATIONS = ["Spouse", "Parent", "Sibling", "Friend", "Other"];
-
 export const STATUS_CFG = {
   draft: { bg: '#fef9c3', color: '#a16207', icon: React.createElement(Clock, { size: 14 }), label: 'Draft' },
   submitted: { bg: '#dbeafe', color: '#1d4ed8', icon: React.createElement(Clock, { size: 14 }), label: 'Submitted — Pending Review' },

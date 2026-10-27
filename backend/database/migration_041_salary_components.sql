@@ -3,7 +3,6 @@
 -- Enterprise-grade configurable salary module
 -- ============================================================
 USE hrms_db;
-
 -- Drop in reverse dependency order so FK constraints don't block
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS employee_salary_assignments;
@@ -11,7 +10,6 @@ DROP TABLE IF EXISTS salary_structure_lines;
 DROP TABLE IF EXISTS salary_structures;
 DROP TABLE IF EXISTS salary_components;
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- ── 1. Salary Component Master ───────────────────────────────
 CREATE TABLE salary_components (
   component_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +36,6 @@ CREATE TABLE salary_components (
   updated_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_component_code (component_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── 2. Salary Structures (named templates) ────────────────────
 CREATE TABLE salary_structures (
   structure_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -50,7 +47,6 @@ CREATE TABLE salary_structures (
   updated_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_structure_name (structure_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── 3. Structure → Component mapping (with overrides) ─────────
 CREATE TABLE salary_structure_lines (
   line_id           INT AUTO_INCREMENT PRIMARY KEY,
@@ -67,7 +63,6 @@ CREATE TABLE salary_structure_lines (
   FOREIGN KEY (structure_id) REFERENCES salary_structures(structure_id) ON DELETE CASCADE,
   FOREIGN KEY (component_id) REFERENCES salary_components(component_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── 4. Employee Salary Assignments ───────────────────────────
 CREATE TABLE employee_salary_assignments (
   assignment_id     INT AUTO_INCREMENT PRIMARY KEY,
@@ -80,14 +75,11 @@ CREATE TABLE employee_salary_assignments (
   created_at        TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (structure_id) REFERENCES salary_structures(structure_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ════════════════════════════════════════════════════════════
 -- STORED PROCEDURES
 -- ════════════════════════════════════════════════════════════
 DELIMITER $$
-
 -- ── Component CRUD ───────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_list_salary_components $$
 CREATE PROCEDURE sp_list_salary_components(IN p_active_only TINYINT(1))
 BEGIN
@@ -95,13 +87,11 @@ BEGIN
    WHERE (p_active_only IS NULL OR is_active = p_active_only)
    ORDER BY category, sort_order, component_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_salary_component $$
 CREATE PROCEDURE sp_get_salary_component(IN p_id INT)
 BEGIN
   SELECT * FROM salary_components WHERE component_id = p_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_upsert_salary_component $$
 CREATE PROCEDURE sp_upsert_salary_component(
   IN p_id               INT,
@@ -162,16 +152,13 @@ BEGIN
     SELECT p_id AS component_id;
   END IF;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_toggle_salary_component $$
 CREATE PROCEDURE sp_toggle_salary_component(IN p_id INT, IN p_active TINYINT(1))
 BEGIN
   UPDATE salary_components SET is_active = p_active WHERE component_id = p_id AND is_system = 0;
   SELECT ROW_COUNT() AS affected;
 END $$
-
 -- ── Structure CRUD ────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_list_salary_structures $$
 CREATE PROCEDURE sp_list_salary_structures()
 BEGIN
@@ -183,7 +170,6 @@ BEGIN
    GROUP BY s.structure_id
    ORDER BY s.is_default DESC, s.structure_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_salary_structure $$
 CREATE PROCEDURE sp_get_salary_structure(IN p_id INT)
 BEGIN
@@ -192,7 +178,6 @@ BEGIN
     LEFT JOIN salary_structure_lines l ON l.structure_id = s.structure_id AND l.is_active = 1
    WHERE s.structure_id = p_id
    GROUP BY s.structure_id;
-
   SELECT l.*, c.component_name, c.component_code, c.category,
          c.calc_type AS master_calc_type,
          c.percentage_value AS master_pct_value,
@@ -208,7 +193,6 @@ BEGIN
    WHERE l.structure_id = p_id AND l.is_active = 1
    ORDER BY l.sort_order, c.sort_order;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_upsert_salary_structure $$
 CREATE PROCEDURE sp_upsert_salary_structure(
   IN p_id          INT,
@@ -233,7 +217,6 @@ BEGIN
     SELECT p_id AS structure_id;
   END IF;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_save_structure_lines $$
 CREATE PROCEDURE sp_save_structure_lines(
   IN p_structure_id  INT,
@@ -261,16 +244,13 @@ BEGIN
     sort_order             = p_sort_order,
     is_active              = 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_remove_structure_line $$
 CREATE PROCEDURE sp_remove_structure_line(IN p_structure_id INT, IN p_component_id INT)
 BEGIN
   UPDATE salary_structure_lines SET is_active = 0
    WHERE structure_id = p_structure_id AND component_id = p_component_id;
 END $$
-
 DELIMITER ;
-
 -- ════════════════════════════════════════════════════════════
 -- SEED: System salary components
 -- ════════════════════════════════════════════════════════════
@@ -312,14 +292,11 @@ INSERT INTO salary_components (
 ('NPS Contribution',         'NPS',          'Employer Contribution','Percentage',10.0000,'BASIC',NULL,                   'Monthly',  0,0,0,0, 1,1,0, 0, 50,  'Employer NPS @ 10% of Basic'),
 ('Statutory Bonus',          'STAT_BONUS',   'Employer Contribution','Formula',NULL,NULL,     'IF(BASIC<=21000,1400,0)',   'Monthly',  1,0,0,0, 1,1,1, 1, 60,  'Statutory bonus if Basic ≤ ₹21,000')
 ON DUPLICATE KEY UPDATE component_name = VALUES(component_name), description = VALUES(description);
-
 -- ── Seed: Standard structure ──────────────────────────────────
 INSERT INTO salary_structures (structure_name, description, is_default)
 VALUES ('Standard', 'Default structure: Basic 50%, HRA 40%, PF capped, Statutory Bonus', 1)
 ON DUPLICATE KEY UPDATE structure_name = VALUES(structure_name);
-
 SET @std_id = (SELECT structure_id FROM salary_structures WHERE structure_name = 'Standard' LIMIT 1);
-
 INSERT INTO salary_structure_lines (structure_id, component_id, fixed_amount, sort_order)
 SELECT @std_id, component_id,
   CASE component_code
@@ -333,5 +310,4 @@ FROM salary_components
 WHERE component_code IN ('BASIC','HRA','TEL','LTA','SPL','EMP_PF','EMP_ER_PF','STAT_BONUS','GRATUITY')
   AND is_active = 1
 ON DUPLICATE KEY UPDATE sort_order = VALUES(sort_order);
-
 SELECT 'Migration 041 complete — Dynamic Salary Components system ready' AS status;

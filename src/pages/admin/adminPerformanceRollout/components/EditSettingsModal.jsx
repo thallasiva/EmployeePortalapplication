@@ -4,7 +4,6 @@ import { updateCycleSettings } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
 import Modal from "./Modal";
 import CycleTypePicker from "./CycleTypePicker";
-
 const EditSettingsModal = React.memo(function EditSettingsModal({ cycle, onClose, onSaved }) {
   const [form, setForm] = useState({
     fy_label: cycle.fy_label || "",
@@ -13,7 +12,6 @@ const EditSettingsModal = React.memo(function EditSettingsModal({ cycle, onClose
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-
   const submit = async () => {
     if (!form.fy_label.trim()) { setErr("Name required."); return; }
     setSaving(true); setErr("");
@@ -24,7 +22,6 @@ const EditSettingsModal = React.memo(function EditSettingsModal({ cycle, onClose
     } catch (e) { setErr(e?.response?.data?.message || "Save failed."); }
     finally { setSaving(false); }
   };
-
   return (
     <Modal title="Edit Cycle Settings" onClose={onClose}>
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 14 })}>
@@ -54,5 +51,4 @@ const EditSettingsModal = React.memo(function EditSettingsModal({ cycle, onClose
     </Modal>
   );
 });
-
 export default EditSettingsModal;

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import
   {
-
     Home,
     Users,
     Building,
@@ -14,7 +13,6 @@ import
     Settings,
     Headphones,
     FileOutput,
-
     UserPen,
     Proportions,
     Radio,
@@ -43,17 +41,13 @@ import
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
 import { useMenuPermissions } from "../hooks/useMenuPermissions";
-
 const BRAND_NAME = "HRMS";
-
 const isPathActive = (pathname, link, search = "") =>
 {
   if (!link) return false;
-
   const [linkPath, linkQuery] = link.split("?");
   const normalized = pathname.replace(/\/$/, "") || "/";
   const target = linkPath.replace(/\/$/, "") || "/";
-
   if (
     target === "/dashboard" ||
     target === "/employee/home" ||
@@ -62,23 +56,18 @@ const isPathActive = (pathname, link, search = "") =>
 {
     return normalized === target && (!linkQuery || search.includes(linkQuery));
   }
-
   const pathMatch = normalized === target || normalized.startsWith(`${target}/`);
-
   if (linkQuery) return pathMatch && search.includes(linkQuery);
   return pathMatch;
 };
-
 export const Sidebar = ({ open }) =>
 {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const [expanded, setExpanded] = useState(null);
-
   const user = getStoredUser();
   const role = user?.role ?? ROLE_ADMIN;
   const { isAllowed, isSuperAdmin } = useMenuPermissions(user);
-
   const [appraisalActive, setAppraisalActive] = useState(false);
   useEffect(() =>
   {
@@ -89,9 +78,7 @@ export const Sidebar = ({ open }) =>
         catch(() => setAppraisalActive(false));
     }
   }, [pathname]);
-
   const adminItems = [
-
     {
       label: "Dashboard", permId: "dashboard",
       icon: <Home size={20} />,
@@ -102,7 +89,6 @@ export const Sidebar = ({ open }) =>
       icon: <Users size={20} />,
       navigationLink: "/dashboard/employee"
     },
-
     {
       label: "Attendance", permId: "attendance",
       icon: <Clock size={20} />,
@@ -115,7 +101,6 @@ export const Sidebar = ({ open }) =>
         { label: "Leave Requests", navigationLink: "/dashboard/leave?tab=requests" },
         { label: "Leave Balances", navigationLink: "/dashboard/leave?tab=balances" },
         { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" }]
-
     },
     {
       label: "Timesheets", permId: "timesheets",
@@ -127,7 +112,6 @@ export const Sidebar = ({ open }) =>
       icon: <Calendar size={20} />,
       navigationLink: "/dashboard/calendar"
     },
-
     {
       label: "Payroll", permId: "payroll",
       icon: <FileText size={20} />,
@@ -147,7 +131,6 @@ export const Sidebar = ({ open }) =>
         { label: "Arrears", navigationLink: "/dashboard/payroll/inputs?tab=arrears" },
         { label: "Final Settlement", navigationLink: "/dashboard/payroll/inputs?tab=settlement" },
         { label: "Stop Salary Processing", navigationLink: "/dashboard/payroll/inputs?tab=stop" }]
-
     },
     {
       label: "Verify", permId: "payroll",
@@ -157,7 +140,6 @@ export const Sidebar = ({ open }) =>
         { label: "Payroll Statement", navigationLink: "/dashboard/payroll/statement?tab=statement" },
         { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
         { label: "Payroll Differences", navigationLink: "/dashboard/payroll/statement?tab=diff" }]
-
     },
     {
       label: "Published Info", permId: "payroll",
@@ -171,7 +153,6 @@ export const Sidebar = ({ open }) =>
         { label: "Loan Statement", navigationLink: "/employee/payroll/loans" },
         { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
         { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" }]
-
     },
     {
       label: "Payroll Admin", permId: "payroll",
@@ -186,7 +167,6 @@ export const Sidebar = ({ open }) =>
         { label: "Payroll Release", navigationLink: "/dashboard/payroll/compliance?tab=release" },
         { label: "POI Overview", navigationLink: "/dashboard/payroll/tax-forms?tab=poi" },
         { label: "PF KYC Mapping", navigationLink: "/dashboard/payroll/compliance?tab=pf-kyc" }]
-
     },
     {
       label: "Payroll Setup", permId: "payroll",
@@ -197,15 +177,12 @@ export const Sidebar = ({ open }) =>
         { label: "Salary Assignment", navigationLink: "/dashboard/salary-assignment" },
         { label: "Salary Templates", navigationLink: "/dashboard/salary-templates" },
         { label: "Payroll Settings", navigationLink: "/dashboard/payroll/setup?tab=settings" }]
-
     },
-
     {
       label: "Onboarding", permId: "onboarding",
       icon: <UserRoundPlus size={20} />,
       navigationLink: "/dashboard/onboarding"
     },
-
     {
       label: "Recruitment", permId: "recruitment",
       icon: <UserSearch size={20} strokeWidth={1.75} />,
@@ -227,7 +204,6 @@ export const Sidebar = ({ open }) =>
       badge: "New",
       badgeColor: "#f18200"
     },
-
     {
       label: "Reports", permId: "reports",
       icon: <Proportions size={20} />,
@@ -238,12 +214,10 @@ export const Sidebar = ({ open }) =>
       icon: <BookOpen size={20} />,
       navigationLink: "/dashboard/documents"
     },
-
     {
       label: "Helpdesk", permId: "helpdesk",
       icon: <Headphones size={20} />,
       navigationLink: "/dashboard/helpdesk"
-
     },
     {
       label: "Company", permId: "company",
@@ -261,7 +235,6 @@ export const Sidebar = ({ open }) =>
         { label: "Manager Transfer", navigationLink: "/dashboard/workflow-delegation?tab=transfer" },
         { label: "Delegation", navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
         { label: "Audit History", navigationLink: "/dashboard/workflow-delegation?tab=audit" }]
-
     },
     {
       label: "Role Management", permId: "role-mgmt",
@@ -286,9 +259,6 @@ export const Sidebar = ({ open }) =>
       icon: <UserPen size={20} />,
       navigationLink: "/dashboard/profile"
     }];
-
-
-
   const teamOverviewItem = isRecruiterLead(user) ?
     {
       label: "Team Management",
@@ -300,15 +270,12 @@ export const Sidebar = ({ open }) =>
         { label: "Regularizations", navigationLink: "/manager/team/regularizations" },
         { label: "Resignations", navigationLink: "/manager/team/resignations" },
         { label: "Appraisal", navigationLink: "/manager/team/appraisal" }]
-
     } :
     {
       label: "Team Overview",
       icon: <Users size={20} strokeWidth={1.75} />,
       navigationLink: "/manager"
     };
-
-
   const hiringItemTL = {
     label: "Recruitment",
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
@@ -320,8 +287,6 @@ export const Sidebar = ({ open }) =>
       { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" }
     ]
   };
-
-
   const hiringItemRecruiter = {
     label: "Recruitment",
     icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
@@ -333,9 +298,7 @@ export const Sidebar = ({ open }) =>
       { label: "Interviews", navigationLink: "/recruiter/recruitment?page=interviews" },
     ]
   };
-
   const employeeItems = [
-
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
@@ -346,7 +309,6 @@ export const Sidebar = ({ open }) =>
       icon: <IdCard size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/my-info"
     },
-
     {
       label: "Attendance",
       icon: <SquareCheck size={20} strokeWidth={1.75} />,
@@ -355,7 +317,6 @@ export const Sidebar = ({ open }) =>
         { label: "My Regularizations", navigationLink: "/employee/attendance/regularizations" },
         { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
         { label: "Shift Roster", navigationLink: "/employee/attendance/shifts" }]
-
     },
     {
       label: "Leave",
@@ -363,14 +324,12 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
         { label: "Apply Leave", navigationLink: "/employee/leave/apply" }]
-
     },
     {
       label: "Calendar",
       icon: <CalendarRange size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/leave/calendar"
     },
-
     {
       label: "Salary",
       icon: <HandCoins size={20} strokeWidth={1.75} />,
@@ -378,7 +337,6 @@ export const Sidebar = ({ open }) =>
         { label: "Payslips", navigationLink: "/employee/payroll/payslips" },
         { label: "Salary Revision", navigationLink: "/employee/payroll/salary-revision" },
         { label: "YTD Reports", navigationLink: "/employee/payroll/ytd-reports" }]
-
     },
     {
       label: "Tax & Benefits",
@@ -387,7 +345,6 @@ export const Sidebar = ({ open }) =>
         { label: "IT Declaration", navigationLink: "/employee/payroll/it-declaration" },
         { label: "Proof of Investment", navigationLink: "/employee/payroll/claims" },
         { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" }]
-
     },
     {
       label: "Finance",
@@ -395,10 +352,7 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Reimbursements", navigationLink: "/employee/payroll/reimbursements" },
         { label: "Loans & Advances", navigationLink: "/employee/payroll/loans" }]
-
     },
-
-
     ...(appraisalActive ? [{
       label: "Appraisal",
       icon: <Award size={20} strokeWidth={1.75} />,
@@ -410,9 +364,7 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "My Timesheet", navigationLink: "/employee/todo/tasks" },
         { label: "Overview", navigationLink: "/employee/todo/review" }]
-
     },
-
     {
       label: "People",
       icon: <UserRound size={20} strokeWidth={1.75} />,
@@ -434,9 +386,7 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Kudos", navigationLink: "/employee/worklife/kudos" },
         { label: "Feedback", navigationLink: "/employee/worklife/feedback" }]
-
     },
-
     {
       label: "Document Center",
       icon: <BookOpen size={20} strokeWidth={1.75} />,
@@ -452,45 +402,33 @@ export const Sidebar = ({ open }) =>
       icon: <Layers size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/request-hub"
     },
-
     {
       label: "Hiring",
       icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
       badge: "New",
       children: [
         { label: "Internal Jobs", navigationLink: "/employee/hiring" }]
-
     },
     {
       label: "Resignation",
       icon: <LogOut size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/resignation"
     },
-
     {
       label: "Workflow Delegates",
       icon: <GitBranch size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/workflow-delegates"
     }];
-
-
-
   const hiringEntry = isRecruiterLead(user) ? hiringItemTL : hiringItemRecruiter;
-
-
-
   const employeeItemsWithoutHiring = employeeItems.filter((item) => item.label !== "Hiring");
-
   const employeeItemsForRecruiters = canViewTeamOverview(user) ?
     [hiringEntry, teamOverviewItem, ...employeeItemsWithoutHiring] :
     [hiringEntry, ...employeeItemsWithoutHiring];
-
   // Filter adminItems for non-super-admin roles based on MenuPermissions
   // Super Admin sees all items; other admin-role users see filtered items
   const filteredAdminItems = isSuperAdmin
     ? adminItems
     : adminItems.filter(item => !item.permId || isAllowed(item.permId));
-
   const items = isAdmin(user) ?
     filteredAdminItems :
     isReportingManager(user) ?
@@ -502,13 +440,11 @@ export const Sidebar = ({ open }) =>
   {
     setExpanded(expanded === index ? null : index);
   };
-
   const handleLogout = () =>
   {
     logoutUser();
     navigate("/login");
   };
-
   useEffect(() =>
   {
     const activeIndex = items.findIndex(
@@ -522,9 +458,7 @@ export const Sidebar = ({ open }) =>
     {
       setExpanded(activeIndex);
     }
-
   }, [pathname, search, role]);
-
   const menuItemClass = (active, childActive = false) =>
     [
       "sidebar-menu-item",
@@ -532,25 +466,20 @@ export const Sidebar = ({ open }) =>
       childActive && !active ? "sidebar-menu-item-parent-active" : "",
       !open ? "justify-center px-2" : "",
       "cursor-pointer"].
-
       filter(Boolean).
       join(" ");
-
   const childItemClass = (active) =>
     [
       "sidebar-child-item",
       active ? "sidebar-child-item-active" : "",
       "cursor-pointer"].
-
       filter(Boolean).
       join(" ");
-
   return (
     <aside className={[
       "relative flex h-screen shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
       open ? "w-[248px]" : "w-[68px]"].
       join(" ")}>
-
       { }
       <div className={[
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
@@ -563,9 +492,7 @@ export const Sidebar = ({ open }) =>
           EP
         </div>
         {open && <span className="text-sm font-extrabold tracking-tight text-slate-800">{BRAND_NAME}</span>}
-
       </div>
-
       { }
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2.5">
         {items.map((item, index) =>
@@ -573,7 +500,6 @@ export const Sidebar = ({ open }) =>
           const childActive = item.children?.some((child) =>
             isPathActive(pathname, child.navigationLink, search)
           );
-
           if (!item.children)
           {
             const active = isPathActive(pathname, item.navigationLink, search);
@@ -581,7 +507,6 @@ export const Sidebar = ({ open }) =>
               <div key={index} className={menuItemClass(active)}
                 onClick={() => navigate(item.navigationLink)}
                 title={!open ? item.label : undefined}>
-
                 <span className={[
                   "flex shrink-0",
                   active ? "text-white" : "text-gray-400"].
@@ -601,15 +526,12 @@ export const Sidebar = ({ open }) =>
                   </>
                 }
               </div>);
-
           }
-
           return (
             <div key={index}>
               <div className={menuItemClass(false, childActive)}
                 onClick={() => toggleAccordion(index)}
                 title={!open ? item.label : undefined}>
-
                 <span className={[
                   "flex shrink-0",
                   childActive ? "text-brand-500" : "text-gray-400"].
@@ -632,7 +554,6 @@ export const Sidebar = ({ open }) =>
                   </>
                 }
               </div>
-
               {expanded === index && open &&
                 <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
                   {item.children.map((child, childIndex) =>
@@ -645,20 +566,14 @@ export const Sidebar = ({ open }) =>
                           const [p, q] = child.navigationLink.split("?");
                           navigate(q ? `${p}?${q}` : p);
                         }}>
-
                         {child.label}
                       </div>);
-
                   })}
                 </div>
               }
             </div>);
-
         })}
       </nav>
-
     </aside>);
-
 };
-
 export default Sidebar;

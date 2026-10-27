@@ -2,20 +2,16 @@ import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { DAYS, LEAVE_COLORS, B, BL } from "../constants/leaveConstants";
 import { Flag } from "lucide-react";
-
 const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentShiftDef, ltColorMap }) => {
   const weekStart = new Date(cursor);
   weekStart.setDate(cursor.getDate() - cursor.getDay());
-
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
     d.setDate(weekStart.getDate() + i);
     return d;
   });
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   return (
     <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 8 })}>
       {weekDays.map((date, di) => {
@@ -24,7 +20,6 @@ const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentS
         const leaves    = leavesOnDay(date);
         const dayHols   = getHolidaysOnDay(date);
         const isHol     = dayHols.length > 0;
-
         return (
           <div key={di} className={cssClass({
             borderRadius: 10, minHeight: 160, padding: "10px 10px",
@@ -40,7 +35,6 @@ const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentS
                 {date.getDate()}
               </div>
             </div>
-
             {dayHols.map((h, hi) => (
               <div key={hi} className={cssClass({
                 borderRadius: 5, padding: "4px 7px", marginBottom: 5,
@@ -50,11 +44,9 @@ const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentS
                 <div className={cssClass({ fontSize: 9, opacity: .8 })}>{currentShiftDef.label} Holiday</div>
               </div>
             ))}
-
             {leaves.length === 0 && dayHols.length === 0 && (
               <div className={cssClass({ fontSize: 11, color: "#d1d5db", textAlign: "center", marginTop: 12 })}>—</div>
             )}
-
             {leaves.map((r, ri) => {
               const c = ltColorMap[r.leave_type_id] || LEAVE_COLORS[0];
               return (
@@ -75,6 +67,5 @@ const CalendarWeekView = memo(({ cursor, leavesOnDay, getHolidaysOnDay, currentS
     </div>
   );
 });
-
 CalendarWeekView.displayName = "CalendarWeekView";
 export default CalendarWeekView;

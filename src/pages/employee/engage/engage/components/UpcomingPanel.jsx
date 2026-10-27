@@ -2,17 +2,14 @@ import React, { useMemo } from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fullName, anniversaryThisYear, daysFromToday, labelForDays, yearsCompleted } from "../utils";
 import { Lock, CalendarDays, Cake, Trophy } from "lucide-react";
-
 const UpcomingPanel = React.memo(function UpcomingPanel({ employees, holidays }) {
   const upcoming = useMemo(() => {
     const list = [];
-
     for (const h of holidays) {
       const off = daysFromToday(h.holiday_date);
       if (off >= 0 && off <= 30)
         list.push({ name: h.holiday_name, off, emoji: h.is_restricted ? <Lock size={16} /> : <CalendarDays size={16} />, isHoliday: true });
     }
-
     for (const emp of employees) {
       const name = fullName(emp);
       const bd = anniversaryThisYear(emp.birthday || emp.dob);
@@ -26,10 +23,8 @@ const UpcomingPanel = React.memo(function UpcomingPanel({ employees, holidays })
         if (off >= 0 && off <= 14) list.push({ name, off, emoji: <Trophy size={16} /> });
       }
     }
-
     return list.sort((a, b) => a.off - b.off).slice(0, 8);
   }, [employees, holidays]);
-
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e8edf2", borderRadius: 12, padding: 16 })}>
       <p className={cssClass({ fontSize: 13, fontWeight: 600, color: "#1a2233", margin: "0 0 12px" })}>
@@ -60,5 +55,4 @@ const UpcomingPanel = React.memo(function UpcomingPanel({ employees, holidays })
     </div>
   );
 });
-
 export default UpcomingPanel;

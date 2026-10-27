@@ -5,21 +5,17 @@ import { ORANGE } from "../constants";
 import { fmtINR } from "../utils";
 import PayrollTable from "./PayrollTable";
 import { Check } from "lucide-react";
-
 function PayrollRelease({ month, year }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [releasing, setReleasing] = useState({});
-
   const load = useCallback(() => {
     setLoading(true);
     listPayslips({ month, year, limit: 500 })
       .then((r) => setRows(r.data || []))
       .finally(() => setLoading(false));
   }, [month, year]);
-
   useEffect(() => { load(); }, [load]);
-
   const handleRelease = useCallback(async (id) => {
     setReleasing((p) => ({ ...p, [id]: true }));
     try {
@@ -28,7 +24,6 @@ function PayrollRelease({ month, year }) {
     } catch {}
     setReleasing((p) => ({ ...p, [id]: false }));
   }, [load]);
-
   const cols = [
     { key: "emp_code", label: "Emp Code" },
     { key: "employee_name", label: "Employee" },
@@ -70,11 +65,9 @@ function PayrollRelease({ month, year }) {
         ),
     },
   ];
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   const generated = rows.filter((r) => r.status === "generated").length;
   const paid = rows.filter((r) => r.status === "paid").length;
   const summaryStats = [
@@ -83,7 +76,6 @@ function PayrollRelease({ month, year }) {
     { label: "Released / Paid", value: paid, color: "#16a34a" },
     { label: "Pending", value: rows.length - generated - paid, color: "#888" },
   ];
-
   return (
     <>
       <div className={cssClass({ display: "flex", gap: 16, marginBottom: 16 })}>
@@ -104,5 +96,4 @@ function PayrollRelease({ month, year }) {
     </>
   );
 }
-
 export default React.memo(PayrollRelease);

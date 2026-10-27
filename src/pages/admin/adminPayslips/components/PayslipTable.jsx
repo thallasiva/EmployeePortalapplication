@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../../../../components/Pagination";
 import { formatINR } from "../../../../component/charts/InteractivePieChart";
 import { MONTH_OPTIONS } from "../constants/payslipOptions";
-
 const PayslipTable = React.memo(function PayslipTable({
   month,
   year,
@@ -20,15 +19,12 @@ const PayslipTable = React.memo(function PayslipTable({
     page, setPage, totalPages,
     from, to, total, pageSize, setPageSize,
   } = pagination;
-
   const monthLabel = MONTH_OPTIONS.find((m) => m.value === month)?.label;
-
   return (
     <div className="rounded-xl border border-[#dce3eb] bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-[15px] font-semibold text-[#334155]">
         Payslips for {monthLabel} {year}
       </h2>
-
       {loading ? (
         <p className="text-sm text-gray-500">Loading payslips...</p>
       ) : pagedPayslips.length === 0 ? (
@@ -112,5 +108,4 @@ const PayslipTable = React.memo(function PayslipTable({
     </div>
   );
 });
-
 export default PayslipTable;

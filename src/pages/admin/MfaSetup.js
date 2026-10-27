@@ -2,15 +2,6 @@ import { useState, useEffect } from "react";
 import { setupMfa, enableMfa, disableMfa, getMfaStatus } from "../../api/auth.api";
 import { getErrorMessage } from "../../api/client";
 import { ArrowRight, Check } from "lucide-react";
-
-
-
-
-
-
-
-
-
 const MfaSetup = () => {
   const [status, setStatus] = useState(null);
   const [qrData, setQrData] = useState(null);
@@ -19,13 +10,11 @@ const MfaSetup = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("status");
-
   useEffect(() => {
     getMfaStatus().
     then((d) => setStatus(d.mfaEnabled)).
     catch(() => setStatus(false));
   }, []);
-
   const handleStartSetup = async () => {
     setLoading(true);setError("");
     try {
@@ -38,7 +27,6 @@ const MfaSetup = () => {
       setLoading(false);
     }
   };
-
   const handleEnable = async (e) => {
     e.preventDefault();
     if (!code.trim()) {setError("Enter the 6-digit code from your app");return;}
@@ -54,7 +42,6 @@ const MfaSetup = () => {
       setLoading(false);
     }
   };
-
   const handleDisable = async (e) => {
     e.preventDefault();
     if (!code.trim()) {setError("Enter your current TOTP code to confirm");return;}
@@ -70,14 +57,12 @@ const MfaSetup = () => {
       setLoading(false);
     }
   };
-
   return (
     <div className="p-6 max-w-lg mx-auto">
       <h1 className="text-xl font-semibold text-slate-800 mb-1">Two-factor authentication (MFA)</h1>
       <p className="text-sm text-slate-500 mb-6">
         Protect your admin account with a TOTP authenticator app (Google Authenticator, Authy, etc.).
       </p>
-
       {}
       {status !== null &&
       <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-6 ${
@@ -87,13 +72,11 @@ const MfaSetup = () => {
           {status ? "MFA is enabled" : "MFA is not enabled"}
         </div>
       }
-
       {error &&
       <div className="mb-4 px-4 py-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
           {error}
         </div>
       }
-
       {}
       {step === "status" && !status &&
       <div className="bg-white border border-gray-200 rounded-xl p-6">
@@ -105,12 +88,10 @@ const MfaSetup = () => {
           className="btn-primary px-6 py-2 disabled:opacity-60"
           onClick={handleStartSetup}
           disabled={loading}>
-
             {loading ? "Loading..." : "Set up MFA"}
           </button>
         </div>
       }
-
       {}
       {step === "scan" && qrData &&
       <div className="bg-white border border-gray-200 rounded-xl p-6">
@@ -129,7 +110,6 @@ const MfaSetup = () => {
           </button>
         </div>
       }
-
       {}
       {step === "confirm" &&
       <div className="bg-white border border-gray-200 rounded-xl p-6">
@@ -146,14 +126,12 @@ const MfaSetup = () => {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             autoFocus />
-
             <button type="submit" className="btn-primary w-full py-2 disabled:opacity-60" disabled={loading}>
               {loading ? "Enabling..." : "Enable MFA"}
             </button>
           </form>
         </div>
       }
-
       {}
       {step === "done" && backupCodes &&
       <div className="bg-white border border-green-200 rounded-xl p-6">
@@ -175,7 +153,6 @@ const MfaSetup = () => {
           </button>
         </div>
       }
-
       {}
       {step === "status" && status &&
       <div className="bg-white border border-gray-200 rounded-xl p-6">
@@ -186,13 +163,11 @@ const MfaSetup = () => {
         <button
           className="text-sm text-red-600 underline"
           onClick={() => {setStep("disable");setError("");setCode("");}}>
-
               Disable MFA
             </button>
         }
         </div>
       }
-
       {step === "disable" &&
       <div className="bg-white border border-red-200 rounded-xl p-6">
           <p className="text-sm text-slate-600 mb-4">
@@ -208,7 +183,6 @@ const MfaSetup = () => {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             autoFocus />
-
             <div className="flex gap-3">
               <button type="submit" className="bg-red-600 text-white px-5 py-2 rounded-lg text-sm disabled:opacity-60" disabled={loading}>
                 {loading ? "Disabling..." : "Disable MFA"}
@@ -221,7 +195,5 @@ const MfaSetup = () => {
         </div>
       }
     </div>);
-
 };
-
 export default MfaSetup;

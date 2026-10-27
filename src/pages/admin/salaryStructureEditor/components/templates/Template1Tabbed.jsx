@@ -5,12 +5,10 @@ import {
   ToggleLeft, ToggleRight,
 } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
-
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY  = "#1e3a5f";
 const AMBER = "#d97706";
 const AMBER_TEXT = "#92400e";
-
 // ─── Inline SVG donut chart ───────────────────────────────────────────────────
 function DonutChart({ slices }) {
   const R = 56, CX = 75, CY = 75, stroke = 20;
@@ -39,7 +37,6 @@ function DonutChart({ slices }) {
     </svg>
   );
 }
-
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 const TEMPLATE_TABS = [
   { id: "fixed",    label: "Earnings" },
@@ -49,7 +46,6 @@ const TEMPLATE_TABS = [
   { id: "employer", label: "Employer Contribution" },
   { id: "other",    label: "Other Info" },
 ];
-
 // ─── Row actions ──────────────────────────────────────────────────────────────
 function RowActions({ line, onEdit, onRemove }) {
   return (
@@ -65,7 +61,6 @@ function RowActions({ line, onEdit, onRemove }) {
     </div>
   );
 }
-
 // ─── Earnings table ───────────────────────────────────────────────────────────
 function EarningsTable({ lines, onAdd, onEdit, onRemove, canAdd }) {
   return (
@@ -114,7 +109,6 @@ function EarningsTable({ lines, onAdd, onEdit, onRemove, canAdd }) {
     </div>
   );
 }
-
 // ─── Variable pay table ───────────────────────────────────────────────────────
 function VariableTable({ lines, onAdd, onEdit, onRemove, canAdd }) {
   return (
@@ -161,7 +155,6 @@ function VariableTable({ lines, onAdd, onEdit, onRemove, canAdd }) {
     </div>
   );
 }
-
 // ─── Generic section tab ──────────────────────────────────────────────────────
 function GenericTab({ lines, onAdd, onEdit, onRemove, canAdd, label }) {
   return (
@@ -201,7 +194,6 @@ function GenericTab({ lines, onAdd, onEdit, onRemove, canAdd, label }) {
     </div>
   );
 }
-
 // ─── Salary summary sidebar ───────────────────────────────────────────────────
 function SalarySummary({ computed, structure }) {
   const lines = structure?.lines ?? [];
@@ -213,7 +205,6 @@ function SalarySummary({ computed, structure }) {
   const ctc = totalFixed + totalVar + totalBen + totalEmp;
   const net = ctc - totalDed;
   const safe = ctc || 1;
-
   const slices = [
     { label: "Fixed",    pct: Math.round((totalFixed / safe) * 100), color: NAVY },
     { label: "Variable", pct: Math.round((totalVar   / safe) * 100), color: AMBER },
@@ -221,10 +212,8 @@ function SalarySummary({ computed, structure }) {
     { label: "Employer", pct: Math.round((totalEmp   / safe) * 100), color: "#6366f1" },
     { label: "Deduct",   pct: Math.round((totalDed   / safe) * 100), color: "#ef4444" },
   ].filter(s => s.pct > 0);
-
   const sum = slices.reduce((s, sl) => s + sl.pct, 0);
   if (sum < 100) slices.push({ label: "", pct: 100 - sum, color: "#e5e7eb" });
-
   const legend = [
     { label: "Fixed Earnings",      value: fmtINR(totalFixed), color: NAVY },
     { label: "Variable Pay",        value: fmtINR(totalVar),   color: AMBER },
@@ -232,7 +221,6 @@ function SalarySummary({ computed, structure }) {
     { label: "Employer Contrib.",   value: fmtINR(totalEmp),   color: "#6366f1" },
     { label: "Deductions",          value: fmtINR(totalDed),   color: "#ef4444" },
   ];
-
   return (
     <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
       <div className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-white" style={{ backgroundColor: NAVY }}>
@@ -265,7 +253,6 @@ function SalarySummary({ computed, structure }) {
     </div>
   );
 }
-
 // ─── Main export ──────────────────────────────────────────────────────────────
 const Template1Tabbed = React.memo(function Template1Tabbed({
   structure,
@@ -285,14 +272,11 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
 }) {
   const navigate = useNavigate();
   const strCode = `SAL-STR-${String(structure?.structure_id || "NEW").padStart(3, "0")}`;
-
   const fixedLines    = useMemo(() => tabFilter(structure?.lines ?? [], "fixed"),    [structure?.lines]);
   const variableLines = useMemo(() => tabFilter(structure?.lines ?? [], "variable"), [structure?.lines]);
   const deductLines   = useMemo(() => tabFilter(structure?.lines ?? [], "deduct"),   [structure?.lines]);
   const employerLines = useMemo(() => tabFilter(structure?.lines ?? [], "employer"), [structure?.lines]);
-
   const currentTab = TEMPLATE_TABS.some(t => t.id === activeTab) ? activeTab : "fixed";
-
   function renderContent() {
     switch (currentTab) {
       case "fixed":
@@ -332,7 +316,6 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
         );
     }
   }
-
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "#f8f9fb" }}>
       {/* ── Top header ── */}
@@ -344,7 +327,6 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
           <span className="text-gray-300">›</span>
           <span className="font-medium text-gray-700 truncate max-w-56">{structure?.structure_name}</span>
         </nav>
-
         <div className="flex items-center justify-between gap-4">
           {/* Employee card */}
           <div className="flex items-center gap-3">
@@ -385,7 +367,6 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
               </div>
             </div>
           </div>
-
           {/* Action buttons */}
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={() => setActiveTab("preview")}
@@ -404,7 +385,6 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
           </div>
         </div>
       </div>
-
       {/* ── Tab bar ── */}
       <div className="shrink-0 border-b border-gray-200 bg-white px-6 overflow-x-auto">
         <div className="flex min-w-max">
@@ -419,7 +399,6 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
           ))}
         </div>
       </div>
-
       {/* ── Content + sidebar ── */}
       <div className="flex flex-1 overflow-hidden gap-4 p-4">
         <div className="flex-1 overflow-auto min-w-0">{renderContent()}</div>
@@ -430,5 +409,4 @@ const Template1Tabbed = React.memo(function Template1Tabbed({
     </div>
   );
 });
-
 export default Template1Tabbed;

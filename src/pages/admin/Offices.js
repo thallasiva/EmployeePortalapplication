@@ -1,7 +1,6 @@
 import React from 'react';
 import { avatarDataUri } from '../../lib/placeholders';
 import { Pencil } from "lucide-react";
-
 const Offices = ({ employees }) =>
 {
   return (
@@ -12,7 +11,6 @@ const Offices = ({ employees }) =>
                     <input
             placeholder="Office Name"
             className="flex-1 border rounded px-3 py-2" />
-
                     <button className="bg-orange-500 text-white px-5 py-2 rounded-lg">
                         Create Office
                     </button>
@@ -20,7 +18,6 @@ const Offices = ({ employees }) =>
                         Cancel
                     </button>
                 </div>
-
                 {}
                 <div className="bg-white rounded-xl shadow p-5">
                     <div className="flex justify-between items-center mb-4">
@@ -30,7 +27,6 @@ const Offices = ({ employees }) =>
                         </div>
                         <button className="text-brand" aria-label="Edit"><Pencil size={15} /></button>
                     </div>
-
                     {}
                     <div className="flex items-center justify-between border rounded p-3 mb-4">
                         <div className="flex items-center gap-3">
@@ -43,7 +39,6 @@ const Offices = ({ employees }) =>
                         </div>
                         <button className="bg-gray-200 px-2 py-1 rounded">^</button>
                     </div>
-
                     {}
                     <table className="w-full text-sm">
                         <thead className="bg-gray-100">
@@ -84,7 +79,5 @@ const Offices = ({ employees }) =>
                 </div>
             </div>
         </div>);
-
 };
-
 export default Offices;

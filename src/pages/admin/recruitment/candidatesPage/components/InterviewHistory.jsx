@@ -3,9 +3,7 @@ import { listInterviews, submitFeedback, getErrorMessage } from "../../../../../
 import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { LEVEL_ORDER, NO_NEXT_STATUSES } from "../constants";
 import InterviewPipeline from "./InterviewPipeline";
-
 const TYPE_ICON = { "Video Call": "Video", "Phone": "Phone", "In-Person": "Office", "Teams": "Teams" };
-
 function dotBgCls(iv) {
   if (iv.status === "Scheduled") return "bg-[#f18200]";
   if (iv.feedback_status === "Selected") return "bg-green-600";
@@ -13,21 +11,18 @@ function dotBgCls(iv) {
   if (iv.feedback_status === "Hold") return "bg-amber-500";
   return "bg-gray-400";
 }
-
 function cardCls(iv) {
   if (iv.status === "Scheduled") return { wrap: "border-orange-200 bg-amber-50", badge: "text-[#f18200] border-orange-200 bg-white" };
   if (iv.feedback_status === "Selected") return { wrap: "border-green-200 bg-green-50", badge: "text-green-600 border-green-200 bg-white" };
   if (iv.feedback_status === "Not Selected") return { wrap: "border-red-200 bg-red-50", badge: "text-red-600 border-red-200 bg-white" };
   return { wrap: "border-gray-200 bg-gray-50", badge: "text-gray-500 border-gray-200 bg-white" };
 }
-
 const InterviewHistory = React.memo(function InterviewHistory({ candidateId, role, candidateStatus }) {
   const [ivs, setIvs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cs, setCs] = useState({});
   const canComment = role === 4;
   const canMoveNext = (role === 1 || role === 3 || role === 5) && !NO_NEXT_STATUSES.includes(candidateStatus);
-
   useEffect(() => {
     if (!candidateId) return;
     setLoading(true);
@@ -36,10 +31,8 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [candidateId]);
-
   function startEdit(iv) { setCs((s) => ({ ...s, [iv.interview_id]: { text: iv.feedback_comments || "", editing: true, saving: false } })); }
   function cancelEdit(id) { setCs((s) => { const n = { ...s }; delete n[id]; return n; }); }
-
   async function saveComment(iv) {
     const c = cs[iv.interview_id];
     if (!c) return;
@@ -54,14 +47,11 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
       setCs((s) => ({ ...s, [iv.interview_id]: { ...c, saving: false } }));
     }
   }
-
   if (loading) return <div className="mt-4 text-sm text-gray-400">Loading interview history...</div>;
   if (!ivs.length) return null;
-
   return (
     <div className="mt-5">
       <InterviewPipeline ivs={ivs} candidateStatus={candidateStatus} />
-
       <div className="flex items-center gap-2 mb-3.5">
         <div className="w-[3px] h-4 bg-[#f18200] rounded-sm" />
         <span className="text-[11px] font-bold text-gray-700 uppercase tracking-[0.06em]">Interview History</span>
@@ -69,7 +59,6 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
           {ivs.length} round{ivs.length !== 1 ? "s" : ""}
         </span>
       </div>
-
       <div className="flex flex-col gap-2.5">
         {ivs.map((iv, i) => {
           const sc = cardCls(iv);
@@ -77,7 +66,6 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
           const isScheduled = iv.status === "Scheduled";
           const hasComment = !!(iv.feedback_comments && iv.feedback_comments.trim());
           const cState = cs[iv.interview_id];
-
           return (
             <div key={iv.interview_id} className={`rounded-xl border overflow-hidden ${sc.wrap}`}>
               <div className="flex items-center gap-2.5 px-3.5 py-2.5">
@@ -100,7 +88,6 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
                   }
                 </div>
               </div>
-
               {cState?.editing ? (
                 <div className="mx-3.5 mb-3">
                   <textarea
@@ -146,5 +133,4 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
     </div>
   );
 });
-
 export default InterviewHistory;

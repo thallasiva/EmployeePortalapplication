@@ -5,16 +5,13 @@ import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.ap
 import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
-
 const STATUS_BADGE = { Pending: "pending", Approved: "approved", Rejected: "rejected" };
-
 function formatDate(val) {
   if (!val) return "—";
   const d = new Date(val);
   if (isNaN(d)) return String(val);
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 function mapRow(row) {
   return {
     id:        row.leave_request_id,
@@ -28,12 +25,10 @@ function mapRow(row) {
     status:    row.status,
   };
 }
-
 const RecruiterTeamLeave = () => {
   const [requests, setRequests] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [filter,   setFilter]   = useState("Pending");
-
   const load = () => {
     setLoading(true);
     listLeaveRequests({})
@@ -44,9 +39,7 @@ const RecruiterTeamLeave = () => {
       .catch(() => setRequests([]))
       .finally(() => setLoading(false));
   };
-
   useEffect(() => { load(); }, []);
-
   const action = (id, decision) => {
     setRequests((prev) => prev.map((r) => r.id === id ? { ...r, status: decision } : r));
     reviewLeaveRequest(id, {
@@ -56,14 +49,11 @@ const RecruiterTeamLeave = () => {
       .then(() => { successToast(`Leave ${decision.toLowerCase()}`); load(); })
       .catch((err) => { apiErrorToast(err, "Failed"); load(); });
   };
-
   const filtered = filter === "All" ? requests : requests.filter((r) => r.status === filter);
   const { paged: pagedLeave, page: leavePage, setPage: setLeavePage, totalPages: leaveTotalPages, from: leaveFrom, to: leaveTo, total: leaveTotal, pageSize: leavePageSize, setPageSize: setLeavePageSize } = usePagination(filtered);
-
   return (
     <div className="admin-dash space-y-4">
       <RecruiterTabs />
-
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Team Leave Requests</h1>
@@ -88,7 +78,6 @@ const RecruiterTeamLeave = () => {
           ))}
         </div>
       </div>
-
       <div className="space-y-3">
         {loading ? (
           <p className="text-sm text-gray-400 text-center py-10">Loading...</p>
@@ -133,5 +122,4 @@ const RecruiterTeamLeave = () => {
     </div>
   );
 };
-
 export default RecruiterTeamLeave;

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BL } from "../constants/tabs";
-
 const ManagerSelect = React.memo(function ManagerSelect({
   managers,
   value,
@@ -12,7 +11,6 @@ const ManagerSelect = React.memo(function ManagerSelect({
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-
   const selected = managers.find((m) => m.employee_id === value);
   const filtered = useMemo(
     () =>
@@ -24,7 +22,6 @@ const ManagerSelect = React.memo(function ManagerSelect({
       ),
     [managers, q]
   );
-
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -32,7 +29,6 @@ const ManagerSelect = React.memo(function ManagerSelect({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
   return (
     <div ref={ref} className={cssClass({ position: "relative" })}>
       <div
@@ -47,7 +43,6 @@ const ManagerSelect = React.memo(function ManagerSelect({
         <span>{selected ? selected.full_name : placeholder}</span>
         <ChevronDown size={14} color="#9ca3af" />
       </div>
-
       {open && (
         <div className={cssClass({
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100,
@@ -100,5 +95,4 @@ const ManagerSelect = React.memo(function ManagerSelect({
     </div>
   );
 });
-
 export default ManagerSelect;

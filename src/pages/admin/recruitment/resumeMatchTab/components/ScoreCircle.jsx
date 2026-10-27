@@ -1,6 +1,5 @@
 import React from "react";
 import { getScoreColor } from "../utils/scoreColor";
-
 const ScoreCircle = React.memo(function ScoreCircle({ score, size = 64 }) {
   const r = size / 2 - 6;
   const circ = 2 * Math.PI * r;
@@ -24,5 +23,4 @@ const ScoreCircle = React.memo(function ScoreCircle({ score, size = 64 }) {
     </svg>
   );
 });
-
 export default ScoreCircle;

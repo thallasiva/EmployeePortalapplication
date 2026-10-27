@@ -1,11 +1,9 @@
 export const fmt = (n) =>
   Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 export function greeting() {
   const h = new Date().getHours();
   return h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
 }
-
 export function fmtTime(t) {
   if (!t) return "—";
   try {
@@ -22,7 +20,6 @@ export function fmtTime(t) {
     return String(t);
   }
 }
-
 export function fmtHolDate(dateStr) {
   const d = new Date(dateStr);
   return {

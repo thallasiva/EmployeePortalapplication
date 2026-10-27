@@ -9,7 +9,6 @@ import {
 } from "../../../../api/salaryComponent.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { getErrorMessage } from "../../../../api/client";
-
 export function useSalaryStructures() {
   const [structures, setStructures] = useState([]);
   const [allComponents, setAllComp] = useState([]);
@@ -17,7 +16,6 @@ export function useSalaryStructures() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -30,26 +28,21 @@ export function useSalaryStructures() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     load();
   }, [load]);
-
   const openCreate = useCallback(() => {
     setEditing(null);
     setFormOpen(true);
   }, []);
-
   const openEdit = useCallback((s) => {
     setEditing(s);
     setFormOpen(true);
   }, []);
-
   const closeForm = useCallback(() => {
     setFormOpen(false);
     setEditing(null);
   }, []);
-
   const handleSave = useCallback(
     async (data) => {
       setSaving(true);
@@ -71,7 +64,6 @@ export function useSalaryStructures() {
     },
     [editing, closeForm, load]
   );
-
   return {
     structures,
     allComponents,

@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import ReviewRow from "./ReviewRow";
-
 const CycleSection = React.memo(function CycleSection({ cycle }) {
   const [collapsed, setCollapsed] = useState(false);
   const completed = cycle.reviews.filter((r) => r.status === "Completed").length;
-
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <button
@@ -34,7 +32,6 @@ const CycleSection = React.memo(function CycleSection({ cycle }) {
           )}
         </div>
       </button>
-
       {!collapsed && (
         <div className="border-t border-gray-100 overflow-x-auto">
           <table className="w-full text-sm">
@@ -58,5 +55,4 @@ const CycleSection = React.memo(function CycleSection({ cycle }) {
     </div>
   );
 });
-
 export default CycleSection;

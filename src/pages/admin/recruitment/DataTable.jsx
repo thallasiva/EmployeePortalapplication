@@ -2,12 +2,9 @@ import React, { useState, useEffect } from "react";
 import Badge from "./Badge";
 import { badgeColor } from "./data";
 import Pagination, { usePagination } from "../../../components/Pagination";
-
 function DataTable({ columns, rows }) {
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(rows);
-
   const minWidthClass = columns.length > 8 ? "min-w-[1200px]" : "min-w-[760px]";
-
   return (
     <div>
       <div className="overflow-x-auto">
@@ -40,5 +37,4 @@ function DataTable({ columns, rows }) {
     </div>
   );
 }
-
 export default DataTable;

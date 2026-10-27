@@ -1,5 +1,4 @@
 import React from "react";
-
 export const EmptyDocIllustration = React.memo(function EmptyDocIllustration() {
   return (
     <svg width="120" height="110" viewBox="0 0 120 110" fill="none" aria-hidden>
@@ -11,7 +10,6 @@ export const EmptyDocIllustration = React.memo(function EmptyDocIllustration() {
     </svg>
   );
 });
-
 export const HeroIllustration = React.memo(function HeroIllustration() {
   return (
     <svg width="130" height="70" viewBox="0 0 130 70" fill="none" aria-hidden>

@@ -2,11 +2,9 @@ import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit2, Trash2, Eye, Save } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
-
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY  = "#1e3a5f";
 const AMBER = "#d97706";
-
 // ─── Donut chart ──────────────────────────────────────────────────────────────
 function DonutChart({ slices }) {
   const R = 48, CX = 64, CY = 64, stroke = 18;
@@ -32,7 +30,6 @@ function DonutChart({ slices }) {
     </svg>
   );
 }
-
 // ─── Mini section panel ───────────────────────────────────────────────────────
 function SectionPanel({ title, lines, onAdd, onEdit, onRemove, canAdd, accentColor, columns }) {
   return (
@@ -51,7 +48,6 @@ function SectionPanel({ title, lines, onAdd, onEdit, onRemove, canAdd, accentCol
           </button>
         )}
       </div>
-
       {/* Column headers */}
       <div className="grid bg-gray-50 border-b border-gray-100"
         style={{ gridTemplateColumns: `1fr 1fr auto` }}>
@@ -59,7 +55,6 @@ function SectionPanel({ title, lines, onAdd, onEdit, onRemove, canAdd, accentCol
           <div key={c} className="px-2 py-1.5 text-[9px] font-semibold text-gray-400 uppercase tracking-wide">{c}</div>
         ))}
       </div>
-
       {/* Rows */}
       <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
         {lines.length === 0 ? (
@@ -83,7 +78,6 @@ function SectionPanel({ title, lines, onAdd, onEdit, onRemove, canAdd, accentCol
           </div>
         ))}
       </div>
-
       {/* Footer total */}
       <div className="px-3 py-2 border-t border-gray-100 bg-gray-50/60 flex justify-between text-[10px]">
         <span className="text-gray-500">{lines.length} item{lines.length !== 1 ? "s" : ""}</span>
@@ -94,7 +88,6 @@ function SectionPanel({ title, lines, onAdd, onEdit, onRemove, canAdd, accentCol
     </div>
   );
 }
-
 // ─── Compact summary ──────────────────────────────────────────────────────────
 function CompactSummary({ structure }) {
   const lines = structure?.lines ?? [];
@@ -106,7 +99,6 @@ function CompactSummary({ structure }) {
   const ctc = totalFixed + totalVar + totalBen + totalEmp;
   const net = ctc - totalDed;
   const safe = ctc || 1;
-
   const slices = [
     { label: "Fixed",   pct: Math.round((totalFixed/safe)*100), color: NAVY },
     { label: "Var",     pct: Math.round((totalVar/safe)*100),   color: AMBER },
@@ -114,10 +106,8 @@ function CompactSummary({ structure }) {
     { label: "Emp",     pct: Math.round((totalEmp/safe)*100),   color: "#6366f1" },
     { label: "Ded",     pct: Math.round((totalDed/safe)*100),   color: "#ef4444" },
   ].filter(s => s.pct > 0);
-
   const sum = slices.reduce((s, sl) => s + sl.pct, 0);
   if (sum < 100) slices.push({ label: "", pct: 100 - sum, color: "#e5e7eb" });
-
   const rows = [
     { label: "Fixed Earnings",    value: fmtINR(totalFixed), color: NAVY },
     { label: "Variable Pay",      value: fmtINR(totalVar),   color: AMBER },
@@ -125,7 +115,6 @@ function CompactSummary({ structure }) {
     { label: "Employer Contrib.", value: fmtINR(totalEmp),   color: "#6366f1" },
     { label: "Deductions",        value: fmtINR(totalDed),   color: "#ef4444" },
   ];
-
   return (
     <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
       <div className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-wide text-white" style={{ backgroundColor: NAVY }}>
@@ -157,7 +146,6 @@ function CompactSummary({ structure }) {
     </div>
   );
 }
-
 // ─── Main Template 2 ──────────────────────────────────────────────────────────
 const Template2Grid = React.memo(function Template2Grid({
   structure,
@@ -177,13 +165,11 @@ const Template2Grid = React.memo(function Template2Grid({
 }) {
   const navigate = useNavigate();
   const strCode = `SAL-STR-${String(structure?.structure_id || "NEW").padStart(3, "0")}`;
-
   const fixedLines    = useMemo(() => tabFilter(structure?.lines ?? [], "fixed"),    [structure?.lines]);
   const variableLines = useMemo(() => tabFilter(structure?.lines ?? [], "variable"), [structure?.lines]);
   const employerLines = useMemo(() => tabFilter(structure?.lines ?? [], "employer"), [structure?.lines]);
   const deductLines   = useMemo(() => tabFilter(structure?.lines ?? [], "deduct"),   [structure?.lines]);
   const benefitLines  = useMemo(() => (structure?.lines ?? []).filter(l => l.category === "Benefit"), [structure?.lines]);
-
   const SECTIONS = [
     { title: "EARNINGS (Fixed)", lines: fixedLines,    color: NAVY,      cols: ["Component","Amount",""] },
     { title: "VARIABLE PAY",     lines: variableLines, color: AMBER,     cols: ["Component","Amount",""] },
@@ -191,7 +177,6 @@ const Template2Grid = React.memo(function Template2Grid({
     { title: "DEDUCTIONS",       lines: deductLines,   color: "#ef4444", cols: ["Component","Amount",""] },
     { title: "EMPLOYER CONTRIB.",lines: employerLines, color: "#6366f1", cols: ["Component","Amount",""] },
   ];
-
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "#f8f9fb" }}>
       {/* Header strip */}
@@ -203,7 +188,6 @@ const Template2Grid = React.memo(function Template2Grid({
           <span className="text-gray-300">›</span>
           <span className="font-medium text-gray-700 truncate max-w-48">{structure?.structure_name}</span>
         </nav>
-
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <button onClick={() => navigate("/dashboard/salary-structures")}
@@ -233,7 +217,6 @@ const Template2Grid = React.memo(function Template2Grid({
               <span className="text-[11px] text-gray-400">Monthly · INR · All Employees</span>
             </div>
           </div>
-
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={() => setActiveTab("preview")}
               className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs hover:bg-gray-50 transition-colors">
@@ -251,7 +234,6 @@ const Template2Grid = React.memo(function Template2Grid({
           </div>
         </div>
       </div>
-
       {/* Main area: horizontal grid + summary */}
       <div className="flex flex-1 overflow-hidden gap-3 p-4">
         {/* 5 section columns */}
@@ -273,7 +255,6 @@ const Template2Grid = React.memo(function Template2Grid({
             ))}
           </div>
         </div>
-
         {/* Summary card */}
         <div className="w-64 shrink-0">
           <CompactSummary structure={structure} />
@@ -282,5 +263,4 @@ const Template2Grid = React.memo(function Template2Grid({
     </div>
   );
 });
-
 export default Template2Grid;

@@ -5,7 +5,6 @@ import RegularizationPanel  from "./RegularizationPanel";
 import ResignationsPanel    from "./ResignationsPanel";
 import HelpdeskPanel        from "./HelpdeskPanel";
 import ComingSoonPanel      from "./ComingSoonPanel";
-
 const PanelRouter = React.memo(function PanelRouter({ item, search, statusFilter }) {
   if (!item) return null;
   switch (item.dataType) {
@@ -17,5 +16,4 @@ const PanelRouter = React.memo(function PanelRouter({ item, search, statusFilter
     default:                return <ComingSoonPanel label={item.label} />;
   }
 });
-
 export default PanelRouter;

@@ -5,15 +5,12 @@ import { getMyITDeclaration, saveMyITDeclaration } from "../../../../../api/itDe
 import { SEC123_ITEMS, CH8_ITEMS, MED_ITEMS } from "../constants";
 import { countMonths } from "../utils/hraHelpers";
 import { buildItems, loadStateFromItems } from "../utils/declarationSerializer";
-
 export function useITDeclaration() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [structure, setStructure] = useState(null);
-
   const [cycle, setCycle] = useState(null);
   const [declaration, setDeclaration] = useState(null);
-
   const [vals123, setVals123] = useState({});
   const [valsCh8, setValsCh8] = useState({});
   const [hraData, setHraData] = useState({ houses: [] });
@@ -22,7 +19,6 @@ export function useITDeclaration() {
   const [selfOccupied, setSelfOccupied] = useState({});
   const [incomes, setIncomes] = useState([{ particulars: "", amount: 0 }]);
   const [tcsTds, setTcsTds] = useState({ tcs: 0, tds: 0 });
-
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -49,11 +45,9 @@ export function useITDeclaration() {
     } catch {}
     setLoading(false);
   }, []);
-
   useEffect(() => {
     loadAll();
   }, [loadAll]);
-
   const handleSave = async (submit = false) => {
     setSaving(true);
     try {
@@ -66,11 +60,9 @@ export function useITDeclaration() {
     }
     setSaving(false);
   };
-
   const breakdown = structure?.basic ? buildSalaryBreakdown(structure) : null;
   const annualHRA = breakdown ? breakdown.hra * 12 : 0;
   const annualGross = breakdown ? breakdown.gross * 12 : 0;
-
   const declared123 = Math.min(
     SEC123_ITEMS.reduce((s, i) => s + (Number(vals123[i.label]) || 0), 0),
     150000
@@ -85,11 +77,9 @@ export function useITDeclaration() {
   const declaredIncome = incomes.reduce((s, r) => s + (Number(r.amount) || 0), 0);
   const declaredTcsTds = (Number(tcsTds.tcs) || 0) + (Number(tcsTds.tds) || 0);
   const totalDeclared = declared123 + declaredCh8 + declaredHRA + declaredMed + declaredIncome + declaredTcsTds;
-
   const isLocked = !cycle || cycle.status !== "active";
   const isReadOnly = declaration?.status === "submitted" || declaration?.status === "approved";
   const status = declaration?.status;
-
   return {
     // loading states
     loading,

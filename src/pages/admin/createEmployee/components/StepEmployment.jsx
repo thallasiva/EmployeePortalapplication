@@ -1,6 +1,5 @@
 import React from "react";
 import Field from "./Field";
-
 const StepEmployment = React.memo(function StepEmployment({
   values,
   errors,
@@ -141,5 +140,4 @@ const StepEmployment = React.memo(function StepEmployment({
     </>
   );
 });
-
 export default StepEmployment;

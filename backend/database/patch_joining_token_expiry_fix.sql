@@ -7,9 +7,7 @@
 -- Run in MySQL Workbench against hrms_db
 -- ============================================================
 USE hrms_db;
-
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -39,7 +37,6 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 -- Also extend existing invitation expiry dates that are within the last 30 days
 -- so current candidates with recently expired links can access again
 SET SQL_SAFE_UPDATES = 0;
@@ -50,7 +47,6 @@ WHERE  id > 0
   AND  expires_at > DATE_SUB(NOW(), INTERVAL 30 DAY)
   AND  status NOT IN ('approved', 'rejected');
 SET SQL_SAFE_UPDATES = 1;
-
 SELECT CONCAT(
   'Patch complete — sp_joining_verify_token now allows expired links if formality exists. ',
   ROW_COUNT(), ' invitation(s) had their expiry extended.'

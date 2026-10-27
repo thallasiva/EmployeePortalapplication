@@ -1,7 +1,6 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { inputClass } from "../constants";
-
 const JobSearchFilters = React.memo(function JobSearchFilters() {
   return (
     <div className="mb-3.5 grid grid-cols-1 gap-2 md:grid-cols-[1fr_160px_180px]">
@@ -28,5 +27,4 @@ const JobSearchFilters = React.memo(function JobSearchFilters() {
     </div>
   );
 });
-
 export default JobSearchFilters;

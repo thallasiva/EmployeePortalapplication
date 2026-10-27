@@ -6,24 +6,19 @@ import { B } from "../constants/leaveConstants";
 import Btn from "./Btn";
 import Toast from "./Toast";
 import LeaveTypeModal from "./LeaveTypeModal";
-
 const LeaveTypesTab = memo(() => {
   const [types, setTypes]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [toast, setToast]     = useState(null);
-
   const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
-
   const load = async () => {
     setLoading(true);
     try { const r = await listLeaveTypes(); setTypes(Array.isArray(r) ? r : r.data || []); }
     catch (e) { showToast(e.message, "error"); }
     finally { setLoading(false); }
   };
-
   useEffect(() => { load(); }, []);
-
   const handleSave = async (form) => {
     form.leave_type_id
       ? await updateLeaveType(form.leave_type_id, form)
@@ -32,26 +27,21 @@ const LeaveTypesTab = memo(() => {
     setEditing(null);
     load();
   };
-
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try { await deleteLeaveType(id); showToast("Deleted"); load(); }
     catch (e) { showToast(e.message, "error"); }
   };
-
   return (
     <div className={cssClass({ display: "flex", flexDirection: "column", gap: 16 })}>
       <Toast {...(toast || { msg: null })} />
-
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center" })}>
         <span className={cssClass({ fontSize: 13, color: "#9ca3af" })}>Configure leave types, quotas and carry-forward rules.</span>
         <Btn onClick={() => setEditing({ leave_type_name: "", short_code: "", annual_quota: 0, carry_forward_limit: 0, requires_proof: false, description: "" })}>
           <Plus size={14} />New Leave Type
         </Btn>
       </div>
-
       {loading && <div className={cssClass({ padding: 40, textAlign: "center", color: "#9ca3af" })}>Loading…</div>}
-
       {!loading && (
         <div className={cssClass({ border: "1px solid #e9eaec", borderRadius: 12, overflow: "hidden" })}>
           <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 13 })}>
@@ -111,13 +101,11 @@ const LeaveTypesTab = memo(() => {
           </table>
         </div>
       )}
-
       {editing && (
         <LeaveTypeModal initial={editing} onClose={() => setEditing(null)} onSave={handleSave} />
       )}
     </div>
   );
 });
-
 LeaveTypesTab.displayName = "LeaveTypesTab";
 export default LeaveTypesTab;

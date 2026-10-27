@@ -4,7 +4,6 @@ import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { FORM16_YEARS } from "../constants";
 import { toJumpId } from "../utils";
-
 const Form16View = React.memo(function Form16View({
   form16YearOpen, setForm16YearOpen, jumpToSection
 }) {
@@ -15,7 +14,6 @@ const Form16View = React.memo(function Form16View({
         <JumpList
           items={FORM16_YEARS}
           onJump={(item) => jumpToSection(item, () => setForm16YearOpen((curr) => ({ ...curr, [item]: true })))} />
-
         <div className="flex-1 p-2 max-h-[520px] overflow-y-auto" data-doc-scroll>
           {FORM16_YEARS.map((year) => (
             <div key={year} id={toJumpId(year)} className="border border-[#dfe5ed] mb-2 bg-white">
@@ -37,5 +35,4 @@ const Form16View = React.memo(function Form16View({
     </div>
   );
 });
-
 export default Form16View;

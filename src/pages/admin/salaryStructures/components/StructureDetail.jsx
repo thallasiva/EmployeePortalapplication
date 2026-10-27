@@ -10,7 +10,6 @@ import { getErrorMessage } from "../../../../api/client";
 import { CAT_ORDER, CAT_COLOR } from "../constants";
 import { groupLinesByCategory } from "../utils";
 import AddLineModal from "./AddLineModal";
-
 const StructureDetail = React.memo(function StructureDetail({
   structure,
   allComponents,
@@ -20,7 +19,6 @@ const StructureDetail = React.memo(function StructureDetail({
   const [loadingDetail, setLD] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [savingLine, setSL] = useState(false);
-
   const loadDetail = useCallback(async () => {
     setLD(true);
     try {
@@ -30,14 +28,11 @@ const StructureDetail = React.memo(function StructureDetail({
       setLD(false);
     }
   }, [structure.structure_id]);
-
   useEffect(() => {
     loadDetail();
   }, [loadDetail]);
-
   const lines = detail?.lines ?? [];
   const existingIds = new Set(lines.map((l) => l.component_id));
-
   const handleAddLine = useCallback(
     async (payload) => {
       setSL(true);
@@ -60,7 +55,6 @@ const StructureDetail = React.memo(function StructureDetail({
     },
     [structure, lines, loadDetail, onRefresh]
   );
-
   const handleRemoveLine = useCallback(
     async (componentId) => {
       if (!window.confirm("Remove this component from the structure?")) return;
@@ -74,12 +68,9 @@ const StructureDetail = React.memo(function StructureDetail({
     },
     [structure.structure_id, loadDetail]
   );
-
   const grouped = groupLinesByCategory(lines);
-
   if (loadingDetail)
     return <div className="px-5 py-6 text-center text-sm text-gray-400">Loading…</div>;
-
   return (
     <div className="border-t border-gray-100 bg-gray-50 px-4 py-4">
       <div className="flex items-center justify-between mb-3">
@@ -93,7 +84,6 @@ const StructureDetail = React.memo(function StructureDetail({
           <Plus size={12} /> Add Component
         </button>
       </div>
-
       {CAT_ORDER.map(
         (cat) =>
           grouped[cat]?.length > 0 && (
@@ -135,13 +125,11 @@ const StructureDetail = React.memo(function StructureDetail({
             </div>
           )
       )}
-
       {lines.length === 0 && (
         <div className="text-center py-4 text-sm text-gray-400">
           No components yet. Click "Add Component" to start building.
         </div>
       )}
-
       {addOpen && (
         <AddLineModal
           structureId={structure.structure_id}
@@ -155,5 +143,4 @@ const StructureDetail = React.memo(function StructureDetail({
     </div>
   );
 });
-
 export default StructureDetail;

@@ -1,6 +1,5 @@
 import React from "react";
 import { BRAND } from "../constants";
-
 export const StatCard = React.memo(function StatCard({
   label, value, sub, icon: Icon,
   iconBg = "#fff7ed", iconColor = BRAND, trend,

@@ -1,5 +1,3 @@
-
-
 export const REGULARIZATION_HISTORY = [
 {
   id: 1,
@@ -19,11 +17,9 @@ export const REGULARIZATION_HISTORY = [
     lastOut: "19:00",
     reason: "Early Logout"
   }],
-
   timeline: [
   { label: "Accept by admin", time: "Today 03:46 PM" },
   { label: "Submitted", time: "Today 12:17 PM" }]
-
 },
 {
   id: 2,
@@ -43,11 +39,9 @@ export const REGULARIZATION_HISTORY = [
     lastOut: "18:55",
     reason: "Late Login"
   }],
-
   timeline: [
   { label: "Accept by Amrita Debashish Das", time: "20 May 10:30 AM" },
   { label: "Submitted", time: "18 May 09:15 AM" }]
-
 },
 {
   id: 3,
@@ -67,13 +61,8 @@ export const REGULARIZATION_HISTORY = [
     lastOut: "19:00",
     reason: "Missed punch"
   }],
-
   timeline: [
   { label: "Accept by admin", time: "10 May 02:00 PM" },
   { label: "Submitted", time: "09 May 11:00 AM" }]
-
 }];
-
-
-
 export const EXCEPTION_DAYS = new Set(["5-4", "5-15"]);

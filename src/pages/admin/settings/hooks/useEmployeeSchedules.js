@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo } from "react";
 import { listWorkSchedules, saveEmployeeSchedule, resetEmployeeSchedule } from "../../../../api/workSchedule.api";
 import { listEmployees } from "../../../../api/employee.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
-
 const toRow = (e) => ({
   employee_id: e.employee_id,
   employee_name: `${e.first_name || ''} ${e.last_name || ''}`.trim(),
@@ -13,7 +12,6 @@ const toRow = (e) => ({
   schedule_id: null, schedule_type: null, work_days: null,
   start_time: null, end_time: null,
 });
-
 export function useEmployeeSchedules() {
   const [empSchedules, setEmpSchedules] = useState([]);
   const [schedLoading, setSchedLoading] = useState(false);
@@ -28,7 +26,6 @@ export function useEmployeeSchedules() {
     rotation_pattern: "",
   });
   const [bulkSaving, setBulkSaving] = useState(false);
-
   const filteredEmpScheds = useMemo(() => {
     const q = schedSearch.trim().toLowerCase();
     if (!q) return empSchedules;
@@ -38,7 +35,6 @@ export function useEmployeeSchedules() {
       (e.emp_job_title || "").toLowerCase().includes(q)
     );
   }, [empSchedules, schedSearch]);
-
   const loadEmpSchedules = useCallback(async () => {
     setSchedLoading(true);
     try {
@@ -58,7 +54,6 @@ export function useEmployeeSchedules() {
       setSchedLoading(false);
     }
   }, []);
-
   const toggleBulkDay = useCallback((dayId) => {
     setBulkForm((f) => {
       const days = new Set(f.work_days || []);
@@ -66,7 +61,6 @@ export function useEmployeeSchedules() {
       return { ...f, work_days: [...days] };
     });
   }, []);
-
   const toggleCheck = useCallback((empId) => {
     setCheckedEmps((s) => {
       const n = new Set(s);
@@ -74,7 +68,6 @@ export function useEmployeeSchedules() {
       return n;
     });
   }, []);
-
   const toggleAll = useCallback((currentFiltered) => {
     if (checkedEmps.size === currentFiltered.length) {
       setCheckedEmps(new Set());
@@ -82,7 +75,6 @@ export function useEmployeeSchedules() {
       setCheckedEmps(new Set(currentFiltered.map((e) => e.employee_id)));
     }
   }, [checkedEmps.size]);
-
   const applyBulk = useCallback(async () => {
     if (!checkedEmps.size) return;
     setBulkSaving(true);
@@ -97,7 +89,6 @@ export function useEmployeeSchedules() {
     await loadEmpSchedules();
     setBulkSaving(false);
   }, [checkedEmps, bulkForm, loadEmpSchedules]);
-
   const resetSched = useCallback(async (empId) => {
     try {
       await resetEmployeeSchedule(empId);
@@ -107,7 +98,6 @@ export function useEmployeeSchedules() {
       apiErrorToast(err, "reset schedule");
     }
   }, [loadEmpSchedules]);
-
   return {
     empSchedules, schedLoading,
     schedSearch, setSchedSearch,

@@ -1,7 +1,7 @@
 import React from "react";
+import { Minus, Plus } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { TH, TSS, TN } from "../constants";
-
 export const ColHead = React.memo(function ColHead({ fiscalMonths }) {
   return (
     <thead>
@@ -15,7 +15,6 @@ export const ColHead = React.memo(function ColHead({ fiscalMonths }) {
     </thead>
   );
 });
-
 export const SecHdr = React.memo(function SecHdr({ label, amount, expanded, onToggle }) {
   return (
     <div
@@ -27,7 +26,7 @@ export const SecHdr = React.memo(function SecHdr({ label, amount, expanded, onTo
       })}
     >
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 6 })}>
-        <span className={cssClass({ fontSize: 13, color: "#475569", lineHeight: 1 })}>{onToggle ? (expanded ? "−" : "+") : ""}</span>
+        <span className={cssClass({ display: "flex", color: "#475569" })}>{onToggle ? (expanded ? <Minus size={14} aria-hidden="true" /> : <Plus size={14} aria-hidden="true" />) : null}</span>
         <span className={cssClass({ fontSize: 12, fontWeight: 700, color: "#1e293b" })}>{label}</span>
       </div>
       {amount != null && (
@@ -38,7 +37,6 @@ export const SecHdr = React.memo(function SecHdr({ label, amount, expanded, onTo
     </div>
   );
 });
-
 export const CalcRow = React.memo(function CalcRow({ label, amount }) {
   return (
     <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 14px", background: "#d6e4f0", borderBottom: "1px solid #d5dbe3" })}>
@@ -49,7 +47,6 @@ export const CalcRow = React.memo(function CalcRow({ label, amount }) {
     </div>
   );
 });
-
 export const NoData = React.memo(function NoData() {
   return (
     <div className={cssClass({ padding: "20px 14px", textAlign: "center", color: "#f18200", fontSize: 12, fontWeight: 600, background: "#fff", borderBottom: "1px solid #e2e8f0" })}>

@@ -5,7 +5,6 @@ import ReportToolbar from "./components/ReportToolbar";
 import SummaryTableHeader from "./components/SummaryTableHeader";
 import SummaryTableBody from "./components/SummaryTableBody";
 import SummaryTableFooter from "./components/SummaryTableFooter";
-
 export default function LeaveSummaryReport() {
   const {
     year, setYear,
@@ -16,7 +15,6 @@ export default function LeaveSummaryReport() {
     employees, leaveTypes,
     handleExportCSV,
   } = useLeaveSummary();
-
   return (
     <div className="p-4">
       <ReportToolbar
@@ -29,13 +27,11 @@ export default function LeaveSummaryReport() {
         onExportCSV={handleExportCSV}
         hasData={employees.length > 0}
       />
-
       {error && (
         <div className="mb-4 px-4 py-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
           {error}
         </div>
       )}
-
       {loading ? (
         <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
           Loading leave summary…
@@ -49,7 +45,6 @@ export default function LeaveSummaryReport() {
           </table>
         </div>
       )}
-
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
         {(data?.leaveTypes || []).map((lt) => (
           <span key={lt.leave_type_id} className="flex items-center gap-1">

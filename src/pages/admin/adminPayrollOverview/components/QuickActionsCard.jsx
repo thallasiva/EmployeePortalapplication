@@ -2,7 +2,6 @@ import React from "react";
 import { Zap } from "lucide-react";
 import Card from "./Card";
 import { cssClass } from "../../../../utils/classStyles";
-
 // actions = [{ label, icon, onClick, primary, disabled }]
 export default function QuickActionsCard({ actions = [] }) {
   return (

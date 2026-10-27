@@ -4,11 +4,9 @@ import { cssClass } from "../../../../utils/classStyles";
 import { getManagerDetails } from "../../../../api/orgHierarchy.api";
 import { BRAND } from "../constants/tabs";
 import { fmtDate, statusColor } from "../utils/formatters";
-
 const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, onClose }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (!managerId) return;
     setLoading(true);
@@ -17,9 +15,7 @@ const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, o
       .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, [managerId]);
-
   if (!managerId) return null;
-
   return (
     <div className={cssClass({
       position: "fixed", inset: 0, background: "#0006", zIndex: 1000,
@@ -38,7 +34,6 @@ const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, o
             <X size={20} />
           </button>
         </div>
-
         <div className={cssClass({ padding: "24px" })}>
           {loading ? (
             <div className={cssClass({ textAlign: "center", padding: 40, color: "#9ca3af" })}>Loading…</div>
@@ -69,7 +64,6 @@ const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, o
                   </div>
                 </div>
               </div>
-
               <div className={cssClass({ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" })}>
                 <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#374151" })}>
                   <Mail size={14} color={BRAND} /> {data.email || "—"}
@@ -78,7 +72,6 @@ const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, o
                   <Calendar size={14} color={BRAND} /> Joined {fmtDate(data.emp_joining_date)}
                 </div>
               </div>
-
               {data.direct_reports?.length > 0 && (
                 <div>
                   <div className={cssClass({ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 12 })}>
@@ -123,5 +116,4 @@ const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, o
     </div>
   );
 });
-
 export default ManagerDetailModal;

@@ -2,7 +2,6 @@ import { memo, useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { B } from "../constants/leaveConstants";
 import Btn from "./Btn";
-
 const Field = ({ k, label, form, setForm }) => (
   <div>
     <label className={cssClass({ display: "block", fontSize: 11, fontWeight: 600, color: "#6b7280", marginBottom: 5 })}>{label}</label>
@@ -17,7 +16,6 @@ const Field = ({ k, label, form, setForm }) => (
     />
   </div>
 );
-
 const EditBalanceModal = memo(({ emp, bal, year, onClose, onSave }) => {
   const [form, setForm] = useState({
     opening_balance: bal.opening_balance,
@@ -26,7 +24,6 @@ const EditBalanceModal = memo(({ emp, bal, year, onClose, onSave }) => {
   });
   const [saving, setSaving] = useState(false);
   const balance = Math.max(0, Number(form.opening_balance || 0) + Number(form.granted || 0) - Number(form.availed || 0));
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -40,7 +37,6 @@ const EditBalanceModal = memo(({ emp, bal, year, onClose, onSave }) => {
       });
     } catch (e) { alert(e.message); setSaving(false); }
   };
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", zIndex: 9999,
       display: "flex", alignItems: "center", justifyContent: "center" })}>
@@ -68,6 +64,5 @@ const EditBalanceModal = memo(({ emp, bal, year, onClose, onSave }) => {
     </div>
   );
 });
-
 EditBalanceModal.displayName = "EditBalanceModal";
 export default EditBalanceModal;

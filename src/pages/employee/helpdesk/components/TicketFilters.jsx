@@ -2,7 +2,6 @@ import { memo } from "react";
 import { TICKET_STATUSES } from "../constants/categories";
 import { BRAND, BRAND_LIGHT } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
-
 /**
  * Pill-filter row for the My Tickets view.
  * Single responsibility: render status filter buttons + fire onFilterChange.
@@ -28,5 +27,4 @@ const TicketFilters = memo(function TicketFilters({ activeFilter, onFilterChange
     </div>
   );
 });
-
 export default TicketFilters;

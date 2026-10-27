@@ -1,9 +1,7 @@
 -- Patch: add emp_joining_date to sp_get_payslip_full
 -- Required for gratuity eligibility check (>= 4 years 240 days)
 -- Run once on existing DB
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_get_payslip_full $$
 CREATE PROCEDURE sp_get_payslip_full (IN p_id INT)
 BEGIN
@@ -23,5 +21,4 @@ BEGIN
     LEFT JOIN employee_bank_details b ON b.employee_id = e.employee_id
    WHERE p.payslip_id = p_id;
 END $$
-
 DELIMITER ;

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useSalaryStructures } from "./hooks/useSalaryStructures";
 import StructureCard from "./components/StructureCard";
 import StructureForm from "./components/StructureForm";
-
 export default function SalaryStructuresPage() {
   const navigate = useNavigate();
   const {
@@ -20,7 +19,6 @@ export default function SalaryStructuresPage() {
     handleSave,
     load,
   } = useSalaryStructures();
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -45,7 +43,6 @@ export default function SalaryStructuresPage() {
           </button>
         </div>
       </div>
-
       {loading ? (
         <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
       ) : structures.length === 0 ? (
@@ -66,7 +63,6 @@ export default function SalaryStructuresPage() {
           ))}
         </div>
       )}
-
       {formOpen && (
         <StructureForm
           initial={editing}

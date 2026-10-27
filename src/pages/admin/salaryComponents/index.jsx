@@ -4,7 +4,6 @@ import { useSalaryComponents } from "./hooks/useSalaryComponents";
 import { CATEGORIES, CAT_COLOR } from "./constants";
 import ComponentRow from "./components/ComponentRow";
 import ComponentForm from "./components/ComponentForm";
-
 export default function SalaryComponentsPage() {
   const {
     components,
@@ -25,7 +24,6 @@ export default function SalaryComponentsPage() {
     handleSave,
     handleToggle,
   } = useSalaryComponents();
-
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -42,7 +40,6 @@ export default function SalaryComponentsPage() {
           <Plus size={15} /> Add Component
         </button>
       </div>
-
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -70,7 +67,6 @@ export default function SalaryComponentsPage() {
           Show inactive
         </label>
       </div>
-
       {loading ? (
         <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
       ) : (
@@ -116,7 +112,6 @@ export default function SalaryComponentsPage() {
           )}
         </div>
       )}
-
       {formOpen && (
         <ComponentForm
           initial={editing}

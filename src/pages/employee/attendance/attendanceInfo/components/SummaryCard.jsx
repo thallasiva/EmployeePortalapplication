@@ -1,5 +1,4 @@
 import React from "react";
-
 const SummaryCard = React.memo(function SummaryCard({ title, value, trend }) {
   return (
     <div className="min-w-[160px] flex-1 bg-white border border-[#dce3eb] rounded-lg px-4 py-3 shadow-sm">
@@ -11,5 +10,4 @@ const SummaryCard = React.memo(function SummaryCard({ title, value, trend }) {
     </div>
   );
 });
-
 export default SummaryCard;

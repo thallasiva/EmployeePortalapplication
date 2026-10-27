@@ -1,20 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const SafeExternalLink = ({ href, children, className = "", ...rest }) =>
 <a
   href={href}
@@ -22,9 +5,6 @@ const SafeExternalLink = ({ href, children, className = "", ...rest }) =>
   rel="noopener noreferrer"
   className={className}
   {...rest}>
-
     {children}
   </a>;
-
-
 export default SafeExternalLink;

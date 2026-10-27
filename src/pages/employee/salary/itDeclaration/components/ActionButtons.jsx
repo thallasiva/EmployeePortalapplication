@@ -1,7 +1,6 @@
 import React from "react";
 import { Save, Send } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 function ActionButtons({ saving, totalDeclared, onSaveDraft, onSubmit }) {
   return (
     <div className={cssClass({ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" })}>
@@ -20,5 +19,4 @@ function ActionButtons({ saving, totalDeclared, onSaveDraft, onSubmit }) {
     </div>
   );
 }
-
 export default React.memo(ActionButtons);

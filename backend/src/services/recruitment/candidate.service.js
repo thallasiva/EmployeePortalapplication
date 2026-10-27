@@ -2,20 +2,15 @@ const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
-
 class CandidateService extends BaseService {
   constructor() {
     super("rec_candidates", "candidate_id");
   }
-
-
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
     const results = await callProcedure('sp_rec_get_recruiter_team_lead(?)', [recruiterId]);
     return (results[0] ?? [])[0] ?? {};
   }
-
-
   async _getRecruiterContacts(recruiterId) {
     if (!recruiterId) return {};
     const [recRows, tl] = await Promise.all([
@@ -30,7 +25,6 @@ class CandidateService extends BaseService {
       tlName: tl.tl_name || ''
     };
   }
-
   async list({ jobReqId, status, recruiterId, search, roleId, recEmpId, limit = 20, offset = 0 } = {}) {
     const results = await callProcedure(
       "sp_rec_list_candidates(?, ?, ?, ?, ?, ?, ?, ?)",
@@ -38,14 +32,12 @@ class CandidateService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getById(candidateId) {
     const results = await callProcedure("sp_rec_get_candidate(?)", [candidateId]);
     const row = (results[0] ?? [])[0];
     if (!row) throw new ApiError(404, "Candidate not found");
     return row;
   }
-
   async create(data, createdBy, ip) {
     const results = await callProcedure(
       "sp_rec_create_candidate(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @candidate_id, @candidate_code)",
@@ -70,11 +62,8 @@ class CandidateService extends BaseService {
       data.recruiterId,
       createdBy,
       ip]
-
     );
     const row = (results[0] ?? [])[0];
-
-
     if (row && data.recruiterId) {
       const candidateName = row.name || data.name || 'Candidate';
       const jobTitle = row.job_title || '';
@@ -92,21 +81,15 @@ class CandidateService extends BaseService {
         }
       }).catch(() => {});
     }
-
     return row;
   }
-
   async updateStatus(candidateId, status, updatedBy, ip) {
-
     await callProcedure(
       "sp_rec_update_candidate_status(?, ?, ?, ?)",
       [candidateId, status, updatedBy, ip]
     );
-
-
     const fullResults = await callProcedure('sp_rec_get_candidate(?)', [candidateId]);
     const row = (fullResults[0] ?? [])[0];
-
     if (row) {
       const name = row.name || 'Candidate';
       const jobTitle = row.job_title || '';
@@ -115,16 +98,11 @@ class CandidateService extends BaseService {
       const s = (status || '').toLowerCase();
       const isShort = s === 'shortlisted' || s === 'selected';
       const isReject = s === 'rejected' || s === 'not selected';
-
-
       if (email) {
         if (isReject) notify.candidateRejected({ candidateEmail: email, candidateName: name, jobTitle });
       }
-
-
       if (recruiterId) {
         this._getRecruiterContacts(recruiterId).then(({ recruiterEmail, recruiterName, tlEmail, tlName }) => {
-
           if (recruiterEmail) {
             notify.candidateStatusToRecruiter({
               recruiterEmail,
@@ -134,7 +112,6 @@ class CandidateService extends BaseService {
               status
             });
           }
-
           if (tlEmail && (isShort || isReject)) {
             notify.tlCandidateUpdate({
               tlEmail,
@@ -147,8 +124,6 @@ class CandidateService extends BaseService {
           }
         }).catch(() => {});
       }
-
-
       if (s === 'selected') {
         notify.candidateSelectedAdmin({
           candidateName: name,
@@ -157,9 +132,7 @@ class CandidateService extends BaseService {
         });
       }
     }
-
     return row;
   }
 }
-
 module.exports = new CandidateService();

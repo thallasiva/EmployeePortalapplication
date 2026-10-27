@@ -1,6 +1,5 @@
 import React from "react";
 import { PERIODS } from "../constants";
-
 function JobsPeriodTabs({ period, setPeriod, periodCounts }) {
   return (
     <div className="flex items-center gap-1 px-4 pt-3.5 border-b border-gray-100">
@@ -27,5 +26,4 @@ function JobsPeriodTabs({ period, setPeriod, periodCounts }) {
     </div>
   );
 }
-
 export default React.memo(JobsPeriodTabs);

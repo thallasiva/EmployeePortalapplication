@@ -3,7 +3,6 @@ import { X } from "lucide-react";
 import { CATEGORIES, CALC_TYPES, FREQUENCIES, BLANK, inp, sel } from "../constants";
 import Toggle from "./Toggle";
 import Field from "./Field";
-
 const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClose, saving }) {
   const [f, setF] = useState(
     initial
@@ -14,10 +13,8 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
         }
       : BLANK
   );
-
   const set = useCallback((name, val) => setF((p) => ({ ...p, [name]: val })), []);
   const handle = useCallback((e) => set(e.target.name, e.target.value), [set]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-xl">
@@ -59,7 +56,6 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
               </select>
             </Field>
           </div>
-
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Calculation</p>
             <div className="grid grid-cols-2 gap-3">
@@ -89,7 +85,6 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
               )}
             </div>
           </div>
-
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Statutory Applicability</p>
             <div className="flex flex-wrap gap-2">
@@ -99,7 +94,6 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
               <Toggle value={!!f.gratuity_applicable} onChange={(v) => set("gratuity_applicable", v)} label="Gratuity Applicable" />
             </div>
           </div>
-
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Visibility</p>
             <div className="flex flex-wrap gap-2">
@@ -108,7 +102,6 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
               <Toggle value={!!f.show_payslip} onChange={(v) => set("show_payslip", v)} label="Payslip" />
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-3">
             <Field label="Sort Order" half>
               <input type="number" name="sort_order" value={f.sort_order} onChange={handle} className={inp} />
@@ -117,7 +110,6 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
               <input name="description" value={f.description} onChange={handle} className={inp} placeholder="Brief description" />
             </Field>
           </div>
-
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
             <button type="submit" disabled={saving} className="flex-1 bg-[#1e3a5f] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
@@ -129,5 +121,4 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
     </div>
   );
 });
-
 export default ComponentForm;

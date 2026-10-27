@@ -4,7 +4,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { sc } from "../constants";
 import { fmtDate, empName } from "../utils";
 import Badge from "./Badge";
-
 const LeaveCard = React.memo(function LeaveCard({ r, isPrivileged }) {
   const cfg = sc(r.status);
   const days = Number(r.total_days ?? r.days ?? 0);
@@ -66,5 +65,4 @@ const LeaveCard = React.memo(function LeaveCard({ r, isPrivileged }) {
     </div>
   );
 });
-
 export default LeaveCard;

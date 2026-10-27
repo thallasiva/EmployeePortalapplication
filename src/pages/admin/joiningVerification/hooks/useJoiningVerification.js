@@ -7,7 +7,6 @@ import {
 } from "../../../../api/joining.api";
 import { listEmployees } from "../../../../api/employee.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
-
 export function useJoiningVerification() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +24,6 @@ export function useJoiningVerification() {
     department: "",
   });
   const [managers, setManagers] = useState([]);
-
   useEffect(() => {
     listEmployees({ status: "Active", limit: 500 })
       .then((res) => {
@@ -41,7 +39,6 @@ export function useJoiningVerification() {
       })
       .catch(() => {});
   }, []);
-
   const load = useCallback(() => {
     setLoading(true);
     listJoiningInvitations({ status: filter === "all" ? undefined : filter, limit: 100 })
@@ -49,11 +46,9 @@ export function useJoiningVerification() {
       .catch(() => setRows([]))
       .finally(() => setLoading(false));
   }, [filter]);
-
   useEffect(() => {
     load();
   }, [load]);
-
   const openDetail = useCallback(async (id, row) => {
     setDetailId(id);
     setDetail(null);
@@ -74,7 +69,6 @@ export function useJoiningVerification() {
       apiErrorToast(e, "load joining details");
     }
   }, []);
-
   const submitReview = useCallback(async () => {
     if (!decision) return;
     setReviewing(true);
@@ -91,7 +85,6 @@ export function useJoiningVerification() {
       setReviewing(false);
     }
   }, [decision, detailId, remarks, adminFields, load]);
-
   const saveAdminFieldsOnly = useCallback(async () => {
     setReviewing(true);
     try {
@@ -116,7 +109,6 @@ export function useJoiningVerification() {
       setReviewing(false);
     }
   }, [detailId, detail, adminFields, load]);
-
   const resend = useCallback(async (id) => {
     try {
       await resendJoiningInvitation(id);
@@ -125,17 +117,14 @@ export function useJoiningVerification() {
       apiErrorToast(e, "resend invitation");
     }
   }, []);
-
   const updateAdminField = useCallback((e) => {
     setAdminFields((p) => ({ ...p, [e.target.name]: e.target.value }));
   }, []);
-
   const closeDetail = useCallback(() => {
     setDetailId(null);
     setDetail(null);
     setSelectedRow(null);
   }, []);
-
   return {
     rows,
     loading,

@@ -1,6 +1,5 @@
 import React from "react";
 import { CheckCircle } from "lucide-react";
-
 const SubmittedView = React.memo(function SubmittedView({ inv }) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -18,5 +17,4 @@ const SubmittedView = React.memo(function SubmittedView({ inv }) {
     </div>
   );
 });
-
 export default SubmittedView;

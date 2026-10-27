@@ -2,11 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Inbox, CheckCircle2, AlertCircle, Clock, Search, Eye, RefreshCw, Download, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { emailLogsApi } from "../../../../../api/settings.api";
 import { Toast } from "../components/SharedUI";
-
 const PER = 10;
 const STATUS_OPTS = ["All Status","Sent","Failed","Pending","Queued"];
 const MODULE_OPTS = ["All Modules","Leave","Attendance","Payroll","Recruitment","Onboarding","System","Performance"];
-
 const StatusBadge = ({ s }) => {
   const cfg = {
     Sent:    { bg:"#dcfce7", text:"#16a34a", icon:<CheckCircle2 size={12} /> },
@@ -21,7 +19,6 @@ const StatusBadge = ({ s }) => {
     </span>
   );
 };
-
 export default function EmailLogs() {
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState({ total:0, Sent:0, Failed:0, Pending:0, Queued:0 });
@@ -34,9 +31,7 @@ export default function EmailLogs() {
   const [retrying, setRetrying] = useState(null);
   const [viewRow, setViewRow] = useState(null);
   const [toast, setToast] = useState(null);
-
   const showToast = (message, type = "success") => { setToast({ message, type }); setTimeout(() => setToast(null), 3000); };
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -50,12 +45,9 @@ export default function EmailLogs() {
     } catch { showToast("Failed to load logs", "error"); }
     finally { setLoading(false); }
   }, [search, status, module, page]);
-
   useEffect(() => { load(); }, [load]);
-
   /* reset page on filter change */
   useEffect(() => { setPage(1); }, [search, status, module]);
-
   const handleRetry = async (id) => {
     setRetrying(id);
     try {
@@ -65,20 +57,16 @@ export default function EmailLogs() {
     } catch { showToast("Retry failed", "error"); }
     finally { setRetrying(null); }
   };
-
   const totalPages = Math.max(1, Math.ceil(total / PER));
-
   const STAT_CARDS = [
     { label:"Total Emails",   value:stats.total,   icon:<Inbox size={18} />,       color:"#f18200", bg:"#fff8f0" },
     { label:"Sent",           value:stats.Sent,    icon:<CheckCircle2 size={18} />, color:"#16a34a", bg:"#dcfce7" },
     { label:"Failed",         value:stats.Failed,  icon:<AlertCircle size={18} />,  color:"#dc2626", bg:"#fee2e2" },
     { label:"Pending/Queue",  value:(stats.Pending||0)+(stats.Queued||0), icon:<Clock size={18} />, color:"#ca8a04", bg:"#fef9c3" },
   ];
-
   return (
     <div className="space-y-5">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-
       {/* Detail Modal */}
       {viewRow && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
@@ -104,7 +92,6 @@ export default function EmailLogs() {
           </div>
         </div>
       )}
-
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {STAT_CARDS.map(({ label, value, icon, color, bg }) => (
@@ -119,7 +106,6 @@ export default function EmailLogs() {
           </div>
         ))}
       </div>
-
       {/* Filters */}
       <div className="bg-white rounded-xl border border-[#f1f5f9] p-4">
         <div className="flex flex-col sm:flex-row gap-3">
@@ -142,7 +128,6 @@ export default function EmailLogs() {
           </button>
         </div>
       </div>
-
       {/* Table */}
       <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
         {loading ? (
@@ -184,7 +169,6 @@ export default function EmailLogs() {
             </tbody>
           </table>
         )}
-
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-[#f1f5f9]">

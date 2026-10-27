@@ -4,10 +4,8 @@ import { fmtINR } from "../utils/formatters";
 import { ORANGE } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
 import Table from "./Table";
-
 const Arrears = React.memo(function Arrears({ year }) {
   const { rows, loading } = useArrears(year);
-
   const cols = useMemo(() => [
     { key: "emp_code", label: "Emp Code" },
     { key: "employee_name", label: "Employee" },
@@ -43,14 +41,11 @@ const Arrears = React.memo(function Arrears({ year }) {
       ),
     },
   ], []);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   return (
     <Table cols={cols} rows={rows} emptyMsg="No arrears found — no salary revisions detected" />
   );
 });
-
 export default Arrears;

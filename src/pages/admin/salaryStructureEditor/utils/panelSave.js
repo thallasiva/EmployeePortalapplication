@@ -4,7 +4,6 @@ import {
 } from "../../../../api/salaryComponent.api";
 import { getErrorMessage } from "../../../../api/client";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
-
 /**
  * Handles saving a component from the Add/Edit panel.
  * Returns true on success, false on failure.
@@ -20,7 +19,6 @@ export async function executePanelSave({
 }) {
   try {
     let componentId;
-
     if (data.mode === "existing") {
       componentId = data.component_id;
     } else if (data.component_id) {
@@ -65,21 +63,18 @@ export async function executePanelSave({
       });
       componentId = created.component_id;
     }
-
     let sid = structure.structure_id;
     if (!sid) {
       const s = await saveMeta();
       sid = s.structure_id;
       setStructure((prev) => ({ ...prev, structure_id: sid }));
     }
-
     await updateStructure(sid, {
       structure_name: structure.structure_name,
       description: structure.description,
       is_default: structure.is_default,
       lines: [{ component_id: componentId, sort_order: Number(data.sort_order) || 100 }],
     });
-
     successToast("Component added");
     setPanelOpen(false);
     setEditLine(null);

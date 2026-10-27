@@ -3,7 +3,6 @@ import { Check, X, RefreshCw } from "lucide-react";
 import Pagination, { usePagination } from "../../components/Pagination";
 import { getAllTimesheets, getAdminDashboardCounts, getAnyTimesheetDetail, reviewTimesheet } from "../../api/timesheet.api";
 import "./adminDashboard.css";
-
 function Toast({ msg, type, onClose }) {
   if (!msg) return null;
   const color = type === "error" ? "bg-red-50 border-red-300 text-red-700" : "bg-emerald-50 border-emerald-300 text-emerald-700";
@@ -14,49 +13,38 @@ function Toast({ msg, type, onClose }) {
     </div>
   );
 }
-
-
-
 const STATUS_STYLE = {
   draft: "bg-gray-100 text-gray-600 border-gray-300",
   pending: "bg-amber-50 text-amber-700 border-amber-300",
   approved: "bg-emerald-50 text-emerald-700 border-emerald-300",
   rejected: "bg-red-50 text-red-600 border-red-300"
 };
-
 function StatusBadge({ status }) {
   return (
     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border capitalize ${STATUS_STYLE[status] || ""}`}>
       {status}
     </span>);
-
 }
-
-
 function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     getAnyTimesheetDetail(timesheetId).
     then(setDetail).
     catch(() => {}).
     finally(() => setLoading(false));
   }, [timesheetId]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-800">Timesheet Detail</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close"><X size={18} aria-hidden="true" /></button>
         </div>
-
         {loading ?
         <div className="p-8 text-center text-gray-400">Loading…</div> :
         !detail ?
         <div className="p-8 text-center text-red-500">Failed to load</div> :
-
         <div className="p-6 space-y-5">
             {}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
@@ -76,7 +64,6 @@ function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
                 </div>
             )}
             </div>
-
             {}
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Work Log Entries</h3>
@@ -98,7 +85,6 @@ function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
                   <tbody className="divide-y divide-gray-100">
                     {(detail.entries || []).length === 0 ?
                   <tr><td colSpan={9} className="px-4 py-6 text-center text-gray-400">No entries</td></tr> :
-
                   (detail.entries || []).map((e) =>
                   <tr key={e.entry_id} className="hover:bg-gray-50">
                           <td className="px-4 py-2">{e.project_name}</td>
@@ -136,10 +122,7 @@ function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
           )}
       </div>
     </div>);
-
 }
-
-
 export default function AdminTimesheets() {
   const [timesheets, setTimesheets] = useState([]);
   const [counts, setCounts] = useState(null);
@@ -149,12 +132,10 @@ export default function AdminTimesheets() {
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
   const [actioning, setActioning] = useState(null); // timesheetId being actioned
-
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
   };
-
   const handleApprove = async (timesheetId) => {
     setActioning(timesheetId);
     try {
@@ -165,7 +146,6 @@ export default function AdminTimesheets() {
       showToast(e?.response?.data?.message || "Approval failed", "error");
     } finally { setActioning(null); }
   };
-
   const handleReject = async (timesheetId, comments = "") => {
     setActioning(timesheetId);
     try {
@@ -176,7 +156,6 @@ export default function AdminTimesheets() {
       showToast(e?.response?.data?.message || "Rejection failed", "error");
     } finally { setActioning(null); }
   };
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -185,27 +164,20 @@ export default function AdminTimesheets() {
       setCounts(await getAdminDashboardCounts());
     } catch {} finally {setLoading(false);}
   }, [filter]);
-
   useEffect(() => {load();}, [load]);
-
   const filtered = search ?
   timesheets.filter((t) => t.employee_name?.toLowerCase().includes(search.toLowerCase()) || t.emp_code?.includes(search)) :
   timesheets;
-
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(filtered);
-
   const FILTER_OPTIONS = ["all", "pending", "approved", "rejected", "draft"];
-
   return (
     <div className="admin-dash space-y-4">
       <Toast msg={toast?.msg} type={toast?.type} onClose={() => setToast(null)} />
-
       {}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Timesheets</h1>
         <p className="text-gray-500 mt-1">All employee weekly timesheet submissions</p>
       </div>
-
       {}
       {counts &&
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -223,7 +195,6 @@ export default function AdminTimesheets() {
         )}
         </div>
       }
-
       {}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex gap-2 flex-wrap">
@@ -240,9 +211,7 @@ export default function AdminTimesheets() {
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 w-full sm:w-56 focus:border-brand focus:outline-none shadow-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)} />
-
       </div>
-
       {}
       <div className="admin-dash-card !p-0 overflow-hidden">
         <div className="overflow-x-auto">
@@ -316,7 +285,6 @@ export default function AdminTimesheets() {
         </div>
         <Pagination page={page} setPage={setPage} totalPages={totalPages} from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
       </div>
-
       {viewId && (
         <TimesheetDetailModal
           timesheetId={viewId}
@@ -329,5 +297,4 @@ export default function AdminTimesheets() {
         />
       )}
     </div>);
-
 }

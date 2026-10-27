@@ -2,7 +2,6 @@
 -- Migration 045: AI Interview Sessions
 -- Run: node src/database/runSql.js migration_045_ai_interview.sql
 -- ─────────────────────────────────────────────────────────────────────────────
-
 -- Step 1: Create table
 CREATE TABLE IF NOT EXISTS ai_interview_sessions (
   session_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -29,19 +28,12 @@ CREATE TABLE IF NOT EXISTS ai_interview_sessions (
   INDEX idx_job       (job_req_id),
   INDEX idx_status    (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_create_session;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_get_session;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_submit;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_list_by_recruiter;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_get_report;
-
 DELIMITER $$
-
 CREATE PROCEDURE sp_ai_interview_create_session(
   IN p_token           VARCHAR(64),
   IN p_candidate_id    INT,
@@ -60,7 +52,6 @@ BEGIN
     (p_token, p_candidate_id, p_job_req_id, p_recruiter_id, p_candidate_name, p_candidate_email, p_job_title, p_questions_json, p_expires_at);
   SELECT LAST_INSERT_ID() AS session_id;
 END$$
-
 CREATE PROCEDURE sp_ai_interview_get_session(IN p_token VARCHAR(64))
 BEGIN
   UPDATE ai_interview_sessions
@@ -68,7 +59,6 @@ BEGIN
   WHERE status = 'pending' AND expires_at < NOW();
   SELECT * FROM ai_interview_sessions WHERE token = p_token LIMIT 1;
 END$$
-
 CREATE PROCEDURE sp_ai_interview_submit(
   IN p_token           VARCHAR(64),
   IN p_answers_json    LONGTEXT,
@@ -88,7 +78,6 @@ BEGIN
   WHERE token = p_token AND status = 'pending';
   SELECT ROW_COUNT() AS affected;
 END$$
-
 CREATE PROCEDURE sp_ai_interview_list_by_recruiter(
   IN p_recruiter_id INT,
   IN p_limit        INT,
@@ -104,10 +93,8 @@ BEGIN
   ORDER BY s.created_at DESC
   LIMIT p_limit OFFSET p_offset;
 END$$
-
 CREATE PROCEDURE sp_ai_interview_get_report(IN p_session_id INT)
 BEGIN
   SELECT * FROM ai_interview_sessions WHERE session_id = p_session_id LIMIT 1;
 END$$
-
 DELIMITER ;

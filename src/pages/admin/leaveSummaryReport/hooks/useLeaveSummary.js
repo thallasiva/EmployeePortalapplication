@@ -3,7 +3,6 @@ import { getLeaveSummary } from "../../../../api/leaveRequest.api";
 import { getErrorMessage } from "../../../../api/client";
 import { YEARS, MONTH_LABELS } from "../constants";
 import { ltCode, fmt } from "../utils";
-
 export function useLeaveSummary() {
   const CURRENT_YEAR = YEARS[0];
   const [year, setYear] = useState(CURRENT_YEAR);
@@ -13,7 +12,6 @@ export function useLeaveSummary() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const tableRef = useRef(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -26,9 +24,7 @@ export function useLeaveSummary() {
       setLoading(false);
     }
   }, [year, statusFilter]);
-
   useEffect(() => { load(); }, [load]);
-
   const employees = useMemo(
     () =>
       (data?.employees || []).filter(
@@ -40,9 +36,7 @@ export function useLeaveSummary() {
       ),
     [data, search]
   );
-
   const leaveTypes = data?.leaveTypes || [];
-
   const handleExportCSV = useCallback(() => {
     if (!employees.length) return;
     const rows = [];
@@ -53,7 +47,6 @@ export function useLeaveSummary() {
     MONTH_LABELS.forEach((m) => leaveTypes.forEach((lt) => h.push(`${m} ${ltCode(lt.leave_type_name)}`)));
     leaveTypes.forEach((lt) => h.push(`Closing ${ltCode(lt.leave_type_name)}`));
     rows.push(h);
-
     employees.forEach((emp) => {
       const row = [
         emp.emp_code,
@@ -73,7 +66,6 @@ export function useLeaveSummary() {
       leaveTypes.forEach((lt) => row.push(ld(lt.leave_type_id).closing_balance ?? 0));
       rows.push(row);
     });
-
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -83,7 +75,6 @@ export function useLeaveSummary() {
     a.click();
     URL.revokeObjectURL(url);
   }, [employees, leaveTypes, year]);
-
   return {
     year,
     setYear,

@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const SHOW = 6;
-
 const FilterSection = React.memo(function FilterSection({ sec, collapsed, onToggle }) {
   const [showAll, setShowAll] = useState(false);
   const visibleOpts = showAll ? sec.options : sec.options.slice(0, SHOW);
   const activeCount = sec.selected.size;
-
   return (
     <div className={cssClass({ borderBottom: "1px solid #334155" })}>
       <button
@@ -61,7 +58,6 @@ const FilterSection = React.memo(function FilterSection({ sec, collapsed, onTogg
           />
         </div>
       </button>
-
       {!collapsed && (
         <div className={cssClass({ paddingBottom: 8 })}>
           {visibleOpts.map((opt) => {
@@ -137,5 +133,4 @@ const FilterSection = React.memo(function FilterSection({ sec, collapsed, onTogg
     </div>
   );
 });
-
 export default FilterSection;

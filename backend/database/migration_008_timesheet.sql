@@ -3,9 +3,7 @@
 -- Tables: employee_tasks, weekly_timesheets, timesheet_entries,
 --         extra_work_requests
 -- ============================================================
-
 USE hrms_db;
-
 -- ── 1. Employee-owned tasks ──────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS employee_tasks (
   task_id        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -18,7 +16,6 @@ CREATE TABLE IF NOT EXISTS employee_tasks (
   updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_et_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── 2. Weekly timesheet header ───────────────────────────────────────────────
 -- One row per employee per ISO week (week_start = Monday of that week).
 CREATE TABLE IF NOT EXISTS weekly_timesheets (
@@ -38,7 +35,6 @@ CREATE TABLE IF NOT EXISTS weekly_timesheets (
   CONSTRAINT fk_wt_employee  FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_wt_reviewer  FOREIGN KEY (reviewed_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── 3. Timesheet entries (rows inside a weekly sheet) ───────────────────────
 CREATE TABLE IF NOT EXISTS timesheet_entries (
   entry_id       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -58,7 +54,6 @@ CREATE TABLE IF NOT EXISTS timesheet_entries (
   CONSTRAINT fk_te_employee  FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_te_task      FOREIGN KEY (task_id)     REFERENCES employee_tasks(task_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── 4. Extra-work requests ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS extra_work_requests (
   extra_work_id  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -78,7 +73,6 @@ CREATE TABLE IF NOT EXISTS extra_work_requests (
   CONSTRAINT fk_ew_timesheet FOREIGN KEY (timesheet_id) REFERENCES weekly_timesheets(timesheet_id) ON DELETE CASCADE,
   CONSTRAINT fk_ew_reviewer  FOREIGN KEY (reviewed_by)  REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── Patch: add date/time fields to employee_tasks ────────────────────────────
 ALTER TABLE employee_tasks
   ADD COLUMN IF NOT EXISTS start_date  DATE          DEFAULT NULL AFTER description,

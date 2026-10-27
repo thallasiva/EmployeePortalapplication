@@ -1,12 +1,10 @@
 import React from "react";
 import { Mail, X } from "lucide-react";
 import { MONTH_OPTIONS } from "../constants/payslipOptions";
-
 const GenerateAllResultModal = React.memo(function GenerateAllResultModal({ result, onClose }) {
   if (!result) return null;
   const { month, year, generated, emailed, results = [] } = result;
   const monthLabel = MONTH_OPTIONS.find((m) => m.value === Number(month))?.label || month;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl rounded-xl bg-white shadow-xl">
@@ -18,7 +16,6 @@ const GenerateAllResultModal = React.memo(function GenerateAllResultModal({ resu
             <X size={18} />
           </button>
         </div>
-
         <div className="px-5 py-4">
           <p className="text-sm text-gray-600 mb-3">
             Generated <strong>{generated}</strong> payslip(s), emailed <strong>{emailed}</strong> of them.
@@ -56,7 +53,6 @@ const GenerateAllResultModal = React.memo(function GenerateAllResultModal({ resu
             </table>
           </div>
         </div>
-
         <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-3">
           <button
             type="button"
@@ -70,5 +66,4 @@ const GenerateAllResultModal = React.memo(function GenerateAllResultModal({ resu
     </div>
   );
 });
-
 export default GenerateAllResultModal;

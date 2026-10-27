@@ -1,5 +1,4 @@
 const Joi = require('joi');
-
 const createSalaryStructureSchema = Joi.object({
   employee_id: Joi.number().integer().required(),
   basic: Joi.number().min(0).optional(),
@@ -14,33 +13,27 @@ const createSalaryStructureSchema = Joi.object({
   ctc: Joi.number().min(0).optional(),
   effective_from: Joi.date().iso().required(),
 });
-
 const updateSalaryStructureSchema = createSalaryStructureSchema.fork(
   ['employee_id', 'effective_from'],
   (s) => s.optional()
 );
-
 const generatePayslipSchema = Joi.object({
   employee_id: Joi.number().integer().required(),
   month: Joi.number().integer().min(1).max(12).required(),
   year: Joi.number().integer().min(2000).required(),
 });
-
 const generateMyPayslipSchema = Joi.object({
   month: Joi.number().integer().min(1).max(12).optional(),
   year: Joi.number().integer().min(2000).optional(),
 });
-
 const generateAllPayslipsSchema = Joi.object({
   month: Joi.number().integer().min(1).max(12).required(),
   year: Joi.number().integer().min(2000).required(),
 });
-
 const runPayrollSchema = Joi.object({
   month: Joi.number().integer().min(1).max(12).required(),
   year: Joi.number().integer().min(2000).required(),
 });
-
 const importSalaryStructureRowSchema = Joi.object({
   emp_code: Joi.string().required(),
   basic: Joi.number().min(0).optional().allow('', null),
@@ -55,11 +48,9 @@ const importSalaryStructureRowSchema = Joi.object({
   ctc: Joi.number().min(0).optional().allow('', null),
   effective_from: Joi.date().iso().required(),
 });
-
 const importSalaryStructuresSchema = Joi.object({
   items: Joi.array().items(importSalaryStructureRowSchema).min(1).required(),
 });
-
 module.exports = {
   createSalaryStructureSchema,
   updateSalaryStructureSchema,

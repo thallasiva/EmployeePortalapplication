@@ -7,7 +7,6 @@ import { getErrorMessage } from "../../../../api/client";
 import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
 import { INITIAL_VALUES, STEPS } from "../constants";
 import { validateStep } from "../utils";
-
 export function useCreateEmployee() {
   const navigate = useNavigate();
   const [departments, setDepartments] = useState([]);
@@ -17,7 +16,6 @@ export function useCreateEmployee() {
   const [errors, setErrors] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
   useEffect(() => {
     listDepartments()
       .then(setDepartments)
@@ -26,12 +24,10 @@ export function useCreateEmployee() {
       .then((data) => setMembers(Array.isArray(data) ? data : []))
       .catch((err) => apiErrorToast(err, "Failed to load managers"));
   }, []);
-
   const setField = useCallback((name, value) => {
     setValues((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   }, []);
-
   const goNext = useCallback(() => {
     const stepErrors = validateStep(step, values);
     if (Object.keys(stepErrors).length > 0) {
@@ -40,9 +36,7 @@ export function useCreateEmployee() {
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }, [step, values]);
-
   const goPrev = useCallback(() => setStep((s) => Math.max(s - 1, 0)), []);
-
   const handleSubmit = useCallback(async () => {
     const allErrors = {
       ...validateStep(0, values),
@@ -54,7 +48,6 @@ export function useCreateEmployee() {
       setStep(0);
       return;
     }
-
     setSubmitting(true);
     try {
       await createEmployee({
@@ -132,7 +125,6 @@ export function useCreateEmployee() {
       setSubmitting(false);
     }
   }, [values]);
-
   return {
     step,
     departments,

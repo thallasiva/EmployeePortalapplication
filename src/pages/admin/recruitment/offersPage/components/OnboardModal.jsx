@@ -1,7 +1,6 @@
 import React from "react";
 import { Loader2, UserCheck } from "lucide-react";
 import { Modal, Field, Input, Btn } from "../../shared";
-
 const OnboardModal = React.memo(function OnboardModal({
   open, candidateName, effDate, onEffDateChange, onboarding, onClose, onConfirm
 }) {
@@ -35,5 +34,4 @@ const OnboardModal = React.memo(function OnboardModal({
     </Modal>
   );
 });
-
 export default OnboardModal;

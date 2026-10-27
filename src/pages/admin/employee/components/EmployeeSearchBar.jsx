@@ -2,7 +2,6 @@ import React from "react";
 import { Filter, LayoutGrid, List, Search, X } from "lucide-react";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import FilterPanel from "./FilterPanel";
-
 const EmployeeSearchBar = React.memo(function EmployeeSearchBar({
   search,
   onSearchChange,
@@ -86,7 +85,6 @@ const EmployeeSearchBar = React.memo(function EmployeeSearchBar({
           </button>
         )}
       </div>
-
       {/* Filter button */}
       <button
         type="button"
@@ -125,7 +123,6 @@ const EmployeeSearchBar = React.memo(function EmployeeSearchBar({
           </span>
         )}
       </button>
-
       <FilterPanel
         open={filterPanelOpen}
         onClose={onCloseFilter}
@@ -135,7 +132,6 @@ const EmployeeSearchBar = React.memo(function EmployeeSearchBar({
         onClearAll={onClearAll}
         sections={filterSections}
       />
-
       {/* View toggle */}
       <div className={joinClasses("emp-view-toggle", cssClass({ marginLeft: "auto" }))}>
         <button
@@ -158,5 +154,4 @@ const EmployeeSearchBar = React.memo(function EmployeeSearchBar({
     </div>
   );
 });
-
 export default EmployeeSearchBar;

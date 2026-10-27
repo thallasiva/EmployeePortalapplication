@@ -3,13 +3,10 @@
 -- Replace hardcoded SQL in service layer with reusable stored procedures.
 -- Run in MySQL Workbench: source migration_032_core_procedures.sql
 -- =============================================================================
-
 DELIMITER $$
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- EMPLOYEE PROCEDURES
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_list_employees $$
 CREATE PROCEDURE sp_list_employees (
   IN p_department   INT,
@@ -53,7 +50,6 @@ BEGIN
    ORDER BY e.employee_id DESC
    LIMIT  IFNULL(p_limit, 18446744073709551615)
    OFFSET IFNULL(p_offset, 0);
-
   -- Second result set: total count (used for pagination)
   SELECT COUNT(*) AS total
     FROM employees e
@@ -66,7 +62,6 @@ BEGIN
           e.email      LIKE CONCAT('%', p_search, '%') OR
           e.emp_code   LIKE CONCAT('%', p_search, '%'));
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_employee_profile $$
 CREATE PROCEDURE sp_get_employee_profile (IN p_employee_id INT)
 BEGIN
@@ -93,14 +88,11 @@ BEGIN
     LEFT JOIN employee_contact_info ci ON ci.employee_id = e.employee_id
     LEFT JOIN employee_bank_details bd ON bd.employee_id = e.employee_id
    WHERE e.employee_id = p_employee_id;
-
   -- Contact info
   SELECT * FROM employee_contact_info WHERE employee_id = p_employee_id;
-
   -- Bank details
   SELECT * FROM employee_bank_details WHERE employee_id = p_employee_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_org_chart $$
 CREATE PROCEDURE sp_get_org_chart ()
 BEGIN
@@ -114,7 +106,6 @@ BEGIN
    WHERE e.employee_status = 'Active' AND e.has_left_organization = 0
    ORDER BY e.employee_id ASC;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_employee_directory $$
 CREATE PROCEDURE sp_get_employee_directory (
   IN p_location         VARCHAR(100),
@@ -150,7 +141,6 @@ BEGIN
      AND (p_holiday_calendar IS NULL OR e.holiday_calendar = p_holiday_calendar)
    ORDER BY e.first_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_employee_team $$
 CREATE PROCEDURE sp_get_employee_team (IN p_employee_id INT)
 BEGIN
@@ -165,7 +155,6 @@ BEGIN
     LEFT JOIN employees m     ON m.employee_id     = e.reporting_to
    WHERE e.employee_id = p_employee_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_upsert_contact_info $$
 CREATE PROCEDURE sp_upsert_contact_info (
   IN p_employee_id                 INT,
@@ -209,10 +198,8 @@ BEGIN
     permanent_address_line1    = COALESCE(p_permanent_address_line1,    permanent_address_line1),
     permanent_address_line2    = COALESCE(p_permanent_address_line2,    permanent_address_line2),
     permanent_address_line3    = COALESCE(p_permanent_address_line3,    permanent_address_line3);
-
   SELECT * FROM employee_contact_info WHERE employee_id = p_employee_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_upsert_bank_details $$
 CREATE PROCEDURE sp_upsert_bank_details (
   IN p_employee_id      INT,
@@ -246,14 +233,11 @@ BEGIN
     dd_payable_at       = COALESCE(p_dd_payable_at,    dd_payable_at),
     account_holder_name = COALESCE(p_account_holder,   account_holder_name),
     payment_type        = COALESCE(p_payment_type,     payment_type);
-
   SELECT * FROM employee_bank_details WHERE employee_id = p_employee_id;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- AUTH PROCEDURES
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_get_user_for_login $$
 CREATE PROCEDURE sp_get_user_for_login (IN p_email VARCHAR(150))
 BEGIN
@@ -268,7 +252,6 @@ BEGIN
    WHERE u.email = p_email
    LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_user_by_id $$
 CREATE PROCEDURE sp_get_user_by_id (IN p_user_id INT)
 BEGIN
@@ -283,7 +266,6 @@ BEGIN
    WHERE u.user_id = p_user_id
    LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_login_success $$
 CREATE PROCEDURE sp_login_success (IN p_user_id INT)
 BEGIN
@@ -291,7 +273,6 @@ BEGIN
      SET last_login = NOW(), failed_login_attempts = 0, locked_until = NULL
    WHERE user_id = p_user_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_login_fail $$
 CREATE PROCEDURE sp_login_fail (
   IN  p_user_id        INT,
@@ -304,9 +285,7 @@ BEGIN
   DECLARE v_attempts INT DEFAULT 0;
   SELECT IFNULL(failed_login_attempts, 0) + 1 INTO v_attempts
     FROM users WHERE user_id = p_user_id;
-
   SET p_attempts = v_attempts;
-
   IF v_attempts >= p_max_attempts THEN
     UPDATE users
        SET failed_login_attempts = v_attempts,
@@ -318,7 +297,6 @@ BEGIN
     SET p_locked = 0;
   END IF;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_register_user $$
 CREATE PROCEDURE sp_register_user (
   IN  p_first_name     VARCHAR(80),
@@ -336,9 +314,7 @@ CREATE PROCEDURE sp_register_user (
 BEGIN
   DECLARE v_emp_code VARCHAR(30);
   SET v_emp_code = CONCAT('EMP', LPAD(FLOOR(RAND() * 1000000), 6, '0'));
-
   START TRANSACTION;
-
   INSERT INTO employees (
     emp_code, first_name, last_name, email, mobile, emp_job_title,
     department_id, designation_id, employee_type, employee_status, emp_joining_date
@@ -347,22 +323,17 @@ BEGIN
     IFNULL(p_job_title, 'Employee'),
     p_department_id, p_designation_id, 'Full-Time', 'Active', CURDATE()
   );
-
   SET p_employee_id = LAST_INSERT_ID();
   SET p_emp_code    = v_emp_code;
-
   INSERT INTO users (email, password_hash, role_id, employee_id, status)
   VALUES (p_email, p_password_hash, IFNULL(p_role_id, 2), p_employee_id, 'Active');
-
   COMMIT;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_change_password $$
 CREATE PROCEDURE sp_change_password (IN p_user_id INT, IN p_new_hash VARCHAR(255))
 BEGIN
   UPDATE users SET password_hash = p_new_hash WHERE user_id = p_user_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_set_reset_token $$
 CREATE PROCEDURE sp_set_reset_token (
   IN p_email  VARCHAR(150),
@@ -374,7 +345,6 @@ BEGIN
    WHERE email = p_email;
   SELECT ROW_COUNT() AS affected;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_reset_password $$
 CREATE PROCEDURE sp_reset_password (
   IN  p_token    VARCHAR(64),
@@ -384,10 +354,8 @@ CREATE PROCEDURE sp_reset_password (
 BEGIN
   DECLARE v_user_id INT DEFAULT NULL;
   DECLARE v_expiry  DATETIME DEFAULT NULL;
-
   SELECT user_id, reset_token_expiry INTO v_user_id, v_expiry
     FROM users WHERE reset_token = p_token LIMIT 1;
-
   IF v_user_id IS NULL OR v_expiry < NOW() THEN
     SET p_ok = 0;
   ELSE
@@ -397,11 +365,9 @@ BEGIN
     SET p_ok = 1;
   END IF;
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- LEAVE REQUEST PROCEDURES
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_list_leave_requests $$
 CREATE PROCEDURE sp_list_leave_requests (
   IN p_employee_id   INT,
@@ -432,7 +398,6 @@ BEGIN
    ORDER BY lr.applied_on DESC
    LIMIT  IFNULL(p_limit, 18446744073709551615)
    OFFSET IFNULL(p_offset, 0);
-
   -- Count result set for pagination
   SELECT COUNT(*) AS total
     FROM leave_requests lr
@@ -443,7 +408,6 @@ BEGIN
      AND (p_department_id IS NULL OR e.department_id  = p_department_id)
      AND (p_reporting_to  IS NULL OR e.reporting_to   = p_reporting_to);
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_leave_request $$
 CREATE PROCEDURE sp_get_leave_request (IN p_id INT)
 BEGIN
@@ -460,7 +424,6 @@ BEGIN
     LEFT JOIN employees rv  ON rv.employee_id  = lr.reviewed_by
    WHERE lr.leave_request_id = p_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_leave_balances $$
 CREATE PROCEDURE sp_get_leave_balances (IN p_employee_id INT, IN p_year INT)
 BEGIN
@@ -476,7 +439,6 @@ BEGIN
      AND lb.year          = p_year
    ORDER BY lt.leave_type_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_cancel_leave_request $$
 CREATE PROCEDURE sp_cancel_leave_request (
   IN  p_id          INT,
@@ -487,10 +449,8 @@ CREATE PROCEDURE sp_cancel_leave_request (
 BEGIN
   DECLARE v_emp_id INT;
   DECLARE v_status VARCHAR(30);
-
   SELECT employee_id, status INTO v_emp_id, v_status
     FROM leave_requests WHERE leave_request_id = p_id LIMIT 1;
-
   IF v_emp_id IS NULL THEN
     SET p_ok = 0; SET p_msg = 'Leave request not found';
   ELSEIF v_emp_id != p_employee_id THEN
@@ -502,7 +462,6 @@ BEGIN
     SET p_ok = 1; SET p_msg = 'Cancelled';
   END IF;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_leave_summary $$
 CREATE PROCEDURE sp_get_leave_summary (
   IN p_year          INT,
@@ -522,16 +481,13 @@ BEGIN
      AND (p_department_id IS NULL OR e.department_id = p_department_id)
      AND (p_status        IS NULL OR e.employee_status = p_status)
    ORDER BY e.emp_code;
-
   -- Result 2: all leave types
   SELECT leave_type_id, leave_type_name FROM leave_types ORDER BY leave_type_name;
-
   -- Result 3: leave balances for the year
   SELECT lb.employee_id, lb.leave_type_id,
          lb.opening_balance, lb.granted, lb.availed,
          GREATEST(0, lb.opening_balance + lb.granted - lb.availed) AS closing_balance
     FROM leave_balances lb WHERE lb.year = p_year;
-
   -- Result 4: monthly leave usage
   SELECT lr.employee_id, lr.leave_type_id,
          MONTH(lr.from_date) AS month,
@@ -540,11 +496,9 @@ BEGIN
    WHERE lr.status = 'Approved' AND YEAR(lr.from_date) = p_year
    GROUP BY lr.employee_id, lr.leave_type_id, MONTH(lr.from_date);
 END $$
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- TIMESHEET / TASK PROCEDURES
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_create_task $$
 CREATE PROCEDURE sp_create_task (
   IN  p_employee_id    INT,
@@ -570,13 +524,11 @@ BEGIN
   SET p_task_id = LAST_INSERT_ID();
   SELECT * FROM employee_tasks WHERE task_id = p_task_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_task $$
 CREATE PROCEDURE sp_get_task (IN p_task_id INT)
 BEGIN
   SELECT * FROM employee_tasks WHERE task_id = p_task_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_list_my_tasks $$
 CREATE PROCEDURE sp_list_my_tasks (IN p_employee_id INT)
 BEGIN
@@ -584,7 +536,6 @@ BEGIN
    WHERE employee_id = p_employee_id
    ORDER BY created_at DESC;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_delete_task $$
 CREATE PROCEDURE sp_delete_task (
   IN  p_task_id     INT,
@@ -596,7 +547,6 @@ BEGIN
    WHERE task_id = p_task_id AND employee_id = p_employee_id;
   SET p_affected = ROW_COUNT();
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_weekly_timesheet $$
 CREATE PROCEDURE sp_get_weekly_timesheet (
   IN  p_employee_id INT,
@@ -610,16 +560,13 @@ BEGIN
    WHERE employee_id = p_employee_id
      AND week_start = p_week_start
    LIMIT 1;
-
   IF p_ts_id IS NULL THEN
     INSERT INTO weekly_timesheets (employee_id, week_start, week_end, status)
     VALUES (p_employee_id, p_week_start, p_week_end, 'draft');
     SET p_ts_id = LAST_INSERT_ID();
   END IF;
-
   SELECT * FROM weekly_timesheets WHERE timesheet_id = p_ts_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_submit_timesheet $$
 CREATE PROCEDURE sp_submit_timesheet (
   IN  p_employee_id   INT,
@@ -630,10 +577,8 @@ CREATE PROCEDURE sp_submit_timesheet (
 BEGIN
   DECLARE v_status    VARCHAR(30);
   DECLARE v_emp_id    INT;
-
   SELECT status, employee_id INTO v_status, v_emp_id
     FROM weekly_timesheets WHERE timesheet_id = p_timesheet_id LIMIT 1;
-
   IF v_emp_id IS NULL THEN
     SET p_ok = 0; SET p_msg = 'Timesheet not found';
   ELSEIF v_emp_id != p_employee_id THEN
@@ -649,7 +594,6 @@ BEGIN
     SET p_ok = 1; SET p_msg = 'submitted';
   END IF;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_review_timesheet $$
 CREATE PROCEDURE sp_review_timesheet (
   IN  p_timesheet_id  INT,
@@ -661,10 +605,8 @@ CREATE PROCEDURE sp_review_timesheet (
 )
 BEGIN
   DECLARE v_status VARCHAR(30);
-
   SELECT status INTO v_status
     FROM weekly_timesheets WHERE timesheet_id = p_timesheet_id LIMIT 1;
-
   IF v_status IS NULL THEN
     SET p_ok = 0; SET p_msg = 'Timesheet not found';
   ELSEIF v_status != 'submitted' THEN
@@ -678,10 +620,8 @@ BEGIN
      WHERE timesheet_id = p_timesheet_id;
     SET p_ok = 1; SET p_msg = p_decision;
   END IF;
-
   SELECT p_ok AS ok, p_msg AS msg;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_employee_dashboard $$
 CREATE PROCEDURE sp_employee_dashboard (IN p_employee_id INT)
 BEGIN
@@ -693,18 +633,15 @@ BEGIN
     SUM(CASE WHEN status = 'draft'     THEN 1 ELSE 0 END) AS draft
   FROM weekly_timesheets
   WHERE employee_id = p_employee_id;
-
   -- Open task count
   SELECT COUNT(*) AS open_tasks
   FROM employee_tasks
   WHERE employee_id = p_employee_id
     AND status NOT IN ('completed', 'in_timesheet');
-
   -- Pending leave requests
   SELECT COUNT(*) AS pending_leaves
   FROM leave_requests
   WHERE employee_id = p_employee_id AND status = 'Pending';
-
   -- Leave balances
   SELECT lt.leave_type_name,
          IFNULL(lb.balance, lt.annual_quota) AS balance
@@ -715,7 +652,6 @@ BEGIN
         AND lb.year          = YEAR(CURDATE())
   ORDER BY lt.leave_type_name;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_admin_dashboard $$
 CREATE PROCEDURE sp_admin_dashboard ()
 BEGIN
@@ -725,12 +661,10 @@ BEGIN
     SUM(CASE WHEN status = 'approved'  THEN 1 ELSE 0 END) AS approved_timesheets,
     COUNT(*) AS total_timesheets
   FROM weekly_timesheets;
-
   -- Employee counts by role
   SELECT
     (SELECT COUNT(*) FROM employees WHERE employee_status = 'Active') AS active_employees,
     (SELECT COUNT(*) FROM leave_requests WHERE status = 'Pending')    AS pending_leaves,
     (SELECT COUNT(*) FROM helpdesk_tickets WHERE status = 'Open')     AS open_tickets;
 END $$
-
 DELIMITER ;

@@ -2,7 +2,6 @@ import React from "react";
 import { Users } from "lucide-react";
 import { EMPLOYEE_TABS } from "../constants";
 import EmployeeTable from "./EmployeeTable";
-
 const EmployeeSection = React.memo(function EmployeeSection({
   employees, filteredEmployees, loading, employeeTab, onTabChange, tabCounts, onRegularize,
 }) {
@@ -19,7 +18,6 @@ const EmployeeSection = React.memo(function EmployeeSection({
           {filteredEmployees.length} of {employees.length} employees
         </span>
       </div>
-
       <div className="flex flex-wrap gap-2 mb-4 border-b border-gray-100 pb-3">
         {EMPLOYEE_TABS.map((tab) => (
           <button
@@ -32,7 +30,6 @@ const EmployeeSection = React.memo(function EmployeeSection({
           </button>
         ))}
       </div>
-
       {loading ? (
         <p className="text-sm text-gray-400 text-center py-8">Loading attendance...</p>
       ) : (
@@ -41,5 +38,4 @@ const EmployeeSection = React.memo(function EmployeeSection({
     </section>
   );
 });
-
 export default EmployeeSection;

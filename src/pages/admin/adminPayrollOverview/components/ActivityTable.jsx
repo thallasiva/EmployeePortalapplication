@@ -2,13 +2,11 @@ import React from "react";
 import { History } from "lucide-react";
 import Card from "./Card";
 import { cssClass } from "../../../../utils/classStyles";
-
 const badge = (status) => {
   const map = { Completed: ["#16a34a", "#f0fdf4"], Processing: ["#d97706", "#fffbeb"], Pending: ["#d97706", "#fffbeb"], Draft: ["#6b7280", "#f3f4f6"], Failed: ["#dc2626", "#fef2f2"] };
   const [c, bg] = map[status] || ["#6b7280", "#f3f4f6"];
   return <span className={cssClass({ fontSize: 11, fontWeight: 700, color: c, background: bg, padding: "2px 9px", borderRadius: 999 })}>{status || "—"}</span>;
 };
-
 // rows = [{ when, action, user, status }]
 export default function ActivityTable({ rows = [] }) {
   return (

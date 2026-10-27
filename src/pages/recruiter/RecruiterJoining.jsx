@@ -8,12 +8,10 @@ import {
 import { apiErrorToast, errorToast, successToast } from "../../utils/ToastControllers";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
-
 function fmt(v) {
   if (!v) return "—";
   return new Date(v).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 const STATUS = {
   pending: { cls: "bg-gray-100 text-gray-600", label: "Not Submitted" },
   submitted: { cls: "bg-amber-100 text-amber-700", label: "Submitted" },
@@ -22,7 +20,6 @@ const STATUS = {
   changes_requested: { cls: "bg-red-100 text-red-700", label: "Changes Requested" },
   rejected: { cls: "bg-red-100 text-red-700", label: "Rejected" }
 };
-
 const FILTERS = [
 { key: "pending_verification", label: "Pending Review" },
 { key: "submitted", label: "Submitted" },
@@ -31,16 +28,11 @@ const FILTERS = [
 { key: "rejected", label: "Rejected" },
 { key: "pending", label: "Not Submitted" },
 { key: "all", label: "All" }];
-
-
-
 const Row = ({ label, value }) =>
 <div className="flex justify-between py-2 border-b border-amber-50 last:border-0 text-[13px]">
     <span className="text-gray-400 w-44 flex-shrink-0 text-[12px]">{label}</span>
     <span className="font-medium text-gray-800 text-right break-all">{value || "—"}</span>
   </div>;
-
-
 const Sec = ({ title, children }) =>
 <div className="bg-white rounded-xl border border-amber-100 overflow-hidden mb-4">
     <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "linear-gradient(to right, #6B5133, #8B7355)" }}>
@@ -48,15 +40,12 @@ const Sec = ({ title, children }) =>
     </div>
     <div className="px-4 py-3">{children}</div>
   </div>;
-
-
 export default function RecruiterJoining() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("pending_verification");
   const [detail, setDetail] = useState(null);
   const [detailId, setDetailId] = useState(null);
-
   const load = () => {
     setLoading(true);
     listJoiningInvitations({ status: filter === "all" ? undefined : filter, limit: 200 }).
@@ -64,9 +53,7 @@ export default function RecruiterJoining() {
     catch(() => setRows([])).
     finally(() => setLoading(false));
   };
-
   useEffect(() => {load();}, [filter]);
-
   const openDetail = async (id) => {
     setDetailId(id);
     setDetail(null);
@@ -75,20 +62,15 @@ export default function RecruiterJoining() {
       setDetail(d);
     } catch (err) { apiErrorToast(err, "load joining details"); }
   };
-
   const resend = async (id) => {
     try {await resendJoiningInvitation(id);successToast("Invitation resent");}
     catch (err) { apiErrorToast(err, "resend invitation"); }
   };
-
   const parse = (v) => {try {return JSON.parse(v) || [];} catch {return [];}};
-
   const { paged: pagedRows, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(rows);
-
   return (
     <div className="p-6 space-y-5">
       <RecruiterTabs />
-
       {}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -104,7 +86,6 @@ export default function RecruiterJoining() {
           <RefreshCw size={14} /> Refresh
         </button>
       </div>
-
       {}
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map(({ key, label }) =>
@@ -117,7 +98,6 @@ export default function RecruiterJoining() {
           </button>
         )}
       </div>
-
       {}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {loading ?
@@ -129,7 +109,6 @@ export default function RecruiterJoining() {
             <Clock size={36} className="text-gray-300 mx-auto mb-3" />
             <p className="text-[13px] text-gray-400">No records found for this filter.</p>
           </div> :
-
         <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
               <thead>
@@ -188,7 +167,6 @@ export default function RecruiterJoining() {
                         </div>
                       </td>
                     </tr>);
-
               })}
               </tbody>
             </table>
@@ -197,12 +175,10 @@ export default function RecruiterJoining() {
           </div>
         }
       </div>
-
       {}
       {detailId &&
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col">
-
             {}
             <div className="flex items-center justify-between px-6 py-4 border-b border-amber-100 flex-shrink-0"
           style={{ background: "linear-gradient(to right, #6B5133, #8B7355)" }}>
@@ -224,14 +200,12 @@ export default function RecruiterJoining() {
                 <XCircle size={20} />
               </button>
             </div>
-
             {}
             <div className="overflow-y-auto flex-1 px-6 py-5">
               {!detail ?
             <div className="flex items-center justify-center py-12">
                   <div className="w-6 h-6 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#d97706", borderTopColor: "transparent" }} />
                 </div> :
-
             <>
                   {}
                   {(detail.admin_employee_id || detail.admin_designation || detail.admin_department) &&
@@ -245,14 +219,12 @@ export default function RecruiterJoining() {
                       </div>
                     </div>
               }
-
                   {}
                   {detail.photo_url &&
               <Sec title="Profile Photo">
                       <img src={detail.photo_url} alt="Profile" className="w-28 h-32 object-cover rounded-xl border-2 border-amber-200 shadow" />
                     </Sec>
               }
-
                   <Sec title="Personal Information">
                     <Row label="Full Name" value={detail.full_name} />
                     <Row label="Date of Birth" value={fmt(detail.dob)} />
@@ -263,7 +235,6 @@ export default function RecruiterJoining() {
                     <Row label="Permanent Address" value={detail.permanent_address} />
                     <Row label="Joining Date" value={fmt(detail.joining_date_text)} />
                   </Sec>
-
                   {parse(detail.education_json).length > 0 &&
               <Sec title="Education">
                       <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -283,7 +254,6 @@ export default function RecruiterJoining() {
                       </div>
                     </Sec>
               }
-
                   <Sec title="Bank Details">
                     <Row label="Bank Name" value={detail.bank_name} />
                     <Row label="Account Holder" value={detail.account_holder_name} />
@@ -291,20 +261,17 @@ export default function RecruiterJoining() {
                     <Row label="IFSC Code" value={detail.ifsc_code} />
                     <Row label="Branch" value={detail.branch_details} />
                   </Sec>
-
                   {detail.signature_url &&
               <Sec title="Employee Signature">
                       <img src={detail.signature_url} alt="Signature" className="h-16 object-contain border border-amber-200 rounded-lg bg-white px-3 py-2" />
                     </Sec>
               }
-
                   <div className="text-center py-2">
                     <span className="text-[12px] text-gray-400">View-only — HR review actions are in Admin &gt; Joining Formalities</span>
                   </div>
                 </>
             }
             </div>
-
             <div className="px-6 py-4 border-t border-amber-100 flex justify-end flex-shrink-0">
               <button onClick={() => {setDetailId(null);setDetail(null);}}
             className="px-4 py-2 text-[13px] font-medium border rounded-lg"
@@ -316,5 +283,4 @@ export default function RecruiterJoining() {
         </div>
       }
     </div>);
-
 }

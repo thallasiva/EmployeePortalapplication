@@ -1,11 +1,9 @@
 import React, { useMemo, useState } from "react";
 import "./adminCharts.css";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 function barHeight(value, yMax, chartHeight) {
   if (!value || value <= 0 || !yMax) return 0;
   return Math.max(Math.round(value / yMax * chartHeight), value > 0 ? 4 : 0);
 }
-
 function computeYMax(data, seriesKeys) {
   let max = 0;
   data.forEach((row) => {
@@ -18,7 +16,6 @@ function computeYMax(data, seriesKeys) {
   if (max <= 20) return 20;
   return Math.ceil(max / 5) * 5;
 }
-
 function buildYTicks(yMax) {
   const step = yMax <= 10 ? 5 : yMax / 4;
   const ticks = [];
@@ -28,12 +25,6 @@ function buildYTicks(yMax) {
   if (ticks[ticks.length - 1] !== 0) ticks.push(0);
   return ticks;
 }
-
-
-
-
-
-
 export default function AdminGroupedBarChart({
   title,
   subtitle,
@@ -47,7 +38,6 @@ export default function AdminGroupedBarChart({
   const seriesKeys = series.map((s) => s.key);
   const yMax = yMaxProp ?? computeYMax(data, seriesKeys);
   const yTicks = useMemo(() => buildYTicks(yMax), [yMax]);
-
   return (
     <div className="admin-chart">
       {(title || subtitle) &&
@@ -58,7 +48,6 @@ export default function AdminGroupedBarChart({
           </div>
         </div>
       }
-
       <div className="admin-chart__body">
         <div className="admin-chart__y-label">{yLabel}</div>
         <div className="admin-chart__plot-wrap">
@@ -68,19 +57,15 @@ export default function AdminGroupedBarChart({
               <span key={tick}>{tick}</span>
               )}
             </div>
-
             <div
               className={joinClasses("admin-chart__bars-area", cssClass(
                 { height, position: "relative" }))}>
-
               {yTicks.slice(1, -1).map((tick) =>
               <div
                 key={tick}
                 className={joinClasses("admin-chart__grid-line", cssClass(
                   { bottom: `${28 + tick / yMax * (height - 28)}px` }))} />
-
               )}
-
               {data.map((row, idx) =>
               <div
                 key={row.label}
@@ -88,7 +73,6 @@ export default function AdminGroupedBarChart({
                   { height: "100%" }))}
                 onMouseEnter={() => setHovered(idx)}
                 onMouseLeave={() => setHovered(null)}>
-
                   {hovered === idx &&
                 <div className="admin-chart__tooltip">
                       <div className="admin-chart__tooltip-title">{row.label}</div>
@@ -97,7 +81,6 @@ export default function AdminGroupedBarChart({
                           <span
                       className={joinClasses("admin-chart__swatch", cssClass(
                         { background: s.color }))} />
-
                           {s.name}: {row[s.key] ?? 0}
                         </div>
                   )}
@@ -112,7 +95,6 @@ export default function AdminGroupedBarChart({
                         height: barHeight(row[s.key], yMax, height - 28),
                         background: s.color
                       }))} />
-
                   )}
                   </div>
                   <span className="admin-chart__x-label">{row.label}</span>
@@ -122,7 +104,6 @@ export default function AdminGroupedBarChart({
           </div>
         </div>
       </div>
-
       <div className="admin-chart__legend">
         {series.map((s) =>
         <span key={s.key} className="admin-chart__legend-item">
@@ -132,5 +113,4 @@ export default function AdminGroupedBarChart({
         )}
       </div>
     </div>);
-
 }

@@ -9,7 +9,6 @@ import HolidaySummary from "./components/HolidaySummary";
 import ShiftLegend from "./components/ShiftLegend";
 import HolidayModal from "./components/HolidayModal";
 import CSVUploadModal from "./components/CSVUploadModal";
-
 export default function TimeOff() {
   const [shift, setShift] = useState("general");
   const [year, setYear] = useState(CURRENT_YEAR);
@@ -17,21 +16,17 @@ export default function TimeOff() {
   const [editModal, setEditModal] = useState(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showCSV, setShowCSV] = useState(false);
-
   const { allHolidays, allLocations, loading, toast, handleSave, handleDelete, handleCSVImported } =
     useHolidays(year);
-
   const openAddHoliday = () => { setEditModal(null); setShowEdit(true); };
   const openEditHoliday = (h) => { setEditModal(h); setShowEdit(true); };
   const closeEdit = () => { setShowEdit(false); setEditModal(null); };
   const onSaved = async (form) => { await handleSave(form); closeEdit(); };
   const onCSVImported = (count) => { setShowCSV(false); handleCSVImported(count); };
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f8f9fb", padding: "24px 28px",
       fontFamily: "'Inter','Plus Jakarta Sans',system-ui,sans-serif" })}>
       <Toast {...(toast || { msg: null })} />
-
       <div className={cssClass({ maxWidth: 1280, margin: "0 auto" })}>
         <PageHeader
           year={year}
@@ -42,7 +37,6 @@ export default function TimeOff() {
           onAddHoliday={openAddHoliday}
           onUploadCSV={() => setShowCSV(true)}
         />
-
         <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 300px", gap: 22, alignItems: "start" })}>
           <HolidayPanel
             shift={shift}
@@ -57,10 +51,8 @@ export default function TimeOff() {
           />
           <HolidaySummary allHolidays={allHolidays} year={year} locationFilter={locationFilter} />
         </div>
-
         <ShiftLegend />
       </div>
-
       {showEdit && (
         <HolidayModal
           initial={editModal}

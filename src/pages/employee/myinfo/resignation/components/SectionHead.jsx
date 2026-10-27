@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const SectionHead = React.memo(function SectionHead({ children }) {
   return (
     <p className={cssClass({
@@ -14,5 +13,4 @@ const SectionHead = React.memo(function SectionHead({ children }) {
     </p>
   );
 });
-
 export default SectionHead;

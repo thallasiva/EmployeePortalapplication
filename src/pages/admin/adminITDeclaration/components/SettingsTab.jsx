@@ -2,14 +2,12 @@ import React from "react";
 import { CheckCircle2, Lock } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND, fmtDate } from "../constants";
-
 const HOW_IT_WORKS = [
   { step: "1", label: "Enable cycle",      desc: "Click Enable to open the declaration window for all employees" },
   { step: "2", label: "Employee submits",  desc: "Employees fill IT Declaration (80C, HRA, etc.) and submit" },
   { step: "3", label: "Employee uploads",  desc: "Employees upload proof documents (PDF/JPG) via Proof of Investment" },
   { step: "4", label: "Admin reviews",     desc: "Review each submission here — Approve or Reject with remarks" },
 ];
-
 const SettingsTab = React.memo(function SettingsTab({ cycle, isActive, toggling, onToggle }) {
   return (
     <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 })}>
@@ -44,7 +42,6 @@ const SettingsTab = React.memo(function SettingsTab({ cycle, isActive, toggling,
           </button>
         </div>
       </div>
-
       {/* How it works card */}
       <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 24 })}>
         <h2 className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b", margin: "0 0 16px" })}>
@@ -75,5 +72,4 @@ const SettingsTab = React.memo(function SettingsTab({ cycle, isActive, toggling,
     </div>
   );
 });
-
 export default SettingsTab;

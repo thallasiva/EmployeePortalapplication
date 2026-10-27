@@ -1,13 +1,8 @@
-
-
-
-
 export const SHIFT_LABEL = {
   general: "General Shift",
   mid: "Mid Shift",
   night: "Night Shift"
 };
-
 export const RM_TEAM_MEMBERS = [
 {
   id: 101,
@@ -58,9 +53,6 @@ export const RM_TEAM_MEMBERS = [
   hours: "0h",
   late: false
 }];
-
-
-
 export const RM_LEAVE_REQUESTS = [
 {
   id: 1,
@@ -95,9 +87,6 @@ export const RM_LEAVE_REQUESTS = [
   appliedOn: "08 Jun 2026",
   status: "Approved"
 }];
-
-
-
 export const RM_REGULARIZATION_REQUESTS = [
 {
   id: 1,
@@ -129,8 +118,6 @@ export const RM_REGULARIZATION_REQUESTS = [
   appliedOn: "02 Jun 2026",
   status: "Approved"
 }];
-
-
 export function getRmTeamSummary() {
   const total = RM_TEAM_MEMBERS.length;
   const present = RM_TEAM_MEMBERS.filter((m) => m.status === "present").length;
@@ -140,7 +127,6 @@ export function getRmTeamSummary() {
   const pendingRegularizations = RM_REGULARIZATION_REQUESTS.filter(
     (r) => r.status === "Pending"
   ).length;
-
   return {
     total,
     present,

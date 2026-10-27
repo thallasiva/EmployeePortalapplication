@@ -1,6 +1,5 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
-
 export const PageHeader = React.memo(function PageHeader({ breadcrumbs = [], title, subtitle, action }) {
   return (
     <div className="mb-5">

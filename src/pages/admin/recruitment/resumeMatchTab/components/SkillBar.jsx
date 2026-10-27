@@ -1,5 +1,4 @@
 import React from "react";
-
 const SkillBar = React.memo(function SkillBar({ label, score, color }) {
   return (
     <div className="mb-2.5">
@@ -16,5 +15,4 @@ const SkillBar = React.memo(function SkillBar({ label, score, color }) {
     </div>
   );
 });
-
 export default SkillBar;

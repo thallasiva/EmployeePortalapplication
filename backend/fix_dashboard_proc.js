@@ -1,9 +1,7 @@
 'use strict';
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-
 const DROP = `DROP PROCEDURE IF EXISTS sp_rec_admin_dashboard`;
-
 const CREATE = `
 CREATE PROCEDURE sp_rec_admin_dashboard()
 BEGIN
@@ -62,7 +60,6 @@ BEGIN
   ORDER  BY c.updated_at DESC;
 END
 `;
-
 async function run() {
   const conn = await mysql.createConnection({
     host:     process.env.DB_HOST || 'localhost',
@@ -84,5 +81,4 @@ async function run() {
     await conn.end();
   }
 }
-
 run();

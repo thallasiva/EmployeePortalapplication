@@ -1,5 +1,3 @@
-
-
 export const STATIC_USERS = {
   "admin@yopmail.com": {
     password: "Test@123",
@@ -51,63 +49,45 @@ export const STATIC_USERS = {
     email: "hrmanager@yopmail.com"
   }
 };
-
 export const STATIC_ROLES = [
 { role_id: 1, role_name: "Admin" },
 { role_id: 2, role_name: "Employee" },
 { role_id: 3, role_name: "Reporting Manager" },
 { role_id: 4, role_name: "Recruiter Team Lead" },
 { role_id: 5, role_name: "Recruiter" }];
-
-
 export const STATIC_COMPANIES = [
 { company_id: 1, company_name: "NAT IT Services" },
 { company_id: 2, company_name: "NAT IT Solutions Pvt Ltd" }];
-
-
 export const STATIC_DEPARTMENTS = [
 { department_id: 1, department_name: "Engineering" },
 { department_id: 2, department_name: "Human Resources" },
 { department_id: 3, department_name: "Finance" },
 { department_id: 4, department_name: "Design" }];
-
-
 export const STATIC_DESIGNATIONS = [
 { designation_id: 1, designation_name: "Software Engineer", department_id: 1 },
 { designation_id: 2, designation_name: "Senior Developer", department_id: 1 },
 { designation_id: 3, designation_name: "HR Executive", department_id: 2 },
 { designation_id: 4, designation_name: "UI/UX Designer", department_id: 4 },
 { designation_id: 5, designation_name: "Accountant", department_id: 3 }];
-
-
 export const STATIC_DASHBOARD_STATS = {
   employees_count: 24,
   companies_count: 3,
   leaves_count: 8,
   salaries_count: 24
 };
-
 export const DASHBOARD_TEAM_MEMBERS = [
 { name: "Linda Craver", team: "iOS" },
 { name: "Jenni Sims", team: "Android" },
 { name: "Alex Kumar", team: "Engineering" },
 { name: "Priya Sharma", team: "HR" }];
-
-
 export const DASHBOARD_RECENT_ACTIVITY = [
 { text: "New employee added", time: "2 hours ago" },
 { text: "Company profile updated", time: "Yesterday" },
 { text: "Leave request approved", time: "2 days ago" }];
-
-
 export const DASHBOARD_UPCOMING_EVENTS = [
 { text: "Board meeting", date: "Dec 25" },
 { text: "Public holiday", date: "Jan 1" },
 { text: "Appraisal cycle starts", date: "Feb 1" }];
-
-
-
-
 export const STATIC_EMPLOYEES = [
 {
   employee_id: 101,
@@ -289,7 +269,4 @@ export const STATIC_EMPLOYEES = [
   contact_city: "Hyderabad",
   contact_country: "India"
 }];
-
-
-
 export const RM_TEAM_EMPLOYEE_IDS = [101, 102, 103, 104];

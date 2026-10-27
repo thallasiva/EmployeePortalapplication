@@ -1,5 +1,4 @@
 import React from "react";
-
 export const Row = React.memo(function Row({ label, value }) {
   return (
     <div className="flex justify-between py-2 border-b border-amber-50 last:border-0 text-[13px]">
@@ -8,7 +7,6 @@ export const Row = React.memo(function Row({ label, value }) {
     </div>
   );
 });
-
 export const Sec = React.memo(function Sec({ icon: Icon, title, children }) {
   return (
     <div className="bg-white rounded-xl border border-amber-100 overflow-hidden mb-4">
@@ -20,7 +18,6 @@ export const Sec = React.memo(function Sec({ icon: Icon, title, children }) {
     </div>
   );
 });
-
 export const AdminCombo = React.memo(function AdminCombo({
   label, name, value, onChange, options, listId, placeholder,
 }) {
@@ -44,7 +41,6 @@ export const AdminCombo = React.memo(function AdminCombo({
     </div>
   );
 });
-
 export const AdminSelect = React.memo(function AdminSelect({
   label, name, value, onChange, options, placeholder,
 }) {
@@ -69,7 +65,6 @@ export const AdminSelect = React.memo(function AdminSelect({
     </div>
   );
 });
-
 export const TblHead = React.memo(function TblHead({ cols }) {
   return (
     <thead>

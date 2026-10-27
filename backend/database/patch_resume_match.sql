@@ -2,7 +2,6 @@
 -- PATCH: Resume Match / AI Resume Screening
 -- Run once in MySQL Workbench / CLI
 -- ═══════════════════════════════════════════════════════════════════
-
 CREATE TABLE IF NOT EXISTS rec_resume_matches (
   match_id        INT AUTO_INCREMENT PRIMARY KEY,
   candidate_id    INT NOT NULL,
@@ -18,9 +17,7 @@ CREATE TABLE IF NOT EXISTS rec_resume_matches (
   FOREIGN KEY (candidate_id) REFERENCES rec_candidates(candidate_id)    ON DELETE CASCADE,
   FOREIGN KEY (job_req_id)   REFERENCES rec_job_requests(job_req_id)   ON DELETE CASCADE
 );
-
 DELIMITER $$
-
 -- Upsert a match result (called from Node.js after computing)
 DROP PROCEDURE IF EXISTS sp_rec_upsert_match $$
 CREATE PROCEDURE sp_rec_upsert_match(
@@ -48,14 +45,12 @@ BEGIN
     missing_skills = p_missing_skills,
     recommendation = p_recommendation,
     computed_at    = NOW();
-
   SELECT m.*, c.name AS candidate_name, j.title AS job_title
   FROM   rec_resume_matches m
   JOIN   rec_candidates   c ON c.candidate_id = m.candidate_id
   JOIN   rec_job_requests j ON j.job_req_id   = m.job_req_id
   WHERE  m.candidate_id = p_candidate_id AND m.job_req_id = p_job_req_id;
 END $$
-
 -- Get single match
 DROP PROCEDURE IF EXISTS sp_rec_get_match $$
 CREATE PROCEDURE sp_rec_get_match(
@@ -69,7 +64,6 @@ BEGIN
   JOIN   rec_job_requests j ON j.job_req_id   = m.job_req_id
   WHERE  m.candidate_id = p_candidate_id AND m.job_req_id = p_job_req_id;
 END $$
-
 -- List all matches for a job, ranked by score
 DROP PROCEDURE IF EXISTS sp_rec_list_matches_by_job $$
 CREATE PROCEDURE sp_rec_list_matches_by_job(IN p_job_req_id INT)
@@ -90,5 +84,4 @@ BEGIN
   WHERE  m.job_req_id = p_job_req_id
   ORDER  BY m.match_score DESC;
 END $$
-
 DELIMITER ;

@@ -5,7 +5,6 @@ import { fmtDate, mask } from "../utils";
 import Field from "./Field";
 import InfoCard from "./InfoCard";
 import { Grid, SectionLabel, Badge } from "./Grid";
-
 const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed, toggle }) {
   return (
     <div id="section-statutory" className={cssClass({ marginTop: 8 })}>
@@ -21,7 +20,6 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
           <p className={cssClass({ color: "#94a3b8", fontSize: 13 })}>No bank account linked.</p>
         )}
       </InfoCard>
-
       <InfoCard id="card-pf-account" title="PF Account">
         <Grid cols={3}>
           <Field label="PF Number" value={bd.pf_number || e.pf_number} />
@@ -41,14 +39,12 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
           <Field label="KYC Document" value={null} />
         </Grid>
       </InfoCard>
-
       <InfoCard id="card-passport-and-visa" title="Passport and Visa">
         <SectionLabel label="Passport" />
         <p className={cssClass({ color: "#f18200", fontSize: 13, margin: "0 0 12px" })}>No data Found.</p>
         <SectionLabel label="Visa" />
         <p className={cssClass({ color: "#f18200", fontSize: 13, margin: 0 })}>No data Found.</p>
       </InfoCard>
-
       <InfoCard id="card-other-ids" title="Other IDs">
         {[
           { label: "AADHAAR",                       value: e.aadhaar_number,               key: "aadhaar", verified: false },
@@ -75,5 +71,4 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
     </div>
   );
 });
-
 export default StatutorySection;

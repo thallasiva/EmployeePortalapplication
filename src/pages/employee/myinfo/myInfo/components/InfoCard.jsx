@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const InfoCard = React.memo(function InfoCard({ id, title, children, defaultOpen = true, action }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -19,5 +18,4 @@ const InfoCard = React.memo(function InfoCard({ id, title, children, defaultOpen
     </div>
   );
 });
-
 export default InfoCard;

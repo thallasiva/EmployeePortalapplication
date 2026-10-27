@@ -19,7 +19,6 @@ import {
   startOfWeek,
   summarizeWeek } from
 "../../../utils/reportWeekUtils";import { cssClass, joinClasses } from "../../../utils/classStyles";
-
 const STATUS_FILTER_OPTIONS = [
 { value: "", label: "All Status" },
 { value: "Present", label: "Present" },
@@ -27,19 +26,15 @@ const STATUS_FILTER_OPTIONS = [
 { value: "Absent", label: "Absent" },
 { value: "On Leave", label: "On Leave" },
 { value: "Weekend", label: "Weekend" }];
-
-
 export default function AttendanceReport() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [regularizedIds, setRegularizedIds] = useState(() => new Set());
   const [statusFilter, setStatusFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-
   const baseRows = useMemo(
     () => generateWeekAttendance(weekStart),
     [weekStart]
   );
-
   const rows = useMemo(
     () =>
     baseRows.map((row) =>
@@ -49,11 +44,9 @@ export default function AttendanceReport() {
     ),
     [baseRows, regularizedIds]
   );
-
   const summary = useMemo(() => summarizeWeek(rows), [rows]);
   const stats = useMemo(() => buildWeekStats(summary), [summary]);
   const chart = useMemo(() => buildWeekChart(weekStart, rows), [weekStart, rows]);
-
   const filteredRows = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     return rows.filter((row) => {
@@ -66,18 +59,14 @@ export default function AttendanceReport() {
       return matchesStatus && matchesSearch;
     });
   }, [rows, statusFilter, searchQuery]);
-
   const handleRegularize = (id) => {
     setRegularizedIds((prev) => new Set(prev).add(id));
   };
-
   const goPrevWeek = () => setWeekStart((w) => shiftWeek(w, -1));
   const goNextWeek = () => setWeekStart((w) => shiftWeek(w, 1));
-
   return (
     <div className="report-page">
       <ReportPageHeader title="Attendance Report" />
-
       <div className="report-top-grid">
         <div className="report-stats-grid">
           {stats.map((stat) =>
@@ -88,7 +77,6 @@ export default function AttendanceReport() {
             icon={<CalendarDays size={16} />}
             color={stat.color}
             trend={stat.trend} />
-
           )}
         </div>
         <div className="report-chart-card">
@@ -105,10 +93,8 @@ export default function AttendanceReport() {
             present={chart.present}
             absent={chart.absent}
             labels={chart.labels} />
-
         </div>
       </div>
-
       <div className="report-table-section">
         <h2 className="report-table-section__title">Employee Attendance</h2>
         <div className="report-table-toolbar">
@@ -131,7 +117,6 @@ export default function AttendanceReport() {
               className="report-filter-select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}>
-
               {STATUS_FILTER_OPTIONS.map((opt) =>
               <option key={opt.value || "all"} value={opt.value}>
                   {opt.label}
@@ -144,7 +129,6 @@ export default function AttendanceReport() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)} />
-
           </div>
         </div>
         <div className={cssClass({ overflowX: "auto" })}>
@@ -171,7 +155,6 @@ export default function AttendanceReport() {
                     No attendance records match the selected filters.
                   </td>
                 </tr> :
-
               filteredRows.map((row) =>
               <tr key={row.id}>
                   <td>
@@ -194,7 +177,6 @@ export default function AttendanceReport() {
                   <td>
                     {row.status === "Weekend" ?
                   <span className="text-gray-400">—</span> :
-
                   <span className={`report-production ${row.productionGood ? "is-good" : "is-low"}`}>
                         <Clock size={12} className="inline -mt-0.5" /> {row.production}
                       </span>
@@ -207,10 +189,8 @@ export default function AttendanceReport() {
                     className="report-regularize-btn"
                     onClick={() => handleRegularize(row.id)}
                     disabled={regularizedIds.has(row.id)}>
-
                         {regularizedIds.has(row.id) ? "Regularized" : "Regularizations"}
                       </button> :
-
                   <span className="text-gray-400">—</span>
                   }
                   </td>
@@ -222,5 +202,4 @@ export default function AttendanceReport() {
         </div>
       </div>
     </div>);
-
 }

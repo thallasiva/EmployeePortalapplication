@@ -4,7 +4,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { sc } from "../constants";
 import { fmtDate, empName } from "../utils";
 import Badge from "./Badge";
-
 const RegCard = React.memo(function RegCard({ r, isPrivileged }) {
   const cfg = sc(r.status);
   return (
@@ -55,5 +54,4 @@ const RegCard = React.memo(function RegCard({ r, isPrivileged }) {
     </div>
   );
 });
-
 export default RegCard;

@@ -3,11 +3,9 @@ import Btn from "./Btn";
 import Card from "./Card";
 import { EMPLOYEES } from "./data";
 import DataTable from "./DataTable";
-
 const inputClass =
   "w-full rounded border-[0.5px] border-gray-300 bg-white px-[9px] py-[7px] " +
   "text-sm text-gray-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
-
 function EmployeesTab()
 {
   return (
@@ -35,5 +33,4 @@ function EmployeesTab()
     </>
   );
 }
-
 export default EmployeesTab;

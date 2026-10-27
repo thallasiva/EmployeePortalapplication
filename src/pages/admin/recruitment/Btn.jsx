@@ -16,5 +16,4 @@ function Btn({ children, primary, small, onClick, type = "button" })
     </button>
   );
 }
-
 export default Btn;

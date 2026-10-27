@@ -1,5 +1,4 @@
 import { statToneClasses } from "./data";
-
 function Stat({ icon: Icon, label, value, note, tone = "brand" })
 {
   const toneClass = statToneClasses[tone] || statToneClasses.brand;

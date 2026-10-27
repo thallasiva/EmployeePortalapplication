@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { SHIFTS } from "../constants";
-
 const ShiftLegend = React.memo(() => (
   <div className={cssClass({ marginTop: 18, padding: "14px 18px", borderRadius: 10,
     background: "#fff8f0", border: "1px solid #fed7aa",
@@ -21,6 +20,5 @@ const ShiftLegend = React.memo(() => (
     ))}
   </div>
 ));
-
 ShiftLegend.displayName = "ShiftLegend";
 export default ShiftLegend;

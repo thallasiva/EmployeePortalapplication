@@ -1,5 +1,4 @@
 import React from "react";
-
 const KPICard = React.memo(function KPICard({ icon: Icon, label, value, color, sub }) {
   return (
     <div className="admin-dash-card flex items-center gap-4">
@@ -14,5 +13,4 @@ const KPICard = React.memo(function KPICard({ icon: Icon, label, value, color, s
     </div>
   );
 });
-
 export default KPICard;

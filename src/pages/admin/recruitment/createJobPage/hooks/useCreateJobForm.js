@@ -3,23 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { createJob, assignRecruiters, listRecruiters, getErrorMessage } from "../../../../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK } from "../constants/formConstants";
-
 export function useCreateJobForm() {
   const navigate = useNavigate();
   const [form, setForm] = useState(BLANK);
   const [submitting, setSubmitting] = useState(false);
   const [recruiters, setRecruiters] = useState([]);
-
   useEffect(() => {
     listRecruiters()
       .then((rows) => setRecruiters(rows ?? []))
       .catch(() => {});
   }, []);
-
   const handleChange = useCallback((e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   }, []);
-
   const toggleRecruiter = useCallback((id) => {
     setForm((f) => ({
       ...f,
@@ -28,9 +24,7 @@ export function useCreateJobForm() {
         : [...f.assignedRecruiters, id],
     }));
   }, []);
-
   const resetForm = useCallback(() => setForm(BLANK), []);
-
   const isValid = useMemo(
     () =>
       !!(
@@ -49,7 +43,6 @@ export function useCreateJobForm() {
       ),
     [form]
   );
-
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -79,7 +72,6 @@ export function useCreateJobForm() {
           skillSet: form.skillSet,
           description: form.description,
         });
-
         if (form.assignedRecruiters.length && job?.job_req_id) {
           try {
             await assignRecruiters(job.job_req_id, form.assignedRecruiters);
@@ -95,7 +87,6 @@ export function useCreateJobForm() {
     },
     [form, isValid, submitting, navigate]
   );
-
   return {
     form,
     submitting,

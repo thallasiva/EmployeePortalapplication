@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { Star } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const LABELS = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
-
 const StarPicker = React.memo(function StarPicker({ value, onChange, disabled }) {
   const [hover, setHover] = useState(0);
   return (
@@ -32,5 +30,4 @@ const StarPicker = React.memo(function StarPicker({ value, onChange, disabled })
     </span>
   );
 });
-
 export default StarPicker;

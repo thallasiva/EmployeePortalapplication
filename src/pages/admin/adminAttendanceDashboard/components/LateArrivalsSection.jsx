@@ -1,10 +1,8 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { getInitials } from "../utils";
-
 const LateArrivalsSection = React.memo(function LateArrivalsSection({ lateEmployees, lateSectionRef }) {
   if (lateEmployees.length === 0) return null;
-
   return (
     <section ref={lateSectionRef} className="admin-dash-card border-orange-200 bg-orange-50/30">
       <div className="flex items-center gap-2 mb-4">
@@ -49,5 +47,4 @@ const LateArrivalsSection = React.memo(function LateArrivalsSection({ lateEmploy
     </section>
   );
 });
-
 export default LateArrivalsSection;

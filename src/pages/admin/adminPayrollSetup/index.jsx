@@ -5,13 +5,10 @@ import { ORANGE, TABS } from "./constants";
 import SalaryComponents from "./components/SalaryComponents";
 import RevisionPlanner from "./components/RevisionPlanner";
 import PayrollSettings from "./components/PayrollSettings";
-
 const AdminPayrollSetup = React.memo(function AdminPayrollSetup() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "components";
-
   const setTab = useCallback((t) => setSearchParams({ tab: t }), [setSearchParams]);
-
   return (
     <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
       <div className={cssClass({ marginBottom: 24 })}>
@@ -22,7 +19,6 @@ const AdminPayrollSetup = React.memo(function AdminPayrollSetup() {
           Salary structures, revision history and payroll configuration
         </p>
       </div>
-
       <div
         className={cssClass({
           display: "flex",
@@ -51,7 +47,6 @@ const AdminPayrollSetup = React.memo(function AdminPayrollSetup() {
           </button>
         ))}
       </div>
-
       <div
         className={cssClass({
           background: "#fff",
@@ -68,5 +63,4 @@ const AdminPayrollSetup = React.memo(function AdminPayrollSetup() {
     </div>
   );
 });
-
 export default AdminPayrollSetup;

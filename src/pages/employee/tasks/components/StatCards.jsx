@@ -1,5 +1,4 @@
 import { memo } from "react";
-
 const StatCards = memo(function StatCards({ counts, onStatClick }) {
   const cards = [
     {
@@ -33,7 +32,6 @@ const StatCards = memo(function StatCards({ counts, onStatClick }) {
       onClick: () => onStatClick("timesheets", "rejected"),
     },
   ];
-
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {cards.map((card) => (
@@ -48,5 +46,4 @@ const StatCards = memo(function StatCards({ counts, onStatClick }) {
     </div>
   );
 });
-
 export default StatCards;

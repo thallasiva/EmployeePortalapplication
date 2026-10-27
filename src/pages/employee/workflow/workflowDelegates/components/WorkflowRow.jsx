@@ -4,7 +4,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { STATUS_STYLE } from "../constants";
 import { delegateStatus } from "../utils";
 import EmpSelect from "./EmpSelect";
-
 const WorkflowRow = React.memo(function WorkflowRow({
   wf, entry, employees, myId, onChange, onRemove,
 }) {
@@ -16,7 +15,6 @@ const WorkflowRow = React.memo(function WorkflowRow({
         return emp ? [emp.first_name, emp.last_name].filter(Boolean).join(" ") : "—";
       })()
     : null;
-
   return (
     <div
       className={cssClass({
@@ -66,7 +64,6 @@ const WorkflowRow = React.memo(function WorkflowRow({
           )}
         </div>
       </div>
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 })}>
         <div>
           <label className={cssClass({ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 })}>Delegate To</label>
@@ -104,7 +101,6 @@ const WorkflowRow = React.memo(function WorkflowRow({
           />
         </div>
       </div>
-
       {entry?.delegateId && (
         <div
           className={cssClass({
@@ -125,5 +121,4 @@ const WorkflowRow = React.memo(function WorkflowRow({
     </div>
   );
 });
-
 export default WorkflowRow;

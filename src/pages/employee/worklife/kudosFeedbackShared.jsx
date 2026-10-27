@@ -12,16 +12,13 @@ import {
   listKfEmployees,
   requestFeedback } from
 "../../../api/kudosFeedback.api";
-
 export const BRAND = "#f18200";
 export const FEEDBACK_TYPES = ["Positive", "Constructive", "Developmental"];
-
 export const TYPE_STYLE = {
   Positive: { badge: "bg-emerald-50 text-emerald-700", bar: "#16a34a" },
   Constructive: { badge: "bg-orange-50 text-orange-700", bar: "#f18200" },
   Developmental: { badge: "bg-blue-50 text-blue-700", bar: "#1d4ed8" }
 };
-
 export function timeAgo(value) {
   if (!value) return "";
   const date = new Date(String(value).replace(" ", "T"));
@@ -35,7 +32,6 @@ export function timeAgo(value) {
   }
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 export const Avatar = ({ name, size = 40, tone = "orange" }) => {
   const tones = {
     orange: "bg-[#fff4e6] text-[#b45309]",
@@ -49,9 +45,7 @@ export const Avatar = ({ name, size = 40, tone = "orange" }) => {
       aria-hidden="true">
       {name === "Anonymous" ? "?" : getUserInitials(name)}
     </div>);
-
 };
-
 export const StatCard = ({ icon, label, value, hint, accent = "bg-orange-50" }) =>
 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent}`}>{icon}</div>
@@ -61,8 +55,6 @@ export const StatCard = ({ icon, label, value, hint, accent = "bg-orange-50" }) 
       {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
     </div>
   </div>;
-
-
 export const Tabs = ({ tabs, active, onChange, label }) =>
 <div role="tablist" aria-label={label} className="flex gap-1 border-b border-slate-200 overflow-x-auto">
     {tabs.map((t) =>
@@ -81,8 +73,6 @@ export const Tabs = ({ tabs, active, onChange, label }) =>
       </button>
   )}
   </div>;
-
-
 export const EmptyState = ({ icon, title, text, action }) =>
 <div className="flex flex-col items-center text-center py-12 px-4">
     <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mb-3">{icon}</div>
@@ -90,31 +80,23 @@ export const EmptyState = ({ icon, title, text, action }) =>
     {text && <p className="text-sm text-slate-500 mt-1 max-w-sm">{text}</p>}
     {action && <div className="mt-4">{action}</div>}
   </div>;
-
-
 export const Loading = () =>
 <div className="flex items-center justify-center py-12 text-slate-400" role="status">
     <Loader2 className="animate-spin" size={22} />
     <span className="sr-only">Loading</span>
   </div>;
-
-
 export const PrimaryButton = ({ children, className = "", ...props }) =>
 <button
   {...props}
   className={`h-10 px-4 rounded-xl bg-[#f18200] hover:bg-[#e07000] disabled:opacity-60 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors ${className}`}>
     {children}
   </button>;
-
-
 export const SecondaryButton = ({ children, className = "", ...props }) =>
 <button
   {...props}
   className={`h-10 px-4 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 flex items-center justify-center gap-2 transition-colors ${className}`}>
     {children}
   </button>;
-
-
 export const CategoryBadge = ({ name, color }) =>
 name ?
 <span
@@ -123,17 +105,13 @@ name ?
       {name}
     </span> :
 null;
-
-
 /* ---------- Modal shell ---------- */
-
 const Modal = ({ title, icon, onClose, children, width = "max-w-lg" }) => {
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4" onMouseDown={onClose}>
       <div
@@ -151,22 +129,16 @@ const Modal = ({ title, icon, onClose, children, width = "max-w-lg" }) => {
         <div className="px-6 pb-6 overflow-y-auto">{children}</div>
       </div>
     </div>);
-
 };
-
 const Label = ({ children, htmlFor }) =>
 <label htmlFor={htmlFor} className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">{children}</label>;
-
-
 /* ---------- People picker ---------- */
-
 export const EmployeePicker = ({ multiple = false, value, onChange, teamOnly = false, max = 25, preset = [] }) => {
   const [search, setSearch] = useState("");
   const [people, setPeople] = useState([]);
   const [known, setKnown] = useState(() => Object.fromEntries(preset.map((p) => [p.employee_id, p])));
   const [loading, setLoading] = useState(false);
   const selected = multiple ? value : value ? [value] : [];
-
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -182,14 +154,12 @@ export const EmployeePicker = ({ multiple = false, value, onChange, teamOnly = f
     }, 250);
     return () => {alive = false;clearTimeout(t);};
   }, [search, teamOnly]);
-
   const toggle = (id) => {
     if (!multiple) return onChange(selected[0] === id ? null : id);
     if (selected.includes(id)) return onChange(selected.filter((x) => x !== id));
     if (selected.length >= max) return toast.info(`You can select up to ${max} people`);
     onChange([...selected, id]);
   };
-
   return (
     <div className="space-y-2">
       {selected.length > 0 &&
@@ -238,15 +208,11 @@ export const EmployeePicker = ({ multiple = false, value, onChange, teamOnly = f
                 {on && <Check size={16} className="text-[#f18200]" />}
               </button>
             </li>);
-
         })}
       </ul>
     </div>);
-
 };
-
 /* ---------- Give Kudos ---------- */
-
 export const GiveKudosModal = ({ onClose, onSent, teamOnly = false, preset = [] }) => {
   const [to, setTo] = useState(preset.map((p) => p.employee_id));
   const [categories, setCategories] = useState([]);
@@ -254,14 +220,12 @@ export const GiveKudosModal = ({ onClose, onSent, teamOnly = false, preset = [] 
   const [message, setMessage] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [saving, setSaving] = useState(false);
-
   useEffect(() => {
     listKfCategories({ type: "kudos" }).then((rows) => {
       setCategories(rows || []);
       if (rows?.length) setCategoryId(rows[0].category_id);
     }).catch(() => {});
   }, []);
-
   const submit = async (e) => {
     e.preventDefault();
     if (!to.length) return toast.error("Select at least one person");
@@ -278,7 +242,6 @@ export const GiveKudosModal = ({ onClose, onSent, teamOnly = false, preset = [] 
       setSaving(false);
     }
   };
-
   return (
     <Modal title="Give Kudos" icon={<Award size={20} className="text-amber-500" />} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
@@ -329,11 +292,8 @@ export const GiveKudosModal = ({ onClose, onSent, teamOnly = false, preset = [] 
         </div>
       </form>
     </Modal>);
-
 };
-
 /* ---------- Give Feedback ---------- */
-
 export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmployee = null, teamOnly = false }) => {
   const lockedTo = request ? request.requester_employee_id : presetEmployee?.employee_id;
   const [to, setTo] = useState(lockedTo || null);
@@ -343,11 +303,9 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
   const [message, setMessage] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [saving, setSaving] = useState(false);
-
   useEffect(() => {
     listKfCategories({ type: "feedback" }).then((rows) => setCategories(rows || [])).catch(() => {});
   }, []);
-
   const submit = async (e) => {
     e.preventDefault();
     if (!to) return toast.error("Select who the feedback is for");
@@ -371,9 +329,7 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
       setSaving(false);
     }
   };
-
   const lockedName = request?.requester_name || presetEmployee?.name;
-
   return (
     <Modal title={request ? "Respond to feedback request" : "Give Feedback"} icon={<MessageSquare size={20} className="text-[#f18200]" />} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
@@ -385,7 +341,6 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
               {request && <p className="text-xs text-slate-500 truncate">Asked about: {request.topic}</p>}
             </div>
           </div> :
-
         <div>
             <Label>For</Label>
             <EmployeePicker value={to} onChange={setTo} teamOnly={teamOnly} />
@@ -446,17 +401,13 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
         </div>
       </form>
     </Modal>);
-
 };
-
 /* ---------- Request Feedback ---------- */
-
 export const RequestFeedbackModal = ({ onClose, onSent }) => {
   const [reviewers, setReviewers] = useState([]);
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-
   const submit = async (e) => {
     e.preventDefault();
     if (!reviewers.length) return toast.error("Select at least one person");
@@ -473,7 +424,6 @@ export const RequestFeedbackModal = ({ onClose, onSent }) => {
       setSaving(false);
     }
   };
-
   return (
     <Modal title="Request Feedback" icon={<MessageSquare size={20} className="text-[#f18200]" />} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
@@ -510,11 +460,8 @@ export const RequestFeedbackModal = ({ onClose, onSent }) => {
         </div>
       </form>
     </Modal>);
-
 };
-
 /* ---------- Kudos card ---------- */
-
 export const KudosItem = ({ k, perspective = "wall" }) => {
   const person = perspective === "received" ? k.from_name : perspective === "sent" ? k.to_name : k.from_name;
   return (
@@ -538,16 +485,12 @@ export const KudosItem = ({ k, perspective = "wall" }) => {
         <p className="text-xs text-slate-400 mt-2">{timeAgo(k.created_at)}</p>
       </div>
     </article>);
-
 };
-
 /* ---------- Report (HR Manager / Admin) ---------- */
-
 const monthLabel = (key) => {
   const [y, m] = key.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleString("en-IN", { month: "short" });
 };
-
 function downloadCsv(filename, rows) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csv = rows.map((r) => r.map(esc).join(",")).join("\n");
@@ -558,7 +501,6 @@ function downloadCsv(filename, rows) {
   a.click();
   URL.revokeObjectURL(url);
 }
-
 export const FeedbackReport = ({ onGiveKudos }) => {
   const [months, setMonths] = useState(6);
   const [departmentId, setDepartmentId] = useState("");
@@ -566,9 +508,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
   const [departments, setDepartments] = useState([]);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {listDepartments().then(setDepartments).catch(() => {});}, []);
-
   useEffect(() => {
     setLoading(true);
     getKfReport({ months, department_id: departmentId || undefined, type: type || undefined }).
@@ -576,10 +516,8 @@ export const FeedbackReport = ({ onGiveKudos }) => {
     catch((err) => toast.error(getErrorMessage(err, "Could not load report"))).
     finally(() => setLoading(false));
   }, [months, departmentId, type]);
-
   const totalByType = useMemo(() => (report?.by_type || []).reduce((s, r) => s + Number(r.total), 0), [report]);
   const maxTrend = useMemo(() => Math.max(1, ...(report?.trend || []).flatMap((t) => [t.kudos, t.feedback])), [report]);
-
   const exportCsv = () => {
     if (!report) return;
     downloadCsv(`feedback-report-${months}m.csv`, [
@@ -587,11 +525,9 @@ export const FeedbackReport = ({ onGiveKudos }) => {
     ...report.by_employee.map((r) => [r.name, r.emp_code, r.department_name, r.positive, r.constructive, r.developmental, r.total, r.last_feedback_at])]
     );
   };
-
   const t = report?.totals || {};
   const participation = t.employees ? Math.round(Number(t.active_people) / Number(t.employees) * 100) : 0;
   const responseRate = Number(t.requests_total) ? Math.round(Number(t.requests_completed) / Number(t.requests_total) * 100) : null;
-
   // conic-gradient donut for the feedback mix
   let acc = 0;
   const donut = (report?.by_type || []).map((r) => {
@@ -599,7 +535,6 @@ export const FeedbackReport = ({ onGiveKudos }) => {
     acc += totalByType ? Number(r.total) / totalByType * 100 : 0;
     return `${TYPE_STYLE[r.feedback_type].bar} ${start}% ${acc}%`;
   }).join(", ");
-
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end gap-3">
@@ -626,7 +561,6 @@ export const FeedbackReport = ({ onGiveKudos }) => {
           <Download size={15} /> Export CSV
         </SecondaryButton>
       </div>
-
       {loading && !report ? <Loading /> :
       <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -635,7 +569,6 @@ export const FeedbackReport = ({ onGiveKudos }) => {
             <StatCard icon={<Check size={22} className="text-emerald-600" />} label="Participation" value={`${participation}%`} hint={`${t.active_people || 0} of ${t.employees || 0} people`} accent="bg-emerald-50" />
             <StatCard icon={<Send size={22} className="text-blue-600" />} label="Request response" value={responseRate == null ? "–" : `${responseRate}%`} hint={`${t.pending_requests || 0} pending`} accent="bg-blue-50" />
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -659,7 +592,6 @@ export const FeedbackReport = ({ onGiveKudos }) => {
                 {report.trend.map((m) => <span key={m.month} className="flex-1 text-center text-xs font-semibold text-slate-500">{monthLabel(m.month)}</span>)}
               </div>
             </section>
-
             <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <h2 className="text-base font-bold text-slate-900 mb-4">Feedback by type</h2>
               <div className="flex items-center gap-5 flex-wrap">
@@ -685,13 +617,11 @@ export const FeedbackReport = ({ onGiveKudos }) => {
               </div>
             </section>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto">
               <h2 className="text-base font-bold text-slate-900 px-5 pt-5 pb-3">Feedback received per employee</h2>
               {report.by_employee.length === 0 ?
             <EmptyState icon={<MessageSquare className="text-[#f18200]" />} title="No feedback in this period" /> :
-
             <table className="w-full min-w-[620px] text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-xs text-slate-500 text-left">
@@ -724,7 +654,6 @@ export const FeedbackReport = ({ onGiveKudos }) => {
                 </table>
             }
             </section>
-
             <div className="space-y-4">
               <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                 <h2 className="text-base font-bold text-slate-900 mb-3">Kudos by department</h2>
@@ -769,5 +698,4 @@ export const FeedbackReport = ({ onGiveKudos }) => {
         </>
       }
     </div>);
-
 };

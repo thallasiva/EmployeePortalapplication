@@ -1,25 +1,13 @@
-
-
-
-
-
-
-
-
-
-
 const HEADER_ALIASES = {
   holiday_name: ["holiday name", "name", "holiday_name", "holiday"],
   holiday_date: ["date", "holiday date", "holiday_date"],
   holiday_calendar: ["calendar", "holiday calendar", "holiday_calendar"],
   is_restricted: ["restricted", "is restricted", "is_restricted", "restricted holiday"]
 };
-
 function splitCsvLine(line) {
   const cells = [];
   let current = "";
   let inQuotes = false;
-
   for (let i = 0; i < line.length; i += 1) {
     const char = line[i];
     if (inQuotes) {
@@ -45,26 +33,18 @@ function splitCsvLine(line) {
   cells.push(current);
   return cells.map((c) => c.trim());
 }
-
-
 function normalizeDate(value) {
   if (!value) return null;
   const trimmed = String(value).trim();
-
-
   if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(trimmed)) {
     const [y, m, d] = trimmed.split("-");
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
-
-
   const dmyMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
   if (dmyMatch) {
     const [, d, m, y] = dmyMatch;
     return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
   }
-
-
   const parsed = new Date(trimmed);
   if (!Number.isNaN(parsed.getTime())) {
     const y = parsed.getFullYear();
@@ -72,60 +52,44 @@ function normalizeDate(value) {
     const d = String(parsed.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   }
-
   return null;
 }
-
 function toBoolean(value) {
   if (value === undefined || value === null) return false;
   const v = String(value).trim().toLowerCase();
   return v === "yes" || v === "true" || v === "1" || v === "y";
 }
-
-
-
-
-
-
 export function parseHolidayCsv(text) {
   const lines = String(text).
   split(/\r?\n/).
   map((l) => l.trim()).
   filter((l) => l.length > 0);
-
   if (lines.length < 2) {
     throw new Error("The file must contain a header row and at least one holiday row.");
   }
-
   const headerCells = splitCsvLine(lines[0]).map((h) => h.toLowerCase());
   const columnIndex = {};
-
   Object.entries(HEADER_ALIASES).forEach(([field, aliases]) => {
     const idx = headerCells.findIndex((h) => aliases.includes(h));
     if (idx !== -1) columnIndex[field] = idx;
   });
-
   if (columnIndex.holiday_name === undefined || columnIndex.holiday_date === undefined) {
     throw new Error(
       'The file must have "Holiday Name" and "Date" columns (a header row is required).'
     );
   }
-
   const holidays = [];
   const errors = [];
-
   for (let i = 1; i < lines.length; i += 1) {
     const cells = splitCsvLine(lines[i]);
     const name = cells[columnIndex.holiday_name]?.trim();
     const rawDate = cells[columnIndex.holiday_date]?.trim();
     if (!name && !rawDate) continue;
-
     const date = normalizeDate(rawDate);
     if (!name || !date) {
       errors.push(`Row ${i + 1}: could not read holiday name/date ("${name || ""}", "${rawDate || ""}")`);
       continue;
     }
-
     holidays.push({
       holiday_name: name,
       holiday_date: date,
@@ -139,10 +103,8 @@ export function parseHolidayCsv(text) {
       false
     });
   }
-
   if (holidays.length === 0) {
     throw new Error(errors[0] || "No valid holiday rows were found in the file.");
   }
-
   return { holidays, errors };
 }

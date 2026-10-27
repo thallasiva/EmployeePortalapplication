@@ -8,7 +8,6 @@ import { missingFields } from "../utils";
 import StepBar from "./StepBar";
 import ResumeUploadStep from "./ResumeUploadStep";
 import CandidateFormStep from "./CandidateFormStep";
-
 const AddCandidateWizard = React.memo(function AddCandidateWizard({
   open, onClose, jobs, recruiters, isRecruiter, onSuccess
 }) {
@@ -24,14 +23,12 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
   const [preScoring, setPreScoring] = useState(false);
   const [preScore, setPreScore] = useState(null);
   const [scoreErr, setScoreErr] = useState("");
-
   function reset() {
     setStep(1); setFile(null); setParsing(false); setParseErr("");
     setParsed(null); setMatchScore(null); setAutoFilled([]); setForm(BLANK); setSaving(false);
     setPreScoring(false); setPreScore(null); setScoreErr("");
   }
   function handleClose() { reset(); onClose(); }
-
   async function triggerScoring(fileToUse, jobId) {
     if (!fileToUse || !jobId) { setPreScore(null); setScoreErr(""); return; }
     setPreScoring(true); setPreScore(null); setScoreErr("");
@@ -44,7 +41,6 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
       setPreScoring(false);
     }
   }
-
   async function handleFileChange(e) {
     const f = e.target.files[0];
     if (!f) return;
@@ -72,14 +68,12 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
       }
     } catch { /* silent — user can still parse manually */ }
   }
-
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     const newVal = type === "checkbox" ? checked : value;
     setForm((f) => ({ ...f, [name]: newVal }));
     if (name === "jobReqId") { setPreScore(null); setScoreErr(""); triggerScoring(file, newVal); }
   }
-
   async function handleParse() {
     if (!file) return;
     setParsing(true); setParseErr(""); setAutoFilled([]);
@@ -115,7 +109,6 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
       setParsing(false);
     }
   }
-
   async function handleSubmit() {
     const missing = missingFields(form);
     if (missing.length) { errorToast("Please fill in all required fields: " + missing.join(", ")); return; }
@@ -142,10 +135,8 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
       setSaving(false);
     }
   }
-
   const missing = missingFields(form);
   const canSubmit = missing.length === 0;
-
   return (
     <SlideOver open={open} onClose={handleClose} title="Add Candidate" width={600}
       footer={
@@ -188,5 +179,4 @@ const AddCandidateWizard = React.memo(function AddCandidateWizard({
     </SlideOver>
   );
 });
-
 export default AddCandidateWizard;

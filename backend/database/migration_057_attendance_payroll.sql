@@ -7,7 +7,6 @@
 --   * payslips.breakdown_json — the exact components and attendance used for a payslip.
 -- Run with: node src/database/runSql.js migration_057_attendance_payroll.sql
 -- =============================================================
-
 DROP PROCEDURE IF EXISTS tmp_057_add_columns;
 DELIMITER $$
 CREATE PROCEDURE tmp_057_add_columns()
@@ -24,11 +23,9 @@ END$$
 DELIMITER ;
 CALL tmp_057_add_columns();
 DROP PROCEDURE IF EXISTS tmp_057_add_columns;
-
 INSERT INTO leave_types (leave_type_name, annual_quota, carry_forward_limit, requires_proof, is_paid, description)
 SELECT 'Loss of Pay', 0, 0, 0, 0, 'Unpaid leave — deducted from salary for each day taken'
 WHERE NOT EXISTS (SELECT 1 FROM leave_types WHERE leave_type_name = 'Loss of Pay');
-
 CREATE TABLE IF NOT EXISTS payroll_attendance_adjustments (
   adjustment_id   INT AUTO_INCREMENT PRIMARY KEY,
   employee_id     INT NOT NULL,
@@ -42,5 +39,4 @@ CREATE TABLE IF NOT EXISTS payroll_attendance_adjustments (
   UNIQUE KEY uq_payroll_adj (employee_id, year, month),
   CONSTRAINT fk_payroll_adj_emp FOREIGN KEY (employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE
 );
-
 SELECT 'migration_057_attendance_payroll done' AS status;

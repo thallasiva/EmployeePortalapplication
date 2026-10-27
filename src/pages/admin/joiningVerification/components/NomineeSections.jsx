@@ -2,7 +2,6 @@ import React from "react";
 import { Heart, Shield, ClipboardList } from "lucide-react";
 import { Sec, TblHead } from "./SharedUI";
 import { fmt, parse } from "../utils";
-
 const NomineeSections = React.memo(function NomineeSections({ detail }) {
   return (
     <>
@@ -28,7 +27,6 @@ const NomineeSections = React.memo(function NomineeSections({ detail }) {
           <p className="text-[12px] text-gray-400">No nominees added.</p>
         )}
       </Sec>
-
       <Sec icon={Shield} title="Gratuity Nominees (Form F)">
         {parse(detail.gratuity_nominees_json).length > 0 ? (
           <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -51,7 +49,6 @@ const NomineeSections = React.memo(function NomineeSections({ detail }) {
           <p className="text-[12px] text-gray-400">No nominees added.</p>
         )}
       </Sec>
-
       <Sec icon={ClipboardList} title="Group Personal Accidental Insurance Nominees">
         {parse(detail.ins_nominees_json).length > 0 ? (
           <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -77,5 +74,4 @@ const NomineeSections = React.memo(function NomineeSections({ detail }) {
     </>
   );
 });
-
 export default NomineeSections;

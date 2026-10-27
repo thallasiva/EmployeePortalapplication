@@ -15,12 +15,10 @@ FROM users u
 LEFT JOIN roles r ON r.role_id = u.role_id
 LEFT JOIN employees e ON e.employee_id = u.employee_id
 WHERE u.email = 'michael.j@company.com';
-
 -- ============================================================
 -- STEP 2: See all roles available
 -- ============================================================
 SELECT role_id, role_name FROM roles ORDER BY role_id;
-
 -- ============================================================
 -- STEP 3: Fix — set Michael's role to "Reporting Manager"
 --  (role_id=3 is standard; confirm from STEP 2 output first)
@@ -28,7 +26,6 @@ SELECT role_id, role_name FROM roles ORDER BY role_id;
 UPDATE users
 SET role_id = (SELECT role_id FROM roles WHERE role_name = 'Reporting Manager' LIMIT 1)
 WHERE email = 'michael.j@company.com';
-
 -- ============================================================
 -- STEP 4: Also fix any other user whose employee record
 --  has direct reports but whose role is still "Employee"
@@ -42,7 +39,6 @@ JOIN (
 JOIN roles r ON r.role_id = u.role_id AND r.role_name = 'Employee'
 SET u.role_id = (SELECT role_id FROM roles WHERE role_name = 'Reporting Manager' LIMIT 1)
 WHERE u.employee_id IS NOT NULL;
-
 -- ============================================================
 -- STEP 5: Verify fix
 -- ============================================================

@@ -3,9 +3,7 @@
 -- Error: "Illegal mix of collations ... for operation 'like'"
 -- Run once in MySQL — safe to re-run.
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_search_employees_org $$
 CREATE PROCEDURE sp_search_employees_org (
   IN p_q             VARCHAR(200) COLLATE utf8mb4_unicode_ci,
@@ -30,10 +28,8 @@ BEGIN
      AND (p_designation_id IS NULL OR e.designation_id = p_designation_id)
      AND (p_status         IS NULL OR e.employee_status = p_status)
    LIMIT 30;
-
   -- All employees for hierarchy path building
   SELECT employee_id, reporting_to, CONCAT(first_name,' ',IFNULL(last_name,'')) AS full_name
     FROM employees;
 END $$
-
 DELIMITER ;

@@ -12,10 +12,8 @@ import {
 import { DAYS, MAX_DAILY_HOURS } from "../constants/taskConstants";
 import { getWeekBounds, toDateStr } from "../utils/dateUtils";
 import { emptyEntry, colTotal, buildTaskRows, mergeTaskRows, buildTimesheetPayload } from "../utils/timesheetUtils";
-
 export function useTimesheetTab(jumpTo = null) {
   const [weekOffset, setWeekOffset] = useState(0);
-
   useEffect(() => {
     if (!jumpTo?.week_start) return;
     const now = new Date();
@@ -27,7 +25,6 @@ export function useTimesheetTab(jumpTo = null) {
     const diffWeeks = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
     setWeekOffset(diffWeeks);
   }, [jumpTo]);
-
   const [entries, setEntries] = useState([]);
   const [nextId, setNextId] = useState(2);
   const [timesheet, setTimesheet] = useState(null);
@@ -40,9 +37,7 @@ export function useTimesheetTab(jumpTo = null) {
   const [myExtraWork, setMyExtraWork] = useState([]);
   const [allTasks, setAllTasks] = useState([]);
   const [editTask, setEditTask] = useState(null);
-
   const { weekStart, dates } = getWeekBounds(weekOffset);
-
   const loadWeek = useCallback(async () => {
     setLoading(true); setErr("");
     try {
@@ -95,40 +90,31 @@ export function useTimesheetTab(jumpTo = null) {
     } catch { setErr("Failed to load timesheet"); }
     finally { setLoading(false); }
   }, [weekStart]); // eslint-disable-line react-hooks/exhaustive-deps
-
   useEffect(() => { loadWeek(); }, [loadWeek]);
-
   useEffect(() => {
     getMyExtraWork().then(setMyExtraWork).catch(() => {});
   }, []);
-
   const isLocked = timesheet?.status === "approved";
   const canEdit = !timesheet || ["draft", "rejected"].includes(timesheet?.status);
-
   const updateEntry = (id, field, val) =>
     setEntries((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: val } : r)));
-
   const updateHours = (id, day, val) =>
     setEntries((prev) =>
       prev.map((r) =>
         r.id === id ? { ...r, hours: { ...r.hours, [day]: { ...r.hours[day], value: val } } } : r
       )
     );
-
   const addRow = () => {
     setEntries((prev) => [...prev, emptyEntry(nextId, dates)]);
     setNextId((n) => n + 1);
   };
   const removeRow = (id) => setEntries((prev) => prev.filter((r) => r.id !== id));
-
   const overDays = DAYS
     .map((day, i) => ({ day, date: toDateStr(dates[i]), total: colTotal(entries, day) }))
     .filter((d) => d.total > MAX_DAILY_HOURS)
     .map((d) => d.date);
   const hasOvertime = overDays.length > 0;
-
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3000); };
-
   const handleSave = async () => {
     setSaving(true); setErr("");
     try {
@@ -138,7 +124,6 @@ export function useTimesheetTab(jumpTo = null) {
     } catch (e) { setErr(e?.response?.data?.message || "Save failed"); }
     finally { setSaving(false); }
   };
-
   const handleSubmit = async () => {
     if (hasOvertime) { setErr("Daily hours exceed 8h. Use 'Extra Work Request' for overtime days."); return; }
     setSaving(true); setErr("");
@@ -152,12 +137,10 @@ export function useTimesheetTab(jumpTo = null) {
     } catch (e) { setErr(e?.response?.data?.message || "Submit failed"); }
     finally { setSaving(false); setSubmitting(false); }
   };
-
   const handleExtraWorkSubmit = async (form) => {
     await createExtraWorkRequest({ ...form, timesheet_id: timesheet?.timesheet_id });
     setMyExtraWork(await getMyExtraWork());
   };
-
   const handleUpdateTask = async (form) => {
     if (!editTask) return;
     await updateTask(editTask.task_id, form);
@@ -178,7 +161,6 @@ export function useTimesheetTab(jumpTo = null) {
     const refreshed = await getMyTasks();
     setAllTasks(refreshed);
   };
-
   return {
     weekOffset, setWeekOffset,
     dates, weekStart,

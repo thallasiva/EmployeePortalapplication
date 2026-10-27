@@ -2,7 +2,6 @@ import React from "react";
 import { Mail } from "lucide-react";
 import { BRAND } from "../constants";
 import Avatar from "./Avatar";
-
 const ColleagueCard = React.memo(function ColleagueCard({ person, isManager, isDirectReport }) {
   return (
     <div
@@ -46,5 +45,4 @@ const ColleagueCard = React.memo(function ColleagueCard({ person, isManager, isD
     </div>
   );
 });
-
 export default ColleagueCard;

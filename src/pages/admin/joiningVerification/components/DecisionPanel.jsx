@@ -1,12 +1,10 @@
 import React from "react";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-
 const DECISION_OPTIONS = [
   { key: "approve", label: "Approve", cls: "text-emerald-700 bg-emerald-50 border-emerald-200", ring: "ring-emerald-400", icon: CheckCircle },
   { key: "request_changes", label: "Request Changes", cls: "text-amber-700 bg-amber-50 border-amber-200", ring: "ring-amber-400", icon: AlertTriangle },
   { key: "reject", label: "Reject", cls: "text-red-700 bg-red-50 border-red-200", ring: "ring-red-400", icon: XCircle },
 ];
-
 const DecisionPanel = React.memo(function DecisionPanel({
   detail,
   decision,
@@ -17,7 +15,6 @@ const DecisionPanel = React.memo(function DecisionPanel({
   const canDecide = ["submitted", "pending_verification", "changes_requested"].includes(
     detail.formality_status
   );
-
   return (
     <>
       {canDecide && (
@@ -50,7 +47,6 @@ const DecisionPanel = React.memo(function DecisionPanel({
           />
         </div>
       )}
-
       {detail.formality_status === "approved" && (
         <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
           <CheckCircle size={18} className="text-emerald-600 flex-shrink-0" />
@@ -59,7 +55,6 @@ const DecisionPanel = React.memo(function DecisionPanel({
           </p>
         </div>
       )}
-
       {detail.formality_status === "rejected" && (
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl p-4">
           <XCircle size={18} className="text-red-600 flex-shrink-0" />
@@ -72,5 +67,4 @@ const DecisionPanel = React.memo(function DecisionPanel({
     </>
   );
 });
-
 export default DecisionPanel;

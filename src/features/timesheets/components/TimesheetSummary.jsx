@@ -1,7 +1,5 @@
 import TimesheetStatusBadge from "./TimesheetStatusBadge";
-
 const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-GB") : "—";
-
 export default function TimesheetSummary({ detail })
 {
   const items = [["Employee", detail.employee_name], ["Week", `${detail.week_start} – ${detail.week_end}`], ["Total Hours", `${Number(detail.total_hours || 0).toFixed(1)}h`], ["Status", <TimesheetStatusBadge key="status" status={detail.status} />], ["Submitted", formatDate(detail.submitted_at)], ["Reviewed By", detail.reviewer_name || "—"], ["Reviewed At", formatDate(detail.reviewed_at)], ["Comments", detail.comments || "—"]];

@@ -1,6 +1,5 @@
 import React from 'react';
 import PermissionAllowTable from './PermissionAllowTable';
-
 const timeOffRows = [
   {
     key: 'leaveRequests',
@@ -28,7 +27,6 @@ const timeOffRows = [
     description: 'Create, edit, or delete working from home requests for people in their team.',
   },
 ];
-
 const ManageTimeOffTab = ({ values, onToggle }) =>
 {
   return (
@@ -39,5 +37,4 @@ const ManageTimeOffTab = ({ values, onToggle }) =>
     />
   );
 };
-
 export default ManageTimeOffTab;

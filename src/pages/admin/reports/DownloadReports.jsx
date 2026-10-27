@@ -4,16 +4,12 @@ import {
   Calendar, ClipboardList, Receipt, Loader2 } from
 "lucide-react";
 import apiClient from "../../../api/client";
-
-
 import { cssClass, joinClasses } from "../../../utils/classStyles";
 function pad(n) {return String(n).padStart(2, "0");}
-
 function currentMonthYear() {
   const d = new Date();
   return { month: pad(d.getMonth() + 1), year: String(d.getFullYear()) };
 }
-
 const MONTHS = [
 { value: "01", label: "January" }, { value: "02", label: "February" },
 { value: "03", label: "March" }, { value: "04", label: "April" },
@@ -21,13 +17,10 @@ const MONTHS = [
 { value: "07", label: "July" }, { value: "08", label: "August" },
 { value: "09", label: "September" }, { value: "10", label: "October" },
 { value: "11", label: "November" }, { value: "12", label: "December" }];
-
-
 function yearOptions() {
   const y = new Date().getFullYear();
   return [y - 1, y, y + 1].map(String);
 }
-
 async function triggerDownload(url, params = {}) {
   const qs = new URLSearchParams(params).toString();
   const full = `${url}${qs ? "?" + qs : ""}`;
@@ -42,9 +35,6 @@ async function triggerDownload(url, params = {}) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
-
-
-
 function MonthYearPicker({ month, year, onMonth, onYear }) {
   const selectStyle = {
     padding: "6px 10px", fontSize: 13, border: "1px solid #e2e8f0",
@@ -59,11 +49,7 @@ function MonthYearPicker({ month, year, onMonth, onYear }) {
         {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
       </select>
     </div>);
-
 }
-
-
-
 function ReportCard({ icon: Icon, iconBg, iconColor, title, description, children, onDownload, loading }) {
   return (
     <div className={cssClass({
@@ -83,39 +69,23 @@ function ReportCard({ icon: Icon, iconBg, iconColor, title, description, childre
           <p className={cssClass({ margin: "3px 0 0", fontSize: 12, color: "#94a3b8" })}>{description}</p>
         </div>
       </div>
-
       {children}
-
       <button
         type="button"
         onClick={onDownload}
         disabled={loading}
-
-
-
-
-
-
-
         onMouseEnter={(e) => {if (!loading) e.currentTarget.style.opacity = "0.85";}}
         onMouseLeave={(e) => {e.currentTarget.style.opacity = "1";}} className={cssClass({ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "9px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", background: loading ? "#f1f5f9" : iconBg, color: loading ? "#94a3b8" : iconColor, border: `1px solid ${loading ? "#e2e8f0" : iconColor + "55"}`, transition: "all 0.15s", marginTop: 4 })}>
-
         {loading ?
         <><Loader2 size={15} className={cssClass({ animation: "spin 1s linear infinite" })} /> Generating…</> :
         <><Download size={15} /> Download</>
         }
       </button>
     </div>);
-
 }
-
-
-
 export default function DownloadReports() {
   const def = currentMonthYear();
   const [loading, setLoading] = useState({});
-
-
   const [lbDate, setLbDate] = useState(new Date().toISOString().slice(0, 10));
   const [lsFrom, setLsFrom] = useState(`${def.year}-01-01`);
   const [lsTo, setLsTo] = useState(`${def.year}-12-31`);
@@ -127,20 +97,17 @@ export default function DownloadReports() {
   const [ecrMonth, setEcrMonth] = useState(def.month);
   const [ecrYear, setEcrYear] = useState(def.year);
   const [ecrCode, setEcrCode] = useState("");
-
   const dl = async (key, url, params) => {
     setLoading((p) => ({ ...p, [key]: true }));
     try {await triggerDownload(url, params);}
     catch (e) {alert("Download failed: " + (e?.message || "Unknown error"));} finally
     {setLoading((p) => ({ ...p, [key]: false }));}
   };
-
   const inputStyle = {
     padding: "6px 10px", fontSize: 13, border: "1px solid #e2e8f0",
     borderRadius: 7, outline: "none", color: "#334155", background: "#f8fafc", width: "100%", boxSizing: "border-box"
   };
   const labelStyle = { fontSize: 11, color: "#94a3b8", display: "block", marginBottom: 3 };
-
   return (
     <div className={cssClass({ padding: "0 0 40px" })}>
       <div className={cssClass({ marginBottom: 24 })}>
@@ -149,11 +116,8 @@ export default function DownloadReports() {
           Generate statutory and HR reports in Excel / text format, matching standard templates.
         </p>
       </div>
-
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 18 })}>
-
         {}
         <ReportCard
           icon={Users} iconBg="#eff6ff" iconColor="#2563eb"
@@ -161,8 +125,6 @@ export default function DownloadReports() {
           description="Full employee directory with all HR fields (55 columns)"
           loading={loading.emp}
           onDownload={() => dl("emp", "/reports/download/emp-data")} />
-
-
         {}
         <ReportCard
           icon={Calendar} iconBg="#f0fdf4" iconColor="#16a34a"
@@ -170,14 +132,12 @@ export default function DownloadReports() {
           description="Current leave balances (Comp Off, EL, Paternity, RH, SL) per employee"
           loading={loading.lb}
           onDownload={() => dl("lb", "/reports/download/leave-balance", { date: lbDate })}>
-
           <div>
             <label className={cssClass(labelStyle)}>As On Date</label>
             <input type="date" value={lbDate} onChange={(e) => setLbDate(e.target.value)}
             max={new Date().toISOString().slice(0, 10)} className={cssClass(inputStyle)} />
           </div>
         </ReportCard>
-
         {}
         <ReportCard
           icon={ClipboardList} iconBg="#fdf4ff" iconColor="#9333ea"
@@ -185,7 +145,6 @@ export default function DownloadReports() {
           description="Opening balance, eligibility, availed & closing per employee for a date range"
           loading={loading.ls}
           onDownload={() => dl("ls", "/reports/download/leave-summary", { from: lsFrom, to: lsTo })}>
-
           <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 })}>
             <div>
               <label className={cssClass(labelStyle)}>From Date</label>
@@ -197,7 +156,6 @@ export default function DownloadReports() {
             </div>
           </div>
         </ReportCard>
-
         {}
         <ReportCard
           icon={FileSpreadsheet} iconBg="#fff7ed" iconColor="#ea580c"
@@ -205,10 +163,8 @@ export default function DownloadReports() {
           description="Employee & employer PF / EPS / EDLI contributions with UAN and PF numbers"
           loading={loading.pf}
           onDownload={() => dl("pf", "/reports/download/pf-statement", { month: pfMonth, year: pfYear })}>
-
           <MonthYearPicker month={pfMonth} year={pfYear} onMonth={setPfMonth} onYear={setPfYear} />
         </ReportCard>
-
         {}
         <ReportCard
           icon={Receipt} iconBg="#fff1f2" iconColor="#e11d48"
@@ -216,7 +172,6 @@ export default function DownloadReports() {
           description="Monthly PT statement with slab-wise summary and employee-wise PT amount"
           loading={loading.pt}
           onDownload={() => dl("pt", "/reports/download/profession-tax", { month: ptMonth, year: ptYear, state: ptState })}>
-
           <MonthYearPicker month={ptMonth} year={ptYear} onMonth={setPtMonth} onYear={setPtYear} />
           <div className={cssClass({ marginTop: 4 })}>
             <label className={cssClass(labelStyle)}>State</label>
@@ -227,7 +182,6 @@ export default function DownloadReports() {
             </select>
           </div>
         </ReportCard>
-
         {}
         <ReportCard
           icon={FileText} iconBg="#f0f9ff" iconColor="#0284c7"
@@ -235,7 +189,6 @@ export default function DownloadReports() {
           description="Electronic Challan-cum-Return text file for EPFO portal upload"
           loading={loading.ecr}
           onDownload={() => dl("ecr", "/reports/download/ecr-file", { month: ecrMonth, year: ecrYear, estb_code: ecrCode || undefined })}>
-
           <MonthYearPicker month={ecrMonth} year={ecrYear} onMonth={setEcrMonth} onYear={setEcrYear} />
           <div className={cssClass({ marginTop: 4 })}>
             <label className={cssClass(labelStyle)}>Establishment Code (optional)</label>
@@ -243,8 +196,6 @@ export default function DownloadReports() {
             placeholder="e.g. 100272303987" className={cssClass(inputStyle)} />
           </div>
         </ReportCard>
-
       </div>
     </div>);
-
 }

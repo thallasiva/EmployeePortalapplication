@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getManagerExtraWork, reviewExtraWork } from "../../../../api/timesheet.api";
 import StatusBadge from "./StatusBadge";
-
 const ExtraWorkPanel = React.memo(function ExtraWorkPanel() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState({});
   const [saving, setSaving] = useState({});
-
   const load = useCallback(async () => {
     try {
       setRequests(await getManagerExtraWork());
@@ -16,11 +14,9 @@ const ExtraWorkPanel = React.memo(function ExtraWorkPanel() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     load();
   }, [load]);
-
   const handleReview = useCallback(
     async (id, decision) => {
       setSaving((s) => ({ ...s, [id]: true }));
@@ -34,12 +30,10 @@ const ExtraWorkPanel = React.memo(function ExtraWorkPanel() {
     },
     [load, notes]
   );
-
   if (loading)
     return <div className="ts-loading p-8 text-center text-gray-400">Loading…</div>;
   if (!requests.length)
     return <p className="text-sm text-gray-400 p-4">No extra work requests.</p>;
-
   return (
     <div className="space-y-3">
       {requests.map((ew) => (
@@ -96,5 +90,4 @@ const ExtraWorkPanel = React.memo(function ExtraWorkPanel() {
     </div>
   );
 });
-
 export default ExtraWorkPanel;

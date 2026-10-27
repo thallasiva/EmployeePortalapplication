@@ -5,24 +5,18 @@ import { listSalaryAssignments, assignSalaryStructure, getAssignmentHistory } fr
 import { listStructures } from "../../api/salaryComponent.api";
 import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 import { getErrorMessage } from "../../api/client";
-
 const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400";
 const sel = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white";
-
 function fmt(n) {
   if (!n) return "—";
   return "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
-
-
 function AssignModal({ employee, structures, onSave, onClose, saving }) {
   const cur = employee;
   const [structureId, setStructId] = useState(cur.structure_id ? String(cur.structure_id) : "");
   const [ctcMonthly, setCtcMonthly] = useState(cur.ctc_annual ? String(Math.round(cur.ctc_annual / 12)) : "");
   const [effectiveFrom, setEffDate] = useState(new Date().toISOString().slice(0, 10));
-
   const ctcAnnual = Number(ctcMonthly) * 12;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
@@ -35,7 +29,6 @@ function AssignModal({ employee, structures, onSave, onClose, saving }) {
         </div>
         <form onSubmit={(e) => {e.preventDefault();onSave(employee.employee_id, { structure_id: structureId, ctc_annual: ctcAnnual, effective_from: effectiveFrom });}}
         className="px-5 py-4 space-y-4">
-
           <div>
             <label className="block text-xs text-gray-500 mb-1">Salary Structure *</label>
             <select required value={structureId} onChange={(e) => setStructId(e.target.value)} className={sel}>
@@ -47,7 +40,6 @@ function AssignModal({ employee, structures, onSave, onClose, saving }) {
               )}
             </select>
           </div>
-
           <div>
             <label className="block text-xs text-gray-500 mb-1">CTC (Monthly) *</label>
             <input required type="number" min={1000} value={ctcMonthly}
@@ -58,18 +50,15 @@ function AssignModal({ employee, structures, onSave, onClose, saving }) {
               </p>
             }
           </div>
-
           <div>
             <label className="block text-xs text-gray-500 mb-1">Effective From *</label>
             <input required type="date" value={effectiveFrom} onChange={(e) => setEffDate(e.target.value)} className={inp} />
           </div>
-
           {cur.structure_id &&
           <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12px] text-amber-700">
               Current: <b>{cur.structure_name}</b> · {fmt(cur.ctc_annual)}/year — will be replaced from {effectiveFrom}
             </div>
           }
-
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
             <button type="submit" disabled={saving} className="flex-1 bg-[#1e3a5f] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
@@ -79,21 +68,16 @@ function AssignModal({ employee, structures, onSave, onClose, saving }) {
         </form>
       </div>
     </div>);
-
 }
-
-
 function HistoryPanel({ employeeId, onClose }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     getAssignmentHistory(employeeId).
     then((h) => setHistory(h ?? [])).
     catch(err => apiErrorToast(err, "load salary history")).
     finally(() => setLoading(false));
   }, [employeeId]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
@@ -106,7 +90,6 @@ function HistoryPanel({ employeeId, onClose }) {
           <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
           history.length === 0 ?
           <p className="text-sm text-gray-400 text-center py-8">No revision history found.</p> :
-
           <div className="space-y-3">
               {history.map((h, i) =>
             <div key={h.assignment_id} className={`rounded-xl border px-4 py-3 ${h.is_active ? 'border-green-200 bg-green-50' : 'border-gray-100 bg-gray-50'}`}>
@@ -125,15 +108,11 @@ function HistoryPanel({ employeeId, onClose }) {
         </div>
       </div>
     </div>);
-
 }
-
-
 function EmployeeRow({ emp, structures, onAssigned }) {
   const [open, setOpen] = useState(false);
   const [histOpen, setHistOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-
   const handleSave = async (empId, data) => {
     setSaving(true);
     try {
@@ -145,7 +124,6 @@ function EmployeeRow({ emp, structures, onAssigned }) {
       apiErrorToast(err, "assign salary structure");
     } finally {setSaving(false);}
   };
-
   return (
     <>
       <tr className="border-t border-gray-100 hover:bg-gray-50">
@@ -186,7 +164,6 @@ function EmployeeRow({ emp, structures, onAssigned }) {
           </div>
         </td>
       </tr>
-
       {open &&
       <AssignModal employee={emp} structures={structures}
       onSave={handleSave} onClose={() => setOpen(false)} saving={saving} />
@@ -195,17 +172,13 @@ function EmployeeRow({ emp, structures, onAssigned }) {
       <HistoryPanel employeeId={emp.employee_id} onClose={() => setHistOpen(false)} />
       }
     </>);
-
 }
-
-
 export default function SalaryAssignmentsPage() {
   const [employees, setEmployees] = useState([]);
   const [structures, setStructures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilter] = useState("all");
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -218,20 +191,15 @@ export default function SalaryAssignmentsPage() {
     } catch (err) { apiErrorToast(err, "load salary data");} finally
     {setLoading(false);}
   }, [search]);
-
   useEffect(() => {load();}, [load]);
-
   const filtered = employees.filter((e) => {
     if (filterStatus === "assigned" && !e.structure_id) return false;
     if (filterStatus === "unassigned" && e.structure_id) return false;
     return true;
   });
-
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(filtered);
-
   const assignedCount = employees.filter((e) => e.structure_id).length;
   const unassignedCount = employees.length - assignedCount;
-
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -242,7 +210,6 @@ export default function SalaryAssignmentsPage() {
           </p>
         </div>
       </div>
-
       {}
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative flex-1 min-w-52">
@@ -262,14 +229,12 @@ export default function SalaryAssignmentsPage() {
           </button>
         )}
       </div>
-
       {}
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         {loading ?
         <div className="text-center py-16 text-sm text-gray-400">Loading…</div> :
         filtered.length === 0 ?
         <div className="text-center py-16 text-sm text-gray-400">No employees found.</div> :
-
         <>
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-100">
@@ -290,5 +255,4 @@ export default function SalaryAssignmentsPage() {
         }
       </div>
     </div>);
-
 }

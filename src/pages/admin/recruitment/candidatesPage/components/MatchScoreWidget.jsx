@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { getResumeMatch, computeResumeMatch } from "../../../../../api/recruitment.api";
 import { REC_CLASS } from "../constants";
 import { scoreTextCls, safeArr } from "../utils";
-
 const MatchScoreWidget = React.memo(function MatchScoreWidget({ candidateId, jobReqId }) {
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(false);
   const [computing, setComputing] = useState(false);
-
   useEffect(() => {
     if (!candidateId || !jobReqId) return;
     setLoading(true);
@@ -16,21 +14,17 @@ const MatchScoreWidget = React.memo(function MatchScoreWidget({ candidateId, job
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [candidateId, jobReqId]);
-
   async function recompute() {
     setComputing(true);
     try { const d = await computeResumeMatch(candidateId, jobReqId); setMatch(d); } catch {}
     finally { setComputing(false); }
   }
-
   if (!jobReqId) return null;
   if (loading) return <div className="text-xs text-gray-400 mt-3">Loading match score...</div>;
-
   const rec = match?.recommendation;
   const recCls = REC_CLASS[rec] || "bg-gray-100 text-gray-700";
   const matched = safeArr(match?.matched_skills);
   const missing2 = safeArr(match?.missing_skills);
-
   return (
     <div className="mt-4 border border-gray-200 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-gray-50 border-b border-gray-200">
@@ -74,5 +68,4 @@ const MatchScoreWidget = React.memo(function MatchScoreWidget({ candidateId, job
     </div>
   );
 });
-
 export default MatchScoreWidget;

@@ -1,11 +1,9 @@
 import React from "react";
-
 const TABS = [
   { key: "apply", label: "Apply" },
   { key: "pending", label: "Pending" },
   { key: "history", label: "History" },
 ];
-
 const TabSwitcher = React.memo(function TabSwitcher({ tab, onTabChange }) {
   return (
     <div className="relative flex items-center justify-center mb-4 min-h-[40px]">
@@ -28,5 +26,4 @@ const TabSwitcher = React.memo(function TabSwitcher({ tab, onTabChange }) {
     </div>
   );
 });
-
 export default TabSwitcher;

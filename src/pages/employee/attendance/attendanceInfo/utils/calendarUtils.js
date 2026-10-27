@@ -1,13 +1,11 @@
 import { toISODateString } from "../../../../../lib/dateUtils";
 import { getAttendanceCode, formatMinutesAsHrs } from "../../../../../lib/attendanceUtils";
 import { SHIFT_CODE, HOLIDAYS } from "../constants";
-
 export function getMonthGrid(year, monthIndex) {
   const first = new Date(year, monthIndex, 1);
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
   let startPad = first.getDay() - 1;
   if (startPad < 0) startPad = 6;
-
   const cells = [];
   for (let i = 0; i < startPad; i += 1) cells.push(null);
   for (let day = 1; day <= daysInMonth; day += 1) {
@@ -15,7 +13,6 @@ export function getMonthGrid(year, monthIndex) {
   }
   return cells;
 }
-
 export function buildDayRecord(date, record) {
   const m = date.getMonth() + 1;
   const d = date.getDate();
@@ -26,9 +23,7 @@ export function buildDayRecord(date, record) {
   const isHoliday = record?.status === "holiday" || Boolean(HOLIDAYS[key]);
   const isLeave = record?.status === "leave";
   const pending = !record && !isWeekend && !isHoliday && iso >= todayIso;
-
   const workMinutes = record?.work_hours ? Math.round(Number(record.work_hours) * 60) : 0;
-
   let status;
   if (isHoliday) {
     status = { code: "H", label: "Holiday", workMinutes: 0 };
@@ -41,13 +36,11 @@ export function buildDayRecord(date, record) {
   } else {
     status = getAttendanceCode(workMinutes, { isWeekend: false, isHoliday: false });
   }
-
   const hasData = Boolean(record) && !isHoliday && !isLeave;
   const firstIn = record?.check_in ? record.check_in.slice(0, 5) : "—";
   const lastOut = record?.check_out ? record.check_out.slice(0, 5) : "—";
   const totalWork = hasData ? formatMinutesAsHrs(workMinutes) : "—";
   const lateBy = record?.late_by_minutes || 0;
-
   return {
     iso,
     day: date.getDate(),

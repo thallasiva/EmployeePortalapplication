@@ -1,6 +1,5 @@
 import React from "react";
 import { BRAND } from "../constants";
-
 const SectionLabel = React.memo(function SectionLabel({ children }) {
   return (
     <div
@@ -17,5 +16,4 @@ const SectionLabel = React.memo(function SectionLabel({ children }) {
     </div>
   );
 });
-
 export default SectionLabel;

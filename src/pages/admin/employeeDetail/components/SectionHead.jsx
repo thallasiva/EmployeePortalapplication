@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const SectionHead = React.memo(function SectionHead({ icon: Icon, title }) {
   return (
     <div
@@ -24,5 +23,4 @@ const SectionHead = React.memo(function SectionHead({ icon: Icon, title }) {
     </div>
   );
 });
-
 export default SectionHead;

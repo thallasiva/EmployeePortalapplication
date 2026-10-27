@@ -2,7 +2,6 @@ import React from "react";
 import { Modal, Btn, Field, Input, Select, TwoColGrid } from "../../shared";
 import { INTERVIEW_LEVELS, INTERVIEW_TYPES } from "../../mockData";
 import { BLANK_INT } from "../constants";
-
 const ScheduleInterviewModal = React.memo(function ScheduleInterviewModal({
   open, detail, intForm, scheduling,
   onClose, onSubmit, onChange
@@ -10,7 +9,6 @@ const ScheduleInterviewModal = React.memo(function ScheduleInterviewModal({
   function handleClose() {
     onClose();
   }
-
   return (
     <Modal
       open={open}
@@ -70,5 +68,4 @@ const ScheduleInterviewModal = React.memo(function ScheduleInterviewModal({
     </Modal>
   );
 });
-
 export default ScheduleInterviewModal;

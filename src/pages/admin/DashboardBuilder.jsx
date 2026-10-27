@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Save, Trash2, Eye, Edit2, LayoutDashboard, BarChart2, PieChart, TrendingUp, Users, Clock, Calendar, FileText, X, Check, Maximize2, GripVertical, ArrowUp, ArrowLeft } from "lucide-react";
 import { dashboardsApi } from "../../api/settings.api";
-
 const BRAND = "#f18200";
-
 const WIDGET_CATALOG = [
   { type: "kpi", label: "KPI Card", icon: <TrendingUp size={16} />, desc: "Single metric with trend", w: 1, h: 1 },
   { type: "bar", label: "Bar Chart", icon: <BarChart2 size={16} />, desc: "Compare categories", w: 2, h: 2 },
@@ -14,27 +12,22 @@ const WIDGET_CATALOG = [
   { type: "attendance", label: "Attendance %", icon: <Clock size={16} />, desc: "Today's attendance rate", w: 1, h: 1 },
   { type: "calendar", label: "Event Calendar", icon: <Calendar size={16} />, desc: "Upcoming events", w: 2, h: 2 },
 ];
-
 const SOURCES = ["Employees", "Attendance", "Leave", "Payroll", "Recruitment", "Performance", "Helpdesk"];
-
 const PRESETS = [
   { id: 1, name: "HR Overview Dashboard", widgets: 6, updated: "01 Aug 2026", active: true },
   { id: 2, name: "Payroll Summary", widgets: 4, updated: "28 Jul 2026", active: false },
   { id: 3, name: "Recruitment Pipeline", widgets: 5, updated: "25 Jul 2026", active: false },
 ];
-
 let _wid = 100;
 const mkWidget = (type) =>
 {
   const cat = WIDGET_CATALOG.find(w => w.type === type) || WIDGET_CATALOG[0];
   return { id: _wid++, type, label: cat.label, source: SOURCES[0], color: BRAND, span: cat.w === 2 ? "col-span-2" : "col-span-1", rows: cat.h === 2 ? "row-span-2" : "row-span-1" };
 };
-
 /* ── Widget visual preview ── */
 function WidgetCard({ widget, onSelect, selected, onDelete })
 {
   const isDouble = widget.span === "col-span-2";
-
   const inner = () =>
   {
     switch (widget.type)
@@ -110,7 +103,6 @@ function WidgetCard({ widget, onSelect, selected, onDelete })
       default: return <p className="text-[12px] text-[#94a3b8]">{widget.label}</p>;
     }
   };
-
   return (
     <div onClick={() => onSelect(widget.id)}
       className={`relative rounded-xl border-2 p-4 cursor-pointer transition-all bg-white ${widget.span} ${widget.rows} min-h-[120px] flex flex-col ${selected === widget.id ? "border-[#f18200] shadow-lg shadow-[#f18200]/10" : "border-[#e2e8f0] hover:border-[#f18200]/40"}`}>
@@ -126,26 +118,21 @@ function WidgetCard({ widget, onSelect, selected, onDelete })
     </div>
   );
 }
-
 /* ── Builder view ── */
 function Builder({ dash, onBack, onSave })
 {
   const [widgets, setWidgets] = useState(dash.widgets || []);
   const [selected, setSelected] = useState(null);
   const [name, setName] = useState(dash.name || "My Dashboard");
-
   const addWidget = (type) =>
   {
     const w = mkWidget(type);
     setWidgets(p => [...p, w]);
     setSelected(w.id);
   };
-
   const delWidget = (id) => { setWidgets(p => p.filter(w => w.id !== id)); setSelected(null); };
-
   const selWidget = widgets.find(w => w.id === selected);
   const updateSelected = (patch) => setWidgets(p => p.map(w => w.id === selected ? { ...w, ...patch } : w));
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* Toolbar */}
@@ -161,7 +148,6 @@ function Builder({ dash, onBack, onSave })
           </button>
         </div>
       </div>
-
       <div className="flex flex-1">
         {/* Widget palette */}
         <div className="w-52 bg-white border-r border-[#e2e8f0] overflow-y-auto shrink-0">
@@ -179,7 +165,6 @@ function Builder({ dash, onBack, onSave })
             ))}
           </div>
         </div>
-
         {/* Canvas */}
         <div className="flex-1 bg-[#f8fafc] p-5 overflow-y-auto">
           <div className="grid grid-cols-4 gap-4 auto-rows-[120px]">
@@ -193,7 +178,6 @@ function Builder({ dash, onBack, onSave })
             </button>
           </div>
         </div>
-
         {/* Properties panel */}
         <div className="w-56 bg-white border-l border-[#e2e8f0] shrink-0 p-4">
           <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-3">Properties</p>
@@ -243,19 +227,16 @@ function Builder({ dash, onBack, onSave })
     </div>
   );
 }
-
 export default function DashboardBuilder()
 {
   const [dashboards, setDashboards] = useState(PRESETS);
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState("");
-
   useEffect(() => {
     dashboardsApi.list().then(data => {
       if (Array.isArray(data) && data.length > 0) setDashboards(data);
     }).catch(() => {});
   }, []);
-
   const handleSave = (data) =>
   {
     setDashboards(p => data.id && p.find(d => d.id === data.id)
@@ -265,9 +246,7 @@ export default function DashboardBuilder()
     setEditing(null);
     setToast("Dashboard saved!"); setTimeout(() => setToast(""), 3000);
   };
-
   if (editing !== null) return <div className="min-h-screen bg-[#f0f4f8]"><Builder dash={editing} onBack={() => setEditing(null)} onSave={handleSave} /></div>;
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {toast && <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2"><Check size={15} />{toast}</div>}
@@ -286,7 +265,6 @@ export default function DashboardBuilder()
           <Plus size={15} /> New Dashboard
         </button>
       </div>
-
       <div className="px-6 pb-10 grid grid-cols-3 gap-5">
         {dashboards.map(d => (
           <div key={d.id} className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden hover:shadow-md transition-shadow">

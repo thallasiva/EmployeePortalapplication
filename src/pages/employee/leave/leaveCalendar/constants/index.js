@@ -6,7 +6,6 @@ export const AVATAR_COLORS = [
   "bg-rose-500",
   "bg-cyan-500",
 ];
-
 export const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",

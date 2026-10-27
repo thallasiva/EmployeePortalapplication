@@ -2,19 +2,16 @@ import React, { useRef } from "react";
 import { Upload, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { Field } from "../../shared";
 import ScorePanel from "./ScorePanel";
-
 const ResumeUploadStep = React.memo(function ResumeUploadStep({
   jobs, form, file, parsing, preScoring, preScore, scoreErr, parseErr,
   onFileChange, onFormChange
 }) {
   const fileRef = useRef(null);
-
   return (
     <div>
       <div className="mb-4 px-3.5 py-2.5 bg-amber-50 rounded-lg border-l-[3px] border-l-[#f18200] text-sm text-amber-800">
         Select the job position, then upload a resume to auto-extract candidate details.
       </div>
-
       <Field label="Job / Position" required>
         <select
           name="jobReqId"
@@ -29,9 +26,7 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
           )}
         </select>
       </Field>
-
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2.5">Upload Resume</div>
-
       <div
         onClick={() => fileRef.current?.click()}
         className={`border-2 border-dashed rounded-xl px-6 py-7 text-center cursor-pointer transition-all ${file ? "border-[#f18200] bg-amber-50" : "border-gray-300 bg-gray-50"}`}>
@@ -50,7 +45,6 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
           </>
         )}
       </div>
-
       {file && form.jobReqId &&
         <div className="mt-3.5">
           {preScoring &&
@@ -71,13 +65,11 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
           {!preScoring && preScore && <ScorePanel score={preScore} showHint />}
         </div>
       }
-
       {file && !form.jobReqId &&
         <div className="mt-3 px-3.5 py-2.5 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-xs text-gray-400 text-center">
           Select a job above to see the resume match score
         </div>
       }
-
       {parseErr &&
         <div className="mt-3 px-3.5 py-2.5 bg-red-50 rounded-lg border-l-[3px] border-l-red-500 text-sm text-red-800 flex gap-2">
           <AlertCircle size={14} className="flex-shrink-0 mt-0.5" /> {parseErr}
@@ -86,5 +78,4 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
     </div>
   );
 });
-
 export default ResumeUploadStep;

@@ -7,10 +7,8 @@ import OffersTableCard from "./components/OffersTableCard";
 import OfferCreateSlideOver from "./components/OfferCreateSlideOver";
 import OfferDetailSlideOver from "./components/OfferDetailSlideOver";
 import OnboardModal from "./components/OnboardModal";
-
 export default function OffersPage({ role }) {
   const s = useOffersState(role);
-
   return (
     <div>
       <PageHeader
@@ -24,9 +22,7 @@ export default function OffersPage({ role }) {
           </div>
         )}
       />
-
       <StatusFilterBar offers={s.offers} filterStatus={s.filterStatus} onSelect={s.selectFilter} />
-
       <OffersTableCard
         tableRef={s.tableRef}
         loading={s.loading}
@@ -37,7 +33,6 @@ export default function OffersPage({ role }) {
         onFilterChange={s.setFilterStatus}
         onView={s.openDetail}
       />
-
       <OfferCreateSlideOver
         open={s.offerOpen}
         onClose={s.closeCreateForm}
@@ -52,7 +47,6 @@ export default function OffersPage({ role }) {
         onSubmit={s.handleCreate}
         onBack={() => s.setStep("form")}
       />
-
       {s.detail && (
         <OfferDetailSlideOver
           detail={s.detail}
@@ -71,7 +65,6 @@ export default function OffersPage({ role }) {
           }}
         />
       )}
-
       <OnboardModal
         open={s.onboardModal}
         candidateName={s.detail?.candidate_name}

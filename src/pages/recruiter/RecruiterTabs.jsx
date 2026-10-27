@@ -1,18 +1,15 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, CalendarCheck, Users, FileCheck } from "lucide-react";
-
 const TABS = [
   { label: "Team Overview",       path: "/recruiter/team/overview",    icon: LayoutDashboard },
   { label: "Leave Requests",      path: "/recruiter/team/leave",        icon: CalendarCheck },
   { label: "Attendance",          path: "/recruiter/team/attendance",   icon: Users },
   { label: "Joining Formalities", path: "/recruiter/team/joining",      icon: FileCheck },
 ];
-
 const RecruiterTabs = () => {
   const navigate  = useNavigate();
   const { pathname } = useLocation();
-
   return (
     <div className="flex gap-1 flex-wrap mb-2">
       {TABS.map(({ label, path, icon: Icon }) => {
@@ -35,5 +32,4 @@ const RecruiterTabs = () => {
     </div>
   );
 };
-
 export default RecruiterTabs;

@@ -1,6 +1,5 @@
 import React from "react";
 import { inputCls } from "../constants";
-
 export const Field = React.memo(function Field({ label, required, children, error }) {
   return (
     <div className="mb-3.5">
@@ -14,7 +13,6 @@ export const Field = React.memo(function Field({ label, required, children, erro
     </div>
   );
 });
-
 export const Input = React.memo(function Input({ value, onChange, placeholder, type = "text", disabled, name, ...rest }) {
   return (
     <input
@@ -30,7 +28,6 @@ export const Input = React.memo(function Input({ value, onChange, placeholder, t
     />
   );
 });
-
 export const Select = React.memo(function Select({ value, onChange, options = [], placeholder, disabled, name }) {
   return (
     <select
@@ -48,7 +45,6 @@ export const Select = React.memo(function Select({ value, onChange, options = []
     </select>
   );
 });
-
 export const Textarea = React.memo(function Textarea({ value, onChange, placeholder, rows = 3, disabled, name }) {
   return (
     <textarea

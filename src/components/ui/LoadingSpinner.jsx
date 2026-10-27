@@ -1,7 +1,5 @@
 import { memo } from "react";
-
 const SIZES = { sm: "w-4 h-4 border-2", md: "w-8 h-8 border-4", lg: "w-12 h-12 border-4" };
-
 /**
  * Amber spinner — matches the app's primary accent colour.
  * @param {'sm'|'md'|'lg'} size
@@ -18,7 +16,6 @@ const LoadingSpinner = memo(function LoadingSpinner({ size = "md", className = "
     </div>
   );
 });
-
 /**
  * Full-page centred loading overlay.
  */
@@ -31,7 +28,6 @@ export const PageLoader = memo(function PageLoader({ label = "Loading..." })
     </div>
   );
 });
-
 /**
  * Inline skeleton line — for text placeholder loading states.
  */
@@ -39,5 +35,4 @@ export const SkeletonLine = memo(function SkeletonLine({ width = "w-full", heigh
 {
   return <div className={`${width} ${height} rounded bg-gray-200 animate-pulse`} />;
 });
-
 export default LoadingSpinner;

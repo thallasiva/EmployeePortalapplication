@@ -5,7 +5,6 @@ import { fmt } from "../utils";
 import SectionHead from "./SectionHead";
 import FormInput from "./FormInput";
 import Row from "./Row";
-
 const StatutorySection = React.memo(function StatutorySection({
   employee, editMode, form, formErrors, touched, set, touch,
 }) {
@@ -40,5 +39,4 @@ const StatutorySection = React.memo(function StatutorySection({
     </div>
   );
 });
-
 export default StatutorySection;

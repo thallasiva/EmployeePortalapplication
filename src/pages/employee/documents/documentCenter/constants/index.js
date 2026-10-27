@@ -7,7 +7,6 @@ export const VIEW = {
   FORMS: "forms",
   LETTERS: "letters"
 };
-
 export const POLICIES = [
   {
     id: "information-security",
@@ -64,20 +63,16 @@ export const POLICIES = [
       "Ethical standards, anti-harassment guidelines, and reporting procedures for all employees."
   }
 ];
-
 export const FORM16_YEARS = ["2025-26", "2024-25", "2023-24"];
-
 export const FORM_SECTIONS = [
   { id: "tax-forms", jumpLabel: "Tax Forms", title: "Tax Forms" },
   { id: "statutory-forms", jumpLabel: "Statutory Forms", title: "Statutory Forms" },
   { id: "declaration-forms", jumpLabel: "Declaration Forms", title: "Declaration Forms" }
 ];
-
 export const LETTER_SECTIONS = [
   { id: "pending-letters", jumpLabel: "Pending", title: "Pending Requests" },
   { id: "closed-letters", jumpLabel: "Closed", title: "Closed Requests" }
 ];
-
 export const PAYSLIP_ROWS = [
   { month: "Apr 2026", text: "Payroll for the month of Apr 2026", date: "01 May, 2026", file: null },
   { month: "Mar 2026", text: "Payroll for the month of Mar 2026", date: "06 Apr, 2026", file: "Mar 2026.pdf" },

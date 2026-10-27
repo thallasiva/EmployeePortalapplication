@@ -3,7 +3,6 @@ import { UserCheck, Search, X, Building, Users, Eye } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import { statusColor } from "../utils/formatters";
-
 const ManagersTab = React.memo(function ManagersTab({
   managers,
   mgSearch,
@@ -17,7 +16,6 @@ const ManagersTab = React.memo(function ManagersTab({
       m.designation_name?.toLowerCase().includes(mgSearch.toLowerCase()) ||
       m.department_name?.toLowerCase().includes(mgSearch.toLowerCase())
   );
-
   return (
     <div>
       <div className={cssClass({
@@ -49,7 +47,6 @@ const ManagersTab = React.memo(function ManagersTab({
           )}
         </div>
       </div>
-
       {filtered.length === 0 ? (
         <div className={cssClass({
           textAlign: "center", padding: 40, color: "#9ca3af",
@@ -95,7 +92,6 @@ const ManagersTab = React.memo(function ManagersTab({
                     {m.employee_status || "Active"}
                   </span>
                 </div>
-
                 <div className={cssClass({
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "10px 12px", background: "#f9fafb", borderRadius: 8, gap: 10,
@@ -111,7 +107,6 @@ const ManagersTab = React.memo(function ManagersTab({
                     {m.team_count != null ? m.team_count : "—"} reports
                   </div>
                 </div>
-
                 <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, fontSize: 12, color: BRAND, fontWeight: 600 })}>
                   <Eye size={13} /> View Details
                 </div>
@@ -123,5 +118,4 @@ const ManagersTab = React.memo(function ManagersTab({
     </div>
   );
 });
-
 export default ManagersTab;

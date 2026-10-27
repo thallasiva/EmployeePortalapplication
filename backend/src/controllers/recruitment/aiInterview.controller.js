@@ -1,11 +1,9 @@
 'use strict';
-
 const asyncHandler   = require('express-async-handler');
 const aiSvc          = require('../../services/recruitment/aiInterview.service');
 const { callProcedure, query } = require('../../config/db');
 const ApiResponse    = require('../../utils/ApiResponse');
 const { sendMailNow } = require('../../services/email.service');
-
 async function getCandidateResumeText(candidateId) {
   const dynamicRows = await query(
     `SELECT field_value
@@ -14,7 +12,6 @@ async function getCandidateResumeText(candidateId) {
       ORDER BY created_date DESC, id DESC`,
     [candidateId]
   ).catch(() => []);
-
   for (const row of dynamicRows) {
     try {
       const value = JSON.parse(row.field_value);
@@ -24,7 +21,6 @@ async function getCandidateResumeText(candidateId) {
       if (String(row.field_value || '').trim()) return String(row.field_value);
     }
   }
-
   const parserLogs = await query(
     `SELECT full_json
        FROM rec_parser_logs
@@ -33,7 +29,6 @@ async function getCandidateResumeText(candidateId) {
       LIMIT 1`,
     [candidateId]
   ).catch(() => []);
-
   try {
     const parsed = JSON.parse(parserLogs[0]?.full_json || '{}');
     return parsed.rawText || parsed.resume_text || parsed.summary || '';
@@ -41,7 +36,6 @@ async function getCandidateResumeText(candidateId) {
     return '';
   }
 }
-
 // ── send invite email ──────────────────────────────────────────────────────
 async function sendAIInterviewInvite({ candidateEmail, candidateName, jobTitle, token, expiresAt, recruiterName }) {
   const link = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/ai-interview/${token}`;
@@ -67,23 +61,19 @@ async function sendAIInterviewInvite({ candidateEmail, candidateName, jobTitle, 
     `,
   });
 }
-
 // ── POST /ai-interviews  — recruiter creates session ──────────────────────
 const create = asyncHandler(async (req, res) => {
   const { candidateId, jobReqId, durationMinutes } = req.body;
   if (!candidateId || !jobReqId) {
     return res.status(400).json({ success: false, message: 'candidateId and jobReqId are required' });
   }
-
   // Fetch candidate + job details
   const cRes = await callProcedure('sp_rec_get_candidate(?)', [Number(candidateId)]);
   const candidate = (cRes[0] ?? [])[0];
   const jRes = await callProcedure('sp_rec_get_job_request(?)', [Number(jobReqId)]);
   const job = (jRes[0] ?? [])[0];
-
   if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
   if (!job)       return res.status(404).json({ success: false, message: 'Job not found' });
-
   // Store interview context only. The engine generates one question after
   // each response; candidates never receive a pre-generated question list.
   const profile = {
@@ -107,7 +97,6 @@ const create = asyncHandler(async (req, res) => {
     durationMinutes: Number(durationMinutes) || 30,
     expiresHours:   48,
   });
-
   // Send email invite without blocking session creation when SMTP is unavailable.
   let inviteEmail = { sent: false, error: 'SMTP not configured' };
   try {
@@ -125,14 +114,12 @@ const create = asyncHandler(async (req, res) => {
   } catch (err) {
     console.error('[AIInterview] Email delivery skipped:', err.message);
   }
-
   new ApiResponse(
     201,
     { token, expiresAt, durationMinutes: Number(durationMinutes) || 30, inviteEmail },
     inviteEmail.sent ? 'AI interview session created and invite sent' : 'AI interview session created; invite email was not sent'
   ).send(res);
 });
-
 // ── GET /ai-interviews  — recruiter lists sessions ─────────────────────────
 const list = asyncHandler(async (req, res) => {
   const sessions = await aiSvc.listByRecruiter({
@@ -142,18 +129,15 @@ const list = asyncHandler(async (req, res) => {
   });
   new ApiResponse(200, sessions, 'AI interview sessions fetched').send(res);
 });
-
 // ── GET /ai-interviews/report/:id  — recruiter views report ───────────────
 const getReport = asyncHandler(async (req, res) => {
   const report = await aiSvc.getReport(Number(req.params.id));
   if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
-
   // Parse stored JSON blobs
   let answers = [];
   let evaluation = {};
   try { answers = JSON.parse(report.answers_json || '[]'); } catch {}
   try { evaluation = JSON.parse(report.evaluation_json || '{}'); } catch {}
-
   // Build merged questions array: Q text + candidate answer + AI score + feedback
   const questionScores = evaluation.questionScores || [];
   const questions = answers.map((entry, i) => {
@@ -169,7 +153,6 @@ const getReport = asyncHandler(async (req, res) => {
       answerQuality: entry.answerQuality || '',
     };
   });
-
   const payload = {
     session_id:     report.session_id,
     candidate_name: report.candidate_name,
@@ -198,17 +181,14 @@ const getReport = asyncHandler(async (req, res) => {
     nextSteps:      evaluation.nextSteps || [],
     questions,  // merged Q&A with scores
   };
-
   new ApiResponse(200, payload, 'Report fetched').send(res);
 });
-
 // ── PUBLIC: GET /public/ai-interview/:token  — candidate loads interview ──
 const getSession = asyncHandler(async (req, res) => {
   const session = await aiSvc.getSession(req.params.token);
   if (!session) return res.status(404).json({ success: false, message: 'Interview not found or expired' });
   if (session.status === 'completed') return res.status(410).json({ success: false, message: 'This interview has already been submitted' });
   if (new Date(session.expires_at) < new Date()) return res.status(410).json({ success: false, message: 'This interview link has expired' });
-
   const state = (() => { try { return JSON.parse(session.questions_json || '{}'); } catch { return {}; } })();
   new ApiResponse(200, {
     sessionId:      session.session_id,
@@ -222,7 +202,6 @@ const getSession = asyncHandler(async (req, res) => {
     started: Boolean(state.startedAt),
   }, 'Session loaded').send(res);
 });
-
 // PUBLIC: POST /public/ai-interview/:token/start
 const start = asyncHandler(async (req, res) => {
   const started = await aiSvc.startAdaptiveSession(req.params.token);
@@ -231,7 +210,6 @@ const start = asyncHandler(async (req, res) => {
   if (session.status === 'completed') return res.status(410).json({ success: false, message: 'This interview has already been submitted' });
   new ApiResponse(200, { question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: aiSvc.getRemainingSeconds(state), startedAt: state.startedAt, expiresAt: state.expiresAt }, 'Interview started').send(res);
 });
-
 const sendOtp = asyncHandler(async (req, res) => {
   const result = await aiSvc.issueOtp(req.params.token);
   if (!result) return res.status(404).json({ success: false, message: 'Interview not found or expired' });
@@ -247,13 +225,11 @@ const sendOtp = asyncHandler(async (req, res) => {
   }
   new ApiResponse(200, { sent: true }, 'Verification code sent').send(res);
 });
-
 const verifyOtp = asyncHandler(async (req, res) => {
   const result = await aiSvc.verifyOtp(req.params.token, req.body.code);
   if (!result.valid) return res.status(400).json({ success: false, message: result.error });
   new ApiResponse(200, { verified: true }, 'Verification successful').send(res);
 });
-
 // PUBLIC: POST /public/ai-interview/:token/answer
 const answer = asyncHandler(async (req, res) => {
   if (!String(req.body.answer || '').trim()) return res.status(400).json({ success: false, message: 'An answer is required' });
@@ -265,17 +241,13 @@ const answer = asyncHandler(async (req, res) => {
     : { complete: false, question: result.question, questionNumber: result.questionNumber, remainingSeconds: result.remainingSeconds, expiresAt: result.expiresAt };
   new ApiResponse(200, safeResult, result.complete ? 'Interview submitted successfully' : 'Next question ready').send(res);
 });
-
 // ── PUBLIC: POST /public/ai-interview/:token/submit  — candidate submits ──
 const submit = asyncHandler(async (req, res) => {
   const completed = await aiSvc.completeAdaptiveSession(req.params.token, 'candidate_completed');
   if (!completed) return res.status(410).json({ success: false, message: 'Interview is unavailable or already completed' });
-
   // SECURITY: do not return evaluation data to the candidate
   new ApiResponse(200, { complete: true }, 'Interview submitted successfully. Thank you!').send(res);
 });
-
-
 // ── PUBLIC: POST /public/ai-interview/:token/proctoring ────────────────────
 const logProctoring = asyncHandler(async (req, res) => {
   const { event, count, timestamp } = req.body;
@@ -291,12 +263,10 @@ const logProctoring = asyncHandler(async (req, res) => {
   }
   new ApiResponse(200, result, 'Proctoring event logged').send(res);
 });
-
 // ── PUBLIC: POST /public/ai-interview/:token/draft ─────────────────────────
 const saveDraft = asyncHandler(async (req, res) => {
   const { questionId, draft } = req.body;
   await aiSvc.saveDraft(req.params.token, questionId, draft || '');
   new ApiResponse(200, {}, 'Draft saved').send(res);
 });
-
 module.exports = { create, list, getReport, getSession, start, sendOtp, verifyOtp, answer, submit, logProctoring, saveDraft };

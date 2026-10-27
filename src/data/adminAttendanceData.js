@@ -11,16 +11,12 @@ export const ADMIN_ATTENDANCE_SUMMARY = {
   lateThisMonth: 47,
   attendanceRate: 94
 };
-
 export const ADMIN_WEEKLY_ATTENDANCE = [
 { day: "Mon", present: 17, absent: 1, late: 2, leave: 1 },
 { day: "Tue", present: 19, absent: 1, late: 1, leave: 0 },
 { day: "Wed", present: 18, absent: 1, late: 3, leave: 1 },
 { day: "Thu", present: 20, absent: 0, late: 1, leave: 0 },
 { day: "Fri", present: 16, absent: 1, late: 2, leave: 2 }];
-
-
-
 export const ADMIN_ALL_EMPLOYEES = [
 { id: 1, name: "Priya Sharma", department: "Engineering", empId: "EMP001", status: "present", checkIn: "09:02", checkOut: "18:15", hours: "9.2h", nineHrMet: true },
 { id: 2, name: "Sean Black", department: "Engineering", empId: "EMP002", status: "present", checkIn: "08:55", checkOut: "18:05", hours: "9.1h", nineHrMet: true },
@@ -46,16 +42,12 @@ export const ADMIN_ALL_EMPLOYEES = [
 { id: 22, name: "Diana Ross", department: "Sales", empId: "EMP022", status: "present", checkIn: "09:02", checkOut: "18:05", hours: "9.1h", nineHrMet: true },
 { id: 23, name: "Tom Harris", department: "Operations", empId: "EMP023", status: "present", checkIn: "09:00", checkOut: "18:00", hours: "9.0h", nineHrMet: true },
 { id: 24, name: "Olivia White", department: "Finance", empId: "EMP024", status: "present", checkIn: "09:05", checkOut: "18:08", hours: "9.1h", nineHrMet: true }];
-
-
 export const ADMIN_EARLY_LOGOUTS = ADMIN_ALL_EMPLOYEES.filter(
   (e) => e.status === "late" && !e.nineHrMet
 );
-
 export const ADMIN_NINE_HR_COMPLIANT = ADMIN_ALL_EMPLOYEES.filter(
   (e) => e.status === "present" && e.nineHrMet
 );
-
 export const ADMIN_ATTENDANCE_CALENDAR = {
   year: 2026,
   month: 4,
@@ -94,15 +86,12 @@ export const ADMIN_ATTENDANCE_CALENDAR = {
     31: "present"
   }
 };
-
 export const ATTENDANCE_LEGEND = [
 { key: "present", label: "Present", color: "#22c55e" },
 { key: "late", label: "Late", color: "#f97316" },
 { key: "absent", label: "Absent", color: "#f472b6" },
 { key: "leave", label: "Leave", color: "#3b82f6" },
 { key: "weekend", label: "Weekend", color: "#e5e7eb" }];
-
-
 export const STATUS_LABEL = {
   present: "Present",
   absent: "Absent",
@@ -112,7 +101,6 @@ export const STATUS_LABEL = {
   holiday: "Holiday",
   half_day: "Half Day"
 };
-
 export const STATUS_BADGE_CLASS = {
   present: "approved",
   absent: "rejected",
@@ -122,27 +110,20 @@ export const STATUS_BADGE_CLASS = {
   holiday: "leave",
   half_day: "pending"
 };
-
 export const ADMIN_ATTENDANCE_WEEKLY_CHART = [
 { label: "Mon", present: 17, absent: 1, late: 2 },
 { label: "Tue", present: 19, absent: 1, late: 1 },
 { label: "Wed", present: 18, absent: 1, late: 3 },
 { label: "Thu", present: 20, absent: 0, late: 1 },
 { label: "Fri", present: 16, absent: 1, late: 2 }];
-
-
 export const ADMIN_ATTENDANCE_WEEKLY_SERIES = [
 { key: "present", name: "Present", color: "#22c55e" },
 { key: "absent", name: "Absent", color: "#f472b6" }];
-
-
 export const ADMIN_ATTENDANCE_STATUS_CHART = [
 { label: "Present", value: 16, color: "#22c55e" },
 { label: "Absent", value: 2, color: "#f472b6" },
 { label: "Late", value: 4, color: "#f97316" },
 { label: "On Leave", value: 2, color: "#3b82f6" }];
-
-
 export const ADMIN_NINE_HR_DEPT_CHART = [
 { label: "Engineering", value: 7, color: "#22c55e" },
 { label: "Sales", value: 2, color: "#22c55e" },
@@ -150,8 +131,6 @@ export const ADMIN_NINE_HR_DEPT_CHART = [
 { label: "HR", value: 2, color: "#22c55e" },
 { label: "Operations", value: 2, color: "#f97316" },
 { label: "Marketing", value: 1, color: "#22c55e" }];
-
-
 export const ADMIN_EARLY_LOGOUT_DEPT_CHART = [
 { label: "Sales", value: 1, color: "#f97316" },
 { label: "Finance", value: 1, color: "#f97316" },

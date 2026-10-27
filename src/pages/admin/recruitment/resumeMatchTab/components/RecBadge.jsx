@@ -1,7 +1,6 @@
 import React from "react";
 import { REC_CLS } from "../constants/recClasses";
 import { Circle } from "lucide-react";
-
 const RecBadge = React.memo(function RecBadge({ label }) {
   const s = REC_CLS[label] || { bg: "bg-gray-100", text: "text-gray-700", icon: <Circle size={12} /> };
   return (
@@ -10,5 +9,4 @@ const RecBadge = React.memo(function RecBadge({ label }) {
     </span>
   );
 });
-
 export default RecBadge;

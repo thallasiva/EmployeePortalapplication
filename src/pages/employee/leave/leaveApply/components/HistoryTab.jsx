@@ -2,7 +2,6 @@ import React from "react";
 import { Clock } from "lucide-react";
 import Pagination from "../../../../../components/Pagination";
 import RequestCard from "./RequestCard";
-
 const HistoryTab = React.memo(function HistoryTab({
   loadingList,
   pagedHistory,
@@ -47,5 +46,4 @@ const HistoryTab = React.memo(function HistoryTab({
     </div>
   );
 });
-
 export default HistoryTab;

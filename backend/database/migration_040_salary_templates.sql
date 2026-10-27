@@ -3,58 +3,46 @@
 -- Configurable salary structure templates for offer creation
 -- ============================================================
 USE hrms_db;
-
 CREATE TABLE IF NOT EXISTS salary_templates (
   template_id        INT AUTO_INCREMENT PRIMARY KEY,
   template_name      VARCHAR(100)   NOT NULL,
   description        VARCHAR(255)   DEFAULT NULL,
-
   -- Percentage-based components
   basic_pct          DECIMAL(5,2)   NOT NULL DEFAULT 50.00,   -- % of CTC monthly
   hra_pct            DECIMAL(5,2)   NOT NULL DEFAULT 40.00,   -- % of Basic
   variable_pct       DECIMAL(5,2)   NOT NULL DEFAULT 0.00,    -- % of CTC (variable pay)
-
   -- Fixed allowances (monthly amounts)
   telephone_monthly  DECIMAL(10,2)  NOT NULL DEFAULT 1500.00,
   lta_annual         DECIMAL(10,2)  NOT NULL DEFAULT 0.00,
-
   -- PF settings
   pf_applicable      TINYINT(1)     NOT NULL DEFAULT 1,
   pf_cap             TINYINT(1)     NOT NULL DEFAULT 1,        -- cap at 15000 basic
-
   -- Other components
   gratuity_applicable TINYINT(1)   NOT NULL DEFAULT 0,
   bonus_applicable   TINYINT(1)    NOT NULL DEFAULT 1,         -- statutory bonus
   insurance_cost     DECIMAL(10,2) NOT NULL DEFAULT 0.00,      -- annual insurance
   other_allowances   DECIMAL(10,2) NOT NULL DEFAULT 0.00,      -- annual other
   professional_tax   DECIMAL(10,2) NOT NULL DEFAULT 0.00,      -- annual PT
-
   is_default         TINYINT(1)    NOT NULL DEFAULT 0,
   is_active          TINYINT(1)    NOT NULL DEFAULT 1,
   created_at         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
   UNIQUE KEY uq_template_name (template_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ── Stored Procedures ──────────────────────────────────────
-
 DELIMITER $$
-
 -- List all active templates
 DROP PROCEDURE IF EXISTS sp_list_salary_templates $$
 CREATE PROCEDURE sp_list_salary_templates()
 BEGIN
   SELECT * FROM salary_templates WHERE is_active = 1 ORDER BY is_default DESC, template_name ASC;
 END $$
-
 -- Get single template
 DROP PROCEDURE IF EXISTS sp_get_salary_template $$
 CREATE PROCEDURE sp_get_salary_template(IN p_id INT)
 BEGIN
   SELECT * FROM salary_templates WHERE template_id = p_id;
 END $$
-
 -- Create template
 DROP PROCEDURE IF EXISTS sp_create_salary_template $$
 CREATE PROCEDURE sp_create_salary_template(
@@ -78,7 +66,6 @@ BEGIN
   IF p_is_default = 1 THEN
     UPDATE salary_templates SET is_default = 0;
   END IF;
-
   INSERT INTO salary_templates (
     template_name, description, basic_pct, hra_pct, variable_pct,
     telephone_monthly, lta_annual, pf_applicable, pf_cap,
@@ -90,10 +77,8 @@ BEGIN
     p_gratuity, p_bonus, p_insurance,
     p_other, p_pt, p_is_default
   );
-
   SELECT LAST_INSERT_ID() AS template_id;
 END $$
-
 -- Update template
 DROP PROCEDURE IF EXISTS sp_update_salary_template $$
 CREATE PROCEDURE sp_update_salary_template(
@@ -118,7 +103,6 @@ BEGIN
   IF p_is_default = 1 THEN
     UPDATE salary_templates SET is_default = 0 WHERE template_id != p_id;
   END IF;
-
   UPDATE salary_templates SET
     template_name       = p_name,
     description         = p_description,
@@ -136,10 +120,8 @@ BEGIN
     professional_tax    = p_pt,
     is_default          = p_is_default
   WHERE template_id = p_id;
-
   SELECT ROW_COUNT() AS updated;
 END $$
-
 -- Delete (soft)
 DROP PROCEDURE IF EXISTS sp_delete_salary_template $$
 CREATE PROCEDURE sp_delete_salary_template(IN p_id INT)
@@ -147,9 +129,7 @@ BEGIN
   UPDATE salary_templates SET is_active = 0 WHERE template_id = p_id;
   SELECT ROW_COUNT() AS deleted;
 END $$
-
 DELIMITER ;
-
 -- Seed: two default templates
 INSERT INTO salary_templates (
   template_name, description, basic_pct, hra_pct, variable_pct,
@@ -171,5 +151,4 @@ INSERT INTO salary_templates (
   1, 0, 0.00, 0.00, 0.00, 0
 )
 ON DUPLICATE KEY UPDATE template_name = VALUES(template_name);
-
 SELECT 'Migration 040 complete — salary_templates created' AS status;

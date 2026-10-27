@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import { useDebounce } from "./useDebounce";
-
 /**
  * Client-side search + multi-key filter hook.
  * Eliminates the duplicated filter/search logic scattered across list pages.
@@ -30,23 +29,17 @@ import { useDebounce } from "./useDebounce";
 export function useFilter(items, { searchFields = [], initialFilters = {}, debounceMs = 300 } = {}) {
   const [search,  setSearch]  = useState("");
   const [filters, setFilters] = useState(initialFilters);
-
   const debouncedSearch = useDebounce(search, debounceMs);
-
   const setFilter = useCallback((key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }, []);
-
   const clearFilters = useCallback(() => {
     setSearch("");
     setFilters(initialFilters);
   }, [initialFilters]);
-
   const filtered = useMemo(() => {
     if (!items) return [];
-
     let result = items;
-
     /* full-text search */
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
@@ -56,21 +49,17 @@ export function useFilter(items, { searchFields = [], initialFilters = {}, debou
         )
       );
     }
-
     /* discrete filters */
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== "" && value != null && value !== "all") {
         result = result.filter((item) => String(item[key] ?? "") === String(value));
       }
     });
-
     return result;
   }, [items, debouncedSearch, filters, searchFields]);
-
   const hasActiveFilters = useMemo(
     () => search !== "" || Object.values(filters).some((v) => v !== "" && v != null && v !== "all"),
     [search, filters]
   );
-
   return { filtered, search, setSearch, filters, setFilter, clearFilters, hasActiveFilters };
 }

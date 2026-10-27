@@ -5,7 +5,6 @@ import TabSwitcher from "./components/TabSwitcher";
 import ApplyTab from "./components/ApplyTab";
 import PendingTab from "./components/PendingTab";
 import HistoryTab from "./components/HistoryTab";
-
 export default function MyRegularizations({ onBack }) {
   const {
     goBack,
@@ -32,7 +31,6 @@ export default function MyRegularizations({ onBack }) {
     nextMonth,
     submitRegularization,
   } = useRegularizationState(onBack);
-
   if (detailRecord) {
     return (
       <div className="-mx-1 space-y-3">
@@ -51,7 +49,6 @@ export default function MyRegularizations({ onBack }) {
       </div>
     );
   }
-
   return (
     <div className="-mx-1 flex flex-col min-h-[calc(100vh-5.5rem)]">
       <nav className="text-sm text-sky-600 mb-3">
@@ -61,9 +58,7 @@ export default function MyRegularizations({ onBack }) {
         <span className="text-slate-400 mx-1">/</span>
         <span className="text-slate-600">My Regularizations</span>
       </nav>
-
       <TabSwitcher tab={tab} onTabChange={setTab} />
-
       {tab === "apply" && (
         <ApplyTab
           grid={grid}
@@ -83,9 +78,7 @@ export default function MyRegularizations({ onBack }) {
           onSubmit={submitRegularization}
         />
       )}
-
       {tab === "pending" && <PendingTab pendingItems={pendingItems} />}
-
       {tab === "history" && (
         <HistoryTab
           expandedId={expandedId}

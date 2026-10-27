@@ -7,7 +7,6 @@ import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import { AppraisalBadge } from "./Badges";
 import Modal from "./Modal";
-
 const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
   const [cycleId, setCycleId] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
@@ -18,50 +17,41 @@ const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
   const [pickerSearch, setPickerSearch] = useState("");
   const [pickerSel, setPickerSel] = useState([]);
   const [adding, setAdding] = useState(false);
-
   useEffect(() => {
     if (!cycles.length) return;
     const active = cycles.find((c) => c.status === "active");
     setCycleId((active || cycles[0]).cycle_id);
   }, [cycles]);
-
   const fetchEnr = useCallback(async (id) => {
     setLoading(true);
     try { setEnrollments((await getEnrollments(id)) || []); }
     catch { setEnrollments([]); }
     finally { setLoading(false); }
   }, []);
-
   useEffect(() => { if (cycleId) fetchEnr(cycleId); }, [cycleId, fetchEnr]);
-
   const filteredEnr = enrollments.filter((e) =>
     `${e.employee_name} ${e.emp_code || ""}`.toLowerCase().includes(search.toLowerCase())
   );
-
   const openPicker = async () => {
     setShowPicker(true);
     const r = await listEmployees({ status: "Active", limit: 500 }).catch(() => ({ data: [] }));
     const ids = new Set(enrollments.map((e) => e.employee_id));
     setAllEmps((r.data || r || []).filter((e) => !ids.has(e.employee_id)));
   };
-
   const filteredPicker = allEmps.filter((e) =>
     `${e.first_name} ${e.last_name} ${e.emp_code || ""}`.toLowerCase().includes(pickerSearch.toLowerCase())
   );
-
   const handleAdd = async () => {
     if (!pickerSel.length) return;
     setAdding(true);
     try { await enrollEmployees(cycleId, pickerSel); setShowPicker(false); setPickerSel([]); fetchEnr(cycleId); }
     catch {} finally { setAdding(false); }
   };
-
   const handleRemove = async (empId) => {
     if (!window.confirm("Remove this employee from the cycle?")) return;
     await unenrollEmployee(empId, cycleId);
     fetchEnr(cycleId);
   };
-
   return (
     <div>
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" })}>
@@ -74,7 +64,6 @@ const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
           </button>
         ))}
       </div>
-
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 12 })}>
         <div className={cssClass({ position: "relative", flex: 1, maxWidth: 340 })}>
           <Search size={14} className={cssClass({ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" })} />
@@ -86,7 +75,6 @@ const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
           <Plus size={13} /> Add Employee
         </button>
       </div>
-
       {loading
         ? <div className={cssClass({ textAlign: "center", padding: 30, color: "#94a3b8" })}>Loading…</div>
         : (
@@ -127,7 +115,6 @@ const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
           </div>
         )
       }
-
       {showPicker && (
         <Modal title="Add Employees to Cycle" onClose={() => setShowPicker(false)} width={480}>
           <div className={cssClass({ display: "flex", flexDirection: "column", gap: 12 })}>
@@ -165,5 +152,4 @@ const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
     </div>
   );
 });
-
 export default EnrollmentTab;

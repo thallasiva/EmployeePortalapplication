@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { STATUS_CFG } from "../constants";
 import { fmtDate } from "../utils";
-
 const ResignationStatus = React.memo(function ResignationStatus({ data, onWithdraw, withdrawing }) {
   const cfg = STATUS_CFG[data.status] || STATUS_CFG.pending;
   return (
@@ -44,5 +43,4 @@ const ResignationStatus = React.memo(function ResignationStatus({ data, onWithdr
     </div>
   );
 });
-
 export default ResignationStatus;

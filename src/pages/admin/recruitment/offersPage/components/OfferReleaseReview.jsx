@@ -1,7 +1,6 @@
 import React from "react";
 import { fmt, fmtM } from "../utils/ctcUtils";
 import { Check, AlertTriangle, X } from "lucide-react";
-
 const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, computed, candidates, checks }) {
   const ctcAnn = Number(form.ctcInput) * 12;
   const varPct = Number(form.variablePct) || 0;
@@ -9,7 +8,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
   const joinBonus = Number(form.joiningBonus) || 0;
   const totalCTC = (computed.ctc || 0) + varAnn + joinBonus;
   const candName = (candidates.find((x) => String(x.candidate_id) === String(form.candidateId)) || {}).name || '—';
-
   const fixedRows = computed._components
     ? computed._components.filter((cp) => cp.category === 'Earning' && cp.show_ctc_breakup !== false)
         .map((cp) => ({ label: cp.component_name, ann: cp.annual_amount }))
@@ -20,7 +18,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
         { label: 'Leave Travel Allowance', ann: computed.leaveTravel || 0 },
         { label: 'Special Allowance', ann: computed.specialAllowance || 0 }
       ];
-
   const empRows = computed._components
     ? computed._components.filter((cp) => cp.category === 'Employer Contribution' && cp.show_ctc_breakup !== false)
         .map((cp) => ({ label: cp.component_name, ann: cp.annual_amount }))
@@ -30,10 +27,8 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
         { label: 'Gratuity', ann: computed.gratuity || 0 },
         { label: 'ESI', ann: computed.esi || 0 }
       ];
-
   const failCount = checks.filter((ck) => ck.status === 'fail').length;
   const warnCount = checks.filter((ck) => ck.status === 'warn').length;
-
   return (
     <div className="space-y-3 pb-2">
       {/* Offer Summary */}
@@ -53,7 +48,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
           ))}
         </div>
       </div>
-
       {/* Fixed Pay */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 mb-1 pl-1">&#9679; Fixed Pay (Earnings)</p>
@@ -77,7 +71,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
           </div>
         </div>
       </div>
-
       {/* Employer Contributions */}
       <div>
         <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1 pl-1">&#9679; Employer Contributions</p>
@@ -96,7 +89,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
           ))}
         </div>
       </div>
-
       {/* Variable Pay + One-time */}
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -128,7 +120,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
           </div>
         </div>
       </div>
-
       {/* CTC Summary */}
       <div className="bg-[#1e3a5f] rounded-xl px-4 py-3">
         <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-2">CTC Summary</p>
@@ -155,7 +146,6 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
           </div>
         </div>
       </div>
-
       {/* Validation Checks */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
@@ -189,5 +179,4 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
     </div>
   );
 });
-
 export default OfferReleaseReview;

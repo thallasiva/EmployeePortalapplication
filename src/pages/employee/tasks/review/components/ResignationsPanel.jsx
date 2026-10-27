@@ -4,10 +4,8 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { useResignationsData } from "../hooks/useResignationsData";
 import ResignCard from "./ResignCard";
 import StatChip from "./StatChip";
-
 const ResignationsPanel = React.memo(function ResignationsPanel({ search, statusFilter }) {
   const { rows, loading, isPrivileged } = useResignationsData();
-
   const filtered = useMemo(() => {
     let list = rows;
     if (statusFilter === "pending") list = rows.filter((r) => r.status === "pending");
@@ -20,11 +18,9 @@ const ResignationsPanel = React.memo(function ResignationsPanel({ search, status
         .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [rows, statusFilter, search]);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 13 })}>Loading…</div>;
   }
-
   if (!rows.length) {
     return (
       <div className={cssClass({ textAlign: "center", padding: "60px 24px" })}>
@@ -35,11 +31,9 @@ const ResignationsPanel = React.memo(function ResignationsPanel({ search, status
       </div>
     );
   }
-
   const pending  = rows.filter((r) => r.status === "pending").length;
   const accepted = rows.filter((r) => ["accepted", "rm_approved"].includes(r.status)).length;
   const rejected = rows.filter((r) => ["rejected", "rm_rejected"].includes(r.status)).length;
-
   return (
     <>
       <div className={cssClass({ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" })}>
@@ -60,5 +54,4 @@ const ResignationsPanel = React.memo(function ResignationsPanel({ search, status
     </>
   );
 });
-
 export default ResignationsPanel;

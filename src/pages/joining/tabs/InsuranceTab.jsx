@@ -1,22 +1,18 @@
 import React from "react";
 import { ClipboardList, User, Heart, FileText, Info, Check, AlertTriangle } from "lucide-react";
 import SignatureUpload from "./SignatureUpload";
-
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] focus:border-[#d97706] bg-white text-gray-800 placeholder-gray-400";
 const inpRO = "w-full border border-amber-100 rounded-lg px-3 py-2 text-[13px] bg-amber-50 text-gray-700 cursor-not-allowed";
 const tbl_inp = "w-full border border-amber-100 rounded-lg px-2 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-[#d97706] bg-white";
-
 const Label = ({ children, required }) =>
 <label className="block text-[11px] font-semibold text-amber-800 uppercase tracking-wide mb-1">
     {children}{required && <span className="text-red-500 ml-0.5">*</span>}
   </label>;
-
 const F = ({ label, required, full, children }) =>
 <div className={full ? "col-span-2" : ""}>
     {label && <Label required={required}>{label}</Label>}
     {children}
   </div>;
-
 const SectionCard = ({ icon: Icon, title, action, children }) =>
 <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
     <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-[#f18200] to-[#f18200]">
@@ -28,33 +24,26 @@ const SectionCard = ({ icon: Icon, title, action, children }) =>
     </div>
     <div className="p-5">{children}</div>
   </div>;
-
 const TH = ({ children }) =>
 <th className="px-3 py-2.5 text-left text-[11px] font-bold text-amber-800 uppercase tracking-wide bg-amber-50 border-b border-amber-100 whitespace-nowrap">{children}</th>;
-
 const AddBtn = ({ onClick }) =>
 <button onClick={onClick} type="button"
 className="inline-flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-white/20 text-white hover:bg-white/30 border border-white/30 transition-colors">
     + Add Nominee
   </button>;
-
 const AutoTag = () =>
 <span className="ml-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
     <Info size={9} /> Auto-filled
   </span>;
-
-
 export default function InsuranceTab({ form, set, setForm }) {
   const nominees = form.insNominees || [];
   const total = nominees.reduce((s, n) => s + (Number(n.shareAmount) || 0), 0);
-
   const addNominee = () => setForm((p) => ({
     ...p, insNominees: [...(p.insNominees || []),
     { nomineeNameAndAddress: "", relationship: "", dateOfBirth: "", shareAmount: "", guardianDetails: "" }]
   }));
   const rmNominee = (i) => setForm((p) => ({ ...p, insNominees: p.insNominees.filter((_, x) => x !== i) }));
   const setN = (i, k, v) => setForm((p) => {const a = [...p.insNominees];a[i] = { ...a[i], [k]: v };return { ...p, insNominees: a };});
-
   return (
     <div className="space-y-4">
       {}
@@ -80,7 +69,6 @@ export default function InsuranceTab({ form, set, setForm }) {
           </F>
         </div>
       </SectionCard>
-
       {}
       <SectionCard icon={Heart} title="Nominee Details" action={<AddBtn onClick={addNominee} />}>
         <div className="overflow-x-auto rounded-xl border border-amber-100">
@@ -114,7 +102,6 @@ export default function InsuranceTab({ form, set, setForm }) {
           {total === 100 ? <Check size={13} className="inline -mt-0.5" /> : <AlertTriangle size={13} className="inline -mt-0.5" />} Total Share: {total}% {total !== 100 ? "(must equal 100%)" : ""}
         </div>
       </SectionCard>
-
       {}
       <SectionCard icon={FileText} title="Declaration">
         <div className="grid grid-cols-2 gap-3">
@@ -133,5 +120,4 @@ export default function InsuranceTab({ form, set, setForm }) {
         </div>
       </SectionCard>
     </div>);
-
 }

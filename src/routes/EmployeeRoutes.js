@@ -3,8 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
 import { PATH_ADMIN_HOME } from "./paths";
 import LazyPage from "./LazyPage";
-
-
 const EmployeeDashboard = lazy(() => import("../pages/employee/Dashboard/EmployeeDashboard"));
 const AttendanceInfo = lazy(() => import("../pages/employee/attendance/AttendanceInfo"));
 const MyRegularizations = lazy(() => import("../pages/employee/attendance/MyRegularizations"));
@@ -36,21 +34,14 @@ const WorkflowDelegates = lazy(() => import("../pages/employee/workflow/Workflow
 const MyInfo = lazy(() => import("../pages/employee/myinfo/MyInfo"));
 const Resignation = lazy(() => import("../pages/employee/myinfo/Resignation"));
 const SelfAppraisal = lazy(() => import("../pages/employee/appraisal/SelfAppraisal"));
-
 const Page = LazyPage;
-
 const EmployeeRoutes = () =>
 {
   const user = getStoredUser();
-
-
-
-
   if (!user)
   {
     return <Navigate to="/login" replace />;
   }
-
   return (
     <Routes>
       <Route index element={<Navigate to="home" replace />} />
@@ -89,9 +80,6 @@ const EmployeeRoutes = () =>
       <Route path="resignation" element={<Page><Resignation /></Page>} />
       <Route path="appraisal" element={<Page><SelfAppraisal /></Page>} />
       <Route path="*" element={<Navigate to="/employee/home" replace />} />
-
     </Routes>);
-
 };
-
 export default EmployeeRoutes;

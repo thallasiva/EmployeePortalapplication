@@ -10,7 +10,6 @@ export function periodStart(key) {
   if (key === "year") return new Date(now.getFullYear(), 0, 1);
   return null;
 }
-
 export function filterJobs(jobs, search, filterStatus, start) {
   return jobs.filter((j) => {
     const q = search.toLowerCase();
@@ -24,7 +23,6 @@ export function filterJobs(jobs, search, filterStatus, start) {
     return matchQ && matchS && matchP;
   });
 }
-
 export function computePeriodCounts(jobs, periods) {
   const counts = {};
   periods.forEach((p) => {

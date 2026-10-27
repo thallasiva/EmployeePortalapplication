@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { Plus, X, Wallet, PiggyBank, TrendingDown, CalendarClock, CheckCircle2, Clock, ChevronRight } from "lucide-react";
-
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
-
 const LOAN_TYPES = ["Personal Loan", "Home Loan", "Vehicle Loan", "Emergency Advance", "Medical Advance"];
-
 const LOANS = [
 { id: "LN001", type: "Personal Loan", amount: 120000, outstanding: 70000, emi: 10000, tenure: 12, remaining: 7, status: "Active", date: "01 Apr 2025" },
 { id: "LN002", type: "Emergency Advance", amount: 50000, outstanding: 0, emi: 5000, tenure: 10, remaining: 0, status: "Closed", date: "01 Jan 2024" }];
-
-
 const TYPE_COLORS = {
   "Personal Loan": { bg: "#eff6ff", color: "#3b82f6" },
   "Home Loan": { bg: "#f0fdf4", color: "#10b981" },
@@ -17,8 +12,6 @@ const TYPE_COLORS = {
   "Emergency Advance": { bg: "#fff7ed", color: "#f18200" },
   "Medical Advance": { bg: "#fef2f2", color: "#ef4444" }
 };
-
-
 function StatCard({ icon, label, value, color, bgColor, sub }) {
   return (
     <div className="bg-white rounded-xl border border-[#e8eef5] p-5 flex items-start gap-4">
@@ -31,15 +24,11 @@ function StatCard({ icon, label, value, color, bgColor, sub }) {
         {sub && <p className="text-[11px] text-[#94a3b8] mt-0.5">{sub}</p>}
       </div>
     </div>);
-
 }
-
-
 function ApplyModal({ onClose }) {
   const [form, setForm] = useState({ type: LOAN_TYPES[0], amount: "", tenure: "", reason: "" });
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
   const emi = form.amount && form.tenure ? Math.round(Number(form.amount) / Number(form.tenure)) : 0;
-
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl w-[460px] max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -55,7 +44,6 @@ function ApplyModal({ onClose }) {
             <X size={20} />
           </button>
         </div>
-
         <div className="p-6 space-y-4">
           {}
           <div>
@@ -64,11 +52,9 @@ function ApplyModal({ onClose }) {
               value={form.type}
               onChange={(e) => set("type", e.target.value)}
               className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10">
-
               {LOAN_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
-
           {}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -79,7 +65,6 @@ function ApplyModal({ onClose }) {
                 onChange={(e) => set("amount", e.target.value)}
                 placeholder="e.g. 100000"
                 className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10" />
-
             </div>
             <div>
               <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Tenure (months)</label>
@@ -89,10 +74,8 @@ function ApplyModal({ onClose }) {
                 onChange={(e) => set("tenure", e.target.value)}
                 placeholder="e.g. 12"
                 className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10" />
-
             </div>
           </div>
-
           {}
           {emi > 0 &&
           <div className="flex items-center gap-3 p-4 bg-[#fff8f0] border border-[#fed7aa] rounded-xl">
@@ -103,7 +86,6 @@ function ApplyModal({ onClose }) {
               </div>
             </div>
           }
-
           {}
           <div>
             <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Reason / Purpose</label>
@@ -113,9 +95,7 @@ function ApplyModal({ onClose }) {
               onChange={(e) => set("reason", e.target.value)}
               placeholder="Brief reason for loan request…"
               className="w-full border border-[#e2e8f0] rounded-lg p-3 text-[13px] outline-none resize-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10" />
-
           </div>
-
           {}
           <div className="flex gap-3 pt-1">
             <button onClick={onClose} className="flex-1 h-[42px] border border-[#e2e8f0] rounded-lg text-[13px] font-semibold text-[#64748b] hover:bg-[#f8fafc] transition-colors">
@@ -128,16 +108,12 @@ function ApplyModal({ onClose }) {
         </div>
       </div>
     </div>);
-
 }
-
-
 function LoanCard({ loan }) {
   const paidAmt = loan.amount - loan.outstanding;
   const progress = Math.round(paidAmt / loan.amount * 100);
   const theme = TYPE_COLORS[loan.type] || { bg: "#f8fafc", color: "#64748b" };
   const isActive = loan.status === "Active";
-
   return (
     <div className="bg-white rounded-xl border border-[#e8eef5] overflow-hidden hover:shadow-md transition-shadow">
       {}
@@ -163,7 +139,6 @@ function LoanCard({ loan }) {
           <p className="text-[20px] font-extrabold text-[#1f2937]">{fmt(loan.amount)}</p>
         </div>
       </div>
-
       {}
       <div className="grid grid-cols-4 divide-x divide-[#f1f5f9] px-0">
         {[
@@ -178,7 +153,6 @@ function LoanCard({ loan }) {
           </div>
         )}
       </div>
-
       {}
       <div className="px-5 pb-4 pt-1">
         <div className="flex items-center justify-between mb-2 text-[12px]">
@@ -189,7 +163,6 @@ function LoanCard({ loan }) {
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{ width: `${progress}%`, background: isActive ? theme.color : "#10b981" }} />
-
         </div>
         <div className="flex justify-between mt-2 text-[11px]">
           <span className="text-emerald-600 font-medium">Paid: {fmt(paidAmt)}</span>
@@ -200,26 +173,19 @@ function LoanCard({ loan }) {
         </div>
       </div>
     </div>);
-
 }
-
-
 export default function Loans() {
   const [tab, setTab] = useState("active");
   const [showModal, setShowModal] = useState(false);
-
   const active = LOANS.filter((l) => l.status === "Active");
   const closed = LOANS.filter((l) => l.status === "Closed");
   const list = tab === "active" ? active : closed;
-
   const totalOutstanding = active.reduce((a, l) => a + l.outstanding, 0);
   const totalEMI = active.reduce((a, l) => a + l.emi, 0);
   const totalBorrowed = LOANS.reduce((a, l) => a + l.amount, 0);
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {showModal && <ApplyModal onClose={() => setShowModal(false)} />}
-
       {}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -229,11 +195,9 @@ export default function Loans() {
         <button
           onClick={() => setShowModal(true)}
           className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
-
           <Plus size={15} /> Apply for Loan
         </button>
       </div>
-
       {}
       <div className="px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={<Wallet size={20} />} label="Total Borrowed" value={fmt(totalBorrowed)} color="#f18200" bgColor="#fff8f0" />
@@ -241,7 +205,6 @@ export default function Loans() {
         <StatCard icon={<CalendarClock size={20} />} label="Monthly EMI" value={fmt(totalEMI)} color="#6366f1" bgColor="#f5f3ff" sub="Due this month" />
         <StatCard icon={<PiggyBank size={20} />} label="Active Loans" value={active.length} color="#10b981" bgColor="#ecfdf5" sub={`${closed.length} closed`} />
       </div>
-
       {}
       <div className="px-6 pb-4">
         <div className="flex gap-1 bg-white rounded-xl border border-[#e8eef5] p-1 w-fit">
@@ -252,13 +215,11 @@ export default function Loans() {
             className={`px-5 h-[36px] rounded-lg text-[13px] font-medium transition-all ${
             tab === k ? "bg-[#f18200] text-white shadow-sm" : "text-[#64748b] hover:text-[#1f2937]"}`
             }>
-
               {l}
             </button>
           )}
         </div>
       </div>
-
       {}
       <div className="px-6 pb-8">
         {list.length === 0 ?
@@ -266,12 +227,10 @@ export default function Loans() {
             <PiggyBank size={48} strokeWidth={1} className="text-[#e2e8f0] mx-auto mb-3" />
             <p className="text-[#94a3b8] text-[14px]">No {tab} loans found.</p>
           </div> :
-
         <div className="flex flex-col gap-4">
             {list.map((loan) => <LoanCard key={loan.id} loan={loan} />)}
           </div>
         }
       </div>
     </div>);
-
 }

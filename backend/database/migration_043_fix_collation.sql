@@ -1,13 +1,10 @@
 -- Fix collation mismatch in joining_invitations.token column
 -- Error: Illegal mix of collations (utf8mb4_0900_ai_ci,IMPLICIT) and (utf8mb4_unicode_ci,IMPLICIT)
-
 -- Step 1: Alter the token column to use utf8mb4_unicode_ci (match server default)
 ALTER TABLE joining_invitations
   MODIFY COLUMN token VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
-
 -- Step 2: Recreate the verify procedure with matching collation on parameter
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci)
 BEGIN

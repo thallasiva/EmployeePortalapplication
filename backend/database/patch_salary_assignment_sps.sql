@@ -4,11 +4,8 @@
 -- Safe to re-run — uses DROP IF EXISTS before each CREATE
 -- ============================================================
 USE hrms_db;
-
 DELIMITER $$
-
 -- ── SP: Assign (or update) an employee's salary structure ─────
-
 DROP PROCEDURE IF EXISTS sp_assign_salary_structure $$
 CREATE PROCEDURE sp_assign_salary_structure(
   IN p_employee_id  INT,
@@ -24,19 +21,14 @@ BEGIN
          is_active    = 0
    WHERE employee_id = p_employee_id
      AND is_active   = 1;
-
   -- Insert new assignment
   INSERT INTO employee_salary_assignments
     (employee_id, structure_id, ctc_annual, effective_from, is_active)
   VALUES
     (p_employee_id, p_structure_id, p_ctc_annual, p_effective_from, 1);
-
   SELECT LAST_INSERT_ID() AS assignment_id;
 END $$
-
-
 -- ── SP: Get an employee's active salary assignment ────────────
-
 DROP PROCEDURE IF EXISTS sp_get_employee_salary_assignment $$
 CREATE PROCEDURE sp_get_employee_salary_assignment(
   IN p_employee_id INT
@@ -60,7 +52,6 @@ BEGIN
     AND esa.is_active   = 1
   ORDER BY esa.effective_from DESC
   LIMIT 1;
-
   -- Result set 2: structure component lines (with effective calc values)
   SELECT
     l.line_id,
@@ -92,10 +83,7 @@ BEGIN
     AND esa.is_active   = 1
   ORDER BY l.sort_order, c.sort_order;
 END $$
-
-
 -- ── SP: List all employees with their current assignment ──────
-
 DROP PROCEDURE IF EXISTS sp_list_employee_salary_assignments $$
 CREATE PROCEDURE sp_list_employee_salary_assignments(
   IN p_department_id INT,
@@ -127,10 +115,7 @@ BEGIN
          e.emp_code LIKE CONCAT('%',p_search,'%'))
   ORDER BY e.department_name, e.first_name;
 END $$
-
-
 -- ── SP: Get assignment history for one employee ───────────────
-
 DROP PROCEDURE IF EXISTS sp_get_salary_assignment_history $$
 CREATE PROCEDURE sp_get_salary_assignment_history(IN p_employee_id INT)
 BEGIN
@@ -143,7 +128,5 @@ BEGIN
   WHERE esa.employee_id = p_employee_id
   ORDER BY esa.effective_from DESC;
 END $$
-
 DELIMITER ;
-
 SELECT 'Patch complete — salary assignment stored procedures created' AS status;

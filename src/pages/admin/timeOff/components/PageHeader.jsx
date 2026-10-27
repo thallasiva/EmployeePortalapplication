@@ -3,7 +3,6 @@ import { Plus, Upload } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { YEAR_OPTIONS } from "../constants";
 import Btn from "./Btn";
-
 const PageHeader = React.memo(({ year, locationFilter, allLocations, onYearChange, onLocationChange, onAddHoliday, onUploadCSV }) => (
   <div className={cssClass({ display: "flex", alignItems: "flex-start", justifyContent: "space-between",
     flexWrap: "wrap", gap: 12, marginBottom: 22 })}>
@@ -37,6 +36,5 @@ const PageHeader = React.memo(({ year, locationFilter, allLocations, onYearChang
     </div>
   </div>
 ));
-
 PageHeader.displayName = "PageHeader";
 export default PageHeader;

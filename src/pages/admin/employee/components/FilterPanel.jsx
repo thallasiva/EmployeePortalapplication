@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Filter, X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import FilterSection from "./FilterSection";
-
 const FilterPanel = React.memo(function FilterPanel({
   open,
   onClose,
@@ -14,24 +13,19 @@ const FilterPanel = React.memo(function FilterPanel({
 }) {
   const [collapsed, setCollapsed] = useState({});
   const ref = useRef(null);
-
   useEffect(() => {
     function onKey(e) { if (e.key === "Escape") onClose(); }
     if (open) document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
-
   const toggleSection = (id) => setCollapsed((c) => ({ ...c, [id]: !c[id] }));
-
   if (!open) return null;
-
   return (
     <>
       <div
         onClick={onClose}
         className={cssClass({ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.25)" })}
       />
-
       <div
         ref={ref}
         className={cssClass({
@@ -85,7 +79,6 @@ const FilterPanel = React.memo(function FilterPanel({
             <X size={16} />
           </button>
         </div>
-
         {/* Active pills */}
         {activePills.length > 0 && (
           <div
@@ -167,7 +160,6 @@ const FilterPanel = React.memo(function FilterPanel({
             </button>
           </div>
         )}
-
         {/* Sections */}
         <div className={cssClass({ flex: 1, overflowY: "auto", padding: "8px 0" })}>
           {sections.map((sec) => (
@@ -183,5 +175,4 @@ const FilterPanel = React.memo(function FilterPanel({
     </>
   );
 });
-
 export default FilterPanel;

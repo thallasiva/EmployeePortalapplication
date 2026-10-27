@@ -1,10 +1,8 @@
 import React from "react";
 import { Info, Users } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const DelegatedToMe = React.memo(function DelegatedToMe({ myId, employees, delegates }) {
   const items = [];
-
   return (
     <div className={cssClass({ display: "flex", flexDirection: "column", gap: 12 })}>
       <div
@@ -19,7 +17,6 @@ const DelegatedToMe = React.memo(function DelegatedToMe({ myId, employees, deleg
           You'll also receive a notification.
         </p>
       </div>
-
       {items.length === 0 ? (
         <div
           className={cssClass({
@@ -53,5 +50,4 @@ const DelegatedToMe = React.memo(function DelegatedToMe({ myId, employees, deleg
     </div>
   );
 });
-
 export default DelegatedToMe;

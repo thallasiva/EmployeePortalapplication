@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import { ChevronRight, ChevronDown, Eye, Forward, CircleX } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { nodeColor } from "../utils/formatters";
-
 const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
   const [open, setOpen] = useState(depth < 2);
   const hasChildren = node.children && node.children.length > 0;
   const color = nodeColor(node);
-
   return (
     <div className={cssClass({ marginLeft: depth === 0 ? 0 : 20 })}>
       <div
@@ -31,7 +29,6 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
         >
           {hasChildren ? open ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : null}
         </button>
-
         <div className={cssClass({
           width: 30, height: 30, borderRadius: "50%", background: color + "20",
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -39,7 +36,6 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
         })}>
           {node.name?.[0] || "?"}
         </div>
-
         <div className={cssClass({ flex: 1, minWidth: 0 })}>
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 6 })}>
             <span className={cssClass({
@@ -74,7 +70,6 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
             )}
           </div>
         </div>
-
         <button
           onClick={() => onSelect(node)}
           className={cssClass({
@@ -86,7 +81,6 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
           <Eye size={12} /> View
         </button>
       </div>
-
       {hasChildren && open && (
         <div className={cssClass({ borderLeft: "2px solid #e5e7eb", marginLeft: 26, paddingLeft: 4 })}>
           {node.children.map((child) => (
@@ -97,5 +91,4 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
     </div>
   );
 });
-
 export default TreeNode;

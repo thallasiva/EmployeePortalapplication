@@ -3,11 +3,9 @@
 --                bank details, payslips (Apr-Jun 2026), and tax regime
 -- =====================================================================
 USE hrms_db;
-
 -- 1. Add tax_regime column to employees if not present
 ALTER TABLE employees
   ADD COLUMN IF NOT EXISTS tax_regime ENUM('new','old') NOT NULL DEFAULT 'new';
-
 -- 2. Add new designations
 INSERT INTO designations (designation_id, designation_name, department_id) VALUES
   (6,  'Senior Software Engineer', 1),
@@ -23,7 +21,6 @@ INSERT INTO designations (designation_id, designation_name, department_id) VALUE
   (16, 'Product Owner',            1),
   (17, 'Database Administrator',   1)
 ON DUPLICATE KEY UPDATE designation_name = VALUES(designation_name);
-
 -- 3. Delete existing records for these employee IDs (idempotent)
 SET FOREIGN_KEY_CHECKS = 0;
 DELETE FROM payslips           WHERE employee_id BETWEEN 6 AND 20;
@@ -32,9 +29,7 @@ DELETE FROM employee_bank_details WHERE employee_id BETWEEN 6 AND 20;
 DELETE FROM users              WHERE employee_id BETWEEN 6 AND 20;
 DELETE FROM employees          WHERE employee_id BETWEEN 6 AND 20;
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- 4. Insert employees
-
 INSERT INTO employees (employee_id, emp_code, first_name, last_name, email, mobile, emp_job_title, department_id, designation_id, employee_type, employee_status, shift, emp_joining_date, tax_regime) VALUES
   (6, 'EMP00006', 'John', 'Doe', 'john.doe@company.com', '9876543216', 'Software Engineer', 1, 1, 'Full-Time', 'Active', 'general', '2020-01-15', 'new'),
   (7, 'EMP00007', 'Jane', 'Smith', 'jane.smith@company.com', '9876543217', 'Senior Software Engineer', 1, 6, 'Full-Time', 'Active', 'general', '2019-06-01', 'new'),
@@ -51,7 +46,6 @@ INSERT INTO employees (employee_id, emp_code, first_name, last_name, email, mobi
   (18, 'EMP00018', 'Kiran', 'Verma', 'kiran.verma@company.com', '9876543228', 'UI/UX Designer', 4, 4, 'Full-Time', 'Active', 'general', '2022-03-07', 'old'),
   (19, 'EMP00019', 'Vikram', 'Singh', 'vikram.singh@company.com', '9876543229', 'Database Administrator', 1, 17, 'Full-Time', 'Active', 'general', '2017-01-25', 'old'),
   (20, 'EMP00020', 'Pooja', 'Nair', 'pooja.nair@company.com', '9876543230', 'HR Executive', 2, 3, 'Full-Time', 'Active', 'general', '2022-11-14', 'new');
-
 -- 5. User accounts (password: Employee@123)
 INSERT INTO users (user_id, email, password_hash, role_id, employee_id, status) VALUES
   (6, 'john.doe@company.com', '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 6, 'Active'),
@@ -69,7 +63,6 @@ INSERT INTO users (user_id, email, password_hash, role_id, employee_id, status) 
   (18, 'kiran.verma@company.com', '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 18, 'Active'),
   (19, 'vikram.singh@company.com', '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 19, 'Active'),
   (20, 'pooja.nair@company.com', '$2b$10$i9tItK26cOgpCbFn4h4f0uEHwx4o11EXn9X636DCWMXHTpBCpLvO2', 2, 20, 'Active');
-
 -- 6. Salary structures
 INSERT INTO salary_structures (employee_id, basic, hra, conveyance, medical_allowance, special_allowance, pf_employee, pf_employer, professional_tax, income_tax, ctc, effective_from) VALUES
   (6, 10000.00, 4000.00, 300.00, 500.00, 2500.00, 1200.00, 1200.00, 150.00, 0.00, 252000.00, '2026-04-01'),
@@ -87,7 +80,6 @@ INSERT INTO salary_structures (employee_id, basic, hra, conveyance, medical_allo
   (18, 18000.00, 7200.00, 540.00, 900.00, 4500.00, 1800.00, 1800.00, 200.00, 0.00, 449280.00, '2026-04-01'),
   (19, 53333.00, 21333.00, 1600.00, 2667.00, 13333.00, 1800.00, 1800.00, 200.00, 0.00, 1288800.00, '2026-04-01'),
   (20, 14000.00, 5600.00, 420.00, 700.00, 3500.00, 1680.00, 1680.00, 200.00, 0.00, 352800.00, '2026-04-01');
-
 -- 7. Bank details
 INSERT INTO employee_bank_details (employee_id, bank_name, account_number, ifsc_code, pan_number, uan_number, account_type, bank_branch, account_holder_name, payment_type) VALUES
   (6, 'HDFC Bank', '501001234560006', 'HDFC0001006', 'ABCPQ1234F', '201234560006', 'Savings', 'Hyderabad - Main Branch', 'John Doe', 'Bank Transfer'),
@@ -106,7 +98,6 @@ INSERT INTO employee_bank_details (employee_id, bank_name, account_number, ifsc_
   (19, 'State Bank of India', '503001234560019', 'SBIN0001019', 'ABCPQ4567S', '201234560019', 'Savings', 'Hyderabad - Main Branch', 'Vikram Singh', 'Bank Transfer'),
   (20, 'Axis Bank', '504001234560020', 'UTIB0001020', 'ABCPQ5678T', '201234560020', 'Savings', 'Hyderabad - Main Branch', 'Pooja Nair', 'Bank Transfer')
 ON DUPLICATE KEY UPDATE bank_name=VALUES(bank_name), account_number=VALUES(account_number);
-
 -- 8. PF numbers
 UPDATE employees SET pf_number = CASE employee_id
   WHEN 6 THEN 'HY/HYD/0123456/0006'
@@ -125,7 +116,6 @@ UPDATE employees SET pf_number = CASE employee_id
   WHEN 19 THEN 'HY/HYD/0123456/0019'
   WHEN 20 THEN 'HY/HYD/0123456/0020'
 END WHERE employee_id BETWEEN 6 AND 20;
-
 -- 9. Sample payslips Apr-Jun 2026
 INSERT INTO payslips (employee_id, month, year, basic, hra, allowances, gross_earnings, ctc, deductions, net_pay, working_days, paid_days, lop_days, status) VALUES
   (6,4,2026,10000.00,4000.00,3950.00,19800.00,21000.00,1350.00,18450.00,26.0,26.0,0.0,'Paid'),

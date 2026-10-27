@@ -3,10 +3,8 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import Avatar from "./Avatar";
 import StarRating from "./StarRating";
 import StatusBadge from "./StatusBadge";
-
 const ReviewRow = React.memo(function ReviewRow({ review }) {
   const [open, setOpen] = useState(false);
-
   return (
     <>
       <tr
@@ -45,7 +43,6 @@ const ReviewRow = React.memo(function ReviewRow({ review }) {
           {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </td>
       </tr>
-
       {open && (
         <tr className="bg-gray-50">
           <td colSpan={5} className="px-6 py-4">
@@ -82,5 +79,4 @@ const ReviewRow = React.memo(function ReviewRow({ review }) {
     </>
   );
 });
-
 export default ReviewRow;

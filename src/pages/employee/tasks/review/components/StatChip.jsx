@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const StatChip = React.memo(function StatChip({ color, label, count }) {
   return (
     <div className={cssClass({
@@ -14,5 +13,4 @@ const StatChip = React.memo(function StatChip({ color, label, count }) {
     </div>
   );
 });
-
 export default StatChip;

@@ -1,7 +1,6 @@
 import { memo, useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { Zap } from "lucide-react";
-
 const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = [], onClose, onSubmit }) {
   const today = new Date().toISOString().slice(0, 10);
   const [form, setForm] = useState({
@@ -12,7 +11,6 @@ const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = []
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-
   const handle = async () => {
     if (!form.task_name || !form.extra_hours || !form.reason) {
       setErr("All fields required");
@@ -28,7 +26,6 @@ const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = []
       setSaving(false);
     }
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
@@ -78,5 +75,4 @@ const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = []
     </div>
   );
 });
-
 export default ExtraWorkModal;

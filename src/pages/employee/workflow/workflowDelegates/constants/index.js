@@ -3,7 +3,6 @@ import {
   FileOutput, Clock, ClipboardList, Award, UserCheck,
   CheckCircle2, AlertCircle, Timer,
 } from "lucide-react";
-
 export const WORKFLOWS = [
   {
     id: "leave",
@@ -46,7 +45,6 @@ export const WORKFLOWS = [
     bg: "#fef2f2",
   },
 ];
-
 export const STATUS_STYLE = {
   active: { bg: "#f0fdf4", color: "#16a34a", label: "Active", icon: <CheckCircle2 size={11} /> },
   upcoming: { bg: "#fff7ed", color: "#c2410c", label: "Upcoming", icon: <Timer size={11} /> },

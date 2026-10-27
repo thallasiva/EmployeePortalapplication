@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS payroll_inputs (
   INDEX idx_payroll_input_employee (employee_id),
   CONSTRAINT fk_payroll_input_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 ALTER TABLE payroll_runs
   ADD COLUMN review_status ENUM('DRAFT','PENDING_REVIEW','APPROVED','REJECTED') NOT NULL DEFAULT 'DRAFT',
   ADD COLUMN reviewed_by INT NULL,

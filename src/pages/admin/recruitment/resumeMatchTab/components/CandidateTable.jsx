@@ -1,9 +1,7 @@
 import React from "react";
 import { Card } from "../../shared";
 import MatchRow from "./MatchRow";
-
 const TABLE_HEADERS = ["Rank", "Candidate", "Score", "Result", "Skills", "Exp", ""];
-
 const CandidateTable = React.memo(function CandidateTable({ filtered, onRecompute }) {
   if (filtered.length === 0) {
     return (
@@ -15,7 +13,6 @@ const CandidateTable = React.memo(function CandidateTable({ filtered, onRecomput
       </Card>
     );
   }
-
   return (
     <Card className="!p-0">
       <table className="w-full border-collapse">
@@ -42,5 +39,4 @@ const CandidateTable = React.memo(function CandidateTable({ filtered, onRecomput
     </Card>
   );
 });
-
 export default CandidateTable;

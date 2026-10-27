@@ -6,16 +6,13 @@
 --  It does NOT change any data. It only reads, so it is safe to run repeatedly.
 --  Review the output, then process payroll in the app.
 -- ============================================================================
-
 -- --- Target period: defaults to the PREVIOUS calendar month -----------------
 SET @month := MONTH(CURDATE() - INTERVAL 1 MONTH);
 SET @year  := YEAR (CURDATE() - INTERVAL 1 MONTH);
 -- To force a specific month instead (e.g. August 2026), uncomment:
 -- SET @month := 8;  SET @year := 2026;
-
 SET @period_start := STR_TO_DATE(CONCAT(@year,'-',@month,'-01'), '%Y-%m-%d');
 SET @days_in_month := DAY(LAST_DAY(@period_start));
-
 -- ============================================================================
 -- 1) PER-EMPLOYEE PAYROLL INPUT
 -- ============================================================================
@@ -31,12 +28,10 @@ SELECT
     @month                                                        AS pay_month,
     @year                                                         AS pay_year,
     @days_in_month                                                AS days_in_month,
-
     -- ---- Salary (active assignment if present, else employee CTC) ----
     COALESCE(sal.ctc_annual, e.ctc)                               AS ctc_annual,
     ROUND(COALESCE(sal.ctc_annual, e.ctc) / 12, 2)               AS monthly_ctc,
     sal.structure_name                                           AS salary_structure,
-
     -- ---- Attendance breakdown for the month ----
     COALESCE(att.present_days, 0)                                AS present_days,
     COALESCE(att.half_days,    0)                                AS half_days,
@@ -45,20 +40,16 @@ SELECT
     COALESCE(att.weekend_days, 0)                                AS weekend_days,
     COALESCE(att.holiday_days, 0)                                AS holiday_days,
     COALESCE(att.marked_days,  0)                                AS total_marked_days,
-
     -- ---- Paid vs Loss-of-Pay (SIMPLE rule — adjust to your policy) ----
     --   Paid   = present + late + weekend + holiday + leave + 0.5*half_day
     --   LOP    = absent + 0.5*half_day
     COALESCE(att.paid_days, 0)                                   AS paid_days,
     COALESCE(att.lop_days,  0)                                   AS lop_days,
-
     -- Prorated monthly pay for the paid days (basic proration on calendar days)
     ROUND(COALESCE(sal.ctc_annual, e.ctc) / 12
           / @days_in_month * COALESCE(att.paid_days, 0), 2)     AS prorated_gross_est,
-
     -- ---- Approved leave days taken in the month ----
     COALESCE(lv.approved_leave_days, 0)                          AS approved_leave_days,
-
     -- ---- Bank details for disbursement ----
     bd.bank_name,
     bd.account_number,
@@ -69,7 +60,6 @@ SELECT
 FROM employees e
 LEFT JOIN departments  d  ON d.department_id   = e.department_id
 LEFT JOIN designations ds ON ds.designation_id = e.designation_id
-
 -- latest ACTIVE salary assignment per employee (avoids duplicate rows)
 LEFT JOIN (
     SELECT s1.employee_id, s1.ctc_annual, ss.structure_name
@@ -84,7 +74,6 @@ LEFT JOIN (
     LEFT JOIN salary_structures ss ON ss.structure_id = s1.structure_id
     WHERE s1.is_active = 1
 ) sal ON sal.employee_id = e.employee_id
-
 -- attendance summary for the target month
 LEFT JOIN (
     SELECT
@@ -105,7 +94,6 @@ LEFT JOIN (
       AND YEAR (attendance_date) = @year
     GROUP BY employee_id
 ) att ON att.employee_id = e.employee_id
-
 -- approved leave days taken in the month
 LEFT JOIN (
     SELECT employee_id, SUM(days) AS approved_leave_days
@@ -115,13 +103,10 @@ LEFT JOIN (
       AND YEAR (from_date) = @year
     GROUP BY employee_id
 ) lv ON lv.employee_id = e.employee_id
-
 LEFT JOIN employee_bank_details bd ON bd.employee_id = e.employee_id
-
 WHERE (e.has_left_organization = 0 OR e.has_left_organization IS NULL)
   AND (e.emp_exit_date IS NULL OR e.emp_exit_date >= @period_start)
 ORDER BY d.department_name, e.emp_code;
-
 -- ============================================================================
 -- 2) QUICK SUMMARY (headcount + total monthly cost)
 -- ============================================================================
@@ -139,7 +124,6 @@ LEFT JOIN (
 ) sal ON sal.employee_id = e.employee_id
 WHERE (e.has_left_organization = 0 OR e.has_left_organization IS NULL)
   AND (e.emp_exit_date IS NULL OR e.emp_exit_date >= @period_start);
-
 -- ============================================================================
 -- 3) HAS PAYROLL ALREADY BEEN RUN FOR THIS MONTH?
 --    (check before you process again — avoids duplicate payslips)

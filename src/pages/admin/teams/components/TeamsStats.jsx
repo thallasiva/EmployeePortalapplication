@@ -1,13 +1,11 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const TeamsStats = React.memo(function TeamsStats({ totalEmployees, managerCount, visibleCount }) {
   const stats = [
     { label: "Total Employees", value: totalEmployees, color: "#f18200" },
     { label: "Reporting Managers", value: managerCount, color: "#6366f1" },
     { label: "Teams Visible", value: visibleCount, color: "#10b981" },
   ];
-
   return (
     <div className={cssClass({ display: "flex", gap: 12, flexWrap: "wrap" })}>
       {stats.map((s) => (
@@ -30,5 +28,4 @@ const TeamsStats = React.memo(function TeamsStats({ totalEmployees, managerCount
     </div>
   );
 });
-
 export default TeamsStats;

@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import AdminDonutChart from "../admin/AdminDonutChart";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 export default function ReportDonutPanel({
   title,
   segments,
@@ -12,7 +11,6 @@ export default function ReportDonutPanel({
     () => segments.reduce((s, seg) => s + seg.value, 0),
     [segments]
   );
-
   return (
     <div className="report-chart-card">
       <div className="report-chart-card__header">
@@ -34,7 +32,6 @@ export default function ReportDonutPanel({
           centerValue={centerValue ?? `${segments[1]?.value ?? 30}%`}
           size={150}
           strokeWidth={24} />
-
         <div className="report-legend">
           {segments.map((seg) =>
           <div key={seg.name} className="report-legend__item">
@@ -48,5 +45,4 @@ export default function ReportDonutPanel({
         </div>
       </div>
     </div>);
-
 }

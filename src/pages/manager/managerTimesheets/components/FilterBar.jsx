@@ -1,6 +1,5 @@
 import React from "react";
 import { FILTER_OPTIONS } from "../constants";
-
 const FilterBar = React.memo(function FilterBar({ filter, setFilter }) {
   return (
     <div className="flex gap-2 flex-wrap">
@@ -21,5 +20,4 @@ const FilterBar = React.memo(function FilterBar({ filter, setFilter }) {
     </div>
   );
 });
-
 export default FilterBar;

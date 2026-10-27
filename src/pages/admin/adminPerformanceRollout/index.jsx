@@ -11,31 +11,25 @@ import EnrollmentTab from "./components/EnrollmentTab";
 import CreateCycleModal from "./components/CreateCycleModal";
 import EditSettingsModal from "./components/EditSettingsModal";
 import DisableConfirmModal from "./components/DisableConfirmModal";
-
 export default function AdminPerformanceRollout() {
   const { cycles, loading, updateInList, prependCycle } = useCycles();
   const [tab, setTab] = useState("cycles");
   const [showCreate, setShowCreate] = useState(false);
   const [editCycle, setEditCycle] = useState(null);
   const [disableData, setDisableData] = useState(null);
-
   const activeCycle = cycles.find((c) => c.status === "active");
-
   const handleCreated = useCallback((c) => {
     prependCycle(c);
     setTab("cycles");
   }, [prependCycle]);
-
   const handleEditSaved = useCallback((u) => {
     updateInList(u);
     setEditCycle(null);
   }, [updateInList]);
-
   const handleDisabled = useCallback((u) => {
     updateInList(u);
     setDisableData(null);
   }, [updateInList]);
-
   return (
     <div className={cssClass({ padding: "28px 32px", maxWidth: 1080, margin: "0 auto" })}>
       <div className={cssClass({ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 })}>
@@ -48,13 +42,11 @@ export default function AdminPerformanceRollout() {
           <Plus size={15} /> New Cycle
         </button>
       </div>
-
       <ActiveRolloutBanner
         activeCycle={activeCycle}
         onStopRollout={() => setDisableData(activeCycle)}
         onStartRollout={() => setTab("rollout")}
       />
-
       <div className={cssClass({ display: "flex", gap: 2, borderBottom: "2px solid #e2e8f0", marginBottom: 24 })}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -63,7 +55,6 @@ export default function AdminPerformanceRollout() {
           </button>
         ))}
       </div>
-
       {loading && (tab === "cycles" || tab === "rollout")
         ? <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8" })}>Loading…</div>
         : (
@@ -82,7 +73,6 @@ export default function AdminPerformanceRollout() {
           </>
         )
       }
-
       {showCreate && <CreateCycleModal onClose={() => setShowCreate(false)} onCreated={handleCreated} />}
       {editCycle && <EditSettingsModal cycle={editCycle} onClose={() => setEditCycle(null)} onSaved={handleEditSaved} />}
       {disableData && <DisableConfirmModal cycle={disableData} onClose={() => setDisableData(null)} onDisabled={handleDisabled} />}

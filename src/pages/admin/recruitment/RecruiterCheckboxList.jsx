@@ -1,5 +1,4 @@
 import { RECRUITERS } from "./data";
-
 function RecruiterCheckboxList()
 {
   return (
@@ -13,5 +12,4 @@ function RecruiterCheckboxList()
     </div>
   );
 }
-
 export default RecruiterCheckboxList;

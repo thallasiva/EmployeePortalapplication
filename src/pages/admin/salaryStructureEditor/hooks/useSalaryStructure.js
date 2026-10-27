@@ -10,12 +10,10 @@ import { getErrorMessage } from "../../../../api/client";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { PREVIEW_CTC } from "../constants";
 import { executePanelSave } from "../utils/panelSave";
-
 export default function useSalaryStructure() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = !id || id === "new";
-
   const [structure, setStructure] = useState(null);
   const [masterComps, setMasterComps] = useState([]);
   const [activeTab, setActiveTab] = useState("fixed");
@@ -27,7 +25,6 @@ export default function useSalaryStructure() {
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState("");
   const computeTimer = useRef(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -54,9 +51,7 @@ export default function useSalaryStructure() {
       setLoading(false);
     }
   }, [id, isNew]);
-
   useEffect(() => { load(); }, [load]);
-
   useEffect(() => {
     if (!structure?.structure_id) return;
     clearTimeout(computeTimer.current);
@@ -65,7 +60,6 @@ export default function useSalaryStructure() {
     }, 500);
     return () => clearTimeout(computeTimer.current);
   }, [structure?.structure_id, structure?.lines]);
-
   const saveMeta = useCallback(async (patch = {}) => {
     const payload = {
       structure_name: draftName,
@@ -81,7 +75,6 @@ export default function useSalaryStructure() {
     }
     return await updateStructure(structure.structure_id, payload);
   }, [draftName, isNew, navigate, structure]);
-
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
@@ -95,13 +88,11 @@ export default function useSalaryStructure() {
       setSaving(false);
     }
   }, [draftName, isNew, load, saveMeta]);
-
   const handlePanelSave = useCallback(async (data) => {
     await executePanelSave({
       data, structure, setStructure, saveMeta, load, setPanelOpen, setEditLine,
     });
   }, [load, saveMeta, structure]);
-
   const handleRemoveLine = useCallback(async (line) => {
     if (!window.confirm(`Remove "${line.component_name}" from this structure?`)) return;
     try {
@@ -112,11 +103,9 @@ export default function useSalaryStructure() {
       apiErrorToast(err, "Failed to remove");
     }
   }, [load, structure]);
-
   const openAdd = useCallback(() => { setEditLine(null); setPanelOpen(true); }, []);
   const openEdit = useCallback((line) => { setEditLine(line); setPanelOpen(true); }, []);
   const closePanel = useCallback(() => { setPanelOpen(false); setEditLine(null); }, []);
-
   return {
     id, isNew, structure, setStructure,
     masterComps, activeTab, setActiveTab,

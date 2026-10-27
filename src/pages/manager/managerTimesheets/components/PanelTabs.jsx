@@ -1,6 +1,5 @@
 import React from "react";
 import { PANEL_OPTIONS } from "../constants";
-
 const PanelTabs = React.memo(function PanelTabs({ activePanel, setActivePanel }) {
   return (
     <div className="flex gap-2">
@@ -21,5 +20,4 @@ const PanelTabs = React.memo(function PanelTabs({ activePanel, setActivePanel })
     </div>
   );
 });
-
 export default PanelTabs;

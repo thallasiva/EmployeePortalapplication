@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { listPayslips } from "../../../../api/payroll.api";
-
 export function useForm16Data(year) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     listPayslips({ year, limit: 2000 })
@@ -43,6 +41,5 @@ export function useForm16Data(year) {
       })
       .finally(() => setLoading(false));
   }, [year]);
-
   return { rows, loading };
 }

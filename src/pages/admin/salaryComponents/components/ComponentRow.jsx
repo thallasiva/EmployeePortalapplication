@@ -2,11 +2,9 @@ import React, { useState, useCallback } from "react";
 import { Pencil, Power, ChevronDown, ChevronUp } from "lucide-react";
 import { CAT_COLOR } from "../constants";
 import { formatCalcDisplay } from "../utils";
-
 const ComponentRow = React.memo(function ComponentRow({ c, onEdit, onToggle }) {
   const [open, setOpen] = useState(false);
   const toggleOpen = useCallback(() => setOpen((o) => !o), []);
-
   return (
     <>
       <tr className={`border-t border-gray-100 ${!c.is_active ? "opacity-50" : ""}`}>
@@ -71,5 +69,4 @@ const ComponentRow = React.memo(function ComponentRow({ c, onEdit, onToggle }) {
     </>
   );
 });
-
 export default ComponentRow;

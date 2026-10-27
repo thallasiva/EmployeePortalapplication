@@ -2,7 +2,6 @@ import React from 'react';
 import { Clock, FileText, Users } from 'lucide-react';
 import LeaveEmployeeDetailTable from '../../../../component/admin/LeaveEmployeeDetailTable';
 import QuickStatCard from './QuickStatCard';
-
 const QuickStatsSection = React.memo(function QuickStatsSection({
   pendingCount,
   onLeaveTodayCount,
@@ -48,7 +47,6 @@ const QuickStatsSection = React.memo(function QuickStatsSection({
           onClick={() => onOpenStat('approved')}
         />
       </div>
-
       {statFilter && (
         <div ref={statDetailRef} className="admin-detail-panel mt-4">
           <div className="flex items-center justify-between mb-3">
@@ -70,5 +68,4 @@ const QuickStatsSection = React.memo(function QuickStatsSection({
     </section>
   );
 });
-
 export default QuickStatsSection;

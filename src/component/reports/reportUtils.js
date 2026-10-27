@@ -1,5 +1,4 @@
 const AVATAR_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6"];
-
 export function getInitials(name) {
   return name
     .split(" ")
@@ -8,7 +7,6 @@ export function getInitials(name) {
     .slice(0, 2)
     .toUpperCase();
 }
-
 export function getAvatarColor(name) {
   let hash = 0;
   for (let i = 0; i < name.length; i += 1) {
@@ -16,13 +14,11 @@ export function getAvatarColor(name) {
   }
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
-
 export const PRIORITY_STYLES = {
   Low: "report-priority--low",
   Medium: "report-priority--medium",
   High: "report-priority--high",
 };
-
 export const STATUS_STYLES = {
   Active: "report-status--active",
   Completed: "report-status--completed",

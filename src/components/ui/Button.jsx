@@ -1,5 +1,4 @@
 import { memo } from "react";
-
 const VARIANTS = {
   primary: "border border-[#d97706] bg-[#d97706] text-white hover:bg-amber-600 hover:border-amber-600",
   secondary: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
@@ -8,14 +7,12 @@ const VARIANTS = {
   success: "border border-green-500 bg-green-500 text-white hover:bg-green-600",
   outline: "border border-[#d97706] bg-transparent text-[#d97706] hover:bg-amber-50",
 };
-
 const SIZES = {
   xs: "px-2.5 py-1 text-[11px]",
   sm: "px-3 py-1.5 text-xs",
   md: "px-4 py-2 text-[13px]",
   lg: "px-5 py-2.5 text-sm",
 };
-
 /**
  * Memoised, polymorphic button.
  *
@@ -41,7 +38,6 @@ const Button = memo(function Button({
 })
 {
   const isDisabled = disabled || loading;
-
   return (
     <button
       type={type}
@@ -67,5 +63,4 @@ const Button = memo(function Button({
     </button>
   );
 });
-
 export default Button;

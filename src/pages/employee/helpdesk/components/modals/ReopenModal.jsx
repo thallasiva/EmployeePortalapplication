@@ -2,7 +2,6 @@ import { memo, useState } from "react";
 import { reopenTicket } from "../../../../../api/helpdesk.api";
 import { cssClass } from "../../../../../utils/classStyles";
 import { X, ClipboardList } from "lucide-react";
-
 /**
  * Reopen-ticket modal.
  * Single responsibility: collect reason + call reopenTicket API.
@@ -11,7 +10,6 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
   const [reason,  setReason]  = useState("");
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
-
   const handleReopen = async () => {
     setLoading(true); setError(null);
     try {
@@ -21,11 +19,9 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
       setError(e?.response?.data?.message || "Failed to reopen. Please try again.");
     } finally { setLoading(false); }
   };
-
   return (
     <div onClick={onClose} className={cssClass({ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 })}>
       <div onClick={(e) => e.stopPropagation()} className={cssClass({ width: "100%", maxWidth: 460, background: "#fff", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden" })}>
-
         {/* Header */}
         <div className={cssClass({ padding: "18px 22px 14px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "space-between" })}>
           <div>
@@ -34,7 +30,6 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
           </div>
           <button onClick={onClose} className={cssClass({ background: "none", border: "none", color: "#9ca3af", fontSize: 18, cursor: "pointer", padding: 4 })} aria-label="Close"><X size={18} /></button>
         </div>
-
         {/* Body */}
         <div className={cssClass({ padding: "18px 22px" })}>
           <div className={cssClass({ padding: "10px 14px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, marginBottom: 14 })}>
@@ -58,7 +53,6 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
             className={cssClass({ width: "100%", padding: "9px 12px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, outline: "none", resize: "none", fontFamily: "inherit", lineHeight: 1.5, boxSizing: "border-box" })}
           />
         </div>
-
         {/* Footer */}
         <div className={cssClass({ padding: "12px 22px", borderTop: "1px solid #e5e7eb", display: "flex", gap: 10, justifyContent: "flex-end", background: "#fafafa" })}>
           <button onClick={onClose} className={cssClass({ padding: "8px 20px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", color: "#6b7280", fontSize: 13, cursor: "pointer" })}>
@@ -72,5 +66,4 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
     </div>
   );
 });
-
 export default ReopenModal;

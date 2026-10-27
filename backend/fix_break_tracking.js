@@ -1,7 +1,6 @@
 'use strict';
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-
 async function run() {
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
@@ -11,7 +10,6 @@ async function run() {
     database: process.env.DB_NAME || 'hrms_db',
     multipleStatements: false,
   });
-
   // 1. Create attendance_punches table
   const tableSql = `CREATE TABLE IF NOT EXISTS attendance_punches (
     punch_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -27,14 +25,12 @@ async function run() {
     INDEX idx_punch_emp_date (employee_id, attendance_date),
     CONSTRAINT fk_punch_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
   ) ENGINE=InnoDB`;
-
   // 2. Add break columns to attendance
   const alterCols = [
     ['break_minutes', 'INT DEFAULT 0'],
     ['total_punches', 'INT DEFAULT 0'],
     ['is_on_break',   'TINYINT(1) DEFAULT 0'],
   ];
-
   const procs = [
     [`DROP PROCEDURE IF EXISTS sp_break_start`, 'drop sp_break_start'],
     [`CREATE PROCEDURE sp_break_start(
@@ -66,7 +62,6 @@ BEGIN
   UPDATE attendance SET is_on_break = 1, total_punches = COALESCE(total_punches,0) + 1
   WHERE employee_id = p_employee_id AND attendance_date = p_date;
 END`, 'create sp_break_start'],
-
     [`DROP PROCEDURE IF EXISTS sp_break_end`, 'drop sp_break_end'],
     [`CREATE PROCEDURE sp_break_end(
   IN p_employee_id INT,
@@ -107,7 +102,6 @@ BEGIN
       total_punches = COALESCE(total_punches,0) + 1
   WHERE employee_id = p_employee_id AND attendance_date = p_date;
 END`, 'create sp_break_end'],
-
     [`DROP PROCEDURE IF EXISTS sp_get_today_attendance`, 'drop sp_get_today_attendance'],
     [`CREATE PROCEDURE sp_get_today_attendance(IN p_employee_id INT)
 BEGIN
@@ -126,13 +120,11 @@ BEGIN
   ORDER BY punch_time ASC;
 END`, 'create sp_get_today_attendance'],
   ];
-
   // Run table create
   try {
     await conn.query(tableSql);
     console.log('OK  create attendance_punches table');
   } catch(e) { console.error('ERR table: ' + e.message); }
-
   // Add columns
   for (const [col, def] of alterCols) {
     try {
@@ -143,7 +135,6 @@ END`, 'create sp_get_today_attendance'],
       else console.error(`ERR ${col}: ${e.message}`);
     }
   }
-
   // Run procs
   for (const [sql, label] of procs) {
     try {
@@ -151,7 +142,6 @@ END`, 'create sp_get_today_attendance'],
       console.log('OK  ' + label);
     } catch(e) { console.error('ERR ' + label + ': ' + e.message); }
   }
-
   await conn.end();
   console.log('\nDone.');
 }

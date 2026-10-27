@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { getHomePath, getStoredUser, persistAuthSession } from "../data/auth";
@@ -7,10 +8,8 @@ import { login as loginApi, verifyMfa } from "../api/auth.api";
 import { getErrorMessage } from "../api/client";
 import { apiErrorToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
-
 const inputClassName =
   "w-full rounded-[10px] border-[1.5px] border-slate-200 bg-slate-50 px-3.5 py-[11px] text-[0.9rem] text-slate-800 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10";
-
 function BrandPanel() {
   return (
     <section className="relative flex min-h-[280px] w-full flex-col items-center justify-center overflow-hidden bg-[linear-gradient(145deg,#0f1f3d_0%,#162848_50%,#1e3460_100%)] px-8 py-10 text-white lg:min-h-full lg:w-[45%] lg:self-stretch">
@@ -19,25 +18,21 @@ function BrandPanel() {
       <span aria-hidden="true" className="pointer-events-none absolute -left-10 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full border border-orange-500/20" />
       <span aria-hidden="true" className="pointer-events-none absolute bottom-20 right-[30px] h-[60px] w-[60px] rounded-full border border-white/10" />
       <span aria-hidden="true" className="pointer-events-none absolute left-10 top-[60px] h-[30px] w-[30px] rounded-full bg-orange-500/25" />
-
       <div className="relative z-10 flex h-[140px] w-[140px] items-center justify-center rounded-[20px] bg-white px-6 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)]">
         <span aria-hidden="true" className="absolute bottom-0 left-1/5 right-1/5 h-[3px] rounded bg-orange-500" />
         <span className="text-4xl font-black tracking-tight text-slate-900">HRMS</span>
       </div>
-
       <div className="relative z-10 mt-7 text-center">
         <h1 className="m-0 text-[1.75rem] font-bold tracking-[-0.01em] text-white">HRMS</h1>
         <div className="mx-auto my-3 h-[3px] w-10 rounded bg-gradient-to-r from-orange-500 to-orange-700" />
         <p className="m-0 text-[0.85rem] font-medium uppercase tracking-[0.05em] text-white/65">Human Resources Portal</p>
       </div>
-
       <p className="absolute bottom-6 left-0 right-0 z-10 m-0 text-center text-[0.72rem] text-white/35">
         © {new Date().getFullYear()} HRMS
       </p>
     </section>
   );
 }
-
 function AuthShell({ children }) {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#e8edf5_0%,#d0d9e8_50%,#c8d4e6_100%)] px-4 py-6">
@@ -51,21 +46,16 @@ function AuthShell({ children }) {
     </div>
   );
 }
-
 function StyledInput({ className = "", ...props }) {
   return <input {...props} className={`${inputClassName} ${className}`} />;
 }
-
 function Label({ children }) {
   return <label className="mb-1.5 block text-[0.8rem] font-semibold uppercase tracking-[0.03em] text-slate-600">{children}</label>;
 }
-
 function FieldError({ msg }) {
-  return msg ? <p className="mt-1 flex items-center gap-1 text-[0.78rem] text-red-500"><span>⚠</span>{msg}</p> : null;
+  return msg ? <p className="mt-1 flex items-center gap-1 text-[0.78rem] text-red-500"><AlertTriangle size={13} aria-hidden="true" />{msg}</p> : null;
 }
-
 const submitButtonClassName = "w-full rounded-[10px] bg-gradient-to-br from-orange-500 to-orange-700 px-3 py-3 text-[0.95rem] font-bold tracking-[0.02em] text-white shadow-[0_6px_20px_rgba(241,130,0,0.25)] transition hover:-translate-y-px hover:shadow-[0_12px_32px_rgba(241,130,0,0.35)] disabled:cursor-not-allowed disabled:bg-none disabled:bg-gray-300 disabled:shadow-none";
-
 const Login = () => {
   const router = useNavigate();
   const [searchParams] = useSearchParams();
@@ -75,7 +65,6 @@ const Login = () => {
   const [mfaLoading, setMfaLoading] = useState(false);
   const idleSignOut = searchParams.get("reason") === "idle";
   const existingUser = getStoredUser();
-
   const loginForm = useFormik({
     initialValues: { email: "", password: "" },
     validationSchema: Yup.object({
@@ -103,7 +92,6 @@ const Login = () => {
       }
     },
   });
-
   const handleMfaSubmit = async (event) => {
     event.preventDefault();
     if (!mfaCode.trim()) {
@@ -122,9 +110,7 @@ const Login = () => {
       setMfaLoading(false);
     }
   };
-
   if (existingUser) return <Navigate to={getHomePath(existingUser)} replace />;
-
   if (mfaState) {
     return (
       <AuthShell>
@@ -142,12 +128,11 @@ const Login = () => {
           <button type="submit" disabled={mfaLoading} className={submitButtonClassName}>{mfaLoading ? "Verifying…" : "Verify Code"}</button>
         </form>
         <p className="mt-5 text-center text-[0.85rem] text-slate-500">
-          <button type="button" onClick={() => { setMfaState(null); setMfaCode(""); setMfaError(""); }} className="font-semibold text-orange-500 hover:text-orange-700">← Back to login</button>
+          <button type="button" onClick={() => { setMfaState(null); setMfaCode(""); setMfaError(""); }} className="inline-flex items-center gap-1 font-semibold text-orange-500 hover:text-orange-700"><ArrowLeft size={14} aria-hidden="true" />Back to login</button>
         </p>
       </AuthShell>
     );
   }
-
   return (
     <AuthShell>
       <div className="mb-8">
@@ -176,5 +161,4 @@ const Login = () => {
     </AuthShell>
   );
 };
-
 export default Login;

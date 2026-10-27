@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass, joinClasses } from "../../../../../utils/classStyles";
 import EmpCard from "./EmpCard";
-
 const TeamRow = React.memo(function TeamRow({ manager, team, selfId, search }) {
   return (
     <div className={joinClasses("org-tree", cssClass({ marginTop: 0 }))}>
@@ -24,5 +23,4 @@ const TeamRow = React.memo(function TeamRow({ manager, team, selfId, search }) {
     </div>
   );
 });
-
 export default TeamRow;

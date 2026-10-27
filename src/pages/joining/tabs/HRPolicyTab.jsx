@@ -1,7 +1,6 @@
 import React from "react";
 import { FileText, CheckCircle, Download } from "lucide-react";
 import hrPolicyPdf from "../../../assets/hr_policy_manual.pdf";
-
 export default function HRPolicyTab({ form, set }) {
   return (
     <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
@@ -14,11 +13,9 @@ export default function HRPolicyTab({ form, set }) {
           href={hrPolicyPdf}
           download="NAT_IT_Services_HR_Policy_Manual.pdf"
           className="flex items-center gap-1.5 text-[11px] font-semibold text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors">
-
           <Download size={12} /> Download PDF
         </a>
       </div>
-
       <div className="p-5">
         {}
         <div className="mb-5 h-[520px] overflow-hidden rounded-xl border border-amber-200">
@@ -28,9 +25,7 @@ export default function HRPolicyTab({ form, set }) {
             width="100%"
             height="100%"
             className="block border-0" />
-
         </div>
-
         {}
         <label className={"flex items-start gap-3 cursor-pointer p-4 rounded-xl border-2 transition-colors " + (
         form.hrPolicyAcknowledged ? "bg-orange-50 border-[#d97706]" : "bg-gray-50 border-gray-200")}>
@@ -46,5 +41,4 @@ export default function HRPolicyTab({ form, set }) {
         </label>
       </div>
     </div>);
-
 }

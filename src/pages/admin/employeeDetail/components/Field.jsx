@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { AlertTriangle } from "lucide-react";
-
 const Field = React.memo(function Field({ label, required, error, touched, children }) {
   const showErr = touched && error;
   return (
@@ -32,5 +31,4 @@ const Field = React.memo(function Field({ label, required, error, touched, child
     </div>
   );
 });
-
 export default Field;

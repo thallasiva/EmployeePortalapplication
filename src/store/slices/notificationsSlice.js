@@ -5,7 +5,6 @@
  */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import apiClient, { unwrap } from "../../api/client";
-
 /* ─── thunks ─────────────────────────────────────────────────────────────── */
 export const fetchNotifications = createAsyncThunk(
   "notifications/fetch",
@@ -17,7 +16,6 @@ export const fetchNotifications = createAsyncThunk(
     }
   }
 );
-
 export const markAllRead = createAsyncThunk(
   "notifications/markAllRead",
   async (_, { rejectWithValue }) => {
@@ -29,7 +27,6 @@ export const markAllRead = createAsyncThunk(
     }
   }
 );
-
 /* ─── slice ──────────────────────────────────────────────────────────────── */
 const notificationsSlice = createSlice({
   name: "notifications",
@@ -65,10 +62,8 @@ const notificationsSlice = createSlice({
       });
   },
 });
-
 /* ─── selectors ──────────────────────────────────────────────────────────── */
 export const selectNotifications = (state) => state.notifications;
 export const selectUnreadCount   = (state) => state.notifications.unread;
-
 export const { clearNotifications, addNotification } = notificationsSlice.actions;
 export default notificationsSlice.reducer;

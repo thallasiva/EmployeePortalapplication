@@ -1,6 +1,5 @@
 import React from 'react';
 import PermissionViewManageTable from './PermissionViewManageTable';
-
 const salaryRows = [
   {
     key: 'salaryStructure',
@@ -18,7 +17,6 @@ const salaryRows = [
     description: 'Access bonuses, incentives, and special compensation entries.',
   },
 ];
-
 const ManageSalariesTab = ({ values, onToggle }) =>
 {
   return (
@@ -29,5 +27,4 @@ const ManageSalariesTab = ({ values, onToggle }) =>
     />
   );
 };
-
 export default ManageSalariesTab;

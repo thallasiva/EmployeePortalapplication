@@ -3,24 +3,20 @@ import { CheckCircle, Forward, CornerUpLeft } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { STATUS_COLOR } from "../constants";
 import { updateTicketStatus } from "../../../../../api/helpdesk.api";
-
 const AdminWorkPanel = React.memo(({ ticket, onUpdated }) => {
   const sc = STATUS_COLOR[ticket.status] || STATUS_COLOR["Open"];
   const [saving, setSaving] = useState(false);
-
   const doStatusUpdate = async (status) => {
     setSaving(true);
     try { await updateTicketStatus(ticket.ticket_id, status); onUpdated(); }
     catch { } finally { setSaving(false); }
   };
-
   return (
     <div className={cssClass({ padding: "16px 24px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 })}>
       <p className={cssClass({ fontSize: 10, color: "#94a3b8", fontWeight: 600,
         textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" })}>
         Work on Request
       </p>
-
       {ticket.status === "Forwarded" && (
         <div className={cssClass({ marginBottom: 12, padding: "10px 14px", background: "#f5f3ff",
           border: "1px solid #ddd6fe", borderRadius: 8, fontSize: 13, color: "#7c3aed" })}>
@@ -33,7 +29,6 @@ const AdminWorkPanel = React.memo(({ ticket, onUpdated }) => {
           <CornerUpLeft size={13} className="inline -mt-0.5" /> Employee was <strong>not satisfied</strong> with the resolution — please re-examine the issue
         </div>
       )}
-
       {["Forwarded", "In Progress", "Reopened"].includes(ticket.status) && (
         <div className={cssClass({ display: "flex", gap: 8, flexWrap: "wrap" })}>
           {["Forwarded", "Reopened"].includes(ticket.status) && (
@@ -56,7 +51,6 @@ const AdminWorkPanel = React.memo(({ ticket, onUpdated }) => {
           )}
         </div>
       )}
-
       {["Resolved", "Closed", "Rejected"].includes(ticket.status) && (
         <div className={cssClass({ padding: "10px 14px", borderRadius: 8, background: sc.bg,
           border: `1px solid ${sc.color}33`, fontSize: 13, color: sc.color, fontWeight: 600 })}>
@@ -68,6 +62,5 @@ const AdminWorkPanel = React.memo(({ ticket, onUpdated }) => {
     </div>
   );
 });
-
 AdminWorkPanel.displayName = "AdminWorkPanel";
 export default AdminWorkPanel;

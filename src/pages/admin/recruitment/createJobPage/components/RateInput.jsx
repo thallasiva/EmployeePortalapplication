@@ -1,6 +1,5 @@
 import React from "react";
 import { CURRENCIES, RATE_PERIODS } from "../constants/formConstants";
-
 const RateInput = React.memo(function RateInput({
   nameVal, nameCur, namePeriod, val, cur, period, onChange,
 }) {
@@ -14,7 +13,6 @@ const RateInput = React.memo(function RateInput({
       >
         {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
       </select>
-
       <input
         name={nameVal}
         type="number"
@@ -23,7 +21,6 @@ const RateInput = React.memo(function RateInput({
         placeholder="0"
         className="min-w-0 flex-1 border-0 px-2.5 py-2 text-left text-[13px] outline-none font-inherit"
       />
-
       <select
         name={namePeriod}
         value={period}
@@ -35,5 +32,4 @@ const RateInput = React.memo(function RateInput({
     </div>
   );
 });
-
 export default RateInput;

@@ -11,12 +11,10 @@ export function fmtINR(n, short = false) {
   if (abs >= 100000)   return "₹ " + (abs / 100000).toFixed(2) + " L";
   return "₹ " + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
-
 export function pct(part, total) {
   if (!total) return 0;
   return Math.min(100, Math.round((part / total) * 100));
 }
-
 export function buildMonthList() {
   const now = new Date();
   const list = [];

@@ -1,6 +1,5 @@
 'use strict';
 const { query } = require('../config/db');
-
 /* ── auto-create tables on first use ── */
 async function ensureTables() {
   await query(`CREATE TABLE IF NOT EXISTS hr_smtp_settings (
@@ -94,7 +93,6 @@ async function ensureTables() {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`);
 }
-
 /* ════════════════════════════════════
    SMTP
 ════════════════════════════════════ */
@@ -115,12 +113,10 @@ async function saveSmtp(data) {
   }
   return getSmtp();
 }
-
 // Query-string paging arrives as strings; LIMIT/OFFSET placeholders need integers.
 function toPaging(page, limit) {
   return { page: Math.max(1, parseInt(page, 10) || 1), limit: Math.min(500, Math.max(1, parseInt(limit, 10) || 20)) };
 }
-
 /* ════════════════════════════════════
    EMAIL TEMPLATES
 ════════════════════════════════════ */
@@ -177,7 +173,6 @@ async function cloneTemplate(id) {
   );
   return getTemplate(r.insertId);
 }
-
 /* ════════════════════════════════════
    EMAIL LOGS
 ════════════════════════════════════ */
@@ -209,7 +204,6 @@ async function getLogStats() {
   rows.forEach(r => { stats[r.status] = r.cnt; stats.total += r.cnt; });
   return stats;
 }
-
 /* ════════════════════════════════════
    EMAIL SCHEDULES
 ════════════════════════════════════ */
@@ -247,7 +241,6 @@ async function deleteSchedule(id) {
   await ensureTables();
   await query('DELETE FROM hr_email_schedules WHERE id=?', [id]);
 }
-
 /* ════════════════════════════════════
    EMAIL PERMISSIONS (JSON per role)
 ════════════════════════════════════ */
@@ -268,7 +261,6 @@ async function saveEmailPermissions(data) {
   }
   return getEmailPermissions();
 }
-
 /* ════════════════════════════════════
    MENU PERMISSIONS
 ════════════════════════════════════ */
@@ -289,7 +281,6 @@ async function saveMenuPermissions(data) {
   }
   return getMenuPermissions();
 }
-
 /* ════════════════════════════════════
    FORM BUILDER
 ════════════════════════════════════ */
@@ -325,7 +316,6 @@ async function deleteForm(id) {
   await ensureTables();
   await query('DELETE FROM hr_custom_forms WHERE id=?', [id]);
 }
-
 /* ════════════════════════════════════
    DASHBOARD BUILDER
 ════════════════════════════════════ */
@@ -360,7 +350,6 @@ async function deleteDashboard(id) {
   await ensureTables();
   await query('DELETE FROM hr_custom_dashboards WHERE id=?', [id]);
 }
-
 /* ════════════════════════════════════
    REPORT BUILDER
 ════════════════════════════════════ */
@@ -396,7 +385,6 @@ async function deleteReport(id) {
   await ensureTables();
   await query('DELETE FROM hr_custom_reports WHERE id=?', [id]);
 }
-
 /* ════════════════════════════════════
    NOTIFICATIONS
 ════════════════════════════════════ */
@@ -438,8 +426,6 @@ async function createNotification(data) {
   const rows = await query('SELECT * FROM hr_notifications WHERE id=?', [r.insertId]);
   return rows[0];
 }
-
-
 /* ════════════════════════════════════
    NOTIFICATION PREFERENCES
 ════════════════════════════════════ */
@@ -458,7 +444,6 @@ async function saveNotificationPreferences(data) {
   );
   return data;
 }
-
 module.exports = {
   getSmtp, saveSmtp,
   listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate, cloneTemplate,
@@ -472,4 +457,3 @@ module.exports = {
   listNotifications, markRead, markAllRead, deleteNotification, createNotification,
   getNotificationPreferences, saveNotificationPreferences,
 };
-

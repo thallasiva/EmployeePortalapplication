@@ -4,26 +4,19 @@ import Pagination, { usePagination } from "../../../components/Pagination";
 import TemplateCard from "./components/TemplateCard";
 import TemplateForm from "./components/TemplateForm";
 import { useSalaryTemplates } from "./hooks/useSalaryTemplates";
-
 const SalaryTemplates = React.memo(function SalaryTemplates() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-
   const { templates, loading, saving, saveTemplate, deleteTemplate } = useSalaryTemplates();
-
   const openCreate = useCallback(() => { setEditing(null); setFormOpen(true); }, []);
   const openEdit = useCallback((t) => { setEditing(t); setFormOpen(true); }, []);
   const closeForm = useCallback(() => { setFormOpen(false); setEditing(null); }, []);
-
   const handleSave = useCallback(async (data) => {
     await saveTemplate(data, editing, closeForm);
   }, [saveTemplate, editing, closeForm]);
-
   const defaultTpl = useMemo(() => templates.find((t) => t.is_default), [templates]);
   const otherTpls = useMemo(() => templates.filter((t) => !t.is_default), [templates]);
-
   const { paged: pagedTpls, page: tplPage, setPage: setTplPage, totalPages: tplTotalPages, from: tplFrom, to: tplTo, total: tplTotal, pageSize: tplPageSize, setPageSize: setTplPageSize } = usePagination(otherTpls);
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {}
@@ -39,7 +32,6 @@ const SalaryTemplates = React.memo(function SalaryTemplates() {
           <Plus size={15} /> New Template
         </button>
       </div>
-
       {loading ?
       <div className="text-center py-16 text-gray-400 text-sm">Loading templates…</div> :
       templates.length === 0 ?
@@ -50,7 +42,6 @@ const SalaryTemplates = React.memo(function SalaryTemplates() {
             Create your first template
           </button>
         </div> :
-
       <div className="space-y-6">
           {}
           {defaultTpl &&
@@ -59,7 +50,6 @@ const SalaryTemplates = React.memo(function SalaryTemplates() {
               <TemplateCard t={defaultTpl} onEdit={openEdit} onDelete={deleteTemplate} />
             </div>
         }
-
           {}
           {otherTpls.length > 0 &&
         <div>
@@ -76,17 +66,14 @@ const SalaryTemplates = React.memo(function SalaryTemplates() {
         }
         </div>
       }
-
       {formOpen &&
       <TemplateForm
         initial={editing}
         onSave={handleSave}
         onClose={closeForm}
         saving={saving} />
-
       }
     </div>
   );
 });
-
 export default SalaryTemplates;

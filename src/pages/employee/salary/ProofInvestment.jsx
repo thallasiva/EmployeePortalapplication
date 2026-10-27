@@ -1,15 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Upload, CheckCircle2, Clock, XCircle, Trash2, Download, AlertCircle, Lock, RefreshCw, AlertTriangle } from "lucide-react";
 import { getMyITDeclaration, getMyProofs, uploadProof, deleteProof, downloadProofUrl } from "../../../api/itDeclaration.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
-
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
-
 const STATUS_CFG = {
   verified: { bg: "#dcfce7", color: "#15803d", icon: <CheckCircle2 size={12} />, label: "Verified" },
   pending: { bg: "#fef9c3", color: "#a16207", icon: <Clock size={12} />, label: "Pending" },
   rejected: { bg: "#fee2e2", color: "#dc2626", icon: <XCircle size={12} />, label: "Rejected" }
 };
-
 function StatusBadge({ status }) {
   const s = STATUS_CFG[status] || STATUS_CFG.pending;
   return (
@@ -17,15 +14,11 @@ function StatusBadge({ status }) {
       fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: s.bg, color: s.color })}>
       {s.icon}{s.label}
     </span>);
-
 }
-
 const INVEST_TYPES = [
 "ELSS Mutual Fund", "Life Insurance", "PPF", "NSC", "Public Provident Fund",
 "Home Loan Principal", "Home Loan Interest", "Tuition Fees", "NPS", "ULIP",
 "Fixed Deposit (5yr)", "Sukanya Samriddhi", "Medical Insurance", "Other"];
-
-
 export default function ProofInvestment() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -33,13 +26,10 @@ export default function ProofInvestment() {
   const [declaration, setDeclaration] = useState(null);
   const [proofs, setProofs] = useState([]);
   const [declaredItems, setDeclaredItems] = useState([]);
-
-
   const [investType, setInvestType] = useState(INVEST_TYPES[0]);
   const [declaredAmt, setDeclaredAmt] = useState("");
   const [actualAmt, setActualAmt] = useState("");
   const [file, setFile] = useState(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -56,10 +46,7 @@ export default function ProofInvestment() {
     } catch {}
     setLoading(false);
   }, []);
-
   useEffect(() => {load();}, [load]);
-
-
   useEffect(() => {
     const match = declaredItems.find((i) =>
     i.sub_label?.toLowerCase().includes(investType.toLowerCase()) ||
@@ -67,7 +54,6 @@ export default function ProofInvestment() {
     );
     setDeclaredAmt(match ? String(match.declared_amount) : "");
   }, [investType, declaredItems]);
-
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
@@ -86,7 +72,6 @@ export default function ProofInvestment() {
     }
     setUploading(false);
   };
-
   const handleDelete = async (proofId) => {
     if (!window.confirm("Delete this proof?")) return;
     try {
@@ -96,15 +81,12 @@ export default function ProofInvestment() {
       alert(e?.response?.data?.message || "Delete failed");
     }
   };
-
   const isLocked = !cycle || cycle.status !== "active";
   const totalDeclared = proofs.reduce((s, p) => s + Number(p.declared_amount || 0), 0);
   const totalVerified = proofs.filter((p) => p.status === "verified").reduce((s, p) => s + Number(p.actual_amount || 0), 0);
   const pendingCount = proofs.filter((p) => p.status === "pending").length;
   const rejectedCount = proofs.filter((p) => p.status === "rejected").length;
-
   if (loading) return <div className={cssClass({ padding: 40, textAlign: "center", color: "#94a3b8" })}>Loading…</div>;
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       {}
@@ -120,7 +102,6 @@ export default function ProofInvestment() {
           <RefreshCw size={13} /> Refresh
         </button>
       </div>
-
       {}
       {declaration &&
       <div className={cssClass({ marginBottom: 16, padding: "10px 16px", borderRadius: 8, fontSize: 13,
@@ -135,7 +116,6 @@ export default function ProofInvestment() {
           </div>
         </div>
       }
-
       {}
       {proofs.length > 0 &&
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 })}>
@@ -153,7 +133,6 @@ export default function ProofInvestment() {
         )}
         </div>
       }
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 20, alignItems: "start" })}>
         {}
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" })}>
@@ -169,7 +148,6 @@ export default function ProofInvestment() {
                 <Lock size={13} /> Declaration cycle is closed. Uploads are disabled.
               </div>
             }
-
             <div className={cssClass({ marginBottom: 14 })}>
               <label className={cssClass({ fontSize: 12, color: "#64748b", display: "block", marginBottom: 6 })}>Investment Type</label>
               <select value={investType} onChange={(e) => setInvestType(e.target.value)} disabled={isLocked} className={cssClass(
@@ -178,7 +156,6 @@ export default function ProofInvestment() {
                 {INVEST_TYPES.map((t) => <option key={t}>{t}</option>)}
               </select>
             </div>
-
             <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 })}>
               <div>
                 <label className={cssClass({ fontSize: 12, color: "#64748b", display: "block", marginBottom: 6 })}>Declared Amount (₹)</label>
@@ -195,7 +172,6 @@ export default function ProofInvestment() {
                     fontSize: 13, outline: "none", boxSizing: "border-box" })} />
               </div>
             </div>
-
             <div className={cssClass({ marginBottom: 16 })}>
               <label className={cssClass({ fontSize: 12, color: "#64748b", display: "block", marginBottom: 6 })}>Document (PDF / JPG / PNG)</label>
               <label className={cssClass({ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -209,7 +185,6 @@ export default function ProofInvestment() {
                 onChange={(e) => setFile(e.target.files[0] || null)} className={cssClass({ display: "none" })} />
               </label>
             </div>
-
             <button onClick={handleUpload} disabled={!file || isLocked || uploading} className={cssClass(
               { width: "100%", padding: 11, borderRadius: 8, fontSize: 13, fontWeight: 700,
                 background: file && !isLocked ? "#f18200" : "#e2e8f0",
@@ -219,7 +194,6 @@ export default function ProofInvestment() {
             </button>
           </div>
         </div>
-
         {}
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" })}>
           <div className={cssClass({ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc",
@@ -227,13 +201,11 @@ export default function ProofInvestment() {
             <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>Uploaded Proofs</span>
             <span className={cssClass({ fontSize: 11, color: "#94a3b8" })}>{proofs.length} document{proofs.length !== 1 ? "s" : ""}</span>
           </div>
-
           {proofs.length === 0 ?
           <div className={cssClass({ padding: 48, textAlign: "center" })}>
               <Upload size={40} strokeWidth={1} className={cssClass({ color: "#cbd5e1", marginBottom: 8 })} />
               <p className={cssClass({ color: "#94a3b8", fontSize: 13 })}>No proofs uploaded yet.</p>
             </div> :
-
           <div>
               {proofs.map((p) =>
             <div key={p.proof_id} className={cssClass({ padding: "14px 18px", borderBottom: "1px solid #f8fafc" })}>
@@ -281,7 +253,6 @@ export default function ProofInvestment() {
             )}
             </div>
           }
-
           {}
           {proofs.length > 0 &&
           <div className={cssClass({ padding: "12px 18px", background: "#f8fafc", borderTop: "1px solid #e8edf2" })}>
@@ -303,5 +274,4 @@ export default function ProofInvestment() {
         </div>
       </div>
     </div>);
-
 }

@@ -3,7 +3,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { listEmployees } from "../../../../api/employee.api";
 import PayrollTable from "./PayrollTable";
 import { AlertTriangle } from "lucide-react";
-
 const cols = [
   { key: "emp_code", label: "Emp Code" },
   {
@@ -51,21 +50,17 @@ const cols = [
       ),
   },
 ];
-
 function PANStatus() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     listEmployees({ status: "Active", limit: 500 })
       .then((r) => setRows(r.data || []))
       .finally(() => setLoading(false));
   }, []);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   const missing = rows.filter((r) => !r.pan_number).length;
   return (
     <>
@@ -78,5 +73,4 @@ function PANStatus() {
     </>
   );
 }
-
 export default React.memo(PANStatus);

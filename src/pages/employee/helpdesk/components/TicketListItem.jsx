@@ -2,7 +2,6 @@ import { memo } from "react";
 import { CheckCircle, ArrowRight, Check, CornerUpLeft } from "lucide-react";
 import { getStatusStyle, fmtDate } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
-
 /**
  * A single row in the My Tickets list.
  * Single responsibility: render one ticket + emit onClick / onClose / onReopen actions.
@@ -11,7 +10,6 @@ const TicketListItem = memo(function TicketListItem({ ticket, index, total, isCl
   const sc         = getStatusStyle(ticket.status);
   const isResolved = ticket.status === "Resolved";
   const isReopened = ticket.status === "Reopened";
-
   return (
     <li
       onClick={onClick}
@@ -54,13 +52,11 @@ const TicketListItem = memo(function TicketListItem({ ticket, index, total, isCl
             )}
           </div>
         </div>
-
         {/* Right: status badge + actions */}
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, flexWrap: "wrap" })}>
           <span className={cssClass({ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: sc.bg, color: sc.color })}>
             {ticket.status}
           </span>
-
           {isResolved && (
             <>
               <button
@@ -94,5 +90,4 @@ const TicketListItem = memo(function TicketListItem({ ticket, index, total, isCl
     </li>
   );
 });
-
 export default TicketListItem;

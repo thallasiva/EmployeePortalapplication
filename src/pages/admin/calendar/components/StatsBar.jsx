@@ -1,6 +1,5 @@
 import React from 'react';
 import { Cake, CalendarDays, Umbrella, Users } from 'lucide-react';
-
 const StatsBar = React.memo(function StatsBar({
   loading,
   totalEmployees,
@@ -42,7 +41,6 @@ const StatsBar = React.memo(function StatsBar({
       color: 'text-red-600',
     },
   ];
-
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {cards.map((card) => (
@@ -67,5 +65,4 @@ const StatsBar = React.memo(function StatsBar({
     </div>
   );
 });
-
 export default StatsBar;

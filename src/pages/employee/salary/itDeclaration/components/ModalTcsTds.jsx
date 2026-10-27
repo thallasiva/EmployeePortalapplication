@@ -2,17 +2,14 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmt } from "../utils/formatters";
 import Modal from "./Modal";
-
 const TCS_TDS_ITEMS = [
   { key: "tcs", label: "TCS — Tax Collected at Source", desc: "Tax deducted by seller on high-value transactions" },
   { key: "tds", label: "TDS — Tax Deducted at Source", desc: "Tax withheld by payer on income payments" },
 ];
-
 function ModalTcsTds({ values, setValues, onClose }) {
   const tcs = Number(values.tcs) || 0;
   const tds = Number(values.tds) || 0;
   const total = tcs + tds;
-
   return (
     <Modal
       title="Tax Credits — TDS / TCS"
@@ -39,7 +36,6 @@ function ModalTcsTds({ values, setValues, onClose }) {
           </div>
         </div>
       </div>
-
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 12 })}>
         {TCS_TDS_ITEMS.map(({ key, label, desc }) => {
           const filled = (Number(values[key]) || 0) > 0;
@@ -71,5 +67,4 @@ function ModalTcsTds({ values, setValues, onClose }) {
     </Modal>
   );
 }
-
 export default React.memo(ModalTcsTds);

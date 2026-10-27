@@ -13,10 +13,8 @@ import DetailsScreen from "./EmployeeDetailsProfile";
 import { EmployeeDocument } from "./EmployeeDocument";
 import PayrollReports from "./PayrollReports";
 import ReviewForm from "./ReviewForm";
-
 import TimeOff from "./TimeOff";
 import "./adminProfile.css";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 const TABS = [
 { id: "employment", label: "Employment", icon: Briefcase },
 { id: "details", label: "Details", icon: User },
@@ -24,10 +22,6 @@ const TABS = [
 { id: "payroll", label: "Payroll", icon: Wallet },
 { id: "timeoff", label: "Time Off", icon: Calendar },
 { id: "reviews", label: "Reviews", icon: Star }];
-
-
-
-
 const NAT_SOFT = {
   name: "Nat Soft",
   address: "Plot No. 42, Tech Park Road, Madhapur",
@@ -36,13 +30,11 @@ const NAT_SOFT = {
   email: "hr@natsoft.in",
   web: "www.natsoft.in"
 };
-
 export default function Profile() {
   const storedUser = getStoredUser();
   const [active, setActive] = useState("employment");
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     async function load() {
       try {
@@ -60,10 +52,8 @@ export default function Profile() {
     }
     load();
   }, []);
-
   const me = profile?.me || storedUser || {};
   const emp = profile?.emp || {};
-
   const displayName = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || me.name || me.email || "Admin User";
   const email = emp.email || me.email || "—";
   const jobTitle = emp.emp_job_title || me.role_name || "Administrator";
@@ -71,7 +61,6 @@ export default function Profile() {
   const status = emp.employee_status || "Active";
   const avatarSeed = emp.employee_id || me.user_id || displayName.length || 1;
   const initial = displayName.charAt(0).toUpperCase();
-
   const renderTab = () => {
     switch (active) {
       case "employment":return <EmployeeProfile />;
@@ -80,11 +69,9 @@ export default function Profile() {
       case "payroll":return <PayrollReports />;
       case "timeoff":return <TimeOff />;
       case "reviews":return <ReviewForm />;
-
       default:return null;
     }
   };
-
   return (
     <div className="admin-profile">
       {}
@@ -92,10 +79,8 @@ export default function Profile() {
         <p className="admin-profile__breadcrumb">Home / Profile</p>
         <h1 className="admin-profile__page-title">My Profile</h1>
       </div>
-
       {}
       <section className="admin-profile__hero">
-
         {}
         <div className="admin-profile__cover">
           {}
@@ -114,7 +99,6 @@ export default function Profile() {
             width: 100, height: 100, borderRadius: "50%",
             background: "rgba(255,255,255,.05)"
           })} />
-
           {}
           <div className={cssClass({
             position: "absolute", bottom: 16, right: 20,
@@ -129,16 +113,13 @@ export default function Profile() {
               {NAT_SOFT.name}
             </div>
           </div>
-
           <button type="button" className="admin-profile__cover-btn">Edit Cover</button>
         </div>
-
         {}
         <div className="admin-profile__body">
           <div className="admin-profile__identity">
             {loading ?
             <div className={joinClasses("admin-profile__avatar", cssClass({ background: "#f3f4f6" }))} /> :
-
             <div className={joinClasses("admin-profile__avatar", cssClass({
               background: "linear-gradient(135deg,#f18200,#fb923c)",
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -154,7 +135,6 @@ export default function Profile() {
               <p className="admin-profile__email">{email}</p>
             </div>
           </div>
-
           {}
           <div className="admin-profile__badges">
             <span className={cssClass({
@@ -174,7 +154,6 @@ export default function Profile() {
             </span>
           </div>
         </div>
-
         {}
         <div className={cssClass({ padding: "0 1.5rem 1.5rem" })}>
           <div className={cssClass({
@@ -196,14 +175,12 @@ export default function Profile() {
               })}>
                 <Building2 size={22} color="#fff" />
               </div>
-
               <div>
                 {}
                 <div className={cssClass({ fontSize: 10, fontWeight: 800, color: "#f18200",
                   textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 3 })}>
                   Head Office
                 </div>
-
                 {}
                 <div className={cssClass({
                   fontSize: 18, fontWeight: 900, color: "#111827",
@@ -212,7 +189,6 @@ export default function Profile() {
                 })}>
                   {NAT_SOFT.name}
                 </div>
-
                 {}
                 <div className={cssClass({ display: "flex", alignItems: "flex-start", gap: 5, marginTop: 8 })}>
                   <MapPin size={13} color="#f18200" className={cssClass({ marginTop: 2, flexShrink: 0 })} />
@@ -227,7 +203,6 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-
             {}
             <div className={cssClass({
               display: "flex", flexDirection: "column", gap: 8,
@@ -268,7 +243,6 @@ export default function Profile() {
           </div>
         </div>
       </section>
-
       {}
       <nav className="admin-profile__tabs-wrap" aria-label="Profile sections">
         <div className="admin-profile__tabs">
@@ -280,12 +254,9 @@ export default function Profile() {
               onClick={() => setActive(tab.id)}>
                 <Icon size={15} /> {tab.label}
               </button>);
-
           })}
         </div>
       </nav>
-
       <div className="admin-profile__content">{renderTab()}</div>
     </div>);
-
 }

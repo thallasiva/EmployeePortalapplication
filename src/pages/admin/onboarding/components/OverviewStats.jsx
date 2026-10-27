@@ -1,6 +1,5 @@
 import React from "react";
 import { Users, Clock3, FileCheck } from "lucide-react";
-
 const OverviewStats = React.memo(function OverviewStats({
   loading,
   activeCount,
@@ -33,7 +32,6 @@ const OverviewStats = React.memo(function OverviewStats({
       bg: pendingFormalities > 0 ? "#fef2f2" : "#f0fdf4",
     },
   ];
-
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       {stats.map(({ value, label, sub, icon: Icon, color, bg }) => (
@@ -57,5 +55,4 @@ const OverviewStats = React.memo(function OverviewStats({
     </div>
   );
 });
-
 export default OverviewStats;

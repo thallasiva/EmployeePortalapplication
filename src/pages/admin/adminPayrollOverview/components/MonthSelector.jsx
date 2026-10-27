@@ -2,7 +2,6 @@ import React from "react";
 import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND, MONTHS, VISIBLE } from "../constants";
-
 const MonthSelector = React.memo(function MonthSelector({
   months, selIdx, scroll,
   onSelectIdx, onScrollLeft, onScrollRight,
@@ -10,7 +9,6 @@ const MonthSelector = React.memo(function MonthSelector({
 }) {
   const visibleMonths = months.slice(scroll, scroll + VISIBLE);
   const now = new Date();
-
   return (
     <div className={cssClass({
       background: "#fff", border: "1px solid #e9eaec", borderRadius: 12,
@@ -29,7 +27,6 @@ const MonthSelector = React.memo(function MonthSelector({
         >
           <ChevronLeft size={16} />
         </button>
-
         <div className={cssClass({ display: "flex", gap: 5, flex: 1 })}>
           {visibleMonths.map((m) => {
             const gIdx = months.findIndex((x) => x.month === m.month && x.year === m.year);
@@ -68,7 +65,6 @@ const MonthSelector = React.memo(function MonthSelector({
             );
           })}
         </div>
-
         <button
           onClick={onScrollRight}
           disabled={scroll + VISIBLE >= months.length}
@@ -85,5 +81,4 @@ const MonthSelector = React.memo(function MonthSelector({
     </div>
   );
 });
-
 export default MonthSelector;

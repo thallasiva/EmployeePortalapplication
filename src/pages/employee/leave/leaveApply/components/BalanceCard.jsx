@@ -1,5 +1,4 @@
 import React from "react";
-
 const BalanceCard = React.memo(function BalanceCard({ name, balance, total, color }) {
   const pct = total > 0 ? Math.min((balance / total) * 100, 100) : 0;
   return (
@@ -25,5 +24,4 @@ const BalanceCard = React.memo(function BalanceCard({ name, balance, total, colo
     </div>
   );
 });
-
 export default BalanceCard;

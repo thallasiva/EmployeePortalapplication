@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 // KPI tile used across the top row.
 export default function StatCard({ icon, label, value, sub, accent = "#f18200", tint = "#fff7ed", alert = false }) {
   return (

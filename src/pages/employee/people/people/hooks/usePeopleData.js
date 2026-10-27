@@ -2,13 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import apiClient, { unwrap } from "../../../../../api/client";
 import { getCurrentUser } from "../../../../../api/auth.api";
 import { fullName, normalize } from "../utils";
-
 export function usePeopleData() {
   const [allEmployees, setAllEmployees] = useState([]);
   const [selfId, setSelfId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -28,22 +26,18 @@ export function usePeopleData() {
       .catch((e) => setError(e?.response?.data?.message || "Failed to load"))
       .finally(() => setLoading(false));
   }, []);
-
   const self = useMemo(
     () => allEmployees.find((e) => e.id === selfId) ?? null,
     [allEmployees, selfId]
   );
-
   const manager = useMemo(
     () => (self?.reportingToId ? allEmployees.find((e) => e.id === self.reportingToId) ?? null : null),
     [allEmployees, self]
   );
-
   const directReports = useMemo(
     () => allEmployees.filter((e) => e.reportingToId === selfId),
     [allEmployees, selfId]
   );
-
   const peers = useMemo(
     () =>
       allEmployees.filter(
@@ -54,7 +48,6 @@ export function usePeopleData() {
       ),
     [allEmployees, self, selfId]
   );
-
   const deptTeam = useMemo(
     () =>
       allEmployees.filter(
@@ -66,6 +59,5 @@ export function usePeopleData() {
       ),
     [allEmployees, self, selfId]
   );
-
   return { loading, error, self, manager, directReports, peers, deptTeam };
 }

@@ -5,7 +5,6 @@ export const STEPS = [
   { id: 3, label: "Bank" },
   { id: 4, label: "Review" },
 ];
-
 export const INITIAL_VALUES = {
   employee_id: "",
   biometric_id: "",
@@ -29,7 +28,6 @@ export const INITIAL_VALUES = {
   ctc: "",
   benefits_plan: "standard",
   role: "2",
-
   gender: "",
   dob: "",
   actual_dob: "",
@@ -48,7 +46,6 @@ export const INITIAL_VALUES = {
   pf_number: "",
   pf_join_date: "",
   esi_number: "",
-
   bank_name: "",
   account_number: "",
   account_type: "",
@@ -57,7 +54,6 @@ export const INITIAL_VALUES = {
   ifsc_code: "",
   account_holder_name: "",
   payment_type: "",
-
   contact_name: "",
   contact_city: "",
   contact_country: "",

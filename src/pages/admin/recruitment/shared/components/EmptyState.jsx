@@ -1,5 +1,4 @@
 import React from "react";
-
 export const EmptyState = React.memo(function EmptyState({ icon: Icon, title, desc, action }) {
   return (
     <div className="text-center py-12 px-5 text-gray-400">

@@ -1,7 +1,6 @@
 import React from "react";
 import { Construction } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const ComingSoonPanel = React.memo(function ComingSoonPanel({ label }) {
   return (
     <div className={cssClass({ textAlign: "center", padding: "60px 24px" })}>
@@ -12,5 +11,4 @@ const ComingSoonPanel = React.memo(function ComingSoonPanel({ label }) {
     </div>
   );
 });
-
 export default ComingSoonPanel;

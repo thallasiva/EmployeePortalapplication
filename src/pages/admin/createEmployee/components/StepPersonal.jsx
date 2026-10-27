@@ -1,6 +1,5 @@
 import React from "react";
 import Field from "./Field";
-
 const StepPersonal = React.memo(function StepPersonal({ values, errors, setField }) {
   return (
     <>
@@ -53,5 +52,4 @@ const StepPersonal = React.memo(function StepPersonal({ values, errors, setField
     </>
   );
 });
-
 export default StepPersonal;

@@ -2,7 +2,6 @@ const BaseService = require('./base.service');
 const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify   = require('./mailNotify.service');
-
 const FILLABLE = [
   'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'dob',
   'marital_status', 'blood_group', 'profile_photo', 'reporting_to', 'emp_job_title',
@@ -16,31 +15,26 @@ const FILLABLE = [
   'contract_end_date', 'date_of_confirmation', 'educational_qualification',
   'total_exp_before_joining', 'previous_employer', 'bgv_status', 'previous_designation',
 ];
-
 const DIRECTORY_FIELDS = [
   'employee_id', 'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'profile_photo',
   'emp_job_title', 'department_id', 'department_name', 'designation_id', 'designation_name',
   'reporting_to', 'reporting_to_name', 'reporting_to_code', 'office_id', 'team_id', 'location',
   'holiday_calendar', 'shift', 'employee_type', 'employee_status', 'emp_joining_date',
 ];
-
 function toDirectoryEntry(e) {
   const out = {};
   for (const k of DIRECTORY_FIELDS) out[k] = e[k] ?? null;
   out.birthday = e.dob ? String(e.dob).slice(5, 10) : null;
   return out;
 }
-
 class EmployeeService extends BaseService {
   constructor() {
     super('employees', 'employee_id', FILLABLE);
   }
-
   async orgChart() {
     const results = await callProcedure('sp_get_org_chart()');
     return results[0] ?? results;
   }
-
   async list({ department, status, search, reporting_to, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_employees(?, ?, ?, ?, ?, ?)',
@@ -57,7 +51,6 @@ class EmployeeService extends BaseService {
     const count = results[1] ?? [];
     return { rows, total: count[0]?.total ?? 0 };
   }
-
   async getProfile(employeeId) {
     const results = await callProcedure('sp_get_employee_profile(?)', [employeeId]);
     const rows        = results[0] ?? [];
@@ -66,7 +59,6 @@ class EmployeeService extends BaseService {
     if (!rows.length) return null;
     return { ...rows[0], contactInfo: contactRows[0] ?? null, bankDetails: bankRows[0] ?? null };
   }
-
   async createWithProcedure(data) {
     const { outs: out } = await callProcedureWithOuts(
       'sp_create_employee(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @employee_id)',
@@ -89,7 +81,6 @@ class EmployeeService extends BaseService {
       ]
     );
     const profile = await this.getProfile(out.employee_id);
-
     if (profile && data.email) {
       notify.employeeCreated({
         name:        (data.first_name + ' ' + (data.last_name || '')).trim(),
@@ -111,11 +102,9 @@ class EmployeeService extends BaseService {
     }
     return profile;
   }
-
   async upsertContactInfo(employeeId, data) {
     const exists = await this.existsById(employeeId);
     if (!exists) throw ApiError.notFound('Employee not found');
-
     const results = await callProcedure(
       'sp_upsert_contact_info(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
@@ -137,11 +126,9 @@ class EmployeeService extends BaseService {
     );
     return (results[0] ?? results)[0] ?? null;
   }
-
   async upsertBankDetails(employeeId, data) {
     const exists = await this.existsById(employeeId);
     if (!exists) throw ApiError.notFound('Employee not found');
-
     const results = await callProcedure(
       'sp_upsert_bank_details(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
@@ -160,21 +147,17 @@ class EmployeeService extends BaseService {
     );
     return (results[0] ?? results)[0] ?? null;
   }
-
   async myTeam(employeeId) {
     const selfResults = await callProcedure('sp_get_employee_team(?)', [employeeId]);
     const self = (selfResults[0] ?? selfResults)[0] ?? null;
     const managerId = self?.reporting_to ?? null;
-
     if (!managerId) {
       return { manager: null, teammates: self ? [toDirectoryEntry(self)] : [], currentEmployeeId: employeeId };
     }
-
     const [managerResults, teammateResults] = await Promise.all([
       callProcedure('sp_get_employee_profile(?)', [managerId]),
       callProcedure('sp_list_employees(?, ?, ?, ?, ?, ?)', [null, 'Active', null, managerId, null, null]),
     ]);
-
     // Colleague-facing fields only (no salary/statutory data), same as the directory.
     const manager = (managerResults[0] ?? [])[0] ?? null;
     return {
@@ -183,7 +166,6 @@ class EmployeeService extends BaseService {
       currentEmployeeId: employeeId,
     };
   }
-
   async directory({ location, department, holidayCalendar } = {}) {
     const results = await callProcedure(
       'sp_get_employee_directory(?, ?, ?)',
@@ -197,7 +179,6 @@ class EmployeeService extends BaseService {
     // never salary, Aadhaar, PF/ESI, family or full date-of-birth data. Birthdays go out as MM-DD.
     return (results[0] ?? []).map(toDirectoryEntry);
   }
-
   async changeRole(employeeId, roleId) {
     try {
       await callProcedure('sp_change_employee_role(?, ?)', [employeeId, roleId]);
@@ -207,16 +188,13 @@ class EmployeeService extends BaseService {
     }
     return true;
   }
-
   async listRoles() {
     const results = await callProcedure('sp_list_roles_basic()');
     return results[0] ?? [];
   }
-
   async listEmployeesWithRoles() {
     const results = await callProcedure('sp_list_employees_with_roles()');
     return results[0] ?? [];
   }
 }
-
 module.exports = new EmployeeService();

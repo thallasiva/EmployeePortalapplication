@@ -1,6 +1,5 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
-
 const DocNavCard = React.memo(function DocNavCard({ icon, title, onClick, color, bg }) {
   return (
     <button
@@ -21,5 +20,4 @@ const DocNavCard = React.memo(function DocNavCard({ icon, title, onClick, color,
     </button>
   );
 });
-
 export default DocNavCard;

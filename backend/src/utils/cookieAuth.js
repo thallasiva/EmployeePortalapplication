@@ -1,27 +1,12 @@
 'use strict';
-
-
-
-
-
-
-
-
 const { env } = require('../config/env');
-
 const IS_PROD = env === 'production';
-
 const BASE_OPTS = {
   httpOnly: true,
   secure: IS_PROD,
   sameSite: IS_PROD ? 'None' : 'Lax',
   path: '/'
 };
-
-
-
-
-
 function setTokenCookies(res, accessToken, refreshToken) {
   if (accessToken) {
     res.cookie('accessToken', accessToken, {
@@ -36,13 +21,8 @@ function setTokenCookies(res, accessToken, refreshToken) {
     });
   }
 }
-
-
-
-
 function clearTokenCookies(res) {
   res.clearCookie('accessToken', { ...BASE_OPTS });
   res.clearCookie('refreshToken', { ...BASE_OPTS });
 }
-
 module.exports = { setTokenCookies, clearTokenCookies };

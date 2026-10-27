@@ -1,9 +1,7 @@
 import React from "react";
 import { CheckCircle2 } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const DONE = "#16a34a", CURRENT = "#f18200", PENDING = "#cbd5e1";
-
 // Horizontal 8-step payroll process bar. steps = [{ label, status }].
 export default function ProcessStepper({ steps = [] }) {
   return (

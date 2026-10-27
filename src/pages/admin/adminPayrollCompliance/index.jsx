@@ -7,20 +7,15 @@ import PANStatus from "./components/PANStatus";
 import PFKYCMapping from "./components/PFKYCMapping";
 import Remittances from "./components/Remittances";
 import PayrollRelease from "./components/PayrollRelease";
-
 function AdminPayrollCompliance() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "pan";
-
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-
   const setTab = useCallback((t) => setSearchParams({ tab: t }), [setSearchParams]);
   const handleMonthChange = useCallback((m, y) => { setMonth(m); setYear(y); }, []);
-
   const needsMonth = ["remittances", "release"].includes(tab);
-
   return (
     <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
       <div className={cssClass({ marginBottom: 24 })}>
@@ -31,7 +26,6 @@ function AdminPayrollCompliance() {
           PAN/PF compliance, statutory remittances and payslip release management
         </p>
       </div>
-
       <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #eee", marginBottom: 24, flexWrap: "wrap" })}>
         {TABS.map((t) => (
           <button
@@ -49,9 +43,7 @@ function AdminPayrollCompliance() {
           </button>
         ))}
       </div>
-
       {needsMonth && <MonthBar month={month} year={year} onChange={handleMonthChange} />}
-
       <div className={cssClass({ background: "#fff", borderRadius: 10, border: "1px solid #eee", padding: 20, boxShadow: "0 1px 4px #0000000a" })}>
         {tab === "pan" && <PANStatus />}
         {tab === "pf-kyc" && <PFKYCMapping />}
@@ -61,5 +53,4 @@ function AdminPayrollCompliance() {
     </div>
   );
 }
-
 export default React.memo(AdminPayrollCompliance);

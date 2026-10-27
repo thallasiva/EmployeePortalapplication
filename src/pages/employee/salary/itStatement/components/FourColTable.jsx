@@ -1,9 +1,7 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { TH } from "../constants";
-
 const tbl = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 export const FourColTable = React.memo(function FourColTable({ rows }) {
   return (
     <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 12 })}>
@@ -30,7 +28,6 @@ export const FourColTable = React.memo(function FourColTable({ rows }) {
     </table>
   );
 });
-
 export const SlabInfoPanel = React.memo(function SlabInfoPanel({ regime, taxableIncome }) {
   const slabData = regime === "new"
     ? [
@@ -47,7 +44,6 @@ export const SlabInfoPanel = React.memo(function SlabInfoPanel({ regime, taxable
         { range: "₹5,00,001 – ₹10,00,000", rate: "20%", from: 500000, to: 1000000 },
         { range: "Above ₹10,00,000", rate: "30%", from: 1000000, to: Infinity },
       ];
-
   return (
     <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 12 })}>
       <thead>

@@ -20,7 +20,6 @@ BEGIN
   DECLARE v_lop_days DECIMAL(4,1) DEFAULT 0;
   DECLARE v_paid_days DECIMAL(4,1) DEFAULT 0;
   DECLARE v_per_day DECIMAL(12,2) DEFAULT 0;
-
   SELECT COALESCE(
     (SELECT esa.ctc_annual / 12
        FROM employee_salary_assignments esa
@@ -35,12 +34,10 @@ BEGIN
   INTO v_monthly_salary
   FROM employees e
   WHERE e.employee_id = p_employee_id;
-
   SET v_basic = ROUND(v_monthly_salary * 0.50, 2);
   SET v_hra = ROUND(v_monthly_salary * 0.20, 2);
   SET v_allowances = ROUND(v_monthly_salary * 0.30, 2);
   SET v_deductions = ROUND(LEAST(v_basic, 15000) * 0.12, 2);
-
   SELECT COUNT(*) INTO v_working_days
   FROM (
     SELECT DATE_ADD(STR_TO_DATE(CONCAT(p_year, '-', p_month, '-01'), '%Y-%m-%d'), INTERVAL seq.n DAY) AS work_date
@@ -58,7 +55,6 @@ BEGIN
       WHERE h.holiday_date = dates.work_date
         AND (h.holiday_calendar = e.holiday_calendar OR h.holiday_calendar IS NULL)
     );
-
   SELECT COALESCE(SUM(CASE WHEN a.status = 'half_day' THEN 0.5 ELSE 1 END), 0)
     INTO v_lop_days
     FROM attendance a
@@ -72,13 +68,11 @@ BEGIN
           AND lr.status = 'Approved'
           AND a.attendance_date BETWEEN lr.from_date AND lr.to_date
      );
-
   SET v_paid_days = GREATEST(v_working_days - v_lop_days, 0);
   SET v_per_day = IF(v_working_days > 0, v_monthly_salary / v_working_days, 0);
   SET v_gross = ROUND(v_per_day * v_paid_days, 2);
   SET v_net = GREATEST(ROUND(v_gross - v_deductions, 2), 0);
   SET v_ctc = ROUND(v_monthly_salary * 12, 2);
-
   INSERT INTO payslips (
     payroll_run_id, employee_id, month, year, basic, hra, allowances,
     gross_earnings, ctc, deductions, net_pay, working_days, paid_days, lop_days, status
@@ -100,7 +94,6 @@ BEGIN
     lop_days = v_lop_days,
     status = 'Generated',
     generated_on = NOW();
-
   SELECT payslip_id INTO p_payslip_id
     FROM payslips
    WHERE employee_id = p_employee_id AND month = p_month AND year = p_year;

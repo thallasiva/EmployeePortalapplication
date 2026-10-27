@@ -1,6 +1,5 @@
 import { memo } from "react";
 import { fmtDate, fmtDuration } from "../utils/dateUtils";
-
 const TaskDurationSummary = memo(function TaskDurationSummary({
   durationDays,
   durationHours,
@@ -12,7 +11,6 @@ const TaskDurationSummary = memo(function TaskDurationSummary({
   endTime,
 }) {
   if ((!durationDays && !durationHours) || isBlocked) return null;
-
   return (
     <div className="bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 space-y-1">
       <p className="text-xs font-semibold uppercase tracking-wide text-brand">Duration Summary</p>
@@ -47,5 +45,4 @@ const TaskDurationSummary = memo(function TaskDurationSummary({
     </div>
   );
 });
-
 export default TaskDurationSummary;

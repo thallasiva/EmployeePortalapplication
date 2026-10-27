@@ -1,29 +1,16 @@
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { verifyAccessToken } = require('../utils/jwt');
-
-
-
-
-
-
-
-
 const authenticate = asyncHandler(async (req, _res, next) => {
-
   let token = req.cookies?.accessToken;
-
-
   if (!token) {
     const header = req.headers.authorization || '';
     const [scheme, headerToken] = header.split(' ');
     if (scheme === 'Bearer' && headerToken) token = headerToken;
   }
-
   if (!token) {
     throw ApiError.unauthorized('Authentication required');
   }
-
   try {
     const decoded = verifyAccessToken(token);
     req.user = decoded;
@@ -32,10 +19,6 @@ const authenticate = asyncHandler(async (req, _res, next) => {
     throw ApiError.unauthorized('Invalid or expired token');
   }
 });
-
-
-
-
 function authorizeRoles(...roles) {
   return (req, _res, next) => {
     if (!req.user) {
@@ -47,5 +30,4 @@ function authorizeRoles(...roles) {
     next();
   };
 }
-
 module.exports = { authenticate, authorizeRoles };

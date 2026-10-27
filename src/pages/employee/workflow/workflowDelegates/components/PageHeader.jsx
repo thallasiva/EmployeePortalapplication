@@ -2,7 +2,6 @@ import React from "react";
 import { GitBranch, CheckCircle2 } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { WORKFLOWS } from "../constants";
-
 const PageHeader = React.memo(function PageHeader({ activeDelegates }) {
   return (
     <div
@@ -55,5 +54,4 @@ const PageHeader = React.memo(function PageHeader({ activeDelegates }) {
     </div>
   );
 });
-
 export default PageHeader;

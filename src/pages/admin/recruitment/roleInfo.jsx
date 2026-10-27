@@ -1,5 +1,4 @@
 import { isAdmin, isRecruiter, isRecruiterLead } from "../../../data/auth";
-
 function roleInfo(user)
 {
     if (isAdmin(user)) return { id: 1, label: "Admin", tabClass: "bg-slate-800 text-white font-bold" };

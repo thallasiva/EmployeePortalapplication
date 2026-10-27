@@ -8,7 +8,6 @@ import {
   progressFromDays,
   buildChecklist,
 } from "../utils";
-
 export function useOnboardingData() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +15,6 @@ export function useOnboardingData() {
   const [uploadTarget, setUploadTarget] = useState(null);
   const [employeeDocs, setEmployeeDocs] = useState({});
   const [docsLoading, setDocsLoading] = useState(false);
-
   useEffect(() => {
     setLoading(true);
     listEmployees({ limit: 200, status: "active" })
@@ -24,7 +22,6 @@ export function useOnboardingData() {
       .catch(err => apiErrorToast(err, "load employees"))
       .finally(() => setLoading(false));
   }, []);
-
   const { activeOnboardings, completedOnboardings } = useMemo(() => {
     const active = [];
     const completed = [];
@@ -34,7 +31,6 @@ export function useOnboardingData() {
     });
     return { activeOnboardings: active, completedOnboardings: completed };
   }, [employees]);
-
   const overdueTasks = useMemo(() => {
     return activeOnboardings
       .filter((emp) => daysSince(emp.date_of_joining) > 7)
@@ -52,7 +48,6 @@ export function useOnboardingData() {
       })
       .slice(0, 5);
   }, [activeOnboardings]);
-
   const avgDays = useMemo(() => {
     if (!activeOnboardings.length) return "—";
     const total = activeOnboardings.reduce(
@@ -61,7 +56,6 @@ export function useOnboardingData() {
     );
     return `${Math.round(total / activeOnboardings.length)}d`;
   }, [activeOnboardings]);
-
   const loadDocsForEmployee = useCallback(
     async (emp) => {
       if (!emp) return;
@@ -79,7 +73,6 @@ export function useOnboardingData() {
     },
     [employeeDocs]
   );
-
   const handleSelectEmployee = useCallback(
     (emp) => {
       setSelectedEmployee(emp);
@@ -87,7 +80,6 @@ export function useOnboardingData() {
     },
     [loadDocsForEmployee]
   );
-
   const handleAfterUpload = useCallback(() => {
     if (!uploadTarget) return;
     const id = uploadTarget.employee_id;
@@ -106,14 +98,12 @@ export function useOnboardingData() {
         .finally(() => setDocsLoading(false));
     }, 500);
   }, [uploadTarget]);
-
   const selectedDays = selectedEmployee ? daysSince(selectedEmployee.date_of_joining) : 0;
   const selectedChecklist = selectedEmployee ? buildChecklist(selectedDays) : [];
   const selectedProgress = selectedEmployee ? progressFromDays(selectedDays) : 0;
   const selectedDocs = selectedEmployee
     ? employeeDocs[selectedEmployee.employee_id] || []
     : [];
-
   return {
     employees,
     loading,

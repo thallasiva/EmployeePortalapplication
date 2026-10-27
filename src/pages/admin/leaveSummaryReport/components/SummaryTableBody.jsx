@@ -1,7 +1,6 @@
 import React from "react";
 import { MONTH_LABELS } from "../constants";
 import { fmt } from "../utils";
-
 const SummaryTableBody = React.memo(function SummaryTableBody({ employees, leaveTypes }) {
   if (employees.length === 0) {
     return (
@@ -14,7 +13,6 @@ const SummaryTableBody = React.memo(function SummaryTableBody({ employees, leave
       </tbody>
     );
   }
-
   return (
     <tbody>
       {employees.map((emp, idx) => {
@@ -46,7 +44,6 @@ const SummaryTableBody = React.memo(function SummaryTableBody({ employees, leave
             <td className="px-3 py-2 whitespace-nowrap text-slate-500 border-b border-slate-100">
               {emp.emp_joining_date ? emp.emp_joining_date.slice(0, 10) : "—"}
             </td>
-
             {leaveTypes.map((lt) => (
               <td key={`ob-${lt.leave_type_id}`} className="px-2 py-2 text-center text-blue-800 bg-blue-50 border-b border-blue-100 border-x border-blue-100">
                 {fmt(ld(lt.leave_type_id).opening_balance)}
@@ -80,5 +77,4 @@ const SummaryTableBody = React.memo(function SummaryTableBody({ employees, leave
     </tbody>
   );
 });
-
 export default SummaryTableBody;

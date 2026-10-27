@@ -1,5 +1,4 @@
 import React from "react";
-
 const StatCard = React.memo(function StatCard({ icon, label, value, color, bgColor }) {
   return (
     <div className="bg-white rounded-xl border border-[#e8eef5] p-5 flex items-center gap-4">
@@ -13,5 +12,4 @@ const StatCard = React.memo(function StatCard({ icon, label, value, color, bgCol
     </div>
   );
 });
-
 export default StatCard;

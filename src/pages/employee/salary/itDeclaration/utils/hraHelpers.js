@@ -1,5 +1,4 @@
 import { MN } from "../constants";
-
 export function getFYMonths() {
   const now = new Date();
   const fyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
@@ -9,7 +8,6 @@ export function getFYMonths() {
   }
   return months;
 }
-
 export function countMonths(from, to) {
   if (!from || !to) return 0;
   const [fm, fy] = from.split(" ");
@@ -19,7 +17,6 @@ export function countMonths(from, to) {
   const diff = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
   return diff >= 0 ? diff + 1 : 0;
 }
-
 export function blankHouse(fyMonths) {
   return {
     from: fyMonths[0] || "",

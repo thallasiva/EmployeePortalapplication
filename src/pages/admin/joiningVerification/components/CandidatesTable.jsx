@@ -3,7 +3,6 @@ import { Eye, Send, Clock } from "lucide-react";
 import Pagination, { usePagination } from "../../../../components/Pagination";
 import { STATUS } from "../constants";
 import { fmt } from "../utils";
-
 const CandidatesTable = React.memo(function CandidatesTable({
   rows,
   loading,
@@ -21,7 +20,6 @@ const CandidatesTable = React.memo(function CandidatesTable({
     pageSize,
     setPageSize,
   } = usePagination(rows);
-
   if (loading) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -34,7 +32,6 @@ const CandidatesTable = React.memo(function CandidatesTable({
       </div>
     );
   }
-
   if (rows.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -45,7 +42,6 @@ const CandidatesTable = React.memo(function CandidatesTable({
       </div>
     );
   }
-
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -140,5 +136,4 @@ const CandidatesTable = React.memo(function CandidatesTable({
     </div>
   );
 });
-
 export default CandidatesTable;

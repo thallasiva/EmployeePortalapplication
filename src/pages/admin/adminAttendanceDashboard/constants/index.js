@@ -10,7 +10,6 @@ export const DEFAULT_SUMMARY = {
   lateThisMonth: 0,
   attendanceRate: 0,
 };
-
 export const EMPLOYEE_TABS = [
   { id: "all", label: "All Employees" },
   { id: "present", label: "Present" },

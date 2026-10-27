@@ -1,9 +1,9 @@
 import { memo, useState, useMemo } from "react";
+import { X } from "lucide-react";
 import { PROJECTS, MAX_DAILY_HOURS } from "../constants/taskConstants";
 import { calcTimeDiff, calcDateDiff } from "../utils/dateUtils";
 import TaskOverHoursPanel from "./TaskOverHoursPanel";
 import TaskDurationSummary from "./TaskDurationSummary";
-
 const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, onSave, onOpenExtraWork }) {
   const [form, setForm] = useState({
     task_name: task?.task_name || "",
@@ -17,7 +17,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-
   const set = (key, val) =>
     setForm((f) => {
       const next = { ...f, [key]: val };
@@ -29,7 +28,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
       }
       return next;
     });
-
   const existingDailyHours = useMemo(() => {
     const map = {};
     (existingTasks || []).forEach((t) => {
@@ -44,7 +42,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
     });
     return map;
   }, [existingTasks, task]);
-
   const maxExistingOnRange = useMemo(() => {
     if (!form.start_date || !form.end_date) return 0;
     let max = 0;
@@ -56,7 +53,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
     }
     return max;
   }, [form.start_date, form.end_date, existingDailyHours]);
-
   const durationDays = calcDateDiff(form.start_date, form.end_date);
   const durationHours = parseFloat(form.duration_hours) || null;
   const isOverHours = durationHours !== null && durationHours > MAX_DAILY_HOURS;
@@ -69,7 +65,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
   const totalHoursAcrossDays =
     durationDays && durationHours ? parseFloat((durationDays * durationHours).toFixed(2)) : null;
   const isBlocked = isOverHours || exceedsWithExisting;
-
   const handle = async () => {
     if (!form.task_name.trim()) { setErr("Task name is required"); return; }
     if (form.start_date && form.end_date && form.end_date < form.start_date) {
@@ -90,25 +85,21 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
       setSaving(false);
     }
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-y-auto max-h-[95vh]">
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-800">{task ? "Edit Task" : "Create Task"}</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close"><X size={18} aria-hidden="true" /></button>
         </div>
-
         <div className="px-6 py-5 space-y-4">
           {err && <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{err}</p>}
-
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Task Name <span className="text-red-500">*</span>
             <input className="ts-input mt-1.5 w-full text-sm" value={form.task_name}
               placeholder="e.g. Build login module"
               onChange={(e) => set("task_name", e.target.value)} />
           </label>
-
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Project
             <select className="ts-input mt-1.5 w-full text-sm" value={form.project_name}
@@ -116,14 +107,12 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
               {PROJECTS.map((p) => <option key={p}>{p}</option>)}
             </select>
           </label>
-
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Description
             <textarea rows={2} className="ts-input mt-1.5 w-full text-sm resize-none"
               value={form.description} placeholder="Optional details…"
               onChange={(e) => set("description", e.target.value)} />
           </label>
-
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
               Start Date
@@ -137,7 +126,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
                 value={form.end_date} onChange={(e) => set("end_date", e.target.value)} />
             </label>
           </div>
-
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
               Start Time
@@ -150,7 +138,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
                 value={form.end_time} onChange={(e) => set("end_time", e.target.value)} />
             </label>
           </div>
-
           <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Duration (hours / day)
             <div className="flex items-center gap-2 mt-1.5">
@@ -164,7 +151,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
               )}
             </div>
           </label>
-
           <TaskOverHoursPanel
             isOverHours={isOverHours}
             exceedsWithExisting={exceedsWithExisting}
@@ -175,7 +161,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
             onClose={onClose}
             onOpenExtraWork={onOpenExtraWork}
           />
-
           <TaskDurationSummary
             durationDays={durationDays}
             durationHours={durationHours}
@@ -187,7 +172,6 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
             endTime={form.end_time}
           />
         </div>
-
         <div className="flex gap-2 justify-end px-6 pb-5">
           <button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
           <button type="button" onClick={handle} disabled={saving || isBlocked}
@@ -200,5 +184,4 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
     </div>
   );
 });
-
 export default TaskModal;

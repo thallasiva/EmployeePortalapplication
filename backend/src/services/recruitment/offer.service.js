@@ -1,5 +1,4 @@
 'use strict';
-
 const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
@@ -8,13 +7,6 @@ const joiningSvc = require("../joining.service");
 const { generateOfferLetterPdf } = require("../../utils/offerLetterPdf");
 const { generateOfferLetterDocx } = require("../../utils/offerLetterDocx");
 const libre = require("libreoffice-convert");
-
-
-
-
-
-
-
 process.on('uncaughtException', (err) => {
   if (
   err && err.code === 'ENOTEMPTY' && err.syscall === 'rmdir' &&
@@ -23,10 +15,8 @@ process.on('uncaughtException', (err) => {
     console.info('[offer] Suppressed libreoffice-convert Windows tmp-cleanup error (known bug)');
     return;
   }
-
   throw err;
 });
-
 function docxToPdf(docxBuffer) {
   return new Promise((resolve) => {
     libre.convert(docxBuffer, '.pdf', undefined, (err, result) => {
@@ -40,18 +30,15 @@ function docxToPdf(docxBuffer) {
     });
   });
 }
-
 class OfferService extends BaseService {
   constructor() {
     super("rec_offers", "offer_id");
   }
-
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
     const results = await callProcedure('sp_rec_get_recruiter_team_lead(?)', [recruiterId]);
     return (results[0] ?? [])[0] ?? {};
   }
-
   async list({ status, search, limit = 20, offset = 0 } = {}) {
     const results = await callProcedure(
       "sp_rec_list_offers(?, ?, ?, ?)",
@@ -59,14 +46,12 @@ class OfferService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getById(offerId) {
     const results = await callProcedure("sp_rec_get_offer(?)", [offerId]);
     const row = (results[0] ?? [])[0];
     if (!row) throw new ApiError(404, "Offer not found");
     return row;
   }
-
   async create(data, createdBy, ip) {
     const results = await callProcedure(
       "sp_rec_create_offer(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @offer_id, @offer_code)",
@@ -89,18 +74,15 @@ class OfferService extends BaseService {
       data.ctcInWords || null,
       createdBy,
       ip]
-
     );
     return (results[0] ?? [])[0];
   }
-
   async release(offerId, releasedBy, ip) {
     const results = await callProcedure(
       "sp_rec_release_offer(?, ?, ?)",
       [offerId, releasedBy, ip]
     );
     const row = (results[0] ?? [])[0];
-
     if (row) {
       const candidateEmail = row.candidate_email || row.email || null;
       const candidateName = row.candidate_name || row.name || 'Candidate';
@@ -123,7 +105,6 @@ class OfferService extends BaseService {
         gratuity: row.gratuity || 0,
         esi: row.esi || 0
       };
-
       const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
       this._getRecruiterTL(recruiterId).then((tl) => {
         if (tl.tl_email) {
@@ -134,14 +115,12 @@ class OfferService extends BaseService {
           });
         }
       }).catch(() => {});
-
       console.info('[offer] release: candidateEmail=', candidateEmail, 'candidateName=', candidateName);
       if (candidateEmail) {
         const candidateId = row.candidate_id || null;
         Promise.resolve().then(async () => {
           let pdfBuffer = null;
           try {
-
             const docxBuf = generateOfferLetterDocx({
               offerCode: ctcData.offerCode || '',
               offerDate: row.created_at || new Date(),
@@ -165,7 +144,6 @@ class OfferService extends BaseService {
               esi: ctcData.esi || 0
             });
             pdfBuffer = await docxToPdf(docxBuf);
-
             if (!pdfBuffer) {
               pdfBuffer = await generateOfferLetterPdf({
                 candidateName, jobTitle,
@@ -177,7 +155,6 @@ class OfferService extends BaseService {
           } catch (pdfErr) {
             console.error('[offer] PDF generation failed:', pdfErr.message);
           }
-
           let invitation = null;
           try {
             invitation = await joiningSvc.createInvitation({
@@ -193,15 +170,12 @@ class OfferService extends BaseService {
               console.error('[offer] getByOffer fallback also failed:', fbErr.message);
             }
           }
-
           if (!invitation?.token) {
             console.error('[offer] No invitation token available -- email not sent');
             return;
           }
-
           const joiningUrl = (process.env.FRONTEND_URL || 'http://localhost:3000') +
           '/joining/' + invitation.token;
-
           notify.joiningInvitation({
             candidateName, candidateEmail, jobTitle, joiningUrl,
             expiresAt: invitation.expires_at,
@@ -218,14 +192,12 @@ class OfferService extends BaseService {
     }
     return row;
   }
-
   async respond(offerId, response, respondedBy, ip) {
     const results = await callProcedure(
       "sp_rec_respond_offer(?, ?, ?, ?)",
       [offerId, response, respondedBy, ip]
     );
     const row = (results[0] ?? [])[0];
-
     if (row) {
       const candidateName = row.candidate_name || row.name || 'Candidate';
       const jobTitle = row.designation || row.job_title || '';
@@ -233,11 +205,9 @@ class OfferService extends BaseService {
       const r = (response || '').toLowerCase();
       const isAccepted = r === 'accepted';
       const isRejected = r === 'rejected' || r === 'declined';
-
       if (isAccepted) {
         notify.offerAcceptedAdmin({ candidateName, jobTitle, dateOfJoining });
       }
-
       if (isAccepted || isRejected) {
         const recruiterId = row.recruiter_id || row.recruiter_employee_id || null;
         this._getRecruiterTL(recruiterId).then((tl) => {
@@ -258,5 +228,4 @@ class OfferService extends BaseService {
     return row;
   }
 }
-
 module.exports = new OfferService();

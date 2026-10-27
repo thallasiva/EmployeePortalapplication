@@ -6,7 +6,6 @@ import {
   cancelDelegation, getReportingHistory,
 } from "../../../../api/orgHierarchy.api";
 import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
-
 const filterTree = (nodes, q) => {
   if (!q) return nodes;
   const low = q.toLowerCase();
@@ -20,7 +19,6 @@ const filterTree = (nodes, q) => {
   };
   return nodes.map(filterNode).filter(Boolean);
 };
-
 export function useWorkflowData(activeTab) {
   const [stats, setStats] = useState(null);
   const [tree, setTree] = useState([]);
@@ -53,7 +51,6 @@ export function useWorkflowData(activeTab) {
   const [delSaving, setDelSaving] = useState(false);
   const [deptFilter] = useState("");
   const [mgSearch, setMgSearch] = useState("");
-
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -67,7 +64,6 @@ export function useWorkflowData(activeTab) {
     } catch {}
     setLoading(false);
   }, []);
-
   const loadTree = useCallback(async () => {
     try {
       const t = await getOrgTree(deptFilter ? { department_id: deptFilter } : {});
@@ -77,22 +73,17 @@ export function useWorkflowData(activeTab) {
       setTree([]);
     }
   }, [deptFilter]);
-
   const loadHistory = useCallback(async () => {
     const r = await getReportingHistory({ page: histPage, limit: 50 });
     setHistory(Array.isArray(r) ? r : []);
   }, [histPage]);
-
   useEffect(() => { loadAll(); }, [loadAll]);
-
   useEffect(() => {
     if (activeTab === "overview" || activeTab === "hierarchy") loadTree();
   }, [activeTab, loadTree]);
-
   useEffect(() => {
     if (activeTab === "history") loadHistory();
   }, [activeTab, loadHistory]);
-
   useEffect(() => {
     if (!searchQ.trim()) { setSearchResults([]); return; }
     const t = setTimeout(async () => {
@@ -105,14 +96,12 @@ export function useWorkflowData(activeTab) {
     }, 350);
     return () => clearTimeout(t);
   }, [searchQ]);
-
   useEffect(() => {
     if (!xferOldMgr) { setXferTeam([]); return; }
     getManagerDetails(xferOldMgr)
       .then((d) => setXferTeam(d?.direct_reports || []))
       .catch(() => setXferTeam([]));
   }, [xferOldMgr]);
-
   const handleAssign = useCallback(async (empId) => {
     const mgr = assignMap[empId];
     if (!mgr) return;
@@ -128,7 +117,6 @@ export function useWorkflowData(activeTab) {
     }
     setSaving((s) => { const n = { ...s }; delete n[empId]; return n; });
   }, [assignMap, loadAll]);
-
   const handleBulkAssign = useCallback(async () => {
     if (!bulkSelected.length || !bulkManager) return;
     setBulkSaving(true);
@@ -143,7 +131,6 @@ export function useWorkflowData(activeTab) {
     }
     setBulkSaving(false);
   }, [bulkSelected, bulkManager, loadAll]);
-
   const handleTransfer = useCallback(async () => {
     if (!xferOldMgr || !xferNewMgr) return;
     setXferSaving(true);
@@ -164,7 +151,6 @@ export function useWorkflowData(activeTab) {
     }
     setXferSaving(false);
   }, [xferOldMgr, xferNewMgr, xferReason, loadAll]);
-
   const handleCreateDelegation = useCallback(async () => {
     const { employee_id, delegate_employee_id, from_date, to_date } = delForm;
     if (!employee_id || !delegate_employee_id || !from_date || !to_date) {
@@ -183,7 +169,6 @@ export function useWorkflowData(activeTab) {
     }
     setDelSaving(false);
   }, [delForm]);
-
   const handleCancelDelegation = useCallback(async (id) => {
     try {
       await cancelDelegation(id);
@@ -194,9 +179,7 @@ export function useWorkflowData(activeTab) {
       apiErrorToast(e, "cancel delegation");
     }
   }, []);
-
   const visibleTree = useMemo(() => filterTree(tree, treeSearch), [tree, treeSearch]);
-
   return {
     stats, tree, unassigned, managers, delegations, history, loading,
     searchQ, setSearchQ, searchResults, searching,

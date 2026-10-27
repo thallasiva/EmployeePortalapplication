@@ -8,19 +8,16 @@ import SummaryCards from "./components/SummaryCards";
 import FilterBar from "./components/FilterBar";
 import TicketList from "./components/TicketList";
 import TicketDetail from "./components/TicketDetail";
-
 export default function HelpdeskAdmin() {
   const user        = getStoredUser();
   const isAdminUser = isAdmin(user);
   const [selected, setSelected] = useState(null);
-
   const {
     tickets, total, loading,
     search, statusF, teamF, page, limit,
     setPage, load,
     handleSearch, handleStatusChange, handleTeamChange, handleClear,
   } = useTickets({ isAdminUser, defaultTeam: isAdminUser ? "Admin Team" : "" });
-
   const counts = tickets.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
   const summaryCards = [
     { label: "Open",        value: counts["Open"]        || 0, color: "#2563eb", bg: "#eff6ff" },
@@ -30,11 +27,9 @@ export default function HelpdeskAdmin() {
     { label: "Resolved",    value: counts["Resolved"]    || 0, color: "#15803d", bg: "#f0fdf4" },
     { label: "Total",       value: total,                      color: BRAND,     bg: "#fff7ed" },
   ];
-
   return (
     <div className={cssClass({ height: "calc(100vh - 4.25rem)", background: "#f5f7fb",
       display: "flex", flexDirection: "column", padding: "16px 20px 12px", overflow: "hidden" })}>
-
       {/* page title */}
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between",
         marginBottom: 16, flexShrink: 0 })}>
@@ -57,9 +52,7 @@ export default function HelpdeskAdmin() {
           <RefreshCw size={12} /> Refresh
         </button>
       </div>
-
       <SummaryCards cards={summaryCards} />
-
       <FilterBar
         search={search} statusF={statusF} teamF={teamF} isAdminUser={isAdminUser}
         onSearch={handleSearch}
@@ -67,14 +60,12 @@ export default function HelpdeskAdmin() {
         onTeamChange={handleTeamChange}
         onClear={handleClear}
       />
-
       <TicketList
         tickets={tickets} total={total} page={page} limit={limit}
         loading={loading} isAdminUser={isAdminUser}
         onSelect={setSelected}
         onPageChange={setPage}
       />
-
       {selected && (
         <TicketDetail
           ticket={selected}

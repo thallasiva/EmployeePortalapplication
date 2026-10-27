@@ -6,7 +6,6 @@ import { fullName } from "../utils/empHelpers";
 import AncestorChain from "./AncestorChain";
 import TeamRow from "./TeamRow";
 import SelfRootView from "./SelfRootView";
-
 const OrgCanvas = React.memo(function OrgCanvas({
   loading,
   error,
@@ -61,7 +60,6 @@ const OrgCanvas = React.memo(function OrgCanvas({
                   search={search}
                 />
               )}
-
               {visibleAncestors.length === 0 && ancestorChain.length > 0 && (
                 <button
                   onClick={onExpandToOne}
@@ -76,7 +74,6 @@ const OrgCanvas = React.memo(function OrgCanvas({
                   View {fullName(manager)}'s Reporting Manager
                 </button>
               )}
-
               <TeamRow manager={manager} team={team} selfId={selfId} search={search} />
             </>
           )}
@@ -85,5 +82,4 @@ const OrgCanvas = React.memo(function OrgCanvas({
     </div>
   );
 });
-
 export default OrgCanvas;

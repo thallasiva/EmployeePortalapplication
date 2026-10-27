@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { getDepartmentName } from "../../../../utils/employeeDisplay";
 import TeamGroupCard from "./TeamGroupCard";
-
 const TeamGroupedView = React.memo(function TeamGroupedView({ employees }) {
   const groups = useMemo(() => {
     const map = {};
@@ -12,11 +11,9 @@ const TeamGroupedView = React.memo(function TeamGroupedView({ employees }) {
     });
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [employees]);
-
   if (!groups.length) {
     return <p className="text-sm text-gray-400 py-8 text-center">No employees found.</p>;
   }
-
   return (
     <div className="space-y-4">
       <span className="text-sm font-medium text-gray-600">
@@ -28,5 +25,4 @@ const TeamGroupedView = React.memo(function TeamGroupedView({ employees }) {
     </div>
   );
 });
-
 export default TeamGroupedView;

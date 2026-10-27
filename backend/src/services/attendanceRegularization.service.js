@@ -1,14 +1,12 @@
 const BaseService = require('./base.service');
 const { callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
 class AttendanceRegularizationService extends BaseService {
   constructor() {
     super('attendance_regularization', 'regularization_id', [
       'employee_id', 'attendance_date', 'requested_check_in', 'requested_check_out', 'reason', 'status',
     ]);
   }
-
   async list({ employee_id, status, reporting_to, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_attendance_regularization(?, ?, ?, ?, ?)',
@@ -22,22 +20,18 @@ class AttendanceRegularizationService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getDetails(id) {
     const results = await callProcedure('sp_get_attendance_regularization(?)', [id]);
     return (results[0] ?? [])[0] ?? null;
   }
-
   async create(data) {
     const row = await super.create({ ...data, status: 'Pending' });
     return this.getDetails(row.regularization_id);
   }
-
   async review(id, { decision, reviewed_by, remarks }) {
     const request = await this.findById(id);
     if (!request) throw ApiError.notFound('Regularization request not found');
     if (request.status !== 'Pending') throw ApiError.conflict('Regularization request already reviewed');
-
     // Pre-check: 5-day monthly limit before calling the procedure
     if (decision === 'Approved') {
       const { query } = require('../config/db');
@@ -55,7 +49,6 @@ class AttendanceRegularizationService extends BaseService {
         throw ApiError.conflict('Regularization limit reached: maximum 5 approvals allowed per month');
       }
     }
-
     try {
       await callProcedure(
         'sp_review_attendance_regularization(?, ?, ?, ?)',
@@ -71,5 +64,4 @@ class AttendanceRegularizationService extends BaseService {
     return this.getDetails(id);
   }
 }
-
 module.exports = new AttendanceRegularizationService();

@@ -1,21 +1,17 @@
 import React, { useRef } from "react";
 import { Heart, User, GraduationCap, Users, Landmark, Camera, Upload, PenLine, Info, X, AlertTriangle, Check } from "lucide-react";
-
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] focus:border-[#d97706] bg-white text-gray-800 placeholder-gray-400";
 const tbl_inp = "w-full border border-amber-100 rounded-lg px-2 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-[#d97706] bg-white";
 const tbl_sel = tbl_inp + " font-sans";
-
 const Label = ({ children, required }) =>
 <label className="block text-[11px] font-semibold text-amber-800 uppercase tracking-wide mb-1">
     {children}{required && <span className="text-red-500 ml-0.5">*</span>}
   </label>;
-
 const F = ({ label, required, full, children }) =>
 <div className={full ? "col-span-2" : ""}>
     {label && <Label required={required}>{label}</Label>}
     {children}
   </div>;
-
 const SectionCard = ({ icon: Icon, title, action, children }) =>
 <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
     <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-[#6B5133] to-[#8B7355]">
@@ -27,27 +23,21 @@ const SectionCard = ({ icon: Icon, title, action, children }) =>
     </div>
     <div className="p-5">{children}</div>
   </div>;
-
 const TH = ({ children }) =>
 <th className="px-3 py-2.5 text-left text-[11px] font-bold text-amber-800 uppercase tracking-wide bg-amber-50 border-b border-amber-100 whitespace-nowrap">{children}</th>;
-
 const AddBtn = ({ onClick }) =>
 <button onClick={onClick} type="button"
 className="inline-flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-white/20 text-white hover:bg-white/30 border border-white/30 transition-colors">
     + Add Row
   </button>;
-
-
 const MARITAL = ["Single", "Married", "Divorced", "Widowed"];
 const QUAL = ["10th", "12th", "Diploma", "B.E/B.Tech", "B.Sc", "B.Com", "B.A", "M.E/M.Tech", "M.Sc", "MBA", "MCA", "PhD", "Other"];
 const BANKS = ["ICICI Bank", "State Bank of India", "HDFC Bank", "Axis Bank", "Punjab National Bank", "Bank of Baroda", "Canara Bank", "Union Bank of India", "Kotak Mahindra Bank", "Other"];
-
 export default function PersonalInfoTab({ form, set, setForm }) {
   const photoRef = useRef();
   const sigRef = useRef();
   const aadharRef = useRef();
   const panDocRef = useRef();
-
   const handleAadharDoc = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -58,18 +48,14 @@ export default function PersonalInfoTab({ form, set, setForm }) {
     if (!file) return;
     setForm((p) => ({ ...p, panDocFile: file, panDocName: file.name }));
   };
-
   const addEdu = () => setForm((p) => ({ ...p, education: [...(p.education || []), { qualification: "", institute: "", specialization: "", year: "" }] }));
   const rmEdu = (i) => setForm((p) => ({ ...p, education: p.education.filter((_, x) => x !== i) }));
   const setEdu = (i, k, v) => setForm((p) => {const e = [...(p.education || [])];e[i] = { ...e[i], [k]: v };return { ...p, education: e };});
-
   const addRef = () => setForm((p) => ({ ...p, references: [...(p.references || []), { name: "", occupation: "", relationship: "", contact: "" }] }));
   const rmRef = (i) => setForm((p) => ({ ...p, references: p.references.filter((_, x) => x !== i) }));
   const setRef = (i, k, v) => setForm((p) => {const r = [...(p.references || [])];r[i] = { ...r[i], [k]: v };return { ...p, references: r };});
-
   const edu = form.education || [{ qualification: "", institute: "", specialization: "", year: "" }];
   const refs = form.references || [{ name: "", occupation: "", relationship: "", contact: "" }];
-
   const handlePhoto = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -77,7 +63,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
     reader.onload = (ev) => setForm((p) => ({ ...p, photoFile: file, photoPreview: ev.target.result }));
     reader.readAsDataURL(file);
   };
-
   const handleSignature = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -85,17 +70,13 @@ export default function PersonalInfoTab({ form, set, setForm }) {
     reader.onload = (ev) => setForm((p) => ({ ...p, signatureFile: file, signaturePreview: ev.target.result }));
     reader.readAsDataURL(file);
   };
-
   const inpRO = "w-full border border-amber-100 rounded-lg px-3 py-2 text-[13px] bg-amber-50 text-gray-700 cursor-not-allowed";
   const AutoTag = () =>
   <span className="ml-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
       <Info size={9} /> Auto-filled
     </span>;
-
-
   return (
     <div className="space-y-4">
-
       {}
       {(form.pfEmail || form.pfMobileNo) &&
       <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-[13px] text-amber-800">
@@ -108,7 +89,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           </span>
         </div>
       }
-
       {}
       <SectionCard icon={User} title="Personal Information">
         <div className="flex gap-5">
@@ -139,7 +119,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
               <div
                 onClick={() => aadharRef.current?.click()}
                 className="flex items-center gap-2 border border-dashed border-amber-300 rounded-lg px-3 py-2 cursor-pointer hover:bg-amber-50 text-[12px]">
-
                 <Upload size={14} className="text-amber-600" />
                 <span className={`truncate ${form.aadharDocName ? "text-neutral-700" : "text-neutral-400"}`}>
                   {form.aadharDocName || "Click to upload Aadhaar (PDF/JPG/PNG)"}
@@ -156,7 +135,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
               <div
                 onClick={() => panDocRef.current?.click()}
                 className="flex items-center gap-2 border border-dashed border-amber-300 rounded-lg px-3 py-2 cursor-pointer hover:bg-amber-50 text-[12px]">
-
                 <Upload size={14} className="text-amber-600" />
                 <span className={`truncate ${form.panDocName ? "text-neutral-700" : "text-neutral-400"}`}>
                   {form.panDocName || "Click to upload PAN Card (PDF/JPG/PNG)"}
@@ -189,7 +167,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
               <textarea className={inp + " resize-none"} rows={2} name="permanentAddress" value={form.permanentAddress || ""} onChange={set} placeholder="Permanent address" />
             </F>
           </div>
-
           {}
           <div className="flex-shrink-0 flex flex-col items-center gap-2">
             <span className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">Photo</span>
@@ -197,7 +174,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
             className="group relative flex h-36 w-32 flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border-2 border-dashed border-amber-600 bg-amber-50 transition-colors">
               {form.photoPreview ?
               <img src={form.photoPreview} alt="preview" className="w-full h-full object-cover" /> :
-
               <>
                   <div className="rounded-full bg-amber-200 p-3 transition-colors">
                     <Camera size={22} className="text-amber-600" />
@@ -216,7 +192,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           </div>
         </div>
       </SectionCard>
-
       {}
       <SectionCard icon={GraduationCap} title="Education Details" action={<AddBtn onClick={addEdu} />}>
         <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -243,7 +218,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           </table>
         </div>
       </SectionCard>
-
       {}
       <SectionCard icon={Users} title="References" action={<AddBtn onClick={addRef} />}>
         <div className="overflow-x-auto rounded-lg border border-amber-100">
@@ -265,7 +239,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           </table>
         </div>
       </SectionCard>
-
       {}
       <SectionCard icon={Landmark} title="Bank Account Details">
         <div className="grid grid-cols-2 gap-3">
@@ -301,7 +274,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           }
         </div>
       </SectionCard>
-
       {}
       <SectionCard icon={PenLine} title="Joining Letter / Declaration">
         <div className="grid grid-cols-2 gap-3">
@@ -311,7 +283,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           <F label="Designation (as in letter)">
             <input className={inp} name="designationText" value={form.designationText || ""} onChange={set} placeholder="Designation as mentioned in letter" />
           </F>
-
           {}
           <F label="Signature (Upload Image)" required full>
             <div className="flex items-start gap-4">
@@ -319,7 +290,6 @@ export default function PersonalInfoTab({ form, set, setForm }) {
               className="flex h-20 w-48 flex-shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-amber-600 bg-amber-50 transition-opacity hover:opacity-80">
                 {form.signaturePreview ?
                 <img src={form.signaturePreview} alt="Signature" className="w-full h-full object-contain p-1" /> :
-
                 <>
                   <PenLine size={20} className="text-amber-600" />
                   <span className="text-[10px] font-semibold text-amber-600">Click to upload signature</span>
@@ -342,7 +312,5 @@ export default function PersonalInfoTab({ form, set, setForm }) {
           </F>
         </div>
       </SectionCard>
-
     </div>);
-
 }

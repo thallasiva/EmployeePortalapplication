@@ -1,11 +1,9 @@
 import React from 'react';
-
 const ReviewType = () =>
 {
   const reviews = [
   { employee: 'Linda Craver', status: 'In Progress' },
   { employee: 'Jenni Sims', status: 'Completed' }];
-
   return (
     <div>
             {}
@@ -30,7 +28,6 @@ const ReviewType = () =>
                   'border-brand text-brand' :
                   'border-orange-500 text-orange-500'}`
                   }>
-
                                         {item.status}
                                     </span>
                                 </td>
@@ -44,7 +41,5 @@ const ReviewType = () =>
                 </table>
             </div>
         </div>);
-
 };
-
 export default ReviewType;

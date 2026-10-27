@@ -1,7 +1,6 @@
 import React from "react";
 import { CheckCircle2, Circle, AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 // Small reusable check row used by health & process-overview cards.
 export default function ChecklistRow({ label, ok, warn = false, note }) {
   const color = warn ? "#d97706" : ok ? "#16a34a" : "#cbd5e1";

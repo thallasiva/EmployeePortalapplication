@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
   Bot, Send, Loader2, CheckCircle2, AlertCircle,
-  ChevronDown, User, Briefcase, Star
+  ChevronDown, User, Briefcase, Star, MessageCircle, X
 } from "lucide-react";
 import { createAIInterview, listAIInterviews, getAIInterviewReport, listCandidates, listJobs, uploadResumeMatch } from "../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
-
 const PRIMARY = "#0E7C86";
 const LIGHT   = "#f0fbfc";
 const BORDER  = "#d1e8ea";
-
 // ── small helpers ─────────────────────────────────────────────────────────────
 function Label({ children }) {
   return <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 4 }}>{children}</label>;
@@ -57,24 +55,20 @@ function Btn({ children, loading, variant = "primary", ...props }) {
   };
   return <button style={{ ...base, ...styles[variant] }} disabled={loading} {...props}>{children}</button>;
 }
-
 // ── Report Modal ──────────────────────────────────────────────────────────────
 function ReportModal({ sessionId, onClose }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     getAIInterviewReport(sessionId)
       .then(setReport)
       .catch(err => apiErrorToast(err, "load interview report"))
       .finally(() => setLoading(false));
   }, [sessionId]);
-
   const REC_COLOR = {
     "Strong Hire": "#059669", Hire: "#2563eb",
     Maybe: "#d97706", "No Hire": "#dc2626",
   };
-
   return (
     <div style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
@@ -87,8 +81,7 @@ function ReportModal({ sessionId, onClose }) {
         <button onClick={onClose} style={{
           position: "absolute", top: 16, right: 16, background: "none",
           border: "none", fontSize: 20, cursor: "pointer", color: "#6b7280"
-        }}>✕</button>
-
+        }} aria-label="Close"><X size={18} /></button>
         {loading ? (
           <div style={{ textAlign: "center", padding: 40 }}>
             <Loader2 size={28} style={{ animation: "spin 1s linear infinite", color: PRIMARY }} />
@@ -107,7 +100,6 @@ function ReportModal({ sessionId, onClose }) {
                 <p style={{ margin: 0, color: "#6b7280", fontSize: 13 }}>{report.candidate_name} · {report.job_title}</p>
               </div>
             </div>
-
             {/* Score + recommendation */}
             <div style={{
               display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20
@@ -124,20 +116,17 @@ function ReportModal({ sessionId, onClose }) {
                 <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginTop: 4 }}>RECOMMENDATION</div>
               </div>
             </div>
-
             {report.summary && (
               <div style={{ background: "#f9fafb", borderRadius: 10, padding: 14, marginBottom: 16, fontSize: 14, color: "#374151" }}>
                 {report.summary}
               </div>
             )}
-
             {/* Recommendation reason */}
             {report.recommendationReason && (
               <div style={{ background:"#eff6ff", border:"1px solid #bfdbfe", borderRadius:10, padding:14, marginBottom:16, fontSize:13, color:"#1e40af" }}>
                 <strong>Why this recommendation:</strong> {report.recommendationReason}
               </div>
             )}
-
             {/* Dimension scores */}
             {(report.technicalSkills != null) && (
               <div style={{ marginBottom:20 }}>
@@ -164,7 +153,6 @@ function ReportModal({ sessionId, onClose }) {
                 </div>
               </div>
             )}
-
             {/* Q&A breakdown */}
             {report.questions && report.questions.length > 0 && (
               <div>
@@ -189,7 +177,7 @@ function ReportModal({ sessionId, onClose }) {
                         {q.answer}
                       </div>
                     )}
-                    {q.feedback && <p style={{ fontSize: 12, color: "#6b7280", margin: "6px 0 0", fontStyle:"italic" }}>💬 {q.feedback}</p>}
+                    {q.feedback && <p style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, color: "#6b7280", margin: "6px 0 0", fontStyle:"italic" }}><MessageCircle size={13} aria-hidden="true" />{q.feedback}</p>}
                   </div>
                 ))}
               </div>
@@ -200,11 +188,9 @@ function ReportModal({ sessionId, onClose }) {
     </div>
   );
 }
-
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIInterviewSetup() {
   const [tab, setTab] = useState("create"); // "create" | "list"
-
   // Form state
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs]             = useState([]);
@@ -215,21 +201,17 @@ export default function AIInterviewSetup() {
   const [resumeUploading, setResumeUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent]       = useState(false);
-
   // List state
   const [sessions, setSessions]         = useState([]);
   const [loadingList, setLoadingList]   = useState(false);
   const [reportSessionId, setReportSessionId] = useState(null);
-
   useEffect(() => {
     listCandidates({ limit: 500 }).then(r => setCandidates(r?.data ?? [])).catch(() => {});
     listJobs({ limit: 200 }).then(r => setJobs(r?.data ?? [])).catch(() => {});
   }, []);
-
   useEffect(() => {
     if (tab === "list") loadSessions();
   }, [tab]);
-
   function loadSessions() {
     setLoadingList(true);
     listAIInterviews({ limit: 50 })
@@ -237,7 +219,6 @@ export default function AIInterviewSetup() {
       .catch(err => apiErrorToast(err, "load interview sessions"))
       .finally(() => setLoadingList(false));
   }
-
   async function handleSend() {
     if (!form.candidateId || !form.jobReqId) {
       errorToast("Please select a candidate and a job"); return;
@@ -258,7 +239,6 @@ export default function AIInterviewSetup() {
       setSending(false);
     }
   }
-
   async function handleResumeUpload(event) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -277,10 +257,8 @@ export default function AIInterviewSetup() {
       setResumeUploading(false);
     }
   }
-
   const STATUS_COLOR = { pending: "#d97706", completed: "#059669", expired: "#dc2626" };
   const REC_COLOR    = { "Strong Hire": "#059669", Hire: "#2563eb", Maybe: "#d97706", "No Hire": "#dc2626" };
-
   return (
     <div style={{ padding: "24px 28px", fontFamily: "Inter, sans-serif" }}>
       {/* Header */}
@@ -295,7 +273,6 @@ export default function AIInterviewSetup() {
           </p>
         </div>
       </div>
-
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: `2px solid ${BORDER}` }}>
         {[{ key: "create", label: "Send Invitation" }, { key: "list", label: "Session History" }].map(t => (
@@ -312,7 +289,6 @@ export default function AIInterviewSetup() {
           >{t.label}</button>
         ))}
       </div>
-
       {/* ── CREATE TAB ──────────────────────────────────────────────────────── */}
       {tab === "create" && (
         <div style={{ maxWidth: 560 }}>
@@ -335,7 +311,6 @@ export default function AIInterviewSetup() {
               <h2 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 700, color: "#111827" }}>
                 Configure AI Interview
               </h2>
-
               <Field label="Candidate *">
                 <Select
                   value={form.candidateId}
@@ -349,7 +324,6 @@ export default function AIInterviewSetup() {
                   ))}
                 </Select>
               </Field>
-
               <Field label="Job Requisition *">
                 <Select
                   value={form.jobReqId}
@@ -363,7 +337,6 @@ export default function AIInterviewSetup() {
                   ))}
                 </Select>
               </Field>
-
               <Field label="Candidate Resume">
                 <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 12px", border: `1px dashed ${resumeFile ? PRIMARY : BORDER}`, borderRadius: 8, background: resumeFile ? LIGHT : "#f9fafb", cursor: resumeUploading ? "wait" : "pointer" }}>
                   <span style={{ fontSize: 13, color: resumeFile ? PRIMARY : "#6b7280", fontWeight: 600 }}>{resumeUploading ? "Uploading and parsing…" : resumeFile ? resumeFile.name : "Upload PDF or DOCX resume"}</span>
@@ -372,7 +345,6 @@ export default function AIInterviewSetup() {
                 </label>
                 <div style={{ marginTop: 5, color: "#9ca3af", fontSize: 11 }}>Questions will be tailored to the uploaded resume, skills, and projects.</div>
               </Field>
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
                 <Field label="Interview duration (hard limit)">
                   <Select
@@ -385,7 +357,6 @@ export default function AIInterviewSetup() {
                   </Select>
                 </Field>
               </div>
-
               {/* Info box */}
               <div style={{
                 background: LIGHT, border: `1px solid ${BORDER}`,
@@ -395,7 +366,6 @@ export default function AIInterviewSetup() {
                 evaluates each answer, and chooses the next follow-up, skill, and difficulty dynamically.
                 The server enforces the selected duration and the recruiter receives a full evidence-based report.
               </div>
-
               <Btn loading={sending} onClick={handleSend}>
                 {sending ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={15} />}
                 {sending ? "Sending…" : "Send AI Interview Invitation"}
@@ -404,7 +374,6 @@ export default function AIInterviewSetup() {
           )}
         </div>
       )}
-
       {/* ── LIST TAB ────────────────────────────────────────────────────────── */}
       {tab === "list" && (
         <div>
@@ -413,7 +382,6 @@ export default function AIInterviewSetup() {
               {loadingList ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : "↺ Refresh"}
             </Btn>
           </div>
-
           {loadingList && sessions.length === 0 ? (
             <div style={{ textAlign: "center", padding: 40, color: "#6b7280" }}>
               <Loader2 size={28} style={{ animation: "spin 1s linear infinite", color: PRIMARY }} />
@@ -472,12 +440,10 @@ export default function AIInterviewSetup() {
           )}
         </div>
       )}
-
       {/* Report modal */}
       {reportSessionId && (
         <ReportModal sessionId={reportSessionId} onClose={() => setReportSessionId(null)} />
       )}
-
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

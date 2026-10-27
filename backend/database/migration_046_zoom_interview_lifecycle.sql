@@ -2,7 +2,6 @@
 -- Stores the Zoom meeting ID needed to cancel the remote meeting later.
 ALTER TABLE rec_interviews
   ADD COLUMN zoom_meeting_id VARCHAR(64) NULL AFTER teams_join_url;
-
 DROP PROCEDURE IF EXISTS sp_rec_set_zoom_meeting_details;
 DELIMITER $$
 CREATE PROCEDURE sp_rec_set_zoom_meeting_details(

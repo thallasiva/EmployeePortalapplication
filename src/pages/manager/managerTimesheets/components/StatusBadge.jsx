@@ -1,6 +1,5 @@
 import React from "react";
 import { STATUS_STYLE } from "../constants";
-
 const StatusBadge = React.memo(function StatusBadge({ status }) {
   return (
     <span
@@ -12,5 +11,4 @@ const StatusBadge = React.memo(function StatusBadge({ status }) {
     </span>
   );
 });
-
 export default StatusBadge;

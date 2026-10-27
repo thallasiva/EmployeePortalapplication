@@ -5,24 +5,18 @@ import { ORANGE, TABS } from "./constants";
 import Form16 from "./components/Form16";
 import Form24Q from "./components/Form24Q";
 import POIOverview from "./components/POIOverview";
-
 const AdminPayrollTaxForms = React.memo(function AdminPayrollTaxForms() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "form16";
-
   const currentYear = useMemo(() => new Date().getFullYear(), []);
   const [year, setYear] = useState(currentYear);
-
   const setTab = useCallback((t) => setSearchParams({ tab: t }), [setSearchParams]);
-
   const years = useMemo(() => {
     const result = [];
     for (let y = currentYear - 3; y <= currentYear + 1; y++) result.push(y);
     return result;
   }, [currentYear]);
-
   const handleYearChange = useCallback((e) => setYear(Number(e.target.value)), []);
-
   return (
     <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
       <div className={cssClass({ marginBottom: 24 })}>
@@ -33,7 +27,6 @@ const AdminPayrollTaxForms = React.memo(function AdminPayrollTaxForms() {
           Form 16, Form 24Q and Proof of Investment overview
         </p>
       </div>
-
       <div
         className={cssClass({
           display: "flex",
@@ -62,7 +55,6 @@ const AdminPayrollTaxForms = React.memo(function AdminPayrollTaxForms() {
           </button>
         ))}
       </div>
-
       <div
         className={cssClass({
           display: "flex",
@@ -89,7 +81,6 @@ const AdminPayrollTaxForms = React.memo(function AdminPayrollTaxForms() {
           ))}
         </select>
       </div>
-
       <div
         className={cssClass({
           background: "#fff",
@@ -106,5 +97,4 @@ const AdminPayrollTaxForms = React.memo(function AdminPayrollTaxForms() {
     </div>
   );
 });
-
 export default AdminPayrollTaxForms;

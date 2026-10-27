@@ -4,20 +4,15 @@ import { useEmployeeSchedules } from "./hooks/useEmployeeSchedules";
 import SettingsHeader from "./components/SettingsHeader";
 import CompanyProfile from "./components/CompanyProfile";
 import WorkSchedule from "./components/WorkSchedule";
-import NotificationPreferences from "./components/NotificationPreferences";
-
 export default function Settings() {
   const {
     selectedCompanyId, selectedCompany,
     companyOpen, setCompanyOpen,
-    profile, schedule, notifications,
-    selectCompany, setProfile, setSchedule, toggleDay, toggleNotif,
+    profile, schedule,
+    selectCompany, setProfile, setSchedule, toggleDay,
   } = useSettingsState();
-
   const [scheduleTab, setScheduleTab] = useState("company");
-
   const empScheduleState = useEmployeeSchedules();
-
   const empScheduleProps = {
     empSchedules:      empScheduleState.empSchedules,
     schedLoading:      empScheduleState.schedLoading,
@@ -37,7 +32,6 @@ export default function Settings() {
     applyBulk:         empScheduleState.applyBulk,
     resetSched:        empScheduleState.resetSched,
   };
-
   return (
     <div className="space-y-6">
       <SettingsHeader
@@ -47,7 +41,6 @@ export default function Settings() {
         setCompanyOpen={setCompanyOpen}
         selectCompany={selectCompany}
       />
-
       <div className="grid ">
         <div className="space-y-6">
           <CompanyProfile
@@ -66,11 +59,6 @@ export default function Settings() {
             loadEmpSchedules={empScheduleState.loadEmpSchedules}
           />
         </div>
-
-        {/* <NotificationPreferences
-          notifications={notifications}
-          toggleNotif={toggleNotif}
-        /> */}
       </div>
     </div>
   );

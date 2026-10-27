@@ -1,9 +1,7 @@
 -- Fix: sp_list_employee_salary_assignments
 -- employees table has department_id / designation_id (FKs), not name columns directly.
 -- Join departments and designations tables instead.
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_list_employee_salary_assignments $$
 CREATE PROCEDURE sp_list_employee_salary_assignments(
   IN p_department_id INT,
@@ -39,5 +37,4 @@ BEGIN
          e.emp_code LIKE CONCAT('%',p_search,'%'))
   ORDER BY d.department_name, e.first_name;
 END $$
-
 DELIMITER ;

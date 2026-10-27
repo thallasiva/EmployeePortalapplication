@@ -1,7 +1,6 @@
 .admin-onboarding {
   color: #0f172a;
 }
-
 .onboarding-stat-card {
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -12,7 +11,6 @@
   gap: 16px;
   min-height: 96px;
 }
-
 .onboarding-stat-card__icon {
   width: 44px;
   height: 44px;
@@ -22,14 +20,12 @@
   place-items: center;
   color: #0f172a;
 }
-
 .onboarding-overdue-panel {
   background: #fffbeb;
   border: 1px solid #fef3c7;
   border-radius: 24px;
   padding: 24px;
 }
-
 .onboarding-overdue-header {
   display: flex;
   justify-content: space-between;
@@ -37,7 +33,6 @@
   gap: 12px;
   margin-bottom: 18px;
 }
-
 .onboarding-overdue-tag {
   display: inline-flex;
   align-items: center;
@@ -49,12 +44,10 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-
 .onboarding-overdue-list {
   display: grid;
   gap: 10px;
 }
-
 .onboarding-overdue-item {
   background: #fffaf0;
   border: 1px solid #fde68a;
@@ -65,11 +58,9 @@
   justify-content: space-between;
   gap: 16px;
 }
-
 .onboarding-overdue-item p {
   margin: 0;
 }
-
 .onboarding-overdue-status {
   background: #fef3c7;
   color: #b45309;
@@ -78,7 +69,6 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
-
 .onboarding-card {
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -86,14 +76,12 @@
   padding: 24px;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
 }
-
 .onboarding-card__top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
-
 .onboarding-avatar {
   width: 52px;
   height: 52px;
@@ -104,7 +92,6 @@
   color: #0f172a;
   font-weight: 700;
 }
-
 .onboarding-active-badge {
   display: inline-flex;
   align-items: center;
@@ -115,7 +102,6 @@
   font-size: 0.8rem;
   font-weight: 700;
 }
-
 .onboarding-progress-bar {
   margin-top: 20px;
   height: 10px;
@@ -123,13 +109,11 @@
   border-radius: 999px;
   overflow: hidden;
 }
-
 .onboarding-progress-bar__fill {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #16a34a, #059669);
 }
-
 .onboarding-view-checklist {
   margin-top: 22px;
   width: 100%;
@@ -144,14 +128,12 @@
   color: #166534;
   font-weight: 700;
 }
-
 .onboarding-completed-panel {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 24px;
 }
-
 .onboarding-completed-badge {
   display: inline-flex;
   align-items: center;
@@ -162,26 +144,22 @@
   font-size: 0.8rem;
   font-weight: 700;
 }
-
 .onboarding-completed-card {
   border: 1px solid #e2e8f0;
   border-radius: 20px;
   padding: 20px;
   background: #f8fafc;
 }
-
 .onboarding-completed-progress {
   min-width: 72px;
   text-align: right;
 }
-
 .onboarding-checklist-panel {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 28px;
 }
-
 .onboarding-checklist-header {
   display: flex;
   justify-content: space-between;
@@ -191,14 +169,12 @@
   padding-bottom: 24px;
   margin-bottom: 24px;
 }
-
 .onboarding-checklist-actions {
   display: flex;
   gap: 14px;
   align-items: center;
   flex-wrap: wrap;
 }
-
 .onboarding-custom-task-btn {
   background: #eef2ff;
   color: #4338ca;
@@ -208,7 +184,6 @@
   font-size: 0.9rem;
   font-weight: 700;
 }
-
 .onboarding-checklist-progress-circle {
   width: 72px;
   height: 72px;
@@ -219,19 +194,16 @@
   font-weight: 700;
   color: #312e81;
 }
-
 .onboarding-checklist-groups {
   display: grid;
   gap: 20px;
 }
-
 .onboarding-group-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 22px;
 }
-
 .onboarding-group-header {
   display: flex;
   align-items: center;
@@ -239,7 +211,6 @@
   gap: 16px;
   margin-bottom: 18px;
 }
-
 .onboarding-task-item {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -250,13 +221,11 @@
   background: #fff;
   border: 1px solid #e2e8f0;
 }
-
 .onboarding-task-status {
   display: flex;
   align-items: start;
   padding-top: 4px;
 }
-
 .onboarding-task-dot {
   width: 12px;
   height: 12px;
@@ -264,15 +233,12 @@
   display: inline-block;
   margin-top: 6px;
 }
-
 .onboarding-task-dot.completed {
   background: #16a34a;
 }
-
 .onboarding-task-dot.pending {
   background: #f59e0b;
 }
-
 .onboarding-task-badge {
   display: inline-flex;
   align-items: center;
@@ -280,32 +246,25 @@
   padding: 4px 10px;
   font-weight: 700;
 }
-
 .onboarding-task-badge.completed {
   background: #d1fae5;
   color: #166534;
 }
-
 .onboarding-task-badge.pending {
   background: #fef3c7;
   color: #b45309;
 }
-
 .onboarding-completed-panel {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 24px;
 }
-
-
   .onboarding-card__top,
   .onboarding-completed-card {
     flex-direction: column;
     align-items: stretch;
   }
-
   .onboarding-completed-progress {
     text-align: left;
   }
-

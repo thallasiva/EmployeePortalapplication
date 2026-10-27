@@ -1,16 +1,13 @@
 #!/bin/bash
 set -e
-
 echo "========================================"
 echo "  HRMS Backend Deploy → EC2 18.234.111.185"
 echo "========================================"
-
 SERVER_IP="18.234.111.185"
 SERVER_USER="ubuntu"
 APP_DIR="/home/ubuntu/app"
 REPO_URL="https://github.com/thallasiva/EmployeePortalapplication.git"
 BRANCH="Development"
-
 # ── SSH Key: update this path to your actual .pem file ──────────────────────
 # Common locations — try each until one works:
 KEY_FILE=""
@@ -25,23 +22,19 @@ for f in \
   "$HOME/.ssh/natsoft.pem"; do
   if [ -f "$f" ]; then KEY_FILE="$f"; break; fi
 done
-
 if [ -z "$KEY_FILE" ]; then
   echo "❌ SSH key (.pem) not found. Set KEY_FILE manually in this script."
   exit 1
 fi
 chmod 400 "$KEY_FILE"
 echo "Using key: $KEY_FILE"
-
 # ── Helper: run commands on remote server ────────────────────────────────────
 remote() {
   ssh -i "$KEY_FILE" -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_IP" "$@"
 }
-
 echo ""
 echo "[1/6] Testing SSH connection..."
 remote echo "SSH OK ✅"
-
 echo ""
 echo "[2/6] Installing dependencies on server (first time only)..."
 remote bash << 'REMOTE'
@@ -56,7 +49,6 @@ remote bash << 'REMOTE'
   fi
   echo "Node: $(node -v)  NPM: $(npm -v)  PM2: $(pm2 -v)"
 REMOTE
-
 echo ""
 echo "[3/6] Pulling latest code from GitHub ($BRANCH)..."
 remote bash << REMOTE
@@ -71,7 +63,6 @@ remote bash << REMOTE
   fi
   echo "Code updated ✅"
 REMOTE
-
 echo ""
 echo "[4/6] Installing backend npm packages..."
 remote bash << REMOTE
@@ -79,7 +70,6 @@ remote bash << REMOTE
   npm install --omit=dev
   echo "Packages installed ✅"
 REMOTE
-
 echo ""
 echo "[5/6] Writing production .env on server..."
 # Push the .env — fill in DB_PASSWORD and secrets below
@@ -89,24 +79,19 @@ NODE_ENV=production
 PORT=5000
 CLIENT_ORIGIN=https://hrms.natsoft.io
 FRONTEND_URL=https://hrms.natsoft.io
-
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=YOUR_DB_PASSWORD_HERE
 DB_NAME=hrms_db
 DB_CONNECTION_LIMIT=10
-
 JWT_SECRET=CHANGE_THIS_TO_A_STRONG_SECRET_64CHARS
 JWT_EXPIRES_IN=1d
 JWT_REFRESH_SECRET=CHANGE_THIS_TO_ANOTHER_STRONG_SECRET
 JWT_REFRESH_EXPIRES_IN=7d
-
 SALARY_ENCRYPTION_KEY=64d14ac40a10a11264edb4d6b84ab3c7ea7558f7cca00590691958a363a0c813
-
 UPLOAD_DIR=uploads
 MAX_UPLOAD_MB=10
-
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_SECURE=false
@@ -116,32 +101,26 @@ SMTP_FROM=HRMS\ <thallasiva786@gmail.com>
 ENV
 echo ".env written ✅"
 REMOTE
-
 echo ""
 echo "[6/6] Restarting backend with PM2..."
 remote bash << REMOTE
   cd $APP_DIR/backend
   # Copy ecosystem config
   cp $APP_DIR/ecosystem.config.js $APP_DIR/backend/
-
   # Create uploads dir if missing
   mkdir -p uploads
-
   # Start or reload with PM2
   if pm2 list | grep -q "hrms-backend"; then
     pm2 reload hrms-backend --update-env
   else
     pm2 start ecosystem.config.js --env production
   fi
-
   # Save PM2 process list so it survives reboots
   pm2 save
   sudo env PATH=\$PATH:/usr/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu 2>/dev/null || true
-
   echo "PM2 status:"
   pm2 list
 REMOTE
-
 echo ""
 echo "✅ Backend deployed successfully!"
 echo "   API: https://backend.natsoft.io/api"

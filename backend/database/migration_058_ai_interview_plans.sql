@@ -7,7 +7,6 @@
 --                                   from the AI recommendation
 -- Run with: node src/database/runSql.js migration_058_ai_interview_plans.sql
 -- =============================================================
-
 CREATE TABLE IF NOT EXISTS ai_interview_plans (
   plan_id           INT AUTO_INCREMENT PRIMARY KEY,
   job_req_id        INT NOT NULL,
@@ -24,7 +23,6 @@ CREATE TABLE IF NOT EXISTS ai_interview_plans (
   KEY idx_plan_job (job_req_id, status),
   CONSTRAINT fk_plan_job FOREIGN KEY (job_req_id) REFERENCES rec_job_requests (job_req_id) ON DELETE CASCADE
 );
-
 CREATE TABLE IF NOT EXISTS ai_interview_plan_questions (
   question_id        INT AUTO_INCREMENT PRIMARY KEY,
   plan_id            INT NOT NULL,
@@ -39,7 +37,6 @@ CREATE TABLE IF NOT EXISTS ai_interview_plan_questions (
   KEY idx_plan_q (plan_id, sort_order),
   CONSTRAINT fk_plan_q FOREIGN KEY (plan_id) REFERENCES ai_interview_plans (plan_id) ON DELETE CASCADE
 );
-
 DROP PROCEDURE IF EXISTS tmp_058_add_columns;
 DELIMITER $$
 CREATE PROCEDURE tmp_058_add_columns()
@@ -57,5 +54,4 @@ END$$
 DELIMITER ;
 CALL tmp_058_add_columns();
 DROP PROCEDURE IF EXISTS tmp_058_add_columns;
-
 SELECT 'migration_058_ai_interview_plans done' AS status;

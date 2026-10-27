@@ -3,7 +3,6 @@ import { CheckCircle, ArrowRight, X } from "lucide-react";
 import { getTicket } from "../../../../../api/helpdesk.api";
 import { getStatusStyle, fmtDate, fmtDateTime, getCommentStyle } from "../../utils/helpdeskUtils";
 import { cssClass } from "../../../../../utils/classStyles";
-
 /**
  * Full ticket detail modal — loads ticket by ID, shows metadata, description, and comment thread.
  * Single responsibility: fetch + display a single ticket's details.
@@ -11,7 +10,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, onAction }) {
   const [ticket,  setTicket]  = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     getTicket(ticketId)
@@ -19,13 +17,10 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
       .catch(() => setTicket(null))
       .finally(() => setLoading(false));
   }, [ticketId]);
-
   const sc = ticket ? getStatusStyle(ticket.status) : {};
-
   return (
     <div onClick={onClose} className={cssClass({ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 })}>
       <div onClick={(e) => e.stopPropagation()} className={cssClass({ width: "100%", maxWidth: 600, maxHeight: "88vh", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", overflow: "hidden" })}>
-
         {/* Header */}
         <div className={cssClass({ padding: "16px 20px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 })}>
           <div className={cssClass({ flex: 1, minWidth: 0 })}>
@@ -42,7 +37,6 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
           </div>
           <button onClick={onClose} className={cssClass({ background: "none", border: "none", color: "#9ca3af", fontSize: 20, cursor: "pointer", padding: 4, flexShrink: 0 })} aria-label="Close"><X size={18} /></button>
         </div>
-
         {/* Body */}
         <div className={cssClass({ flex: 1, overflowY: "auto", padding: "16px 20px" })}>
           {loading ? (
@@ -65,7 +59,6 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
                   </div>
                 ))}
               </div>
-
               {/* Description */}
               {ticket.description && (
                 <div className={cssClass({ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 14px", marginBottom: 16 })}>
@@ -73,7 +66,6 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
                   <p className={cssClass({ fontSize: 13, color: "#374151", margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 })}>{ticket.description}</p>
                 </div>
               )}
-
               {/* Comments */}
               {ticket.comments?.length > 0 ? (
                 <div>
@@ -103,7 +95,6 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
             </>
           )}
         </div>
-
         {/* Footer actions */}
         {ticket && (
           <div className={cssClass({ padding: "12px 20px", borderTop: "1px solid #e5e7eb", background: "#fafafa", display: "flex", gap: 8, justifyContent: "flex-end" })}>
@@ -126,5 +117,4 @@ const TicketDetailModal = memo(function TicketDetailModal({ ticketId, onClose, o
     </div>
   );
 });
-
 export default TicketDetailModal;

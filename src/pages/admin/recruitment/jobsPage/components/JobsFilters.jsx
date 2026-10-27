@@ -1,7 +1,6 @@
 import React from "react";
 import { SearchBar, Select } from "../shared";
 import { ASSIGNMENT_STATUSES } from "../mockData";
-
 function JobsFilters({ search, setSearch, filterStatus, setFilterStatus, loading, visibleCount }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 flex-wrap">
@@ -20,5 +19,4 @@ function JobsFilters({ search, setSearch, filterStatus, setFilterStatus, loading
     </div>
   );
 }
-
 export default React.memo(JobsFilters);

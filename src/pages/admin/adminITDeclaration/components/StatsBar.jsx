@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const STAT_ITEMS = (stats) => [
   { label: "Total",       value: stats.total,       color: BRAND },
   { label: "Submitted",   value: stats.submitted,   color: "#1d4ed8" },
@@ -9,7 +8,6 @@ const STAT_ITEMS = (stats) => [
   { label: "Rejected",    value: stats.rejected,    color: "#dc2626" },
   { label: "Not Started", value: stats.not_started, color: "#94a3b8" },
 ];
-
 const StatsBar = React.memo(function StatsBar({ stats }) {
   return (
     <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, marginBottom: 20 })}>
@@ -24,5 +22,4 @@ const StatsBar = React.memo(function StatsBar({ stats }) {
     </div>
   );
 });
-
 export default StatsBar;

@@ -2,17 +2,14 @@
 -- Quick fix: adds hr_remarks + 4 admin columns to joining_formalities,
 -- then recreates sp_joining_review (9 params) and sp_joining_verify_token
 -- Run this if migration_044 has NOT been executed yet.
-
 ALTER TABLE joining_formalities
   ADD COLUMN IF NOT EXISTS hr_remarks           TEXT         NULL,
   ADD COLUMN IF NOT EXISTS admin_employee_id    VARCHAR(50)  NULL,
   ADD COLUMN IF NOT EXISTS admin_designation    VARCHAR(255) NULL,
   ADD COLUMN IF NOT EXISTS admin_reporting_to   VARCHAR(255) NULL,
   ADD COLUMN IF NOT EXISTS admin_department     VARCHAR(255) NULL;
-
 -- ── sp_joining_review (9 params, with expires_at reset on request_changes) ──
 DROP PROCEDURE IF EXISTS sp_joining_review;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_review(
   IN p_invitation_id   INT,
@@ -33,7 +30,6 @@ BEGIN
     WHEN 'reject'          THEN 'rejected'
     ELSE p_decision
   END;
-
   UPDATE joining_invitations SET
     status = CASE p_decision
                WHEN 'approve'         THEN 'approved'
@@ -47,7 +43,6 @@ BEGIN
                  END,
     updated_at = NOW()
   WHERE id = p_invitation_id;
-
   UPDATE joining_formalities SET
     status             = v_jf_status,
     hr_remarks         = p_remarks,
@@ -59,7 +54,6 @@ BEGIN
     admin_department   = COALESCE(p_department,   admin_department),
     updated_at         = NOW()
   WHERE invitation_id = p_invitation_id;
-
   SELECT ji.*, jf.status AS formality_status, jf.hr_remarks AS review_remarks,
          jf.reviewed_at, jf.admin_employee_id, jf.admin_designation,
          jf.admin_reporting_to, jf.admin_department
@@ -68,10 +62,8 @@ BEGIN
   WHERE ji.id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ── sp_joining_verify_token (returns hr_remarks for the changes-requested banner) ──
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci

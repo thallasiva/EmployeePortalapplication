@@ -1,7 +1,6 @@
 export const AVATAR_COLORS = [
   "#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#f18200", "#f18200",
 ];
-
 export const REVIEW_CYCLES = [
   {
     id: 1,
@@ -105,5 +104,4 @@ export const REVIEW_CYCLES = [
     ],
   },
 ];
-
 export const REVIEW_STATUSES = ["All", "Completed", "In Progress", "Pending", "Not Started"];

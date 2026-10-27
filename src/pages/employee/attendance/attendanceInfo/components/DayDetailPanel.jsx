@@ -1,23 +1,19 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, Clock, AlertCircle, CheckCircle2, CalendarX, Umbrella, Coffee, ArrowRightLeft, ArrowRight, MapPin } from "lucide-react";
-
 const SIX_HOURS_MINUTES = 360;
-
 const InfoRow = ({ label, value, accent }) => (
   <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
     <span className="text-xs text-slate-500 font-medium">{label}</span>
     <span className={`text-sm font-bold ${accent || "text-slate-800"}`}>{value || "—"}</span>
   </div>
 );
-
 const TimeBlock = ({ icon, label, time, color }) => (
   <div className={`flex-1 rounded-xl p-3 flex flex-col items-center gap-1 border ${color}`}>
     <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">{icon}{label}</div>
     <span className="text-xl font-extrabold text-slate-800 tracking-tight">{time || "—"}</span>
   </div>
 );
-
 const STATUS_META = {
   P:    { label: "Full Day Present",   color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   "P:A":{ label: "Partial Attendance", color: "bg-amber-50 text-amber-700 border-amber-200" },
@@ -25,19 +21,16 @@ const STATUS_META = {
   H:    { label: "Holiday",            color: "bg-blue-50 text-blue-700 border-blue-200" },
   L:    { label: "On Leave",           color: "bg-purple-50 text-purple-700 border-purple-200" },
 };
-
 function fmtMins(mins) {
   if (!mins || mins <= 0) return "—";
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
-
 function parsePunches(raw) {
   if (!raw) return [];
   try { return typeof raw === "string" ? JSON.parse(raw) : raw; } catch { return []; }
 }
-
 const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
   const navigate = useNavigate();
   const isWorkday = !selected.isWeekend && !selected.isHoliday && !selected.pending;
@@ -46,16 +39,13 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
   const code = selected?.status?.code || "";
   const meta = STATUS_META[code] || {};
   const raw = selected?.raw || {};
-
   const breakMins = raw.break_minutes ?? 0;
   const punches = useMemo(() => parsePunches(raw.punches), [raw.punches]);
   const breakSessions = Math.max(0, Math.floor(punches.length / 2) - 1);
-
   const weekdayFull = (() => {
     try { return new Date(selected.iso + "T12:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" }); }
     catch { return selected.weekday; }
   })();
-
   return (
     <div className="xl:col-span-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
       {/* Date header */}
@@ -75,7 +65,6 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           </span>
         )}
       </div>
-
       {/* Punch times */}
       <div className="px-5 pt-4 pb-2">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Punch Times</p>
@@ -84,7 +73,6 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           <TimeBlock icon={<LogOut size={12} className="text-[#f18200]" />}  label="Check Out" time={selected.processed?.lastOut} color="bg-orange-50 border-orange-200" />
         </div>
       </div>
-
       {/* Break summary strip */}
       {isWorkday && (workedMinutes > 0 || breakMins > 0) && (
         <div className="mx-5 mt-3 grid grid-cols-3 gap-2">
@@ -102,7 +90,6 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           </div>
         </div>
       )}
-
       {/* Alert banners */}
       {canRegularize && (
         <div className="mx-5 mt-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3">
@@ -120,7 +107,6 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           <p className="text-xs font-semibold text-emerald-700">{selected.processed?.totalWorkHrs} worked — no regularization needed</p>
         </div>
       )}
-
       {/* Details & punch log */}
       <div className="flex-1 px-5 pt-4 pb-2 overflow-y-auto space-y-4">
         {/* Work details */}
@@ -134,7 +120,6 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
             <InfoRow label="Status"            value={code || (selected.isWeekend ? "Weekend" : selected.isHoliday ? "Holiday" : "—")} />
           </div>
         </div>
-
         {/* Punch timeline */}
         {punches.length > 0 && (
           <div>
@@ -174,7 +159,6 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
             )}
           </div>
         )}
-
         {/* No data */}
         {!isWorkday && !selected.isHoliday && !selected.pending && (
           <div className="flex flex-col items-center justify-center py-6 text-slate-300">
@@ -183,12 +167,10 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           </div>
         )}
       </div>
-
       <p className="px-5 py-2.5 text-[10px] text-slate-300 border-t border-slate-100">
         {user?.name || "Employee"} · Break = time between check-out & re-check-in
       </p>
     </div>
   );
 });
-
 export default DayDetailPanel;

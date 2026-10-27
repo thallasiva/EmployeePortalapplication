@@ -2,10 +2,8 @@ import { memo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { MON } from "../constants/leaveConstants";
 import { Flag } from "lucide-react";
-
 const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDef }) => {
   const year = cursor.getFullYear();
-
   const empIds = [...new Set(
     filtered
       .filter((r) => {
@@ -14,13 +12,11 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
       })
       .map((r) => r.employee_id),
   )];
-
   const holidayMonths = new Set(
     shiftHolidays
       .filter((h) => new Date(h.holiday_date).getFullYear() === year)
       .map((h) => new Date(h.holiday_date).getMonth()),
   );
-
   return (
     <div className={cssClass({ overflowX: "auto" })}>
       <table className={cssClass({ borderCollapse: "collapse", fontSize: 11, minWidth: 900 })}>
@@ -42,7 +38,6 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
               </th>
             ))}
           </tr>
-
           <tr className={cssClass({ background: currentShiftDef.bg })}>
             <td className={cssClass({ padding: "4px 10px", fontSize: 10, fontWeight: 700,
               color: currentShiftDef.color, position: "sticky", left: 0,
@@ -71,7 +66,6 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
             })}
           </tr>
         </thead>
-
         <tbody>
           {empIds.length === 0 && (
             <tr>
@@ -80,7 +74,6 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
               </td>
             </tr>
           )}
-
           {empIds.map((empId) => {
             const empReqs = filtered.filter((r) => String(r.employee_id) === String(empId));
             const name = empReqs[0]?.employee_name || empId;
@@ -127,6 +120,5 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
     </div>
   );
 });
-
 CalendarYearView.displayName = "CalendarYearView";
 export default CalendarYearView;

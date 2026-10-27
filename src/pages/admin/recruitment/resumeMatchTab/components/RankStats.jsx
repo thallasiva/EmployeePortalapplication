@@ -1,13 +1,11 @@
 import React, { useMemo } from "react";
 import { REC_CLS } from "../constants/recClasses";
-
 const REC_LABELS = [
   { label: "Highly Suitable", key: "Highly Suitable" },
   { label: "Suitable", key: "Suitable" },
   { label: "Partial", key: "Partially Suitable" },
   { label: "Not Suitable", key: "Not Suitable" },
 ];
-
 const RankStats = React.memo(function RankStats({ filtered }) {
   const stats = useMemo(
     () =>
@@ -18,7 +16,6 @@ const RankStats = React.memo(function RankStats({ filtered }) {
       })),
     [filtered],
   );
-
   return (
     <div className="flex gap-2 mb-3 flex-wrap">
       {stats.map((s) => (
@@ -30,5 +27,4 @@ const RankStats = React.memo(function RankStats({ filtered }) {
     </div>
   );
 });
-
 export default RankStats;

@@ -3,16 +3,13 @@ import { LogOut, Clock, AlertTriangle, X, ArrowRight, ArrowLeft } from "lucide-r
 import { cssClass } from "../../../../../utils/classStyles";
 import { RESIGN_REASONS } from "../constants";
 import { fmtDate, noticeDays, minDate } from "../utils";
-
 const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving }) {
   const [reason,   setReason]   = useState("");
   const [lwd,      setLwd]      = useState("");
   const [comments, setComments] = useState("");
   const [step,     setStep]     = useState(1);
-
   const notice     = noticeDays(lwd);
   const canProceed = reason && lwd;
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 })}>
       <div className={cssClass({ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 500, boxShadow: "0 24px 80px rgba(0,0,0,0.18)", overflow: "hidden" })}>
@@ -33,7 +30,6 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
             <X size={20} />
           </button>
         </div>
-
         {/* Step tabs */}
         <div className={cssClass({ display: "flex", borderBottom: "1px solid #f1f5f9" })}>
           {["Resignation Details", "Confirmation"].map((s, i) => (
@@ -43,7 +39,6 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
             </div>
           ))}
         </div>
-
         {/* Step 1 */}
         {step === 1 && (
           <div className={cssClass({ padding: 24 })}>
@@ -87,7 +82,6 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
             </div>
           </div>
         )}
-
         {/* Step 2 */}
         {step === 2 && (
           <div className={cssClass({ padding: 24 })}>
@@ -126,5 +120,4 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
     </div>
   );
 });
-
 export default ResignModal;

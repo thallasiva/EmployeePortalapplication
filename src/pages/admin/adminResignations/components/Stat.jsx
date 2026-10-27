@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const Stat = React.memo(function Stat({ label, value, color }) {
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
@@ -11,5 +10,4 @@ const Stat = React.memo(function Stat({ label, value, color }) {
     </div>
   );
 });
-
 export default Stat;

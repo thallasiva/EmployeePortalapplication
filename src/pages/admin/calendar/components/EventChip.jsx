@@ -2,7 +2,6 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { cssClass, joinClasses } from '../../../../utils/classStyles';
 import { EVENT_TYPES } from '../constants/eventTypes';
-
 const EventChip = React.memo(function EventChip({ type, label, onDelete }) {
   const cfg = EVENT_TYPES[type] || EVENT_TYPES.training;
   return (
@@ -26,5 +25,4 @@ const EventChip = React.memo(function EventChip({ type, label, onDelete }) {
     </div>
   );
 });
-
 export default EventChip;

@@ -3,7 +3,6 @@ import { GitBranch, Search, RefreshCw, X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import OrgChart from "./OrgChart";
-
 /**
  * Standalone chart panel used by HierarchyTab.
  * Renders the org-chart legend + search bar header, then the chart body.
@@ -59,7 +58,6 @@ const ChartPanel = React.memo(function ChartPanel({
           </div>
         </div>
       </div>
-
       <div className={cssClass({ padding: "16px", background: "#f8fafc", minHeight: 300 })}>
         {loading ? (
           <div className={cssClass({ textAlign: "center", padding: 60, color: "#9ca3af" })}>
@@ -77,5 +75,4 @@ const ChartPanel = React.memo(function ChartPanel({
     </div>
   );
 });
-
 export default ChartPanel;

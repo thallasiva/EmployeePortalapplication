@@ -4,7 +4,6 @@ import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { FORM_SECTIONS } from "../constants";
 import { toJumpId } from "../utils";
-
 const FormsView = React.memo(function FormsView({
   formSectionOpen, setFormSectionOpen, jumpToSection
 }) {
@@ -19,7 +18,6 @@ const FormsView = React.memo(function FormsView({
             if (!section) return;
             jumpToSection(section.id, () => setFormSectionOpen((curr) => ({ ...curr, [section.id]: true })));
           }} />
-
         <div className="flex-1 p-2 max-h-[520px] overflow-y-auto" data-doc-scroll>
           {FORM_SECTIONS.map((section) => (
             <div key={section.id} id={toJumpId(section.id)} className="border border-[#dfe5ed] mb-2 bg-white">
@@ -41,5 +39,4 @@ const FormsView = React.memo(function FormsView({
     </div>
   );
 });
-
 export default FormsView;

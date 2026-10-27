@@ -2,15 +2,12 @@ import React from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { SecHdr } from "./TablePrimitives";
-
 const tbl = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 /** Section I — Standard Deduction */
 export const SectionI = React.memo(function SectionI({ open, onToggle, isNew, stdDed, STD_DED }) {
   const label = isNew
     ? "I. Less Deduction under Section 19 (Standard Deduction)"
     : "I. Less Deduction under Section 16 (Standard Deduction)";
-
   const rows = [
     {
       label: isNew
@@ -25,7 +22,6 @@ export const SectionI = React.memo(function SectionI({ open, onToggle, isNew, st
       value: STD_DED,
     },
   ];
-
   return (
     <>
       <SecHdr label={label} amount={stdDed} expanded={open} onToggle={onToggle} />
@@ -46,7 +42,6 @@ export const SectionI = React.memo(function SectionI({ open, onToggle, isNew, st
     </>
   );
 });
-
 /** Section K — Income from Other Sources */
 export const SectionK = React.memo(function SectionK({ open, onToggle, openKi, onToggleKi, openKh, onToggleKh }) {
   return (
@@ -73,13 +68,11 @@ export const SectionK = React.memo(function SectionK({ open, onToggle, openKi, o
     </>
   );
 });
-
 /** Section M — Chapter deductions */
 export const SectionM = React.memo(function SectionM({ open, onToggle, isNew, ch8Ded }) {
   const label = isNew
     ? "M. Deduction Under Chapter VIII (Not applicable under New Regime)"
     : "M. Deduction Under Chapter VI-A (80C, 80D, etc.)";
-
   return (
     <>
       <SecHdr label={label} amount={ch8Ded} expanded={open} onToggle={onToggle} />

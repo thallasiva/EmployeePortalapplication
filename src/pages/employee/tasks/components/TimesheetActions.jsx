@@ -1,6 +1,5 @@
 import { memo } from "react";
 import { AlertTriangle } from "lucide-react";
-
 const TimesheetActions = memo(function TimesheetActions({
   canEdit,
   hasOvertime,
@@ -11,7 +10,6 @@ const TimesheetActions = memo(function TimesheetActions({
   setShowExtraWork,
 }) {
   if (!canEdit) return null;
-
   return (
     <div className="flex items-center gap-3 justify-end">
       {hasOvertime && (
@@ -34,5 +32,4 @@ const TimesheetActions = memo(function TimesheetActions({
     </div>
   );
 });
-
 export default TimesheetActions;

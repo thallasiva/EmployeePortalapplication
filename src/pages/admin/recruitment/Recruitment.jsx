@@ -14,7 +14,6 @@ import ManagerDashboard from "./ManagerDashboard";
 import RecruiterDashboard from "./RecruiterDashboard";
 import { Briefcase } from "lucide-react";
 import Toolbar from "./Toolbar";
-
 export default function Recruitment()
 {
   const user = getStoredUser();
@@ -25,30 +24,23 @@ export default function Recruitment()
   const [active, setActive] = useState(initialTab);
   const recruiterKey = getRecruiterKey(user);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-
   const [interviews, setInterviews] = useState(INTERVIEWS);
-
   useEffect(() =>
   {
     const tab = searchParams.get("tab") || "dashboard";
     setActive(tab);
   }, [searchParams]);
-
   const handleScheduleInterview = (interview) =>
   {
-
     setInterviews((prev) => [...prev, interview]);
-
     setActive("interviews");
   };
-
   const getRoleStyles = () =>
   {
     if (role.id === 1) return "from-slate-600 to-slate-700";
     if (role.id === 4) return "from-violet-600 to-violet-700";
     return "from-orange-500 to-orange-600";
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {}
@@ -74,7 +66,6 @@ export default function Recruitment()
           </div>
         </div>
       </div>
-
       {}
       <div className="mx-auto max-w-7xl px-6 py-8">
         {}
@@ -102,14 +93,11 @@ export default function Recruitment()
                 "text-gray-600 hover:bg-gray-50"}
                 `
                 }>
-
                 <Icon size={16} />
                 {tab.label}
               </button>);
-
           })}
         </nav>
-
         {}
         <div className="rounded-xl bg-white p-6 shadow-lg">
           {active === "dashboard" && role.id === 1 && <AdminDashboard />}
@@ -137,5 +125,4 @@ export default function Recruitment()
         </div>
       </div>
     </div>);
-
 }

@@ -11,7 +11,6 @@ import { apiErrorToast, errorToast, successToast } from "../../../../../utils/To
 import { PERIODS } from "../constants";
 import { getStoredUser, ROLE_RECRUITER } from "../../../../../data/auth";
 import { periodStart, filterJobs, computePeriodCounts } from "../utils";
-
 export function useJobsPage() {
   const [jobs, setJobs] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -26,7 +25,6 @@ export function useJobsPage() {
   const [originalIds, setOriginalIds] = useState([]);
   const [assigning, setAssigning] = useState(false);
   const [loadingAssign, setLoadingAssign] = useState(false);
-
   const loadJobs = useCallback(async () => {
     setLoading(true);
     try {
@@ -42,15 +40,12 @@ export function useJobsPage() {
       setLoading(false);
     }
   }, [filterStatus, search]);
-
   useEffect(() => { loadJobs(); }, [loadJobs]);
-
   useEffect(() => {
     // Recruiters can't assign recruiters, and the endpoint is lead/admin-only.
     if (Number(getStoredUser()?.role) === ROLE_RECRUITER) return;
     listRecruiters().then((rows) => setRecruiters(rows ?? [])).catch(() => {});
   }, []);
-
   const openAssign = useCallback(async (row) => {
     setAssignOpen(row);
     setLoadingAssign(true);
@@ -66,13 +61,11 @@ export function useJobsPage() {
       setLoadingAssign(false);
     }
   }, []);
-
   const closeAssign = useCallback(() => {
     setAssignOpen(null);
     setAssignIds([]);
     setOriginalIds([]);
   }, []);
-
   const handleAssign = useCallback(async () => {
     setAssigning(true);
     try {
@@ -87,7 +80,6 @@ export function useJobsPage() {
       setAssigning(false);
     }
   }, [assignOpen, assignIds, loadJobs]);
-
   const handleClose = useCallback(async (job) => {
     if (!window.confirm(`Close "${job.title}"? This will move it from Open to Closed.`)) return;
     try {
@@ -99,29 +91,23 @@ export function useJobsPage() {
       apiErrorToast(err, "Failed to close job");
     }
   }, [loadJobs]);
-
   const start = useMemo(() => periodStart(period), [period]);
-
   const visibleJobs = useMemo(
     () => filterJobs(jobs, search, filterStatus, start),
     [jobs, search, filterStatus, start]
   );
-
   const periodCounts = useMemo(
     () => computePeriodCounts(jobs, PERIODS),
     [jobs]
   );
-
   const totalOpen = useMemo(
     () => jobs.filter((j) => j.assignment_status === "Open").length,
     [jobs]
   );
-
   const totalCompleted = useMemo(
     () => jobs.filter((j) => j.assignment_status === "Completed").length,
     [jobs]
   );
-
   return {
     jobs,
     totalCount,

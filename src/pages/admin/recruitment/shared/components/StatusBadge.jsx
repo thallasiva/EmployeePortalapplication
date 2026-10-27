@@ -1,6 +1,5 @@
 import React from "react";
 import { STATUS_CLS } from "../constants";
-
 export const StatusBadge = React.memo(function StatusBadge({ status }) {
   const cls = STATUS_CLS[status] ?? "bg-gray-100 text-gray-600";
   return (

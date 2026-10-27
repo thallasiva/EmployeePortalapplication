@@ -2,7 +2,6 @@ import { memo } from "react";
 import { fmt } from "../utils/dateUtils";
 import { STATUS_STYLE, STATUS_LABEL } from "../constants/taskConstants";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
 const TimesheetWeekNav = memo(function TimesheetWeekNav({ dates, timesheet, setWeekOffset }) {
   return (
     <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-5 py-3 shadow-sm">
@@ -31,5 +30,4 @@ const TimesheetWeekNav = memo(function TimesheetWeekNav({ dates, timesheet, setW
     </div>
   );
 });
-
 export default TimesheetWeekNav;

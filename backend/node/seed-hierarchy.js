@@ -11,7 +11,6 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
-
 const pool = mysql.createPool({
   host:     process.env.DB_HOST     || 'localhost',
   port:     Number(process.env.DB_PORT || 3306),
@@ -19,7 +18,6 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME     || 'hrms_db',
 });
-
 /* ── Seniority keywords → rank (higher = more senior) ── */
 function rankDesig(name = '') {
   const n = name.toLowerCase();
@@ -30,7 +28,6 @@ function rankDesig(name = '') {
   if (/senior|sr\.|principal|specialist/.test(n))                          return 2;
   return 1; // junior / associate / engineer / analyst / default
 }
-
 async function main() {
   const conn = await pool.getConnection();
   try {
@@ -41,28 +38,22 @@ async function main() {
     const [departments] = await conn.query(
       `SELECT department_id, department_name FROM departments ORDER BY department_id`
     );
-
     if (!designations.length || !departments.length) {
       console.error('❌  No designations or departments found. Add them first.');
       return;
     }
-
     console.log(`\nDesignations (${designations.length}):`, designations.map(d => d.designation_name).join(', '));
     console.log(`Departments  (${departments.length}):`, departments.map(d => d.department_name).join(', '));
-
     /* Rank each designation */
     designations.forEach(d => d._rank = rankDesig(d.designation_name));
     designations.sort((a, b) => b._rank - a._rank || a.designation_id - b.designation_id);
-
     /* Pick top designation (CEO/Director level) */
     const topDesig  = designations[0];
     const midDesigs = designations.filter(d => d._rank >= 3 && d._rank < topDesig._rank);
     const lowDesigs = designations.filter(d => d._rank < 3);
-
     /* Fallbacks if keywords didn't match */
     const midPool = midDesigs.length ? midDesigs : [designations[Math.floor(designations.length / 2)] || designations[0]];
     const lowPool = lowDesigs.length ? lowDesigs : [designations[designations.length - 1] || designations[0]];
-
     /* ── 2. Load all active employees ── */
     const [employees] = await conn.query(`
       SELECT e.employee_id, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS name,
@@ -73,19 +64,15 @@ async function main() {
        WHERE e.employee_status = 'Active'
        ORDER BY e.employee_id
     `);
-
     console.log(`\nActive employees: ${employees.length}`);
     employees.forEach(e => e._rank = rankDesig(e.designation_name));
-
     /* Group by rank */
     const topEmps = employees.filter(e => e._rank >= 5);
     const midEmps = employees.filter(e => e._rank >= 3 && e._rank < 5);
     const lowEmps = employees.filter(e => e._rank < 3);
-
     /* ── 3. Insert filler employees if hierarchy levels are thin ── */
     const hash = await bcrypt.hash('Password@123', 10);
     let nextCode = 1000 + employees.length;
-
     async function insertEmployee({ first_name, last_name, designation_id, department_id, email }) {
       nextCode++;
       const code = `EMP${nextCode}`;
@@ -98,7 +85,6 @@ async function main() {
       console.log(`  ➕ Inserted ${first_name} ${last_name} (${code}) as ${designation_id}`);
       return { employee_id: r.insertId, name: `${first_name} ${last_name}`, _rank: rankDesig('') };
     }
-
     /* Need at least 1 top-level */
     if (!topEmps.length) {
       const dept = departments[0];
@@ -110,7 +96,6 @@ async function main() {
       e._rank = 6;
       topEmps.push(e);
     }
-
     /* Need at least 3 mid-level managers (one per main dept) */
     const deptSlice = departments.slice(0, Math.min(4, departments.length));
     for (let i = midEmps.length; i < 3; i++) {
@@ -131,7 +116,6 @@ async function main() {
       e._rank = 3;
       midEmps.push(e);
     }
-
     /* Need at least 5 junior employees */
     const juniorNames = [
       { f: 'Amit',      l: 'Joshi'     },
@@ -153,7 +137,6 @@ async function main() {
       e._rank = 1;
       lowEmps.push(e);
     }
-
     /* ── 4. Re-fetch all employees after inserts ── */
     const [allEmp] = await conn.query(`
       SELECT e.employee_id, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS name,
@@ -166,11 +149,9 @@ async function main() {
     `);
     allEmp.forEach(e => e._rank = rankDesig(e.designation_name));
     allEmp.sort((a, b) => b._rank - a._rank || a.employee_id - b.employee_id);
-
     /* ── 5. Assign reporting_to ── */
     const ceo = allEmp[0]; // most senior
     console.log(`\nCEO/Top: ${ceo.name} (${ceo.designation_name})`);
-
     let updated = 0;
     for (const emp of allEmp) {
       if (emp.employee_id === ceo.employee_id) {
@@ -180,7 +161,6 @@ async function main() {
         }
         continue;
       }
-
       // Find best manager: closest higher rank, prefer same department
       let manager = null;
       const higherRanked = allEmp.filter(e => e._rank > emp._rank && e.employee_id !== emp.employee_id);
@@ -191,11 +171,9 @@ async function main() {
         const minHigherRank = Math.min(...higherRanked.map(e => e._rank));
         const directLine = higherRanked.filter(e => e._rank === minHigherRank);
         const sameDeptDirect = directLine.filter(e => e.department_id === emp.department_id);
-
         manager = sameDeptDirect[0] || directLine[0] || sameDept[0] || higherRanked[0];
       }
       if (!manager) manager = ceo;
-
       if (emp.reporting_to !== manager.employee_id) {
         await conn.query(
           `UPDATE employees SET reporting_to = ? WHERE employee_id = ?`,
@@ -212,12 +190,10 @@ async function main() {
         updated++;
       }
     }
-
     console.log(`\n🎉 Done! ${updated} employees updated. Refresh Workflow Delegation page.\n`);
   } finally {
     conn.release();
     await pool.end();
   }
 }
-
 main().catch(e => { console.error('❌ Error:', e.message); process.exit(1); });

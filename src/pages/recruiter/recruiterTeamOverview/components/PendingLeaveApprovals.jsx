@@ -1,7 +1,6 @@
 import React from "react";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { fmtDate } from "../utils";
-
 const PendingLeaveApprovals = React.memo(function PendingLeaveApprovals({
   pendingLeavesRows,
   pendingLeaves,
@@ -9,7 +8,6 @@ const PendingLeaveApprovals = React.memo(function PendingLeaveApprovals({
   handleLeave,
 }) {
   if (!pendingLeavesRows.length) return null;
-
   return (
     <div className="admin-dash-card !p-0 overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
@@ -79,5 +77,4 @@ const PendingLeaveApprovals = React.memo(function PendingLeaveApprovals({
     </div>
   );
 });
-
 export default PendingLeaveApprovals;

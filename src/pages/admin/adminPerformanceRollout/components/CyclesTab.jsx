@@ -4,13 +4,11 @@ import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import { CycleTypeBadge, StatusBadge } from "./Badges";
-
 const CyclesTab = React.memo(function CyclesTab({ cycles, onEdit, onRollout, onDisable, onReEnable, onNew }) {
   const [expandedId, setExpandedId] = useState(() => {
     const active = cycles.find((c) => c.status === "active");
     return active?.cycle_id || null;
   });
-
   if (cycles.length === 0) {
     return (
       <div className={cssClass({ textAlign: "center", padding: 60, background: "#f8fafc", border: "2px dashed #e2e8f0", borderRadius: 14 })}>
@@ -24,7 +22,6 @@ const CyclesTab = React.memo(function CyclesTab({ cycles, onEdit, onRollout, onD
       </div>
     );
   }
-
   return (
     <div>
       {cycles.map((cycle) => {
@@ -51,7 +48,6 @@ const CyclesTab = React.memo(function CyclesTab({ cycles, onEdit, onRollout, onD
                 <StatusBadge status={cycle.status} />
               </div>
             </div>
-
             {expanded && (
               <div className={cssClass({ padding: "16px 18px", borderTop: "1px solid #e2e8f0", background: "#fff" })}>
                 <div className={cssClass({ display: "flex", gap: 10, flexWrap: "wrap" })}>
@@ -98,5 +94,4 @@ const CyclesTab = React.memo(function CyclesTab({ cycles, onEdit, onRollout, onD
     </div>
   );
 });
-
 export default CyclesTab;

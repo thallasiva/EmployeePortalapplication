@@ -6,7 +6,6 @@ import { getMyLeaveBalances } from "../../../../../api/leaveRequest.api";
 import { getMyTodayAttendance, getMyMonthlyAttendance } from "../../../../../api/attendance.api";
 import { buildSalaryBreakdown } from "../../../../../utils/salaryBreakdown";
 import { getCurrentPayslipMonthLabel } from "../../../../../lib/dateUtils";
-
 export function useDashboardData({ month, year }) {
   const [user, setUser] = useState(null);
   const [structure, setStructure] = useState(null);
@@ -16,7 +15,6 @@ export function useDashboardData({ month, year }) {
   const [todayAtt, setTodayAtt] = useState(null);
   const [monthAtt, setMonthAtt] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const now = new Date();
     const today = now.toISOString().split("T")[0];
@@ -46,16 +44,12 @@ export function useDashboardData({ month, year }) {
       setMonthAtt(mAtt);
     }).finally(() => setLoading(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const currentSlip = useMemo(
     () => payslips.find((p) => Number(p.month) === month && Number(p.year) === year),
     [payslips, month, year]
   );
-
   const sal = useMemo(() => buildSalaryBreakdown(structure, currentSlip), [structure, currentSlip]);
-
   const payslipLabel = useMemo(() => getCurrentPayslipMonthLabel(), []);
-
   return {
     user,
     structure,

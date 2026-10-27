@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const Badge = React.memo(function Badge({ status, map }) {
   const c = map[status] || { bg: "#f1f5f9", color: "#64748b", label: status || "—" };
   return (
@@ -14,5 +13,4 @@ const Badge = React.memo(function Badge({ status, map }) {
     </span>
   );
 });
-
 export default Badge;

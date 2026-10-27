@@ -2,19 +2,16 @@ import { useState } from "react";
 import Btn from "./Btn";
 import { footerActionsClass, gridClass, inputClass, inputErrorClass, labelTextClass } from "./data";
 import emptyValues from "./emptyValues";
-
 function ValidatedForm({ fields, schema, columns = 4, submitLabel, secondaryLabel = "Cancel" })
 {
   const [values, setValues] = useState(() => emptyValues(fields));
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-
   const update = (name, value) =>
   {
     setValues((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
-
   const submit = async (event) =>
   {
     event.preventDefault();
@@ -35,7 +32,6 @@ function ValidatedForm({ fields, schema, columns = 4, submitLabel, secondaryLabe
       setSubmitted(false);
     }
   };
-
   return (
     <form onSubmit={submit}>
       <div className={gridClass[columns] || gridClass[4]}>

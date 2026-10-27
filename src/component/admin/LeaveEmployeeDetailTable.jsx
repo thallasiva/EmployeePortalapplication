@@ -1,21 +1,16 @@
 import React from "react";
-
 function statusClass(status) {
   if (status === "Approved") return "approved";
   if (status === "Rejected") return "rejected";
   return "pending";
 }
-
-
 export default function LeaveEmployeeDetailTable({ rows = [], emptyMessage }) {
   if (!rows.length) {
     return (
       <p className="text-sm text-gray-400 py-4 text-center bg-gray-50 rounded-lg">
         {emptyMessage ?? "No employees on leave."}
       </p>);
-
   }
-
   return (
     <div className="overflow-x-auto">
       <table className="admin-att-table w-full">
@@ -49,7 +44,6 @@ export default function LeaveEmployeeDetailTable({ rows = [], emptyMessage }) {
               <span className={`admin-status-badge ${statusClass(row.status)}`}>
                       {row.status}
                     </span> :
-
               "—"
               }
                 </td>
@@ -59,5 +53,4 @@ export default function LeaveEmployeeDetailTable({ rows = [], emptyMessage }) {
         </tbody>
       </table>
     </div>);
-
 }

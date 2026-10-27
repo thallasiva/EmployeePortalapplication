@@ -1,9 +1,7 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const Req = () => <span className={cssClass({ color: "#ef4444", marginLeft: 2 })}>*</span>;
-
 const FieldWrap = React.memo(function FieldWrap({ label, required, error, children, hint }) {
   return (
     <div>
@@ -22,9 +20,7 @@ const FieldWrap = React.memo(function FieldWrap({ label, required, error, childr
     </div>
   );
 });
-
 export default FieldWrap;
-
 export const fieldStyle = (hasErr) => ({
   width: "100%", boxSizing: "border-box", height: 40, padding: "0 12px",
   border: `1.5px solid ${hasErr ? "#fca5a5" : "#e2e8f0"}`,
@@ -33,7 +29,6 @@ export const fieldStyle = (hasErr) => ({
   color: "#1e293b", fontFamily: "inherit",
   transition: "border-color 0.15s",
 });
-
 export const textareaStyle = (hasErr) => ({
   ...fieldStyle(hasErr), height: "auto", paddingTop: 10, paddingBottom: 10, resize: "vertical",
 });

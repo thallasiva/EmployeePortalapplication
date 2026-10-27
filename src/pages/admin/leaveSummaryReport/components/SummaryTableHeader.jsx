@@ -1,7 +1,6 @@
 import React from "react";
 import { MONTH_LABELS } from "../constants";
 import { ltCode } from "../utils";
-
 const SummaryTableHeader = React.memo(function SummaryTableHeader({ leaveTypes, year }) {
   return (
     <thead>
@@ -22,7 +21,6 @@ const SummaryTableHeader = React.memo(function SummaryTableHeader({ leaveTypes, 
         ))}
         <th colSpan={leaveTypes.length} className="px-3 py-1.5 text-center bg-rose-700 border-x border-rose-500">Closing Balance</th>
       </tr>
-
       <tr>
         {[
           { bg: "bg-blue-600 border-blue-500" },
@@ -41,5 +39,4 @@ const SummaryTableHeader = React.memo(function SummaryTableHeader({ leaveTypes, 
     </thead>
   );
 });
-
 export default SummaryTableHeader;

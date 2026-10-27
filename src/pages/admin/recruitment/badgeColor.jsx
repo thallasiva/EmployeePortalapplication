@@ -15,7 +15,6 @@ export const badgeColor = (value) => {
   ) {
     return "green";
   }
-
   if (
     [
       "Hold",
@@ -30,7 +29,6 @@ export const badgeColor = (value) => {
   ) {
     return "orange";
   }
-
   if (
     [
       "Inactive",
@@ -44,7 +42,5 @@ export const badgeColor = (value) => {
   ) {
     return "red";
   }
-
   return "blue";
 };
-

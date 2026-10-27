@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { SecHdr } from "./TablePrimitives";
 import { FourColTable, SlabInfoPanel } from "./FourColTable";
-
 /** Section O — Annual Tax */
 export const SectionO = React.memo(function SectionO({ open, onToggle, totalTax, regime, taxableIncome, rawTax, cess }) {
   return (
@@ -17,7 +16,6 @@ export const SectionO = React.memo(function SectionO({ open, onToggle, totalTax,
     </>
   );
 });
-
 /** Section P — Tax Paid Till Date */
 export const SectionP = React.memo(function SectionP({ open, onToggle, taxPaid }) {
   return (
@@ -36,7 +34,6 @@ export const SectionP = React.memo(function SectionP({ open, onToggle, taxPaid }
     </>
   );
 });
-
 /** Section Q — Balance Payable */
 export const SectionQ = React.memo(function SectionQ({ open, onToggle, remaining, rawTax, cess }) {
   return (
@@ -46,7 +43,6 @@ export const SectionQ = React.memo(function SectionQ({ open, onToggle, remaining
     </>
   );
 });
-
 /** Section R — TDS Recovered in Current Month */
 export const SectionR = React.memo(function SectionR({ open, onToggle, monthlyTDS, monthlyRaw, monthlyCess }) {
   return (

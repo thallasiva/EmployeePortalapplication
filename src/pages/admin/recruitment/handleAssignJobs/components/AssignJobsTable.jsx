@@ -4,12 +4,10 @@ import Badge from "../../Badge";
 import Btn from "../../Btn";
 import RecruiterDropdown from "./RecruiterDropdown";
 import { JOB_REQUESTS, RECRUITERS, badgeColor } from "../constants";
-
 const COLUMNS = [
   "Job ID", "Job Title", "Client", "Company/Department",
   "Position Type", "Job Status", "Recruiter Assignment Status", "Assign Recruiter",
 ];
-
 const AssignJobsTable = React.memo(function AssignJobsTable({
   selectedJobs,
   selectedRecruiters,
@@ -102,7 +100,6 @@ const AssignJobsTable = React.memo(function AssignJobsTable({
             </tbody>
           </table>
         </div>
-
         {selectedJobs.length > 0 && (
           <div className="flex items-center justify-between rounded-md bg-blue-50 p-3">
             <div className="text-xs font-semibold text-blue-900">
@@ -111,7 +108,6 @@ const AssignJobsTable = React.memo(function AssignJobsTable({
             <Btn primary onClick={onAssignJobs}>Assign Jobs</Btn>
           </div>
         )}
-
         {assignMessage && (
           <div className={`rounded-md p-3 text-xs font-semibold ${
             assignMessage.includes("Successfully")
@@ -125,5 +121,4 @@ const AssignJobsTable = React.memo(function AssignJobsTable({
     </Card>
   );
 });
-
 export default AssignJobsTable;

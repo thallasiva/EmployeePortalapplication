@@ -7,7 +7,6 @@ import SectionHead from "./SectionHead";
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
 import Row from "./Row";
-
 const EmploymentSection = React.memo(function EmploymentSection({
   employee, editMode, form, formErrors, touched, set, touch, departments, managers,
 }) {
@@ -41,5 +40,4 @@ const EmploymentSection = React.memo(function EmploymentSection({
     </div>
   );
 });
-
 export default EmploymentSection;

@@ -1,6 +1,5 @@
 export const ADMIN_TOTAL_EMPLOYEES = 24;
 export const ADMIN_ACTION_BY = "Sarah Chen";
-
 export const ADMIN_LEAVE_SUMMARY = [
 {
   id: "sick",
@@ -32,9 +31,6 @@ export const ADMIN_LEAVE_SUMMARY = [
   usedThisMonth: 6,
   totalQuota: 120
 }];
-
-
-
 export const INITIAL_LEAVE_REQUESTS = [
 {
   id: 1,
@@ -334,8 +330,6 @@ export const INITIAL_LEAVE_REQUESTS = [
   actionBy: "Sarah Chen",
   actionOn: "17 May 2026"
 }];
-
-
 export const ADMIN_LEAVE_POLICIES = [
 {
   title: "Sick Leave",
@@ -349,8 +343,6 @@ export const ADMIN_LEAVE_POLICIES = [
   title: "Casual Leave",
   text: "5 days/year, granted annually, no carryover, requires 1-day advance notice."
 }];
-
-
 export const ADMIN_LEAVE_MONTHLY_CHART = [
 { label: "Jan", sick: 3, earned: 8, casual: 2 },
 { label: "Feb", sick: 5, earned: 10, casual: 3 },
@@ -358,32 +350,22 @@ export const ADMIN_LEAVE_MONTHLY_CHART = [
 { label: "Apr", sick: 6, earned: 9, casual: 5 },
 { label: "May", sick: 8, earned: 14, casual: 6 },
 { label: "Jun", sick: 2, earned: 5, casual: 1 }];
-
-
 export const ADMIN_LEAVE_MONTHLY_SERIES = [
 { key: "sick", name: "Sick Leave", color: "#3b82f6" },
 { key: "earned", name: "Earned Leave", color: "#22c55e" },
 { key: "casual", name: "Casual Leave", color: "#8b5cf6" }];
-
-
 export const ADMIN_LEAVE_ON_LEAVE_TODAY_CHART = [
 { label: "Sick Leave", value: 2, color: "#3b82f6" },
 { label: "Earned Leave", value: 3, color: "#22c55e" },
 { label: "Casual Leave", value: 1, color: "#8b5cf6" }];
-
-
 export const ADMIN_LEAVE_WEEKLY_OUT_CHART = [
 { label: "Mon", out: 4, pending: 2 },
 { label: "Tue", out: 3, pending: 1 },
 { label: "Wed", out: 5, pending: 3 },
 { label: "Thu", out: 2, pending: 1 },
 { label: "Fri", out: 6, pending: 2 }];
-
-
 export const ADMIN_LEAVE_WEEKLY_OUT_SERIES = [
 { key: "out", name: "On Leave", color: "#3b82f6" },
 { key: "pending", name: "Pending Requests", color: "#f97316" }];
-
-
 export const CALENDAR_PURPOSE =
 "Shows team staffing availability day-by-day. Dots are computed from approved leave — green means full coverage, yellow means a few people out, red means heavy absence. Use month arrows to plan ahead and click a date to see who is on leave.";

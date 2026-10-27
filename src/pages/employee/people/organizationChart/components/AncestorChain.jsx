@@ -1,8 +1,8 @@
 import React from "react";
+import { Minus, Plus } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import EmpCard from "./EmpCard";
 import VLine from "./VLine";
-
 const AncestorChain = React.memo(function AncestorChain({
   ancestors,
   canExpandMore,
@@ -24,7 +24,10 @@ const AncestorChain = React.memo(function AncestorChain({
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
             })}
-          >+</button>
+            aria-label="Expand one more level up"
+          >
+            <Plus size={14} aria-hidden="true" />
+          </button>
         )}
         <button
           onClick={onCollapse}
@@ -36,9 +39,11 @@ const AncestorChain = React.memo(function AncestorChain({
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           })}
-        >−</button>
+          aria-label="Collapse this level"
+        >
+          <Minus size={14} aria-hidden="true" />
+        </button>
       </div>
-
       {ancestors.map((anc) => (
         <React.Fragment key={anc.employee_id}>
           <EmpCard emp={anc} search={search} />
@@ -48,5 +53,4 @@ const AncestorChain = React.memo(function AncestorChain({
     </div>
   );
 });
-
 export default AncestorChain;

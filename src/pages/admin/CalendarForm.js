@@ -3,33 +3,26 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin, { Draggable } from "@fullcalendar/interaction";
 import { Plus, X } from "lucide-react";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 export default function CalendarForm() {
   const calendarRef = useRef(null);
   const sidebarRef = useRef(null);
-
   const [showModal, setShowModal] = useState(false);
-
   const [categories, setCategories] = useState([
   { title: "New Theme Release", color: "#2f49c7" },
   { title: "My Event", color: "#22c55e" },
   { title: "Meet Manager", color: "#f59e0b" },
   { title: "Create New theme", color: "#6b7280" }]
   );
-
   const [form, setForm] = useState({
     name: "",
     color: "#dc2626"
   });
-
   const today = new Date();
   const initialCalendarDate = today.toISOString().slice(0, 10);
-
   const toEventDate = (year, month, day) => {
     const d = new Date(year, month, day);
     return d.toISOString().slice(0, 10);
   };
-
   const [events, setEvents] = useState(() => {
     const y = today.getFullYear();
     const m = today.getMonth();
@@ -58,10 +51,7 @@ export default function CalendarForm() {
       start: toEventDate(y, m, 16),
       color: "#2f49c7"
     }];
-
   });
-
-
   useEffect(() => {
     if (sidebarRef.current) {
       new Draggable(sidebarRef.current, {
@@ -75,8 +65,6 @@ export default function CalendarForm() {
       });
     }
   }, [categories]);
-
-
   const handleReceive = (info) => {
     setEvents((prev) => [
     ...prev,
@@ -88,24 +76,18 @@ export default function CalendarForm() {
     }]
     );
   };
-
   const handleAddCategory = () => {
     if (!form.name) return;
-
     setCategories((prev) => [
     ...prev,
     { title: form.name, color: form.color }]
     );
-
     setForm({ name: "", color: "#dc2626" });
     setShowModal(false);
   };
-
   return (
     <div className="min-h-screen bg-[#f5f6f8]">
       {}
-
-
       {}
       <div className="p-4">
         {}
@@ -113,10 +95,8 @@ export default function CalendarForm() {
           <div className="text-sm text-gray-500">
             Home <span className="mx-2">/</span> Calendar
           </div>
-
           <h2 className="font-semibold text-[#1c2746]">Calendar</h2>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4">
           {}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-fit">
@@ -125,12 +105,10 @@ export default function CalendarForm() {
                 Calendar
               </h3>
             </div>
-
             <div className="p-4">
               <p className="text-[12px] text-gray-600 mb-4">
                 Drag and drop your event or click in the calendar
               </p>
-
               <div ref={sidebarRef} className="space-y-3">
                 {categories.map((item, index) =>
                 <div
@@ -138,31 +116,25 @@ export default function CalendarForm() {
                   className="external-event h-11 border border-gray-300 rounded px-3 flex items-center gap-3 cursor-move bg-white"
                   data-title={item.title}
                   data-color={item.color}>
-
                     <span
                     className={joinClasses("w-3 h-3 rounded-sm", cssClass(
                       { backgroundColor: item.color }))} />
-
                     <span className="text-sm">{item.title}</span>
                   </div>
                 )}
               </div>
-
               <label className="flex items-center gap-2 mt-4 text-sm text-gray-500">
                 <input type="checkbox" />
                 Remove after drop
               </label>
-
               <button
                 onClick={() => setShowModal(true)}
                 className="w-full h-11 bg-brand hover:bg-brand-600 text-white rounded mt-4 flex items-center justify-center gap-2 font-semibold">
-
                 <Plus size={16} />
                 Create New
               </button>
             </div>
           </div>
-
           {}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <FullCalendar
@@ -186,11 +158,9 @@ export default function CalendarForm() {
                 day: "Day"
               }}
               height="auto" />
-
           </div>
         </div>
       </div>
-
       {}
       {showModal &&
       <div className={joinClasses("fixed inset-0 bg-black/40 z-50 flex justify-center pt-16", cssClass({ height: '400px' }))}>
@@ -200,21 +170,17 @@ export default function CalendarForm() {
               <h2 className="text-[36px] font-semibold text-gray-800">
                 Add a category
               </h2>
-
               <button
               onClick={() => setShowModal(false)}
               className="border border-red-500 text-red-500 rounded-sm p-1">
-
                 <X size={16} />
               </button>
             </div>
-
             {}
             <div className="p-4">
               <label className="block text-sm mb-2 font-medium">
                 Category Name
               </label>
-
               <input
               type="text"
               placeholder="Enter Name"
@@ -223,38 +189,30 @@ export default function CalendarForm() {
               setForm({ ...form, name: e.target.value })
               }
               className="w-full h-11 border border-gray-300 rounded px-3 text-sm outline-none" />
-
-
               <label className="block text-sm mt-4 mb-2 font-medium">
                 Choose Category Color
               </label>
-
               <select
               value={form.color}
               onChange={(e) =>
               setForm({ ...form, color: e.target.value })
               }
               className="w-full h-11 border border-gray-300 rounded px-3 text-sm outline-none">
-
                 <option value="#dc2626">Danger</option>
                 <option value="#22c55e">Success</option>
                 <option value="#2f49c7">Primary</option>
                 <option value="#f59e0b">Warning</option>
                 <option value="#6b7280">Secondary</option>
               </select>
-
               <div className="flex gap-4 mt-6">
                 <button
                 onClick={handleAddCategory}
                 className="w-32 h-11 bg-brand hover:bg-brand-600 text-white rounded font-semibold">
-
                   Apply
                 </button>
-
                 <button
                 onClick={() => setShowModal(false)}
                 className="w-32 h-11 bg-red-500 hover:bg-red-600 text-white rounded font-semibold">
-
                   Cancel
                 </button>
               </div>
@@ -263,5 +221,4 @@ export default function CalendarForm() {
         </div>
       }
     </div>);
-
 }

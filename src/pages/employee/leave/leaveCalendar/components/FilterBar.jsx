@@ -1,5 +1,4 @@
 import React from "react";
-
 const FilterBar = React.memo(function FilterBar({ filterType, onFilterTypeChange, canViewAll }) {
   return (
     <div className="mb-5">
@@ -16,5 +15,4 @@ const FilterBar = React.memo(function FilterBar({ filterType, onFilterTypeChange
     </div>
   );
 });
-
 export default FilterBar;

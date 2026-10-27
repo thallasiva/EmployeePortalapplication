@@ -1,6 +1,5 @@
 import React from "react";
 import Field from "./Field";
-
 const StepCompensation = React.memo(function StepCompensation({ values, errors, setField }) {
   return (
     <>
@@ -28,5 +27,4 @@ const StepCompensation = React.memo(function StepCompensation({ values, errors, 
     </>
   );
 });
-
 export default StepCompensation;

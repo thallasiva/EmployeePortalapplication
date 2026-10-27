@@ -1,6 +1,5 @@
 import React from "react";
 import { STATUS_CONFIG } from "../constants";
-
 const StatusBadge = React.memo(function StatusBadge({ status }) {
   const s = STATUS_CONFIG[status] || STATUS_CONFIG.Pending;
   return (
@@ -9,5 +8,4 @@ const StatusBadge = React.memo(function StatusBadge({ status }) {
     </span>
   );
 });
-
 export default StatusBadge;

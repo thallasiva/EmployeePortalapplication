@@ -10,7 +10,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { listDepartments }  from "../../api/department.api";
 import { listLeaveTypes }   from "../../api/leaveType.api";
-
 /* ─── thunks ─────────────────────────────────────────────────────────────── */
 export const fetchDepartments = createAsyncThunk(
   "referenceData/fetchDepartments",
@@ -19,7 +18,6 @@ export const fetchDepartments = createAsyncThunk(
     catch (e) { return rejectWithValue(e?.response?.data?.message ?? e.message); }
   }
 );
-
 export const fetchLeaveTypes = createAsyncThunk(
   "referenceData/fetchLeaveTypes",
   async (_, { rejectWithValue }) => {
@@ -27,7 +25,6 @@ export const fetchLeaveTypes = createAsyncThunk(
     catch (e) { return rejectWithValue(e?.response?.data?.message ?? e.message); }
   }
 );
-
 /* ─── slice ──────────────────────────────────────────────────────────────── */
 const referenceDataSlice = createSlice({
   name: "referenceData",
@@ -47,7 +44,6 @@ const referenceDataSlice = createSlice({
       .addCase(fetchDepartments.pending,  (s) => { s.departments.status = "loading"; })
       .addCase(fetchDepartments.fulfilled,(s, a) => { s.departments.status = "succeeded"; s.departments.data = a.payload ?? []; })
       .addCase(fetchDepartments.rejected, (s, a) => { s.departments.status = "failed"; s.departments.error = a.payload; });
-
     /* leave types */
     builder
       .addCase(fetchLeaveTypes.pending,   (s) => { s.leaveTypes.status = "loading"; })
@@ -55,10 +51,8 @@ const referenceDataSlice = createSlice({
       .addCase(fetchLeaveTypes.rejected,  (s, a) => { s.leaveTypes.status = "failed"; s.leaveTypes.error = a.payload; });
   },
 });
-
 /* ─── selectors ──────────────────────────────────────────────────────────── */
 export const selectDepartments = (state) => state.referenceData.departments;
 export const selectLeaveTypes  = (state) => state.referenceData.leaveTypes;
-
 export const { resetReferenceData } = referenceDataSlice.actions;
 export default referenceDataSlice.reducer;

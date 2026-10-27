@@ -3,7 +3,6 @@ import { PageHeader } from "../shared";
 import { useResumeMatch } from "./hooks/useResumeMatch";
 import QuickMatchPanel from "./components/QuickMatchPanel";
 import CandidateRankSection from "./components/CandidateRankSection";
-
 const ResumeMatchTab = React.memo(function ResumeMatchTab({ role }) {
   const {
     jobs,
@@ -16,7 +15,6 @@ const ResumeMatchTab = React.memo(function ResumeMatchTab({ role }) {
     loadMatches,
     handleRecompute,
   } = useResumeMatch();
-
   return (
     <div>
       <PageHeader
@@ -24,9 +22,7 @@ const ResumeMatchTab = React.memo(function ResumeMatchTab({ role }) {
         title="Resume Match"
         subtitle="Instantly check how well a candidate matches a job requirement"
       />
-
       <QuickMatchPanel jobs={jobs} />
-
       <CandidateRankSection
         jobs={jobs}
         selectedJob={selectedJob}
@@ -41,5 +37,4 @@ const ResumeMatchTab = React.memo(function ResumeMatchTab({ role }) {
     </div>
   );
 });
-
 export default ResumeMatchTab;

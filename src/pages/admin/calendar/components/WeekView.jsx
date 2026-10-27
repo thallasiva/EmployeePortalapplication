@@ -1,6 +1,5 @@
 import React from 'react';
 import { CalendarDays } from 'lucide-react';
-
 const WeekView = React.memo(function WeekView() {
   return (
     <div className="p-4 text-center text-sm text-slate-400 py-10">
@@ -9,5 +8,4 @@ const WeekView = React.memo(function WeekView() {
     </div>
   );
 });
-
 export default WeekView;

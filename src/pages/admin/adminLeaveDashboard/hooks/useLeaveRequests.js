@@ -6,13 +6,10 @@ import {
   getApprovedLeavesToday,
 } from '../../../../utils/adminLeaveUtils';
 import { formatActionDate, mapRequest } from '../utils/leaveUtils';
-
 const today = new Date();
-
 export function useLeaveRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const loadRequests = useCallback(() => {
     setLoading(true);
     return listLeaveRequests({ limit: 100 })
@@ -22,11 +19,9 @@ export function useLeaveRequests() {
       .catch(() => setRequests([]))
       .finally(() => setLoading(false));
   }, []);
-
   useEffect(() => {
     loadRequests();
   }, [loadRequests]);
-
   const pending = useMemo(
     () => requests.filter((r) => r.status === 'Pending'),
     [requests]
@@ -55,7 +50,6 @@ export function useLeaveRequests() {
     ],
     [pending.length, approved.length, rejected.length]
   );
-
   const handleApprove = useCallback(
     (id) => {
       setRequests((curr) =>
@@ -75,7 +69,6 @@ export function useLeaveRequests() {
     },
     [loadRequests]
   );
-
   const handleReject = useCallback(
     (id) => {
       setRequests((curr) =>
@@ -95,7 +88,6 @@ export function useLeaveRequests() {
     },
     [loadRequests]
   );
-
   return {
     requests,
     loading,

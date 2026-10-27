@@ -3,7 +3,6 @@ import { PieChart } from "lucide-react";
 import Card from "./Card";
 import Donut from "./Donut";
 import ChecklistRow from "./ChecklistRow";
-
 export default function ProcessOverviewCard({ steps = [] }) {
   const done = steps.filter((s) => s.status === "done").length;
   const total = steps.length || 1;

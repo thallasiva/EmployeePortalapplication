@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Bell, Mail, MessageSquare, Smartphone, Save, RotateCcw, Loader2 } from "lucide-react";
 import client from "../../../api/client";
-
 const Toggle = ({ on, onToggle }) => (
   <button onClick={onToggle}
     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${on ? "bg-[#f18200]" : "bg-[#cbd5e1]"}`}>
     <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-4" : "translate-x-1"}`} />
   </button>
 );
-
 const CHANNELS = [
   { key:"email",  label:"Email",            icon:<Mail size={16}/>,           color:"#f18200" },
   { key:"inapp",  label:"In-App",           icon:<Bell size={16}/>,           color:"#6366f1" },
   { key:"sms",    label:"SMS",              icon:<Smartphone size={16}/>,     color:"#10b981" },
   { key:"push",   label:"Push",             icon:<MessageSquare size={16}/>,  color:"#3b82f6" },
 ];
-
 const NOTIF_EVENTS = [
   { group:"Leave", events:[
     { label:"Leave Approved",          email:true,  inapp:true,  sms:false, push:true  },
@@ -42,17 +39,13 @@ const NOTIF_EVENTS = [
     { label:"Document Expiry Reminder",email:true,  inapp:true,  sms:false, push:false },
   ]},
 ];
-
 const buildDefault = () => NOTIF_EVENTS.map(g => ({ ...g, events: g.events.map(e => ({ ...e })) }));
-
 export default function NotificationSettings() {
   const [matrix, setMatrix] = useState(buildDefault);
   const [loading, setLoading]  = useState(true);
   const [saving, setSaving]    = useState(false);
   const [toast, setToast]      = useState(null);
-
   const showToast = (msg, type="success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
-
   /* Load saved settings */
   useEffect(() => {
     client.get("/settings/notification-preferences")
@@ -60,7 +53,6 @@ export default function NotificationSettings() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
   const toggle = (gi, ei, channel) => {
     setMatrix(prev =>
       prev.map((g, gIdx) => ({
@@ -71,7 +63,6 @@ export default function NotificationSettings() {
       }))
     );
   };
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -81,15 +72,12 @@ export default function NotificationSettings() {
       showToast("Save failed", "error");
     } finally { setSaving(false); }
   };
-
   const handleReset = () => { setMatrix(buildDefault()); showToast("Reset to defaults", "info"); };
-
   if (loading) return (
     <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
       <Loader2 size={28} className="animate-spin text-[#f18200]" />
     </div>
   );
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* Toast */}
@@ -98,7 +86,6 @@ export default function NotificationSettings() {
           {toast.msg}
         </div>
       )}
-
       {/* Header */}
       <div className="bg-white border-b border-[#e2e8f0] px-6 py-5">
         <div className="flex items-center justify-between">
@@ -123,7 +110,6 @@ export default function NotificationSettings() {
           </div>
         </div>
       </div>
-
       <div className="p-6">
         {/* Channel legend */}
         <div className="flex flex-wrap gap-4 mb-5 bg-white rounded-xl border border-[#f1f5f9] p-4">
@@ -136,7 +122,6 @@ export default function NotificationSettings() {
             </div>
           ))}
         </div>
-
         {/* Matrix */}
         <div className="space-y-4">
           {matrix.map((group, gi) => (

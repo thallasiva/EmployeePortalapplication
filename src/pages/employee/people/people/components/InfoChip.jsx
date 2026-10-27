@@ -1,5 +1,4 @@
 import React from "react";
-
 const InfoChip = React.memo(function InfoChip({ icon: Icon, label, value }) {
   if (!value || value === "—") return null;
   return (
@@ -26,5 +25,4 @@ const InfoChip = React.memo(function InfoChip({ icon: Icon, label, value }) {
     </div>
   );
 });
-
 export default InfoChip;

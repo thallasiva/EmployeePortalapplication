@@ -7,19 +7,16 @@ import {
 } from "../../../../utils/salaryStructureImport";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { cssClass } from "../../../../utils/classStyles";
-
 const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModal({ onClose, onImported }) {
   const fileInputRef = useRef(null);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState("");
-
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
     setError("");
-
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -45,7 +42,6 @@ const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModa
     reader.onerror = () => { setError("Could not read the selected file."); };
     reader.readAsText(file);
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
@@ -55,14 +51,12 @@ const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModa
             <X size={18} />
           </button>
         </div>
-
         <div className="px-5 py-4 space-y-3">
           <p className="text-sm text-gray-600">
             Upload a CSV with an <strong>Employee Code</strong> column and salary fields
             (<strong>Basic</strong>, <strong>HRA</strong>, <strong>Conveyance</strong>, <strong>CTC</strong>, etc.)
             plus an <strong>Effective From</strong> date (YYYY-MM-DD).
           </p>
-
           <div className={cssClass({
             display: "flex", alignItems: "center", justifyContent: "space-between",
             background: "#fff8f0", border: "1px solid #fed7aa", borderRadius: 10,
@@ -88,7 +82,6 @@ const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModa
               ⬇ Download Template
             </button>
           </div>
-
           <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center cursor-pointer hover:border-brand hover:bg-brand-50/40">
             <Upload size={24} className="text-gray-400" />
             <span className="text-sm font-medium text-gray-700">
@@ -103,11 +96,9 @@ const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModa
               disabled={importing}
             />
           </label>
-
           {importing && <p className="text-sm text-brand">Importing salary structures...</p>}
           {error && <p className="text-sm text-rose-600">{error}</p>}
         </div>
-
         <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-3">
           <button
             type="button"
@@ -121,5 +112,4 @@ const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModa
     </div>
   );
 });
-
 export default ImportSalaryStructureModal;

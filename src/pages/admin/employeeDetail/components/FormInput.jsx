@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { baseInp } from "../constants";
 import Field from "./Field";
-
 const FormInput = React.memo(function FormInput({
   label, value, onChange, onBlur, type = "text", required, error, touched, ...rest
 }) {
@@ -20,5 +19,4 @@ const FormInput = React.memo(function FormInput({
     </Field>
   );
 });
-
 export default FormInput;

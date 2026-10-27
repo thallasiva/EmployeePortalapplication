@@ -5,7 +5,6 @@
  */
 const nodemailer = require('nodemailer');
 const { query }  = require('../config/db');
-
 function getTransport() {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
   if (!SMTP_HOST) throw new Error('SMTP not configured (SMTP_HOST missing)');
@@ -19,7 +18,6 @@ function getTransport() {
     from: SMTP_FROM || SMTP_USER || 'noreply@hrms.local'
   };
 }
-
 async function sendMail({ to, subject, html, employeeId, userId, type }) {
   const { transport, from } = getTransport();
   let status = 'SENT', error = null, sentAt = null;
@@ -37,9 +35,7 @@ async function sendMail({ to, subject, html, employeeId, userId, type }) {
   ).catch(() => null);
   if (status === 'FAILED') throw new Error(error);
 }
-
 // ── Specific notification functions ────────────────────────────────────────
-
 exports.sendMissingCheckoutReminder = async ({ employee_name, work_email, check_in_time, employee_id }) => {
   await sendMail({
     to: work_email,
@@ -52,7 +48,6 @@ exports.sendMissingCheckoutReminder = async ({ employee_name, work_email, check_
     type: 'MISSING_CHECKOUT'
   });
 };
-
 exports.sendPayrollApprovalNotification = async ({ employee_name, work_email, month, year, net_pay, employee_id }) => {
   await sendMail({
     to: work_email,
@@ -66,7 +61,6 @@ exports.sendPayrollApprovalNotification = async ({ employee_name, work_email, mo
     type: 'PAYSLIP_APPROVED'
   });
 };
-
 exports.sendLeaveDecisionNotification = async ({ employee_name, work_email, leave_type, start_date, end_date, approved, remarks, employee_id }) => {
   const decision = approved ? '✅ Approved' : '❌ Rejected';
   await sendMail({
@@ -80,7 +74,6 @@ exports.sendLeaveDecisionNotification = async ({ employee_name, work_email, leav
     type: approved ? 'LEAVE_APPROVED' : 'LEAVE_REJECTED'
   });
 };
-
 exports.sendProofRejectionNotification = async ({ employee_name, work_email, proof_type, remarks, employee_id }) => {
   await sendMail({
     to: work_email,
@@ -94,7 +87,6 @@ exports.sendProofRejectionNotification = async ({ employee_name, work_email, pro
     type: 'PROOF_REJECTED'
   });
 };
-
 exports.sendInterviewCompletionNotification = async ({ candidate_name, recruiter_email, job_title, score, recruiter_id }) => {
   await sendMail({
     to: recruiter_email,

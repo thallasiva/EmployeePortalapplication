@@ -1,7 +1,6 @@
 import React from "react";
 import { User } from "lucide-react";
 import { ROLE_ICONS } from "../constants";
-
 const RoleAssignPanel = React.memo(function RoleAssignPanel({
   selected,
   roles,
@@ -18,7 +17,6 @@ const RoleAssignPanel = React.memo(function RoleAssignPanel({
         <div className="text-[13px] font-bold text-gray-700">Assign System Role</div>
         <div className="text-[11px] text-gray-400 mt-0.5">Controls app access &amp; permissions</div>
       </div>
-
       {!selected ? (
         <div className="p-10 text-center">
           <User size={36} color="#d1d5db" className="mb-2.5 mx-auto" />
@@ -45,11 +43,9 @@ const RoleAssignPanel = React.memo(function RoleAssignPanel({
               </div>
             </div>
           </div>
-
           <div className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2.5">
             Select New Role
           </div>
-
           <div className="flex flex-col gap-2 mb-5">
             {roles.map((role) => {
               const rc = getRoleStyle(role.role_id);
@@ -89,7 +85,6 @@ const RoleAssignPanel = React.memo(function RoleAssignPanel({
               );
             })}
           </div>
-
           <button
             onClick={onSave}
             disabled={saving || !pickedRole || pickedRole === selected.role_id}
@@ -110,5 +105,4 @@ const RoleAssignPanel = React.memo(function RoleAssignPanel({
     </div>
   );
 });
-
 export default RoleAssignPanel;

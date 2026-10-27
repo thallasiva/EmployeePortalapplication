@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Shield, Search, Eye, ChevronLeft, ChevronRight, RefreshCw, Loader2, X } from "lucide-react";
 import client from "../../../api/client";
-
 const MODULES_F = ["All Modules","Email Config","Email Templates","Email Permissions","Email Logs","Scheduled Emails","Notification Settings","Menu Permissions","Form Builder","Dashboard Builder","Report Builder","System","Employees","Leave","Payroll","Attendance","Recruitment"];
 const RESULTS_F = ["All Results","Success","Failed","Denied"];
 const PER_PAGE  = 15;
-
 export default function AuditLogs() {
   const [rows, setRows]       = useState([]);
   const [total, setTotal]     = useState(0);
@@ -15,7 +13,6 @@ export default function AuditLogs() {
   const [result, setResult]   = useState("All Results");
   const [page, setPage]       = useState(1);
   const [viewRow, setViewRow] = useState(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -31,12 +28,9 @@ export default function AuditLogs() {
     }
     setLoading(false);
   }, [search, module, result, page]);
-
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [search, module, result]);
-
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {viewRow && (
@@ -62,7 +56,6 @@ export default function AuditLogs() {
           </div>
         </div>
       )}
-
       <div className="bg-white border-b border-[#e2e8f0] px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -79,7 +72,6 @@ export default function AuditLogs() {
           </button>
         </div>
       </div>
-
       <div className="p-6 space-y-5">
         {/* Filters */}
         <div className="bg-white rounded-xl border border-[#f1f5f9] p-4">
@@ -99,7 +91,6 @@ export default function AuditLogs() {
             </select>
           </div>
         </div>
-
         {/* Table */}
         <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
           {loading ? (
@@ -140,7 +131,6 @@ export default function AuditLogs() {
               </tbody>
             </table>
           )}
-
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-[#f1f5f9]">
               <span className="text-[12px] text-[#94a3b8]">Total {total} records</span>

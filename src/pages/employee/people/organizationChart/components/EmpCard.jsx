@@ -2,12 +2,10 @@ import React from "react";
 import { cssClass, joinClasses } from "../../../../../utils/classStyles";
 import { BRAND, deptColor } from "../constants/palette";
 import { fullName, initials } from "../utils/empHelpers";
-
 const EmpCard = React.memo(function EmpCard({ emp, isSelf, badge, search }) {
   const color = deptColor(emp.department_id);
   const name = fullName(emp);
   const matched = search && name.toLowerCase().includes(search.toLowerCase().trim());
-
   return (
     <div className={joinClasses(`org-card${matched ? " org-card--highlight" : ""}`, cssClass({
       outline: isSelf ? `2px solid ${color}` : undefined,
@@ -23,10 +21,8 @@ const EmpCard = React.memo(function EmpCard({ emp, isSelf, badge, search }) {
           />
         ) : initials(name)}
       </div>
-
       <p className="org-name">{name}</p>
       <p className="org-title">{emp.emp_job_title || emp.designation_name || "—"}</p>
-
       <div className={cssClass({ display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap", marginTop: 4 })}>
         {emp.department_name && (
           <span className={joinClasses("org-badge", cssClass({ background: `${color}18`, color }))}>
@@ -49,5 +45,4 @@ const EmpCard = React.memo(function EmpCard({ emp, isSelf, badge, search }) {
     </div>
   );
 });
-
 export default EmpCard;

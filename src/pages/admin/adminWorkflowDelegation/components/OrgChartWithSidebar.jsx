@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import { statusColor } from "../utils/formatters";
 import OrgChart from "./OrgChart";
-
 /**
  * The main org-chart block shown in the Overview tab.
  * Includes legend/search header, the SVG chart (or focused-path view),
@@ -66,7 +65,6 @@ const OrgChartWithSidebar = React.memo(function OrgChartWithSidebar({
           </div>
         </div>
       </div>
-
       {/* Body: chart + sidebar */}
       <div className={cssClass({ display: "flex", background: "#f8fafc", minHeight: 360 })}>
         {/* Chart area */}
@@ -89,7 +87,6 @@ const OrgChartWithSidebar = React.memo(function OrgChartWithSidebar({
             <OrgChart nodes={visibleTree} onSelect={setSelectedNode} highlightIds={highlightIds} />
           )}
         </div>
-
         {/* Search sidebar */}
         <div className={cssClass({
           width: 280, flexShrink: 0, borderLeft: "1px solid #e5e7eb",
@@ -125,7 +122,6 @@ const OrgChartWithSidebar = React.memo(function OrgChartWithSidebar({
               </button>
             )}
           </div>
-
           <div className={cssClass({ flex: 1, overflowY: "auto" })}>
             {searchResults.length > 0 ? (
               <div className={cssClass({ display: "flex", flexDirection: "column", gap: 8 })}>
@@ -182,7 +178,6 @@ const OrgChartWithSidebar = React.memo(function OrgChartWithSidebar({
     </div>
   );
 });
-
 /** Inline mini-SVG showing the focused path (main → manager → employee). */
 function FocusedPathView({ focusedPath, setFocusedPath }) {
   const NW = 180, NH = 64, GAP = 70;
@@ -199,10 +194,8 @@ function FocusedPathView({ focusedPath, setFocusedPath }) {
       ? { ...focusedPath.employee, role: "Selected Employee", color: "#f18200" }
       : null,
   ].filter(Boolean);
-
   const svgW = nodes3.length * (NW + GAP) - GAP + 20;
   const svgH = NH + 80;
-
   return (
     <div>
       <div className={cssClass({ display: "flex", justifyContent: "flex-end", marginBottom: 12 })}>
@@ -276,5 +269,4 @@ function FocusedPathView({ focusedPath, setFocusedPath }) {
     </div>
   );
 }
-
 export default OrgChartWithSidebar;

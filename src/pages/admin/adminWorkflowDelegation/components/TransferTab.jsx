@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { BRAND, BL } from "../constants/tabs";
 import { SectionHead, Input, Btn } from "./SharedUI";
 import ManagerSelect from "./ManagerSelect";
-
 const TransferTab = React.memo(function TransferTab({
   managers,
   xferOldMgr,
@@ -20,7 +19,6 @@ const TransferTab = React.memo(function TransferTab({
   return (
     <div>
       <SectionHead>Manager Transfer</SectionHead>
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 })}>
         <div>
           <label className={cssClass({ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 })}>
@@ -50,7 +48,6 @@ const TransferTab = React.memo(function TransferTab({
           />
         </div>
       </div>
-
       <div className={cssClass({ marginBottom: 20 })}>
         <label className={cssClass({ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 })}>
           Reason
@@ -61,7 +58,6 @@ const TransferTab = React.memo(function TransferTab({
           placeholder="e.g. Manager resigned, restructuring…"
         />
       </div>
-
       {xferTeam.length > 0 && (
         <div className={cssClass({
           background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
@@ -92,7 +88,6 @@ const TransferTab = React.memo(function TransferTab({
           </div>
         </div>
       )}
-
       {xferOldMgr && xferNewMgr && xferTeam.length > 0 && (
         <div className={cssClass({
           background: BL, border: "1px solid #fed7aa", borderRadius: 10,
@@ -105,7 +100,6 @@ const TransferTab = React.memo(function TransferTab({
           </div>
         </div>
       )}
-
       <Btn
         onClick={handleTransfer}
         disabled={!xferOldMgr || !xferNewMgr || !xferTeam.length || xferSaving}
@@ -118,5 +112,4 @@ const TransferTab = React.memo(function TransferTab({
     </div>
   );
 });
-
 export default TransferTab;

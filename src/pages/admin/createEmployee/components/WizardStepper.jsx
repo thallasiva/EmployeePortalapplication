@@ -1,7 +1,6 @@
 import React from "react";
 import { Check } from "lucide-react";
 import { STEPS } from "../constants";
-
 const WizardStepper = React.memo(function WizardStepper({ step }) {
   return (
     <div className="emp-stepper">
@@ -27,5 +26,4 @@ const WizardStepper = React.memo(function WizardStepper({ step }) {
     </div>
   );
 });
-
 export default WizardStepper;

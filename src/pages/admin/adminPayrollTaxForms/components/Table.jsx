@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const Table = React.memo(function Table({ cols, rows, emptyMsg = "No data" }) {
   if (!rows.length)
     return (
@@ -8,7 +7,6 @@ const Table = React.memo(function Table({ cols, rows, emptyMsg = "No data" }) {
         {emptyMsg}
       </div>
     );
-
   return (
     <div className={cssClass({ overflowX: "auto" })}>
       <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 13 })}>
@@ -55,5 +53,4 @@ const Table = React.memo(function Table({ cols, rows, emptyMsg = "No data" }) {
     </div>
   );
 });
-
 export default Table;

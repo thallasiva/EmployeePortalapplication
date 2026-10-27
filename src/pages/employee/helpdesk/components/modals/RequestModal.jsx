@@ -4,7 +4,6 @@ import { createTicket } from "../../../../../api/helpdesk.api";
 import { TOPIC_CONFIG, DEFAULT_FIELDS } from "../../constants/topicConfig";
 import { BRAND, BRAND_LIGHT, BRAND_BORDER, INPUT_BASE, buildDescription } from "../../utils/helpdeskUtils";
 import { cssClass } from "../../../../../utils/classStyles";
-
 /* ─── RichTextArea ─── */
 function RichTextArea({ label, value, onChange, required }) {
   return (
@@ -33,7 +32,6 @@ function RichTextArea({ label, value, onChange, required }) {
     </div>
   );
 }
-
 /* ─── DynamicField ─── */
 function DynamicField({ f, value, onChange }) {
   const focusBorder  = (e) => (e.target.style.borderColor = BRAND);
@@ -43,11 +41,9 @@ function DynamicField({ f, value, onChange }) {
       {f.label} {f.required && <span className={cssClass({ color: "#ef4444" })}>*</span>}
     </label>
   );
-
   switch (f.type) {
     case "richtext":
       return <RichTextArea key={f.key} label={f.label} required={!!f.required} value={value} onChange={onChange} />;
-
     case "text":
       return (
         <div className={cssClass({ marginBottom: 16 })}>
@@ -55,7 +51,6 @@ function DynamicField({ f, value, onChange }) {
           <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={f.placeholder || ""} onFocus={focusBorder} onBlur={blurBorder} className={cssClass(INPUT_BASE)} />
         </div>
       );
-
     case "datetime":
       return (
         <div className={cssClass({ marginBottom: 16 })}>
@@ -66,7 +61,6 @@ function DynamicField({ f, value, onChange }) {
           </div>
         </div>
       );
-
     case "date":
       return (
         <div className={cssClass({ marginBottom: 16 })}>
@@ -75,7 +69,6 @@ function DynamicField({ f, value, onChange }) {
           {f.note && <p className={cssClass({ fontSize: 12, color: BRAND, margin: "4px 0 0" })}>{f.note}</p>}
         </div>
       );
-
     case "select":
     case "searchselect":
       return (
@@ -90,11 +83,9 @@ function DynamicField({ f, value, onChange }) {
           </div>
         </div>
       );
-
     default: return null;
   }
 }
-
 /* ─── RequestModal ─── */
 const RequestModal = memo(function RequestModal({ category, topic, onClose, onSubmitted }) {
   const config      = TOPIC_CONFIG[topic.id] || {};
@@ -103,7 +94,6 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
   const summaryLabel = config.summaryLabel || "Summary";
   const summaryHint  = config.summaryHint  || null;
   const { Icon }    = topic;
-
   const [summary,    setSummary]    = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error,      setError]      = useState(null);
@@ -115,15 +105,12 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
     });
     return obj;
   });
-
   const setVal = useCallback((key, value) => setVals((prev) => ({ ...prev, [key]: value })), []);
-
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
-
   const handleSubmit = async () => {
     if (!summary.trim()) { setError(summaryLabel + " is required."); return; }
     for (const f of [...fieldDefs, ...afterDefs]) {
@@ -144,11 +131,9 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
       setError(e?.response?.data?.message || "Failed to submit. Please try again.");
     } finally { setSubmitting(false); }
   };
-
   return (
     <div onClick={onClose} className={cssClass({ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" })}>
       <div onClick={(e) => e.stopPropagation()} className={cssClass({ width: "100%", maxWidth: 580, maxHeight: "90vh", background: "#fff", borderRadius: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", overflow: "hidden" })}>
-
         {/* Header */}
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 12, padding: "18px 24px", borderBottom: "1px solid #e5e7eb", flexShrink: 0 })}>
           <div className={cssClass({ width: 40, height: 40, borderRadius: 10, background: BRAND_LIGHT, border: "1.5px solid " + BRAND_BORDER, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 })}>
@@ -160,12 +145,10 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
           </div>
           <button onClick={onClose} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 })} aria-label="Close"><X size={18} /></button>
         </div>
-
         {/* Body */}
         <div className={cssClass({ flex: 1, overflowY: "auto", padding: "22px 24px" })}>
           <p className={cssClass({ fontSize: 12, color: "#9ca3af", margin: "0 0 18px" })}>Required fields are marked with an asterisk *</p>
           {error && <div className={cssClass({ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "10px 14px", fontSize: 13, color: "#dc2626", marginBottom: 14 })}>{error}</div>}
-
           {/* Summary */}
           <div className={cssClass({ marginBottom: 16 })}>
             <label className={cssClass({ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 })}>
@@ -176,9 +159,7 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
               className={cssClass({ width: "100%", height: 38, padding: "0 12px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, outline: "none", boxSizing: "border-box", color: "#374151" })} />
             {summaryHint && <p className={cssClass({ fontSize: 12, color: BRAND, margin: "4px 0 0" })}>{summaryHint}</p>}
           </div>
-
           {fieldDefs.map((f) => <DynamicField key={f.key} f={f} value={vals[f.key]} onChange={(v) => setVal(f.key, v)} />)}
-
           {/* Attachment */}
           <div className={cssClass({ marginBottom: afterDefs.length ? 20 : 8 })}>
             <label className={cssClass({ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 })}>Attachment</label>
@@ -190,10 +171,8 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
               </label>
             </div>
           </div>
-
           {afterDefs.map((f) => <DynamicField key={f.key} f={f} value={vals[f.key]} onChange={(v) => setVal(f.key, v)} />)}
         </div>
-
         {/* Footer */}
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 12, padding: "14px 24px", borderTop: "1px solid #e5e7eb", flexShrink: 0, background: "#fafafa" })}>
           <button type="button" onClick={handleSubmit} disabled={submitting}
@@ -208,5 +187,4 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
     </div>
   );
 });
-
 export default RequestModal;

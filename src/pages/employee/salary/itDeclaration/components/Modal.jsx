@@ -1,7 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 function Modal({ title, onClose, onSave, onClear, children }) {
   return (
     <div className={cssClass({
@@ -45,5 +44,4 @@ function Modal({ title, onClose, onSave, onClear, children }) {
     </div>
   );
 }
-
 export default React.memo(Modal);

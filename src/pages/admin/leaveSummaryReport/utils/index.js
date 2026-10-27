@@ -9,6 +9,5 @@ export function ltCode(name = "") {
   if (n.includes("restricted")) return "RH";
   return name.slice(0, 2).toUpperCase();
 }
-
 export const fmt = (v) =>
   v == null || v === 0 ? "-" : Number(v).toFixed(1).replace(".0", "");

@@ -6,7 +6,6 @@ import PayslipSheet from "./PayslipSheet";
 import { downloadPayslipPdf } from "../../utils/payslipPdfGenerator";
 import { errorToast } from "../../utils/ToastControllers";
 import "./payslipPrint.css";
-
 export default function PayslipPrintView() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -14,7 +13,6 @@ export default function PayslipPrintView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -35,7 +33,6 @@ export default function PayslipPrintView() {
       cancelled = true;
     };
   }, [id]);
-
   const handleDownload = async () => {
     if (!data) return;
     setDownloading(true);
@@ -47,11 +44,9 @@ export default function PayslipPrintView() {
       setDownloading(false);
     }
   };
-
   if (loading) return <div className="payslip-print-loading">Loading payslip…</div>;
   if (error) return <div className="payslip-print-error">{error}</div>;
   if (!data) return null;
-
   return (
     <div className="payslip-print-page">
       <div className="payslip-print-toolbar">
@@ -78,7 +73,6 @@ export default function PayslipPrintView() {
           <Printer size={16} /> Print / Save as PDF
         </button>
       </div>
-
       <PayslipSheet data={data} />
     </div>
   );

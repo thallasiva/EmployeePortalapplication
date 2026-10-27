@@ -1,5 +1,4 @@
 import React from "react";
-
 const TeamStatusGrid = React.memo(function TeamStatusGrid({ summary, onScrollToLate }) {
   return (
     <div className="admin-dash-card lg:col-span-2">
@@ -32,5 +31,4 @@ const TeamStatusGrid = React.memo(function TeamStatusGrid({ summary, onScrollToL
     </div>
   );
 });
-
 export default TeamStatusGrid;

@@ -4,13 +4,10 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { useHelpdeskData } from "../hooks/useHelpdeskData";
 import TicketCard from "./TicketCard";
 import StatChip from "./StatChip";
-
 const OPEN_STATUSES     = ["open", "pending", "in-progress", "Forwarded", "Reopened"];
 const RESOLVED_STATUSES = ["resolved", "closed", "Approved", "Rejected"];
-
 const HelpdeskPanel = React.memo(function HelpdeskPanel({ search, statusFilter }) {
   const { rows, loading, isPrivileged } = useHelpdeskData();
-
   const filtered = useMemo(() => {
     let list = rows;
     if (statusFilter === "pending") list = rows.filter((r) => OPEN_STATUSES.includes(r.status));
@@ -23,11 +20,9 @@ const HelpdeskPanel = React.memo(function HelpdeskPanel({ search, statusFilter }
         .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [rows, statusFilter, search]);
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 13 })}>Loading…</div>;
   }
-
   if (!rows.length) {
     return (
       <div className={cssClass({ textAlign: "center", padding: "60px 24px" })}>
@@ -38,10 +33,8 @@ const HelpdeskPanel = React.memo(function HelpdeskPanel({ search, statusFilter }
       </div>
     );
   }
-
   const open     = rows.filter((r) => OPEN_STATUSES.includes(r.status)).length;
   const resolved = rows.filter((r) => ["resolved", "closed", "Approved"].includes(r.status)).length;
-
   return (
     <>
       <div className={cssClass({ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" })}>
@@ -61,5 +54,4 @@ const HelpdeskPanel = React.memo(function HelpdeskPanel({ search, statusFilter }
     </>
   );
 });
-
 export default HelpdeskPanel;

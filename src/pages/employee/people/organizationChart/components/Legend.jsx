@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const Legend = React.memo(function Legend({ depts }) {
   if (!depts.length) return null;
   return (
@@ -20,5 +19,4 @@ const Legend = React.memo(function Legend({ depts }) {
     </div>
   );
 });
-
 export default Legend;

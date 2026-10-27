@@ -1,8 +1,6 @@
 import React from "react";
 import { Check, X, CircleDot } from "lucide-react";
-
 const PIPELINE_STEPS = ["Round 1", "Round 2", "Round 3", "HR", "Shortlisted"];
-
 function stepState(label, ivs, candidateStatus) {
   if (label === "Shortlisted") {
     const isShortlisted = candidateStatus === "Shortlisted" || candidateStatus === "Offer Released" ||
@@ -16,7 +14,6 @@ function stepState(label, ivs, candidateStatus) {
   if (iv.status === "Scheduled") return "active";
   return "pending";
 }
-
 function stepLabel(label, ivs) {
   if (label === "Shortlisted") return label;
   const iv = ivs.find((r) => r.level === label || (label === "HR" && r.level === "HR"));
@@ -26,7 +23,6 @@ function stepLabel(label, ivs) {
   if (iv.status === "Scheduled") return label + " (scheduled)";
   return label;
 }
-
 const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidateStatus }) {
   return (
     <div className="mb-4 px-4 py-3.5 bg-gray-50 rounded-xl border border-gray-200">
@@ -70,5 +66,4 @@ const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidate
     </div>
   );
 });
-
 export default InterviewPipeline;

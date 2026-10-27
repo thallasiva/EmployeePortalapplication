@@ -1,5 +1,4 @@
 import React from "react";
-
 const SummaryCard = React.memo(function SummaryCard({
   icon: Icon, value, label, suffix, iconBg, iconColor,
 }) {
@@ -20,5 +19,4 @@ const SummaryCard = React.memo(function SummaryCard({
     </div>
   );
 });
-
 export default SummaryCard;

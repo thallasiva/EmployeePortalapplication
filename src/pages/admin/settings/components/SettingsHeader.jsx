@@ -1,7 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { COMPANIES } from "../constants";
-
 const SettingsHeader = React.memo(function SettingsHeader({
   selectedCompany, selectedCompanyId,
   companyOpen, setCompanyOpen, selectCompany,
@@ -13,7 +12,6 @@ const SettingsHeader = React.memo(function SettingsHeader({
           <p className="text-sm text-gray-500 mb-1">Home / Settings</p>
           <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
         </div>
-
         <div className="flex items-center gap-3">
           <div className="relative">
             <button
@@ -29,7 +27,6 @@ const SettingsHeader = React.memo(function SettingsHeader({
               </span>
               <ChevronDown size={14} className={`transition-transform ${companyOpen ? 'rotate-180' : ''}`} />
             </button>
-
             {companyOpen && (
               <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 min-w-[240px] py-1">
                 {COMPANIES.map((co) => (
@@ -48,7 +45,6 @@ const SettingsHeader = React.memo(function SettingsHeader({
               </div>
             )}
           </div>
-
           <button className="inline-flex items-center justify-center rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-600 transition">
             Save Changes
           </button>
@@ -57,5 +53,4 @@ const SettingsHeader = React.memo(function SettingsHeader({
     </div>
   );
 });
-
 export default SettingsHeader;

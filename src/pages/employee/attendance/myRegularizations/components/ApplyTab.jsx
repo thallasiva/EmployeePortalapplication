@@ -1,7 +1,6 @@
 import React from "react";
 import CalendarPanel from "./CalendarPanel";
 import RegularizeForm from "./RegularizeForm";
-
 const ApplyTab = React.memo(function ApplyTab({
   grid,
   monthLabel,
@@ -31,7 +30,6 @@ const ApplyTab = React.memo(function ApplyTab({
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
       />
-
       <RegularizeForm
         selectedIso={selectedIso}
         isException={isException}
@@ -43,7 +41,6 @@ const ApplyTab = React.memo(function ApplyTab({
         onLastOutChange={onLastOutChange}
         onSubmit={onSubmit}
       />
-
       <div className="lg:w-[200px] shrink-0 bg-amber-50/90 border border-amber-100 rounded-lg p-4 text-xs text-slate-600 leading-relaxed">
         <p>You can regularise for any exception day(s) on or after 05-05-2026</p>
         <p className="mt-3">You can regularise for a maximum of 5 days</p>
@@ -51,5 +48,4 @@ const ApplyTab = React.memo(function ApplyTab({
     </div>
   );
 });
-
 export default ApplyTab;

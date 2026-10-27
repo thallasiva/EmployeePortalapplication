@@ -3,7 +3,6 @@ import { Search, ZoomIn, ZoomOut, RotateCcw, Network } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants/palette";
 import { fullName } from "../utils/empHelpers";
-
 const OrgToolbar = React.memo(function OrgToolbar({
   manager,
   search,
@@ -31,7 +30,6 @@ const OrgToolbar = React.memo(function OrgToolbar({
           </p>
         </div>
       </div>
-
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 8 })}>
         <div className={cssClass({ position: "relative" })}>
           <Search size={13} className={cssClass({
@@ -49,7 +47,6 @@ const OrgToolbar = React.memo(function OrgToolbar({
             })}
           />
         </div>
-
         <div className={cssClass({
           display: "flex", alignItems: "center", gap: 2, background: "#fff",
           border: "1px solid #dbe2ea", borderRadius: 8, height: 32, padding: "0 4px",
@@ -78,5 +75,4 @@ const OrgToolbar = React.memo(function OrgToolbar({
     </div>
   );
 });
-
 export default OrgToolbar;

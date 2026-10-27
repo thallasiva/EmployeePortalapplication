@@ -1,6 +1,5 @@
 import React from "react";
 import { SUMMARY_STATS } from "../constants";
-
 const SummaryCards = React.memo(function SummaryCards({ counts }) {
   if (!counts) return null;
   return (
@@ -14,5 +13,4 @@ const SummaryCards = React.memo(function SummaryCards({ counts }) {
     </div>
   );
 });
-
 export default SummaryCards;

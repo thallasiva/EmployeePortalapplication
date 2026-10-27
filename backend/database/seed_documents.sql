@@ -4,9 +4,7 @@
 --
 -- Run: node src/database/runSql.js database/seed_documents.sql
 -- =====================================================================
-
 USE hrms_db;
-
 -- Ensure categories exist
 INSERT INTO document_categories (category_id, category_name) VALUES
   (1, 'policies'),
@@ -14,14 +12,12 @@ INSERT INTO document_categories (category_id, category_name) VALUES
   (3, 'templates'),
   (4, 'forms')
 ON DUPLICATE KEY UPDATE category_name = VALUES(category_name);
-
 -- Remove previous entries if re-running
 DELETE FROM documents WHERE file_url IN (
   '/uploads/posh-policy-natit.pdf',
   '/uploads/natit-handbook.pdf',
   '/uploads/natit-hr-policy-manual.pdf'
 );
-
 -- Insert the 3 documents (visibility = 'all' → visible to every employee)
 INSERT INTO documents (title, description, category_id, file_type, file_size, file_url, visibility, employee_id, uploaded_by)
 VALUES
@@ -58,7 +54,6 @@ VALUES
     NULL,
     1
   );
-
 -- ─────────────────────────────────────────────────────────────────────
 -- Done ✓  All 3 documents will appear in:
 --   Admin   → Dashboard → Documents section

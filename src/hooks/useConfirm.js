@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-
 /**
  * Manages a confirmation dialog and its pending action.
  * Works with <ConfirmDialog> from components/ui.
@@ -31,14 +30,11 @@ export function useConfirm() {
     confirmLabel: "Confirm",
     onConfirm: () => {},
   });
-
   const confirm = useCallback(({ title, description, variant = "danger", confirmLabel = "Confirm", onConfirm }) => {
     setConfirmState({ open: true, title, description, variant, confirmLabel, onConfirm });
   }, []);
-
   const closeConfirm = useCallback(() => {
     setConfirmState((prev) => ({ ...prev, open: false }));
   }, []);
-
   return { confirmState, confirm, closeConfirm };
 }

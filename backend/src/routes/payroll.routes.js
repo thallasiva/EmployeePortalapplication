@@ -14,7 +14,6 @@ const {
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
 const auditLog = require('../middleware/auditLog');
-
 const Joi = require('joi');
 const attendanceAdjustmentSchema = Joi.object({
   month: Joi.number().integer().min(1).max(12).required(),
@@ -23,15 +22,12 @@ const attendanceAdjustmentSchema = Joi.object({
   hold_salary: Joi.boolean().default(false),
   reason: Joi.string().trim().min(3).max(255).required(),
 });
-
 const router = express.Router();
 router.use(authenticate);
-
 // ── Employee self-service ─────────────────────────────────────────────────
 router.get('/payslips/me', auditLog('READ_OWN_PAYSLIP'), controller.myPayslips);
 router.post('/payslips/me/generate', auditLog('GENERATE_OWN_PAYSLIP'), validate(generateMyPayslipSchema), controller.generateMyPayslip);
 router.get('/salary-structures/me', auditLog('READ_OWN_SALARY'), controller.getLatestSalaryStructure);
-
 // ── Salary structures ─────────────────────────────────────────────────────
 router.get('/salary-structures', requirePermission('payroll','view'), auditLog('READ_SALARY_LIST'), controller.listSalaryStructures);
 router.get('/salary-structures/:id', requirePermission('payroll','view'), auditLog('READ_SALARY'), controller.getSalaryStructure);
@@ -40,7 +36,6 @@ router.post('/salary-structures', requirePermission('payroll','add'), auditLog('
 router.post('/salary-structures/import', requirePermission('payroll','add'), auditLog('IMPORT_SALARY'), validate(importSalaryStructuresSchema), controller.importSalaryStructures);
 router.put('/salary-structures/:id', requirePermission('payroll','edit'), auditLog('UPDATE_SALARY'), validate(updateSalaryStructureSchema), controller.updateSalaryStructure);
 router.delete('/salary-structures/:id', requirePermission('payroll','delete'), auditLog('DELETE_SALARY'), controller.removeSalaryStructure);
-
 // ── Payslips ──────────────────────────────────────────────────────────────
 router.get('/payslips', requirePermission('payroll','view'), auditLog('READ_PAYSLIP_LIST'), controller.listPayslips);
 router.get('/payslips/:id/full', auditLog('READ_PAYSLIP_FULL'), controller.getPayslipFull);
@@ -48,26 +43,21 @@ router.get('/payslips/:id', requirePermission('payroll','view'), auditLog('READ_
 router.post('/payslips/generate', requirePermission('payroll','add'), auditLog('GENERATE_PAYSLIP'), validate(generatePayslipSchema), controller.generatePayslip);
 router.post('/payslips/generate-all', requirePermission('payroll','add'), auditLog('GENERATE_ALL_PAYSLIPS'), validate(generateAllPayslipsSchema), controller.generateAllPayslips);
 router.put('/payslips/:id/mark-paid', requirePermission('payroll','edit'), auditLog('MARK_PAYSLIP_PAID'), controller.markPayslipPaid);
-
 // ── Payroll runs ──────────────────────────────────────────────────────────
 // Attendance → salary: per-employee attendance and computed pay before processing
 router.get('/attendance-summary', requirePermission('payroll','view'), auditLog('READ_PAYROLL_ATTENDANCE'), controller.attendanceSummary);
 router.put('/attendance-summary/:employeeId/adjustment', requirePermission('payroll','edit'), auditLog('ADJUST_PAYROLL_ATTENDANCE', r => r.params.employeeId), validate(attendanceAdjustmentSchema), controller.saveAttendanceAdjustment);
-
 router.get('/runs', requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN_LIST'), controller.listPayrollRuns);
 router.get('/runs/:id', requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN'), controller.getPayrollRun);
 router.post('/runs', requirePermission('payroll','add'), auditLog('CREATE_PAYROLL_RUN'), validate(runPayrollSchema), controller.runPayroll);
 router.post('/runs/:id/submit-review', requirePermission('payroll','add'), controller.submitPayrollReview);
 router.put('/runs/:id/review', requirePermission('payroll','edit'), controller.reviewPayroll);
 router.get('/runs/:id/bank-export', requirePermission('payroll','edit'), controller.exportBankFile);
-
 // ── Payroll lock / unlock ─────────────────────────────────────────────────
 router.post('/runs/:id/lock', requirePermission('payroll','edit'), auditLog('LOCK_PAYROLL_RUN'), controller.lockPayrollRun);
 router.delete('/runs/:id/lock', requirePermission('payroll','edit'), auditLog('UNLOCK_PAYROLL_RUN'), controller.unlockPayrollRun);
-
 // ── Payroll inputs ────────────────────────────────────────────────────────
 router.get('/inputs', requirePermission('payroll','view'), controller.listPayrollInputs);
 router.post('/inputs', requirePermission('payroll','add'), controller.createPayrollInput);
 router.put('/inputs/:id/review', requirePermission('payroll','edit'), controller.reviewPayrollInput);
-
 module.exports = router;

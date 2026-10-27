@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { inp, sel, OVERRIDE_TYPES } from "../constants";
-
 const AddLineModal = React.memo(function AddLineModal({
   existingIds,
   allComponents,
@@ -16,7 +15,6 @@ const AddLineModal = React.memo(function AddLineModal({
   const [overrideType, setOverType] = useState("None");
   const [overrideValue, setOverVal] = useState("");
   const [sortOrder, setSortOrder] = useState("");
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl">
@@ -111,5 +109,4 @@ const AddLineModal = React.memo(function AddLineModal({
     </div>
   );
 });
-
 export default AddLineModal;

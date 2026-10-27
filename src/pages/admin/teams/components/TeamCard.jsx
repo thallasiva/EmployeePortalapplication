@@ -3,12 +3,10 @@ import { ChevronDown, ChevronUp, Users, Crown } from "lucide-react";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import { badgeInlineStyle } from "../utils";
 import MemberAvatar from "./MemberAvatar";
-
 const TeamCard = React.memo(function TeamCard({ team, expanded, onToggle }) {
   const { lead, members, name, department, description, badgeClass, badgeIdx } = team;
   const inlineStyle = badgeClass ? undefined : badgeInlineStyle(badgeIdx);
   const badgeCls = badgeClass ? `teams-badge ${badgeClass}` : "teams-badge";
-
   return (
     <article className="teams-card">
       <div className="teams-card__top">
@@ -18,11 +16,8 @@ const TeamCard = React.memo(function TeamCard({ team, expanded, onToggle }) {
           {members.length}
         </span>
       </div>
-
       <span className={joinClasses(badgeCls, cssClass(inlineStyle))}>{department}</span>
-
       {description && <p className="teams-card__description">{description}</p>}
-
       {lead && (
         <div className="teams-card__lead">
           <MemberAvatar name={lead.name} size="md" />
@@ -33,7 +28,6 @@ const TeamCard = React.memo(function TeamCard({ team, expanded, onToggle }) {
           </span>
         </div>
       )}
-
       <div className="teams-avatar-stack">
         {members.slice(0, 6).map((m) => (
           <MemberAvatar key={m.employee_id} name={m.name} />
@@ -49,7 +43,6 @@ const TeamCard = React.memo(function TeamCard({ team, expanded, onToggle }) {
           </span>
         )}
       </div>
-
       <button
         type="button"
         className="teams-card__toggle"
@@ -66,7 +59,6 @@ const TeamCard = React.memo(function TeamCard({ team, expanded, onToggle }) {
           </>
         )}
       </button>
-
       {expanded && (
         <div className="teams-card__members">
           {members.map((m) => (
@@ -85,5 +77,4 @@ const TeamCard = React.memo(function TeamCard({ team, expanded, onToggle }) {
     </article>
   );
 });
-
 export default TeamCard;

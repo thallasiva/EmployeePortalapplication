@@ -1,6 +1,5 @@
 /* ─── Shared UI Component Library ───────────────────────────────────────── */
-/* Import from this barrel to keep paths stable as files evolve.             */
-
+/* Import from this barrel to keep paths stable as files evolve. */
 export { default as Badge, BADGE_COLORS } from "./Badge";
 export { default as Button } from "./Button";
 export { default as Card } from "./Card";

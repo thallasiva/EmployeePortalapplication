@@ -2,19 +2,16 @@ import { useEffect, useState } from "react";
 import { FileText, Download, Eye, Upload } from "lucide-react";
 import { listDocuments, uploadDocument } from "../../api/document.api";
 import apiClient from "../../api/client";
-
 function fileUrl(relPath) {
   if (!relPath) return "#";
   const base = apiClient.defaults?.baseURL?.replace(/\/api\/?$/, "") || "";
   return `${base}${relPath}`;
 }
-
 function DocCard({ doc }) {
   const name = doc.document_name || doc.file_name || "Document";
   const category = doc.category_name || "Policy";
   const date = doc.created_at ? new Date(doc.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
   const url = fileUrl(doc.file_url);
-
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
@@ -42,15 +39,12 @@ function DocCard({ doc }) {
         </div>
       </div>
     </div>);
-
 }
-
 export function EmployeeDocument() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState("");
-
   const load = () => {
     setLoading(true);
     listDocuments({ visibility: "all", limit: 100 }).
@@ -58,9 +52,7 @@ export function EmployeeDocument() {
     catch(() => setErr("Failed to load documents")).
     finally(() => setLoading(false));
   };
-
   useEffect(() => {load();}, []);
-
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -75,15 +67,12 @@ export function EmployeeDocument() {
     } catch {setErr("Upload failed");} finally
     {setUploading(false);e.target.value = "";}
   };
-
-
   const groups = docs.reduce((acc, d) => {
     const cat = d.category_name || "General";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(d);
     return acc;
   }, {});
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -96,9 +85,7 @@ export function EmployeeDocument() {
           <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} />
         </label>
       </div>
-
       {err && <p className="text-sm text-red-500">{err}</p>}
-
       {loading ?
       <div className="py-12 text-center text-sm text-gray-400">Loading documents…</div> :
       docs.length === 0 ?
@@ -107,7 +94,6 @@ export function EmployeeDocument() {
           <p className="text-sm">No documents uploaded yet.</p>
           <p className="text-xs mt-1">Upload company policies to make them available here.</p>
         </div> :
-
       Object.entries(groups).map(([cat, items]) =>
       <div key={cat}>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{cat}</h3>
@@ -118,5 +104,4 @@ export function EmployeeDocument() {
       )
       }
     </div>);
-
 }

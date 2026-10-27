@@ -4,10 +4,8 @@ import { CH8_ITEMS } from "../constants";
 import { fmt } from "../utils/formatters";
 import Modal from "./Modal";
 import AmtRow from "./AmtRow";
-
 function ModalCh8({ values, setValues, onClose }) {
   const total = CH8_ITEMS.reduce((s, item) => s + (Number(values[item.label]) || 0), 0);
-
   return (
     <Modal
       title="Other Deductions (80D / 80E / 80G)"
@@ -48,5 +46,4 @@ function ModalCh8({ values, setValues, onClose }) {
     </Modal>
   );
 }
-
 export default React.memo(ModalCh8);

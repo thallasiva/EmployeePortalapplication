@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { getInitials, avatarColor } from "../utils";
-
 const Avatar = React.memo(function Avatar({ name, size = 36 }) {
   const bg = avatarColor(name);
   return (
@@ -24,5 +23,4 @@ const Avatar = React.memo(function Avatar({ name, size = 36 }) {
     </span>
   );
 });
-
 export default Avatar;

@@ -5,7 +5,6 @@ import EmailTemplates    from "./tabs/EmailTemplates";
 import EmailPermissions  from "./tabs/EmailPermissions";
 import EmailLogs         from "./tabs/EmailLogs";
 import ScheduledEmails   from "./tabs/ScheduledEmails";
-
 const TABS = [
   { id: "smtp",        label: "SMTP Settings",      icon: <Settings size={15}/>,  desc: "Server & auth config" },
   { id: "templates",   label: "Email Templates",    icon: <FileText size={15}/>,  desc: "Create & manage templates" },
@@ -13,12 +12,9 @@ const TABS = [
   { id: "logs",        label: "Email Logs",         icon: <Activity size={15}/>,  desc: "Track sent emails" },
   { id: "scheduled",  label: "Scheduled Emails",   icon: <Calendar size={15}/>,  desc: "Recurring sends" },
 ];
-
 export default function EmailConfigIndex() {
   const [active, setActive] = useState("smtp");
-
   const current = TABS.find(t => t.id === active);
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* Page header */}
@@ -33,11 +29,10 @@ export default function EmailConfigIndex() {
           </p>
         </div>
       </div>
-
       {/* Tab navigation */}
       <div className="px-6 pb-5">
         <div className="flex gap-1 overflow-x-auto pb-1">
-          {TABS.map((tab, i) => {
+          {TABS.map((tab) => {
             const isActive = tab.id === active;
             return (
               <button key={tab.id} onClick={() => setActive(tab.id)}
@@ -46,10 +41,6 @@ export default function EmailConfigIndex() {
                     ? "bg-[#f18200] text-white border-[#f18200] shadow-md shadow-[#f18200]/20"
                     : "bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#f18200]/40 hover:text-[#f18200]"
                 }`}>
-                {/* <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold ${
-                  isActive?"bg-white/20":"bg-[#f8fafc]"}`}>
-                  {i + 1}
-                </span> */}
                 {tab.icon}
                 {tab.label}
               </button>
@@ -57,7 +48,6 @@ export default function EmailConfigIndex() {
           })}
         </div>
       </div>
-
       {/* Content area */}
       <div className="px-6 pb-10">
         {/* Section sub-header */}
@@ -70,7 +60,6 @@ export default function EmailConfigIndex() {
             <p className="text-[12px] text-[#94a3b8]">{current.desc}</p>
           </div>
         </div>
-
         {/* Render active tab */}
         {active === "smtp"        && <SmtpSettings/>}
         {active === "templates"   && <EmailTemplates/>}

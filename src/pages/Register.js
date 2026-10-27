@@ -12,8 +12,6 @@ import { register as registerApi } from "../api/auth.api";
 import { getErrorMessage } from "../api/client";
 import { apiErrorToast, successToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
-
-
 const Input = ({ label, name, type = "text", formik }) =>
 <div className="w-1/2 px-2 mb-4">
         <label className="block text-sm text-gray-700 mb-1">{label}</label>
@@ -24,8 +22,6 @@ const Input = ({ label, name, type = "text", formik }) =>
     value={formik.values[name]}
     onChange={formik.handleChange}
     onBlur={formik.handleBlur} /> :
-
-
   <input
     type={type}
     name={name}
@@ -33,15 +29,11 @@ const Input = ({ label, name, type = "text", formik }) =>
     onChange={formik.handleChange}
     onBlur={formik.handleBlur}
     className="w-full border rounded-lg px-4 py-2" />
-
   }
         {formik.touched[name] && formik.errors[name] &&
   <p className="text-red-500 text-sm">{formik.errors[name]}</p>
   }
     </div>;
-
-
-
 const Textarea = ({ label, name, formik }) =>
 <div className="w-1/2 px-2 mb-4">
         <label className="block text-sm text-gray-700 mb-1">{label}</label>
@@ -52,29 +44,22 @@ const Textarea = ({ label, name, formik }) =>
     onBlur={formik.handleBlur}
     className="w-full border rounded-lg px-4 py-2"
     rows={4} />
-
         {formik.touched[name] && formik.errors[name] &&
   <p className="text-red-500 text-sm">{formik.errors[name]}</p>
   }
     </div>;
-
-
-
 const Select = ({ label, name, options, formik, onChange }) =>
 <div className="w-1/2 px-2 mb-4">
         <label className="block text-sm text-gray-700 mb-1">{label}</label>
-
         <select
     name={name}
     value={formik.values[name]}
     onChange={(e) =>
     {
       formik.handleChange(e);
-
       const selectedOption = options.find(
         (opt) => String(opt.value) === String(e.target.value)
       );
-
       if (onChange)
       {
         onChange(selectedOption);
@@ -82,7 +67,6 @@ const Select = ({ label, name, options, formik, onChange }) =>
     }}
     onBlur={formik.handleBlur}
     className="w-full border rounded-lg px-4 py-2">
-
             <option value="">Select</option>
             {options.map((opt) =>
     <option key={opt.id} value={opt.value}>
@@ -90,14 +74,10 @@ const Select = ({ label, name, options, formik, onChange }) =>
                 </option>
     )}
         </select>
-
         {formik.touched[name] && formik.errors[name] &&
   <p className="text-red-500 text-sm">{formik.errors[name]}</p>
   }
     </div>;
-
-
-
 const Register = () =>
 {
   const navigate = useNavigate();
@@ -105,27 +85,20 @@ const Register = () =>
   const [rolesList, setRolesList] = useState([]);
   const [getdesignationList, setdesignationList] = useState([]);
   const [getdepartmentList, setdepartmentList] = useState([]);
-
   const genderOptions = [
   { id: 1, label: "Male", value: "Male" },
   { id: 2, label: "Female", value: "Female" },
   { id: 2, label: "Others", value: "Others" }];
-
-
-
   useEffect(() =>
   {
     setRolesList(getRolesForSelect());
     setCompiness(getCompaniesForSelect());
     setdepartmentList(getDepartmentsForSelect());
   }, []);
-
   const designationApi = (departmentId) =>
   {
     setdesignationList(getDesignationsForSelect(departmentId));
   };
-
-
   const handleDepartmentChange = (selectedOption) =>
   {
     if (selectedOption)
@@ -134,8 +107,6 @@ const Register = () =>
       designationApi(selectedOption.value);
     }
   };
-
-
   const formik = useFormik({
     initialValues: {
       company_id: "",
@@ -152,7 +123,6 @@ const Register = () =>
       password: "",
       confirmPassword: ""
     },
-
     validationSchema: Yup.object({
       company_id: Yup.string().required(),
       first_name: Yup.string().required(),
@@ -170,7 +140,6 @@ const Register = () =>
       oneOf([Yup.ref("password")]).
       required()
     }),
-
     onSubmit: async (values, { setSubmitting }) =>
     {
       try
@@ -193,20 +162,15 @@ const Register = () =>
       {
         apiErrorToast(err, "Registration failed");
       } finally
-
       {
         setSubmitting(false);
       }
     }
   });
-
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-8 rounded-xl w-full max-w-5xl">
-
                 <form onSubmit={formik.handleSubmit}>
-
                     {}
                     <div className="flex flex-wrap">
                         <Select
@@ -214,21 +178,17 @@ const Register = () =>
               name="company_id"
               options={getCompiness}
               formik={formik} />
-
                     </div>
-
                     {}
                     <div className="flex flex-wrap">
                         <Input label="First Name" name="first_name" formik={formik} />
                         <Input label="Last Name" name="last_name" formik={formik} />
                     </div>
-
                     {}
                     <div className="flex flex-wrap">
                         <Input label="Username" name="username" formik={formik} />
                         <Input label="Email" name="email" formik={formik} />
                     </div>
-
                     {}
                     <div className="flex flex-wrap">
                         <Select
@@ -237,28 +197,21 @@ const Register = () =>
               options={getdepartmentList}
               formik={formik}
               onChange={handleDepartmentChange} />
-
-
                         <Select
               label="Designation"
               name="designation"
               options={getdesignationList}
               formik={formik} />
-
                     </div>
-
                     {}
                     <div className="flex flex-wrap">
                         <Input label="Mobile" name="mobile" formik={formik} />
-
                         <Select
               label="Gender"
               name="gender"
               options={genderOptions}
               formik={formik} />
-
                     </div>
-
                     {}
                     <div className="flex flex-wrap">
                         <Select
@@ -266,28 +219,20 @@ const Register = () =>
               name="role"
               options={rolesList}
               formik={formik} />
-
-
                         <Textarea label="Address" name="address" formik={formik} />
                     </div>
-
                     {}
                     <div className="flex flex-wrap">
                         <Input label="Password" name="password" type="password" formik={formik} />
                         <Input label="Confirm Password" name="confirmPassword" type="password" formik={formik} />
                     </div>
-
                     <button
             type="submit"
             className="w-full bg-brand text-white py-2 mt-4 rounded">
-
                         Register
                     </button>
-
                 </form>
             </div>
         </div>);
-
 };
-
 export default Register;

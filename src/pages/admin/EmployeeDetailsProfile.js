@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Globe, Phone, Mail, MapPin, ExternalLink, Building2 } from "lucide-react";
-
 const COMPANIES = [
 {
   name: "NAT IT Services Pvt. Ltd.",
@@ -50,12 +49,9 @@ const COMPANIES = [
   founded: "2021",
   size: "11–50 employees"
 }];
-
-
 export default function DetailsScreen() {
   const [selected, setSelected] = useState(0);
   const co = COMPANIES[selected];
-
   return (
     <div className="space-y-5">
       {}
@@ -69,7 +65,6 @@ export default function DetailsScreen() {
           </button>
         )}
       </div>
-
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden xl:col-span-1">
@@ -92,7 +87,6 @@ export default function DetailsScreen() {
             </a>
           </div>
         </div>
-
         {}
         <div className="xl:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
@@ -111,7 +105,6 @@ export default function DetailsScreen() {
                     {href ?
                   <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
                   className="text-sm text-brand font-medium hover:underline break-all">{value}</a> :
-
                   <p className="text-sm text-gray-700 font-medium break-all">{value}</p>
                   }
                   </div>
@@ -119,7 +112,6 @@ export default function DetailsScreen() {
               )}
             </div>
           </div>
-
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
             <h3 className="font-semibold text-gray-800 mb-4">Company Details</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -138,5 +130,4 @@ export default function DetailsScreen() {
         </div>
       </div>
     </div>);
-
 }

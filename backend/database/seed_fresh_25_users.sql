@@ -12,11 +12,8 @@
 --   recruiter1/2@yopmail.com     → Test@123
 --   All 20 employees             → Employee@123
 -- =====================================================================
-
 USE hrms_db;
-
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 1. TRUNCATE ALL TRANSACTIONAL TABLES
 -- ─────────────────────────────────────────────────────────────────────
@@ -63,9 +60,7 @@ TRUNCATE TABLE users;
 TRUNCATE TABLE employee_bank_details;
 TRUNCATE TABLE employee_contact_info;
 TRUNCATE TABLE employees;
-
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 2. ENSURE ROLES EXIST
 -- ─────────────────────────────────────────────────────────────────────
@@ -76,7 +71,6 @@ INSERT INTO roles (role_id, role_name, description) VALUES
   (4, 'HR Manager',           'Leads recruitment team; approves offers'),
   (5, 'Recruiter',            'Manages assigned requirements and candidate pipeline')
 ON DUPLICATE KEY UPDATE role_name = VALUES(role_name), description = VALUES(description);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 3. ENSURE DEPARTMENTS EXIST
 -- ─────────────────────────────────────────────────────────────────────
@@ -90,7 +84,6 @@ INSERT INTO departments (department_id, department_name, company_id) VALUES
   (7, 'Operations',      1),
   (8, 'Recruitment',     1)
 ON DUPLICATE KEY UPDATE department_name = VALUES(department_name);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 4. ENSURE DESIGNATIONS EXIST
 -- ─────────────────────────────────────────────────────────────────────
@@ -116,14 +109,12 @@ INSERT INTO designations (designation_id, designation_name, department_id) VALUE
   (19, 'Recruiter',             8),
   (20, 'System Administrator',  2)
 ON DUPLICATE KEY UPDATE designation_name = VALUES(designation_name), department_id = VALUES(department_id);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 5. ENSURE OFFICE EXISTS
 -- ─────────────────────────────────────────────────────────────────────
 INSERT INTO offices (office_id, office_name, location, holiday_calendar) VALUES
   (1, 'HQ - Hyderabad', 'Hyderabad', 'India - Default')
 ON DUPLICATE KEY UPDATE office_name = VALUES(office_name);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 6. EMPLOYEES
 --    IDs 1   : Admin
@@ -134,7 +125,6 @@ ON DUPLICATE KEY UPDATE office_name = VALUES(office_name);
 --    IDs 20-25: 6 employees under Manager 3 (Ops/Sales/Marketing)
 --    IDs 26-27: Recruiters (report to HR Manager)
 -- ─────────────────────────────────────────────────────────────────────
-
 -- ── Admin ──────────────────────────────────────────────────────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,office_id,employee_type,employee_status,
@@ -142,7 +132,6 @@ INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,ge
 VALUES
 (1,'EMP001','Vikram','Nair','admin@yopmail.com','9000000001','Male',
  'System Administrator',2,20,1,'Full-Time','Active','general','2020-01-01',1200000,60000);
-
 -- ── Reporting Managers ─────────────────────────────────────────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,office_id,employee_type,employee_status,
@@ -154,7 +143,6 @@ VALUES
  'HR Manager',2,3,1,'Full-Time','Active','general','2019-06-01',1800000,85000),
 (4,'EMP004','Rajesh','Patel','manager3@yopmail.com','9000000004','Male',
  'Operations Manager',7,7,1,'Full-Time','Active','general','2020-02-01',2000000,95000);
-
 -- ── HR Manager / Recruiter Admin ───────────────────────────────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,reporting_to,office_id,employee_type,
@@ -162,7 +150,6 @@ INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,ge
 VALUES
 (5,'EMP005','Sneha','Reddy','hrmanager@yopmail.com','9000000005','Female',
  'HR Manager',8,18,1,1,'Full-Time','Active','general','2020-08-01',1800000,80000);
-
 -- ── 7 Employees under Arjun Kumar (Engineering) ───────────────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,reporting_to,office_id,employee_type,
@@ -175,7 +162,6 @@ VALUES
 (10,'EMP010','Aditya', 'Singh',  'aditya@yopmail.com', '9000000010','Male',  'DevOps Engineer',  1,8, 2,1,'Full-Time','Active','general','2021-11-01',1200000,55000),
 (11,'EMP011','Pooja',  'Mehta',  'pooja@yopmail.com',  '9000000011','Female','Senior Developer', 1,2, 2,1,'Full-Time','Active','general','2020-07-15',1500000,65000),
 (12,'EMP012','Manoj',  'Verma',  'manoj@yopmail.com',  '9000000012','Male',  'Tech Lead',        1,15,2,1,'Full-Time','Active','general','2019-10-01',1800000,80000);
-
 -- ── 7 Employees under Priya Sharma (HR/Finance) ───────────────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,reporting_to,office_id,employee_type,
@@ -188,7 +174,6 @@ VALUES
 (17,'EMP017','Lakshmi', 'Suresh', 'lakshmi@yopmail.com','9000000017','Female','HR Executive',   2,3, 3,1,'Full-Time','Active','general','2022-07-01',720000,32000),
 (18,'EMP018','Ravi',    'Shankar','ravi@yopmail.com',   '9000000018','Male',  'Finance Analyst', 3,16,3,1,'Full-Time','Active','general','2021-05-10',900000,40000),
 (19,'EMP019','Meena',   'Kumari', 'meena@yopmail.com',  '9000000019','Female','HR Executive',   2,3, 3,1,'Full-Time','Active','general','2023-01-10',720000,32000);
-
 -- ── 6 Employees under Rajesh Patel (Ops/Sales/Marketing) ──────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,reporting_to,office_id,employee_type,
@@ -200,7 +185,6 @@ VALUES
 (23,'EMP023','Neha',     'Kapoor',    'neha@yopmail.com',   '9000000023','Female','Sales Executive',   6,10,4,1,'Full-Time','Active','general','2022-05-01',900000,40000),
 (24,'EMP024','Venkat',   'Subramaniam','venkat@yopmail.com','9000000024','Male',  'Operations Executive',7,12,4,1,'Full-Time','Active','general','2022-09-01',900000,40000),
 (25,'EMP025','Pallavi',  'Singh',     'pallavi@yopmail.com','9000000025','Female','Marketing Analyst', 5,17,4,1,'Full-Time','Active','general','2023-03-01',840000,37000);
-
 -- ── 2 Recruiters (report to HR Manager Sneha Reddy) ───────────────
 INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,gender,
   emp_job_title,department_id,designation_id,reporting_to,office_id,employee_type,
@@ -208,7 +192,6 @@ INSERT INTO employees (employee_id,emp_code,first_name,last_name,email,mobile,ge
 VALUES
 (26,'EMP026','Sarah',  'Johnson', 'recruiter1@yopmail.com','9000000026','Female','Recruiter',8,19,5,1,'Full-Time','Active','general','2022-04-01',900000,40000),
 (27,'EMP027','Rahul',  'Mehta',   'recruiter2@yopmail.com','9000000027','Male',  'Recruiter',8,19,5,1,'Full-Time','Active','general','2023-02-01',840000,37000);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 7. USER ACCOUNTS
 --    Admin@123     hash: $2b$10$7d7tY9j89EC1LCT3j3JYG.qyTuXA/UguIhas0z2nX/TjdaI2mGWXq
@@ -249,7 +232,6 @@ INSERT INTO users (user_id,email,password_hash,role_id,employee_id,status) VALUE
 -- Recruiters
 (26, 'recruiter1@yopmail.com', '$2a$10$foYEOSL4CBGFcBKjoEwz4u8AiyjD/BqTYcWr71ZuFjS9VGeG21CTG', 5, 26, 'Active'),
 (27, 'recruiter2@yopmail.com', '$2a$10$foYEOSL4CBGFcBKjoEwz4u8AiyjD/BqTYcWr71ZuFjS9VGeG21CTG', 5, 27, 'Active');
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 8. LEAVE BALANCES (current year, all employees)
 -- ─────────────────────────────────────────────────────────────────────
@@ -259,7 +241,6 @@ FROM employees e
 CROSS JOIN leave_types lt
 WHERE lt.leave_type_id IN (1,2,3)
 ON DUPLICATE KEY UPDATE granted = lt.annual_quota, balance = lt.annual_quota;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 9. SALARY STRUCTURES (basic packages)
 -- ─────────────────────────────────────────────────────────────────────
@@ -301,7 +282,6 @@ VALUES
 -- Recruiters (emp 26–27)
 (26, '2022-04-01', 40000,16000, 8000,1250,1250, 4800, 4800,200,1500, 66500, 60000, 71300),
 (27, '2023-02-01', 37000,14800, 7400,1250,1250, 4440, 4440,200,1200, 61700, 55860, 66140);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 10. HOLIDAYS (current year)
 -- ─────────────────────────────────────────────────────────────────────
@@ -316,7 +296,6 @@ INSERT INTO holidays (holiday_name, holiday_date, holiday_calendar, is_restricte
   ('Diwali',            CONCAT(YEAR(CURDATE()),'-10-20'), 'India - Default', 0),
   ('Christmas',         CONCAT(YEAR(CURDATE()),'-12-25'), 'India - Default', 0)
 ON DUPLICATE KEY UPDATE holiday_name = VALUES(holiday_name);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- SUMMARY
 -- ─────────────────────────────────────────────────────────────────────
@@ -326,7 +305,6 @@ SELECT CONCAT(
   (SELECT COUNT(*) FROM users), ' users | ',
   (SELECT COUNT(*) FROM leave_balances), ' leave balance rows'
 ) AS result;
-
 SELECT
   r.role_name,
   COUNT(u.user_id) AS count

@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 // Reusable SVG ring gauge. Used by Payroll Health and Process Overview.
 export default function Donut({ percent = 0, size = 132, stroke = 13, color = "#16a34a", track = "#eef2f7", center, sub }) {
   const r = (size - stroke) / 2;

@@ -5,18 +5,15 @@ import {
   getMyTodayAttendance,
 } from "../../../../../api/attendance.api";
 import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
-
 export function useAttendance({ todayAtt, setTodayAtt }) {
   const checkIn = todayAtt?.check_in || todayAtt?.check_in_time || todayAtt?.checkIn || null;
   const checkOut = todayAtt?.check_out || todayAtt?.check_out_time || todayAtt?.checkOut || null;
-
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [elapsed, setElapsed] = useState("");
   const [checkinLocation, setCheckinLocation] = useState("");
   const [checkoutLocation, setCheckoutLocation] = useState("");
   const [onBreak, setOnBreak] = useState(false);
-
   useEffect(() => {
     if (!checkIn || checkOut) { setElapsed(""); return; }
     function tick() {
@@ -43,7 +40,6 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [checkIn, checkOut]);
-
   const workHours = useMemo(() => {
     if (!checkIn || !checkOut) return null;
     try {
@@ -59,12 +55,10 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       return `${Math.floor(diff / 3600)}h ${Math.floor((diff % 3600) / 60)}m`;
     } catch { return null; }
   }, [checkIn, checkOut]);
-
   const refreshAttendance = useCallback(
     () => getMyTodayAttendance().then(setTodayAtt).catch(() => {}),
     [setTodayAtt]
   );
-
   // Reverse geocode lat/lng → readable address via OpenStreetMap Nominatim (free, no key)
   const reverseGeocode = useCallback(async (lat, lng) => {
     try {
@@ -85,7 +79,6 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       return `${lat}, ${lng}`;
     }
   }, []);
-
   // Get GPS coordinates + human-readable location name
   const getLocation = useCallback(() => {
     return new Promise((resolve) => {
@@ -102,7 +95,6 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       );
     });
   }, [reverseGeocode]);
-
   const handleCheckIn = useCallback(async () => {
     setCheckingIn(true);
     try {
@@ -119,7 +111,6 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       setCheckingIn(false);
     }
   }, [refreshAttendance, getLocation, checkOut]);
-
   const handleCheckOut = useCallback(async () => {
     setCheckingOut(true);
     try {
@@ -135,6 +126,5 @@ export function useAttendance({ todayAtt, setTodayAtt }) {
       setCheckingOut(false);
     }
   }, [refreshAttendance, getLocation]);
-
   return { checkIn, checkOut, elapsed, workHours, checkingIn, checkingOut, handleCheckIn, handleCheckOut, checkinLocation, checkoutLocation, onBreak };
 }

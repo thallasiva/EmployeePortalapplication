@@ -4,51 +4,40 @@
 -- MySQL 8 does not support "ADD COLUMN IF NOT EXISTS" (migrations 027/029 used it and failed).
 -- Run with: node src/database/runSql.js migration_053_schema_repairs.sql
 -- =============================================================
-
 -- 1. users.enabled / users.password exist in some databases (added outside these migrations)
 --    as NOT NULL without defaults, so every INSERT from sp_create_employee / sp_register_user
 --    failed with "Field 'enabled' doesn't have a default value". The app uses password_hash.
-
 SET @exists := (SELECT COUNT(*) > 0 FROM information_schema.COLUMNS
                  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'enabled');
 SET @sql := IF(@exists, 'ALTER TABLE users MODIFY enabled BIT(1) NOT NULL DEFAULT b''1''', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
-
 SET @exists := (SELECT COUNT(*) > 0 FROM information_schema.COLUMNS
                  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'password');
 SET @sql := IF(@exists, 'ALTER TABLE users MODIFY password VARCHAR(255) NULL DEFAULT NULL', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
 -- 2. Appraisal rollout / disable columns from migrations 027 and 029.
-
 SET @missing := (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
                   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'appraisal_cycles' AND COLUMN_NAME = 'rollout_type');
 SET @sql := IF(@missing, 'ALTER TABLE appraisal_cycles ADD COLUMN rollout_type ENUM(''all'',''selected'') NOT NULL DEFAULT ''all''', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
-
 SET @missing := (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
                   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'appraisal_cycles' AND COLUMN_NAME = 'disabled_at');
 SET @sql := IF(@missing, 'ALTER TABLE appraisal_cycles ADD COLUMN disabled_at DATETIME DEFAULT NULL', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
-
 SET @missing := (SELECT COUNT(*) = 0 FROM information_schema.COLUMNS
                   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'appraisal_cycles' AND COLUMN_NAME = 'disabled_by');
 SET @sql := IF(@missing, 'ALTER TABLE appraisal_cycles ADD COLUMN disabled_by INT UNSIGNED DEFAULT NULL', 'SELECT 1');
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
-
 -- 3. Regenerating payslips outside a payroll run (generate-all passes a NULL run id) must not
 --    unlink them from their run — bank export joins payslips on payroll_run_id.
 DROP PROCEDURE IF EXISTS sp_generate_payslip;
@@ -73,7 +62,6 @@ BEGIN
   DECLARE v_lop_days DECIMAL(4,1) DEFAULT 0;
   DECLARE v_paid_days DECIMAL(4,1) DEFAULT 0;
   DECLARE v_per_day DECIMAL(12,2) DEFAULT 0;
-
   SELECT COALESCE(
     (SELECT esa.ctc_annual / 12
        FROM employee_salary_assignments esa
@@ -88,12 +76,10 @@ BEGIN
   INTO v_monthly_salary
   FROM employees e
   WHERE e.employee_id = p_employee_id;
-
   SET v_basic = ROUND(v_monthly_salary * 0.50, 2);
   SET v_hra = ROUND(v_monthly_salary * 0.20, 2);
   SET v_allowances = ROUND(v_monthly_salary * 0.30, 2);
   SET v_deductions = ROUND(LEAST(v_basic, 15000) * 0.12, 2);
-
   SELECT COUNT(*) INTO v_working_days
   FROM (
     SELECT DATE_ADD(STR_TO_DATE(CONCAT(p_year, '-', p_month, '-01'), '%Y-%m-%d'), INTERVAL seq.n DAY) AS work_date
@@ -111,7 +97,6 @@ BEGIN
       WHERE h.holiday_date = dates.work_date
         AND (h.holiday_calendar = e.holiday_calendar OR h.holiday_calendar IS NULL)
     );
-
   SELECT COALESCE(SUM(CASE WHEN a.status = 'half_day' THEN 0.5 ELSE 1 END), 0)
     INTO v_lop_days
     FROM attendance a
@@ -125,13 +110,11 @@ BEGIN
           AND lr.status = 'Approved'
           AND a.attendance_date BETWEEN lr.from_date AND lr.to_date
      );
-
   SET v_paid_days = GREATEST(v_working_days - v_lop_days, 0);
   SET v_per_day = IF(v_working_days > 0, v_monthly_salary / v_working_days, 0);
   SET v_gross = ROUND(v_per_day * v_paid_days, 2);
   SET v_net = GREATEST(ROUND(v_gross - v_deductions, 2), 0);
   SET v_ctc = ROUND(v_monthly_salary * 12, 2);
-
   INSERT INTO payslips (
     payroll_run_id, employee_id, month, year, basic, hra, allowances,
     gross_earnings, ctc, deductions, net_pay, working_days, paid_days, lop_days, status
@@ -153,11 +136,9 @@ BEGIN
     lop_days = v_lop_days,
     status = 'Generated',
     generated_on = NOW();
-
   SELECT payslip_id INTO p_payslip_id
     FROM payslips
    WHERE employee_id = p_employee_id AND month = p_month AND year = p_year;
 END $$
 DELIMITER ;
-
 SELECT 'migration_053_schema_repairs done' AS status;

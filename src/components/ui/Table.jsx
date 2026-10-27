@@ -2,7 +2,6 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import EmptyState from "./EmptyState";
 import LoadingSpinner from "./LoadingSpinner";
-
 /* ─── SortIcon ────────────────────────────────────────────────────────────── */
 const SortIcon = memo(function SortIcon({ direction })
 {
@@ -10,7 +9,6 @@ const SortIcon = memo(function SortIcon({ direction })
   if (direction === "desc") return <ChevronDown size={12} />;
   return <ChevronsUpDown size={12} className="opacity-40" />;
 });
-
 /* ─── Table ───────────────────────────────────────────────────────────────── */
 /**
  * Generic, sortable, accessible data table.
@@ -49,7 +47,6 @@ const Table = memo(function Table({
 {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
-
   const handleSort = useCallback((key) =>
   {
     setSortKey((prev) =>
@@ -63,7 +60,6 @@ const Table = memo(function Table({
       return key;
     });
   }, []);
-
   const sorted = useMemo(() =>
   {
     if (!sortKey) return data;
@@ -77,15 +73,11 @@ const Table = memo(function Table({
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [data, sortKey, sortDir]);
-
   const clickable = typeof onRowClick === "function";
-
   const thClass = (col) =>
     `px-3 py-2.5 text-left text-[11px] font-bold text-gray-500 tracking-wide uppercase whitespace-nowrap select-none ${col.sortable ? "cursor-pointer hover:text-gray-700" : ""} ${col.headerClass ?? ""}`;
-
   const tdClass = (col) =>
     `px-3 py-2.5 text-[13px] text-gray-700 ${col.align === "center" ? "text-center" : col.align === "right" ? "text-right" : ""} ${col.className ?? ""}`;
-
   return (
     <div className={`overflow-x-auto ${className}`}>
       <table className="w-full border-collapse min-w-[600px]" role="table">
@@ -106,7 +98,6 @@ const Table = memo(function Table({
             ))}
           </tr>
         </thead>
-
         <tbody>
           {loading ? (
             <tr>
@@ -143,5 +134,4 @@ const Table = memo(function Table({
     </div>
   );
 });
-
 export default Table;

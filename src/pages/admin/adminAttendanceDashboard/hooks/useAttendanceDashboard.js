@@ -5,20 +5,17 @@ import { enrichAdminEmployee } from "../../../../utils/attendanceRegularization"
 import { applyAttendanceRegularization } from "../../../../utils/attendanceRegularization";
 import { DEFAULT_SUMMARY } from "../constants";
 import { mapAttendanceRow } from "../utils";
-
 export function useAttendanceDashboard() {
   const [employees, setEmployees] = useState([]);
   const [summary, setSummary] = useState(DEFAULT_SUMMARY);
   const [loading, setLoading] = useState(true);
   const [employeeTab, setEmployeeTab] = useState("all");
   const lateSectionRef = useRef(null);
-
   useEffect(() => {
     const todayStr = toISODateString(new Date());
     const monthStart = toISODateString(
       new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     );
-
     setLoading(true);
     Promise.all([
       getAttendanceDashboard(todayStr).catch(() => null),
@@ -44,7 +41,6 @@ export function useAttendanceDashboard() {
       );
     }).finally(() => setLoading(false));
   }, []);
-
   const statusChart = useMemo(
     () => [
       { label: "Present", value: summary.presentToday, color: "#22c55e" },
@@ -54,18 +50,15 @@ export function useAttendanceDashboard() {
     ],
     [summary]
   );
-
   const handleRegularize = useCallback((id) => {
     setEmployees((prev) =>
       prev.map((emp) => (emp.id === id ? applyAttendanceRegularization(emp) : emp))
     );
   }, []);
-
   const lateEmployees = useMemo(
     () => employees.filter((e) => e.status === "late"),
     [employees]
   );
-
   const tabCounts = useMemo(
     () => ({
       all: employees.length,
@@ -76,12 +69,10 @@ export function useAttendanceDashboard() {
     }),
     [employees]
   );
-
   const filteredEmployees = useMemo(() => {
     if (employeeTab === "all") return employees;
     return employees.filter((e) => e.status === employeeTab);
   }, [employeeTab, employees]);
-
   return {
     employees, summary, loading,
     lateSectionRef, statusChart,

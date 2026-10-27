@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const SkeletonCard = React.memo(function SkeletonCard() {
   return (
     <div className={cssClass({
@@ -23,5 +22,4 @@ const SkeletonCard = React.memo(function SkeletonCard() {
     </div>
   );
 });
-
 export default SkeletonCard;

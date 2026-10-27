@@ -3,9 +3,7 @@
 -- Run in MySQL Workbench against hrms_db
 -- ============================================================
 USE hrms_db;
-
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -28,5 +26,4 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 SELECT 'Patch complete — sp_joining_verify_token now returns candidate_mobile' AS status;

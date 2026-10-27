@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { captureError } from "../utils/sentry";
 import { getErrorMessage } from "../api/client";
-
 /**
  * Lightweight hook for one-shot async operations (mutations, submit, delete, etc.).
  * For data-fetching with auto-run on mount, use `useApiQuery` instead.
@@ -27,7 +26,6 @@ import { getErrorMessage } from "../api/client";
 export function useAsync() {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
-
   const run = useCallback(async (asyncFn, { onSuccess, onError } = {}) => {
     setLoading(true);
     setError(null);
@@ -45,11 +43,9 @@ export function useAsync() {
       setLoading(false);
     }
   }, []);
-
   const reset = useCallback(() => {
     setLoading(false);
     setError(null);
   }, []);
-
   return { loading, error, run, reset };
 }

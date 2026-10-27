@@ -1,6 +1,5 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
-
 async function run() {
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST, port: Number(process.env.DB_PORT || 3306),
@@ -8,28 +7,23 @@ async function run() {
     database: process.env.DB_NAME, multipleStatements: false,
   });
   console.log('Connected to', process.env.DB_NAME);
-
   // Add columns if missing
   const [cols] = await conn.query(`
     SELECT COLUMN_NAME FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'rec_interviews'
     AND COLUMN_NAME IN ('duration_minutes','candidate_type')`, [process.env.DB_NAME]);
   const existing = cols.map(c => c.COLUMN_NAME);
-
   if (!existing.includes('duration_minutes')) {
     await conn.query(`ALTER TABLE rec_interviews ADD COLUMN duration_minutes INT NULL DEFAULT NULL AFTER interview_time`);
     console.log('✓ Added duration_minutes column');
   } else { console.log('- duration_minutes already exists'); }
-
   if (!existing.includes('candidate_type')) {
     await conn.query(`ALTER TABLE rec_interviews ADD COLUMN candidate_type ENUM('Internal','External') NOT NULL DEFAULT 'External' AFTER interviewer`);
     console.log('✓ Added candidate_type column');
   } else { console.log('- candidate_type already exists'); }
-
   // Drop and recreate procedure
   await conn.query(`DROP PROCEDURE IF EXISTS sp_rec_schedule_interview`);
   console.log('✓ Dropped old procedure');
-
   await conn.query(`
 CREATE PROCEDURE sp_rec_schedule_interview(
   IN  p_candidate_id      INT,
@@ -96,10 +90,8 @@ BEGIN
 
   CALL sp_rec_get_interview(p_interview_id);
 END`);
-
   console.log('✓ Recreated sp_rec_schedule_interview with 15 IN + 2 OUT params');
   await conn.end();
   console.log('Done.');
 }
-
 run().catch(err => { console.error('✗', err.message); process.exit(1); });

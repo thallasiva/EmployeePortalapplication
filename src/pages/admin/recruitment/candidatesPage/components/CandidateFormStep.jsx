@@ -3,7 +3,6 @@ import { AlertCircle, Sparkles } from "lucide-react";
 import { Field, Input, Select, TwoColGrid } from "../../shared";
 import { GENDERS } from "../../mockData";
 import ScorePanel from "./ScorePanel";
-
 const CandidateFormStep = React.memo(function CandidateFormStep({
   form, jobs, recruiters, isRecruiter,
   parsed, parseErr, matchScore, autoFilled, missing,
@@ -13,13 +12,11 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
     if (!autoFilled.includes(field)) return null;
     return <div className="text-[10px] text-[#f18200] mt-0.5 font-semibold inline-flex items-center gap-1"><Sparkles size={10} /> extracted from resume</div>;
   }
-
   function afWrap(field, children) {
     return autoFilled.includes(field)
       ? <div className="rounded-lg outline outline-2 outline-[#f18200] outline-offset-1">{children}</div>
       : <>{children}</>;
   }
-
   return (
     <div>
       {parseErr &&
@@ -28,7 +25,6 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           <div><strong>Parse error:</strong> {parseErr} — please fill in the fields manually.</div>
         </div>
       }
-
       {!parseErr && parsed ? (
         <div className="mb-3.5 px-3.5 py-2.5 bg-green-50 rounded-lg border-l-[3px] border-l-green-600 text-sm text-green-800">
           Resume parsed ({parsed.parsedBy === "openai" ? "AI-powered" : "keyword match"}) — fields highlighted in orange were auto-extracted. Review and fill any missing fields.
@@ -38,24 +34,20 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           Fields marked <strong>*</strong> are mandatory.
         </div>
       ) : null}
-
       {missing.length > 0 &&
         <div className="mb-3.5 px-3.5 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex gap-2 items-start">
           <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
           <div><strong>Missing required fields:</strong> {missing.join(", ")}</div>
         </div>
       }
-
       {matchScore &&
         <div className="mb-4"><ScorePanel score={matchScore} /></div>
       }
-
       <Field label="Job / Position" required>
         <Select name="jobReqId" value={form.jobReqId} onChange={onFormChange}
           options={jobs.map((j) => ({ value: String(j.job_req_id), label: j.job_req_code + " — " + j.title + " (" + j.client + ")" }))}
           placeholder="Select job requirement" />
       </Field>
-
       {!isRecruiter &&
         <Field label="Assign Recruiter">
           <Select name="recruiterId" value={form.recruiterId} onChange={onFormChange}
@@ -63,7 +55,6 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
             placeholder="Select recruiter" />
         </Field>
       }
-
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2.5 mt-1">Personal Details</div>
       <TwoColGrid>
         <Field label="Full Name" required>
@@ -82,7 +73,6 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           <Select name="gender" value={form.gender} onChange={onFormChange} options={GENDERS} placeholder="Select gender" />
         </Field>
       </TwoColGrid>
-
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2.5">Experience & CTC</div>
       <TwoColGrid>
         <Field label="Total Experience (Yrs)" required>
@@ -100,7 +90,6 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           <Input name="expectedCtc" type="number" value={form.expectedCtc} onChange={onFormChange} placeholder="Annual CTC in rupees" />
         </Field>
       </TwoColGrid>
-
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2.5">Notice Period</div>
       <TwoColGrid>
         <Field label="Serving Notice Period?">
@@ -115,7 +104,6 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           </Field>
         }
       </TwoColGrid>
-
       <Field label="Skill Set (comma-separated)" required>
         {afWrap("skillSet", <Input name="skillSet" value={form.skillSet} onChange={onFormChange} placeholder="e.g. Java, Spring Boot, MySQL" />)}
         <AutoHint field="skillSet" />
@@ -125,7 +113,6 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           options={["Naukri.com", "LinkedIn", "Referral", "Indeed", "Monster", "Direct", "Other"]}
           placeholder="Select source" />
       </Field>
-
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2.5">Address</div>
       <TwoColGrid>
         <Field label="PIN Code"><Input name="pinCode" value={form.pinCode} onChange={onFormChange} placeholder="6-digit PIN" /></Field>
@@ -136,5 +123,4 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
     </div>
   );
 });
-
 export default CandidateFormStep;

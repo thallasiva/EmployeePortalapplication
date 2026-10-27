@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Server, Eye, EyeOff, CheckCircle2, XCircle, RefreshCw, TestTube2, Save, Mail, Loader2 } from "lucide-react";
 import { Btn, Input, Select, Toggle, SectionCard, Toast } from "../components/SharedUI";
 import { smtpApi } from "../../../../../api/settings.api";
-
 const DEFAULTS = {
   host:"smtp.gmail.com", port:"587", enc:"TLS",
   senderName:"", senderEmail:"", replyTo:"",
@@ -10,7 +9,6 @@ const DEFAULTS = {
   dailyLimit:"5000", retry:"3", timeout:"30",
   autoRetry:true, queue:true,
 };
-
 function validate(f) {
   const err = {};
   if (!f.host?.trim())              err.host = "SMTP host is required";
@@ -19,7 +17,6 @@ function validate(f) {
   if (!f.username?.trim())          err.username = "Username is required";
   return err;
 }
-
 export default function SmtpSettings() {
   const [form, setForm] = useState(DEFAULTS);
   const [errors, setErrors] = useState({});
@@ -29,12 +26,10 @@ export default function SmtpSettings() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [lastTested, setLastTested] = useState(null);
-
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   }, []);
-
   /* Load from API */
   useEffect(() => {
     setLoading(true);
@@ -43,9 +38,7 @@ export default function SmtpSettings() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
   const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(p => ({ ...p, [k]: "" })); };
-
   const handleTest = async () => {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
@@ -60,7 +53,6 @@ export default function SmtpSettings() {
       showToast("SMTP connection failed. Check settings.", "error");
     }
   };
-
   const handleSave = async () => {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
@@ -72,20 +64,16 @@ export default function SmtpSettings() {
       showToast("Save failed. Please try again.", "error");
     } finally { setSaving(false); }
   };
-
   const connected = testState === "success";
   const failed    = testState === "fail";
-
   if (loading) return (
     <div className="flex items-center justify-center h-40">
       <Loader2 size={26} className="animate-spin text-[#f18200]" />
     </div>
   );
-
   return (
     <div className="space-y-5">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-
       {/* Connection status bar */}
       <div className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13px] font-medium ${
         connected ? "bg-green-50 border-green-200 text-green-700"
@@ -95,7 +83,6 @@ export default function SmtpSettings() {
         {connected ? <CheckCircle2 size={16} /> : failed ? <XCircle size={16} /> : <Server size={16} />}
         {connected ? `Connected · Last tested ${lastTested}` : failed ? "Connection failed" : lastTested ? `Last tested ${lastTested}` : "Not yet tested"}
       </div>
-
       <SectionCard icon={<Server size={16} color="#f18200" />} label="Server Configuration">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input label="SMTP Host" placeholder="smtp.gmail.com" value={form.host}
@@ -106,7 +93,6 @@ export default function SmtpSettings() {
             options={["TLS","SSL","STARTTLS","None"]} />
         </div>
       </SectionCard>
-
       <SectionCard icon={<Mail size={16} color="#f18200" />} label="Sender Details">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input label="Sender Name" placeholder="HR Portal" value={form.senderName}
@@ -117,7 +103,6 @@ export default function SmtpSettings() {
             onChange={e => set("replyTo", e.target.value)} />
         </div>
       </SectionCard>
-
       <SectionCard icon={<Server size={16} color="#f18200" />} label="Authentication">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Username" placeholder="username@company.com" value={form.username}
@@ -132,7 +117,6 @@ export default function SmtpSettings() {
           </div>
         </div>
       </SectionCard>
-
       <SectionCard icon={<RefreshCw size={16} color="#f18200" />} label="Delivery Settings">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Input label="Daily Email Limit" value={form.dailyLimit}
@@ -153,7 +137,6 @@ export default function SmtpSettings() {
           </label>
         </div>
       </SectionCard>
-
       <div className="flex flex-wrap gap-3 justify-end pt-1">
         <Btn variant="outline" icon={<TestTube2 size={14} />} onClick={handleTest}
           disabled={testState === "testing"}>

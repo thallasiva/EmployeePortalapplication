@@ -11,26 +11,22 @@ const { query, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { computeStructure } = require('../utils/formulaEngine');
 const salaryAssignmentSvc = require('./salaryAssignment.service');
-
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 // No schedule on file: Monday–Friday (attendance data shows Saturday is not worked).
 const DEFAULT_WORK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri'];
 const PF_WAGE_CAP = 15000;
 const ESI_GROSS_LIMIT = 21000;
-
 const pad = (n) => String(n).padStart(2, '0');
 const ymd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
 const toDateStr = (v) => (v ? String(v).slice(0, 10) : null);
 const todayIST = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-
 function parseWorkDays(raw) {
   let days = raw;
   if (typeof raw === 'string') { try { days = JSON.parse(raw); } catch { days = null; } }
   if (!Array.isArray(days) || !days.length) return DEFAULT_WORK_DAYS;
   return days.map((d) => String(d).slice(0, 3).toLowerCase()).filter((d) => DAY_KEYS.includes(d));
 }
-
 // A leave covering a single half day is worth 0.5; everything else is a full day per date.
 function leaveDayValue(leave, date) {
   const half = (s) => s === 'First Half' || s === 'Second Half';
@@ -39,7 +35,6 @@ function leaveDayValue(leave, date) {
   if (date === leave.to_date && half(leave.to_session)) return 0.5;
   return 1;
 }
-
 /** Monthly earnings/deductions split for one employee, before attendance proration. */
 async function salaryBasis(emp) {
   try {
@@ -56,7 +51,6 @@ async function salaryBasis(emp) {
       }
     }
   } catch { /* fall through to base salary */ }
-
   const monthly = Number(emp.base_salary) || 0;
   if (monthly <= 0) return null;
   // No salary structure: split the monthly base salary 50 / 20 / 30.
@@ -72,14 +66,12 @@ async function salaryBasis(emp) {
     fixedDeductions: [],
   };
 }
-
 async function loadMonth(month, year, employeeIds) {
   const start = ymd(year, month, 1);
   const lastDay = new Date(year, month, 0).getDate();
   const end = ymd(year, month, lastDay);
   const idFilter = employeeIds?.length ? 'AND e.employee_id IN (?)' : '';
   const idParams = employeeIds?.length ? [employeeIds] : [];
-
   const employees = await query(
     `SELECT e.employee_id, e.emp_code, TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS name,
             e.employee_status, e.emp_joining_date, e.emp_exit_date, e.holiday_calendar, e.shift, e.base_salary,
@@ -99,7 +91,6 @@ async function loadMonth(month, year, employeeIds) {
   );
   const ids = employees.map((e) => e.employee_id);
   if (!ids.length) return { start, end, lastDay, employees, holidays: [], attendance: [], leaves: [], pendingRegs: [], inputs: [], adjustments: [] };
-
   const [holidays, attendance, leaves, pendingRegs, inputs, adjustments] = await Promise.all([
     query(`SELECT holiday_date, holiday_calendar, holiday_name, shift FROM holidays
             WHERE holiday_date BETWEEN ? AND ? AND COALESCE(is_restricted, 0) = 0`, [start, end]),
@@ -120,7 +111,6 @@ async function loadMonth(month, year, employeeIds) {
   ]);
   return { start, end, lastDay, employees, holidays, attendance, leaves, pendingRegs, inputs, adjustments };
 }
-
 /** Per-day breakdown + totals for one employee. */
 function classifyDays(emp, ctx, month, year) {
   const today = todayIST();
@@ -137,19 +127,16 @@ function classifyDays(emp, ctx, month, year) {
   const myLeaves = ctx.leaves.filter((l) => l.employee_id === emp.employee_id)
     .map((l) => ({ ...l, from_date: toDateStr(l.from_date), to_date: toDateStr(l.to_date) }));
   const pendingReg = new Set(ctx.pendingRegs.filter((r) => r.employee_id === emp.employee_id).map((r) => toDateStr(r.attendance_date)));
-
   const t = { calendarDays: ctx.lastDay, monthWorkingDays: 0, employedWorkingDays: 0, present: 0, late: 0, halfDays: 0,
     paidLeave: 0, unpaidLeave: 0, absent: 0, pendingLeave: 0, pendingRegularization: 0, upcoming: 0,
     holidays: 0, weeklyOffs: 0, workedOnOffDays: 0, notEmployed: 0 };
   const days = [];
-
   for (let d = 1; d <= ctx.lastDay; d += 1) {
     const date = ymd(year, month, d);
     const dow = DAY_KEYS[new Date(year, month - 1, d).getDay()];
     const a = att.get(date);
     const isWorkDay = workDays.includes(dow) && !holidayOn.has(date);
     if (isWorkDay) t.monthWorkingDays += 1;
-
     if ((joining && date < joining) || (exit && date > exit)) {
       t.notEmployed += 1;
       days.push({ date, type: 'not_employed', lop: 0 });
@@ -162,12 +149,10 @@ function classifyDays(emp, ctx, month, year) {
       days.push({ date, type, label: holidayOn.get(date) || null, worked: Boolean(a && ['present', 'late', 'half_day'].includes(a.status)), lop: 0 });
       continue;
     }
-
     t.employedWorkingDays += 1;
     const approved = myLeaves.find((l) => l.status === 'Approved' && date >= l.from_date && date <= l.to_date);
     const pending = myLeaves.find((l) => l.status === 'Pending' && date >= l.from_date && date <= l.to_date);
     let entry;
-
     if (a && (a.status === 'present' || a.status === 'late')) {
       t.present += 1;
       if (a.status === 'late' || Number(a.late_by_minutes) > 0) t.late += 1;
@@ -205,19 +190,16 @@ function classifyDays(emp, ctx, month, year) {
   }
   return { totals: t, days, workDays };
 }
-
 /** Builds the full row (attendance + salary) for one employee. */
 async function buildEmployeeRow(emp, ctx, month, year) {
   const { totals: t, days, workDays } = classifyDays(emp, ctx, month, year);
   const adj = ctx.adjustments.find((a) => a.employee_id === emp.employee_id) || null;
   const inputs = Object.fromEntries(ctx.inputs.filter((i) => i.employee_id === emp.employee_id).map((i) => [i.input_type, Number(i.amount)]));
-
   const computedLop = round2(days.reduce((s, d) => s + (d.lop || 0), 0));
   const lopAdjustment = Number(adj?.lop_adjustment || 0);
   const lopDays = Math.min(t.employedWorkingDays, Math.max(0, round2(computedLop + lopAdjustment)));
   const paidDays = round2(t.employedWorkingDays - lopDays);
   const payFactor = t.monthWorkingDays > 0 ? paidDays / t.monthWorkingDays : 0;
-
   const basis = await salaryBasis(emp);
   const flags = [];
   if (!basis) flags.push({ code: 'NO_SALARY', label: 'No salary structure or base salary' });
@@ -229,7 +211,6 @@ async function buildEmployeeRow(emp, ctx, month, year) {
   if (adj?.hold_salary) flags.push({ code: 'ON_HOLD', label: `Salary on hold: ${adj.reason}` });
   if (emp.emp_exit_date && toDateStr(emp.emp_exit_date) <= ctx.end) flags.push({ code: 'EXITING', label: `Last working day ${toDateStr(emp.emp_exit_date)}` });
   if (emp.emp_joining_date && toDateStr(emp.emp_joining_date) >= ctx.start) flags.push({ code: 'NEW_JOINER', label: `Joined ${toDateStr(emp.emp_joining_date)}` });
-
   let pay = null;
   if (basis) {
     const earnings = basis.earnings.map((e) => ({ ...e, amount: Math.round(e.monthly * payFactor) }));
@@ -238,7 +219,6 @@ async function buildEmployeeRow(emp, ctx, month, year) {
     const gross = earnings.reduce((s, e) => s + e.amount, 0);
     const basic = earnings.find((e) => /^BASIC/i.test(e.code || '') || /^basic/i.test(e.label))?.amount || 0;
     const hra = earnings.find((e) => /HRA/i.test(e.code || '') || /house rent|hra/i.test(e.label))?.amount || 0;
-
     const deductions = [];
     const pf = Math.round(Math.min(basic, PF_WAGE_CAP) * 0.12);
     if (pf > 0) deductions.push({ code: 'PF', label: 'Provident Fund (12%)', amount: pf });
@@ -248,7 +228,6 @@ async function buildEmployeeRow(emp, ctx, month, year) {
     if (pt) deductions.push({ code: 'PT', label: 'Professional Tax', amount: pt });
     basis.fixedDeductions.forEach((d) => deductions.push({ code: d.code, label: d.label, amount: Math.round(d.monthly) }));
     const totalDeductions = deductions.reduce((s, d) => s + d.amount, 0);
-
     pay = {
       source: basis.source,
       structureName: basis.structureName,
@@ -262,7 +241,6 @@ async function buildEmployeeRow(emp, ctx, month, year) {
       overtime: inputs.OVERTIME || 0, arrears: inputs.ARREARS || 0,
     };
   }
-
   return {
     employee_id: emp.employee_id,
     emp_code: emp.emp_code,
@@ -280,12 +258,10 @@ async function buildEmployeeRow(emp, ctx, month, year) {
     days,
   };
 }
-
 async function runStatus(month, year) {
   const rows = await query('SELECT payroll_run_id, status, review_status, is_locked, total_amount, processed_on FROM payroll_runs WHERE month = ? AND year = ?', [month, year]);
   return rows[0] || null;
 }
-
 async function getMonthSummary({ month, year, employeeIds = null, includeDays = true }) {
   const m = Number(month), y = Number(year);
   if (!(m >= 1 && m <= 12) || !(y >= 2000 && y <= 2100)) throw ApiError.badRequest('Valid month and year are required');
@@ -311,7 +287,6 @@ async function getMonthSummary({ month, year, employeeIds = null, includeDays = 
   };
   return { month: m, year: y, period: { start: ctx.start, end: ctx.end }, run: await runStatus(m, y), totals, employees: rows };
 }
-
 async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSalary, reason, userId }) {
   const run = await runStatus(month, year);
   if (run?.is_locked) throw ApiError.forbidden('Payroll for this month is locked. Unlock it before changing attendance adjustments.');
@@ -328,7 +303,6 @@ async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSala
   );
   return (await query('SELECT * FROM payroll_attendance_adjustments WHERE employee_id = ? AND month = ? AND year = ?', [employeeId, month, year]))[0];
 }
-
 /**
  * Process payroll for the month from attendance: one payslip per payable employee.
  * Held employees get an "On Hold" payslip; employees without salary are skipped.
@@ -337,11 +311,9 @@ async function processPayroll({ month, year, processedBy }) {
   const run = await runStatus(month, year);
   if (run?.is_locked) throw ApiError.forbidden('Payroll for this month is locked. Unlock it to re-process.');
   if (run?.review_status === 'APPROVED') throw ApiError.conflict('Payroll for this month is already approved.');
-
   const summary = await getMonthSummary({ month, year });
   const toPay = summary.employees.filter((r) => r.pay);
   const skipped = summary.employees.filter((r) => !r.pay).map((r) => ({ employee_id: r.employee_id, name: r.name, reason: 'No salary structure or base salary' }));
-
   const runId = await withTransaction(async (conn) => {
     await conn.query(
       `INSERT INTO payroll_runs (month, year, status, processed_by, processed_on, review_status)
@@ -352,7 +324,6 @@ async function processPayroll({ month, year, processedBy }) {
     );
     const [[runRow]] = await conn.query('SELECT payroll_run_id FROM payroll_runs WHERE month = ? AND year = ?', [month, year]);
     const id = runRow.payroll_run_id;
-
     for (const r of toPay) {
       const a = r.attendance;
       const breakdown = {
@@ -384,7 +355,6 @@ async function processPayroll({ month, year, processedBy }) {
           r.on_hold ? 'On Hold' : 'Generated', JSON.stringify(breakdown)]
       );
     }
-
     if (toPay.length) {
       await conn.query(
         `UPDATE payroll_inputs SET status = 'CONSUMED'
@@ -400,7 +370,6 @@ async function processPayroll({ month, year, processedBy }) {
     );
     return id;
   });
-
   return {
     payroll_run_id: runId,
     processed: toPay.filter((r) => !r.on_hold).length,
@@ -409,5 +378,4 @@ async function processPayroll({ month, year, processedBy }) {
     totals: summary.totals,
   };
 }
-
 module.exports = { getMonthSummary, saveAdjustment, processPayroll, parseWorkDays, DEFAULT_WORK_DAYS };

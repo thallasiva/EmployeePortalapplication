@@ -1,6 +1,5 @@
 import React from "react";
 import { History } from "lucide-react";
-
 const HistoryTab = React.memo(function HistoryTab() {
   return (
     <div className="flex flex-col items-center justify-center h-full py-24 text-gray-400">
@@ -12,5 +11,4 @@ const HistoryTab = React.memo(function HistoryTab() {
     </div>
   );
 });
-
 export default HistoryTab;

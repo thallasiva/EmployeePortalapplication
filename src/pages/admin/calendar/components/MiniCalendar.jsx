@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MONTHS } from '../constants/eventTypes';
 import { buildMonthGrid } from '../utils/calendarUtils';
-
 const MiniCalendar = React.memo(function MiniCalendar({
   year,
   month,
@@ -16,7 +15,6 @@ const MiniCalendar = React.memo(function MiniCalendar({
   const todayDay = today.getDate();
   const isCurrentMonthView =
     today.getFullYear() === year && today.getMonth() + 1 === month;
-
   const daysWithEvents = useMemo(() => {
     const days = new Set();
     Object.keys(filteredMap).forEach((key) => {
@@ -27,7 +25,6 @@ const MiniCalendar = React.memo(function MiniCalendar({
     });
     return days;
   }, [filteredMap, year, month]);
-
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
       <div className="flex items-center justify-between mb-3">
@@ -82,5 +79,4 @@ const MiniCalendar = React.memo(function MiniCalendar({
     </div>
   );
 });
-
 export default MiniCalendar;

@@ -2,17 +2,12 @@ import React, { useState } from "react";
 import { RM_TEAM_MEMBERS, SHIFT_LABEL } from "../../data/managerData";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
-
 const MONTHS = ["January", "February", "March", "April", "May", "June",
 "July", "August", "September", "October", "November", "December"];
-
 const APPRAISAL_PERIOD = "FY 2025 – 2026";
-
 function getInitials(name) {
   return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
-
-
 const APPRAISAL_ATTENDANCE = [
 {
   id: 101,
@@ -86,15 +81,12 @@ const APPRAISAL_ATTENDANCE = [
   lastCheckOut: "--:--",
   status: "absent"
 }];
-
-
 const STATUS_BADGE = {
   present: "approved",
   absent: "rejected",
   late: "pending"
 };
 const STATUS_LABEL = { present: "Present", absent: "Absent", late: "Late" };
-
 function RateBadge({ rate }) {
   const color =
   rate >= 95 ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
@@ -104,13 +96,10 @@ function RateBadge({ rate }) {
     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${color}`}>
       {rate}%
     </span>);
-
 }
-
 export default function TeamAttendanceAppraisal() {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
-
   const summary = {
     totalMembers: APPRAISAL_ATTENDANCE.length,
     avgAttendance: Math.round(
@@ -119,11 +108,9 @@ export default function TeamAttendanceAppraisal() {
     fullPresent: APPRAISAL_ATTENDANCE.filter((e) => e.attendanceRate >= 95).length,
     needsAttention: APPRAISAL_ATTENDANCE.filter((e) => e.attendanceRate < 85).length
   };
-
   return (
     <div className="admin-dash space-y-4">
       <ManagerTabs />
-
       {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -138,13 +125,11 @@ export default function TeamAttendanceAppraisal() {
           className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-brand focus:outline-none"
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(Number(e.target.value))}>
-
           {MONTHS.map((m, i) =>
           <option key={m} value={i}>{m} {now.getFullYear()}</option>
           )}
         </select>
       </div>
-
       {}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
@@ -159,7 +144,6 @@ export default function TeamAttendanceAppraisal() {
           </div>
         )}
       </div>
-
       {}
       <div className="admin-dash-card !p-0 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -223,7 +207,6 @@ export default function TeamAttendanceAppraisal() {
           </table>
         </div>
       </div>
-
       {}
       <div className="flex flex-wrap gap-4 text-xs text-gray-500 px-1">
         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> ≥95% — Excellent</span>
@@ -231,5 +214,4 @@ export default function TeamAttendanceAppraisal() {
         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" /> &lt;85% — Needs Improvement</span>
       </div>
     </div>);
-
 }

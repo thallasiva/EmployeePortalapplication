@@ -16,21 +16,17 @@ import AnalyticsSection from './components/AnalyticsSection';
 import RequestsPanel from './components/RequestsPanel';
 import LeavePolicySection from './components/LeavePolicySection';
 import ImportHolidayCalendarModal from './components/ImportHolidayCalendarModal';
-
 const today = new Date();
-
 export default function AdminLeaveDashboard() {
   const location = useLocation();
   const requestsPanelRef = useRef(null);
   const statDetailRef = useRef(null);
-
   const [requestTab, setRequestTab] = useState(location.state?.tab ?? 'pending');
   const [highlightRequestId, setHighlightRequestId] = useState(
     location.state?.requestId ?? null
   );
   const [statFilter, setStatFilter] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
-
   const {
     requests,
     loading,
@@ -43,7 +39,6 @@ export default function AdminLeaveDashboard() {
     handleApprove,
     handleReject,
   } = useLeaveRequests();
-
   useEffect(() => {
     if (location.state?.tab) setRequestTab(location.state.tab);
     if (location.state?.requestId) {
@@ -57,10 +52,8 @@ export default function AdminLeaveDashboard() {
       }, 150);
     }
   }, [location.state]);
-
   const tabRows =
     requestTab === 'pending' ? pending : requestTab === 'approved' ? approved : rejected;
-
   const statDetailRows = useMemo(() => {
     if (statFilter === 'pending') return pending;
     if (statFilter === 'approved')
@@ -71,7 +64,6 @@ export default function AdminLeaveDashboard() {
     if (statFilter === 'teamOut') return onLeaveToday;
     return [];
   }, [statFilter, pending, approved, onLeaveToday]);
-
   const statDetailTitle =
     statFilter === 'pending'
       ? 'All Pending Requests'
@@ -80,7 +72,6 @@ export default function AdminLeaveDashboard() {
       : statFilter === 'teamOut'
       ? 'Team Out Today'
       : '';
-
   const openStat = useCallback(
     (filter) => {
       setStatFilter(filter);
@@ -90,7 +81,6 @@ export default function AdminLeaveDashboard() {
     },
     []
   );
-
   return (
     <div className="admin-dash space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -109,14 +99,12 @@ export default function AdminLeaveDashboard() {
           Import Holiday Calendar
         </button>
       </div>
-
       {showImportModal && (
         <ImportHolidayCalendarModal
           onClose={() => setShowImportModal(false)}
           onImported={() => {}}
         />
       )}
-
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
           Leave Overview by Type
@@ -127,7 +115,6 @@ export default function AdminLeaveDashboard() {
           ))}
         </div>
       </section>
-
       <QuickStatsSection
         pendingCount={pending.length}
         onLeaveTodayCount={onLeaveToday.length}
@@ -139,9 +126,7 @@ export default function AdminLeaveDashboard() {
         onOpenStat={openStat}
         onCloseStatFilter={() => setStatFilter(null)}
       />
-
       <AnalyticsSection requestChart={requestChart} totalRequests={requests.length} />
-
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <div className="admin-dash-card">
           <TeamAvailabilityCalendar
@@ -165,7 +150,6 @@ export default function AdminLeaveDashboard() {
           onReject={handleReject}
         />
       </section>
-
       <section className="admin-dash-card">
         <h3 className="font-semibold text-gray-900 mb-4">All Employees on Leave Today</h3>
         <LeaveEmployeeDetailTable
@@ -173,7 +157,6 @@ export default function AdminLeaveDashboard() {
           emptyMessage="No employees on approved leave today."
         />
       </section>
-
       <LeavePolicySection />
     </div>
   );

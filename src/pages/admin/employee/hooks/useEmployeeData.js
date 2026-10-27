@@ -9,7 +9,6 @@ import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { getEmployeeStatus } from "../../../../utils/employeeStatus";
 import { getDepartmentName } from "../../../../utils/employeeDisplay";
 import { STATUS_OPTIONS, TYPE_OPTIONS } from "../constants";
-
 export function useEmployeeData() {
   const csvInputRef = useRef(null);
   const [employees, setEmployees] = useState([]);
@@ -21,7 +20,6 @@ export function useEmployeeData() {
   const [filterDept, setFilterDept] = useState(new Set());
   const [filterType, setFilterType] = useState(new Set());
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-
   const refreshEmployees = useCallback(async () => {
     setLoading(true);
     try {
@@ -33,9 +31,7 @@ export function useEmployeeData() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => { refreshEmployees(); }, [refreshEmployees]);
-
   const deptOptions = useMemo(() => {
     const counts = {};
     employees.forEach((e) => {
@@ -46,7 +42,6 @@ export function useEmployeeData() {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([name, count]) => ({ value: name, label: name, count }));
   }, [employees]);
-
   const statusOptions = useMemo(() => {
     const counts = {};
     employees.forEach((e) => {
@@ -57,10 +52,8 @@ export function useEmployeeData() {
       (o) => o.count > 0
     );
   }, [employees]);
-
   const filteredEmployees = useMemo(() => {
     let list = employees;
-
     if (filterStatus.size > 0) {
       list = list.filter((e) => {
         const { label } = getEmployeeStatus(e);
@@ -73,7 +66,6 @@ export function useEmployeeData() {
     if (filterType.size > 0) {
       list = list.filter((e) => filterType.has(e.employee_type || "Full-Time"));
     }
-
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter((e) => {
@@ -90,16 +82,13 @@ export function useEmployeeData() {
     }
     return list;
   }, [employees, search, filterStatus, filterDept, filterType]);
-
   const activeFilterCount = filterStatus.size + filterDept.size + filterType.size;
-
   const clearAllFilters = useCallback(() => {
     setFilterStatus(new Set());
     setFilterDept(new Set());
     setFilterType(new Set());
     setSearch("");
   }, []);
-
   const activePills = useMemo(() => {
     const pills = [];
     filterStatus.forEach((v) =>
@@ -125,7 +114,6 @@ export function useEmployeeData() {
     );
     return pills;
   }, [filterStatus, filterDept, filterType]);
-
   const handleCsvImport = useCallback(
     (e) => {
       const file = e.target.files?.[0];
@@ -165,13 +153,11 @@ export function useEmployeeData() {
     },
     [employees, refreshEmployees]
   );
-
   const handleCsvExport = useCallback(() => {
     if (!employees.length) { errorToast("No employees found to export."); return; }
     downloadEmployeeCsv(employees, `employees-${new Date().toISOString().slice(0, 10)}.csv`);
     successToast("Employee list exported");
   }, [employees]);
-
   const filterSections = useMemo(
     () => [
       { id: "status", label: "Status", options: statusOptions, selected: filterStatus, onChange: setFilterStatus },
@@ -180,7 +166,6 @@ export function useEmployeeData() {
     ],
     [statusOptions, deptOptions, filterStatus, filterDept, filterType]
   );
-
   return {
     csvInputRef,
     employees,

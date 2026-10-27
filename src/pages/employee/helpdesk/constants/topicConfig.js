@@ -1,5 +1,4 @@
 import { URGENCY_OPTIONS, IMPACT_OPTIONS, SERVICES_OPTIONS } from "./categories";
-
 /**
  * Per-topic form field configuration.
  * Each entry maps a topic id → its field definitions.
@@ -74,5 +73,4 @@ export const TOPIC_CONFIG = {
     ],
   },
 };
-
 export const DEFAULT_FIELDS = [{ key: "desc", label: "Description", type: "richtext" }];

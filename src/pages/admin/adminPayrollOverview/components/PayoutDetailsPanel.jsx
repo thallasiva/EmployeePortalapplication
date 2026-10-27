@@ -4,12 +4,10 @@ import { BRAND } from "../constants";
 import { fmtINR, pct } from "../utils";
 import MultiDonut from "./MultiDonut";
 import ProgressRow from "./ProgressRow";
-
 const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) {
   let totalBasic = 0, totalHRA = 0, totalAllowances = 0;
   let totalPF = 0, totalESI = 0, totalPT = 0, totalTDS = 0;
   let totalGross = 0, totalNet = 0, totalDeductions = 0;
-
   payslips.forEach((p) => {
     const basic = Number(p.basic || 0);
     const hra = Number(p.hra || 0);
@@ -17,14 +15,12 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
     const gross = Number(p.gross_earnings || p.gross || 0);
     const ded = Number(p.deductions || 0);
     const net = Number(p.net_pay || p.net || 0);
-
     totalBasic += basic;
     totalHRA += hra;
     totalAllowances += allowances;
     totalGross += gross;
     totalDeductions += ded;
     totalNet += net;
-
     const pfBase = Math.min(basic, 15000);
     const pf = +(pfBase * 0.12).toFixed(2);
     const esi = gross <= 21000 ? +(gross * 0.0075).toFixed(2) : 0;
@@ -35,26 +31,21 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
     totalPT += pt;
     totalTDS += tds;
   });
-
   const earnSegs = [
     { label: "Basic",      value: totalBasic,       color: "#f18200" },
     { label: "HRA",        value: totalHRA,         color: "#fb923c" },
     { label: "Allowances", value: totalAllowances,  color: "#fbbf24" },
   ];
-
   const dedSegs = [
     { label: "PF (12%)",         value: totalPF,   color: "#6366f1" },
     { label: "ESI (0.75%)",      value: totalESI,  color: "#8b5cf6" },
     { label: "Prof. Tax",        value: totalPT,   color: "#a78bfa" },
     { label: "TDS / Income Tax", value: totalTDS,  color: "#c4b5fd" },
   ];
-
   const netRatio = pct(totalNet, totalGross);
   const dedRatio = pct(totalDeductions, totalGross);
   const count = payslips.length;
-
   const ringSegs = [...earnSegs, { label: "Deductions", value: totalDeductions, color: "#e0e7ff" }];
-
   return (
     <div className={cssClass({
       background: "#fff", border: "1px solid #e9eaec", borderRadius: 14,
@@ -73,7 +64,6 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
           {netRatio}% Net Ratio
         </div>
       </div>
-
       {/* Donut + Summary */}
       <div className={cssClass({ display: "flex", gap: 28, alignItems: "flex-start", marginBottom: 22 })}>
         <div className={cssClass({ flexShrink: 0, position: "relative" })}>
@@ -89,7 +79,6 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
             <div className={cssClass({ fontSize: 10, color: "#9ca3af", marginTop: 2 })}>of {fmtINR(totalGross, true)}</div>
           </div>
         </div>
-
         <div className={cssClass({ flex: 1 })}>
           {[
             { label: "Gross Earnings",    value: totalGross,      color: BRAND,      bg: "#fff8f0" },
@@ -104,7 +93,6 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
               <span className={cssClass({ fontSize: 14, fontWeight: 800, color: t.color })}>{fmtINR(t.value)}</span>
             </div>
           ))}
-
           <div className={cssClass({ marginTop: 12 })}>
             <div className={cssClass({ fontSize: 11, color: "#9ca3af", marginBottom: 5, fontWeight: 600 })}>
               Gross split — Net vs Deductions
@@ -120,9 +108,7 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
           </div>
         </div>
       </div>
-
       <div className={cssClass({ borderTop: "1px dashed #f0f0f0", margin: "4px 0 20px" })} />
-
       {/* Earnings Breakdown */}
       <div className={cssClass({ marginBottom: 18 })}>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 })}>
@@ -136,7 +122,6 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
             sub={`${pct(s.value, totalGross)}%`} />
         ))}
       </div>
-
       {/* Deductions Breakdown */}
       <div>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 })}>
@@ -153,7 +138,6 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
           <div className={cssClass({ fontSize: 13, color: "#aaa", textAlign: "center", padding: "12px 0" })}>No deduction data</div>
         )}
       </div>
-
       {/* Per Employee Avg */}
       {count > 0 && (
         <>
@@ -181,5 +165,4 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
     </div>
   );
 });
-
 export default PayoutDetailsPanel;

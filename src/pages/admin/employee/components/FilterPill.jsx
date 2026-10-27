@@ -1,7 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const FilterPill = React.memo(function FilterPill({ label, onRemove }) {
   return (
     <span
@@ -35,5 +34,4 @@ const FilterPill = React.memo(function FilterPill({ label, onRemove }) {
     </span>
   );
 });
-
 export default FilterPill;

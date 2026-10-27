@@ -8,7 +8,6 @@ import TicketFilters from "./TicketFilters";
 import TicketListItem from "./TicketListItem";
 import ReopenModal from "./modals/ReopenModal";
 import TicketDetailModal from "./modals/TicketDetailModal";
-
 /**
  * My Tickets view — list, filter, close, reopen, and view details.
  * Delegates data-fetching to useHelpdeskTickets, rendering to child components.
@@ -18,19 +17,14 @@ const MyTicketsView = memo(function MyTicketsView({ onNewRequest }) {
   const [filter,     setFilter]     = useState("all");
   const [reopenFor,  setReopenFor]  = useState(null);
   const [viewTicket, setViewTicket] = useState(null);
-
   useEffect(() => { load(); }, [load]);
-
   const visible = useMemo(
     () => filter === "all" ? tickets : tickets.filter((t) => t.status === filter),
     [tickets, filter]
   );
-
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(visible);
-
   return (
     <div className={cssClass({ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, background: "#fff", padding: "20px 28px" })}>
-
       {/* Header */}
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 })}>
         <div>
@@ -46,9 +40,7 @@ const MyTicketsView = memo(function MyTicketsView({ onNewRequest }) {
           </button>
         </div>
       </div>
-
       <TicketFilters activeFilter={filter} onFilterChange={setFilter} />
-
       {/* List */}
       <div className={cssClass({ flex: 1, border: "1px solid #e5e7eb", borderRadius: 6, overflow: "auto" })}>
         {loading ? (
@@ -79,7 +71,6 @@ const MyTicketsView = memo(function MyTicketsView({ onNewRequest }) {
         )}
         <Pagination page={page} setPage={setPage} totalPages={totalPages} from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
       </div>
-
       {reopenFor && (
         <ReopenModal
           ticket={reopenFor}
@@ -87,7 +78,6 @@ const MyTicketsView = memo(function MyTicketsView({ onNewRequest }) {
           onReopened={() => { setReopenFor(null); load(); }}
         />
       )}
-
       {viewTicket && (
         <TicketDetailModal
           ticketId={viewTicket}
@@ -102,5 +92,4 @@ const MyTicketsView = memo(function MyTicketsView({ onNewRequest }) {
     </div>
   );
 });
-
 export default MyTicketsView;

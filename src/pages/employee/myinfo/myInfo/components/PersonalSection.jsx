@@ -5,10 +5,8 @@ import { fmtDate, calcAge } from "../utils";
 import Field from "./Field";
 import InfoCard from "./InfoCard";
 import { Grid } from "./Grid";
-
 const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, toggle }) {
   const emp_name = [e.first_name, e.last_name].filter(Boolean).join(" ") || "—";
-
   return (
     <div id="section-personal">
       <InfoCard id="card-profile" title="Profile">
@@ -30,7 +28,6 @@ const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, t
           </div>
         </div>
       </InfoCard>
-
       <InfoCard id="card-personal" title="Personal">
         <Grid cols={3}>
           <Field label="Blood Group"     value={e.blood_group}     masked show={revealed.blood_group}     onToggle={() => toggle("blood_group")} />
@@ -52,7 +49,6 @@ const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, t
           <Field label="Caste"           value={null} />
         </Grid>
       </InfoCard>
-
       <InfoCard id="card-address" title="Address">
         <div className={cssClass({ marginBottom: 12 })}>
           <span className={cssClass({ fontSize: 12, background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 12px", color: "#475569", fontWeight: 600 })}>
@@ -71,7 +67,6 @@ const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, t
           <Field label="Relationship" value={ci.emergency_contact_relation} />
         </Grid>
       </InfoCard>
-
       <InfoCard id="card-education" title="Education">
         {e.educational_qualification ? (
           <Grid cols={3}>
@@ -87,5 +82,4 @@ const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, t
     </div>
   );
 });
-
 export default PersonalSection;

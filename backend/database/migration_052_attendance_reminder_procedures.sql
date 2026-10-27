@@ -4,7 +4,6 @@
 -- log a warning; once applied, every server running the cron EMAILS employees daily.
 -- Run with: node src/database/runSql.js migration_052_attendance_reminder_procedures.sql
 -- =============================================================
-
 -- Active employees with no check-in today, excluding approved leave and holidays.
 DROP PROCEDURE IF EXISTS sp_get_missing_checkins;
 DELIMITER $$
@@ -29,7 +28,6 @@ BEGIN
             WHERE h.holiday_date = CURDATE() AND h.is_restricted = 0);
 END $$
 DELIMITER ;
-
 -- Employees who checked in today but have not checked out.
 DROP PROCEDURE IF EXISTS sp_get_missing_checkouts;
 DELIMITER $$
@@ -47,5 +45,4 @@ BEGIN
      AND e.email IS NOT NULL;
 END $$
 DELIMITER ;
-
 SELECT 'migration_052_attendance_reminder_procedures done' AS status;

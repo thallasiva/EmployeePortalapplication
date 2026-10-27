@@ -1,24 +1,19 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-
 const PAGE_SIZES = [20, 50, 100, 200, 500];
-
 export const Table = React.memo(function Table({
   columns, data, onRowClick, emptyMessage = "No records found.", pageSize: initialPageSize = 20,
 }) {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(initialPageSize);
-
   React.useEffect(() => { setPage(1); }, [data]);
   React.useEffect(() => { setPage(1); }, [pageSize]);
-
   const total = data?.length ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(page, totalPages);
   const paged = (data ?? []).slice((safePage - 1) * pageSize, safePage * pageSize);
   const from = total === 0 ? 0 : (safePage - 1) * pageSize + 1;
   const to = Math.min(safePage * pageSize, total);
-
   return (
     <div>
       <div className="overflow-x-auto">
@@ -57,7 +52,6 @@ export const Table = React.memo(function Table({
           </tbody>
         </table>
       </div>
-
       {/* Pagination bar */}
       <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 bg-white text-[13px] text-gray-600 select-none">
         <div className="flex items-center gap-2">

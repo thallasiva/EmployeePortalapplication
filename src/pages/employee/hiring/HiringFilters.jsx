@@ -5,10 +5,8 @@ import {
   DEPARTMENTS,
   LOCATIONS,
 } from "../../../data/hiringFilters";
-
 function FilterSection({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
-
   return (
     <div className="hiring-filter-section">
       <button
@@ -23,7 +21,6 @@ function FilterSection({ title, defaultOpen = true, children }) {
     </div>
   );
 }
-
 export default function HiringFilters({
   dateAdded,
   onDateAddedChange,
@@ -34,11 +31,9 @@ export default function HiringFilters({
 }) {
   const [showAllDepts, setShowAllDepts] = useState(true);
   const visibleDepts = showAllDepts ? DEPARTMENTS : DEPARTMENTS.slice(0, 8);
-
   return (
     <aside className="hiring-filters">
       <h2 className="hiring-filters__title">Filters</h2>
-
       <FilterSection title="Date added">
         {DATE_ADDED_OPTIONS.map((opt) => (
           <label key={opt.id} className="hiring-filter-option">
@@ -52,7 +47,6 @@ export default function HiringFilters({
           </label>
         ))}
       </FilterSection>
-
       <FilterSection title="Department">
         {visibleDepts.map((dept) => (
           <label key={dept} className="hiring-filter-option">
@@ -74,7 +68,6 @@ export default function HiringFilters({
           </button>
         )}
       </FilterSection>
-
       <FilterSection title="Location">
         {LOCATIONS.map((loc) => (
           <label key={loc} className="hiring-filter-option">

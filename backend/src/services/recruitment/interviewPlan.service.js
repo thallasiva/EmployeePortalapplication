@@ -11,9 +11,7 @@ const OpenAI = require('openai');
 const { query, callProcedure, withTransaction } = require('../../config/db');
 const ApiError = require('../../utils/ApiError');
 const { buildQuestionPlan } = require('./interviewQuestionBank');
-
 const DEFAULT_TIME = { experience: 180, resume_probe: 180, technical: 180, practical: 180, scenario: 300, system_design: 600, coding: 600 };
-
 // Scoring guide used for question-bank questions (the AI writes question-specific ones).
 const GENERIC_POINTS = {
   experience: ['Describes their own role clearly', 'Gives concrete examples with results', 'Communicates in a structured way'],
@@ -22,20 +20,17 @@ const GENERIC_POINTS = {
   practical: ['Describes a concrete, step-by-step approach', 'Uses appropriate tools or techniques', 'Considers impact, risks or verification'],
   scenario: ['Starts by understanding/triaging the problem', 'Prioritises and communicates with stakeholders', 'Explains how they verify the fix and prevent recurrence'],
 };
-
 function getOpenAI() {
   const key = process.env.OPENAI_API_KEY;
   if (!key || key === 'your-openai-api-key-here') return null;
   return new OpenAI({ apiKey: key });
 }
-
 async function loadJob(jobReqId) {
   const res = await callProcedure('sp_rec_get_job_request(?)', [Number(jobReqId)]);
   const job = (res[0] ?? [])[0];
   if (!job) throw ApiError.notFound('Job not found');
   return job;
 }
-
 function jobProfile(job) {
   return {
     jobTitle: job.title || job.job_title || 'Position',
@@ -44,13 +39,11 @@ function jobProfile(job) {
     experienceLevel: job.experience_level || '',
   };
 }
-
 const parseJson = (v, fallback) => {
   if (v == null) return fallback;
   if (typeof v === 'object') return v;
   try { return JSON.parse(v); } catch { return fallback; }
 };
-
 async function generateWithAI(profile, count) {
   const openai = getOpenAI();
   if (!openai) return null;
@@ -96,7 +89,6 @@ Return ONLY JSON: {"questions":[{"question":"","stage":"introduction|resume_vali
     return null;
   }
 }
-
 function generateFromBank(profile, count) {
   const { plan } = buildQuestionPlan(profile, Date.now() % 2147483647);
   return plan.slice(0, count).map((q) => ({
@@ -109,7 +101,6 @@ function generateFromBank(profile, count) {
     time_limit_seconds: DEFAULT_TIME[q.type] || (q.stage === 'scenario' ? 300 : 180),
   }));
 }
-
 async function getPlan(planId) {
   const [plan] = await query(
     `SELECT p.*, j.title AS job_title,
@@ -124,7 +115,6 @@ async function getPlan(planId) {
   const questions = await query('SELECT * FROM ai_interview_plan_questions WHERE plan_id = ? ORDER BY sort_order, question_id', [planId]);
   return { ...plan, questions: questions.map((q) => ({ ...q, expected_points: parseJson(q.expected_points, []) })) };
 }
-
 /** Plans for a job: the approved one (if any), the current draft (if any), and history. */
 async function listForJob(jobReqId) {
   const rows = await query(
@@ -140,7 +130,6 @@ async function listForJob(jobReqId) {
     history: rows,
   };
 }
-
 /** Per job: does it have an approved plan? Used by the invitation form. */
 async function jobPlanStatuses() {
   return query(
@@ -149,7 +138,6 @@ async function jobPlanStatuses() {
        FROM rec_job_requests j LEFT JOIN ai_interview_plans p ON p.job_req_id = j.job_req_id
       WHERE j.deleted_at IS NULL GROUP BY j.job_req_id, j.title`);
 }
-
 async function generateDraft(jobReqId, userId, { questionCount = 8, durationMinutes = 30 } = {}) {
   const job = await loadJob(jobReqId);
   const profile = jobProfile(job);
@@ -157,7 +145,6 @@ async function generateDraft(jobReqId, userId, { questionCount = 8, durationMinu
   const aiQuestions = await generateWithAI(profile, count);
   const questions = aiQuestions || generateFromBank(profile, count);
   const generatedBy = aiQuestions ? 'ai' : 'question_bank';
-
   const planId = await withTransaction(async (conn) => {
     // Only one draft per job: a new generation replaces the previous draft.
     await conn.query("DELETE FROM ai_interview_plans WHERE job_req_id = ? AND status = 'DRAFT'", [jobReqId]);
@@ -171,7 +158,6 @@ async function generateDraft(jobReqId, userId, { questionCount = 8, durationMinu
   });
   return getPlan(planId);
 }
-
 async function insertQuestions(conn, planId, questions) {
   let order = 0;
   for (const q of questions) {
@@ -184,13 +170,11 @@ async function insertQuestions(conn, planId, questions) {
         String(q.question_text).trim(), JSON.stringify((q.expected_points || []).filter(Boolean)), Number(q.time_limit_seconds) || 180]);
   }
 }
-
 async function assertDraft(planId) {
   const [p] = await query('SELECT status FROM ai_interview_plans WHERE plan_id = ?', [planId]);
   if (!p) throw ApiError.notFound('Interview plan not found');
   if (p.status !== 'DRAFT') throw ApiError.conflict('Only a draft plan can be edited. Create a new draft from the approved plan to make changes.');
 }
-
 /** Replaces the draft's questions and settings with HR's edited version. */
 async function saveDraft(planId, { questions, durationMinutes, notes }) {
   await assertDraft(planId);
@@ -204,7 +188,6 @@ async function saveDraft(planId, { questions, durationMinutes, notes }) {
   });
   return getPlan(planId);
 }
-
 async function approve(planId, userId) {
   await assertDraft(planId);
   const plan = await getPlan(planId);
@@ -217,7 +200,6 @@ async function approve(planId, userId) {
   });
   return getPlan(planId);
 }
-
 /** Starts a new draft as a copy of the approved plan, so HR can revise it. */
 async function reviseApproved(jobReqId, userId) {
   const { approved, draft } = await listForJob(jobReqId);
@@ -234,17 +216,14 @@ async function reviseApproved(jobReqId, userId) {
   });
   return getPlan(planId);
 }
-
 async function discardDraft(planId) {
   await assertDraft(planId);
   await query('DELETE FROM ai_interview_plans WHERE plan_id = ?', [planId]);
 }
-
 async function getApprovedForJob(jobReqId) {
   const [row] = await query("SELECT plan_id FROM ai_interview_plans WHERE job_req_id = ? AND status = 'APPROVED' LIMIT 1", [jobReqId]);
   return row ? getPlan(row.plan_id) : null;
 }
-
 module.exports = {
   listForJob, jobPlanStatuses, getPlan, generateDraft, saveDraft, approve, reviseApproved, discardDraft, getApprovedForJob,
 };

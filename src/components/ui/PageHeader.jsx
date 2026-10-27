@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 /**
  * Standardised page header with optional back button and action slot.
  *
@@ -14,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 const PageHeader = memo(function PageHeader({ title, subtitle, actions, back = false, className = "" })
 {
   const navigate = useNavigate();
-
   return (
     <div className={`flex items-start justify-between mb-6 ${className}`}>
       <div className="flex items-start gap-2">
@@ -32,7 +30,6 @@ const PageHeader = memo(function PageHeader({ title, subtitle, actions, back = f
           {subtitle && <p className="text-[13px] text-gray-500 mt-0.5">{subtitle}</p>}
         </div>
       </div>
-
       {actions && (
         <div className="flex items-center gap-2 shrink-0 ml-4">
           {actions}
@@ -41,5 +38,4 @@ const PageHeader = memo(function PageHeader({ title, subtitle, actions, back = f
     </div>
   );
 });
-
 export default PageHeader;

@@ -1,18 +1,5 @@
 'use strict';
-
-
-
-
-
-
-
-
-
-
-
 const { callProcedure } = require("../../config/db");
-
-
 const ALIAS_MAP = {
   "js": ["javascript"],
   "javascript": ["js"],
@@ -64,11 +51,9 @@ const ALIAS_MAP = {
   "oauth": ["oauth2", "oauth 2.0"],
   "oauth2": ["oauth", "oauth 2.0"]
 };
-
 function normalise(str) {
   return str.toLowerCase().replace(/[^a-z0-9.+#]/g, " ").replace(/\s+/g, " ").trim();
 }
-
 function parseSkills(skillSetStr) {
   if (!skillSetStr) return [];
   return skillSetStr.
@@ -76,19 +61,11 @@ function parseSkills(skillSetStr) {
   map((s) => normalise(s)).
   filter(Boolean);
 }
-
 function skillMatches(required, candidateSkills, resumeText = '') {
   const reqNorm = normalise(required);
-
-
   if (candidateSkills.includes(reqNorm)) return true;
-
-
   const aliases = ALIAS_MAP[reqNorm] || [];
   if (aliases.some((a) => candidateSkills.includes(a))) return true;
-
-
-
   const reqWords = reqNorm.split(' ');
   const prefixMatch = (target) => {
     const tWords = target.split(' ');
@@ -96,19 +73,13 @@ function skillMatches(required, candidateSkills, resumeText = '') {
     reqWords.every((w, i) => tWords[i] === w);
   };
   if (candidateSkills.some(prefixMatch)) return true;
-
-
   if (aliases.some((alias) => candidateSkills.some((cs) => {
     const aWords = alias.split(' ');
     const cWords = cs.split(' ');
     return aWords.length <= cWords.length && aWords.every((w, i) => cWords[i] === w);
   }))) return true;
-
-
-
   if (resumeText) {
     const rt = normalise(resumeText);
-
     const wordIn = (term) => {
       const t = normalise(term);
       return rt === t || rt.startsWith(t + ' ') || rt.endsWith(' ' + t) ||
@@ -118,33 +89,21 @@ function skillMatches(required, candidateSkills, resumeText = '') {
     if (wordIn(reqNorm)) return true;
     if (aliases.some((a) => wordIn(a))) return true;
   }
-
   return false;
 }
-
-
-
-
-
 function parseMinExperience(expLevel) {
   if (!expLevel) return 0;
   const match = String(expLevel).match(/(\d+)/);
   return match ? Number(match[1]) : 0;
 }
-
-
 function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobExperienceLevel, resumeText = '' }) {
   const jobSkills = parseSkills(jobSkillSet);
   const candSkills = parseSkills(candidateSkillSet);
   const candExp = Number(relevantExperience) || 0;
   const reqExp = parseMinExperience(jobExperienceLevel);
-
-
   const matched = [];
   const missing = [];
-
   if (jobSkills.length === 0) {
-
   } else {
     for (const skill of jobSkills) {
       if (skillMatches(skill, candSkills, resumeText)) {
@@ -154,12 +113,9 @@ function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobE
       }
     }
   }
-
   const skillScore = jobSkills.length > 0 ?
   Math.round(matched.length / jobSkills.length * 100) :
   100;
-
-
   let expScore;
   if (reqExp === 0) {
     expScore = 100;
@@ -168,17 +124,12 @@ function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobE
   } else {
     expScore = Math.round(candExp / reqExp * 100);
   }
-
-
   const total = Math.round(skillScore * 0.6 + expScore * 0.4);
-
-
   let recommendation;
   if (total >= 80) recommendation = "Highly Suitable";else
   if (total >= 65) recommendation = "Suitable";else
   if (total >= 45) recommendation = "Partially Suitable";else
   recommendation = "Not Suitable";
-
   return {
     matchScore: total,
     skillScore,
@@ -188,31 +139,19 @@ function computeScore({ candidateSkillSet, relevantExperience, jobSkillSet, jobE
     recommendation
   };
 }
-
-
-
-
-
-
 async function computeAndStore(candidateId, jobReqId) {
-
   const candResults = await callProcedure("sp_rec_get_candidate_match_inputs(?)", [candidateId]);
   const cand = (candResults[0] ?? [])[0];
   if (!cand) throw new Error(`Candidate ${candidateId} not found`);
-
-
   const jobResults = await callProcedure("sp_rec_get_job_match_inputs(?)", [jobReqId]);
   const job = (jobResults[0] ?? [])[0];
   if (!job) throw new Error(`Job ${jobReqId} not found`);
-
   const result = computeScore({
     candidateSkillSet: cand.skill_set,
     relevantExperience: cand.relevant_experience,
     jobSkillSet: job.skill_set,
     jobExperienceLevel: job.experience_level
   });
-
-
   const rows = await callProcedure(
     "sp_rec_upsert_match(?, ?, ?, ?, ?, ?, ?, ?)",
     [
@@ -224,12 +163,9 @@ async function computeAndStore(candidateId, jobReqId) {
     JSON.stringify(result.matched),
     JSON.stringify(result.missing),
     result.recommendation]
-
   );
-
   return (rows[0] ?? [])[0];
 }
-
 async function getMatch(candidateId, jobReqId) {
   const rows = await callProcedure(
     "sp_rec_get_match(?, ?)",
@@ -237,7 +173,6 @@ async function getMatch(candidateId, jobReqId) {
   );
   return (rows[0] ?? [])[0] || null;
 }
-
 async function listByJob(jobReqId) {
   const rows = await callProcedure(
     "sp_rec_list_matches_by_job(?)",
@@ -245,11 +180,6 @@ async function listByJob(jobReqId) {
   );
   return rows[0] ?? [];
 }
-
-
-
-
-
 function autoComputeAsync(candidateId, jobReqId) {
   if (!candidateId || !jobReqId) return;
   setImmediate(async () => {
@@ -261,16 +191,10 @@ function autoComputeAsync(candidateId, jobReqId) {
     }
   });
 }
-
-
-
-
-
 async function quickMatch({ jobReqId, candidateSkills, candidateExperience, resumeText = '' }) {
   const jobResults = await callProcedure("sp_rec_get_job_match_inputs(?)", [jobReqId]);
   const job = (jobResults[0] ?? [])[0];
   if (!job) throw new Error(`Job ${jobReqId} not found`);
-
   const result = computeScore({
     candidateSkillSet: candidateSkills,
     relevantExperience: candidateExperience,
@@ -278,8 +202,6 @@ async function quickMatch({ jobReqId, candidateSkills, candidateExperience, resu
     jobExperienceLevel: job.experience_level,
     resumeText
   });
-
   return { ...result, jobTitle: job.title, jobExperienceLevel: job.experience_level };
 }
-
 module.exports = { computeAndStore, getMatch, listByJob, autoComputeAsync, quickMatch };

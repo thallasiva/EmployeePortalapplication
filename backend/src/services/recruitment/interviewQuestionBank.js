@@ -5,7 +5,6 @@
  * different, seeded mix so interviews for different roles — and different candidates
  * for the same role — are not identical.
  */
-
 const TRACKS = {
   java: {
     match: /\bjava\b|spring|hibernate|jpa|j2ee|microservice/i,
@@ -186,7 +185,6 @@ const TRACKS = {
     ],
   },
 };
-
 const GENERAL = [
   'A production issue is reported just before a release and the root cause is unclear. Walk me through what you would do in the first hour.',
   'Tell me about a time you disagreed with a teammate or lead. How was it resolved?',
@@ -196,7 +194,6 @@ const GENERAL = [
   'Why are you interested in this role, and what would you want to achieve in your first six months?',
   'Tell me about the piece of work you are most proud of and your exact contribution.',
 ];
-
 // Small deterministic PRNG so a session's questions stay stable across restarts.
 function seededRandom(seed) {
   let s = (Number(seed) >>> 0) || 1;
@@ -205,7 +202,6 @@ function seededRandom(seed) {
     return s / 4294967296;
   };
 }
-
 function shuffle(list, rand) {
   const a = [...list];
   for (let i = a.length - 1; i > 0; i -= 1) {
@@ -214,13 +210,11 @@ function shuffle(list, rand) {
   }
   return a;
 }
-
 function hashString(text) {
   let h = 2166136261;
   for (const ch of String(text || '')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
-
 /** Tracks for a job, most relevant first (matches in the title count double). */
 function detectTracks(profile = {}) {
   const title = String(profile.jobTitle || '');
@@ -234,7 +228,6 @@ function detectTracks(profile = {}) {
     .slice(0, 3)
     .map((t) => t.key);
 }
-
 /**
  * The ordered fallback plan for a session: intro, a project question, role questions
  * from the detected tracks (interleaved, shuffled per seed), then general questions.
@@ -244,22 +237,18 @@ function buildQuestionPlan(profile = {}, seed) {
   const tracks = detectTracks(profile);
   const mainSkill = (Array.isArray(profile.requiredSkills) ? profile.requiredSkills : String(profile.requiredSkills || '').split(','))
     .map((s) => String(s).trim()).filter(Boolean)[0] || profile.jobTitle || 'your main technology';
-
   const plan = [
     { stage: 'introduction', type: 'experience', question: 'Could you briefly introduce yourself and explain your current role, responsibilities, and the project you work on?' },
     { stage: 'resume_validation', type: 'resume_probe', skill: mainSkill, question: `Walk me through the most recent project where you used ${mainSkill}. What was the architecture, and which part did you personally build?` },
   ];
-
   const pools = tracks.map((key) => shuffle(TRACKS[key].questions, rand).map((q) => ({ stage: 'technical', type: 'technical', skill: key, question: q })));
   const roleQuestions = [];
   while (pools.some((p) => p.length) && roleQuestions.length < 9) {
     for (const p of pools) if (p.length && roleQuestions.length < 9) roleQuestions.push(p.shift());
   }
   plan.push(...roleQuestions);
-
   const general = shuffle(GENERAL, rand).map((q) => ({ stage: /production issue|deadline/.test(q) ? 'scenario' : 'domain', type: 'experience', question: q }));
   plan.push(...general.slice(0, roleQuestions.length ? 3 : 6));
   return { tracks, plan };
 }
-
 module.exports = { detectTracks, buildQuestionPlan, hashString };

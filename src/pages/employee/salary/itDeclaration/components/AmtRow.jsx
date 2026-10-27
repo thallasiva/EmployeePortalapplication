@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 function AmtRow({ section, label, maxLimit, value, onChange }) {
   const filled = !!value && Number(value) > 0;
   return (
@@ -48,5 +47,4 @@ function AmtRow({ section, label, maxLimit, value, onChange }) {
     </div>
   );
 }
-
 export default React.memo(AmtRow);

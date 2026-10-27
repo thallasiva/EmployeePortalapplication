@@ -8,7 +8,6 @@ import ResignationTabs    from "./components/ResignationTabs";
 import ApplyForm          from "./components/ApplyForm";
 import ResignCard         from "./components/ResignCard";
 import LeavingIllustration from "./components/LeavingIllustration";
-
 const EmptyState = React.memo(function EmptyState({ icon: Icon, text }) {
   return (
     <div className={cssClass({ textAlign: "center", padding: "64px 0", color: "#94a3b8" })}>
@@ -19,24 +18,19 @@ const EmptyState = React.memo(function EmptyState({ icon: Icon, text }) {
     </div>
   );
 });
-
 export default function Resignation() {
   const { resignations, profile, loading, reload } = useResignationData();
-
   const [tab,       setTab]       = useState("apply");
   const [showForm,  setShowForm]  = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [apiError,  setApiError]  = useState(null);
-
   const pending = resignations.filter((r) => r.status === "pending");
   const history = resignations.filter((r) => r.status !== "pending");
-
   // Auto-switch to pending tab when there are pending resignations
   useEffect(() => {
     if (pending.length > 0 && tab === "apply" && !showForm) setTab("pending");
   }, [pending.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleSubmit = useCallback(async (fields, file) => {
     setSaving(true);
     setApiError(null);
@@ -59,7 +53,6 @@ export default function Resignation() {
     }
     setSaving(false);
   }, [reload]);
-
   const handleWithdraw = useCallback(async (id) => {
     if (!window.confirm("Are you sure you want to withdraw your resignation?")) return;
     setWithdrawing(true);
@@ -72,9 +65,7 @@ export default function Resignation() {
     }
     setWithdrawing(false);
   }, [reload]);
-
   const changeTab = useCallback((k) => { setTab(k); setShowForm(false); setApiError(null); }, []);
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: "28px 24px", fontFamily: "inherit" })}>
       {/* Header */}
@@ -87,9 +78,7 @@ export default function Resignation() {
           <p className={cssClass({ margin: 0, fontSize: 12, color: "#94a3b8" })}>Manage your exit request</p>
         </div>
       </div>
-
       <ResignationTabs active={tab} onChange={changeTab} pendingCount={pending.length} />
-
       {loading ? (
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8", fontSize: 14 })}>Loading…</div>
       ) : (
@@ -116,7 +105,6 @@ export default function Resignation() {
               </div>
             )
           )}
-
           {tab === "pending" && (
             pending.length === 0 ? (
               <EmptyState icon={Clock} text="No pending resignation requests." />
@@ -128,7 +116,6 @@ export default function Resignation() {
               </div>
             )
           )}
-
           {tab === "history" && (
             history.length === 0 ? (
               <EmptyState icon={XCircle} text="No resignation history found." />

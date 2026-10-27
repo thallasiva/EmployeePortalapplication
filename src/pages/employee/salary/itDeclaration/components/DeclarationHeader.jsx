@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 function DeclarationHeader({ cycle, totalDeclared, annualGross }) {
   return (
     <div className={cssClass({ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 })}>
@@ -22,5 +21,4 @@ function DeclarationHeader({ cycle, totalDeclared, annualGross }) {
     </div>
   );
 }
-
 export default React.memo(DeclarationHeader);

@@ -1,6 +1,5 @@
 import React from "react";
 import { X } from "lucide-react";
-
 export const Modal = React.memo(function Modal({ open, onClose, title, children, width = 560, footer }) {
   if (!open) return null;
   return (

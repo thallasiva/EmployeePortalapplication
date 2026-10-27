@@ -1,18 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { AlertTriangle, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Download, Loader2, Lock, PauseCircle, Play, Search, SlidersHorizontal, Users, Wallet, X, ArrowRight } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Download, Loader2, Lock, Minus, PauseCircle, Play, Plus, Search, SlidersHorizontal, Users, Wallet, X, ArrowRight } from "lucide-react";
 import { getErrorMessage } from "../../../api/client";
 import {
   getPayrollAttendanceSummary,
   runPayroll,
   savePayrollAttendanceAdjustment } from
 "../../../api/payroll.api";
-
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const inr = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
 const num = (n) => Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 1 });
-
 // Day-type colours for the attendance strip and legend.
 const DAY_STYLE = {
   present: { bg: "#16a34a", label: "Present" },
@@ -28,7 +26,6 @@ const DAY_STYLE = {
   upcoming: { bg: "#f1f5f9", label: "Upcoming" },
   not_employed: { bg: "#ffffff", label: "Not employed" }
 };
-
 const FLAG_TONE = {
   NO_SALARY: "bg-rose-50 text-rose-700 border-rose-200",
   NO_BANK: "bg-amber-50 text-amber-800 border-amber-200",
@@ -41,14 +38,12 @@ const FLAG_TONE = {
   EXITING: "bg-violet-50 text-violet-700 border-violet-200"
 };
 const INFO_FLAGS = ["MONTH_NOT_OVER", "NEW_JOINER", "EXITING"];
-
 function previousMonth() {
   const d = new Date();
   d.setDate(1);
   d.setMonth(d.getMonth() - 1);
   return { month: d.getMonth() + 1, year: d.getFullYear() };
 }
-
 function downloadCsv(filename, rows) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const blob = new Blob([rows.map((r) => r.map(esc).join(",")).join("\n")], { type: "text/csv;charset=utf-8" });
@@ -57,9 +52,7 @@ function downloadCsv(filename, rows) {
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
-
 /* ---------- small pieces ---------- */
-
 const Kpi = ({ icon, label, value, sub, tone = "text-slate-900" }) =>
 <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-start gap-3">
     <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shrink-0">{icon}</div>
@@ -69,15 +62,11 @@ const Kpi = ({ icon, label, value, sub, tone = "text-slate-900" }) =>
       {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
     </div>
   </div>;
-
-
 const Stat = ({ label, value, tone = "text-slate-800" }) =>
 <div className="flex justify-between gap-3 py-1 text-sm">
     <span className="text-slate-500">{label}</span>
     <span className={`font-semibold tabular-nums ${tone}`}>{value}</span>
   </div>;
-
-
 function DayStrip({ days }) {
   return (
     <div className="flex flex-wrap gap-1" role="list" aria-label="Day-by-day attendance">
@@ -95,12 +84,9 @@ function DayStrip({ days }) {
             {day}
             {d.lop ? <span className="text-[8px] leading-none opacity-90">−{d.lop}</span> : null}
           </div>);
-
       })}
     </div>);
-
 }
-
 function Legend() {
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1.5">
@@ -110,11 +96,8 @@ function Legend() {
         </span>
       )}
     </div>);
-
 }
-
 /* ---------- adjustment dialog ---------- */
-
 function AdjustDialog({ row, month, year, onClose, onSaved }) {
   const [lop, setLop] = useState(row.adjustment?.lop_adjustment ?? 0);
   const [hold, setHold] = useState(row.adjustment?.hold_salary ?? false);
@@ -122,13 +105,11 @@ function AdjustDialog({ row, month, year, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const a = row.attendance;
   const newLop = Math.min(a.employedWorkingDays, Math.max(0, a.computedLop + Number(lop || 0)));
-
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
   const save = async (e) => {
     e.preventDefault();
     if ((Number(lop) || hold) && reason.trim().length < 3) return toast.error("Please give a reason for the adjustment");
@@ -146,7 +127,6 @@ function AdjustDialog({ row, month, year, onClose, onSaved }) {
       setSaving(false);
     }
   };
-
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-4" onMouseDown={onClose}>
       <form role="dialog" aria-modal="true" aria-label="Adjust attendance" onSubmit={save} onMouseDown={(e) => e.stopPropagation()}
@@ -165,10 +145,10 @@ function AdjustDialog({ row, month, year, onClose, onSaved }) {
         <div>
           <label htmlFor="adj-lop" className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1.5">LOP adjustment (days)</label>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setLop((v) => Math.round((Number(v) - 0.5) * 10) / 10)} className="w-10 h-10 rounded-xl border border-slate-200 font-bold">−</button>
+            <button type="button" onClick={() => setLop((v) => Math.round((Number(v) - 0.5) * 10) / 10)} className="w-10 h-10 rounded-xl border border-slate-200 font-bold" aria-label="Decrease LOP"><Minus size={16} aria-hidden="true" /></button>
             <input id="adj-lop" type="number" step="0.5" min="-31" max="31" value={lop} onChange={(e) => setLop(e.target.value)}
             className="flex-1 h-10 border border-slate-200 rounded-xl px-3 text-center font-bold tabular-nums outline-none focus:border-[#f18200]" />
-            <button type="button" onClick={() => setLop((v) => Math.round((Number(v) + 0.5) * 10) / 10)} className="w-10 h-10 rounded-xl border border-slate-200 font-bold">+</button>
+            <button type="button" onClick={() => setLop((v) => Math.round((Number(v) + 0.5) * 10) / 10)} className="w-10 h-10 rounded-xl border border-slate-200 font-bold" aria-label="Increase LOP"><Plus size={16} aria-hidden="true" /></button>
           </div>
           <p className="text-xs text-slate-500 mt-1">Use a minus value to waive LOP (e.g. −1 for an approved client visit), plus to add LOP.</p>
         </div>
@@ -189,11 +169,8 @@ function AdjustDialog({ row, month, year, onClose, onSaved }) {
         </div>
       </form>
     </div>);
-
 }
-
 /* ---------- employee row ---------- */
-
 function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
   const a = row.attendance;
   const p = row.pay;
@@ -295,11 +272,8 @@ function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
         </tr>
       }
     </>);
-
 }
-
 /* ---------- page ---------- */
-
 export default function AdminSalaryProcessing() {
   const [{ month, year }, setPeriod] = useState(previousMonth);
   const [data, setData] = useState(null);
@@ -311,7 +285,6 @@ export default function AdminSalaryProcessing() {
   const [adjusting, setAdjusting] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [processing, setProcessing] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -323,26 +296,21 @@ export default function AdminSalaryProcessing() {
       setLoading(false);
     }
   }, [month, year]);
-
   useEffect(() => {load();}, [load]);
-
   const shiftMonth = (delta) => setPeriod(({ month: m, year: y }) => {
     const d = new Date(y, m - 1 + delta, 1);
     return { month: d.getMonth() + 1, year: d.getFullYear() };
   });
-
   const rows = data?.employees || [];
   const departments = useMemo(() => [...new Set(rows.map((r) => r.department).filter(Boolean))].sort(), [rows]);
   const visible = rows.filter((r) =>
   (!search || `${r.name} ${r.emp_code}`.toLowerCase().includes(search.toLowerCase())) && (
   !dept || r.department === dept) && (
   !onlyIssues || r.flags.some((f) => !INFO_FLAGS.includes(f.code))));
-
   const run = data?.run;
   const locked = Boolean(run?.is_locked) || run?.review_status === "APPROVED";
   const t = data?.totals;
   const blocking = rows.filter((r) => r.flags.some((f) => ["PENDING_LEAVE", "PENDING_REGULARIZATION"].includes(f.code))).length;
-
   const replaceRow = (updated) => {
     if (!updated) return load();
     setData((prev) => {
@@ -363,7 +331,6 @@ export default function AdminSalaryProcessing() {
       };
     });
   };
-
   const process = async () => {
     setProcessing(true);
     try {
@@ -377,7 +344,6 @@ export default function AdminSalaryProcessing() {
       setProcessing(false);
     }
   };
-
   const exportCsv = () => downloadCsv(`attendance-salary-${year}-${String(month).padStart(2, "0")}.csv`, [
   ["Employee code", "Name", "Department", "Working days", "Employed days", "Present", "Late", "Half days", "Paid leave", "Unpaid leave", "No attendance", "Pending", "LOP adjustment", "LOP days", "Paid days", "Monthly gross", "Gross earned", "Deductions", "Net pay", "On hold", "Notes"],
   ...rows.map((r) => {
@@ -387,11 +353,9 @@ export default function AdminSalaryProcessing() {
     r.on_hold ? "Yes" : "", r.flags.map((f) => f.label).join("; ")];
   })]
   );
-
   return (
     <div className="space-y-5">
       {adjusting && <AdjustDialog row={adjusting} month={month} year={year} onClose={() => setAdjusting(null)} onSaved={replaceRow} />}
-
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -405,7 +369,6 @@ export default function AdminSalaryProcessing() {
           <button onClick={() => shiftMonth(1)} aria-label="Next month" className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"><ChevronRight size={18} /></button>
         </div>
       </div>
-
       {/* Run status */}
       {run &&
       <div className={`rounded-2xl border px-4 py-3 flex flex-wrap items-center justify-between gap-3 ${locked ? "bg-slate-50 border-slate-200" : "bg-sky-50 border-sky-200"}`}>
@@ -416,7 +379,6 @@ export default function AdminSalaryProcessing() {
           <Link to="/dashboard/payroll" className="text-sm font-bold text-[#b45309] hover:underline inline-flex items-center gap-1">Review &amp; approve <ArrowRight size={14} /></Link>
         </div>
       }
-
       {/* KPIs */}
       {loading && !data ?
       <div className="flex justify-center py-16 text-slate-400"><Loader2 className="animate-spin" /></div> :
@@ -429,14 +391,12 @@ export default function AdminSalaryProcessing() {
             <Kpi icon={<Wallet size={18} />} label="Gross payable" value={inr(t.gross)} sub={`− ${inr(t.deductions)} deductions`} />
             <Kpi icon={<Wallet size={18} />} label="Net payout" value={inr(t.net)} tone="text-[#b45309]" />
           </div>
-
           {blocking > 0 &&
         <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800 flex items-start gap-2">
               <AlertTriangle size={16} className="mt-0.5 shrink-0" />
               <span><strong>{blocking} employee(s)</strong> have leaves or regularizations still pending. Those days count as loss of pay until they are approved — approve them first, or adjust here.</span>
             </div>
         }
-
           {/* Filters + actions */}
           <div className="flex flex-wrap items-center gap-2">
             <label className="flex items-center gap-2 flex-1 min-w-[220px] max-w-sm h-10 bg-white border border-slate-200 rounded-xl px-3">
@@ -458,9 +418,7 @@ export default function AdminSalaryProcessing() {
               <Play size={15} /> {run ? "Re-process payroll" : "Process payroll"}
             </button>
           </div>
-
           <Legend />
-
           {/* Table */}
           <div className="bg-white border border-slate-200 rounded-2xl overflow-x-auto">
             <table className="w-full min-w-[1000px]">
@@ -491,7 +449,6 @@ export default function AdminSalaryProcessing() {
           </div>
         </>
       }
-
       {/* Confirm processing */}
       {confirming && t &&
       <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-4" onMouseDown={() => !processing && setConfirming(false)}>
@@ -516,5 +473,4 @@ export default function AdminSalaryProcessing() {
         </div>
       }
     </div>);
-
 }

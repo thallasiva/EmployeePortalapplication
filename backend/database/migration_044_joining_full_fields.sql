@@ -1,5 +1,4 @@
 -- Migration 044: Expand joining_formalities table with all new fields
-
 ALTER TABLE joining_formalities
   ADD COLUMN IF NOT EXISTS actual_dob                        DATE         NULL,
   ADD COLUMN IF NOT EXISTS pan_no                            VARCHAR(20)  NULL,
@@ -88,10 +87,8 @@ ALTER TABLE joining_formalities
   ADD COLUMN IF NOT EXISTS admin_designation                 VARCHAR(255) NULL,
   ADD COLUMN IF NOT EXISTS admin_reporting_to                VARCHAR(255) NULL,
   ADD COLUMN IF NOT EXISTS admin_department                  VARCHAR(255) NULL;
-
 -- ── Recreate sp_joining_save_formalities ──────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_joining_save_formalities;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_save_formalities(
   IN p_invitation_id  INT,
@@ -275,10 +272,8 @@ BEGIN
   SELECT * FROM joining_formalities WHERE invitation_id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ── Recreate sp_joining_get_formality ────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_joining_get_formality;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_get_formality(IN p_invitation_id INT)
 BEGIN
@@ -293,10 +288,8 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ── sp_joining_review extended with admin fields ──────────────────────────────
 DROP PROCEDURE IF EXISTS sp_joining_review;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_review(
   IN p_invitation_id   INT,
@@ -317,7 +310,6 @@ BEGIN
     WHEN 'reject'           THEN 'rejected'
     ELSE p_decision
   END;
-
   UPDATE joining_invitations SET
     status     = CASE p_decision
                    WHEN 'approve'         THEN 'approved'
@@ -327,7 +319,6 @@ BEGIN
                  END,
     updated_at = NOW()
   WHERE id = p_invitation_id;
-
   UPDATE joining_formalities SET
     status               = v_jf_status,
     hr_remarks           = p_remarks,
@@ -339,7 +330,6 @@ BEGIN
     admin_department     = COALESCE(p_department,    admin_department),
     updated_at           = NOW()
   WHERE invitation_id = p_invitation_id;
-
   SELECT ji.*, jf.status AS formality_status, jf.hr_remarks AS review_remarks,
          jf.reviewed_at, jf.admin_employee_id, jf.admin_designation,
          jf.admin_reporting_to, jf.admin_department
@@ -348,12 +338,10 @@ BEGIN
   WHERE ji.id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ── sp_joining_get_form_by_token ──────────────────────────────────────────────
 -- Employee-facing: returns all saved formality columns so the UI can pre-fill
 -- the form when the employee reopens after a "changes_requested" decision.
 DROP PROCEDURE IF EXISTS sp_joining_get_form_by_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_get_form_by_token(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -372,11 +360,9 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ── Patch sp_joining_review to reset expires_at on request_changes ────────────
 -- (Re-create with the fix — adds 5-day window so the new token never blocks reopen)
 DROP PROCEDURE IF EXISTS sp_joining_review;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_review(
   IN p_invitation_id   INT,
@@ -397,7 +383,6 @@ BEGIN
     WHEN 'reject'           THEN 'rejected'
     ELSE p_decision
   END;
-
   UPDATE joining_invitations SET
     status = CASE p_decision
                WHEN 'approve'         THEN 'approved'
@@ -412,7 +397,6 @@ BEGIN
                  END,
     updated_at = NOW()
   WHERE id = p_invitation_id;
-
   UPDATE joining_formalities SET
     status               = v_jf_status,
     hr_remarks           = p_remarks,
@@ -424,7 +408,6 @@ BEGIN
     admin_department     = COALESCE(p_department,    admin_department),
     updated_at           = NOW()
   WHERE invitation_id = p_invitation_id;
-
   SELECT ji.*, jf.status AS formality_status, jf.hr_remarks AS review_remarks,
          jf.reviewed_at, jf.admin_employee_id, jf.admin_designation,
          jf.admin_reporting_to, jf.admin_department
@@ -433,10 +416,8 @@ BEGIN
   WHERE ji.id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 -- ── Patch sp_joining_verify_token to return hr_remarks (for changes_requested banner) ──
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci)
 BEGIN

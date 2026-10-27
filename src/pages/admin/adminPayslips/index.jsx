@@ -5,13 +5,11 @@ import PayslipsHeader from "./components/PayslipsHeader";
 import PayslipTable from "./components/PayslipTable";
 import ImportSalaryStructureModal from "./components/ImportSalaryStructureModal";
 import GenerateAllResultModal from "./components/GenerateAllResultModal";
-
 const AdminPayslips = React.memo(function AdminPayslips() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [showImportModal, setShowImportModal] = useState(false);
-
   const {
     payslips,
     loading,
@@ -24,9 +22,7 @@ const AdminPayslips = React.memo(function AdminPayslips() {
     handleMarkPaid,
     handleDownloadPdf,
   } = usePayslips(month, year);
-
   const pagination = usePagination(payslips);
-
   return (
     <div className="min-h-screen bg-[#f5f7fb] p-6">
       <PayslipsHeader
@@ -38,7 +34,6 @@ const AdminPayslips = React.memo(function AdminPayslips() {
         onImport={() => setShowImportModal(true)}
         onGenerateAll={handleGenerateAll}
       />
-
       <PayslipTable
         month={month}
         year={year}
@@ -48,14 +43,12 @@ const AdminPayslips = React.memo(function AdminPayslips() {
         onMarkPaid={handleMarkPaid}
         onDownloadPdf={handleDownloadPdf}
       />
-
       {showImportModal && (
         <ImportSalaryStructureModal
           onClose={() => setShowImportModal(false)}
           onImported={loadPayslips}
         />
       )}
-
       {generateResult && (
         <GenerateAllResultModal
           result={generateResult}
@@ -65,5 +58,4 @@ const AdminPayslips = React.memo(function AdminPayslips() {
     </div>
   );
 });
-
 export default AdminPayslips;

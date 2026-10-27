@@ -9,7 +9,6 @@ import {
 import AdminGroupedBarChart from "../../../../component/admin/AdminGroupedBarChart";
 import AdminDonutChart from "../../../../component/admin/AdminDonutChart";
 import AdminHorizontalBarChart from "../../../../component/admin/AdminHorizontalBarChart";
-
 const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, summary }) {
   return (
     <section>
@@ -60,5 +59,4 @@ const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, sum
     </section>
   );
 });
-
 export default AnalyticsSection;

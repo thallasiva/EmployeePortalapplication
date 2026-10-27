@@ -4,14 +4,12 @@ import {
 } from "../../../../api/payroll.api";
 import { downloadPayslipPdf } from "../../../../utils/payslipPdfGenerator";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
-
 export function usePayslips(month, year) {
   const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generateResult, setGenerateResult] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
-
   const loadPayslips = useCallback(() => {
     setLoading(true);
     listPayslips({ month, year, limit: 100 })
@@ -19,11 +17,9 @@ export function usePayslips(month, year) {
       .catch(() => setPayslips([]))
       .finally(() => setLoading(false));
   }, [month, year]);
-
   useEffect(() => {
     loadPayslips();
   }, [loadPayslips]);
-
   const handleGenerateAll = useCallback(async () => {
     setGenerating(true);
     try {
@@ -37,7 +33,6 @@ export function usePayslips(month, year) {
       setGenerating(false);
     }
   }, [month, year, loadPayslips]);
-
   const handleMarkPaid = useCallback(async (id) => {
     try {
       await markPayslipPaid(id);
@@ -47,7 +42,6 @@ export function usePayslips(month, year) {
       apiErrorToast(err, "update payslip");
     }
   }, [loadPayslips]);
-
   const handleDownloadPdf = useCallback(async (id) => {
     setDownloadingId(id);
     try {
@@ -59,7 +53,6 @@ export function usePayslips(month, year) {
       setDownloadingId(null);
     }
   }, []);
-
   return {
     payslips,
     loading,

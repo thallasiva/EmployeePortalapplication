@@ -3,11 +3,9 @@ import { Headphones, ArrowLeft, ArrowRight } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND, STATUS_COLOR, TEAM_COLOR } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
-
 const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUser, onSelect, onPageChange }) => (
   <div className={cssClass({ flex: 1, background: "#fff", border: "1px solid #e2e8f0",
     borderRadius: 12, overflow: "hidden", minHeight: 0, display: "flex", flexDirection: "column" })}>
-
     {/* column headers */}
     <div className={cssClass({ display: "grid", gridTemplateColumns: "2fr 1.2fr 0.9fr 1.1fr 1fr 0.8fr",
       padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0",
@@ -16,7 +14,6 @@ const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUs
       <span>Subject</span><span>Employee</span><span>Category</span>
       <span>Forwarded To</span><span>Status</span><span>Date</span>
     </div>
-
     {/* rows */}
     <div className={cssClass({ flex: 1, overflowY: "auto" })}>
       {loading ? (
@@ -73,7 +70,6 @@ const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUs
         );
       })}
     </div>
-
     {/* pagination */}
     {total > limit && (
       <div className={cssClass({ padding: "10px 16px", borderTop: "1px solid #e2e8f0",
@@ -94,6 +90,5 @@ const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUs
     )}
   </div>
 ));
-
 TicketList.displayName = "TicketList";
 export default TicketList;

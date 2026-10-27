@@ -6,11 +6,8 @@
 --
 -- After running this SQL, restart the backend so the app service re-encrypts
 -- any rows that still have salary_encrypted = NULL.
-
 USE hrms_db;
-
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- ── salary_structures: allow NULL so we can clear plaintext ──────────────────
 ALTER TABLE salary_structures
   MODIFY COLUMN basic              DECIMAL(12,2) DEFAULT NULL,
@@ -23,7 +20,6 @@ ALTER TABLE salary_structures
   MODIFY COLUMN professional_tax   DECIMAL(12,2) DEFAULT NULL,
   MODIFY COLUMN income_tax         DECIMAL(12,2) DEFAULT NULL,
   MODIFY COLUMN ctc                DECIMAL(12,2) DEFAULT NULL;
-
 -- ── payslips: allow NULL so we can clear plaintext ───────────────────────────
 ALTER TABLE payslips
   MODIFY COLUMN basic          DECIMAL(12,2) DEFAULT NULL,
@@ -33,5 +29,4 @@ ALTER TABLE payslips
   MODIFY COLUMN ctc            DECIMAL(12,2) DEFAULT NULL,
   MODIFY COLUMN deductions     DECIMAL(12,2) DEFAULT NULL,
   MODIFY COLUMN net_pay        DECIMAL(12,2) DEFAULT NULL;
-
 SET FOREIGN_KEY_CHECKS = 1;

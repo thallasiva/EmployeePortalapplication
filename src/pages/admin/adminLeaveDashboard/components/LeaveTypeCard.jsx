@@ -2,14 +2,12 @@ import React from 'react';
 import { Calendar } from 'lucide-react';
 import { cssClass } from '../../../../utils/classStyles';
 import { LEAVE_ICON, LEAVE_COLOR } from '../constants/leaveConstants';
-
 const LeaveTypeCard = React.memo(function LeaveTypeCard({ item }) {
   const Icon = LEAVE_ICON[item.icon] || Calendar;
   const colors = LEAVE_COLOR[item.color] || LEAVE_COLOR.green;
   const pct = item.totalQuota
     ? Math.round((item.usedThisMonth / item.totalQuota) * 100)
     : 0;
-
   return (
     <div className="admin-dash-card">
       <div className="flex items-start justify-between mb-3">
@@ -31,5 +29,4 @@ const LeaveTypeCard = React.memo(function LeaveTypeCard({ item }) {
     </div>
   );
 });
-
 export default LeaveTypeCard;

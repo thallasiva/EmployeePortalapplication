@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const SummaryCards = React.memo(({ cards }) => (
   <div className={cssClass({ display: "flex", gap: 10, marginBottom: 16, flexShrink: 0, flexWrap: "wrap" })}>
     {cards.map((s) => (
@@ -15,6 +14,5 @@ const SummaryCards = React.memo(({ cards }) => (
     ))}
   </div>
 ));
-
 SummaryCards.displayName = "SummaryCards";
 export default SummaryCards;

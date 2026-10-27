@@ -1,6 +1,5 @@
 import { Filter, Plus, UserPlus } from "lucide-react";
 import Btn from "./Btn";
-
 function Toolbar({ role, setActive })
 {
     if (role.id === 1) return null;
@@ -12,5 +11,4 @@ function Toolbar({ role, setActive })
         </div>
     );
 }
-
 export default Toolbar;

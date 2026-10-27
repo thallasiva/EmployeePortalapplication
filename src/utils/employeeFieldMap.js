@@ -1,17 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const EMPLOYEE_FIELD_MAP = [
 { header: "Employee Number", key: "employee_number", group: "employee", column: "emp_code" },
 { header: "Employee Name", key: "employee_name", group: "derived" },
@@ -55,9 +41,6 @@ export const EMPLOYEE_FIELD_MAP = [
 { header: "Permanent Address Line 3", key: "permanent_address_line_3", group: "contact", column: "permanent_address_line3" },
 { header: "Has Left The Organization", key: "has_left_the_organization", group: "employee", column: "has_left_organization" },
 { header: "Leaving Date", key: "leaving_date", group: "employee", column: "emp_exit_date" }];
-
-
-
 export const EXPORT_EXTRA_COLUMNS = [
 { header: "Mobile", get: (e) => e.mobile },
 { header: "Department", get: (e) => e.department_name },
@@ -67,10 +50,7 @@ export const EXPORT_EXTRA_COLUMNS = [
 { header: "Employee Type", get: (e) => e.employee_type },
 { header: "CTC", get: (e) => e.ctc },
 { header: "Reporting Manager", get: (e) => e.reporting_to_name?.trim() }];
-
-
 const TRUE_VALUES = new Set(["yes", "y", "true", "1"]);
-
 export function parseBooleanFlag(value) {
   if (value === undefined || value === null) return false;
   return TRUE_VALUES.has(String(value).trim().toLowerCase());

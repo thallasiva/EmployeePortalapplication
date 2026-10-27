@@ -4,9 +4,7 @@
 -- Fixes: "Out of range value for column 'v_limit'"
 -- ============================================================
 USE hrms_db;
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_list_leave_requests $$
 CREATE PROCEDURE sp_list_leave_requests (
   IN p_employee_id   INT,
@@ -40,7 +38,6 @@ BEGIN
          )
    ORDER BY lr.applied_on DESC
    LIMIT IFNULL(p_limit, 9223372036854775807) OFFSET IFNULL(p_offset, 0);
-
   SELECT COUNT(*) AS total
     FROM leave_requests lr
     JOIN employees e ON e.employee_id = lr.employee_id
@@ -55,7 +52,5 @@ BEGIN
            OR (p_team_role_id IS NOT NULL AND u.role_id = p_team_role_id)
          );
 END $$
-
 DELIMITER ;
-
 SELECT 'sp_list_leave_requests fixed — 8 params with BIGINT limit' AS status;

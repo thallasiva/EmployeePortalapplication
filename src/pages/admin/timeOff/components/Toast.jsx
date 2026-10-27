@@ -1,7 +1,6 @@
 import React from "react";
 import { Check, AlertCircle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const Toast = React.memo(({ msg, type = "success" }) =>
   msg ? (
     <div className={cssClass({
@@ -16,6 +15,5 @@ const Toast = React.memo(({ msg, type = "success" }) =>
     </div>
   ) : null
 );
-
 Toast.displayName = "Toast";
 export default Toast;

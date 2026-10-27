@@ -1,5 +1,4 @@
 'use strict';
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -10,16 +9,12 @@ const slowDown = require('express-slow-down');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
-
 const { clientOrigin, env } = require('./config/env');
 const routes = require('./routes');
 const sanitizeBody = require('./middleware/sanitizeBody');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const { authenticate, authorizeRoles } = require('./middleware/auth');
-
 const app = express();
-
-
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -46,8 +41,6 @@ app.use(
     hidePoweredBy: true
   })
 );
-
-
 app.use(
   cors({
     origin: clientOrigin,
@@ -57,20 +50,15 @@ app.use(
     exposedHeaders: ['X-Request-Id']
   })
 );
-
-
 app.use((req, res, next) => {
   const id = crypto.randomUUID();
   req.requestId = id;
   res.setHeader('X-Request-Id', id);
   next();
 });
-
-
 morgan.token('safe-auth', (req) =>
 req.headers.authorization ? '[REDACTED]' : '-'
 );
-
 if (env !== 'test') {
   app.use(
     morgan(
@@ -80,41 +68,23 @@ if (env !== 'test') {
     )
   );
 }
-
-
 app.use(compression());
-
-
 app.use(cookieParser());
-
-
 const path = require('path');
 app.use('/public', express.static(path.join(__dirname, '../../src/assets'), {
   maxAge: '7d',
   immutable: false,
   setHeaders: (res) => {res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');}
 }));
-
-
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-
-
-
 app.use(hpp({ whitelist: ['sort', 'fields', 'filter', 'ids'] }));
-
-
-
 app.use(sanitizeBody);
-
-
-
 const authSlowDown = slowDown({
   windowMs: 15 * 60 * 1000,
   delayAfter: 3,
   delayMs: (hits) => (hits - 3) * 500
 });
-
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -123,8 +93,6 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
   message: { success: false, message: 'Too many auth attempts. Please try again later.' }
 });
-
-
 const payrollLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 60,
@@ -132,8 +100,6 @@ const payrollLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: 'Too many payroll requests. Please slow down.' }
 });
-
-
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
@@ -141,17 +107,12 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests. Please try again later.' }
 });
-
 app.use('/api/auth', authSlowDown, authLimiter);
 app.use('/api/payroll', payrollLimiter);
 app.use('/api', generalLimiter);
-
-
 const { upload: uploadConfig } = require('./config/env');
 const uploadDir = require('path').resolve(process.cwd(), uploadConfig.dir);
 app.use('/uploads', express.static(uploadDir, { index: false }));
-
-
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
@@ -159,14 +120,11 @@ app.get('/health', (req, res) => {
     database: req.app.locals.dbConnected ? 'connected' : 'disconnected'
   });
 });
-
 app.get('/api/health/', (req, res) => {
   res.status(200).json({ ok: true, status: 'ok', ts: new Date().toISOString() });
 });
-
 // Email diagnostics send real mail from the company SMTP account — Admin only.
 const adminOnly = [authenticate, authorizeRoles('Admin')];
-
 app.get('/api/health/email', adminOnly, async (req, res) => {
   try {
     const { verifySmtp } = require('./services/email.service');
@@ -176,9 +134,6 @@ app.get('/api/health/email', adminOnly, async (req, res) => {
     res.status(503).json({ ok: false, error: err.message });
   }
 });
-
-
-
 app.post('/api/health/email/send-test', adminOnly, async (req, res) => {
   try {
     const { sendMailNow } = require('./services/email.service');
@@ -194,8 +149,6 @@ app.post('/api/health/email/send-test', adminOnly, async (req, res) => {
     res.status(500).json({ sent: false, error: err.message });
   }
 });
-
-
 app.get('/api/health/email/send-test', adminOnly, async (req, res) => {
   try {
     const { sendMailNow } = require('./services/email.service');
@@ -211,14 +164,11 @@ app.get('/api/health/email/send-test', adminOnly, async (req, res) => {
     res.status(500).json({ sent: false, error: err.message });
   }
 });
-
-
 app.get('/api/health/email/send-pdf-test', adminOnly, async (req, res) => {
   try {
     const { sendMailNow } = require('./services/email.service');
     const { generateOfferLetterPdf } = require('./utils/offerLetterPdf');
     const to = req.query.to || 'pavan@yopmail.com';
-
     const pdfBuffer = await generateOfferLetterPdf({
       candidateName: 'Test Candidate',
       jobTitle: 'Software Engineer',
@@ -231,7 +181,6 @@ app.get('/api/health/email/send-pdf-test', adminOnly, async (req, res) => {
       pfContribution: 216000, statutoryBonus: 46250,
       gratuity: 86580, esi: 0
     });
-
     const result = await sendMailNow({
       to,
       subject: 'HRMS -- Offer Letter PDF Test',
@@ -239,7 +188,6 @@ app.get('/api/health/email/send-pdf-test', adminOnly, async (req, res) => {
       text: 'Test email with PDF attachment.',
       attachments: [{ filename: 'Offer_Letter_TEST.pdf', content: pdfBuffer, contentType: 'application/pdf' }]
     });
-
     res.status(result.sent ? 200 : 500).json({
       ...result,
       pdfSize: pdfBuffer.length,
@@ -249,12 +197,7 @@ app.get('/api/health/email/send-pdf-test', adminOnly, async (req, res) => {
     res.status(500).json({ sent: false, error: err.message, stack: err.stack?.split('\n').slice(0, 5) });
   }
 });
-
-
 app.use("/api", routes);
-
-
 app.use(notFoundHandler);
 app.use(errorHandler);
-
 module.exports = app;

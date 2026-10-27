@@ -17,7 +17,6 @@ export function validateStep(step, values) {
   }
   return errors;
 }
-
 export function formatSalary(val) {
   return Number(val).toLocaleString("en-US", {
     style: "currency",
@@ -25,7 +24,6 @@ export function formatSalary(val) {
     maximumFractionDigits: 0,
   });
 }
-
 export function formatDate(val) {
   if (!val) return "—";
   return new Date(val).toLocaleDateString("en-US", {

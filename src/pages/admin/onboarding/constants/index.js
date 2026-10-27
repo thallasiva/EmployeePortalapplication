@@ -1,5 +1,4 @@
 export const ONBOARDING_DAYS = 90;
-
 export const CHECKLIST_TEMPLATE = [
   {
     section: "Pre-boarding",

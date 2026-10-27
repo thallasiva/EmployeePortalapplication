@@ -2,12 +2,10 @@ import React, { useEffect } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { WORK_DAYS, INPUT_CLS } from "../constants";
 import EmployeeScheduleTab from "./EmployeeScheduleTab";
-
 const SCHEDULE_TABS = [
   { id: "company",  label: "Company Default" },
   { id: "employee", label: "Per Employee" },
 ];
-
 const WorkSchedule = React.memo(function WorkSchedule({
   selectedCompany, schedule, setSchedule, toggleDay,
   scheduleTab, setScheduleTab,
@@ -17,7 +15,6 @@ const WorkSchedule = React.memo(function WorkSchedule({
   useEffect(() => {
     if (scheduleTab === "employee") loadEmpSchedules();
   }, [scheduleTab, loadEmpSchedules]);
-
   return (
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -43,7 +40,6 @@ const WorkSchedule = React.memo(function WorkSchedule({
           ))}
         </div>
       </div>
-
       {scheduleTab === "company" && (
         <>
           <p className="mt-4 text-sm text-gray-500">
@@ -80,12 +76,10 @@ const WorkSchedule = React.memo(function WorkSchedule({
           </div>
         </>
       )}
-
       {scheduleTab === "employee" && (
         <EmployeeScheduleTab {...empScheduleProps} />
       )}
     </section>
   );
 });
-
 export default WorkSchedule;

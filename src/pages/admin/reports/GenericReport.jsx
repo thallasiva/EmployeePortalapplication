@@ -7,21 +7,17 @@ import {
 "../../../component/reports/ReportsLayout";
 import { GENERIC_REPORTS } from "../../../data/reportsData";import { cssClass, joinClasses } from "../../../utils/classStyles";
 import { ArrowUpDown } from "lucide-react";
-
 export default function GenericReport({ type }) {
   const config = GENERIC_REPORTS[type];
   if (!config) return null;
-
   return (
     <div className="report-page">
       <ReportPageHeader title={config.title} />
-
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 720 }))}>
         {config.stats.map((stat) =>
         <ReportStatCard key={stat.label} {...stat} />
         )}
       </div>
-
       <div className="report-table-section">
         <ReportTableToolbar title={config.tableTitle} />
         <div className={cssClass({ overflowX: "auto" })}>
@@ -44,7 +40,6 @@ export default function GenericReport({ type }) {
                   <ReportStatusBadge status={cell} /> :
                   idx === 1 && typeof cell === "string" && cell.includes(" ") ?
                   <strong>{cell}</strong> :
-
                   cell
                   }
                     </td>
@@ -56,5 +51,4 @@ export default function GenericReport({ type }) {
         </div>
       </div>
     </div>);
-
 }

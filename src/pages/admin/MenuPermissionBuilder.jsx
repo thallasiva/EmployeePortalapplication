@@ -2,12 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Save, Shield, Check, X, ChevronRight, ChevronDown, Users, Loader2, LayoutDashboard, ClipboardList, UserPlus, User, Clock, TreePalm, FilePen, ChartColumn, Tag, Timer, Wallet, TrendingUp, FileText, Download, CircleCheck, Target, Briefcase, MessagesSquare, Star, FileStack, FolderOpen, Ticket, Rocket, Link2, Building2, BriefcaseBusiness, Forward, ShieldCheck, Settings, Wrench, Mail, Bell, Palette, Lock } from "lucide-react";
 import { menuPermissionsApi } from "../../api/settings.api";
 import { bustMenuPermissionsCache } from "../../hooks/useMenuPermissions";
-
 const BRAND = "#f18200";
-
 const ROLES = ["Admin", "HR Manager", "Manager", "Employee", "Recruiter", "Finance"];
 const ROLE_COLORS = ["#f18200", "#6366f1", "#8b5cf6", "#10b981", "#3b82f6", "#64748b"];
-
 const MENU_TREE = [
   { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={16} />, children: [] },
   {
@@ -69,7 +66,6 @@ const MENU_TREE = [
   { id: "menu-perm", label: "Menu Permissions", icon: <Lock size={16} />, children: [] },
   { id: "notif-center", label: "Notification Center", icon: <Bell size={16} />, children: [] },
 ];
-
 // Build default: Admin=all, others restricted
 const buildDefault = () =>
 {
@@ -107,7 +103,6 @@ const buildDefault = () =>
   });
   return perms;
 };
-
 export default function MenuPermissionBuilder() {
   const [perms, setPerms] = useState(buildDefault);
   const [activeRole, setActiveRole] = useState(ROLES[0]);
@@ -115,19 +110,16 @@ export default function MenuPermissionBuilder() {
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     menuPermissionsApi.get().then(data => {
       if (data && Object.keys(data).length > 0) setPerms(data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
-
   if (loading) return (
     <div className="flex items-center justify-center h-40">
       <Loader2 size={24} className="animate-spin" style={{color:"#f18200"}} />
     </div>
   );
-
   const toggle = (id) =>
   {
     setPerms(p => ({
@@ -136,7 +128,6 @@ export default function MenuPermissionBuilder() {
     }));
     setDirty(true);
   };
-
   const toggleParent = (menu) =>
   {
     const childIds = (menu.children || []).map(c => c.id);
@@ -147,7 +138,6 @@ export default function MenuPermissionBuilder() {
     setPerms(p => ({ ...p, [activeRole]: { ...p[activeRole], ...patch } }));
     setDirty(true);
   };
-
   const toggleAll = (val) =>
   {
     const all = {};
@@ -159,7 +149,6 @@ export default function MenuPermissionBuilder() {
     setPerms(p => ({ ...p, [activeRole]: all }));
     setDirty(true);
   };
-
   const handleSave = async () => {
     try {
       await menuPermissionsApi.save(perms);
@@ -168,9 +157,7 @@ export default function MenuPermissionBuilder() {
       setTimeout(() => setSaved(false), 2500);
     } catch { setSaved(false); }
   };
-
   const countEnabled = (role) => Object.values(perms[role] || {}).filter(Boolean).length;
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {saved && (
@@ -178,7 +165,6 @@ export default function MenuPermissionBuilder() {
           <Check size={15} /> Permissions saved successfully
         </div>
       )}
-
       {/* Header */}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -195,7 +181,6 @@ export default function MenuPermissionBuilder() {
           <Save size={15} /> Save Changes
         </button>
       </div>
-
       <div className="px-6 pb-10 flex gap-5">
         {/* Role tabs column */}
         <div className="w-52 shrink-0 space-y-2">
@@ -216,7 +201,6 @@ export default function MenuPermissionBuilder() {
             </button>
           ))}
         </div>
-
         {/* Permissions panel */}
         <div className="flex-1 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
           {/* Panel header */}
@@ -239,7 +223,6 @@ export default function MenuPermissionBuilder() {
               </button>
             </div>
           </div>
-
           {/* Menu tree */}
           <div className="divide-y divide-[#f8fafc]">
             {MENU_TREE.map(menu =>
@@ -250,7 +233,6 @@ export default function MenuPermissionBuilder() {
               const allChildOn = childIds.every(id => perms[activeRole]?.[id]);
               const someChildOn = childIds.some(id => perms[activeRole]?.[id]);
               const parentOn = perms[activeRole]?.[menu.id];
-
               return (
                 <div key={menu.id}>
                   <div className={`flex items-center gap-4 px-5 py-3.5 hover:bg-[#fafbff] transition-colors ${parentOn || allChildOn ? "" : "opacity-50"}`}>

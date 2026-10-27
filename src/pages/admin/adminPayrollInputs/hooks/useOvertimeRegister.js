@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { listPayslips } from "../../../../api/payroll.api";
-
 export function useOvertimeRegister(month, year) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     listPayslips({ month, year, limit: 500 })
@@ -24,6 +22,5 @@ export function useOvertimeRegister(month, year) {
       })
       .finally(() => setLoading(false));
   }, [month, year]);
-
   return { rows, loading };
 }

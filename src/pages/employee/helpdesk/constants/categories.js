@@ -3,7 +3,6 @@ import {
   LogOut, UserPlus, AlertCircle, Wifi, Globe, ShieldCheck, Users,
   Network, Server, Wrench,
 } from "lucide-react";
-
 export const CATEGORIES = [
   {
     id: "hardware",
@@ -38,7 +37,6 @@ export const CATEGORIES = [
     ],
   },
 ];
-
 export const URGENCY_OPTIONS = [
   "",
   "Immediately – it's affecting lots of people",
@@ -46,18 +44,15 @@ export const URGENCY_OPTIONS = [
   "Medium – there's a workaround available",
   "Low – it can wait a little",
 ];
-
 export const IMPACT_OPTIONS = [
   "",
   "Affecting the whole organisation",
   "Affecting a team or project",
   "Affecting just me",
 ];
-
 export const SERVICES_OPTIONS = [
   "", "Email", "VPN", "Internet / Wi-Fi", "File Server",
   "Database", "Web Server", "DNS", "Active Directory",
   "Microsoft 365", "Google Workspace", "Other",
 ];
-
 export const TICKET_STATUSES = ["all", "Open", "Forwarded", "In Progress", "Reopened", "Resolved", "Closed", "Rejected"];

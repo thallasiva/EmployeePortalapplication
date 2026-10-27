@@ -1,6 +1,5 @@
 import { ShieldCheck, User, ClipboardList, Target, Search } from "lucide-react";
 export const ROLE_ICONS = { 1: <ShieldCheck size={15} />, 2: <User size={15} />, 3: <ClipboardList size={15} />, 4: <Target size={15} />, 5: <Search size={15} /> };
-
 export const ROLE_COLORS = {
   1: { color: "#dc2626", bg: "#fee2e2", border: "#fca5a5" },
   2: { color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" },
@@ -8,7 +7,6 @@ export const ROLE_COLORS = {
   4: { color: "#f18200", bg: "#fff7ed", border: "#fed7aa" },
   5: { color: "#0369a1", bg: "#e0f2fe", border: "#7dd3fc" }
 };
-
 export const JOB_ROLES = [
   { cat: "Management", color: "#185fa5", bg: "#e6f1fb", roles: [
     "CEO (Chief Executive Officer)", "CTO (Chief Technology Officer)", "CIO (Chief Information Officer)",

@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const ReviewModal = React.memo(function ReviewModal({ title, onSubmit, onClose }) {
   const [status, setStatus] = useState("approved");
   const [remarks, setRemarks] = useState("");
   const [saving, setSaving] = useState(false);
-
   const submit = async () => {
     if (status === "rejected" && !remarks.trim()) return;
     setSaving(true);
@@ -14,7 +12,6 @@ const ReviewModal = React.memo(function ReviewModal({ title, onSubmit, onClose }
     catch (e) { alert(e?.response?.data?.message || "Error"); }
     setSaving(false);
   };
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.4)",
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16 })}>
@@ -60,5 +57,4 @@ const ReviewModal = React.memo(function ReviewModal({ title, onSubmit, onClose }
     </div>
   );
 });
-
 export default ReviewModal;

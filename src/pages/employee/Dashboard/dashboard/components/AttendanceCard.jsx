@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmtTime } from "../utils/formatters";
 import { MapPin, Check, Play, Pause } from "lucide-react";
-
 const AttendanceCard = React.memo(function AttendanceCard({
   loading,
   todayAtt,
@@ -35,7 +34,6 @@ const AttendanceCard = React.memo(function AttendanceCard({
         )}
       </div>
       <div className={cssClass({ fontSize: 11, color: "#94a3b8", marginBottom: 18 })}>{todayLabel}</div>
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 })}>
         {/* Check In box */}
         <div className={cssClass({
@@ -62,7 +60,6 @@ const AttendanceCard = React.memo(function AttendanceCard({
             </div>
           )}
         </div>
-
         {/* Check Out box */}
         <div className={cssClass({
           background: checkOut ? "#fff8f0" : "#f8fafc", borderRadius: 10, padding: "14px 12px",
@@ -89,7 +86,6 @@ const AttendanceCard = React.memo(function AttendanceCard({
           )}
         </div>
       </div>
-
       {(elapsed || workHours) && (
         <div className="flex items-center justify-between bg-purple-50 rounded-lg px-3.5 py-2 mb-3.5">
           <span className="text-xs text-purple-700 font-semibold">
@@ -100,7 +96,6 @@ const AttendanceCard = React.memo(function AttendanceCard({
           </span>
         </div>
       )}
-
       <div className="grid grid-cols-2 gap-2.5">
         <button
           onClick={handleCheckIn}
@@ -132,5 +127,4 @@ const AttendanceCard = React.memo(function AttendanceCard({
     </div>
   );
 });
-
 export default AttendanceCard;

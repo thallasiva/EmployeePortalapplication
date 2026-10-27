@@ -1,7 +1,6 @@
 'use strict';
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-
 async function run() {
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
@@ -11,7 +10,6 @@ async function run() {
     database: process.env.DB_NAME || 'hrms_db',
     multipleStatements: false,
   });
-
   const steps = [
     // Fix sp_get_today_attendance — simple, no JSON_ARRAYAGG ORDER BY
     [`DROP PROCEDURE IF EXISTS sp_get_today_attendance`, 'drop sp_get_today_attendance'],
@@ -27,7 +25,6 @@ async function run() {
          WHERE employee_id = p_employee_id AND attendance_date = CURDATE()
          ORDER BY punch_time ASC;
       END`, 'create sp_get_today_attendance'],
-
     // Fix sp_get_monthly_attendance — simple, no complex JSON
     [`DROP PROCEDURE IF EXISTS sp_get_monthly_attendance`, 'drop sp_get_monthly_attendance'],
     [`CREATE PROCEDURE sp_get_monthly_attendance(IN p_employee_id INT, IN p_month INT, IN p_year INT)
@@ -48,7 +45,6 @@ async function run() {
           AND YEAR(a.attendance_date) = p_year
         ORDER BY a.attendance_date;
       END`, 'create sp_get_monthly_attendance'],
-
     // Fix sp_employee_checkin — check attendance table instead of punch log for "already in"
     [`DROP PROCEDURE IF EXISTS sp_employee_checkin`, 'drop sp_employee_checkin'],
     [`CREATE PROCEDURE sp_employee_checkin(
@@ -93,7 +89,6 @@ async function run() {
 
         SELECT * FROM attendance WHERE employee_id = p_employee_id AND attendance_date = p_date;
       END`, 'create sp_employee_checkin'],
-
     // Fix sp_employee_checkout
     [`DROP PROCEDURE IF EXISTS sp_employee_checkout`, 'drop sp_employee_checkout'],
     [`CREATE PROCEDURE sp_employee_checkout(
@@ -158,7 +153,6 @@ async function run() {
         SELECT * FROM attendance WHERE employee_id = p_employee_id AND attendance_date = p_date;
       END`, 'create sp_employee_checkout'],
   ];
-
   for (const [sql, label] of steps) {
     try {
       await conn.query(sql);
@@ -167,7 +161,6 @@ async function run() {
       console.error(`  ✗ ${label}: ${e.message}`);
     }
   }
-
   await conn.end();
   console.log('\n✅ Procedures fixed!');
 }

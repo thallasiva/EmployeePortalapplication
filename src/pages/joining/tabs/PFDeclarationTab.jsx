@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
 import { Shield, Info, Upload, CheckCircle, FileText } from "lucide-react";
 import SignatureUpload from "./SignatureUpload";
-
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] bg-white";
 const inpRO = "w-full border border-amber-100 rounded-lg px-3 py-2 text-[13px] bg-amber-50 text-gray-700 cursor-not-allowed";
-
 const F = ({ label, required, full, children }) =>
 <div className={full ? "col-span-2" : ""}>
     <label className="block text-[11px] font-semibold text-amber-800 uppercase tracking-wide mb-1">
@@ -12,25 +10,21 @@ const F = ({ label, required, full, children }) =>
     </label>
     {children}
   </div>;
-
 const Inp = (p) => <input {...p} className={inp} />;
 const Sel = ({ options, ...p }) =>
 <select {...p} className={inp + " font-sans"}>
     <option value="">Select...</option>
     {options.map((o) => <option key={o} value={o}>{o}</option>)}
   </select>;
-
 const Radio = ({ name, value, checked, onChange, label }) =>
 <label className="inline-flex items-center gap-2 cursor-pointer text-[13px] text-gray-700">
     <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="accent-[#d97706] w-3.5 h-3.5" />
     {label}
   </label>;
-
 const AutoTag = () =>
 <span className="ml-1.5 inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
     <Info size={9} /> Auto-filled
   </span>;
-
 const Sect = ({ title, children }) =>
 <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
     <div className="px-5 py-3 bg-gradient-to-r from-[#f18200] to-[#f18200]">
@@ -38,19 +32,14 @@ const Sect = ({ title, children }) =>
     </div>
     <div className="p-5 grid grid-cols-2 gap-3">{children}</div>
   </div>;
-
-
 const YN_OPTIONS = ["Yes", "No"];
 const GENDER = ["Male", "Female", "Other"];
 const MARITAL = ["Single", "Married", "Divorced", "Widowed"];
 const EDU_QUAL = ["Below 10th", "10th Pass", "12th Pass", "Graduate", "Post Graduate", "Other"];
 const DISABILITY = ["Blindness", "Low Vision", "Leprosy", "Hearing Impairment", "Loco Motor Disability", "Mental Retardation", "Mental Illness", "Other"];
-
 export default function PFDeclarationTab({ form, set, setForm }) {
   const aadharRef = React.useRef(null);
   const panDocRef = React.useRef(null);
-
-
   useEffect(() => {
     const updates = {};
     if (form.accountNumber && form.pfBankAccNo !== form.accountNumber) updates.pfBankAccNo = form.accountNumber;
@@ -61,12 +50,10 @@ export default function PFDeclarationTab({ form, set, setForm }) {
     }
     if (Object.keys(updates).length) setForm((p) => ({ ...p, ...updates }));
   }, [form.accountNumber, form.ifscCode, form.panNo]);
-
   const handleFileUpload = (file, nameKey, fileKey) => {
     if (!file) return;
     setForm((p) => ({ ...p, [nameKey]: file.name, [fileKey]: file }));
   };
-
   const DocUploadCard = ({ label, nameKey, fileKey, inputRef }) => {
     const uploaded = form[nameKey];
     return (
@@ -75,18 +62,15 @@ export default function PFDeclarationTab({ form, set, setForm }) {
         uploaded ? "border-green-400 bg-green-50" : "border-amber-300 bg-amber-50 hover:border-[#d97706]"}`
         }
         onClick={() => inputRef.current?.click()}>
-
         <input
           type="file"
           accept=".pdf,.jpg,.jpeg,.png"
           ref={inputRef}
           className="hidden"
           onChange={(e) => handleFileUpload(e.target.files[0], nameKey, fileKey)} />
-
         <div className="flex items-center gap-2 min-w-0">
           {uploaded ?
           <CheckCircle size={16} className="text-green-500 flex-shrink-0" /> :
-
           <Upload size={16} className="text-amber-500 flex-shrink-0" />
           }
           <span className={`text-[12px] truncate ${uploaded ? "text-green-700 font-medium" : "text-amber-700"}`}>
@@ -98,23 +82,18 @@ export default function PFDeclarationTab({ form, set, setForm }) {
           type="button"
           className="text-[11px] text-amber-600 underline flex-shrink-0"
           onClick={(e) => {e.stopPropagation();setForm((p) => ({ ...p, [nameKey]: "", [fileKey]: null }));}}>
-
             Remove
           </button> :
-
         <span className="text-[11px] text-amber-500 bg-amber-100 px-2 py-0.5 rounded flex-shrink-0">Browse</span>
         }
       </div>);
-
   };
-
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-[13px] text-amber-800">
         <p className="font-bold mb-1">PF Declaration — Form 11 (EPF &amp; MP Act, 1952)</p>
         <p>Please provide your Provident Fund details. Fields marked * are mandatory as per EPFO requirements.</p>
       </div>
-
       {}
       <Sect title="Personal Details">
         <F label={<>Employee Name <AutoTag /></>} full>
@@ -145,7 +124,6 @@ export default function PFDeclarationTab({ form, set, setForm }) {
           <Inp name="pfMobileNo" value={form.pfMobileNo || ""} onChange={set} placeholder="10-digit mobile" />
         </F>
       </Sect>
-
       {}
       <Sect title="PF / EPS Membership">
         <F label="Earlier Member of EPF 1952?" required>
@@ -172,7 +150,6 @@ export default function PFDeclarationTab({ form, set, setForm }) {
           </F>
         </>}
       </Sect>
-
       {}
       <Sect title="International Worker">
         <F label="International Worker?" required>
@@ -190,7 +167,6 @@ export default function PFDeclarationTab({ form, set, setForm }) {
           </F>
         </>}
       </Sect>
-
       {}
       <Sect title="Other Details">
         <F label="Educational Qualification" required>
@@ -222,7 +198,6 @@ export default function PFDeclarationTab({ form, set, setForm }) {
           </F>
         }
       </Sect>
-
       {}
       <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
         <div className="px-5 py-3 bg-gradient-to-r from-[#f18200] to-[#f18200]">
@@ -253,7 +228,6 @@ export default function PFDeclarationTab({ form, set, setForm }) {
           }
         </div>
       </div>
-
       {}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <h3 className="text-[13px] font-bold uppercase tracking-wide text-gray-700 mb-4">Declaration</h3>
@@ -277,5 +251,4 @@ export default function PFDeclarationTab({ form, set, setForm }) {
         </div>
       </div>
     </div>);
-
 }

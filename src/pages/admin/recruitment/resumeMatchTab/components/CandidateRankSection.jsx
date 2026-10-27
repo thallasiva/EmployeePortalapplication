@@ -3,7 +3,6 @@ import { RefreshCw, Loader2, ClipboardList } from "lucide-react";
 import { Btn, Select, SearchBar } from "../../shared";
 import RankStats from "./RankStats";
 import CandidateTable from "./CandidateTable";
-
 const CandidateRankSection = React.memo(function CandidateRankSection({
   jobs,
   selectedJob,
@@ -19,12 +18,10 @@ const CandidateRankSection = React.memo(function CandidateRankSection({
     { value: "", label: "— Select a Job to Rank Candidates —" },
     ...jobs.map((j) => ({ value: String(j.job_req_id), label: `${j.job_req_code || ""} — ${j.title}` })),
   ];
-
   const handleSelectJob = useCallback(
     (e) => onSelectJob(e.target.value),
     [onSelectJob],
   );
-
   return (
     <div>
       <div className="mb-3">
@@ -41,20 +38,17 @@ const CandidateRankSection = React.memo(function CandidateRankSection({
           )}
         </div>
       </div>
-
       {selectedJob && loading && (
         <div className="flex items-center gap-2.5 py-8 px-5 text-gray-500">
           <Loader2 size={18} /> Loading ranked candidates…
         </div>
       )}
-
       {selectedJob && !loading && (
         <>
           {filtered.length > 0 && <RankStats filtered={filtered} />}
           <CandidateTable filtered={filtered} onRecompute={onRecompute} />
         </>
       )}
-
       {!selectedJob && (
         <div className="text-center py-5 text-gray-400 text-[13px]">
           Select a job above to see all candidates ranked by match score.
@@ -63,5 +57,4 @@ const CandidateRankSection = React.memo(function CandidateRankSection({
     </div>
   );
 });
-
 export default CandidateRankSection;

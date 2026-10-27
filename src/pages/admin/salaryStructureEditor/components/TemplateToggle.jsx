@@ -1,16 +1,12 @@
 import React, { useState, useCallback } from "react";
-
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY        = "#1e3a5f";
 const AMBER       = "#d97706";
 const AMBER_INACT = "#fbcd97";
-
 const STORAGE_KEY = "salaryStructureTemplate";
-
 function getStored() {
   try { return localStorage.getItem(STORAGE_KEY) || "1"; } catch { return "1"; }
 }
-
 // ─── Preview icon SVGs ────────────────────────────────────────────────────────
 function IconTabbed({ active }) {
   const col = active ? NAVY : "#9ca3af";
@@ -33,7 +29,6 @@ function IconTabbed({ active }) {
     </svg>
   );
 }
-
 function IconGrid({ active }) {
   const col = active ? NAVY : "#9ca3af";
   return (
@@ -57,7 +52,6 @@ function IconGrid({ active }) {
     </svg>
   );
 }
-
 function IconWizard({ active }) {
   const col = active ? NAVY : "#9ca3af";
   return (
@@ -88,13 +82,11 @@ function IconWizard({ active }) {
     </svg>
   );
 }
-
 const TEMPLATES = [
   { id: "1", label: "Tabbed",      Icon: IconTabbed  },
   { id: "2", label: "Grid",        Icon: IconGrid    },
   { id: "3", label: "Wizard",      Icon: IconWizard  },
 ];
-
 // ─── TemplateToggle component ─────────────────────────────────────────────────
 const TemplateToggle = React.memo(function TemplateToggle({ value, onChange }) {
   return (
@@ -122,17 +114,13 @@ const TemplateToggle = React.memo(function TemplateToggle({ value, onChange }) {
     </div>
   );
 });
-
 // ─── Hook for reading/writing template preference ─────────────────────────────
 export function useTemplatePreference() {
   const [template, setTemplateState] = useState(getStored);
-
   const setTemplate = useCallback((id) => {
     try { localStorage.setItem(STORAGE_KEY, id); } catch {}
     setTemplateState(id);
   }, []);
-
   return [template, setTemplate];
 }
-
 export default TemplateToggle;

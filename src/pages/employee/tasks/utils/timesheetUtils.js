@@ -1,6 +1,5 @@
 import { DAYS, PROJECTS } from "../constants/taskConstants";
 import { toDateStr } from "./dateUtils";
-
 export function emptyEntry(id, weekDates) {
   const hours = {};
   DAYS.forEach((day, i) => {
@@ -16,22 +15,18 @@ export function emptyEntry(id, weekDates) {
     hours,
   };
 }
-
 export function rowTotal(hours) {
   return Object.values(hours).reduce((s, h) => s + (parseFloat(h.value) || 0), 0);
 }
-
 export function colTotal(entries, day) {
   return entries.reduce((s, r) => s + (parseFloat(r.hours[day]?.value) || 0), 0);
 }
-
 export function taskOverlapsWeek(task, dates) {
   if (!task.start_date || !task.end_date) return false;
   const weekStart = toDateStr(dates[0]);
   const weekEnd = toDateStr(dates[6]);
   return task.start_date <= weekEnd && task.end_date >= weekStart;
 }
-
 export function buildTaskRows(tasks, dates, startId = 1) {
   const rows = [];
   let id = startId;
@@ -58,7 +53,6 @@ export function buildTaskRows(tasks, dates, startId = 1) {
   });
   return rows;
 }
-
 export function buildTimesheetPayload(entries) {
   const out = [];
   for (const row of entries) {
@@ -77,7 +71,6 @@ export function buildTimesheetPayload(entries) {
   }
   return out;
 }
-
 export function mergeTaskRows(existingRows, tasks, dates) {
   const keys = new Set(existingRows.map((r) => `${r.project}||${r.taskName}`));
   const newRows = buildTaskRows(tasks, dates, existingRows.length + 1).filter(

@@ -1,5 +1,4 @@
 import React from "react";
-
 const PageHeader = React.memo(function PageHeader({ inv }) {
   const statusLabel =
     inv?.formality_status === "submitted"
@@ -9,7 +8,6 @@ const PageHeader = React.memo(function PageHeader({ inv }) {
       : inv?.formality_status === "changes_requested"
       ? "Changes Requested"
       : "In Progress";
-
   return (
     <div className="bg-[#1e3a5f] px-6 py-5">
       <div className="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-3">
@@ -27,5 +25,4 @@ const PageHeader = React.memo(function PageHeader({ inv }) {
     </div>
   );
 });
-
 export default PageHeader;

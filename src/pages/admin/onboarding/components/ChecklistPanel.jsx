@@ -1,7 +1,6 @@
 import React from "react";
 import { FileText, Upload } from "lucide-react";
 import { formatDate, fileUrl } from "../utils";
-
 const ChecklistPanel = React.memo(function ChecklistPanel({
   selectedEmployee,
   selectedDays,
@@ -12,7 +11,6 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
   onUpload,
 }) {
   if (!selectedEmployee) return null;
-
   return (
     <section className="onboarding-checklist-panel">
       <div className="onboarding-checklist-header">
@@ -41,7 +39,6 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
           </div>
         </div>
       </div>
-
       <div className="onboarding-checklist-groups">
         {selectedChecklist.map((group) => (
           <div key={group.section} className="onboarding-group-card">
@@ -82,7 +79,6 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
             </div>
           </div>
         ))}
-
         {/* Uploaded Documents */}
         <div className="onboarding-group-card">
           <div className="onboarding-group-header">
@@ -102,7 +98,6 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
               <Upload size={13} className="inline mr-1" />Upload
             </button>
           </div>
-
           {docsLoading ? (
             <p className="text-sm text-slate-400 py-4 text-center">Loading documents…</p>
           ) : selectedDocs.length === 0 ? (
@@ -154,5 +149,4 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
     </section>
   );
 });
-
 export default ChecklistPanel;

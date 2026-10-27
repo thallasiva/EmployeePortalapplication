@@ -1,6 +1,5 @@
 const styleCache = new Map();
 let styleSheet;
-
 const unitlessProperties = new Set([
   "animationIterationCount",
   "borderImageOutset",
@@ -37,26 +36,22 @@ const unitlessProperties = new Set([
   "zIndex",
   "zoom",
 ]);
-
 function getStyleSheet()
 {
   if (typeof document === "undefined") return null;
   if (styleSheet) return styleSheet;
-
   const tag = document.createElement("style");
   tag.setAttribute("data-generated-class-styles", "true");
   document.head.appendChild(tag);
   styleSheet = tag.sheet;
   return styleSheet;
 }
-
 function kebabCase(property)
 {
   return property
     .replace(/^ms/, "-ms")
     .replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }
-
 function normalizeValue(property, value)
 {
   if (value == null || typeof value === "boolean") return null;
@@ -66,7 +61,6 @@ function normalizeValue(property, value)
   }
   return String(value);
 }
-
 function hash(value)
 {
   let result = 5381;
@@ -76,11 +70,9 @@ function hash(value)
   }
   return (result >>> 0).toString(36);
 }
-
 export function cssClass(style)
 {
   if (!style || typeof style !== "object") return "";
-
   const rules = Object.entries(style)
     .map(([property, value]) =>
     {
@@ -89,23 +81,17 @@ export function cssClass(style)
     })
     .filter(Boolean)
     .join(";");
-
   if (!rules) return "";
-
   if (styleCache.has(rules)) return styleCache.get(rules);
-
   const className = `js-style-${hash(rules)}`;
   styleCache.set(rules, className);
-
   const sheet = getStyleSheet();
   if (sheet)
   {
     sheet.insertRule(`.${className}{${rules}}`, sheet.cssRules.length);
   }
-
   return className;
 }
-
 export function joinClasses(...classes)
 {
   return classes.filter(Boolean).join(" ");

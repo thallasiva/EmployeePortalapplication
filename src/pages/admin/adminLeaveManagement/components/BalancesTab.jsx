@@ -7,7 +7,6 @@ import Btn from "./Btn";
 import Toast from "./Toast";
 import BalancesTable from "./BalancesTable";
 import EditBalanceModal from "./EditBalanceModal";
-
 const BalancesTab = memo(() => {
   const [year, setYear]       = useState(CURRENT_YEAR);
   const [data, setData]       = useState(null);
@@ -19,18 +18,14 @@ const BalancesTab = memo(() => {
   const [accruing, setAccruing]   = useState(false);
   const [accrueMonth, setAccrueMonth] = useState(new Date().getMonth() || 12);
   const [accrueYear,  setAccrueYear]  = useState(new Date().getFullYear());
-
   const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 4000); };
-
   const load = useCallback(async (y) => {
     setLoading(true);
     try { setData(await getAllLeaveBalances(y)); }
     catch (e) { showToast(e.message, "error"); }
     finally { setLoading(false); }
   }, []);
-
   useEffect(() => { load(year); }, [year, load]);
-
   const handleInit = async () => {
     if (!window.confirm(`Initialize leave balances for ${year}? Existing rows will not be overwritten.`)) return;
     setInitLoad(true);
@@ -41,7 +36,6 @@ const BalancesTab = memo(() => {
     } catch (e) { showToast(e.message, "error"); }
     finally { setInitLoad(false); }
   };
-
   const handleAccrue = async () => {
     if (!window.confirm(`Accrue Earned Leave for ${MON[accrueMonth - 1]} ${accrueYear}? This will add working_days/14 to each employee's EL balance.`)) return;
     setAccruing(true);
@@ -52,9 +46,7 @@ const BalancesTab = memo(() => {
     } catch (e) { showToast(e.message, "error"); }
     finally { setAccruing(false); }
   };
-
   const leaveTypes = data?.leaveTypes || [];
-
   const filtered = useMemo(() => {
     if (!data) return [];
     const q = search.toLowerCase();
@@ -64,7 +56,6 @@ const BalancesTab = memo(() => {
       (e.department_name || "").toLowerCase().includes(q)
     ) : data.employees;
   }, [data, search]);
-
   const totals = useMemo(() => {
     const t = {};
     leaveTypes.forEach((lt) => { t[lt.leave_type_id] = { granted: 0, availed: 0, balance: 0 }; });
@@ -77,11 +68,9 @@ const BalancesTab = memo(() => {
     }));
     return t;
   }, [filtered, leaveTypes]);
-
   return (
     <div className={cssClass({ display: "flex", flexDirection: "column", gap: 18 })}>
       <Toast {...(toast || { msg: null })} />
-
       {/* Toolbar */}
       <div className={cssClass({ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" })}>
         <div>
@@ -98,7 +87,6 @@ const BalancesTab = memo(() => {
           {initLoading ? "Initializing…" : `Initialize ${year}`}
         </Btn>
         <Btn onClick={() => load(year)} variant="cancel" size="sm"><RefreshCw size={13} /></Btn>
-
         {/* Accrual panel */}
         <div className={cssClass({ display: "flex", gap: 6, alignItems: "center", marginLeft: "auto",
           background: "#fff8f0", border: "1px solid #fed7aa", borderRadius: 10, padding: "8px 14px" })}>
@@ -117,18 +105,14 @@ const BalancesTab = memo(() => {
           </Btn>
         </div>
       </div>
-
       <p className={cssClass({ fontSize: 11, color: "#9ca3af" })}>
         Formula: <strong>paid_days ÷ 14</strong> (rounded to nearest 0.5 day) — auto-runs on 1st of every month at 6 PM.
         Click any balance cell to edit manually.
       </p>
-
       {loading && <div className={cssClass({ padding: 40, textAlign: "center", color: "#9ca3af" })}>Loading balances…</div>}
-
       {!loading && data && (
         <BalancesTable filtered={filtered} leaveTypes={leaveTypes} totals={totals} setEditing={setEditing} />
       )}
-
       {editing && (
         <EditBalanceModal
           emp={editing.emp}
@@ -146,6 +130,5 @@ const BalancesTab = memo(() => {
     </div>
   );
 });
-
 BalancesTab.displayName = "BalancesTab";
 export default BalancesTab;

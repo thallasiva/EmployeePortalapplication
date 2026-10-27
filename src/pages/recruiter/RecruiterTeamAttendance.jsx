@@ -3,28 +3,23 @@ import Pagination, { usePagination } from "../../components/Pagination";
 import { listAttendance } from "../../api/attendance.api";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
-
 function getInitials(name) {
   return (name || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 }
-
 function fmt(val) {
   if (!val) return "—";
   return String(val).slice(0, 5);
 }
-
 const STATUS_BADGE = {
   present: "approved",
   absent: "rejected",
   late: "pending",
   "half-day": "pending"
 };
-
 const RecruiterTeamAttendance = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-
   useEffect(() => {
     setLoading(true);
     listAttendance({ from_date: date, to_date: date, limit: 200 }).
@@ -32,16 +27,13 @@ const RecruiterTeamAttendance = () => {
     catch(() => setRecords([])).
     finally(() => setLoading(false));
   }, [date]);
-
   const present = records.filter((r) => (r.status || "").toLowerCase() === "present").length;
   const absent = records.filter((r) => (r.status || "").toLowerCase() === "absent").length;
   const late = records.filter((r) => (r.status || "").toLowerCase() === "late").length;
   const { paged: pagedAtt, page: attPage, setPage: setAttPage, totalPages: attTotalPages, from: attFrom, to: attTo, total: attTotal, pageSize: attPageSize, setPageSize: setAttPageSize } = usePagination(records);
-
   return (
     <div className="admin-dash space-y-4">
       <RecruiterTabs />
-
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Team Attendance</h1>
@@ -53,9 +45,7 @@ const RecruiterTeamAttendance = () => {
           max={new Date().toISOString().slice(0, 10)}
           onChange={(e) => setDate(e.target.value)}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-blue-400" />
-
       </div>
-
       {}
       <div className="flex gap-3 flex-wrap">
         {[
@@ -68,14 +58,12 @@ const RecruiterTeamAttendance = () => {
           </span>
         )}
       </div>
-
       <div className="admin-dash-card !p-0 overflow-hidden">
         <div className="overflow-x-auto">
           {loading ?
           <p className="text-sm text-gray-400 text-center py-10">Loading...</p> :
           records.length === 0 ?
           <p className="text-sm text-gray-400 text-center py-10">No attendance records for {date}.</p> :
-
           <>
             <table className="admin-att-table w-full">
               <thead>
@@ -116,7 +104,6 @@ const RecruiterTeamAttendance = () => {
                       <td className="text-sm text-gray-600">{m.work_hours || "—"}</td>
                       <td className="text-sm text-gray-600">{m.late_by || "—"}</td>
                     </tr>);
-
                 })}
               </tbody>
             </table>
@@ -126,7 +113,5 @@ const RecruiterTeamAttendance = () => {
         </div>
       </div>
     </div>);
-
 };
-
 export default RecruiterTeamAttendance;

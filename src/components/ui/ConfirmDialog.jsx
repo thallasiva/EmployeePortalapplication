@@ -2,13 +2,11 @@ import { memo } from "react";
 import { AlertTriangle, Trash2, Info } from "lucide-react";
 import Modal from "./Modal";
 import Button from "./Button";
-
 const ICONS = {
   danger: { Icon: Trash2, iconClass: "text-red-500", bgClass: "bg-red-50" },
   warning: { Icon: AlertTriangle, iconClass: "text-yellow-500", bgClass: "bg-yellow-50" },
   info: { Icon: Info, iconClass: "text-blue-500", bgClass: "bg-blue-50" },
 };
-
 /**
  * Accessible confirmation dialog built on top of <Modal>.
  *
@@ -36,7 +34,6 @@ const ConfirmDialog = memo(function ConfirmDialog({
 {
   const { Icon, iconClass, bgClass } = ICONS[variant] ?? ICONS.danger;
   const btnVariant = variant === "danger" ? "danger" : variant === "warning" ? "primary" : "primary";
-
   return (
     <Modal open={open} onClose={onClose} size="xs">
       <div className="text-center py-2">
@@ -48,7 +45,6 @@ const ConfirmDialog = memo(function ConfirmDialog({
           <p className="text-xs text-gray-500 leading-relaxed max-w-[260px] mx-auto">{description}</p>
         )}
       </div>
-
       <div className="flex gap-2 mt-5 justify-center">
         <Button variant="secondary" onClick={onClose} disabled={loading}>
           {cancelLabel}
@@ -60,5 +56,4 @@ const ConfirmDialog = memo(function ConfirmDialog({
     </Modal>
   );
 });
-
 export default ConfirmDialog;

@@ -4,8 +4,6 @@ export const DATE_ADDED_OPTIONS = [
 { id: "30", label: "Last 30 days" },
 { id: "60", label: "Last 60 days" },
 { id: "90", label: "Last 90 days" }];
-
-
 export const DEPARTMENTS = [
 "Human Resource",
 "SAP BASIS",
@@ -22,21 +20,11 @@ export const DEPARTMENTS = [
 "Legal",
 "Engineering",
 "Customer Support"];
-
-
 export const LOCATIONS = ["Hyderabad"];
-
-
 export const INTERNAL_JOBS = [];
-
 export const REFERRAL_JOB_OPTIONS = [
 { value: "all", label: "All jobs" },
 { value: "job-101", label: "Senior Developer" },
 { value: "job-102", label: "HR Executive" }];
-
-
-
 export const MY_REFERRALS = [];
-
-
 export const APPLIED_JOBS = [];

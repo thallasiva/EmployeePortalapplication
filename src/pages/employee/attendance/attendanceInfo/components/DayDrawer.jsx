@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { X, Clock, Coffee, AlertCircle, LogIn, LogOut } from "lucide-react";
-
 function fmtTime(t) {
   if (!t) return "—";
   const s = String(t);
@@ -18,12 +17,10 @@ function hoursToHM(hrs) {
   const h = Math.floor(hrs), m = Math.round((hrs - h) * 60);
   return `${h}h ${String(m).padStart(2, "0")}m`;
 }
-
 const STATUS_COLOR = {
   P: "#16a34a", L: "#ea580c", "P:A": "#0284c7",
   A: "#dc2626", H: "#3b82f6", LV: "#9333ea", WO: "#94a3b8",
 };
-
 const PUNCH_CFG = {
   CHECK_IN:    { icon: LogIn,   color: "#16a34a", bg: "#f0fdf4", label: "Check In"    },
   BREAK_START: { icon: Coffee,  color: "#d97706", bg: "#fffbeb", label: "Break Start" },
@@ -33,12 +30,9 @@ const PUNCH_CFG = {
   IN:  { icon: LogIn,  color: "#16a34a", bg: "#f0fdf4", label: "Check In"  },
   OUT: { icon: LogOut, color: "#dc2626", bg: "#fef2f2", label: "Check Out" },
 };
-
 export default function DayDrawer({ entry, swipesLoading, onClose }) {
   const punches = useMemo(() => entry?.raw?.punches || [], [entry]);
-
   if (!entry) return null;
-
   const { raw, processed, status } = entry;
   const code       = status?.code;
   const accentColor = STATUS_COLOR[code] || "#f18200";
@@ -47,14 +41,11 @@ export default function DayDrawer({ entry, swipesLoading, onClose }) {
   const worked     = hoursToHM(raw?.work_hours);
   const breakTime  = minsToHM(raw?.break_minutes);
   const lateBy     = raw?.late_by_minutes > 0 ? minsToHM(raw.late_by_minutes) : null;
-
   // Format display date
   const dt = new Date(entry.date + "T00:00:00");
   const dateLabel = dt.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
   return (
     <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 4px 20px rgba(0,0,0,.08)", overflow: "hidden" }}>
-
       {/* ── Gradient header ── */}
       <div style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`, padding: "16px 16px 14px", position: "relative" }}>
         <button
@@ -63,11 +54,9 @@ export default function DayDrawer({ entry, swipesLoading, onClose }) {
         >
           <X size={14} />
         </button>
-
         <p style={{ fontSize: 11, color: "rgba(255,255,255,.7)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
           {dateLabel}
         </p>
-
         {/* IN / OUT big display */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
           <div>
@@ -86,7 +75,6 @@ export default function DayDrawer({ entry, swipesLoading, onClose }) {
           )}
         </div>
       </div>
-
       {/* ── Stats row ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, borderBottom: "1px solid #f1f5f9" }}>
         {[
@@ -103,13 +91,11 @@ export default function DayDrawer({ entry, swipesLoading, onClose }) {
           </div>
         ))}
       </div>
-
       {/* ── Punch timeline ── */}
       <div style={{ padding: "14px 16px" }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
           Punch Timeline
         </p>
-
         {swipesLoading ? (
           <p style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", padding: "12px 0" }}>Loading swipe details...</p>
         ) : punches.length === 0 ? (
@@ -118,7 +104,6 @@ export default function DayDrawer({ entry, swipesLoading, onClose }) {
           <div style={{ position: "relative" }}>
             {/* vertical line */}
             <div style={{ position: "absolute", left: 17, top: 0, bottom: 0, width: 2, background: "#f1f5f9", borderRadius: 2 }} />
-
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {punches.map((p, i) => {
                 const cfg = PUNCH_CFG[p.punch_type] || PUNCH_CFG.IN;

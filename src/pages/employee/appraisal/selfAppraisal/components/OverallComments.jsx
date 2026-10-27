@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const OverallComments = React.memo(function OverallComments({ value, onChange, disabled }) {
   return (
     <div className={cssClass({
@@ -26,5 +25,4 @@ const OverallComments = React.memo(function OverallComments({ value, onChange, d
     </div>
   );
 });
-
 export default OverallComments;

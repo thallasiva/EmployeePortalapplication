@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import Stat from "./Stat";
-
 const StatsBar = React.memo(function StatsBar({ counts }) {
   return (
     <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 })}>
@@ -12,5 +11,4 @@ const StatsBar = React.memo(function StatsBar({ counts }) {
     </div>
   );
 });
-
 export default StatsBar;

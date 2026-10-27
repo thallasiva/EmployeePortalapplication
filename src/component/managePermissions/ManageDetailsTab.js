@@ -1,6 +1,5 @@
 import React from 'react';
 import PermissionViewManageTable from './PermissionViewManageTable';
-
 const detailRows = [
   {
     key: 'basicInformation',
@@ -18,7 +17,6 @@ const detailRows = [
     description: 'Marital status, gender, and profile summary',
   },
 ];
-
 const ManageDetailsTab = ({ values, onToggle }) =>
 {
   return (
@@ -29,5 +27,4 @@ const ManageDetailsTab = ({ values, onToggle }) =>
     />
   );
 };
-
 export default ManageDetailsTab;

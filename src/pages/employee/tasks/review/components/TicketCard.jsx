@@ -4,7 +4,6 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { TICKET_STATUS_CONFIG } from "../constants";
 import { fmtDate } from "../utils";
 import TicketBadge from "./TicketBadge";
-
 const TicketCard = React.memo(function TicketCard({ t, isPrivileged }) {
   const cfg = TICKET_STATUS_CONFIG[t.status] || { border: "#cbd5e1" };
   return (
@@ -58,5 +57,4 @@ const TicketCard = React.memo(function TicketCard({ t, isPrivileged }) {
     </div>
   );
 });
-
 export default TicketCard;

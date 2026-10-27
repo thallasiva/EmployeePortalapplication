@@ -1,5 +1,4 @@
 /* Internal Jobs portal — matches reference screenshot */
-
 .hiring-portal {
   margin: -0.875rem -1.125rem;
   min-height: calc(100vh - 4.5rem);
@@ -8,13 +7,11 @@
   font-family: Arial, Helvetica, sans-serif;
   background: #f0f2f5;
 }
-
 @media (min-width: 1024px) {
   .hiring-portal {
     margin: -0.875rem -1.125rem;
   }
 }
-
 /* Top header */
 .hiring-header {
   display: flex;
@@ -25,13 +22,11 @@
   background: #2c3e50;
   flex-shrink: 0;
 }
-
 .hiring-header__nav {
   display: flex;
   align-items: center;
   gap: 4px;
 }
-
 .hiring-header__tab {
   padding: 6px 16px;
   font-size: 14px;
@@ -41,23 +36,19 @@
   cursor: pointer;
   border-radius: 4px;
 }
-
 .hiring-header__tab--active {
   background: #5dade2;
   color: #1a252f;
   font-weight: 600;
 }
-
 .hiring-header__tab:hover:not(.hiring-header__tab--active) {
   background: rgba(255, 255, 255, 0.08);
 }
-
 .hiring-header__right {
   display: flex;
   align-items: center;
   gap: 14px;
 }
-
 .hiring-header__home-btn {
   padding: 5px 14px;
   font-size: 13px;
@@ -67,11 +58,9 @@
   border-radius: 20px;
   cursor: pointer;
 }
-
 .hiring-header__home-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
-
 .hiring-header__icon-btn {
   padding: 4px;
   color: #fff;
@@ -81,11 +70,9 @@
   display: flex;
   align-items: center;
 }
-
 .hiring-header__icon-btn:hover {
   opacity: 0.85;
 }
-
 .hiring-header__avatar {
   width: 32px;
   height: 32px;
@@ -98,7 +85,6 @@
   align-items: center;
   justify-content: center;
 }
-
 /* Sub navigation */
 .hiring-subnav {
   display: flex;
@@ -110,7 +96,6 @@
   border-bottom: 1px solid #e8e8e8;
   flex-shrink: 0;
 }
-
 .hiring-subnav__tab {
   padding: 10px 0 12px;
   font-size: 12px;
@@ -123,16 +108,13 @@
   cursor: pointer;
   margin-bottom: -1px;
 }
-
 .hiring-subnav__tab--active {
   color: #1890ff;
   border-bottom-color: #1890ff;
 }
-
 .hiring-subnav__tab:hover:not(.hiring-subnav__tab--active) {
   color: #555;
 }
-
 /* Body */
 .hiring-body {
   display: flex;
@@ -140,7 +122,6 @@
   min-height: 0;
   gap: 0;
 }
-
 /* Sidebar filters */
 .hiring-filters {
   width: 240px;
@@ -150,24 +131,20 @@
   padding: 16px 18px;
   overflow-y: auto;
 }
-
 .hiring-filters__title {
   font-size: 15px;
   font-weight: 700;
   color: #333;
   margin-bottom: 16px;
 }
-
 .hiring-filter-section {
   margin-bottom: 8px;
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 8px;
 }
-
 .hiring-filter-section:last-child {
   border-bottom: none;
 }
-
 .hiring-filter-section__head {
   display: flex;
   align-items: center;
@@ -182,11 +159,9 @@
   color: #444;
   text-align: left;
 }
-
 .hiring-filter-section__body {
   padding: 4px 0 8px;
 }
-
 .hiring-filter-option {
   display: flex;
   align-items: center;
@@ -196,7 +171,6 @@
   color: #555;
   cursor: pointer;
 }
-
 .hiring-filter-option input {
   margin: 0;
   accent-color: #1890ff;
@@ -204,7 +178,6 @@
   height: 14px;
   flex-shrink: 0;
 }
-
 .hiring-filter-show-less {
   margin-top: 6px;
   padding: 0;
@@ -214,11 +187,9 @@
   font-size: 13px;
   cursor: pointer;
 }
-
 .hiring-filter-show-less:hover {
   text-decoration: underline;
 }
-
 /* Main content */
 .hiring-main {
   flex: 1;
@@ -226,12 +197,10 @@
   min-width: 0;
   overflow-y: auto;
 }
-
 .hiring-search-wrap {
   position: relative;
   margin-bottom: 16px;
 }
-
 .hiring-search {
   width: 100%;
   height: 40px;
@@ -243,16 +212,13 @@
   border-radius: 4px;
   outline: none;
 }
-
 .hiring-search::placeholder {
   color: #aaa;
 }
-
 .hiring-search:focus {
   border-color: #40a9ff;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
 }
-
 .hiring-search__icon {
   position: absolute;
   right: 12px;
@@ -261,7 +227,6 @@
   color: #999;
   pointer-events: none;
 }
-
 /* Results card */
 .hiring-results {
   background: #fff;
@@ -269,7 +234,6 @@
   border-radius: 4px;
   min-height: 420px;
 }
-
 .hiring-results__header {
   display: flex;
   justify-content: space-between;
@@ -280,11 +244,9 @@
   font-weight: 700;
   color: #444;
 }
-
 .hiring-results__body {
   padding: 24px 20px;
 }
-
 .hiring-job-row {
   display: flex;
   justify-content: space-between;
@@ -292,11 +254,9 @@
   padding: 16px 20px;
   border-bottom: 1px solid #f0f0f0;
 }
-
 .hiring-job-row:last-child {
   border-bottom: none;
 }
-
 .hiring-job-row__title {
   font-size: 15px;
   font-weight: 600;
@@ -304,22 +264,18 @@
   margin-bottom: 4px;
   cursor: pointer;
 }
-
 .hiring-job-row__title:hover {
   text-decoration: underline;
 }
-
 .hiring-job-row__meta {
   font-size: 12px;
   color: #888;
 }
-
 .hiring-job-row__posted {
   font-size: 13px;
   color: #666;
   white-space: nowrap;
 }
-
 /* Empty state */
 .hiring-empty {
   display: flex;
@@ -329,26 +285,22 @@
   padding: 48px 24px 64px;
   text-align: center;
 }
-
 .hiring-empty__illustration {
   width: 220px;
   height: auto;
   margin-bottom: 20px;
 }
-
 .hiring-empty__title {
   font-size: 16px;
   font-weight: 700;
   color: #333;
   margin: 0 0 8px;
 }
-
 .hiring-empty__text {
   font-size: 14px;
   color: #888;
   margin: 0;
 }
-
 /* Simple pages — My Referrals & Applied Jobs */
 .hiring-simple-page {
   flex: 1;
@@ -356,14 +308,12 @@
   background: #f4f7f9;
   overflow-y: auto;
 }
-
 .hiring-simple-page__title {
   font-size: 20px;
   font-weight: 700;
   color: #333;
   margin: 0 0 20px;
 }
-
 .hiring-simple-page__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -371,24 +321,20 @@
   margin-bottom: 16px;
   align-items: center;
 }
-
 .hiring-search-wrap--inline {
   flex: 1;
   min-width: 200px;
   max-width: 360px;
   margin-bottom: 0;
 }
-
 .hiring-search--md {
   max-width: 100%;
 }
-
 .hiring-select-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
-
 .hiring-select {
   height: 40px;
   min-width: 140px;
@@ -402,90 +348,74 @@
   appearance: none;
   cursor: pointer;
 }
-
 .hiring-select:focus {
   border-color: #40a9ff;
 }
-
 .hiring-select__chevron {
   position: absolute;
   right: 10px;
   pointer-events: none;
   color: #888;
 }
-
 .hiring-results--simple {
   min-height: 380px;
 }
-
 .hiring-results__header--3col {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
 }
-
 .hiring-results__header--applied {
   display: grid;
   grid-template-columns: 1fr 1fr 120px;
   gap: 12px;
 }
-
 .hiring-results__header--applied span:nth-child(2) {
   text-align: center;
 }
-
 .hiring-results__header--applied span:nth-child(3) {
   text-align: right;
 }
-
 .hiring-results__row {
   padding: 14px 20px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 14px;
   color: #333;
 }
-
 .hiring-results__row--3col {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
 }
-
 .hiring-results__row--applied {
   display: grid;
   grid-template-columns: 1fr 1fr 120px;
   gap: 12px;
   align-items: center;
 }
-
 .hiring-results__row--applied span:nth-child(2),
 .hiring-applied-status {
   text-align: center;
   font-size: 13px;
   color: #666;
 }
-
 .hiring-results__row--applied .hiring-job-row__posted {
   text-align: right;
 }
-
 .hiring-empty--cta {
   padding: 40px 24px 56px;
 }
-
 .hiring-empty__message {
   font-size: 15px;
   color: #444;
   margin: 0 0 20px;
   font-weight: 400;
 }
-
 .hiring-profile-cards {
   width: 180px;
   height: auto;
   margin-bottom: 24px;
 }
-
 .hiring-btn-primary {
   padding: 10px 22px;
   font-size: 14px;
@@ -496,22 +426,18 @@
   border-radius: 4px;
   cursor: pointer;
 }
-
 .hiring-btn-primary:hover {
   background: #218838;
 }
-
 @media (max-width: 768px) {
   .hiring-body {
     flex-direction: column;
   }
-
   .hiring-filters {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid #e8e8e8;
   }
-
   .hiring-results__header--applied,
   .hiring-results__row--applied {
     grid-template-columns: 1fr;

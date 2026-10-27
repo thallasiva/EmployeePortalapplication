@@ -1,12 +1,10 @@
 import { memo } from "react";
 import { BRAND } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
-
 const TABS = [
   { id: "request", label: "Raise a Request" },
   { id: "tickets", label: "My Tickets" },
 ];
-
 /**
  * Tab navigation bar at the top of the Helpdesk page.
  * Single responsibility: renders + fires onTabChange.
@@ -38,5 +36,4 @@ const HelpdeskTabs = memo(function HelpdeskTabs({ activeTab, onTabChange }) {
     </div>
   );
 });
-
 export default HelpdeskTabs;

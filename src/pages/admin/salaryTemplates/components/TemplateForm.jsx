@@ -3,7 +3,6 @@ import { X } from "lucide-react";
 import { BLANK } from "../constants";
 import Toggle from "./Toggle";
 import NumField from "./NumField";
-
 const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose, saving }) {
   const [form, setForm] = useState(initial || BLANK);
   const handle = (e) => {
@@ -11,7 +10,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
   const handleSubmit = (e) => { e.preventDefault(); onSave(form); };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
@@ -21,7 +19,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"><X size={16} /></button>
         </div>
-
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           {}
           <div className="grid grid-cols-2 gap-4">
@@ -38,7 +35,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400" />
             </div>
           </div>
-
           {}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Percentage Components</p>
@@ -48,7 +44,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
               <NumField label="Variable %" name="variable_pct" value={form.variable_pct} onChange={handle} suffix="% of CTC" />
             </div>
           </div>
-
           {}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Fixed Allowances</p>
@@ -57,7 +52,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
               <NumField label="Leave Travel Allowance (annual ₹)" name="lta_annual" value={form.lta_annual} onChange={handle} suffix="₹/yr" />
             </div>
           </div>
-
           {}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Other Costs (Annual ₹)</p>
@@ -67,7 +61,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
               <NumField label="Professional Tax" name="professional_tax" value={form.professional_tax} onChange={handle} />
             </div>
           </div>
-
           {}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Applicability</p>
@@ -79,7 +72,6 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
               <Toggle value={form.is_default} onChange={(v) => setForm((f) => ({ ...f, is_default: v }))} label="Set as Default" />
             </div>
           </div>
-
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
             className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">
@@ -95,5 +87,4 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
     </div>
   );
 });
-
 export default TemplateForm;

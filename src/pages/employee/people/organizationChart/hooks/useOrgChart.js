@@ -2,13 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import apiClient, { unwrap } from "../../../../../api/client";
 import { getCurrentUser } from "../../../../../api/auth.api";
 import { deptColor } from "../constants/palette";
-
 export function useOrgChart() {
   const [flat, setFlat] = useState([]);
   const [selfId, setSelfId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     Promise.all([
       apiClient.get("/employees/org-chart").then(unwrap),
@@ -21,20 +19,16 @@ export function useOrgChart() {
       .catch((e) => setError(e?.response?.data?.message || "Failed to load org chart"))
       .finally(() => setLoading(false));
   }, []);
-
   const selfEmp = useMemo(() => flat.find((e) => e.employee_id === selfId) ?? null, [flat, selfId]);
   const managerId = selfEmp?.reporting_to ?? null;
-
   const manager = useMemo(
     () => (managerId ? flat.find((e) => e.employee_id === managerId) ?? null : null),
     [flat, managerId],
   );
-
   const team = useMemo(
     () => (managerId ? flat.filter((e) => e.reporting_to === managerId) : []),
     [flat, managerId],
   );
-
   const ancestorChain = useMemo(() => {
     if (!manager?.reporting_to) return [];
     const chain = [];
@@ -50,7 +44,6 @@ export function useOrgChart() {
     }
     return chain;
   }, [flat, manager, managerId]);
-
   const depts = useMemo(() => {
     const m = new Map();
     flat.forEach((e) => {
@@ -64,12 +57,10 @@ export function useOrgChart() {
     });
     return [...m.values()];
   }, [flat]);
-
   const selfDirectReports = useMemo(
     () => (selfEmp ? flat.filter((e) => e.reporting_to === selfEmp.employee_id) : []),
     [flat, selfEmp],
   );
-
   return {
     selfEmp, selfId, manager, managerId, team,
     ancestorChain, depts, selfDirectReports,

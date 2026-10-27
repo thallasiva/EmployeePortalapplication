@@ -1,6 +1,5 @@
 import React from "react";
 import { Check, X } from "lucide-react";
-
 const SkillPills = React.memo(function SkillPills({ skills, matched }) {
   if (!skills?.length) return <span className="text-[12px] text-gray-400">None</span>;
   return (
@@ -18,5 +17,4 @@ const SkillPills = React.memo(function SkillPills({ skills, matched }) {
     </div>
   );
 });
-
 export default SkillPills;

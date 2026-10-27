@@ -1,13 +1,9 @@
 'use strict';
-
 const fs = require('fs');
 const path = require('path');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
-
 const TEMPLATE_PATH = path.join(__dirname, '../../templates/offer_letter_template.docx');
-
-
 function toWords(num) {
   if (!num) return 'Zero Rupees Only';
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
@@ -25,8 +21,6 @@ function toWords(num) {
   }
   return convert(Math.round(num)).trim() + ' Rupees Only';
 }
-
-
 function fmtRs(n) {
   if (!n) return 'Rs.0/-';
   const s = Math.round(n).toString();
@@ -36,26 +30,16 @@ function fmtRs(n) {
   const grouped = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
   return 'Rs.' + grouped + ',' + last3 + '/-';
 }
-
-
 function fmtM(n) {
   if (!n && n !== 0) return '';
   return Math.round(Number(n)).toLocaleString('en-IN');
 }
-
-
 function fmtDate(d) {
   if (!d) return '';
   const dt = new Date(d);
   if (isNaN(dt)) return String(d);
   return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 }
-
-
-
-
-
-
 function generateOfferLetterDocx(data) {
   const {
     offerCode = '',
@@ -79,12 +63,8 @@ function generateOfferLetterDocx(data) {
     gratuity = 0,
     esi = 0
   } = data;
-
-
   const m = (v) => fmtM(Number(v) / 12);
   const a = (v) => fmtM(Number(v));
-
-
   const annualCTC = Number(ctc) || 0;
   const ctcM = Math.round(annualCTC / 12);
   const basicM = Math.round(ctcM * 0.5);
@@ -95,11 +75,9 @@ function generateOfferLetterDocx(data) {
   const sbM = basicM <= 21000 ? 1400 : 0;
   const grossM = ctcM - pfM - sbM;
   const splM = grossM - (basicM + hraM + telM + ltaM);
-
   function useStored(stored, computed) {
     return Number(stored) > 0 ? Number(stored) : computed;
   }
-
   const eff_basic = useStored(basic, basicM * 12);
   const eff_hra = useStored(hra, hraM * 12);
   const eff_tel = useStored(telephoneAllowance, telM * 12);
@@ -110,7 +88,6 @@ function generateOfferLetterDocx(data) {
   const eff_sb = useStored(statutoryBonus, sbM * 12);
   const eff_grat = Number(gratuity) || 0;
   const eff_esi = Number(esi) || 0;
-
   const templateBuf = fs.readFileSync(TEMPLATE_PATH);
   const zip = new PizZip(templateBuf);
   const doc = new Docxtemplater(zip, {
@@ -118,7 +95,6 @@ function generateOfferLetterDocx(data) {
     linebreaks: true,
     delimiters: { start: '{{', end: '}}' }
   });
-
   doc.render({
     OfferCode: offerCode,
     OfferDate: fmtDate(offerDate),
@@ -130,7 +106,6 @@ function generateOfferLetterDocx(data) {
     CompanyName: companyName,
     CompanyEmail: companyEmail,
     ReportTo: reportTo,
-
     Basic_M: m(eff_basic), Basic_A: a(eff_basic),
     HRA_M: m(eff_hra), HRA_A: a(eff_hra),
     Tel_M: m(eff_tel), Tel_A: a(eff_tel),
@@ -143,8 +118,6 @@ function generateOfferLetterDocx(data) {
     ESI_M: m(eff_esi), ESI_A: a(eff_esi),
     CTC_M: m(annualCTC), CTC_A: a(annualCTC)
   });
-
   return doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' });
 }
-
 module.exports = { generateOfferLetterDocx };

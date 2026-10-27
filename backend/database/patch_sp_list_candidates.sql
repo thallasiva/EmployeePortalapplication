@@ -1,9 +1,6 @@
 USE hrms_db;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_candidates;
-
 DELIMITER $$
-
 CREATE PROCEDURE sp_rec_list_candidates(
   IN p_job_req_id   INT,
   IN p_status       VARCHAR(50),
@@ -17,7 +14,6 @@ CREATE PROCEDURE sp_rec_list_candidates(
 BEGIN
   SET p_limit  = COALESCE(p_limit, 20);
   SET p_offset = COALESCE(p_offset, 0);
-
   SELECT SQL_CALC_FOUND_ROWS
          c.candidate_id, c.candidate_code, c.job_req_id, c.name, c.email,
          c.mobile, c.gender, c.total_experience, c.relevant_experience,
@@ -48,10 +44,7 @@ BEGIN
     )
   ORDER BY c.created_at DESC
   LIMIT p_limit OFFSET p_offset;
-
   SELECT FOUND_ROWS() AS total;
 END $$
-
 DELIMITER ;
-
 SELECT 'sp_rec_list_candidates updated — recruiter sees all candidates for their assigned jobs' AS status;

@@ -2,11 +2,9 @@ import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp, Check, Eye, Save, Building2, Briefcase, BarChart2, Calendar, Users, Clock, MapPin, Globe, DollarSign, ArrowRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
-
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY  = "#1e3a5f";
 const AMBER = "#d97706";
-
 // ─── Wizard steps ─────────────────────────────────────────────────────────────
 const WIZARD_STEPS = [
   { id: 1, key: "fixed",    label: "Earnings" },
@@ -16,7 +14,6 @@ const WIZARD_STEPS = [
   { id: 5, key: "employer", label: "Employer Contribution" },
   { id: 6, key: "review",   label: "Review & Publish" },
 ];
-
 // ─── Step progress bar ────────────────────────────────────────────────────────
 function StepBar({ currentStep, onStep }) {
   return (
@@ -57,7 +54,6 @@ function StepBar({ currentStep, onStep }) {
     </div>
   );
 }
-
 // ─── Donut chart ──────────────────────────────────────────────────────────────
 function DonutChart({ slices }) {
   const R = 52, CX = 68, CY = 68, stroke = 19;
@@ -83,7 +79,6 @@ function DonutChart({ slices }) {
     </svg>
   );
 }
-
 // ─── Accordion section ─────────────────────────────────────────────────────────
 function AccordionSection({ title, lines, onAdd, onEdit, onRemove, canAdd, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -110,7 +105,6 @@ function AccordionSection({ title, lines, onAdd, onEdit, onRemove, canAdd, defau
           {open ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
         </div>
       </button>
-
       {/* Table */}
       {open && (
         <div className="border-t border-gray-100">
@@ -157,7 +151,6 @@ function AccordionSection({ title, lines, onAdd, onEdit, onRemove, canAdd, defau
     </div>
   );
 }
-
 // ─── Employee profile sidebar ─────────────────────────────────────────────────
 function EmployeeProfile({ structure, strCode }) {
   const fields = [
@@ -171,7 +164,6 @@ function EmployeeProfile({ structure, strCode }) {
     { icon: MapPin,     label: "Location",      value: "All Locations" },
     { icon: DollarSign, label: "Currency",      value: "INR" },
   ];
-
   return (
     <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
       {/* Avatar header */}
@@ -188,7 +180,6 @@ function EmployeeProfile({ structure, strCode }) {
           Active
         </span>
       </div>
-
       {/* Fields */}
       <div className="p-3 space-y-2">
         {fields.map(({ icon: Icon, label, value }) => (
@@ -204,7 +195,6 @@ function EmployeeProfile({ structure, strCode }) {
     </div>
   );
 }
-
 // ─── Live salary summary ──────────────────────────────────────────────────────
 function LiveSummary({ structure }) {
   const lines = structure?.lines ?? [];
@@ -216,7 +206,6 @@ function LiveSummary({ structure }) {
   const ctc = totalFixed + totalVar + totalBen + totalEmp;
   const net = ctc - totalDed;
   const safe = ctc || 1;
-
   const slices = [
     { label: "Fixed",    pct: Math.round((totalFixed/safe)*100), color: NAVY },
     { label: "Variable", pct: Math.round((totalVar/safe)*100),   color: AMBER },
@@ -224,10 +213,8 @@ function LiveSummary({ structure }) {
     { label: "Employer", pct: Math.round((totalEmp/safe)*100),   color: "#6366f1" },
     { label: "Deduct",   pct: Math.round((totalDed/safe)*100),   color: "#ef4444" },
   ].filter(s => s.pct > 0);
-
   const sum = slices.reduce((s, sl) => s + sl.pct, 0);
   if (sum < 100) slices.push({ label: "", pct: 100 - sum, color: "#e5e7eb" });
-
   const legend = [
     { label: "Fixed Earnings",     value: fmtINR(totalFixed), color: NAVY },
     { label: "Variable Pay",       value: fmtINR(totalVar),   color: AMBER },
@@ -235,7 +222,6 @@ function LiveSummary({ structure }) {
     { label: "Employer Contrib.",  value: fmtINR(totalEmp),   color: "#6366f1" },
     { label: "Deductions",         value: fmtINR(totalDed),   color: "#ef4444" },
   ];
-
   return (
     <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden mt-3">
       <div className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-wide text-white" style={{ backgroundColor: NAVY }}>
@@ -267,7 +253,6 @@ function LiveSummary({ structure }) {
     </div>
   );
 }
-
 // ─── Review step ──────────────────────────────────────────────────────────────
 function ReviewStep({ structure, handleSave, saving }) {
   const lines = structure?.lines ?? [];
@@ -280,7 +265,6 @@ function ReviewStep({ structure, handleSave, saving }) {
   };
   const ctc = totals.Fixed + totals.Variable + totals.Benefits + totals.Employer;
   const net = ctc - totals.Deductions;
-
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
       <h3 className="text-base font-bold text-gray-800 mb-4">Review Salary Structure</h3>
@@ -315,7 +299,6 @@ function ReviewStep({ structure, handleSave, saving }) {
     </div>
   );
 }
-
 // ─── Main Template 3 ──────────────────────────────────────────────────────────
 const Template3Wizard = React.memo(function Template3Wizard({
   structure,
@@ -335,23 +318,19 @@ const Template3Wizard = React.memo(function Template3Wizard({
 }) {
   const navigate = useNavigate();
   const strCode = `SAL-STR-${String(structure?.structure_id || "NEW").padStart(3, "0")}`;
-
   // Map activeTab to wizard step
   const keyToStep = useMemo(() => Object.fromEntries(WIZARD_STEPS.map(s => [s.key, s.id])), []);
   const stepToKey = useMemo(() => Object.fromEntries(WIZARD_STEPS.map(s => [s.id, s.key])), []);
   const currentStep = keyToStep[activeTab] ?? 1;
-
   function goToStep(step) {
     const key = stepToKey[step];
     if (key) setActiveTab(key);
   }
-
   const fixedLines    = useMemo(() => tabFilter(structure?.lines ?? [], "fixed"),    [structure?.lines]);
   const variableLines = useMemo(() => tabFilter(structure?.lines ?? [], "variable"), [structure?.lines]);
   const employerLines = useMemo(() => tabFilter(structure?.lines ?? [], "employer"), [structure?.lines]);
   const deductLines   = useMemo(() => tabFilter(structure?.lines ?? [], "deduct"),   [structure?.lines]);
   const benefitLines  = useMemo(() => (structure?.lines ?? []).filter(l => l.category === "Benefit"), [structure?.lines]);
-
   function renderStepContent() {
     switch (currentStep) {
       case 1:
@@ -370,7 +349,6 @@ const Template3Wizard = React.memo(function Template3Wizard({
         return null;
     }
   }
-
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "#f8f9fb" }}>
       {/* Top header bar */}
@@ -413,21 +391,17 @@ const Template3Wizard = React.memo(function Template3Wizard({
           </div>
         </div>
       </div>
-
       {/* Step bar */}
       <StepBar currentStep={currentStep} onStep={goToStep} />
-
       {/* Main: left sidebar + content + right sidebar */}
       <div className="flex flex-1 overflow-hidden gap-4 p-4">
         {/* Left: employee profile */}
         <div className="w-56 shrink-0 overflow-y-auto space-y-0">
           <EmployeeProfile structure={structure} strCode={strCode} />
         </div>
-
         {/* Centre: step content */}
         <div className="flex-1 overflow-y-auto min-w-0">
           {renderStepContent()}
-
           {/* Navigation buttons */}
           {currentStep < 6 && (
             <div className="flex items-center justify-between mt-4">
@@ -451,7 +425,6 @@ const Template3Wizard = React.memo(function Template3Wizard({
             </div>
           )}
         </div>
-
         {/* Right: live summary */}
         <div className="w-56 shrink-0 overflow-y-auto">
           <LiveSummary structure={structure} />
@@ -460,5 +433,4 @@ const Template3Wizard = React.memo(function Template3Wizard({
     </div>
   );
 });
-
 export default Template3Wizard;

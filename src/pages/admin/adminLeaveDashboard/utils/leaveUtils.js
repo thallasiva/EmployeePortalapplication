@@ -1,5 +1,4 @@
 const today = new Date();
-
 export function formatActionDate() {
   return today.toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -7,7 +6,6 @@ export function formatActionDate() {
     year: 'numeric',
   });
 }
-
 export function formatDate(value) {
   if (!value) return '—';
   const d = new Date(value);
@@ -18,7 +16,6 @@ export function formatDate(value) {
     year: 'numeric',
   });
 }
-
 export function mapRequest(row) {
   return {
     id: row.leave_request_id,

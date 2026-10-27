@@ -11,7 +11,6 @@ import EmployeeSearchBar from "./components/EmployeeSearchBar";
 import TeamsSearchBar from "./components/TeamsSearchBar";
 import TeamGroupedView from "./components/TeamGroupedView";
 import FilterPill from "./components/FilterPill";
-
 export default function Employee() {
   const {
     csvInputRef,
@@ -33,7 +32,6 @@ export default function Employee() {
     handleCsvExport,
     employees,
   } = useEmployeeData();
-
   const {
     paged: pagedEmployees,
     page: empPage,
@@ -45,7 +43,6 @@ export default function Employee() {
     pageSize: empPageSize,
     setPageSize: setEmpPageSize,
   } = usePagination(filteredEmployees);
-
   return (
     <div className="space-y-6">
       <EmployeeToolbar
@@ -55,7 +52,6 @@ export default function Employee() {
         onCsvImport={handleCsvImport}
         onCsvExport={handleCsvExport}
       />
-
       {selectedTab === "All" && (
         <div className="space-y-3">
           <EmployeeSearchBar
@@ -72,7 +68,6 @@ export default function Employee() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
           />
-
           {/* Active filter pills + count */}
           <div
             className={cssClass({
@@ -97,7 +92,6 @@ export default function Employee() {
               <FilterPill key={p.id} label={p.label} onRemove={p.remove} />
             ))}
           </div>
-
           {/* Employee list / grid */}
           {loading ? (
             <p className="text-sm text-gray-400 py-8 text-center">Loading employees…</p>
@@ -150,7 +144,6 @@ export default function Employee() {
           )}
         </div>
       )}
-
       {selectedTab === "Teams" && (
         <div className="space-y-3">
           <TeamsSearchBar

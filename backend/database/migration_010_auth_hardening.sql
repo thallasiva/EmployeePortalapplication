@@ -7,11 +7,8 @@
 --   3. mfa_temp_tokens table — short-lived tokens issued after password
 --      check when MFA is required, replaced by a full JWT after TOTP verify
 -- =============================================================
-
 USE hrms_db;
-
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- ── MFA columns ───────────────────────────────────────────────
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS mfa_enabled      TINYINT(1)   NOT NULL DEFAULT 0
@@ -20,14 +17,12 @@ ALTER TABLE users
     COMMENT 'AES-256-encrypted TOTP base32 secret',
   ADD COLUMN IF NOT EXISTS mfa_backup_codes TEXT         DEFAULT NULL
     COMMENT 'JSON array of bcrypt-hashed one-use backup codes';
-
 -- ── Account lockout columns ───────────────────────────────────
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS failed_login_attempts TINYINT UNSIGNED NOT NULL DEFAULT 0
     COMMENT 'Consecutive failed login attempts since last success',
   ADD COLUMN IF NOT EXISTS locked_until          DATETIME DEFAULT NULL
     COMMENT 'Account locked until this timestamp after too many failures';
-
 -- ── MFA temp-token store ──────────────────────────────────────
 -- After a successful password check for an MFA-enabled account,
 -- we issue a short-lived token stored here. The client must
@@ -45,5 +40,4 @@ CREATE TABLE IF NOT EXISTS mfa_temp_tokens (
   CONSTRAINT fk_mfa_temp_user FOREIGN KEY (user_id)
     REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 SET FOREIGN_KEY_CHECKS = 1;

@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const DetailRow = React.memo(function DetailRow({ label, value }) {
   return (
     <div>
@@ -10,5 +9,4 @@ const DetailRow = React.memo(function DetailRow({ label, value }) {
     </div>
   );
 });
-
 export default DetailRow;

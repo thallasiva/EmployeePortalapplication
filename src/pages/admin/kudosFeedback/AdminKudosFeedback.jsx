@@ -19,20 +19,15 @@ import {
   SecondaryButton,
   Tabs } from
 "../../employee/worklife/kudosFeedbackShared";
-
 const COLORS = ["#f18200", "#16a34a", "#1d4ed8", "#7c3aed", "#0e7490", "#db2777", "#64748b"];
 const EMPTY_FORM = { category_name: "", description: "", color: COLORS[0], category_type: "kudos", is_active: true };
-
 const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
   const [form, setForm] = useState(editing ? { ...editing, is_active: Boolean(editing.is_active) } : { ...EMPTY_FORM, category_type: type });
   const [saving, setSaving] = useState(false);
-
   useEffect(() => {
     setForm(editing ? { ...editing, is_active: Boolean(editing.is_active) } : { ...EMPTY_FORM, category_type: type });
   }, [editing, type]);
-
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
-
   const submit = async (e) => {
     e.preventDefault();
     if (form.category_name.trim().length < 2) return toast.error("Enter a category name");
@@ -55,7 +50,6 @@ const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
       setSaving(false);
     }
   };
-
   return (
     <form onSubmit={submit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
       <h2 className="text-base font-bold text-slate-900">{editing ? "Edit category" : "Add category"}</h2>
@@ -99,23 +93,18 @@ const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
         </PrimaryButton>
       </div>
     </form>);
-
 };
-
 const CategoriesTab = () => {
   const [type, setType] = useState("kudos");
   const [rows, setRows] = useState(null);
   const [editing, setEditing] = useState(null);
-
   const load = useCallback(() => {
     listKfCategories({ all: 1 }).then(setRows).catch((err) => {
       toast.error(getErrorMessage(err, "Could not load categories"));
       setRows([]);
     });
   }, []);
-
   useEffect(() => {load();}, [load]);
-
   const remove = async (c) => {
     const used = Number(c.usage_count);
     const msg = used ?
@@ -131,11 +120,9 @@ const CategoriesTab = () => {
       toast.error(getErrorMessage(err, "Could not delete category"));
     }
   };
-
   const visible = (rows || []).filter((c) => c.category_type === type);
   const counts = { kudos: 0, feedback: 0 };
   (rows || []).forEach((c) => {counts[c.category_type] += 1;});
-
   return (
     <div className="space-y-4">
       <Tabs
@@ -192,14 +179,11 @@ const CategoriesTab = () => {
           onSaved={() => {setEditing(null);load();}} />
       </div>
     </div>);
-
 };
-
 const WallTab = () => {
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const load = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -212,9 +196,7 @@ const WallTab = () => {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {load(1);}, [load]);
-
   if (loading && !rows.length) return <Loading />;
   if (!rows.length) return <EmptyState icon={<Award className="text-[#f18200]" />} title="No kudos yet" />;
   return (
@@ -225,13 +207,10 @@ const WallTab = () => {
       <div className="flex justify-center pt-2"><SecondaryButton onClick={() => load(meta.page + 1)} disabled={loading}>Load more</SecondaryButton></div>
       }
     </div>);
-
 };
-
 const AdminKudosFeedback = () => {
   const [tab, setTab] = useState("overview");
   const [kudosFor, setKudosFor] = useState(null);
-
   return (
     <div className="space-y-6">
       {kudosFor && <GiveKudosModal preset={[kudosFor]} onClose={() => setKudosFor(null)} />}
@@ -257,7 +236,5 @@ const AdminKudosFeedback = () => {
       {tab === "wall" && <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5"><WallTab /></section>}
       {tab === "categories" && <CategoriesTab />}
     </div>);
-
 };
-
 export default AdminKudosFeedback;

@@ -1,6 +1,5 @@
 import React from "react";
 import Skeleton from "./Skeleton";
-
 const LoadingSkeleton = React.memo(function LoadingSkeleton() {
   return (
     <div className="px-6 max-w-[900px] mx-auto">
@@ -22,5 +21,4 @@ const LoadingSkeleton = React.memo(function LoadingSkeleton() {
     </div>
   );
 });
-
 export default LoadingSkeleton;

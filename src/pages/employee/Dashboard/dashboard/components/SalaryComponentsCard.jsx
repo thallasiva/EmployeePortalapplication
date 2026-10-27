@@ -2,7 +2,6 @@ import React from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmt } from "../utils/formatters";
-
 const SalRow = React.memo(function SalRow({ label, value, show, color, bold }) {
   return (
     <div className={cssClass({ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #f8fafc" })}>
@@ -13,7 +12,6 @@ const SalRow = React.memo(function SalRow({ label, value, show, color, bold }) {
     </div>
   );
 });
-
 const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, showSal, setShowSal }) {
   const earnings = [
     { label: "Basic", value: sal.basic },
@@ -24,12 +22,10 @@ const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, sho
     { label: "Conveyance", value: sal.conveyance },
     { label: "Medical", value: sal.medical },
   ].filter((r) => r.value > 0);
-
   const deductions = [
     { label: "Provident Fund", value: sal.pf },
     { label: "Professional Tax", value: sal.profTax },
   ].filter((r) => r.value > 0);
-
   return (
     <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20 })}>
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 })}>
@@ -42,7 +38,6 @@ const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, sho
           {showSal ? "Hide" : "Reveal"}
         </button>
       </div>
-
       <div className={cssClass({ fontSize: 10, color: "#f18200", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 })}>Earnings</div>
       {earnings.map((r) => (
         <div key={r.label} className={cssClass({ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f8fafc", fontSize: 13 })}>
@@ -52,7 +47,6 @@ const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, sho
           </span>
         </div>
       ))}
-
       <div className={cssClass({ fontSize: 10, color: "#e11d48", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 10, marginBottom: 6 })}>Deductions</div>
       {deductions.map((r) => (
         <div key={r.label} className={cssClass({ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f8fafc", fontSize: 13 })}>
@@ -62,7 +56,6 @@ const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, sho
           </span>
         </div>
       ))}
-
       <div className={cssClass({ display: "flex", justifyContent: "space-between", marginTop: 10, paddingTop: 10, borderTop: "2px solid #f1f5f9" })}>
         <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>Net Pay</span>
         <span className={cssClass({ fontSize: 14, fontWeight: 800, color: "#16a34a", letterSpacing: showSal ? 0 : "0.1em" })}>
@@ -72,5 +65,4 @@ const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, sho
     </div>
   );
 });
-
 export default SalaryComponentsCard;

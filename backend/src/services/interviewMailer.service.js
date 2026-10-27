@@ -1,7 +1,5 @@
 'use strict';
-
 const { sendMail } = require('./email.service');
-
 // Platform config per interviewType
 const PLATFORM = {
   Teams: {
@@ -35,7 +33,6 @@ const PLATFORM = {
     modeLabel:  'Zoom (Online)',
   },
 };
-
 async function sendInterviewInvite(data) {
   const {
     candidateName, candidateEmail,
@@ -43,29 +40,23 @@ async function sendInterviewInvite(data) {
     level, interviewType, interviewer, jobTitle,
     joinUrl, recruiterName,
   } = data;
-
   const platform = PLATFORM[interviewType] || {
     color: '#374151', colorLight: '#f9fafb', colorBorder: '#e5e7eb', colorText: '#374151',
     label: interviewType || 'Interview', icon: '📅', btnLabel: 'View Details', modeLabel: interviewType || 'Interview',
   };
-
   const endTime = (() => {
     if (!interviewTime || !durationMinutes) return null;
     const [h, m] = interviewTime.split(':').map(Number);
     const total = h * 60 + m + Number(durationMinutes);
     return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
   })();
-
   const formattedDate = new Date(interviewDate).toLocaleDateString('en-IN', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
-
   const durationLabel = durationMinutes < 60
     ? `${durationMinutes} minutes`
     : `${durationMinutes / 60} hour${durationMinutes > 60 ? 's' : ''}`;
-
   const subject = `Interview Invitation — ${level} | ${jobTitle}`;
-
   const joinBlock = joinUrl ? `
     <a href="${joinUrl}" style="display:block;width:fit-content;margin:24px auto;background:${platform.color};color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:700;text-align:center;letter-spacing:0.02em;">
       ${platform.icon} ${platform.btnLabel}
@@ -76,7 +67,6 @@ async function sendInterviewInvite(data) {
     <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin:20px 0;font-size:13px;color:#856404;">
       ⏳ Your meeting link is being generated. You will receive it shortly via a follow-up email.
     </div>`;
-
   const html = `
 <!DOCTYPE html>
 <html>
@@ -134,7 +124,6 @@ async function sendInterviewInvite(data) {
   </div>
 </body>
 </html>`;
-
   const text = `Interview Invitation — ${level} | ${jobTitle}
 
 Dear ${candidateName},
@@ -152,8 +141,6 @@ Please be available 5 minutes before the scheduled time.
 Best regards,
 ${recruiterName}
 Recruitment Team`;
-
   return sendMail({ to: candidateEmail, subject, html, text });
 }
-
 module.exports = { sendInterviewInvite };

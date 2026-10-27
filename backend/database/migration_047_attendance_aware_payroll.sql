@@ -1,6 +1,5 @@
 -- Attendance-aware payroll calculation.
 -- Run: node src/database/runSql.js migration_047_attendance_aware_payroll.sql
-
 DROP PROCEDURE IF EXISTS sp_generate_payslip;
 DELIMITER $$
 CREATE PROCEDURE sp_generate_payslip (
@@ -15,7 +14,6 @@ BEGIN
   DECLARE v_employer_pf DECIMAL(12,2); DECLARE v_working_days DECIMAL(4,1);
   DECLARE v_lop_days DECIMAL(4,1); DECLARE v_paid_days DECIMAL(4,1);
   DECLARE v_per_day DECIMAL(12,2);
-
   SELECT basic, hra, (conveyance + medical_allowance + special_allowance),
          (pf_employee + professional_tax + income_tax), ctc
     INTO v_basic, v_hra, v_allowances, v_deductions, v_ctc_struct
@@ -26,7 +24,6 @@ BEGIN
       INTO v_basic, v_hra, v_allowances, v_deductions, v_ctc_struct
       FROM employees WHERE employee_id = p_employee_id;
   END IF;
-
   -- Sundays and holidays assigned to the employee's holiday calendar are excluded.
   SELECT COUNT(*) INTO v_working_days
   FROM (
@@ -44,7 +41,6 @@ BEGIN
        WHERE h.holiday_date = dates.work_date
          AND (h.holiday_calendar = e.holiday_calendar OR h.holiday_calendar IS NULL)
     );
-
   -- Approved leave is paid. Explicit absences are one LOP day; half-days are .5 LOP.
   SELECT COALESCE(SUM(CASE WHEN a.status = 'half_day' THEN .5 ELSE 1 END), 0) INTO v_lop_days
     FROM attendance a
@@ -54,7 +50,6 @@ BEGIN
        SELECT 1 FROM leave_requests lr WHERE lr.employee_id = a.employee_id
          AND lr.status = 'Approved' AND a.attendance_date BETWEEN lr.from_date AND lr.to_date
      );
-
   SET v_paid_days = GREATEST(0, v_working_days - v_lop_days);
   SET v_gross = v_basic + v_hra + v_allowances;
   SET v_per_day = IF(v_working_days > 0, v_gross / v_working_days, 0);
@@ -62,7 +57,6 @@ BEGIN
   SET v_net = ROUND(v_gross - v_deductions, 2);
   SET v_employer_pf = ROUND(LEAST(v_basic, 15000) * .12, 2);
   SET v_ctc = IF(v_ctc_struct IS NOT NULL AND v_ctc_struct > 0, v_ctc_struct, v_gross + v_employer_pf);
-
   INSERT INTO payslips (payroll_run_id, employee_id, month, year, basic, hra, allowances,
     gross_earnings, ctc, deductions, net_pay, working_days, paid_days, lop_days, status)
   VALUES (p_payroll_run_id, p_employee_id, p_month, p_year, v_basic, v_hra, v_allowances,

@@ -1,21 +1,10 @@
 import { cssClass, joinClasses } from "./classStyles";
-
-
-
-
-
-
-
 export function getEmployeeStatus(employee) {
   if (!employee) return { label: "Unknown", bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0" };
-
-
   if (employee.serving_notice) {
     return { label: "Notice Period", bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" };
   }
-
   const raw = (employee.employee_status || "Active").trim();
-
   switch (raw) {
     case "Active":
       return { label: "Active", bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" };
@@ -29,11 +18,6 @@ export function getEmployeeStatus(employee) {
       return { label: raw, bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0" };
   }
 }
-
-
-
-
-
 export function EmployeeStatusBadge({ employee, style = {} }) {
   const { label, bg, color, border } = getEmployeeStatus(employee);
   return (
@@ -48,5 +32,4 @@ export function EmployeeStatusBadge({ employee, style = {} }) {
       }
       {label}
     </span>);
-
 }

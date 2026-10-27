@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { sc } from "../constants";
-
 const Badge = React.memo(function Badge({ status }) {
   const cfg = sc(status);
   return (
@@ -15,5 +14,4 @@ const Badge = React.memo(function Badge({ status }) {
     </span>
   );
 });
-
 export default Badge;

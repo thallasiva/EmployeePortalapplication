@@ -3,12 +3,10 @@
  * AI Interview Service
  * Uses direct SQL queries — no stored procedures needed.
  */
-
 const crypto = require('crypto');
 const OpenAI = require('openai');
 const { query } = require('../../config/db');
 const { sendMailNow } = require('../email.service');
-
 let _openai = null;
 function getOpenAI() {
   if (_openai) return _openai;
@@ -17,14 +15,11 @@ function getOpenAI() {
   _openai = new OpenAI({ apiKey: key });
   return _openai;
 }
-
 function getModel() { return process.env.OPENAI_MODEL || 'gpt-4o-mini'; }
-
 // ── Generate questions ─────────────────────────────────────────────────────
 async function generateQuestions({ jobTitle, jobDescription, requiredSkills, experienceLevel, numQuestions = 8 }) {
   const openai = getOpenAI();
   const skillsText = Array.isArray(requiredSkills) ? requiredSkills.join(', ') : (requiredSkills || '');
-
   const prompt = `You are an expert technical interviewer. Generate exactly ${numQuestions} interview questions for the following role.
 
 Role: ${jobTitle}
@@ -42,7 +37,6 @@ Format:
 [
   { "id": 1, "question": "...", "type": "technical|behavioral|situational", "difficulty": "easy|medium|hard", "expectedTopics": ["..."] }
 ]`;
-
   if (openai) {
     try {
       const completion = await openai.chat.completions.create({
@@ -60,10 +54,8 @@ Format:
       console.warn('[AIInterview] OpenAI question generation failed, using fallback:', err.message);
     }
   }
-
   return buildFallbackQuestions(jobTitle, skillsText, numQuestions);
 }
-
 function buildFallbackQuestions(jobTitle, skills, n) {
   const base = [
     { type: 'behavioral',  difficulty: 'easy',   question: `Tell me about yourself and why you applied for the ${jobTitle} role.` },
@@ -79,11 +71,9 @@ function buildFallbackQuestions(jobTitle, skills, n) {
   ];
   return base.slice(0, n).map((q, i) => ({ id: i + 1, ...q, expectedTopics: [] }));
 }
-
 // ── Evaluate answers ───────────────────────────────────────────────────────
 async function evaluateAnswers({ jobTitle, questions, answers }) {
   const openai = getOpenAI();
-
   const pairs = questions.map((q, i) => ({
     question: q.question,
     answer:   answers[i]?.answer || '(no answer provided)',
@@ -91,7 +81,6 @@ async function evaluateAnswers({ jobTitle, questions, answers }) {
     difficulty: q.difficulty,
     expectedTopics: q.expectedTopics || [],
   }));
-
   const prompt = `You are an expert interviewer evaluating a candidate for the role of ${jobTitle}.
 Evaluate each answer and return a JSON object.
 
@@ -109,7 +98,6 @@ Return ONLY valid JSON (no markdown):
     { "questionId": 1, "score": <0-10>, "feedback": "<brief feedback>", "keyPoints": ["<point>"] }
   ]
 }`;
-
   if (openai) {
     try {
       const completion = await openai.chat.completions.create({
@@ -125,10 +113,8 @@ Return ONLY valid JSON (no markdown):
       console.warn('[AIInterview] OpenAI evaluation failed, using fallback:', err.message);
     }
   }
-
   return buildFallbackEvaluation(pairs);
 }
-
 function buildFallbackEvaluation(pairs) {
   const scores = pairs.map((p, i) => {
     const words = (p.answer || '').split(/\s+/).filter(Boolean).length;
@@ -145,24 +131,20 @@ function buildFallbackEvaluation(pairs) {
     questionScores: scores,
   };
 }
-
 // ── DB operations (raw SQL — no stored procedures) ─────────────────────────
 async function createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions, expiresHours = 48 }) {
   const token     = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + expiresHours * 3600 * 1000)
     .toISOString().slice(0, 19).replace('T', ' ');
   const qJson = JSON.stringify(questions);
-
   const result = await query(
     `INSERT INTO ai_interview_sessions
        (token, candidate_id, job_req_id, recruiter_id, candidate_name, candidate_email, job_title, questions_json, expires_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [token, candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, qJson, expiresAt]
   );
-
   return { token, expiresAt, sessionId: result.insertId };
 }
-
 async function getSession(token) {
   // Expire stale sessions first
   await query(
@@ -175,7 +157,6 @@ async function getSession(token) {
   );
   return rows[0] || null;
 }
-
 async function issueOtp(token) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return null;
@@ -203,7 +184,6 @@ async function issueOtp(token) {
     devCode: (!isProd && !result.sent) ? code : undefined,
   };
 }
-
 async function verifyOtp(token, code) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return { valid: false, error: 'Interview unavailable' };
@@ -216,14 +196,12 @@ async function verifyOtp(token, code) {
   await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
   return valid ? { valid: true } : { valid: false, error: 'Invalid verification code.' };
 }
-
 async function submitSession({ token, answers, evaluation }) {
   const aJson = JSON.stringify(answers);
   const eJson = JSON.stringify(evaluation);
   const score = evaluation?.overallScore ?? null;
   const recommendationMap = { STRONG_HIRE: 'Strong Hire', HIRE: 'Hire', FURTHER_EVALUATION: 'Maybe', REJECT: 'No Hire' };
   const rec   = recommendationMap[evaluation?.recommendation] || evaluation?.recommendation || null;
-
   await query(
     `UPDATE ai_interview_sessions
      SET answers_json = ?, evaluation_json = ?, overall_score = ?, recommendation = ?,
@@ -232,7 +210,6 @@ async function submitSession({ token, answers, evaluation }) {
     [aJson, eJson, score, rec, token]
   );
 }
-
 async function listByRecruiter({ recruiterId, limit = 20, offset = 0 }) {
   return query(
     `SELECT session_id, token, candidate_name, candidate_email, job_title,
@@ -244,7 +221,6 @@ async function listByRecruiter({ recruiterId, limit = 20, offset = 0 }) {
     [recruiterId, limit, offset]
   );
 }
-
 async function getReport(sessionId) {
   const rows = await query(
     `SELECT * FROM ai_interview_sessions WHERE session_id = ? LIMIT 1`,
@@ -252,19 +228,16 @@ async function getReport(sessionId) {
   );
   return rows[0] || null;
 }
-
 function parseState(raw) {
   try {
     const parsed = JSON.parse(raw || '{}');
     return Array.isArray(parsed) ? { profile: {}, transcript: parsed, durationSeconds: 1800 } : parsed;
   } catch { return { profile: {}, transcript: [], durationSeconds: 1800 }; }
 }
-
 function getRemainingSeconds(state, now = Date.now()) {
   if (!state?.expiresAt) return Math.max(0, Number(state?.durationSeconds) || 0);
   return Math.max(0, Math.ceil((new Date(state.expiresAt).getTime() - now) / 1000));
 }
-
 function questionTimeLimit(question) {
   const type = String(question?.type || '').toUpperCase();
   if (type === 'CODING' || type === 'CODE') return question?.timeLimit || (question?.problemSize === 'large' ? 1200 : 600);
@@ -272,7 +245,6 @@ function questionTimeLimit(question) {
   if (type === 'SYSTEM_DESIGN' || question?.stage === 'system_design') return question?.timeLimit || 900;
   return question?.timeLimit || 120;
 }
-
 function fallbackNextQuestion({ profile, transcript }) {
   const n = transcript.length + 1;
   if (n === 1) return { id: 1, stage: 'introduction', type: 'experience', difficulty: 'calibrated', question: 'Could you briefly introduce yourself and explain your current role, responsibilities, and the project you work on?' };
@@ -290,7 +262,6 @@ function fallbackNextQuestion({ profile, transcript }) {
       : `Based on your experience, how have you used ${skill} in production, and what trade-offs or issues did you need to handle?`,
   };
 }
-
 // ── Enterprise Adaptive Question Engine ───────────────────────────────────
 function _buildEnterpriseSystemPrompt(profile) {
   const difficulty = _calibratedDifficulty(profile);
@@ -306,7 +277,6 @@ function _buildEnterpriseSystemPrompt(profile) {
     : domain.includes('retail') || domain.includes('ecommerce')
     ? 'Domain: Retail/eCommerce — ask about inventory, order management, payment processing, scalability.'
     : '';
-
   return `You are an Enterprise AI Recruiter conducting a structured technical interview. Your role is adaptive, professional, and evidence-based.
 
 ## CORE PRINCIPLES
@@ -354,10 +324,8 @@ Q9+ (if maxQ > 8) → Domain/Advanced: domain-specific, leadership, system desig
 - Technical questions should test depth: architecture, trade-offs, failure recovery, scaling
 - Avoid yes/no questions — all questions must require a substantive answer`;
 }
-
 // 5-tier difficulty ladder, easiest → hardest.
 const DIFFICULTY_LADDER = ['fundamental', 'intermediate', 'proficient', 'advanced', 'senior'];
-
 // Starting difficulty calibrated to declared experience.
 function _calibratedDifficulty(profile) {
   const yrs = Number(profile.relevantExperience || profile.totalExperience || 0);
@@ -367,7 +335,6 @@ function _calibratedDifficulty(profile) {
   if (yrs >= 1) return 'intermediate';
   return 'fundamental';
 }
-
 // Move one rung on the ladder based on the latest answer quality (A..E).
 function _adaptDifficulty(current, quality) {
   let base = DIFFICULTY_LADDER.indexOf(String(current || '').toLowerCase());
@@ -376,7 +343,6 @@ function _adaptDifficulty(current, quality) {
   const next = Math.min(DIFFICULTY_LADDER.length - 1, Math.max(0, base + delta));
   return DIFFICULTY_LADDER[next];
 }
-
 // Map a content-based 0-10 evaluation score to an A..E quality grade.
 function _qualityFromScore(score) {
   const s = Number(score);
@@ -387,7 +353,6 @@ function _qualityFromScore(score) {
   if (s >= 2) return 'D';
   return 'E';
 }
-
 // Grade the most recent answer. Prefers the content-aware per-answer
 // evaluation (LLM-scored on correctness/depth/etc.); only falls back to a
 // length heuristic when no evaluation has been attached yet.
@@ -404,16 +369,13 @@ function _scoreLastAnswer(transcript) {
   if (wordCount < 80) return 'B';
   return 'A';
 }
-
 async function generateNextQuestion({ profile, transcript, durationSeconds, expiresAt, skillsAssessed = [] }) {
   const openai = getOpenAI();
   if (!openai) return fallbackNextQuestion({ profile, transcript });
-
   const qNum = transcript.length + 1;
   const answerQuality = _scoreLastAnswer(transcript);
   const remainingSeconds = getRemainingSeconds({ durationSeconds, expiresAt });
   const systemPrompt = _buildEnterpriseSystemPrompt(profile);
-
   const lastEntry = transcript[transcript.length - 1] || null;
   const lastEval = lastEntry?.evaluation || null;
   const lastDifficulty = lastEntry?.question?.difficulty || _calibratedDifficulty(profile);
@@ -424,7 +386,6 @@ async function generateNextQuestion({ profile, transcript, durationSeconds, expi
     : answerQuality
       ? _adaptDifficulty(lastDifficulty, answerQuality)
       : _calibratedDifficulty(profile);
-
   const transcriptSummary = transcript.map((t, i) => ({
     q: i + 1,
     stage: t.question?.stage || 'technical',
@@ -435,13 +396,11 @@ async function generateNextQuestion({ profile, transcript, durationSeconds, expi
     question: t.question?.question || '',
     answer: (t.answer || '').slice(0, 1200) + ((t.answer || '').length > 1200 ? '…' : ''),
   }));
-
   const contentEval = lastEval
     ? `Score: ${lastEval.score ?? '?'}/10 | Correctness: ${lastEval.correctness ?? '?'} | Depth: ${lastEval.technicalDepth ?? '?'} | ProblemSolving: ${lastEval.problemSolving ?? '?'} | Communication: ${lastEval.communication ?? '?'}
 Weaknesses observed: ${(lastEval.weaknesses || []).join('; ') || 'none noted'}
 Model-recommended next difficulty: ${lastEval.recommendedDifficulty || 'auto'}`
     : 'No content evaluation available for the last answer yet.';
-
   const userMsg = `## TIME AND COVERAGE
 Duration: ${durationSeconds} seconds. Remaining: ${remainingSeconds} seconds (server-enforced hard limit).
 Skills assessed: ${skillsAssessed.join(', ') || 'None'}
@@ -476,7 +435,6 @@ Return ONLY valid JSON — no markdown, no explanation:
   "rationale": "<1 sentence: why this question now, based on adaptive logic>",
   "question": "<the actual interview question>"
 }`;
-
   try {
     const completion = await openai.chat.completions.create({
       model: getModel(),
@@ -496,17 +454,14 @@ Return ONLY valid JSON — no markdown, no explanation:
   }
   return fallbackNextQuestion({ profile, transcript });
 }
-
 async function evaluateAnswer({ profile, question, answer, transcript }) {
   const fallbackScore = Math.min(10, Math.max(1, Math.round(String(answer || '').trim().split(/\s+/).filter(Boolean).length / 15)));
   const fallback = { score: fallbackScore, correctness: fallbackScore, technicalDepth: fallbackScore, practicalKnowledge: fallbackScore, problemSolving: fallbackScore, communication: fallbackScore, confidence: fallbackScore, strengths: [], weaknesses: [], assessment: fallbackScore >= 7 ? 'Strong answer' : 'Answer needs further validation', recommendedDifficulty: fallbackScore >= 7 ? 'advanced' : 'intermediate' };
   const openai = getOpenAI();
   if (!openai) return fallback;
-
   const qType = String(question?.type || '').toUpperCase();
   const isCoding = qType === 'CODING' || qType === 'CODE' || qType === 'SYSTEM_DESIGN'
     || question?.stage === 'system_design' || question?.stage === 'coding';
-
   const baseSchema = {
     score: '0-10 overall',
     correctness: '0-10 — is the answer factually/technically correct',
@@ -532,28 +487,22 @@ async function evaluateAnswer({ profile, question, answer, transcript }) {
       scalability: 'string — how the approach behaves at scale (for system design)',
     },
   } : {};
-
   const sysContent = isCoding
     ? 'Evaluate a single CODING or SYSTEM-DESIGN interview answer fairly, using job-relevant evidence only. In addition to the general scores, assess algorithmic correctness, time and space complexity, edge-case handling, and optimality/scalability. Judge substance and correctness, never answer length. Return JSON only.'
     : 'Evaluate a single interview answer fairly using job-relevant evidence only. Judge substance, correctness and depth — never answer length. Return JSON only.';
-
   try {
     const completion = await openai.chat.completions.create({ model: getModel(), temperature: 0.2, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sysContent }, { role: 'user', content: JSON.stringify({ role: profile.jobTitle, requiredSkills: profile.requiredSkills, questionType: question?.type, questionDifficulty: question?.difficulty, question: question?.question || question, answer, previousAnswers: transcript.slice(-3).map(t => ({ question: t.question?.question, answer: t.answer })), schema: { ...baseSchema, ...codingSchema } }) }] });
     const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
     return typeof result.score === 'number' ? result : fallback;
   } catch (err) { console.warn('[AIInterview] per-answer evaluation failed:', err.message); return fallback; }
 }
-
 async function evaluateAdaptiveInterview({ profile, transcript }) {
   const openai = getOpenAI();
   const pairs = transcript.map(t => ({ question: t.question?.question || '', answer: t.answer || '', type: t.question?.type || '', difficulty: t.question?.difficulty || '', skill: t.question?.skill || '', answerQuality: t.answerQuality || '?' }));
   const fallback = buildFallbackEvaluation(pairs);
   const normFallback = { ...fallback, recommendation: fallback.recommendation === 'Strong Hire' ? 'STRONG_HIRE' : fallback.recommendation === 'Hire' ? 'HIRE' : fallback.recommendation === 'Maybe' ? 'FURTHER_EVALUATION' : 'REJECT' };
-
   if (!openai) return normFallback;
-
   const systemMsg = `You are an Enterprise AI Interview Evaluator. Produce a comprehensive, fair, evidence-based scorecard. Use only job-relevant evidence. Never infer protected characteristics. Be specific — reference actual answers. Calibrate scores relative to the declared experience level and role seniority.`;
-
   const yrs = Number(profile.relevantExperience || profile.totalExperience || 0);
   const userMsg = `## ROLE & CANDIDATE
 Job: ${profile.jobTitle || 'Not specified'}
@@ -610,7 +559,6 @@ Return ONLY valid JSON with this exact structure (no markdown):
   "hiringRiskFactors": ["<risk factor if any>"],
   "nextSteps": ["<recommended next step if HIRE or FURTHER_EVALUATION>"]
 }`;
-
   try {
     const completion = await openai.chat.completions.create({
       model: getModel(),
@@ -629,12 +577,10 @@ Return ONLY valid JSON with this exact structure (no markdown):
   }
   return normFallback;
 }
-
 async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 20, expiresHours = 48 }) {
   const durationSeconds = Math.min(Math.max(Number(durationMinutes) || 20, 10), 60) * 60;
   return createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions: { profile, transcript: [], durationSeconds, skillsAssessed: [], status: 'PENDING' }, expiresHours });
 }
-
 async function startAdaptiveSession(token) {
   const session = await getSession(token);
   if (!session) return null;
@@ -653,7 +599,6 @@ async function startAdaptiveSession(token) {
   }
   return { session, state };
 }
-
 async function answerAdaptiveSession({ token, answer }) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return null;
@@ -675,7 +620,6 @@ async function answerAdaptiveSession({ token, answer }) {
   await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
   return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt };
 }
-
 async function completeAdaptiveSession(token, reason = 'candidate_completed', suppliedState = null) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return null;
@@ -685,8 +629,6 @@ async function completeAdaptiveSession(token, reason = 'candidate_completed', su
   await submitSession({ token, answers: state.transcript || [], evaluation });
   return { complete: true, evaluation };
 }
-
-
 // ── Proctoring event logging ───────────────────────────────────────────────
 async function logProctoringEvent(token, event) {
   const session = await getSession(token);
@@ -702,7 +644,6 @@ async function logProctoringEvent(token, event) {
   }
   return { ok: true, tabSwitchCount: tabCount };
 }
-
 // ── Auto-save draft answer ─────────────────────────────────────────────────
 async function saveDraft(token, questionId, draft) {
   const session = await getSession(token);
@@ -711,7 +652,6 @@ async function saveDraft(token, questionId, draft) {
   state.currentDraft = { questionId, draft: String(draft || '').slice(0, 5000), savedAt: new Date().toISOString() };
   await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
 }
-
 // ── Idempotency-aware answer ───────────────────────────────────────────────
 async function answerAdaptiveSessionV2({ token, answer, questionId }) {
   const session = await getSession(token);
@@ -727,7 +667,6 @@ async function answerAdaptiveSessionV2({ token, answer, questionId }) {
   // Delegate to existing handler
   return answerAdaptiveSession({ token, answer });
 }
-
 module.exports = {
   generateQuestions,
   evaluateAnswers,

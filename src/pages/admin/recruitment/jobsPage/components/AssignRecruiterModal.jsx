@@ -1,7 +1,6 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
 import { Modal, Btn } from "../shared";
-
 function AssignRecruiterModal({
   assignOpen,
   onClose,
@@ -92,5 +91,4 @@ function AssignRecruiterModal({
     </Modal>
   );
 }
-
 export default React.memo(AssignRecruiterModal);

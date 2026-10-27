@@ -1,6 +1,5 @@
 import React from "react";
 import ApplyEmptyIllustration from "./ApplyEmptyIllustration";
-
 const RegularizeForm = React.memo(function RegularizeForm({
   selectedIso,
   isException,
@@ -14,7 +13,6 @@ const RegularizeForm = React.memo(function RegularizeForm({
 }) {
   const isExceptionDay =
     selectedIso && isException(new Date(selectedIso + "T12:00:00"));
-
   return (
     <div className="flex-1 bg-white border border-slate-200 rounded-lg min-h-[320px]">
       {isExceptionDay ? (
@@ -71,5 +69,4 @@ const RegularizeForm = React.memo(function RegularizeForm({
     </div>
   );
 });
-
 export default RegularizeForm;

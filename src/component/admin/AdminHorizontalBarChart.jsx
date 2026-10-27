@@ -1,9 +1,7 @@
 import React from "react";
 import "./adminCharts.css";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 export default function AdminHorizontalBarChart({ title, subtitle, items = [] }) {
   const max = Math.max(...items.map((i) => i.value), 1);
-
   return (
     <div className="admin-chart">
       {(title || subtitle) &&
@@ -14,7 +12,6 @@ export default function AdminHorizontalBarChart({ title, subtitle, items = [] })
           </div>
         </div>
       }
-
       <div className="admin-hbar-chart">
         {items.map((item) =>
         <div key={item.label} className="admin-hbar-row">
@@ -26,12 +23,10 @@ export default function AdminHorizontalBarChart({ title, subtitle, items = [] })
                   width: `${item.value / max * 100}%`,
                   background: item.color
                 }))} />
-
             </div>
             <span className="admin-hbar-value">{item.value}</span>
           </div>
         )}
       </div>
     </div>);
-
 }

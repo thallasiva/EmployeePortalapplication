@@ -1,7 +1,6 @@
 import React from "react";
 import SectionLabel from "./SectionLabel";
 import ColleagueCard from "./ColleagueCard";
-
 const ColleagueSection = React.memo(function ColleagueSection({ title, people, isDirectReport }) {
   if (!people || people.length === 0) return null;
   return (
@@ -17,5 +16,4 @@ const ColleagueSection = React.memo(function ColleagueSection({ title, people, i
     </div>
   );
 });
-
 export default ColleagueSection;

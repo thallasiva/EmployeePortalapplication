@@ -4,7 +4,6 @@ import PersonalStatutorySection from "./PersonalStatutorySection";
 import NomineeSections from "./NomineeSections";
 import DocumentsSection from "./DocumentsSection";
 import DecisionPanel from "./DecisionPanel";
-
 const DetailModal = React.memo(function DetailModal({
   detailId,
   detail,
@@ -18,7 +17,6 @@ const DetailModal = React.memo(function DetailModal({
   onSubmitReview,
 }) {
   if (!detailId) return null;
-
   const displayName =
     detail?.candidate_name || selectedRow?.candidate_name || "…";
   const initials = displayName
@@ -27,7 +25,6 @@ const DetailModal = React.memo(function DetailModal({
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col">
@@ -67,7 +64,6 @@ const DetailModal = React.memo(function DetailModal({
             <XCircle size={20} />
           </button>
         </div>
-
         {/* Body */}
         <div className="overflow-y-auto flex-1 px-6 py-5">
           {!detail ? (
@@ -92,7 +88,6 @@ const DetailModal = React.memo(function DetailModal({
             </>
           )}
         </div>
-
         {/* Footer */}
         <div className="px-6 py-4 border-t border-amber-100 flex justify-end gap-3 flex-shrink-0">
           <button
@@ -117,5 +112,4 @@ const DetailModal = React.memo(function DetailModal({
     </div>
   );
 });
-
 export default DetailModal;

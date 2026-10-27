@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-
 const StatusFilterBar = React.memo(function StatusFilterBar({ offers, filterStatus, onSelect }) {
   const statBtns = useMemo(() => [
     { label: "Total", val: "", count: offers.length, colorCls: "text-gray-500", bgCls: "bg-gray-100", activeBorder: "border-gray-500" },
@@ -8,7 +7,6 @@ const StatusFilterBar = React.memo(function StatusFilterBar({ offers, filterStat
     { label: "Accepted", val: "Accepted", count: offers.filter((o) => o.status === "Accepted").length, colorCls: "text-emerald-600", bgCls: "bg-emerald-100", activeBorder: "border-emerald-600" },
     { label: "Rejected", val: "Rejected", count: offers.filter((o) => o.status === "Rejected").length, colorCls: "text-red-600", bgCls: "bg-red-100", activeBorder: "border-red-600" }
   ], [offers]);
-
   return (
     <div className="flex gap-2.5 mb-5 flex-wrap">
       {statBtns.map((s) => (
@@ -21,5 +19,4 @@ const StatusFilterBar = React.memo(function StatusFilterBar({ offers, filterStat
     </div>
   );
 });
-
 export default StatusFilterBar;

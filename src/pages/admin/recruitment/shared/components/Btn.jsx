@@ -1,6 +1,5 @@
 import React from "react";
 import { BTN_VARIANT, BTN_SIZE } from "../constants";
-
 export const Btn = React.memo(function Btn({
   children, onClick, variant = "primary", size = "md",
   disabled, type = "button", icon,

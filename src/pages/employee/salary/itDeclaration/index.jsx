@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { useITDeclaration } from "./hooks/useITDeclaration";
-
 import DeclarationHeader from "./components/DeclarationHeader";
 import LockedBanner from "./components/LockedBanner";
 import StatusBanner from "./components/StatusBanner";
 import DeclCard from "./components/DeclCard";
 import ActionButtons from "./components/ActionButtons";
-
 import Modal123 from "./components/Modal123";
 import ModalCh8 from "./components/ModalCh8";
 import ModalHRA from "./components/ModalHRA";
@@ -16,10 +14,8 @@ import ModalHouseProperty from "./components/ModalHouseProperty";
 import ModalOtherIncome from "./components/ModalOtherIncome";
 import ModalTcsTds from "./components/ModalTcsTds";
 import { ChartColumn, ClipboardList, House, Hospital, Building, Coins, ReceiptText } from "lucide-react";
-
 export default function ITDeclaration() {
   const [openModal, setOpenModal] = useState(null);
-
   const {
     loading,
     saving,
@@ -48,7 +44,6 @@ export default function ITDeclaration() {
     totalDeclared,
     handleSave,
   } = useITDeclaration();
-
   if (loading) {
     return (
       <div className={cssClass({ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 14 })}>
@@ -56,7 +51,6 @@ export default function ITDeclaration() {
       </div>
     );
   }
-
   const CARDS = [
     { key: "123", icon: <ChartColumn size={18} />, title: "Tax-Saving Investments (80C / 80CCD)", declared: declared123 || null },
     { key: "ch8", icon: <ClipboardList size={18} />, title: "Other Deductions (80D / 80E / 80G)", declared: declaredCh8 || null },
@@ -66,19 +60,15 @@ export default function ITDeclaration() {
     { key: "income", icon: <Coins size={18} />, title: "Other Sources of Income", declared: declaredIncome || null },
     { key: "tcs", icon: <ReceiptText size={18} />, title: "Tax Credits — TDS / TCS", declared: declaredTcsTds || null },
   ];
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       <DeclarationHeader cycle={cycle} totalDeclared={totalDeclared} annualGross={annualGross} />
-
       {isLocked && <LockedBanner />}
-
       <StatusBanner
         declaration={declaration}
         status={status}
         onEditResubmit={() => handleSave(false)}
       />
-
       {}
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, opacity: isReadOnly ? 0.7 : 1 })}>
         {CARDS.map((card) => (
@@ -92,7 +82,6 @@ export default function ITDeclaration() {
           />
         ))}
       </div>
-
       {}
       {!isLocked && !isReadOnly && (
         <ActionButtons
@@ -102,7 +91,6 @@ export default function ITDeclaration() {
           onSubmit={() => handleSave(true)}
         />
       )}
-
       {}
       {openModal === "123" && (
         <Modal123 values={vals123} setValues={setVals123} onClose={() => setOpenModal(null)} />

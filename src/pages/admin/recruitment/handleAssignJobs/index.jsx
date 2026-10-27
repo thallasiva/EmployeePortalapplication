@@ -4,7 +4,6 @@ import MyTasksView from "./components/MyTasksView";
 import JobSearchFilters from "./components/JobSearchFilters";
 import NewJobRequestForm from "./components/NewJobRequestForm";
 import AssignJobsTable from "./components/AssignJobsTable";
-
 const RequirementsTab = React.memo(function RequirementsTab({ role, recruiterKey }) {
   const {
     selectedJobs,
@@ -19,11 +18,9 @@ const RequirementsTab = React.memo(function RequirementsTab({ role, recruiterKey
     toggleDropdown,
     closeDropdown,
   } = useJobAssignments();
-
   if (role.id === 5) {
     return <MyTasksView recruiterKey={recruiterKey} />;
   }
-
   return (
     <>
       <JobSearchFilters />
@@ -44,5 +41,4 @@ const RequirementsTab = React.memo(function RequirementsTab({ role, recruiterKey
     </>
   );
 });
-
 export default RequirementsTab;

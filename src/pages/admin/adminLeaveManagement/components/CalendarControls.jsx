@@ -3,13 +3,11 @@ import { ChevronLeft, ChevronRight, Calendar, LayoutGrid, BarChart2 } from "luci
 import { cssClass } from "../../../../utils/classStyles";
 import { CALENDAR_SHIFTS, LEAVE_COLORS } from "../constants/leaveConstants";
 import Btn from "./Btn";
-
 const VIEW_BUTTONS = [
   { key: "month", icon: <Calendar size={14} />,  label: "Month" },
   { key: "week",  icon: <LayoutGrid size={14} />, label: "Week"  },
   { key: "year",  icon: <BarChart2 size={14} />,  label: "Year"  },
 ];
-
 /** Toolbar: view-switcher, prev/next navigation, employee filter, and legend */
 const CalendarControls = memo(({
   view, setView,
@@ -35,7 +33,6 @@ const CalendarControls = memo(({
         </button>
       ))}
     </div>
-
     {/* Navigation */}
     <div className={cssClass({ display: "flex", alignItems: "center", gap: 6 })}>
       <Btn variant="cancel" size="sm" onClick={() => navigateDelta(-1)}><ChevronLeft size={14} /></Btn>
@@ -45,7 +42,6 @@ const CalendarControls = memo(({
       <Btn variant="cancel" size="sm" onClick={() => navigateDelta(1)}><ChevronRight size={14} /></Btn>
       <Btn variant="cancel" size="sm" onClick={resetToday}>Today</Btn>
     </div>
-
     {/* Employee filter */}
     <select value={empFilter} onChange={(e) => setEmpFilter(e.target.value)} className={cssClass(
       { padding: "7px 12px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, color: "#374151", minWidth: 200 })}>
@@ -64,7 +60,6 @@ const CalendarControls = memo(({
         </option>
       ))}
     </select>
-
     {/* Legend */}
     <div className={cssClass({ display: "flex", gap: 10, marginLeft: "auto", flexWrap: "wrap", alignItems: "center" })}>
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 4 })}>
@@ -83,6 +78,5 @@ const CalendarControls = memo(({
     </div>
   </div>
 ));
-
 CalendarControls.displayName = "CalendarControls";
 export default CalendarControls;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { ADMIN_LEAVE_POLICIES } from '../../../../data/adminLeaveData';
-
 const LeavePolicySection = React.memo(function LeavePolicySection() {
   return (
     <section className="admin-dash-card">
@@ -20,5 +19,4 @@ const LeavePolicySection = React.memo(function LeavePolicySection() {
     </section>
   );
 });
-
 export default LeavePolicySection;

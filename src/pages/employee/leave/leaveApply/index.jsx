@@ -5,13 +5,11 @@ import BalanceCard from "./components/BalanceCard";
 import LeaveApplyForm from "./components/LeaveApplyForm";
 import PendingTab from "./components/PendingTab";
 import HistoryTab from "./components/HistoryTab";
-
 const TABS = (pendingCount) => [
   { key: "apply", label: "Apply" },
   { key: "pending", label: `Pending${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
   { key: "history", label: "History" },
 ];
-
 export default function LeaveApply() {
   const {
     activeTab,
@@ -51,12 +49,9 @@ export default function LeaveApply() {
     handleSubmit,
     resetForm,
   } = useLeaveApply();
-
   const tabs = TABS(pendingRequests.length);
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
-
       {/* Page header */}
       <div className="px-6 py-4 flex items-center justify-between">
         <div>
@@ -66,7 +61,6 @@ export default function LeaveApply() {
           </p>
         </div>
       </div>
-
       {/* Balance cards */}
       {balances.length > 0 && (
         <div className="px-6 pb-4 flex gap-3 overflow-x-auto pb-2">
@@ -81,7 +75,6 @@ export default function LeaveApply() {
           ))}
         </div>
       )}
-
       {/* Tab switcher */}
       <div className="px-6">
         <div className="flex gap-1 bg-white rounded-xl border border-[#e8eef5] p-1 w-fit">
@@ -100,7 +93,6 @@ export default function LeaveApply() {
           ))}
         </div>
       </div>
-
       {/* Tab content */}
       <div className="p-6 pt-4">
         {activeTab === "apply" && (
@@ -126,7 +118,6 @@ export default function LeaveApply() {
             onClear={resetForm}
           />
         )}
-
         {activeTab === "pending" && (
           <PendingTab
             loadingList={loadingList}
@@ -135,7 +126,6 @@ export default function LeaveApply() {
             cancellingId={cancellingId}
           />
         )}
-
         {activeTab === "history" && (
           <HistoryTab
             loadingList={loadingList}

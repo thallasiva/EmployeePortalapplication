@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Calendar, Clock, Home, Shield, FileText, CheckCircle2, XCircle, AlertCircle, Plus, ChevronRight, Filter, X } from "lucide-react";
-
 // ── Static sample data ────────────────────────────────────────────────────────
 const REQUESTS = [
   { id: 1,  type: "leave",          icon: Calendar, label: "Leave Request",          title: "Casual Leave",                  date: "2026-07-28", status: "Approved",  detail: "1 day · Jul 28" },
@@ -12,7 +11,6 @@ const REQUESTS = [
   { id: 7,  type: "wfh",            icon: Home,     label: "Work From Home",          title: "WFH Request",                  date: "2026-07-05", status: "Pending",   detail: "Half day – PM" },
   { id: 8,  type: "other",          icon: FileText, label: "Other Request",           title: "Letter of Employment",         date: "2026-06-30", status: "Approved",  detail: "Requested document" },
 ];
-
 const TABS = [
   { key: "all",            label: "All",              count: REQUESTS.length },
   { key: "leave",          label: "Leave",            count: REQUESTS.filter(r => r.type === "leave").length },
@@ -21,13 +19,11 @@ const TABS = [
   { key: "permission",     label: "Permission",       count: REQUESTS.filter(r => r.type === "permission").length },
   { key: "other",          label: "Other",            count: REQUESTS.filter(r => r.type === "other").length },
 ];
-
 const STATUS_CONFIG = {
   Approved: { icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   Pending:  { icon: AlertCircle,  color: "text-amber-500",   bg: "bg-amber-50 text-amber-700 border-amber-200" },
   Rejected: { icon: XCircle,      color: "text-red-500",     bg: "bg-red-50 text-red-700 border-red-200" },
 };
-
 const TYPE_COLORS = {
   leave:          "bg-blue-50 text-blue-600",
   regularization: "bg-orange-50 text-[#f18200]",
@@ -35,14 +31,12 @@ const TYPE_COLORS = {
   permission:     "bg-teal-50 text-teal-600",
   other:          "bg-slate-50 text-slate-600",
 };
-
 const SUMMARY_STATS = [
   { label: "Total Requests", value: REQUESTS.length,                                     color: "text-slate-900", bg: "bg-white" },
   { label: "Approved",       value: REQUESTS.filter(r => r.status === "Approved").length, color: "text-emerald-600", bg: "bg-emerald-50" },
   { label: "Pending",        value: REQUESTS.filter(r => r.status === "Pending").length,  color: "text-amber-600",  bg: "bg-amber-50" },
   { label: "Rejected",       value: REQUESTS.filter(r => r.status === "Rejected").length, color: "text-red-500",    bg: "bg-red-50" },
 ];
-
 function NewRequestModal({ onClose }) {
   const [type, setType] = useState("leave");
   const types = [
@@ -88,17 +82,13 @@ function NewRequestModal({ onClose }) {
     </div>
   );
 }
-
 const RequestHub = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [showModal, setShowModal] = useState(false);
-
   const filtered = activeTab === "all" ? REQUESTS : REQUESTS.filter(r => r.type === activeTab);
-
   return (
     <div className="space-y-6">
       {showModal && <NewRequestModal onClose={() => setShowModal(false)} />}
-
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -112,7 +102,6 @@ const RequestHub = () => {
           <Plus size={16} /> New Request
         </button>
       </div>
-
       {/* Summary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {SUMMARY_STATS.map((s) => (
@@ -122,7 +111,6 @@ const RequestHub = () => {
           </div>
         ))}
       </div>
-
       {/* Tab bar */}
       <div className="flex gap-1 overflow-x-auto bg-white border border-slate-100 rounded-xl p-1 shadow-sm w-fit">
         {TABS.map((t) => (
@@ -140,7 +128,6 @@ const RequestHub = () => {
           </button>
         ))}
       </div>
-
       {/* Request list */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
@@ -198,5 +185,4 @@ const RequestHub = () => {
     </div>
   );
 };
-
 export default RequestHub;

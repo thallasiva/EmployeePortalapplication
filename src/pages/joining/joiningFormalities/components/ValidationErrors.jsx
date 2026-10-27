@@ -1,8 +1,6 @@
 import React from "react";
-
 const ValidationErrors = React.memo(function ValidationErrors({ errors }) {
   if (!errors || errors.length === 0) return null;
-
   return (
     <div className="bg-red-50 border border-red-200 rounded-xl p-4">
       <p className="text-[13px] font-semibold text-red-700 mb-2">
@@ -18,5 +16,4 @@ const ValidationErrors = React.memo(function ValidationErrors({ errors }) {
     </div>
   );
 });
-
 export default ValidationErrors;

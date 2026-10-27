@@ -1,17 +1,11 @@
 'use strict';
-
 const nodemailer = require('nodemailer');
 const { email: emailCfg } = require('../config/env');
 const { enqueue } = require('./email/mailQueue');
-
 let _transporter = null;
-
-
-
 function getTransporter() {
   if (_transporter) return _transporter;
   if (!emailCfg.host || !emailCfg.user || !emailCfg.pass) return null;
-
   _transporter = nodemailer.createTransport({
     host: emailCfg.host,
     port: emailCfg.port,
@@ -21,26 +15,19 @@ function getTransporter() {
     maxConnections: 5,
     maxMessages: 100
   });
-
   return _transporter;
 }
-
-
-
 async function _doSend({ to, cc, bcc, subject, html, text, attachments }) {
   const transport = getTransporter();
-
   if (!transport) {
     console.warn('[EMAIL] SMTP not configured -- skipped | to=' + to + ' | subject=' + subject);
     console.warn('[EMAIL] Fix: set SMTP_HOST, SMTP_USER, SMTP_PASS in .env and restart server.');
     return { sent: false, error: 'SMTP not configured' };
   }
-
   if (!to) {
     console.warn('[EMAIL] No recipient -- skipped | subject=' + subject);
     return { sent: false, error: 'Missing recipient' };
   }
-
   try {
     const info = await transport.sendMail({
       from: emailCfg.from,
@@ -59,9 +46,6 @@ async function _doSend({ to, cc, bcc, subject, html, text, attachments }) {
     return { sent: false, error: err.message };
   }
 }
-
-
-
 async function sendMail(options) {
   try {
     const jobId = await enqueue(options);
@@ -72,7 +56,6 @@ async function sendMail(options) {
     return { sent: false, error: err.message };
   }
 }
-
 async function sendMailNow(options) {
   try {
     return await _doSend(options);
@@ -81,15 +64,12 @@ async function sendMailNow(options) {
     return { sent: false, error: err.message };
   }
 }
-
 async function sendBulk(emailList) {
   return Promise.allSettled(emailList.map((opts) => sendMail(opts)));
 }
-
 async function processQueuedJob(job) {
   return _doSend(job.data);
 }
-
 async function verifySmtp() {
   const t = getTransporter();
   if (!t) return { ok: false, reason: 'SMTP not configured -- set SMTP_HOST, SMTP_USER, SMTP_PASS in .env' };
@@ -100,5 +80,4 @@ async function verifySmtp() {
     return { ok: false, reason: err.message };
   }
 }
-
 module.exports = { sendMail, sendMailNow, sendBulk, processQueuedJob, verifySmtp, getTransporter };

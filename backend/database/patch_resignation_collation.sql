@@ -6,9 +6,7 @@
 --       comparisons against VARCHAR columns work regardless of DB default.
 -- Run once in MySQL — safe to re-run.
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_get_all_resignations $$
 CREATE PROCEDURE sp_get_all_resignations (
   IN p_status VARCHAR(30)  COLLATE utf8mb4_unicode_ci,
@@ -32,5 +30,4 @@ BEGIN
           OR d.department_name COLLATE utf8mb4_unicode_ci LIKE CONCAT('%',p_search,'%'))
    ORDER BY r.created_at DESC;
 END $$
-
 DELIMITER ;

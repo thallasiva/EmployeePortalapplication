@@ -2,22 +2,18 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Bell, CheckCheck, Trash2, Info, CheckCircle2, AlertTriangle, XCircle, Loader2, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { notificationsApi } from "../../api/settings.api";
 import { getStoredUser } from "../../data/auth";
-
 const TYPE_CFG = {
   info:    { icon: <Info size={15} />,          color: "#3b82f6", bg: "#eff6ff" },
   success: { icon: <CheckCircle2 size={15} />,  color: "#16a34a", bg: "#dcfce7" },
   warning: { icon: <AlertTriangle size={15} />, color: "#d97706", bg: "#fef3c7" },
   error:   { icon: <XCircle size={15} />,       color: "#dc2626", bg: "#fee2e2" },
 };
-
 const MODULE_TAGS = {
   Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#3b82f6",Recruitment:"#8b5cf6",
   Performance:"#ec4899",Helpdesk:"#14b8a6",System:"#64748b",Onboarding:"#f18200",
 };
-
 const FILTER_OPTS = ["All","Unread","Leave","Attendance","Payroll","Recruitment","System"];
 const PER = 15;
-
 function timeAgo(dt) {
   if (!dt) return "";
   const diff = (Date.now() - new Date(dt).getTime()) / 1000;
@@ -26,7 +22,6 @@ function timeAgo(dt) {
   if (diff < 86400)  return `${Math.floor(diff/3600)}h ago`;
   return `${Math.floor(diff/86400)}d ago`;
 }
-
 export default function NotificationCenter() {
   const user = getStoredUser();
   const [rows, setRows]         = useState([]);
@@ -36,9 +31,7 @@ export default function NotificationCenter() {
   const [filter, setFilter]     = useState("All");
   const [loading, setLoading]   = useState(true);
   const [toast, setToast]       = useState(null);
-
   const showToast = (msg, type="success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 2500); };
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -56,31 +49,25 @@ export default function NotificationCenter() {
     } catch { }
     finally { setLoading(false); }
   }, [page, filter, user?.id]);
-
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [filter]);
-
   const handleMarkRead = async (id) => {
     await notificationsApi.markRead(id);
     setRows(prev => prev.map(r => r.id === id ? { ...r, is_read: 1 } : r));
     setUnread(u => Math.max(0, u - 1));
   };
-
   const handleMarkAllRead = async () => {
     await notificationsApi.markAllRead(user?.id);
     setRows(prev => prev.map(r => ({ ...r, is_read: 1 })));
     setUnread(0);
     showToast("All marked as read");
   };
-
   const handleDelete = async (id) => {
     await notificationsApi.delete(id);
     setRows(prev => prev.filter(r => r.id !== id));
     setTotal(t => t - 1);
   };
-
   const totalPages = Math.max(1, Math.ceil(total / PER));
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {toast && (
@@ -88,7 +75,6 @@ export default function NotificationCenter() {
           {toast.msg}
         </div>
       )}
-
       {/* Header */}
       <div className="bg-white border-b border-[#e2e8f0] px-6 py-5">
         <div className="flex items-center justify-between">
@@ -111,7 +97,6 @@ export default function NotificationCenter() {
           )}
         </div>
       </div>
-
       <div className="p-6 space-y-4">
         {/* Filter tabs */}
         <div className="flex gap-2 flex-wrap">
@@ -127,7 +112,6 @@ export default function NotificationCenter() {
             </button>
           ))}
         </div>
-
         {/* List */}
         <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
           {loading ? (
@@ -155,7 +139,6 @@ export default function NotificationCenter() {
                       style={{ background: cfg.bg, color: cfg.color }}>
                       {cfg.icon}
                     </div>
-
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
@@ -175,7 +158,6 @@ export default function NotificationCenter() {
                         <span className="text-[11px] text-[#94a3b8] shrink-0 pt-0.5">{timeAgo(n.created_at)}</span>
                       </div>
                     </div>
-
                     {/* Actions */}
                     <div className="flex items-center gap-1 shrink-0">
                       {unreadDot && (
@@ -194,7 +176,6 @@ export default function NotificationCenter() {
               })}
             </div>
           )}
-
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-5 py-3 border-t border-[#f1f5f9]">

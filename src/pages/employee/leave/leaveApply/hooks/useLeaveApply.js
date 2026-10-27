@@ -9,10 +9,8 @@ import {
 } from "../../../../../api/leaveRequest.api";
 import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
 import { calcDays, getLeaveColor } from "../utils";
-
 export default function useLeaveApply() {
   const [activeTab, setActiveTab] = useState("apply");
-
   // Form state
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [balances, setBalances] = useState([]);
@@ -23,13 +21,11 @@ export default function useLeaveApply() {
   const [toSession, setToSession] = useState("Full Day");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
   // List state
   const [pendingRequests, setPendingRequests] = useState([]);
   const [historyRequests, setHistoryRequests] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
-
   const {
     paged: pagedHistory,
     page: histPage,
@@ -41,7 +37,6 @@ export default function useLeaveApply() {
     pageSize: histPageSize,
     setPageSize: setHistPageSize,
   } = usePagination(historyRequests);
-
   // Initial data load
   useEffect(() => {
     listLeaveTypes()
@@ -51,7 +46,6 @@ export default function useLeaveApply() {
       .then((data) => setBalances(data || []))
       .catch(() => setBalances([]));
   }, []);
-
   const loadPending = useCallback(() => {
     setLoadingList(true);
     getMyLeaveRequests({ status: "Pending" })
@@ -59,7 +53,6 @@ export default function useLeaveApply() {
       .catch(() => setPendingRequests([]))
       .finally(() => setLoadingList(false));
   }, []);
-
   const loadHistory = useCallback(() => {
     setLoadingList(true);
     getMyLeaveRequests({})
@@ -69,12 +62,10 @@ export default function useLeaveApply() {
       .catch(() => setHistoryRequests([]))
       .finally(() => setLoadingList(false));
   }, []);
-
   useEffect(() => {
     if (activeTab === "pending") loadPending();
     if (activeTab === "history") loadHistory();
   }, [activeTab, loadPending, loadHistory]);
-
   // Derived values
   const days = calcDays(fromDate, toDate, fromSession, toSession);
   const selectedBalance = balances.find(
@@ -84,7 +75,6 @@ export default function useLeaveApply() {
     (lt) => String(lt.leave_type_id) === String(leaveTypeId)
   );
   const selectedColor = selectedTypeIdx >= 0 ? getLeaveColor(selectedTypeIdx) : "#2ea7ff";
-
   const resetForm = useCallback(() => {
     setLeaveTypeId("");
     setFromDate("");
@@ -93,7 +83,6 @@ export default function useLeaveApply() {
     setToSession("Full Day");
     setReason("");
   }, []);
-
   const handleCancel = useCallback(
     (id) => {
       setCancellingId(id);
@@ -107,14 +96,12 @@ export default function useLeaveApply() {
     },
     [loadPending]
   );
-
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
       if (!leaveTypeId) { errorToast("Please select a leave type."); return; }
       if (!fromDate || !toDate) { errorToast("Please select from and to dates."); return; }
       if (!reason.trim()) { errorToast("Please enter a reason."); return; }
-
       setSubmitting(true);
       applyLeave({
         leave_type_id: Number(leaveTypeId),
@@ -138,7 +125,6 @@ export default function useLeaveApply() {
     },
     [days, fromDate, fromSession, leaveTypeId, reason, resetForm, toDate, toSession]
   );
-
   return {
     activeTab,
     setActiveTab,

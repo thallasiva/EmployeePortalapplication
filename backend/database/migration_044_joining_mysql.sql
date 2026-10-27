@@ -2,277 +2,188 @@
 -- MySQL-compatible version of migration_044 (no ADD COLUMN IF NOT EXISTS).
 -- Uses information_schema checks inside a stored procedure.
 -- Run AFTER patch_joining_review_fix_mysql.sql.
-
 DROP PROCEDURE IF EXISTS _tmp_044;
-
 DELIMITER $$
 CREATE PROCEDURE _tmp_044()
 BEGIN
   -- Helper macro: each block checks information_schema before altering
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='actual_dob') THEN
     ALTER TABLE joining_formalities ADD COLUMN actual_dob DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pan_no') THEN
     ALTER TABLE joining_formalities ADD COLUMN pan_no VARCHAR(20) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='father_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN father_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='marital_status') THEN
     ALTER TABLE joining_formalities ADD COLUMN marital_status VARCHAR(30) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='spouse_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN spouse_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='present_address') THEN
     ALTER TABLE joining_formalities ADD COLUMN present_address TEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='joining_date_text') THEN
     ALTER TABLE joining_formalities ADD COLUMN joining_date_text DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='designation_text') THEN
     ALTER TABLE joining_formalities ADD COLUMN designation_text VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='photo_url') THEN
     ALTER TABLE joining_formalities ADD COLUMN photo_url LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='signature_url') THEN
     ALTER TABLE joining_formalities ADD COLUMN signature_url LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='education_json') THEN
     ALTER TABLE joining_formalities ADD COLUMN education_json LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='references_json') THEN
     ALTER TABLE joining_formalities ADD COLUMN references_json LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='branch_details') THEN
     ALTER TABLE joining_formalities ADD COLUMN branch_details VARCHAR(255) NULL; END IF;
-
   -- Term Life
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_employee_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_employee_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_father_or_husband_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_father_or_husband_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_date_of_birth') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_date_of_birth DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_sex') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_sex VARCHAR(10) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_employee_id') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_employee_id VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_address') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_address TEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='term_life_nominees_json') THEN
     ALTER TABLE joining_formalities ADD COLUMN term_life_nominees_json LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_declaration_employee_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_declaration_employee_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_declaration_date') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_declaration_date DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_place') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_place VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='tl_signature') THEN
     ALTER TABLE joining_formalities ADD COLUMN tl_signature VARCHAR(255) NULL; END IF;
-
   -- Gratuity
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_employee_intro_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_employee_intro_name TEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_sex') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_sex VARCHAR(10) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_religion') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_religion VARCHAR(100) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_marital_status') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_marital_status VARCHAR(30) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_department_branch_section') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_department_branch_section VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_employee_id') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_employee_id VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_date_of_joining') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_date_of_joining DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_permanent_address') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_permanent_address TEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_nominees_json') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_nominees_json LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_witnesses_json') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_witnesses_json LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_place') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_place VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_date') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_date DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_employee_signature') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_employee_signature VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='gratuity_employee_statement_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN gratuity_employee_statement_name TEXT NULL; END IF;
-
   -- Insurance
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_employee_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_employee_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_father_or_husband_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_father_or_husband_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_date_of_birth') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_date_of_birth DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_sex') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_sex VARCHAR(10) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_employee_id') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_employee_id VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_address') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_address TEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_nominees_json') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_nominees_json LONGTEXT NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_declaration_employee_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_declaration_employee_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_declaration_date') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_declaration_date DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='ins_signature') THEN
     ALTER TABLE joining_formalities ADD COLUMN ins_signature VARCHAR(255) NULL; END IF;
-
   -- PF
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_employee_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_employee_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_date_of_birth') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_date_of_birth DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_father_or_spouse_name') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_father_or_spouse_name VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_relation_type') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_relation_type VARCHAR(20) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_gender') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_gender VARCHAR(10) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_marital_status') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_marital_status VARCHAR(30) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_email') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_email VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_mobile_no') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_mobile_no VARCHAR(20) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_epf_1952') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_epf_1952 VARCHAR(5) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_eps_1995') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_eps_1995 VARCHAR(5) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_uan') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_uan VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_previous_pf') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_previous_pf VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_exit_previous_employment') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_exit_previous_employment DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_scheme_certificate_no') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_scheme_certificate_no VARCHAR(100) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_ppo') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_ppo VARCHAR(100) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_international_worker') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_international_worker VARCHAR(5) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_country_origin') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_country_origin VARCHAR(100) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_passport_no') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_passport_no VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_passport_validity') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_passport_validity DATE NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_educational_qualification') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_educational_qualification VARCHAR(100) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_specially_abled') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_specially_abled VARCHAR(5) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_disability_category') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_disability_category VARCHAR(100) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_bank_acc_no') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_bank_acc_no VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_ifsc_code') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_ifsc_code VARCHAR(20) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_aadhar_no') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_aadhar_no VARCHAR(20) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_do_have_pan') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_do_have_pan VARCHAR(5) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_pan') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_pan VARCHAR(20) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_place') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_place VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_declaration_accepted') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_declaration_accepted TINYINT(1) DEFAULT 0; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='pf_employee_signature') THEN
     ALTER TABLE joining_formalities ADD COLUMN pf_employee_signature VARCHAR(255) NULL; END IF;
-
   -- Admin fields (may already exist from patch_joining_review_fix_mysql.sql — safe to skip)
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='admin_employee_id') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_employee_id VARCHAR(50) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='admin_designation') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_designation VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='admin_reporting_to') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_reporting_to VARCHAR(255) NULL; END IF;
-
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='joining_formalities' AND COLUMN_NAME='admin_department') THEN
     ALTER TABLE joining_formalities ADD COLUMN admin_department VARCHAR(255) NULL; END IF;
-
 END$$
 DELIMITER ;
-
 CALL _tmp_044();
 DROP PROCEDURE IF EXISTS _tmp_044;
-
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Recreate stored procedures (same as migration_044 — included here for completeness)
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_joining_save_formalities;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_save_formalities(
   IN p_invitation_id  INT,
@@ -450,9 +361,7 @@ BEGIN
   SELECT * FROM joining_formalities WHERE invitation_id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_formality;
-
 DELIMITER $$
 CREATE PROCEDURE sp_joining_get_formality(IN p_invitation_id INT)
 BEGIN
@@ -467,5 +376,4 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 SELECT 'migration_044_joining_mysql.sql applied successfully' AS result;

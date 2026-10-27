@@ -1,5 +1,4 @@
 import React from "react";
-
 export const Tabs = React.memo(function Tabs({ tabs, active, onChange }) {
   return (
     <div className="flex gap-0.5 border-b-2 border-gray-100 mb-5">

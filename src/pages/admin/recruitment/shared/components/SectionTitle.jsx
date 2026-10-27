@@ -1,5 +1,4 @@
 import React from "react";
-
 export const SectionTitle = React.memo(function SectionTitle({ children, action }) {
   return (
     <div className="flex items-center justify-between mb-3.5">

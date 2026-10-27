@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const ITDeclarationCard = React.memo(function ITDeclarationCard() {
   return (
     <div className={cssClass({
@@ -29,5 +28,4 @@ const ITDeclarationCard = React.memo(function ITDeclarationCard() {
     </div>
   );
 });
-
 export default ITDeclarationCard;

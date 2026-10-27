@@ -2,7 +2,6 @@ import React from "react";
 import { CalendarDays, ChevronDown } from "lucide-react";
 import { SESSION_OPTIONS } from "../constants";
 import RequestSummary from "./RequestSummary";
-
 const LeaveApplyForm = React.memo(function LeaveApplyForm({
   leaveTypes,
   leaveTypeId,
@@ -27,7 +26,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
   return (
     <form onSubmit={onSubmit}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
         {/* Main form card */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-[#e8eef5] overflow-hidden">
           <div className="px-6 py-4 border-b border-[#f1f5f9] flex items-center gap-3">
@@ -41,7 +39,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
               </p>
             </div>
           </div>
-
           <div className="p-6 space-y-5">
             {/* Leave type */}
             <div>
@@ -67,7 +64,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                 />
               </div>
             </div>
-
             {/* Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* From */}
@@ -100,7 +96,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                   </div>
                 </div>
               </div>
-
               {/* To */}
               <div>
                 <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
@@ -133,7 +128,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                 </div>
               </div>
             </div>
-
             {/* Reason */}
             <div>
               <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
@@ -147,7 +141,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                 className="w-full border border-[#e2e8f0] rounded-lg p-4 text-[14px] outline-none resize-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10 transition-all"
               />
             </div>
-
             {/* Actions */}
             <div className="flex gap-3 pt-2">
               <button
@@ -167,7 +160,6 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
             </div>
           </div>
         </div>
-
         {/* Right sidebar */}
         <div className="flex flex-col gap-4">
           <RequestSummary
@@ -186,5 +178,4 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
     </form>
   );
 });
-
 export default LeaveApplyForm;

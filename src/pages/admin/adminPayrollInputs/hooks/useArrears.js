@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { listSalaryStructures } from "../../../../api/payroll.api";
-
 export function useArrears(year) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     listSalaryStructures({ limit: 500 })
@@ -22,7 +20,6 @@ export function useArrears(year) {
           }
           map[s.employee_id].revisions.push(s);
         });
-
         const arrears = [];
         Object.values(map).forEach((emp) => {
           const sorted = emp.revisions.sort(
@@ -51,6 +48,5 @@ export function useArrears(year) {
       })
       .finally(() => setLoading(false));
   }, [year]);
-
   return { rows, loading };
 }

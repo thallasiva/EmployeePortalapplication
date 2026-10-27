@@ -4,7 +4,6 @@ const { authenticate, authorizeRoles } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse  = require('../utils/ApiResponse');
 const { query }    = require('../config/db');
-
 // Ensure audit_logs table exists (schema already creates it, but safe guard)
 async function ensureTable() {
   await query(`CREATE TABLE IF NOT EXISTS audit_logs (
@@ -17,19 +16,16 @@ async function ensureTable() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   ) ENGINE=InnoDB`);
 }
-
 router.get(
   '/',
   authenticate,
   authorizeRoles('Admin', 'HR Manager'),
   asyncHandler(async (req, res) => {
     await ensureTable();
-
     const { search = '', module: mod, result, page = 1, limit = 15 } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const pageSize = Math.min(200, Math.max(1, parseInt(limit, 10) || 15));
     const offset = (pageNum - 1) * pageSize;
-
     // Generic audit_logs plus the salary/payroll access trail written by middleware/auditLog.js
     // (nothing else writes audit_logs, so the page was always empty without it).
     const source = `
@@ -41,10 +37,8 @@ router.get(
              'Payroll', COALESCE(sal.ip_address, '—'),
              CASE sal.status WHEN 'OK' THEN 'Success' WHEN 'DENIED' THEN 'Denied' ELSE 'Failed' END
         FROM salary_audit_log sal`;
-
     let where = 'WHERE 1=1';
     const params = [];
-
     if (search) {
       where += ' AND (x.action LIKE ? OR x.module LIKE ? OR u.email LIKE ?)';
       const s = `%${search}%`;
@@ -58,13 +52,11 @@ router.get(
       where += ' AND x.result = ?';
       params.push(result);
     }
-
     const countRows = await query(
       `SELECT COUNT(*) AS total FROM (${source}) x LEFT JOIN users u ON u.user_id = x.user_id ${where}`,
       params
     );
     const total = Number(countRows[0]?.total ?? 0);
-
     const rows = await query(`
       SELECT
         x.id,
@@ -78,9 +70,7 @@ router.get(
       ${where}
       ORDER BY x.created_at DESC
       LIMIT ? OFFSET ?`, [...params, pageSize, offset]);
-
     new ApiResponse(200, { rows, total }, 'OK').send(res);
   })
 );
-
 module.exports = router;

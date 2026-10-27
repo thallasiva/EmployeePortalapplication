@@ -1,5 +1,4 @@
 export const BRAND = "#f18200";
-
 export const STATUS_CFG = {
   pending:     { color: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "Pending Review" },
   rm_approved: { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", label: "You Approved" },
@@ -8,7 +7,6 @@ export const STATUS_CFG = {
   rejected:    { color: "#dc2626", bg: "#fef2f2", border: "#fecaca", label: "HR Rejected" },
   withdrawn:   { color: "#64748b", bg: "#f8fafc", border: "#e2e8f0", label: "Withdrawn" },
 };
-
 export const FILTERS = [
   { key: "all",         label: "All" },
   { key: "pending",     label: "Pending" },

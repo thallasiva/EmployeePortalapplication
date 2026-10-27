@@ -1,24 +1,12 @@
 import React from "react";
 import { formatINR } from "../../component/charts/InteractivePieChart";
 import "./payslipPrint.css";import { cssClass, joinClasses } from "../../utils/classStyles";
-
 const FY_MONTH_LABELS = ["APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR"];
-
 const num = (value) => Number(value || 0).toLocaleString("en-IN");
-
-
-
-
-
-
-
-
 export default function PayslipSheet({ data }) {
   if (!data) return null;
-
   const { employee, bank, company, earnings, deductions, tds, month_name, year, working_days, paid_days, lop_days } = data;
   const { rows: tdsRows = [], chapterVIA = [], incomeTax = {}, taxPaidByMonth = {} } = tds || {};
-
   return (
     <div className="payslip-print-sheet">
       {}
@@ -29,11 +17,9 @@ export default function PayslipSheet({ data }) {
         </div>
         <div className="payslip-print-logo">{company.company_name}</div>
       </div>
-
       <div className="payslip-print-title">
         Payslip for the month of {month_name} - {year}
       </div>
-
       {}
       <table className="payslip-print-table">
         <tbody>
@@ -75,7 +61,6 @@ export default function PayslipSheet({ data }) {
           </tr>
         </tbody>
       </table>
-
       {}
       <div className="payslip-print-columns">
         <table className="payslip-print-table">
@@ -94,7 +79,6 @@ export default function PayslipSheet({ data }) {
             )}
           </tbody>
         </table>
-
         <table className="payslip-print-table">
           <thead>
             <tr>
@@ -118,7 +102,6 @@ export default function PayslipSheet({ data }) {
           </tbody>
         </table>
       </div>
-
       <div className="payslip-print-columns">
         <table className={joinClasses("payslip-print-table", cssClass({ marginBottom: 0 }))}>
           <tbody>
@@ -137,13 +120,11 @@ export default function PayslipSheet({ data }) {
           </tbody>
         </table>
       </div>
-
       {}
       <div className="payslip-print-netpay">
         <p className="netpay-line">Net Pay for the month : {formatINR(data.net_pay)}</p>
         <p className="netpay-words">({data.net_pay_words})</p>
       </div>
-
       {}
       {(data.eps || data.epf || data.edli || data.esi_employer) &&
       <>
@@ -189,7 +170,6 @@ export default function PayslipSheet({ data }) {
           </table>
         </>
       }
-
       {}
       <div className="payslip-print-section-title">TDS Details</div>
       <table className="payslip-print-table">
@@ -212,7 +192,6 @@ export default function PayslipSheet({ data }) {
           )}
         </tbody>
       </table>
-
       {}
       <div className="payslip-print-section-title">Deduction Under Chapter VI-A</div>
       <table className="payslip-print-table">
@@ -230,7 +209,6 @@ export default function PayslipSheet({ data }) {
                 <td className="payslip-print-amount">{num(row.amount)}</td>
               </tr>
           ) :
-
           <tr>
               <td>—</td>
               <td className="payslip-print-amount">0</td>
@@ -238,7 +216,6 @@ export default function PayslipSheet({ data }) {
           }
         </tbody>
       </table>
-
       {}
       <div className="payslip-print-section-title">Income Tax Deduction</div>
       <div className="payslip-print-taxgrid">
@@ -253,7 +230,6 @@ export default function PayslipSheet({ data }) {
         <div><span>Tax to be Deducted</span><span>{num(incomeTax.taxToBeDeducted)}</span></div>
         <div><span>Monthly Projected Tax</span><span>{num(incomeTax.monthlyProjectedTax)}</span></div>
       </div>
-
       {}
       <div className="payslip-print-section-title">Tax Paid Details</div>
       <table className="payslip-print-monthgrid">
@@ -286,10 +262,8 @@ export default function PayslipSheet({ data }) {
           </tr>
         </tbody>
       </table>
-
       <p className="payslip-print-footer">
         This is a computer generated payslip and does not require a signature
       </p>
     </div>);
-
 }

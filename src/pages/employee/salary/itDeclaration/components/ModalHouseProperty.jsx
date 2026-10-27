@@ -4,10 +4,8 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { fmtDec } from "../utils/formatters";
 import Modal from "./Modal";
 import HouseForm from "./HouseForm";
-
 function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccupied, onClose }) {
   const [activeTab, setActiveTab] = useState(0);
-
   const addHouse = () => {
     setHouseData((prev) => {
       const n = [...prev, {}];
@@ -23,7 +21,6 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
     });
   };
   const updateHouse = (i, h) => setHouseData((prev) => prev.map((x, idx) => (idx === i ? h : x)));
-
   const selfOccupiedInt = Math.min(Number(selfOccupied.interest || 0), 200000);
   const letOutLoss = Math.min(
     -houseData.reduce((s, h) => {
@@ -37,13 +34,11 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
     200000
   );
   const totalExemption = selfOccupiedInt + Math.max(letOutLoss, 0);
-
   const inputStyle = {
     width: "100%", padding: "8px 10px", border: "1px solid #e2e8f0",
     borderRadius: 6, fontSize: 12, outline: "none", background: "#fff",
     boxSizing: "border-box"
   };
-
   return (
     <Modal
       title="House Property Income / Loss (Sec. 24)"
@@ -69,7 +64,6 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
       })}>
         <strong>Note:</strong> If (a + b) is less than −₹2,00,000 then −₹2,00,000 will be exempted, else the actual (a + b) will be exempted.
       </div>
-
       {}
       <div className={cssClass({ marginBottom: 20 })}>
         <div className={cssClass({
@@ -82,7 +76,6 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
             a. Income from Self-Occupied Property
           </span>
         </div>
-
         <div className={cssClass({ padding: "0 2px" })}>
           <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "flex-start",
             padding: "0 0 12px", borderBottom: "1px solid #f1f5f9", gap: 12, marginBottom: 12 })}>
@@ -116,7 +109,6 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
           </div>
         </div>
       </div>
-
       {}
       <div>
         <div className={cssClass({
@@ -135,7 +127,6 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
             <Plus size={13} /> Add new property
           </button>
         </div>
-
         {}
         {houseData.length > 0 && (
           <div className={cssClass({ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" })}>
@@ -170,7 +161,6 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
             ))}
           </div>
         )}
-
         {}
         {houseData[activeTab] !== undefined && (
           <div className={cssClass({ border: "1px solid #e2e8f0", borderRadius: 8, padding: "12px 14px", background: "#fafafa" })}>
@@ -187,5 +177,4 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
     </Modal>
   );
 }
-
 export default React.memo(ModalHouseProperty);

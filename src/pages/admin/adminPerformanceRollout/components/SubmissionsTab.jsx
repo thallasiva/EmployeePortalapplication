@@ -5,26 +5,22 @@ import { getAllAppraisals } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import { AppraisalBadge } from "./Badges";
-
 const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
   const [cycleId, setCycleId] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
   useEffect(() => {
     if (!cycles.length) return;
     const active = cycles.find((c) => c.status === "active");
     setCycleId((active || cycles[0]).cycle_id);
   }, [cycles]);
-
   useEffect(() => {
     if (!cycleId) return;
     setLoading(true);
     getAllAppraisals({ cycle_id: cycleId }).then(setData).catch(() => setData(null)).finally(() => setLoading(false));
   }, [cycleId]);
-
   const appraisals = data?.appraisals || [];
   const notSub = data?.notSubmitted || [];
   const all = [...appraisals, ...notSub.map((e) => ({ ...e, appraisal_status: "draft" }))];
@@ -39,7 +35,6 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
     submitted: all.filter((r) => r.appraisal_status === "submitted").length,
     reviewed: all.filter((r) => r.appraisal_status === "reviewed").length
   };
-
   return (
     <div>
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" })}>
@@ -52,7 +47,6 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
           </button>
         ))}
       </div>
-
       <div className={cssClass({ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" })}>
         {[
           { key: "all", label: "Total", icon: <Users size={13} /> },
@@ -66,13 +60,11 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
           </button>
         ))}
       </div>
-
       <div className={cssClass({ position: "relative", marginBottom: 14 })}>
         <Search size={14} className={cssClass({ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" })} />
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name…"
           className={cssClass({ width: "100%", padding: "9px 12px 9px 34px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, boxSizing: "border-box" })} />
       </div>
-
       {loading
         ? <div className={cssClass({ textAlign: "center", padding: 40, color: "#94a3b8" })}>Loading…</div>
         : filtered.length === 0
@@ -114,5 +106,4 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
     </div>
   );
 });
-
 export default SubmissionsTab;

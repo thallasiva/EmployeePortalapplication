@@ -7,7 +7,6 @@ import { fmtDate, diffDays } from "../utils";
 import Chip from "./Chip";
 import DetailRow from "./DetailRow";
 import Timeline from "./Timeline";
-
 const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, withdrawing, isHistory }) {
   const cfg = STATUS_CFG[data.status] || STATUS_CFG.pending;
   const empName = profile ? [profile.first_name, profile.last_name].filter(Boolean).join(" ") : "—";
@@ -17,7 +16,6 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
   const attachUrl = data.attachment_path
     ? `${apiClient.defaults.baseURL}/resignations/my/${data.resignation_id}/attachment`
     : null;
-
   return (
     <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 250px", gap: 16, alignItems: "start" })}>
       {/* Main card */}
@@ -37,7 +35,6 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
             {cfg.label}
           </span>
         </div>
-
         {/* Date chips */}
         <div className={cssClass({ padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, borderBottom: "1px solid #f1f5f9" })}>
           <Chip label="Start Date"      value={fmtDate(data.start_date)}    color="#64748b" />
@@ -49,7 +46,6 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
             color={(data.shortfall_days ?? 0) > 0 ? "#dc2626" : "#16a34a"}
           />
         </div>
-
         {/* Details */}
         <div className={cssClass({
           padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "14px 24px",
@@ -68,7 +64,6 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
             </div>
           )}
         </div>
-
         {/* Attachment */}
         {attachUrl && (
           <div className={cssClass({ padding: "10px 20px", borderBottom: !isHistory && data.status === "pending" ? "1px solid #f1f5f9" : undefined, display: "flex", alignItems: "center", gap: 8 })}>
@@ -80,7 +75,6 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
             </a>
           </div>
         )}
-
         {/* Withdraw */}
         {!isHistory && data.status === "pending" && (
           <div className={cssClass({ padding: "12px 20px", display: "flex", justifyContent: "flex-end" })}>
@@ -95,10 +89,8 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
           </div>
         )}
       </div>
-
       <Timeline resignation={data} profile={profile} />
     </div>
   );
 });
-
 export default ResignCard;

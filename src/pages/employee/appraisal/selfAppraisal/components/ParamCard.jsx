@@ -3,7 +3,6 @@ import { ChevronDown, ChevronUp, Star } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import StarPicker from "./StarPicker";
-
 const ParamCard = React.memo(function ParamCard({ param, idx, rating, onChange, disabled }) {
   const [open, setOpen] = useState(true);
   return (
@@ -47,7 +46,6 @@ const ParamCard = React.memo(function ParamCard({ param, idx, rating, onChange, 
             : <ChevronDown size={15} className={cssClass({ color: "#94a3b8" })} />}
         </div>
       </button>
-
       {open && (
         <div className={cssClass({ padding: "0 18px 16px" })}>
           <p className={cssClass({
@@ -85,5 +83,4 @@ const ParamCard = React.memo(function ParamCard({ param, idx, rating, onChange, 
     </div>
   );
 });
-
 export default ParamCard;

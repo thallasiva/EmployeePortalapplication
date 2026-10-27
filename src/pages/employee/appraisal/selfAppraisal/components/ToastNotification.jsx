@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const ToastNotification = React.memo(function ToastNotification({ toast }) {
   if (!toast) return null;
   return (
@@ -17,5 +16,4 @@ const ToastNotification = React.memo(function ToastNotification({ toast }) {
     </div>
   );
 });
-
 export default ToastNotification;

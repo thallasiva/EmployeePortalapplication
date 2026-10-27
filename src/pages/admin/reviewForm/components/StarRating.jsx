@@ -1,6 +1,5 @@
 import React from "react";
 import { Star } from "lucide-react";
-
 const StarRating = React.memo(function StarRating({ rating, max = 5 }) {
   return (
     <span className="flex gap-0.5">
@@ -15,5 +14,4 @@ const StarRating = React.memo(function StarRating({ rating, max = 5 }) {
     </span>
   );
 });
-
 export default StarRating;

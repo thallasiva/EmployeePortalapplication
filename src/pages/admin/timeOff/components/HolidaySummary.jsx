@@ -2,15 +2,12 @@ import React, { useMemo } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { SHIFTS, MONTHS } from "../constants";
 import { fmtDate, dayName, parseLocalDate } from "../utils/dateUtils";
-
 const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
   const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
-
   const base = useMemo(
     () => locationFilter ? allHolidays.filter((h) => h.location === locationFilter) : allHolidays,
     [allHolidays, locationFilter]
   );
-
   const shiftCounts = useMemo(() =>
     SHIFTS.map((s) => ({
       ...s,
@@ -19,14 +16,12 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
     })),
     [base, today]
   );
-
   const nextHoliday = useMemo(() =>
     [...base]
       .filter((h) => parseLocalDate(h.holiday_date) >= today)
       .sort((a, b) => parseLocalDate(a.holiday_date) - parseLocalDate(b.holiday_date))[0],
     [base, today]
   );
-
   const thisMonth = useMemo(() =>
     base.filter((h) => {
       const d = parseLocalDate(h.holiday_date);
@@ -34,7 +29,6 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
     }),
     [base, today]
   );
-
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e9eaec", borderRadius: 14,
       boxShadow: "0 1px 6px #0000000a", overflow: "hidden" })}>
@@ -46,7 +40,6 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
           01 Jan – 31 Dec {year}{locationFilter ? ` · ${locationFilter}` : ""}
         </div>
       </div>
-
       {/* by shift */}
       <div className={cssClass({ padding: "16px 20px", borderBottom: "1px solid #e9eaec" })}>
         <div className={cssClass({ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase",
@@ -65,7 +58,6 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
           ))}
         </div>
       </div>
-
       {/* this month */}
       <div className={cssClass({ padding: "16px 20px", borderBottom: "1px solid #e9eaec" })}>
         <div className={cssClass({ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase",
@@ -88,7 +80,6 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
           );
         })}
       </div>
-
       {/* next holiday */}
       <div className={cssClass({ padding: "16px 20px" })}>
         <div className={cssClass({ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase",
@@ -123,6 +114,5 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
     </div>
   );
 });
-
 HolidaySummary.displayName = "HolidaySummary";
 export default HolidaySummary;

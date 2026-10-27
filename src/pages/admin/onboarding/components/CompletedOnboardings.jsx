@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { formatDate, initials } from "../utils";
-
 const BRAND = "#f18200";
-
 function getJoinDate(emp) {
   return emp.date_of_joining || emp.joining_date || emp.doj || emp.created_at || null;
 }
-
 const CompletedOnboardings = React.memo(function CompletedOnboardings({
   loading,
   completedOnboardings,
 }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? completedOnboardings : completedOnboardings.slice(0, 5);
-
   return (
     <section className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -35,7 +31,6 @@ const CompletedOnboardings = React.memo(function CompletedOnboardings({
           </div>
         </div>
       </div>
-
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: BRAND, borderTopColor: "transparent" }} />
@@ -101,5 +96,4 @@ const CompletedOnboardings = React.memo(function CompletedOnboardings({
     </section>
   );
 });
-
 export default CompletedOnboardings;

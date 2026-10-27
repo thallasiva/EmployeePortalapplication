@@ -2,7 +2,6 @@ import React from "react";
 import { BarChart3 } from "lucide-react";
 import Card from "./Card";
 import { cssClass } from "../../../../utils/classStyles";
-
 export default function SummaryPanel({ employees = 0, eligible = 0, excluded = 0 }) {
   const cell = (label, value, color) => (
     <div className={cssClass({ flex: 1, textAlign: "center" })}>

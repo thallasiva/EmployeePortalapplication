@@ -5,16 +5,12 @@ import { useOnboardingData } from "./hooks/useOnboardingData";
 import { useJoiningVerification } from "../joiningVerification/hooks/useJoiningVerification";
 import OverviewStats from "./components/OverviewStats";
 import OverdueTasks from "./components/OverdueTasks";
-import ActiveOnboardingsList from "./components/ActiveOnboardingsList";
 import ChecklistPanel from "./components/ChecklistPanel";
-import CompletedOnboardings from "./components/CompletedOnboardings";
 import UploadDocumentModal from "./components/UploadDocumentModal";
 import CandidatesTable from "../joiningVerification/components/CandidatesTable";
 import DetailModal from "../joiningVerification/components/DetailModal";
 import { FILTERS } from "../joiningVerification/constants";
-
 const BRAND = "#f18200";
-
 export default function Onboarding() {
   /* ── Onboarding ── */
   const {
@@ -23,7 +19,6 @@ export default function Onboarding() {
     uploadTarget,
     docsLoading,
     activeOnboardings,
-    completedOnboardings,
     overdueTasks,
     avgDays,
     selectedDays,
@@ -31,10 +26,8 @@ export default function Onboarding() {
     selectedProgress,
     selectedDocs,
     setUploadTarget,
-    handleSelectEmployee,
     handleAfterUpload,
   } = useOnboardingData();
-
   /* ── Joining Formalities ── */
   const {
     rows,
@@ -55,15 +48,12 @@ export default function Onboarding() {
     resend,
     closeDetail,
   } = useJoiningVerification();
-
   const pendingFormalities = rows.filter((r) => {
     const s = r.formality_status || r.invitation_status || "";
     return s === "pending_verification" || s === "submitted";
   }).length;
-
   return (
     <div className="space-y-6 pb-20 px-1">
-
       {/* ── Page Header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -81,7 +71,6 @@ export default function Onboarding() {
           </div>
         </div>
       </div>
-
       {/* ── Stats ───────────────────────────────────────────────── */}
       <OverviewStats
         loading={loading || jfLoading}
@@ -89,7 +78,6 @@ export default function Onboarding() {
         avgDays={avgDays}
         pendingFormalities={pendingFormalities}
       />
-
       {/* ── Joining Formalities ─────────────────────────────────── */}
       <section className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
         {/* Section header */}
@@ -143,7 +131,6 @@ export default function Onboarding() {
             </button>
           </div>
         </div>
-
         {/* Candidates table */}
         <div className="p-4">
           <CandidatesTable
@@ -154,18 +141,8 @@ export default function Onboarding() {
           />
         </div>
       </section>
-
       {/* ── Overdue Tasks ───────────────────────────────────────── */}
       <OverdueTasks overdueTasks={overdueTasks} />
-
-      {/* ── Active Onboardings ──────────────────────────────────── */}
-      {/* <ActiveOnboardingsList
-        loading={loading}
-        activeOnboardings={activeOnboardings}
-        onUpload={setUploadTarget}
-        onViewChecklist={handleSelectEmployee}
-      /> */}
-
       {/* ── Checklist Panel ─────────────────────────────────────── */}
       <ChecklistPanel
         selectedEmployee={selectedEmployee}
@@ -176,13 +153,6 @@ export default function Onboarding() {
         docsLoading={docsLoading}
         onUpload={setUploadTarget}
       />
-
-      {/* ── Completed Onboardings ───────────────────────────────── */}
-      {/* <CompletedOnboardings
-        loading={loading}
-        completedOnboardings={completedOnboardings}
-      /> */}
-
       {/* Modals */}
       {uploadTarget && (
         <UploadDocumentModal
@@ -191,7 +161,6 @@ export default function Onboarding() {
           onUploaded={handleAfterUpload}
         />
       )}
-
       <DetailModal
         detailId={detailId}
         detail={detail}

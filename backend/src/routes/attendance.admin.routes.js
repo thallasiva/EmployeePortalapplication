@@ -10,9 +10,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse  = require('../utils/ApiResponse');
 const { query }    = require('../config/db');
 const notifySvc    = require('../services/notify.service');
-
 router.use(authenticate, authorizeRoles('Admin', 'HR Manager'));
-
 // Who is still checked in without a check-out today?
 router.get('/missing-checkout', asyncHandler(async (req, res) => {
   const date = req.query.date || new Date().toISOString().slice(0, 10);
@@ -33,7 +31,6 @@ router.get('/missing-checkout', asyncHandler(async (req, res) => {
   `, [date]);
   new ApiResponse(200, { date, count: rows.length, employees: rows }, 'Missing check-out list').send(res);
 }));
-
 // Send email reminders to missing-checkout employees
 router.post('/notify-missing-checkout', asyncHandler(async (req, res) => {
   const date = req.body.date || new Date().toISOString().slice(0, 10);
@@ -49,7 +46,6 @@ router.post('/notify-missing-checkout', asyncHandler(async (req, res) => {
       AND a.missing_checkout_notified = 0
       AND a.status NOT IN ('LEAVE','HOLIDAY')
   `, [date]);
-
   let sent = 0, failed = 0;
   for (const row of rows) {
     try {
@@ -60,5 +56,4 @@ router.post('/notify-missing-checkout', asyncHandler(async (req, res) => {
   }
   new ApiResponse(200, { sent, failed, total: rows.length }, 'Missing check-out notifications sent').send(res);
 }));
-
 module.exports = router;

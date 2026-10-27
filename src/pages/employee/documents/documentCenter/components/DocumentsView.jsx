@@ -3,13 +3,11 @@ import { ChevronDown, ChevronRight, FileText, Search, Download, Check } from "lu
 import { PanelTitle } from "./Typography";
 import JumpList from "./JumpList";
 import { toJumpId, scrollElementIntoContainer, docFileUrl } from "../utils";
-
 const DocumentsView = React.memo(function DocumentsView({
   myDocs, docsLoading, joiningDocs, docsByCategory,
   docSectionOpen, setDocSectionOpen
 }) {
   const categoryNames = Object.keys(docsByCategory);
-
   const joiningItems = joiningDocs ? [
     { key: "aadhaar", label: "Aadhaar Card", url: joiningDocs.aadhar_doc_url || null, ack: !!joiningDocs.aadhar_doc_url, type: "upload" },
     { key: "pan", label: "PAN Card", url: joiningDocs.pan_doc_url || null, ack: !!joiningDocs.pan_doc_url, type: "upload" },
@@ -17,11 +15,9 @@ const DocumentsView = React.memo(function DocumentsView({
     { key: "privacy", label: "Privacy Policy", url: null, ack: !!joiningDocs.privacy_policy_accepted, type: "acknowledgment" }
   ] : [];
   const hasAnyJoiningData = joiningItems.some((i) => i.ack);
-
   return (
     <div className="-m-4 bg-[#f5f7fb] min-h-[calc(100vh-5rem)] p-4">
       <PanelTitle>Documents</PanelTitle>
-
       {hasAnyJoiningData &&
         <div className="mb-4">
           <h3 className="text-[13px] font-semibold text-[#3a4558] mb-2">Joining Documents</h3>
@@ -67,7 +63,6 @@ const DocumentsView = React.memo(function DocumentsView({
           </div>
         </div>
       }
-
       {docsLoading ? (
         <div className="border border-[#dfe5ed] bg-white min-h-[200px] flex items-center justify-center">
           <p className="text-[13px] text-[#9ca8b8]">Loading your documents…</p>
@@ -136,5 +131,4 @@ const DocumentsView = React.memo(function DocumentsView({
     </div>
   );
 });
-
 export default DocumentsView;

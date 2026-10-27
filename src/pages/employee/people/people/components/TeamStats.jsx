@@ -1,14 +1,12 @@
 import React from "react";
 import { Building2, UserCheck, Users } from "lucide-react";
 import { BRAND } from "../constants";
-
 const TeamStats = React.memo(function TeamStats({ self, directReports, peers }) {
   const stats = [
     { label: "Department", value: self?.departmentName || "—", icon: Building2, color: "#6366f1", bg: "#eef2ff" },
     { label: "Direct Reports", value: directReports.length, icon: UserCheck, color: "#10b981", bg: "#ecfdf5" },
     { label: "Team Size", value: peers.length + directReports.length + 1, icon: Users, color: BRAND, bg: "#fff8f0" },
   ];
-
   return (
     <div className="grid grid-cols-3 gap-2.5">
       {stats.map(({ label, value, icon: Icon, color, bg }) => (
@@ -33,5 +31,4 @@ const TeamStats = React.memo(function TeamStats({ self, directReports, peers }) 
     </div>
   );
 });
-
 export default TeamStats;

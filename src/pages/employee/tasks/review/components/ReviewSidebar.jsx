@@ -3,7 +3,6 @@ import { ChevronRight } from "lucide-react";
 import { REVIEW_NAV_SECTIONS } from "../../../../../data/reviewHub";
 import { cssClass, joinClasses } from "../../../../../utils/classStyles";
 import { SECTION_ICONS } from "../constants";
-
 const ReviewSidebar = React.memo(function ReviewSidebar({ activeItemId, onNavClick }) {
   return (
     <aside className={cssClass({
@@ -20,7 +19,6 @@ const ReviewSidebar = React.memo(function ReviewSidebar({ activeItemId, onNavCli
       })}>
         Overview
       </div>
-
       <div className={cssClass({ flex: 1, overflowY: "auto", padding: "8px 0" })}>
         {REVIEW_NAV_SECTIONS.map((section) => (
           <div key={section.id} className={cssClass({ marginBottom: 2 })}>
@@ -33,7 +31,6 @@ const ReviewSidebar = React.memo(function ReviewSidebar({ activeItemId, onNavCli
               <span className={cssClass({ opacity: 0.7 })}>{SECTION_ICONS[section.id]}</span>
               {section.label}
             </div>
-
             {section.items.map((item) => {
               const active = activeItemId === item.id;
               return (
@@ -66,5 +63,4 @@ const ReviewSidebar = React.memo(function ReviewSidebar({ activeItemId, onNavCli
     </aside>
   );
 });
-
 export default ReviewSidebar;

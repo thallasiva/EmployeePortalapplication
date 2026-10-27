@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import { B, BD } from "../constants";
-
 const Btn = React.memo(({ onClick, disabled, children, variant = "primary", size = "md", style: extra = {} }) => {
   const sizes = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm", lg: "px-5 py-2.5 text-sm" };
   const base = {
@@ -34,6 +33,5 @@ const Btn = React.memo(({ onClick, disabled, children, variant = "primary", size
     </button>
   );
 });
-
 Btn.displayName = "Btn";
 export default Btn;

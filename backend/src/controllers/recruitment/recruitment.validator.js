@@ -1,14 +1,11 @@
 const Joi = require("joi");
 const validate = require("../../middleware/validate");
-
 const POSITION_TYPES = ["Contract", "Contract to Hire", "Direct Hire"];
 const ASSIGNMENT_STATUSES = ["Open", "Closed", "Completed", "Hold"];
 const JOB_STATUSES = ["Active", "On Hold", "Closed", "Find items"];
 const INTERVIEW_LEVELS = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
 const INTERVIEW_TYPES = ["Video Call", "Phone", "In-Person", "Teams", "GoogleMeet", "Zoom"];
 const OFFER_RESPONSES = ["Accepted", "Rejected"];
-
-
 const createJobSchema = Joi.object({
   title: Joi.string().max(200).required(),
   client: Joi.string().max(200).required(),
@@ -29,18 +26,14 @@ const createJobSchema = Joi.object({
   skillSet: Joi.string().required(),
   description: Joi.string().required()
 });
-
 const updateJobSchema = createJobSchema.fork(
   ["title", "client", "companyDept", "billRate", "payRate", "positionType",
   "vacancies", "country", "experienceLevel", "businessUnit", "skillSet", "description"],
   (f) => f.optional()
 );
-
 const assignRecruitersSchema = Joi.object({
   recruiterIds: Joi.array().items(Joi.number().integer().positive()).min(1).required()
 });
-
-
 const createCandidateSchema = Joi.object({
   jobReqId: Joi.number().integer().positive().allow(null).optional(),
   name: Joi.string().max(200).required(),
@@ -61,12 +54,9 @@ const createCandidateSchema = Joi.object({
   district: Joi.string().max(100).allow("", null),
   recruiterId: Joi.number().integer().positive().optional().allow(null)
 });
-
 const updateCandidateStatusSchema = Joi.object({
   status: Joi.string().required()
 });
-
-
 const scheduleInterviewSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
   jobReqId: Joi.number().integer().positive().allow(null).optional(),
@@ -84,14 +74,11 @@ const scheduleInterviewSchema = Joi.object({
   notes: Joi.string().allow("", null).optional(),
   teamsEnd: Joi.date().iso().allow(null)
 });
-
 const feedbackSchema = Joi.object({
   feedbackStatus: Joi.string().valid("Shortlist", "Move to Next Round", "Reject / Drop").required(),
   feedbackComments: Joi.string().allow("", null),
   shortlisted: Joi.boolean().default(false)
 });
-
-
 const createOfferSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
   jobReqId: Joi.number().integer().positive().allow(null).optional(),
@@ -109,23 +96,18 @@ const createOfferSchema = Joi.object({
   ctc: Joi.number().positive().required(),
   ctcInWords: Joi.string().max(500).allow("", null)
 });
-
 const offerResponseSchema = Joi.object({
   response: Joi.string().valid(...OFFER_RESPONSES).required()
 });
-
-
 const createOnboardingSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
   offerId: Joi.number().integer().positive().required(),
   effectiveDate: Joi.date().iso().allow(null)
 });
-
 const updateTaskSchema = Joi.object({
   taskName: Joi.string().required(),
   taskValue: Joi.alternatives().try(Joi.string(), Joi.boolean()).required()
 });
-
 module.exports = {
   validateCreateJob: validate(createJobSchema),
   validateUpdateJob: validate(updateJobSchema),

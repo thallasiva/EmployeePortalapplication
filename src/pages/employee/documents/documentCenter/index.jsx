@@ -8,7 +8,6 @@ import PoliciesView from "./components/PoliciesView";
 import Form16View from "./components/Form16View";
 import FormsView from "./components/FormsView";
 import LettersView from "./components/LettersView";
-
 export default function DocumentCenter() {
   const {
     view, setView,
@@ -24,11 +23,9 @@ export default function DocumentCenter() {
     jumpToSection,
     handleViewPayslip, handleDownloadPayslip
   } = useDocumentCenter();
-
   if (view === VIEW.HOME) {
     return <HomeView setView={setView} />;
   }
-
   if (view === VIEW.DOCUMENTS) {
     return (
       <DocumentsView
@@ -37,7 +34,6 @@ export default function DocumentCenter() {
         docSectionOpen={docSectionOpen} setDocSectionOpen={setDocSectionOpen} />
     );
   }
-
   if (view === VIEW.PAYSLIPS) {
     return (
       <PayslipsView
@@ -48,7 +44,6 @@ export default function DocumentCenter() {
         handleViewPayslip={handleViewPayslip} handleDownloadPayslip={handleDownloadPayslip} />
     );
   }
-
   if (view === VIEW.POLICIES) {
     return (
       <PoliciesView
@@ -59,7 +54,6 @@ export default function DocumentCenter() {
         handleViewPayslip={handleViewPayslip} handleDownloadPayslip={handleDownloadPayslip} />
     );
   }
-
   if (view === VIEW.FORM16) {
     return (
       <Form16View
@@ -67,7 +61,6 @@ export default function DocumentCenter() {
         jumpToSection={jumpToSection} />
     );
   }
-
   if (view === VIEW.FORMS) {
     return (
       <FormsView
@@ -75,7 +68,6 @@ export default function DocumentCenter() {
         jumpToSection={jumpToSection} />
     );
   }
-
   return (
     <LettersView
       letterSectionOpen={letterSectionOpen} setLetterSectionOpen={setLetterSectionOpen}

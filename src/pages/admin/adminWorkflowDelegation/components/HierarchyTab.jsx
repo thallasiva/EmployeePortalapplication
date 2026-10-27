@@ -3,7 +3,6 @@ import { RefreshCw } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { Btn } from "./SharedUI";
 import ChartPanel from "./ChartPanel";
-
 const HierarchyTab = React.memo(function HierarchyTab({
   loadTree,
   loading,
@@ -31,5 +30,4 @@ const HierarchyTab = React.memo(function HierarchyTab({
     </div>
   );
 });
-
 export default HierarchyTab;

@@ -2,12 +2,10 @@ import React from "react";
 import { Save } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import EmployeeDropdown from "./EmployeeDropdown";
-
 const DAYS = [
   { id: "mon", label: "Mon" }, { id: "tue", label: "Tue" }, { id: "wed", label: "Wed" },
   { id: "thu", label: "Thu" }, { id: "fri", label: "Fri" }, { id: "sat", label: "Sat" }, { id: "sun", label: "Sun" },
 ];
-
 const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
   empSchedules, schedLoading,
   schedSearch, setSchedSearch,
@@ -20,7 +18,6 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
 }) {
   return (
     <div className={cssClass({ marginTop: 20, display: "flex", flexDirection: "column", gap: 16 })}>
-
       {/* Employee selector + schedule type */}
       <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 })}>
         <EmployeeDropdown
@@ -36,7 +33,6 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
           toggleCheck={toggleCheck}
           toggleAll={toggleAll}
         />
-
         <div>
           <p className={cssClass({ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 })}>
             Schedule Type
@@ -54,7 +50,6 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
           </select>
         </div>
       </div>
-
       {/* Bulk form */}
       <div className={cssClass({ border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px" })}>
         {bulkForm.schedule_type === "fixed" ? (
@@ -106,7 +101,6 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
           </div>
         )}
       </div>
-
       {/* Apply button */}
       <button
         type="button"
@@ -128,5 +122,4 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
     </div>
   );
 });
-
 export default EmployeeScheduleTab;

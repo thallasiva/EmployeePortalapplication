@@ -6,13 +6,11 @@ import ScoreCircle from "./ScoreCircle";
 import RecBadge from "./RecBadge";
 import SkillBar from "./SkillBar";
 import SkillPills from "./SkillPills";
-
 const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
   const [expanded, setExpanded] = useState(false);
   const [recomputing, setRecomputing] = useState(false);
   const matched = JSON.parse(row.matched_skills || "[]");
   const missing = JSON.parse(row.missing_skills || "[]");
-
   async function handleRecompute(e) {
     e.stopPropagation();
     setRecomputing(true);
@@ -20,7 +18,6 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
     catch (err) { apiErrorToast(err, "Failed"); }
     finally { setRecomputing(false); }
   }
-
   return (
     <>
       <tr
@@ -89,5 +86,4 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
     </>
   );
 });
-
 export default MatchRow;

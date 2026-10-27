@@ -1,17 +1,14 @@
 import React, { useCallback } from "react";
 import { STATUS_STRIPS_CONFIG } from "../constants";
-
 const StatusStrips = React.memo(function StatusStrips({ candidates, filterStatus, setFilterStatus, tableRef }) {
   const strips = STATUS_STRIPS_CONFIG.map((s) => ({
     ...s,
     count: s.val === "" ? candidates.length : candidates.filter((c) => c.status === s.val).length
   }));
-
   const handleClick = useCallback((val) => {
     setFilterStatus(val);
     setTimeout(() => tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   }, [setFilterStatus, tableRef]);
-
   return (
     <div className="flex gap-2.5 mb-5 flex-wrap">
       {strips.map((s) => (
@@ -26,5 +23,4 @@ const StatusStrips = React.memo(function StatusStrips({ candidates, filterStatus
     </div>
   );
 });
-
 export default StatusStrips;

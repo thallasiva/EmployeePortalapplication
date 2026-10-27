@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
 import { Users } from "lucide-react";
-
 const CHART = { NW: 172, NH: 60, HGAP: 60, VGAP: 16 };
 const TOGGLE_R = 10;
-
 function placeNodes(node, depth, counter, flat, edges) {
   const item = {
     id: node.id, name: node.name, designation: node.designation,
@@ -28,47 +26,37 @@ function placeNodes(node, depth, counter, flat, edges) {
     item.y = (startY + counter.v - CHART.VGAP - CHART.NH) / 2;
   }
 }
-
 function collectHasChildren(node, map = {}) {
   const kids = node.children || [];
   map[node.id] = kids.length > 0;
   kids.forEach((c) => collectHasChildren(c, map));
   return map;
 }
-
 function applyCollapse(node, collapsed) {
   const kids = collapsed.has(node.id)
     ? []
     : (node.children || []).map((c) => applyCollapse(c, collapsed));
   return { ...node, children: kids };
 }
-
 const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = new Set() }) {
   const [collapsed, setCollapsed] = useState(new Set());
-
   const toggle = (id) =>
     setCollapsed((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-
   if (!nodes || nodes.length === 0) return null;
-
   const visNodes = nodes.map((r) => applyCollapse(r, collapsed));
   const flat = [], edges = [], counter = { v: 0 };
   visNodes.forEach((root) => placeNodes(root, 0, counter, flat, edges));
-
   const hasChildrenMap = {};
   nodes.forEach((r) => collectHasChildren(r, hasChildrenMap));
-
   const byId = {};
   flat.forEach((n) => { byId[n.id] = n; });
-
   const maxDepth = Math.max(...flat.map((n) => n.depth), 0);
   const svgW = (maxDepth + 1) * (CHART.NW + CHART.HGAP) + 30;
   const svgH = counter.v + TOGGLE_R * 2 + 20;
-
   const nx = (d) => d * (CHART.NW + CHART.HGAP) + 14;
   const ny = (item) => item.y + 14;
   const boxColor = (item) => {
@@ -78,7 +66,6 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
     if (item.delegate_name) return "#d97706";
     return "#38bdf8";
   };
-
   return (
     <div className={cssClass({ overflowX: "auto", overflowY: "visible" })}>
       <svg width={svgW} height={svgH} className={cssClass({ display: "block", minWidth: svgW })}>
@@ -95,7 +82,6 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
               fill="none" stroke="#93c5fd" strokeWidth={1.5} strokeLinecap="round" />
           );
         })}
-
         {flat.map((item) => {
           const x = nx(item.depth);
           const y = ny(item);
@@ -105,7 +91,6 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
           const desig = (item.designation || "").length > 23
             ? item.designation.slice(0, 22) + "…"
             : item.designation || "—";
-
           return (
             <g key={item.id}>
               {isHighlighted && (
@@ -140,11 +125,15 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
                 <g onClick={(e) => { e.stopPropagation(); toggle(item.id); }} className="cursor-pointer">
                   <circle cx={nx(item.depth) + CHART.NW / 2} cy={ny(item) + CHART.NH + TOGGLE_R + 2}
                     r={TOGGLE_R} fill="#fff" stroke={BRAND} strokeWidth={1.5} />
-                  <text x={nx(item.depth) + CHART.NW / 2} y={ny(item) + CHART.NH + TOGGLE_R + 7}
-                    textAnchor="middle" fill={BRAND} fontSize={12} fontWeight="900"
-                    className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
-                    {collapsed.has(item.id) ? "+" : "−"}
-                  </text>
+                  <path
+                    d={collapsed.has(item.id)
+                      ? `M${nx(item.depth) + CHART.NW / 2 - 3} ${ny(item) + CHART.NH + TOGGLE_R}h6m-3-3v6`
+                      : `M${nx(item.depth) + CHART.NW / 2 - 3} ${ny(item) + CHART.NH + TOGGLE_R}h6`}
+                    stroke={BRAND}
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    className={cssClass({ pointerEvents: "none" })}
+                  />
                 </g>
               )}
             </g>
@@ -154,5 +143,4 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
     </div>
   );
 });
-
 export default OrgChart;

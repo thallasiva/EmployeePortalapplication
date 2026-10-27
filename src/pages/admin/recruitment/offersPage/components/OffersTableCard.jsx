@@ -3,7 +3,6 @@ import { Eye, Loader2, X } from "lucide-react";
 import { Card, Btn, Table, SearchBar } from "../../shared";
 import { fmt, fmtM } from "../utils/ctcUtils";
 import { OFFER_CLS } from "../constants";
-
 const OffersTableCard = React.memo(function OffersTableCard({
   tableRef, loading, visible, search, onSearch, filterStatus, onFilterChange, onView
 }) {
@@ -35,7 +34,6 @@ const OffersTableCard = React.memo(function OffersTableCard({
       )
     }
   ], [onView]);
-
   return (
     <div ref={tableRef} className="scroll-mt-4">
       <Card className="!p-0">
@@ -65,5 +63,4 @@ const OffersTableCard = React.memo(function OffersTableCard({
     </div>
   );
 });
-
 export default OffersTableCard;

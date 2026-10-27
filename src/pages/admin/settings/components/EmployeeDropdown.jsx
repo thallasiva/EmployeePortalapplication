@@ -1,7 +1,6 @@
 import React from "react";
 import { Users, ChevronDown, Check, X, Search } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const EmployeeDropdown = React.memo(function EmployeeDropdown({
   empSchedules, schedLoading,
   schedSearch, setSchedSearch,
@@ -35,7 +34,6 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
           </span>
           <ChevronDown size={13} className={cssClass({ color: "#94a3b8", transform: empDropOpen ? "rotate(180deg)" : "none", transition: "0.2s" })} />
         </button>
-
         {/* Dropdown panel */}
         {empDropOpen && (
           <div className={cssClass({
@@ -54,7 +52,6 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
                 />
               </div>
             </div>
-
             {/* Select all row */}
             <div
               onClick={() => toggleAll(filteredEmpScheds)}
@@ -74,7 +71,6 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
                   : `Select all (${filteredEmpScheds.length})`}
               </span>
             </div>
-
             {/* Employee list */}
             <div className={cssClass({ maxHeight: 220, overflowY: "auto" })}>
               {filteredEmpScheds.length === 0 ? (
@@ -118,7 +114,6 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
                 );
               })}
             </div>
-
             {/* Footer */}
             <div className={cssClass({ padding: "8px 12px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" })}>
               <span className={cssClass({ fontSize: 11, color: "#94a3b8" })}>{checkedEmps.size} selected</span>
@@ -132,7 +127,6 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
           </div>
         )}
       </div>
-
       {/* Selected chips */}
       {checkedEmps.size > 0 && (
         <div className={cssClass({ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 })}>
@@ -166,5 +160,4 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
     </div>
   );
 });
-
 export default EmployeeDropdown;

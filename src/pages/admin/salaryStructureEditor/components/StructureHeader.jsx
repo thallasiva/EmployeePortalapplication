@@ -4,7 +4,6 @@ import {
   ArrowLeft, Save, Eye, ChevronDown, CheckCircle,
 } from "lucide-react";
 import { successToast } from "../../../../utils/ToastControllers";
-
 const StructureHeader = React.memo(function StructureHeader({
   structure,
   draftName,
@@ -25,7 +24,6 @@ const StructureHeader = React.memo(function StructureHeader({
         <span className="text-gray-300">›</span>
         <span className="text-gray-700 font-medium truncate max-w-56">{structure.structure_name}</span>
       </nav>
-
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5 min-w-0">
           <button
@@ -34,7 +32,6 @@ const StructureHeader = React.memo(function StructureHeader({
           >
             <ArrowLeft size={15} />
           </button>
-
           {editingName ? (
             <input
               autoFocus
@@ -53,7 +50,6 @@ const StructureHeader = React.memo(function StructureHeader({
               {draftName}
             </h1>
           )}
-
           <span
             className={`shrink-0 text-[11px] px-2.5 py-1 rounded-full font-semibold border ${
               structure.is_default
@@ -64,7 +60,6 @@ const StructureHeader = React.memo(function StructureHeader({
             {structure.is_default ? "Default" : "Active"}
           </span>
         </div>
-
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onPreview}
@@ -97,12 +92,10 @@ const StructureHeader = React.memo(function StructureHeader({
           </button>
         </div>
       </div>
-
       {structure.description && (
         <p className="text-xs text-gray-400 mt-1.5 ml-9">{structure.description}</p>
       )}
     </div>
   );
 });
-
 export default StructureHeader;

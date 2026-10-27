@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import apiClient, { unwrap } from "../../../../api/client";
 import { buildTeams } from "../utils";
-
 export function useTeams() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +9,6 @@ export function useTeams() {
   const [modalOpen, setModalOpen] = useState(false);
   const [extraTeams, setExtraTeams] = useState([]);
   const [search, setSearch] = useState("");
-
   const fetchData = useCallback(() => {
     setLoading(true);
     setError(null);
@@ -25,12 +23,9 @@ export function useTeams() {
       .catch((e) => setError(e?.response?.data?.message || "Failed to load teams"))
       .finally(() => setLoading(false));
   }, []);
-
   useEffect(() => { fetchData(); }, [fetchData]);
-
   const apiTeams = useMemo(() => buildTeams(rows), [rows]);
   const managerCount = apiTeams.length;
-
   const allTeams = useMemo(() => {
     const combined = [...apiTeams, ...extraTeams];
     if (!search.trim()) return combined;
@@ -43,7 +38,6 @@ export function useTeams() {
         t.members.some((m) => m.name.toLowerCase().includes(q))
     );
   }, [apiTeams, extraTeams, search]);
-
   const handleCreateTeam = useCallback(({ name, department, description }) => {
     setExtraTeams((prev) => [
       ...prev,
@@ -59,11 +53,9 @@ export function useTeams() {
       },
     ]);
   }, []);
-
   const toggleExpanded = useCallback((id) => {
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
-
   return {
     rows,
     loading,

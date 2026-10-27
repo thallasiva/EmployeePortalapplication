@@ -1,5 +1,4 @@
 import { Star } from "lucide-react";
-
 const StarRating = ({ value, onChange, readOnly = false }) =>
 {
     return (
@@ -25,5 +24,4 @@ const StarRating = ({ value, onChange, readOnly = false }) =>
         </div>
     );
 };
-
 export default StarRating;

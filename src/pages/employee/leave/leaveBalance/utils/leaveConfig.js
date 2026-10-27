@@ -1,5 +1,4 @@
 import { TYPE_CONFIG } from "../constants";
-
 export function getConfig(title = "") {
   const t = title.toLowerCase();
   return (

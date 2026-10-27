@@ -9,12 +9,10 @@ import {
 import ReportLineChart from "../../../component/reports/ReportLineChart";
 import { DAILY_STATS, DAILY_LINE, DAILY_LIST } from "../../../data/reportsData";import { cssClass, joinClasses } from "../../../utils/classStyles";
 import { ArrowUpDown, Circle } from "lucide-react";
-
 export default function DailyReport() {
   return (
     <div className="report-page">
       <ReportPageHeader title="Daily Report" />
-
       <div className="report-top-grid">
         <div className="report-stats-grid">
           {DAILY_STATS.map((stat) =>
@@ -36,10 +34,8 @@ export default function DailyReport() {
             absent={DAILY_LINE.absent}
             labels={DAILY_LINE.labels}
             absentColor="#ef4444" />
-
         </div>
       </div>
-
       <div className="report-table-section">
         <ReportTableToolbar title="Daily Attendance List" />
         <div className={cssClass({ overflowX: "auto" })}>
@@ -74,5 +70,4 @@ export default function DailyReport() {
         </div>
       </div>
     </div>);
-
 }

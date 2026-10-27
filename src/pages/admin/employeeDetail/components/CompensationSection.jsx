@@ -7,7 +7,6 @@ import FormInput from "./FormInput";
 import Field from "./Field";
 import Row from "./Row";
 import SalaryBreakdown from "./SalaryBreakdown";
-
 const CompensationSection = React.memo(function CompensationSection({
   employee, editMode, form, formErrors, touched, set, touch, handleCtcChange, compBreakdown,
 }) {
@@ -68,5 +67,4 @@ const CompensationSection = React.memo(function CompensationSection({
     </div>
   );
 });
-
 export default CompensationSection;

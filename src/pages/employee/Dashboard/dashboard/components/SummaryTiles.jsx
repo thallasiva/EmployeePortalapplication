@@ -2,7 +2,6 @@ import React from "react";
 import { TrendingUp, Calendar, Clock } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmt } from "../utils/formatters";
-
 const Tile = React.memo(function Tile({ icon, label, value, sub, bg, color }) {
   return (
     <div className={cssClass({
@@ -26,7 +25,6 @@ const Tile = React.memo(function Tile({ icon, label, value, sub, bg, color }) {
     </div>
   );
 });
-
 const SummaryTiles = React.memo(function SummaryTiles({
   loading,
   showSal,
@@ -55,5 +53,4 @@ const SummaryTiles = React.memo(function SummaryTiles({
     </div>
   );
 });
-
 export default SummaryTiles;

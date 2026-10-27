@@ -1,7 +1,6 @@
 -- ============================================================
 -- Migration 035: Joining Formalities & Onboarding Invitations
 -- ============================================================
-
 -- 1. Joining Invitations — one per candidate/offer release
 CREATE TABLE IF NOT EXISTS joining_invitations (
   id              INT          AUTO_INCREMENT PRIMARY KEY,
@@ -21,17 +20,14 @@ CREATE TABLE IF NOT EXISTS joining_invitations (
   INDEX idx_ji_offer       (offer_id),
   INDEX idx_ji_status      (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- 2. Joining Formalities — actual submission data per invitation
 CREATE TABLE IF NOT EXISTS joining_formalities (
   id                     INT       AUTO_INCREMENT PRIMARY KEY,
   invitation_id          INT       NOT NULL UNIQUE,
   candidate_id           INT       NOT NULL,
-
   -- Step 1: Policy acknowledgments
   handbook_acknowledged  TINYINT(1) NOT NULL DEFAULT 0,
   privacy_policy_accepted TINYINT(1) NOT NULL DEFAULT 0,
-
   -- Step 2: Personal details for joining
   full_name              VARCHAR(255) NULL,
   dob                    DATE         NULL,
@@ -43,23 +39,19 @@ CREATE TABLE IF NOT EXISTS joining_formalities (
   emergency_contact_phone VARCHAR(20) NULL,
   permanent_address      TEXT         NULL,
   current_address        TEXT         NULL,
-
   -- Step 3: Nomination forms (stored as JSON for flexibility)
   term_life_nominee_name      VARCHAR(255) NULL,
   term_life_nominee_relation  VARCHAR(100) NULL,
   term_life_nominee_dob       DATE         NULL,
   term_life_nominee_share     DECIMAL(5,2) NULL,
-
   gratuity_nominee_name       VARCHAR(255) NULL,
   gratuity_nominee_relation   VARCHAR(100) NULL,
   gratuity_nominee_dob        DATE         NULL,
   gratuity_nominee_address    TEXT         NULL,
-
   insurance_nominee_name      VARCHAR(255) NULL,
   insurance_nominee_relation  VARCHAR(100) NULL,
   insurance_nominee_dob       DATE         NULL,
   insurance_nominee_share     DECIMAL(5,2) NULL,
-
   -- Step 4: PF Declaration
   pf_account_number      VARCHAR(50)  NULL,
   uan_number             VARCHAR(20)  NULL,
@@ -68,13 +60,11 @@ CREATE TABLE IF NOT EXISTS joining_formalities (
   pf_nominee_dob         DATE         NULL,
   pf_nominee_share       DECIMAL(5,2) NULL,
   pf_existing_member     TINYINT(1)   NOT NULL DEFAULT 0,
-
   -- Step 5: Bank details
   bank_name              VARCHAR(255) NULL,
   account_number         VARCHAR(50)  NULL,
   ifsc_code              VARCHAR(20)  NULL,
   account_holder_name    VARCHAR(255) NULL,
-
   -- Workflow
   status                 ENUM('draft','submitted','pending_verification','approved','changes_requested','rejected')
                                       NOT NULL DEFAULT 'draft',
@@ -83,19 +73,15 @@ CREATE TABLE IF NOT EXISTS joining_formalities (
   reviewed_at            DATETIME     NULL,
   review_remarks         TEXT         NULL,
   changes_requested_fields TEXT       NULL,   -- comma-separated field names needing correction
-
   created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
   FOREIGN KEY (invitation_id) REFERENCES joining_invitations(id) ON DELETE CASCADE,
   INDEX idx_jf_candidate (candidate_id),
   INDEX idx_jf_status    (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 -- ============================================================
 -- Stored Procedures
 -- ============================================================
-
 DROP PROCEDURE IF EXISTS sp_joining_create_invitation;
 DELIMITER $$
 CREATE PROCEDURE sp_joining_create_invitation(
@@ -117,11 +103,9 @@ BEGIN
     status      = 'pending',
     expires_at  = p_expires_at,
     updated_at  = CURRENT_TIMESTAMP;
-
   SELECT * FROM joining_invitations WHERE token = p_token LIMIT 1;
 END$$
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS sp_joining_verify_token;
 DELIMITER $$
 CREATE PROCEDURE sp_joining_verify_token(IN p_token VARCHAR(64))
@@ -140,7 +124,6 @@ BEGIN
   LIMIT 1;
 END$$
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS sp_joining_save_formalities;
 DELIMITER $$
 CREATE PROCEDURE sp_joining_save_formalities(
@@ -214,20 +197,17 @@ BEGIN
     status = p_status,
     submitted_at = IF(p_status = 'submitted' AND submitted_at IS NULL, NOW(), submitted_at),
     updated_at = CURRENT_TIMESTAMP;
-
   -- Sync invitation status
   UPDATE joining_invitations SET
     status = IF(p_status = 'submitted', 'pending_verification', status),
     updated_at = CURRENT_TIMESTAMP
   WHERE id = p_invitation_id;
-
   SELECT jf.*, ji.token, ji.candidate_email, ji.candidate_name, ji.job_title
   FROM   joining_formalities jf
   JOIN   joining_invitations  ji ON ji.id = jf.invitation_id
   WHERE  jf.invitation_id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS sp_joining_list_pending;
 DELIMITER $$
 CREATE PROCEDURE sp_joining_list_pending(
@@ -255,7 +235,6 @@ BEGIN
           OR ji.candidate_email LIKE CONCAT('%', p_search, '%'))
   ORDER BY ji.created_at DESC
   LIMIT  p_limit OFFSET p_offset;
-
   SELECT COUNT(*) AS total
   FROM   joining_invitations ji
   WHERE  (p_status IS NULL OR ji.status = p_status)
@@ -263,7 +242,6 @@ BEGIN
           OR ji.candidate_email LIKE CONCAT('%', p_search, '%'));
 END$$
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_formality;
 DELIMITER $$
 CREATE PROCEDURE sp_joining_get_formality(IN p_invitation_id INT)
@@ -274,7 +252,6 @@ BEGIN
   WHERE  jf.invitation_id = p_invitation_id LIMIT 1;
 END$$
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS sp_joining_review;
 DELIMITER $$
 CREATE PROCEDURE sp_joining_review(
@@ -287,21 +264,18 @@ CREATE PROCEDURE sp_joining_review(
 BEGIN
   DECLARE v_formality_status VARCHAR(30);
   DECLARE v_inv_status       VARCHAR(30);
-
   SET v_formality_status = CASE p_decision
     WHEN 'approve'           THEN 'approved'
     WHEN 'request_changes'   THEN 'changes_requested'
     WHEN 'reject'            THEN 'rejected'
     ELSE p_decision
   END;
-
   SET v_inv_status = CASE p_decision
     WHEN 'approve'           THEN 'approved'
     WHEN 'request_changes'   THEN 'changes_requested'
     WHEN 'reject'            THEN 'rejected'
     ELSE p_decision
   END;
-
   UPDATE joining_formalities SET
     status                   = v_formality_status,
     reviewed_by              = p_reviewed_by,
@@ -310,12 +284,10 @@ BEGIN
     changes_requested_fields = p_changes_fields,
     updated_at               = CURRENT_TIMESTAMP
   WHERE invitation_id = p_invitation_id;
-
   UPDATE joining_invitations SET
     status     = v_inv_status,
     updated_at = CURRENT_TIMESTAMP
   WHERE id = p_invitation_id;
-
   SELECT ji.*, jf.status AS formality_status, jf.review_remarks,
          jf.candidate_id AS jf_candidate_id
   FROM   joining_invitations ji

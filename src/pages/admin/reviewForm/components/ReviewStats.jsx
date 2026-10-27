@@ -1,6 +1,5 @@
 import React from "react";
 import { joinClasses, cssClass } from "../../../../utils/classStyles";
-
 const ReviewStats = React.memo(function ReviewStats({ stats }) {
   const items = [
     { label: "Total Reviews", value: stats.total, color: "#f18200" },
@@ -8,7 +7,6 @@ const ReviewStats = React.memo(function ReviewStats({ stats }) {
     { label: "In Progress", value: stats.inProgress, color: "#f97316" },
     { label: "Pending", value: stats.pending, color: "#6b7280" },
   ];
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {items.map((s) => (
@@ -20,5 +18,4 @@ const ReviewStats = React.memo(function ReviewStats({ stats }) {
     </div>
   );
 });
-
 export default ReviewStats;

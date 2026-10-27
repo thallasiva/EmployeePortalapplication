@@ -9,9 +9,7 @@
  *   ZOOM_CLIENT_SECRET
  *   ZOOM_HOST_EMAIL   (licensed Zoom user who hosts the meeting)
  */
-
 const https = require('https');
-
 function request(options, body) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
@@ -37,7 +35,6 @@ function request(options, body) {
     req.end();
   });
 }
-
 async function getZoomAccessToken() {
   const { ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET } = process.env;
   if (!ZOOM_ACCOUNT_ID || !ZOOM_CLIENT_ID || !ZOOM_CLIENT_SECRET) {
@@ -45,7 +42,6 @@ async function getZoomAccessToken() {
   }
   const credentials = Buffer.from(`${ZOOM_CLIENT_ID}:${ZOOM_CLIENT_SECRET}`).toString('base64');
   const body = `grant_type=account_credentials&account_id=${ZOOM_ACCOUNT_ID}`;
-
   const data = await request({
     hostname: 'zoom.us',
     path: '/oauth/token',
@@ -56,10 +52,8 @@ async function getZoomAccessToken() {
       'Content-Length': Buffer.byteLength(body),
     },
   }, body);
-
   return data.access_token;
 }
-
 /**
  * Creates a Zoom meeting.
  * @param {object} opts
@@ -74,7 +68,6 @@ async function createZoomMeeting({ topic, startDateTime, durationMins = 60, time
   const accessToken = await getZoomAccessToken();
   const hostEmail = process.env.ZOOM_HOST_EMAIL || '';
   const userPath = hostEmail ? `/users/${encodeURIComponent(hostEmail)}/meetings` : '/users/me/meetings';
-
   const body = JSON.stringify({
     topic,
     type: 2, // Scheduled meeting
@@ -96,7 +89,6 @@ async function createZoomMeeting({ topic, startDateTime, durationMins = 60, time
       auto_recording: 'none',
     },
   });
-
   const result = await request({
     hostname: 'api.zoom.us',
     path: `/v2${userPath}`,
@@ -107,7 +99,6 @@ async function createZoomMeeting({ topic, startDateTime, durationMins = 60, time
       'Content-Length': Buffer.byteLength(body),
     },
   }, body);
-
   let joinUrl = result.join_url;
   if (candidateEmail) {
     const nameParts = String(candidateName || 'Candidate').trim().split(/\s+/);
@@ -126,7 +117,6 @@ async function createZoomMeeting({ topic, startDateTime, durationMins = 60, time
     }));
     joinUrl = registration.join_url || joinUrl;
   }
-
   return {
     joinUrl,
     startUrl:  result.start_url,
@@ -134,7 +124,6 @@ async function createZoomMeeting({ topic, startDateTime, durationMins = 60, time
     password:  result.password || '',
   };
 }
-
 async function cancelZoomMeeting(meetingId) {
   if (!meetingId) return;
   const accessToken = await getZoomAccessToken();
@@ -145,5 +134,4 @@ async function cancelZoomMeeting(meetingId) {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 }
-
 module.exports = { createZoomMeeting, cancelZoomMeeting };

@@ -3,15 +3,12 @@ import { UserCheck } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import StarDisplay from "./StarDisplay";
-
 const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params }) {
   const reviewed = ratings.filter((r) => r.manager_rating);
   if (!reviewed.length) return null;
-
   const avgMgr = (
     reviewed.reduce((s, r) => s + r.manager_rating, 0) / reviewed.length
   ).toFixed(1);
-
   return (
     <div className={cssClass({
       background: "#fff", border: "1px solid #e2e8f0",
@@ -42,7 +39,6 @@ const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params })
           </p>
         </div>
       </div>
-
       <div className={cssClass({ padding: "16px 18px" })}>
         <div className={cssClass({ display: "grid", gap: 10 })}>
           {params.map((p) => {
@@ -100,5 +96,4 @@ const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params })
     </div>
   );
 });
-
 export default ManagerFeedback;

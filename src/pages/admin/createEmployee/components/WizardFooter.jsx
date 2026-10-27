@@ -1,7 +1,6 @@
 import React from "react";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { STEPS } from "../constants";
-
 const WizardFooter = React.memo(function WizardFooter({
   step,
   submitting,
@@ -56,5 +55,4 @@ const WizardFooter = React.memo(function WizardFooter({
     </div>
   );
 });
-
 export default WizardFooter;

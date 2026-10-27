@@ -3,7 +3,6 @@ export const AVATAR_COLORS = [
   "#14b8a6", "#3b82f6", "#eab308", "#ef4444",
   "#10b981", "#f18200", "#06b6d4", "#a855f7",
 ];
-
 export const FALLBACK_BADGE_COLORS = [
   { color: "#7c3aed", border: "#c4b5fd", bg: "#f5f3ff" },
   { color: "#2563eb", border: "#93c5fd", bg: "#eff6ff" },

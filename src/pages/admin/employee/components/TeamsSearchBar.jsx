@@ -2,7 +2,6 @@ import React from "react";
 import { Filter, Search, X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import FilterPanel from "./FilterPanel";
-
 const TeamsSearchBar = React.memo(function TeamsSearchBar({
   search,
   onSearchChange,
@@ -83,7 +82,6 @@ const TeamsSearchBar = React.memo(function TeamsSearchBar({
           </button>
         )}
       </div>
-
       <button
         type="button"
         onClick={onOpenFilter}
@@ -121,7 +119,6 @@ const TeamsSearchBar = React.memo(function TeamsSearchBar({
           </span>
         )}
       </button>
-
       <FilterPanel
         open={filterPanelOpen}
         onClose={onCloseFilter}
@@ -134,5 +131,4 @@ const TeamsSearchBar = React.memo(function TeamsSearchBar({
     </div>
   );
 });
-
 export default TeamsSearchBar;

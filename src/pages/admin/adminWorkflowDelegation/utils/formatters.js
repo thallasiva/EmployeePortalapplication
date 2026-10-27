@@ -2,7 +2,6 @@ export const fmtDate = (d) => {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
-
 export const statusColor = (s) => {
   if (!s) return { bg: "#f3f4f6", color: "#6b7280" };
   const m = {
@@ -13,7 +12,6 @@ export const statusColor = (s) => {
   };
   return m[s] || { bg: "#f3f4f6", color: "#6b7280" };
 };
-
 export const nodeColor = (node) => {
   if (node.status === "Inactive" || node.status === "Resigned") return "#6b7280";
   if (node.delegate_name) return "#d97706";

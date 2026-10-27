@@ -1,6 +1,5 @@
 import React from "react";
 import { Check } from "lucide-react";
-
 const Toggle = React.memo(function Toggle({ value, onChange, label }) {
   return (
     <button
@@ -17,5 +16,4 @@ const Toggle = React.memo(function Toggle({ value, onChange, label }) {
     </button>
   );
 });
-
 export default Toggle;

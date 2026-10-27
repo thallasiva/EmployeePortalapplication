@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { fmtDate } from "../utils/formatters";
 import { SectionHead, Input, Btn } from "./SharedUI";
 import ManagerSelect from "./ManagerSelect";
-
 const DelegationTab = React.memo(function DelegationTab({
   managers,
   delForm,
@@ -19,7 +18,6 @@ const DelegationTab = React.memo(function DelegationTab({
     Expired: { bg: "#f3f4f6", color: "#6b7280" },
     Cancelled: { bg: "#fee2e2", color: "#dc2626" },
   };
-
   return (
     <div>
       {/* Create form */}
@@ -106,7 +104,6 @@ const DelegationTab = React.memo(function DelegationTab({
           <Shield size={14} /> {delSaving ? "Creating…" : "Create Delegation"}
         </Btn>
       </div>
-
       {/* Delegations table */}
       <SectionHead>Active &amp; Recent Delegations</SectionHead>
       {delegations.length === 0 ? (
@@ -177,5 +174,4 @@ const DelegationTab = React.memo(function DelegationTab({
     </div>
   );
 });
-
 export default DelegationTab;

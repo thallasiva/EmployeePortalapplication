@@ -1,7 +1,6 @@
 import React from "react";
 import { Calendar } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const OooQuickSet = React.memo(function OooQuickSet({
   oooFrom, oooTo, setOooFrom, setOooTo, onApply,
 }) {
@@ -65,5 +64,4 @@ const OooQuickSet = React.memo(function OooQuickSet({
     </div>
   );
 });
-
 export default OooQuickSet;

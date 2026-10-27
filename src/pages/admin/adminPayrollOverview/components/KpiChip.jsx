@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const KpiChip = React.memo(function KpiChip({ icon, label, value, accent }) {
   return (
     <div
@@ -31,5 +30,4 @@ const KpiChip = React.memo(function KpiChip({ icon, label, value, accent }) {
     </div>
   );
 });
-
 export default KpiChip;

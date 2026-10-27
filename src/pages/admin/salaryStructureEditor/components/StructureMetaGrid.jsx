@@ -4,7 +4,6 @@ import {
   Building2, Coins, Globe, MapPin, AlignLeft, CheckCircle,
 } from "lucide-react";
 import MetaField from "./MetaField";
-
 const StructureMetaGrid = React.memo(function StructureMetaGrid({ structure, strCode }) {
   return (
     <div className="shrink-0 border-b border-gray-100 bg-gray-50/60 px-6 py-4">
@@ -38,5 +37,4 @@ const StructureMetaGrid = React.memo(function StructureMetaGrid({ structure, str
     </div>
   );
 });
-
 export default StructureMetaGrid;

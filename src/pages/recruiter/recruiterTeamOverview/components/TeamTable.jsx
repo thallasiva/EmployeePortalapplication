@@ -2,7 +2,6 @@ import React from "react";
 import { Search } from "lucide-react";
 import Pagination from "../../../../components/Pagination";
 import { getInitials, fmt, deptColor } from "../utils";
-
 const TeamTable = React.memo(function TeamTable({
   filteredTeam,
   team,
@@ -125,5 +124,4 @@ const TeamTable = React.memo(function TeamTable({
     </div>
   );
 });
-
 export default TeamTable;

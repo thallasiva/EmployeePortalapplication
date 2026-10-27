@@ -1,11 +1,4 @@
-
-
-
-
-
-
 import React, { memo } from "react";
-
 const LoadingFallback = memo(function LoadingFallback({ label = "Loading…" }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
@@ -14,7 +7,5 @@ const LoadingFallback = memo(function LoadingFallback({ label = "Loading…" }) 
         <p className="text-sm text-gray-400 font-medium">{label}</p>
       </div>
     </div>);
-
 });
-
 export default LoadingFallback;

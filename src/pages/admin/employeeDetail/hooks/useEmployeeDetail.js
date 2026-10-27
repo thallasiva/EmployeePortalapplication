@@ -7,28 +7,22 @@ import { getErrorMessage } from "../../../../api/client";
 import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
 import { employeeSchema } from "../constants";
 import { toDateInput, cleanForm } from "../utils";
-
 export function useEmployeeDetail(id) {
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
-
   const [form, setForm] = useState({});
   const [bankForm, setBankForm] = useState({});
   const [contForm, setContForm] = useState({});
-
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
-
   const [departments, setDepartments] = useState([]);
   const [managers, setManagers] = useState([]);
-
   const compBreakdown = useMemo(
     () => calculatePayslip(Number(form.base_salary) || 0),
     [form.base_salary]
   );
-
   const set = useCallback(
     (key) => (val) => {
       setForm((f) => {
@@ -44,17 +38,14 @@ export function useEmployeeDetail(id) {
     },
     [touched]
   );
-
   const setB = useCallback(
     (key) => (val) => setBankForm((f) => ({ ...f, [key]: val })),
     []
   );
-
   const setC = useCallback(
     (key) => (val) => setContForm((f) => ({ ...f, [key]: val })),
     []
   );
-
   const touch = useCallback(
     (key) => () => {
       setTouched((t) => ({ ...t, [key]: true }));
@@ -65,7 +56,6 @@ export function useEmployeeDetail(id) {
     },
     [form]
   );
-
   const handleCtcChange = useCallback(
     (annualCtc) => {
       set("ctc")(annualCtc);
@@ -75,7 +65,6 @@ export function useEmployeeDetail(id) {
     },
     [set]
   );
-
   useEffect(() => {
     setLoading(true);
     getEmployee(id)
@@ -83,7 +72,6 @@ export function useEmployeeDetail(id) {
       .catch((err) => apiErrorToast(err, "Failed to load employee"))
       .finally(() => setLoading(false));
   }, [id]);
-
   const loadDropdowns = useCallback(async () => {
     try {
       const [depts, mgrs] = await Promise.all([listDepartments(), getManagers()]);
@@ -103,7 +91,6 @@ export function useEmployeeDetail(id) {
       );
     } catch {}
   }, [id]);
-
   const enterEdit = useCallback(() => {
     if (!employee) return;
     const e = employee;
@@ -153,13 +140,11 @@ export function useEmployeeDetail(id) {
     loadDropdowns();
     setEditMode(true);
   }, [employee, loadDropdowns]);
-
   const cancelEdit = useCallback(() => {
     setFormErrors({});
     setTouched({});
     setEditMode(false);
   }, []);
-
   const handleSave = useCallback(async () => {
     try {
       await employeeSchema.validate(form, { abortEarly: false });
@@ -191,7 +176,6 @@ export function useEmployeeDetail(id) {
       setSaving(false);
     }
   }, [form, bankForm, contForm, id]);
-
   return {
     employee, loading, saving, editMode,
     form, bankForm, contForm,

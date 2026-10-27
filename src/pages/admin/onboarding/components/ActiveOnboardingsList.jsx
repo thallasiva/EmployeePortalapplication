@@ -1,6 +1,5 @@
 import React from "react";
 import ActiveOnboardingCard from "./ActiveOnboardingCard";
-
 const ActiveOnboardingsList = React.memo(function ActiveOnboardingsList({
   loading,
   activeOnboardings,
@@ -13,7 +12,6 @@ const ActiveOnboardingsList = React.memo(function ActiveOnboardingsList({
         <h2 className="text-xl font-semibold text-slate-900">Active Onboardings</h2>
         <p className="text-sm text-slate-500">New hires within the first 90 days.</p>
       </div>
-
       {loading ? (
         <p className="text-sm text-slate-400">Loading employees…</p>
       ) : activeOnboardings.length === 0 ? (
@@ -33,5 +31,4 @@ const ActiveOnboardingsList = React.memo(function ActiveOnboardingsList({
     </section>
   );
 });
-
 export default ActiveOnboardingsList;

@@ -1,5 +1,3 @@
-
-
 export const LEAVE_DETAIL_CONFIG = {
   "Sick Leave": {
     summary: {
@@ -52,7 +50,6 @@ export const LEAVE_DETAIL_CONFIG = {
       remarks: "",
       expiryDate: "-"
     }]
-
   },
   "Compensatory Off": {
     summary: {
@@ -103,23 +100,19 @@ export const LEAVE_DETAIL_CONFIG = {
       remarks: "",
       expiryDate: "-"
     }]
-
   }
 };
-
 const DEFAULT_SUMMARY = {
   availableBalance: 0,
   openingBalance: 0,
   granted: 0,
   availed: 0
 };
-
 const EMPTY_CHART = {
   balance: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   consumed: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   tooltips: {}
 };
-
 export function getLeaveDetailConfig(leaveType) {
   return (
     LEAVE_DETAIL_CONFIG[leaveType] ?? {
@@ -127,5 +120,4 @@ export function getLeaveDetailConfig(leaveType) {
       chart: EMPTY_CHART,
       transactions: []
     });
-
 }

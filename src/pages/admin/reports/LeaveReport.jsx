@@ -6,31 +6,24 @@ import {
 import ReportStackedBarChart from "../../../component/reports/ReportStackedBarChart";
 import { listLeaveRequests } from "../../../api/leaveRequest.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
 import { ClipboardList } from "lucide-react";
-
 export default function LeaveReport() {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
   useEffect(() => {
     listLeaveRequests({ limit: 500 }).
     then(({ data }) => setLeaves(data || [])).
     catch(() => {}).
     finally(() => setLoading(false));
   }, []);
-
   const pending = leaves.filter((l) => l.status === "pending").length;
   const approved = leaves.filter((l) => l.status === "approved").length;
   const rejected = leaves.filter((l) => l.status === "rejected").length;
-
   const stats = [
   { label: "Total Requests", value: leaves.length, color: "#3b82f6", trend: "All time" },
   { label: "Approved", value: approved, color: "#22c55e", trend: "Approved leaves" },
   { label: "Pending", value: pending, color: "#f97316", trend: "Awaiting review" },
   { label: "Rejected", value: rejected, color: "#ef4444", trend: "Rejected" }];
-
-
-
   const chartData = useMemo(() => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return months.map((label, i) => {
@@ -41,7 +34,6 @@ export default function LeaveReport() {
       return { label, approved: monthLeaves.filter((l) => l.status === "approved").length, pending: monthLeaves.filter((l) => l.status === "pending").length };
     });
   }, [leaves]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return leaves;
@@ -50,9 +42,7 @@ export default function LeaveReport() {
       return [name, l.leave_type_name, l.status].some((v) => (v || "").toLowerCase().includes(q));
     });
   }, [leaves, search]);
-
   if (loading) return <div className="report-page"><p className="text-sm text-gray-400 p-6">Loading…</p></div>;
-
   return (
     <div className="report-page">
       <ReportPageHeader title="Leave Report" />
@@ -96,7 +86,6 @@ export default function LeaveReport() {
                     <td>{days}</td>
                     <td><ReportStatusBadge status={l.status} /></td>
                   </tr>);
-
               })}
               {!filtered.length && <tr><td colSpan={7} className="text-center text-gray-400 py-8">No leave requests found.</td></tr>}
             </tbody>
@@ -104,5 +93,4 @@ export default function LeaveReport() {
         </div>
       </div>
     </div>);
-
 }

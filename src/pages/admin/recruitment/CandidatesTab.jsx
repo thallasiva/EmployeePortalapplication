@@ -5,7 +5,6 @@ import { CANDIDATES, footerActionsClass } from "./data";
 import DataTable from "./DataTable";
 import FieldGrid from "./FieldGrid";
 import CandidateProfile from "./CandidateProfile";
-
 function CandidatesTab({
   role,
   recruiterKey,
@@ -15,14 +14,12 @@ function CandidatesTab({
 })
 {
   const [showProfile, setShowProfile] = useState(false);
-
   const rows =
   role.id === 5 ?
   CANDIDATES.filter(
     (candidate) => candidate.Recruiter === recruiterKey
   ) :
   CANDIDATES;
-
   const tableRows = rows.map((row) => ({
     ...row,
     Action:
@@ -34,10 +31,8 @@ function CandidatesTab({
           setSelectedCandidate(row);
           setShowProfile(true);
         }}>
-
                     View
                 </Btn>
-
                 <Btn
         primary
         small
@@ -46,13 +41,10 @@ function CandidatesTab({
           setSelectedCandidate(row);
           setActive("interviews");
         }}>
-
                     Schedule Interview
                 </Btn>
             </div>
-
   }));
-
   return (
     <>
             {}
@@ -78,15 +70,12 @@ function CandidatesTab({
           "District"]
           }
           columns={4} />
-
-
                     <div className={footerActionsClass}>
                         <Btn>Cancel</Btn>
                         <Btn primary>Submit Candidate Info</Btn>
                     </div>
                 </Card>
       }
-
             {}
             <Card
         title={
@@ -94,7 +83,6 @@ function CandidatesTab({
         "My Candidates" :
         "Recruiter-wise Candidates"
         }>
-
                 <DataTable
           columns={[
           "Job ID",
@@ -117,11 +105,7 @@ function CandidatesTab({
           "Action"]
           }
           rows={tableRows} />
-
             </Card>
-
-
-
             <CandidateProfile open={showProfile}
       candidate={selectedCandidate}
       onClose={() =>
@@ -130,7 +114,5 @@ function CandidatesTab({
         setSelectedCandidate(null);
       }} />
         </>);
-
 }
-
 export default CandidatesTab;

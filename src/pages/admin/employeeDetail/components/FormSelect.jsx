@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { baseInp } from "../constants";
 import Field from "./Field";
-
 const FormSelect = React.memo(function FormSelect({
   label, value, onChange, onBlur, options = [], placeholder, required, error, touched,
 }) {
@@ -23,5 +22,4 @@ const FormSelect = React.memo(function FormSelect({
     </Field>
   );
 });
-
 export default FormSelect;

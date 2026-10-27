@@ -1,20 +1,17 @@
 import { memo, useState, useEffect } from "react";
 import { getMyTimesheets, getTimesheetDetail } from "../../../../api/timesheet.api";
 import { ClipboardList, ChevronRight } from "lucide-react";
-
 const STATUS_COLOR = {
   draft: "bg-gray-100 text-gray-600",
   pending: "bg-amber-50 text-amber-700",
   approved: "bg-emerald-50 text-emerald-700",
   rejected: "bg-red-50 text-red-600",
 };
-
 const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
   const [timesheets, setTimesheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [detailMap, setDetailMap] = useState({});
-
   useEffect(() => {
     setExpandedId(null);
     getMyTimesheets()
@@ -26,7 +23,6 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
       .catch(() => setTimesheets([]))
       .finally(() => setLoading(false));
   }, [statusFilter]);
-
   const toggleRow = async (ts) => {
     const id = ts.timesheet_id;
     if (expandedId === id) { setExpandedId(null); return; }
@@ -41,7 +37,6 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
       }
     }
   };
-
   if (loading) return <div className="ts-loading">Loading…</div>;
   if (!timesheets.length) return (
     <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
@@ -49,7 +44,6 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
       <p className="text-sm">No {statusFilter || ""} timesheets found.</p>
     </div>
   );
-
   return (
     <div className="space-y-2">
       {timesheets.map((t) => {
@@ -78,7 +72,6 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
                 <span className={`text-gray-400 inline-flex transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}><ChevronRight size={14} /></span>
               </div>
             </div>
-
             {isOpen && (
               <div className="border-t border-gray-100 px-5 pb-4 pt-3 bg-gray-50 rounded-b-xl">
                 {detail?.loading ? (
@@ -132,5 +125,4 @@ const TimesheetHistory = memo(function TimesheetHistory({ statusFilter }) {
     </div>
   );
 });
-
 export default TimesheetHistory;

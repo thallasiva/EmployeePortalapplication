@@ -3,7 +3,6 @@ export const BLANK_OFFER = {
   dateOfJoining: "", ctcInput: "",
   variablePct: "", joiningBonus: ""
 };
-
 export const OFFER_CLS = {
   Draft: "bg-gray-100 text-gray-500",
   Released: "bg-amber-100 text-amber-600",

@@ -1,6 +1,5 @@
 import React from "react";
 import { X } from "lucide-react";
-
 export const SlideOver = React.memo(function SlideOver({ open, onClose, title, children, width = 520, footer }) {
   if (!open) return null;
   return (

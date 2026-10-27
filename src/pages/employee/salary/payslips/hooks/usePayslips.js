@@ -9,10 +9,8 @@ import { getMyProfile } from "../../../../../api/employee.api";
 import { downloadPayslipPdf } from "../../../../../utils/payslipPdfGenerator";
 import { errorToast } from "../../../../../utils/ToastControllers";
 import { getCurrentUser } from "../../../../../api/auth.api";
-
 export function usePayslips() {
   const now = new Date();
-
   const [activeTab, setActiveTab] = useState("payslip");
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
@@ -24,7 +22,6 @@ export function usePayslips() {
   const [showInfo, setShowInfo] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     Promise.all([
       getMySalaryStructure().catch(() => null),
@@ -36,11 +33,9 @@ export function usePayslips() {
       setMyPayslips(Array.isArray(p) ? p : []);
       setUser(u);
       setEmpProfile(profile);
-
       if (profile?.bankDetails) {
         setBankDetails(profile.bankDetails);
       }
-
       if (!s && profile) {
         const basicMonthly = Number(profile.base_salary) || 0;
         const ctcAnnual = Number(profile.ctc) || 0;
@@ -53,12 +48,10 @@ export function usePayslips() {
       }
     }).finally(() => setLoading(false));
   }, []);
-
   const currentPayslip = useMemo(
     () => myPayslips.find((p) => Number(p.month) === selectedMonth && Number(p.year) === selectedYear),
     [myPayslips, selectedMonth, selectedYear]
   );
-
   const monthOptions = useMemo(() => {
     const opts = new Map();
     for (let i = 0; i < 12; i++) {
@@ -73,7 +66,6 @@ export function usePayslips() {
     });
     return [...opts.values()].sort((a, b) => b.year - a.year || b.month - a.month);
   }, [myPayslips]);
-
   const handleDownload = useCallback(async () => {
     setDownloading(true);
     try {
@@ -86,13 +78,11 @@ export function usePayslips() {
       setDownloading(false);
     }
   }, [selectedMonth, selectedYear]);
-
   const handleMonthYearChange = useCallback((value) => {
     const [y, m] = value.split("-").map(Number);
     setSelectedYear(y);
     setSelectedMonth(m);
   }, []);
-
   return {
     activeTab,
     setActiveTab,

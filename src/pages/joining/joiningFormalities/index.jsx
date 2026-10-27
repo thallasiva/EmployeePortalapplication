@@ -8,7 +8,6 @@ import ChangesRequestedBanner from "./components/ChangesRequestedBanner";
 import TabNav from "./components/TabNav";
 import ValidationErrors from "./components/ValidationErrors";
 import NavigationButtons from "./components/NavigationButtons";
-
 import HandbookTab from "../tabs/HandbookTab";
 import HRPolicyTab from "../tabs/HRPolicyTab";
 import PersonalInfoTab from "../tabs/PersonalInfoTab";
@@ -18,7 +17,6 @@ import InsuranceTab from "../tabs/InsuranceTab";
 import PFDeclarationTab from "../tabs/PFDeclarationTab";
 import BankDetailsTab from "../tabs/BankDetailsTab";
 import ReviewSubmitTab from "../tabs/ReviewSubmitTab";
-
 export default function JoiningFormalities() {
   const {
     inv,
@@ -35,11 +33,9 @@ export default function JoiningFormalities() {
     goTo,
     handleSubmit
   } = useJoiningForm();
-
   if (loading) return <LoadingView />;
   if (error) return <ErrorView error={error} />;
   if (submitted) return <SubmittedView inv={inv} />;
-
   const TAB_COMPONENTS = [
     <HandbookTab form={form} set={set} setForm={setForm} />,
     <HRPolicyTab form={form} set={set} setForm={setForm} />,
@@ -51,20 +47,14 @@ export default function JoiningFormalities() {
     <BankDetailsTab form={form} set={set} />,
     <ReviewSubmitTab form={form} />
   ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader inv={inv} />
-
       <ChangesRequestedBanner inv={inv} />
-
       <TabNav tab={tab} visited={visited} goTo={goTo} />
-
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
         <ValidationErrors errors={validErrs} />
-
         {TAB_COMPONENTS[tab]}
-
         <NavigationButtons
           tab={tab}
           saving={saving}

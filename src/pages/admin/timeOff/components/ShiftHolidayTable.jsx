@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import { SHIFTS, B, BL } from "../constants";
 import { fmtDate, dayName, parseLocalDate } from "../utils/dateUtils";
 import Btn from "./Btn";
-
 const TH = ({ children }) => (
   <th className={cssClass({ padding: "10px 14px", fontWeight: 700, fontSize: 11, color: "#9ca3af",
     textTransform: "uppercase", letterSpacing: ".06em", textAlign: "left",
@@ -12,24 +11,20 @@ const TH = ({ children }) => (
     {children}
   </th>
 );
-
 const ShiftHolidayTable = React.memo(({ shift, year, locationFilter, allHolidays, onEdit, onDelete }) => {
   const today = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
   }, []);
-
   const filtered = useMemo(() =>
     allHolidays
       .filter((h) => h.shift === shift.key && (!locationFilter || h.location === locationFilter))
       .sort((a, b) => parseLocalDate(a.holiday_date) - parseLocalDate(b.holiday_date)),
     [allHolidays, shift.key, locationFilter]
   );
-
   const upcoming = useMemo(() => filtered.filter((h) => parseLocalDate(h.holiday_date) >= today), [filtered, today]);
   const past     = useMemo(() => filtered.filter((h) => parseLocalDate(h.holiday_date) < today),  [filtered, today]);
   const [tab, setTab] = useState("upcoming");
   const rows = tab === "upcoming" ? upcoming : past;
-
   return (
     <div>
       <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #e9eaec", marginBottom: 18 })}>
@@ -48,7 +43,6 @@ const ShiftHolidayTable = React.memo(({ shift, year, locationFilter, allHolidays
           </button>
         ))}
       </div>
-
       {rows.length === 0 ? (
         <div className={cssClass({ textAlign: "center", padding: "32px 0", color: "#9ca3af" })}>
           <Calendar size={32} className={cssClass({ opacity: .3, margin: "0 auto 10px", display: "block" })} />
@@ -118,6 +112,5 @@ const ShiftHolidayTable = React.memo(({ shift, year, locationFilter, allHolidays
     </div>
   );
 });
-
 ShiftHolidayTable.displayName = "ShiftHolidayTable";
 export default ShiftHolidayTable;

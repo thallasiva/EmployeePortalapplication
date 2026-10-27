@@ -3,7 +3,6 @@ import { POSITION_TYPES, BUSINESS_UNITS, ASSIGNMENT_STATUSES, JOB_STATUSES } fro
 import { EXPERIENCE_LEVELS } from "../constants/formConstants";
 import FRow from "./FRow";
 import RateInput from "./RateInput";
-
 const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
   return (
     <div className="grid grid-cols-2 gap-x-10">
@@ -15,7 +14,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
         <input name="client" value={form.client} onChange={onChange} placeholder="Client name"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
       </FRow>
-
       <FRow label="Job ID#" required>
         <input name="jobIdManual" value={form.jobIdManual} onChange={onChange} placeholder="e.g. JOB-2026-001"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
@@ -24,7 +22,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
         <input name="companyDept" value={form.companyDept} onChange={onChange} placeholder="e.g. IT / Development"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
       </FRow>
-
       <FRow label="Bill Rate" required>
         <RateInput
           nameVal="billRate" nameCur="billCurrency" namePeriod="billPeriod"
@@ -39,7 +36,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
           onChange={onChange}
         />
       </FRow>
-
       <FRow label="Position Type" required>
         <select name="positionType" value={form.positionType} onChange={onChange}
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit">
@@ -50,7 +46,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
         <input name="vacancies" type="number" min="1" value={form.vacancies} onChange={onChange} placeholder="e.g. 2"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
       </FRow>
-
       <FRow label="City" optional>
         <input name="city" value={form.city} onChange={onChange} placeholder="City"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
@@ -59,7 +54,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
         <input name="country" value={form.country} onChange={onChange} placeholder="e.g. India, USA"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
       </FRow>
-
       <FRow label="Experience Level" required>
         <select name="experienceLevel" value={form.experienceLevel} onChange={onChange}
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit">
@@ -74,7 +68,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
           {JOB_STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
       </FRow>
-
       <FRow label="Business Unit" required>
         <select name="businessUnit" value={form.businessUnit} onChange={onChange}
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit">
@@ -88,13 +81,11 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
           {ASSIGNMENT_STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
       </FRow>
-
       <FRow label="Job Opportunity Referred by Phone" optional>
         <input name="opportunityPhone" value={form.opportunityPhone} onChange={onChange} placeholder="Phone number"
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit" />
       </FRow>
       <div />
-
       <FRow label="Skill Set" required span>
         <textarea
           name="skillSet"
@@ -105,7 +96,6 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
           className="box-border w-full rounded-md border border-gray-300 bg-white px-2.5 py-2 text-[13px] text-gray-900 outline-none font-inherit resize-y leading-[1.5]"
         />
       </FRow>
-
       <FRow label="Job Description" required span>
         <textarea
           name="description"
@@ -119,5 +109,4 @@ const JobFormFields = React.memo(function JobFormFields({ form, onChange }) {
     </div>
   );
 });
-
 export default JobFormFields;

@@ -3,10 +3,8 @@ import { cssClass } from "../../../../utils/classStyles";
 import { fmtINR } from "../utils";
 import { useRevisionData } from "../hooks/useRevisionData";
 import Table from "./Table";
-
 const RevisionPlanner = React.memo(function RevisionPlanner() {
   const { revisions, loading } = useRevisionData();
-
   const cols = useMemo(
     () => [
       { key: "emp_code", label: "Emp Code" },
@@ -80,12 +78,10 @@ const RevisionPlanner = React.memo(function RevisionPlanner() {
     ],
     []
   );
-
   if (loading)
     return (
       <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>
     );
-
   return (
     <>
       <div className={cssClass({ marginBottom: 12, fontSize: 13, color: "#666" })}>
@@ -95,5 +91,4 @@ const RevisionPlanner = React.memo(function RevisionPlanner() {
     </>
   );
 });
-
 export default RevisionPlanner;

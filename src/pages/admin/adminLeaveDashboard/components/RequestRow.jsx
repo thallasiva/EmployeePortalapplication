@@ -1,5 +1,4 @@
 import React from 'react';
-
 const RequestRow = React.memo(function RequestRow({
   row,
   showActions,
@@ -63,5 +62,4 @@ const RequestRow = React.memo(function RequestRow({
     </div>
   );
 });
-
 export default RequestRow;

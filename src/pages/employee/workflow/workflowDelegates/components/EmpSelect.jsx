@@ -1,7 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const EmpSelect = React.memo(function EmpSelect({
   value, onChange, employees, placeholder = "Select delegate…", excludeId,
 }) {
@@ -37,5 +36,4 @@ const EmpSelect = React.memo(function EmpSelect({
     </div>
   );
 });
-
 export default EmpSelect;

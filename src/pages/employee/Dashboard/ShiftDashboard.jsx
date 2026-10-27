@@ -1,15 +1,11 @@
 import React from 'react';
 import { getShiftDashboardData } from '../../../data/shiftData';
-
 const ShiftDashboard = ({ shiftId, greeting }) =>
 {
   const shift = getShiftDashboardData(shiftId);
-
-
   return (
     <div className={`rounded-lg shadow border p-2 md:p-5 mb-4 ${shift.theme.bg} ${shift.theme.border}`}>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-
         <div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-800">
             {greeting}
@@ -21,7 +17,6 @@ const ShiftDashboard = ({ shiftId, greeting }) =>
             In: {shift.attendance.checkIn || '--'} · Out: {shift.attendance.checkOut || '--'}
           </p>
         </div>
-
         {}
         <div className="flex items-center gap-3">
           <span className={`text-white text-xs font-semibold px-3 py-1 rounded-full ${shift.theme.pill}`}>
@@ -29,86 +24,20 @@ const ShiftDashboard = ({ shiftId, greeting }) =>
           </span>
           <button
             className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded">
-
             Check In
           </button>
           <button
             className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded">
-
             Check Out
           </button>
-
         </div>
-
       </div>
       {
-
-
-
-
-
       }
           {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       }
-
       {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       }
     </div>);
-
 };
-
 export default ShiftDashboard;

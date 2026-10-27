@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { LogOut, CheckCircle2, XCircle, Paperclip, MessageSquare } from "lucide-react";
+import { LogOut, CheckCircle2, XCircle, Paperclip, MessageSquare, X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import apiClient from "../../../../api/client";
 import { BRAND, fmtDate, fmtDT } from "../constants";
-
 const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
   const [remarks, setRemarks] = useState("");
   const [saving, setSaving] = useState(false);
-
   const submit = async (act) => {
     setSaving(true);
     try {
@@ -21,16 +19,13 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
     }
     setSaving(false);
   };
-
   const mgr = row.manager_reviewed_by_name;
   const isFinal = ["accepted", "rejected"].includes(row.status);
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16 })}>
       <div className={cssClass({ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 560,
         boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto" })}>
-
         {/* Header */}
         <div className={cssClass({ padding: "18px 24px", borderBottom: "1px solid #f1f5f9",
           background: "linear-gradient(135deg,#fff7ed,#fff)",
@@ -43,10 +38,9 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             <p className={cssClass({ margin: 0, fontSize: 15, fontWeight: 800, color: "#1e293b" })}>Final Review</p>
             <p className={cssClass({ margin: 0, fontSize: 12, color: "#94a3b8" })}>{row.employee_name}</p>
           </div>
-          <button onClick={onClose} className={cssClass({ marginLeft: "auto", background: "none", border: "none",
-            cursor: "pointer", color: "#94a3b8", fontSize: 22, lineHeight: 1 })}>×</button>
+          <button onClick={onClose} aria-label="Close" className={cssClass({ marginLeft: "auto", background: "none", border: "none",
+            cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center" })}><X size={18} aria-hidden="true" /></button>
         </div>
-
         {/* Summary grid */}
         <div className={cssClass({ padding: "14px 24px", borderBottom: "1px solid #f1f5f9",
           display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, background: "#fafafa" })}>
@@ -65,14 +59,12 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             </div>
           ))}
         </div>
-
         {/* Reason */}
         <div className={cssClass({ padding: "14px 24px", borderBottom: "1px solid #f1f5f9" })}>
           <p className={cssClass({ margin: "0 0 6px", fontSize: 10, fontWeight: 700, color: BRAND,
             textTransform: "uppercase", letterSpacing: "0.06em" })}>Reason</p>
           <p className={cssClass({ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.6 })}>{row.reason}</p>
         </div>
-
         {/* Manager review */}
         {mgr && (
           <div className={cssClass({ padding: "14px 24px", borderBottom: "1px solid #f1f5f9",
@@ -94,7 +86,6 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             </p>
           </div>
         )}
-
         {/* Contact info */}
         <div className={cssClass({ padding: "14px 24px", borderBottom: "1px solid #f1f5f9",
           display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 })}>
@@ -113,7 +104,6 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             </p>
           </div>
         </div>
-
         {/* Attachment */}
         {row.attachment_path && (
           <div className={cssClass({ padding: "10px 24px", borderBottom: "1px solid #f1f5f9",
@@ -126,7 +116,6 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             </a>
           </div>
         )}
-
         {/* Action area — pending review */}
         {!isFinal && (
           <>
@@ -163,7 +152,6 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
             </div>
           </>
         )}
-
         {/* Action area — already reviewed */}
         {isFinal && (
           <div className={cssClass({ padding: "16px 24px" })}>
@@ -192,5 +180,4 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
     </div>
   );
 });
-
 export default ReviewModal;

@@ -6,7 +6,6 @@ import {
 } from "../../../../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK_INT, LEVEL_ORDER } from "../constants";
-
 export function useCandidatesData({ role }) {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -18,17 +17,14 @@ export function useCandidatesData({ role }) {
   const [addOpen, setAddOpen] = useState(false);
   const [detail, setDetail] = useState(null);
   const tableRef = useRef(null);
-
   const isAdmin = role === 1;
   const isTL = role === 3;
   const isHRMgr = role === 4;
   const isRecruiter = role === 5;
-
   useEffect(() => {
     listJobs({ limit: 200 }).then((res) => setJobs(res?.data ?? [])).catch(() => {});
     if (!isRecruiter) listRecruiters().then((rows) => setRecruiters(rows ?? [])).catch(() => {});
   }, [isRecruiter]);
-
   const loadCandidates = useCallback(async () => {
     setLoading(true);
     try {
@@ -44,9 +40,7 @@ export function useCandidatesData({ role }) {
       setLoading(false);
     }
   }, [filterStatus, filterJob, search]);
-
   useEffect(() => { loadCandidates(); }, [loadCandidates]);
-
   const updateStatus = useCallback(async (candidateId, status) => {
     const prevStatus = candidates.find((c) => c.candidate_id === candidateId)?.status;
     setCandidates((cs2) => cs2.map((c) => c.candidate_id === candidateId ? { ...c, status } : c));
@@ -60,10 +54,6 @@ export function useCandidatesData({ role }) {
       apiErrorToast(err, "Failed to update status");
     }
   }, [candidates]);
-
-
-
-
   const filtered = candidates.filter((c) => {
     const q = search.toLowerCase();
     const matchQ = !q ||
@@ -74,7 +64,6 @@ export function useCandidatesData({ role }) {
       (!filterStatus || c.status === filterStatus) &&
       (!filterJob || String(c.job_req_id) === String(filterJob));
   });
-
   return {
     candidates, jobs, recruiters, loading, filtered,
     search, filterStatus, filterJob,

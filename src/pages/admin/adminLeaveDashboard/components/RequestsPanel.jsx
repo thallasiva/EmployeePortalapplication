@@ -1,7 +1,6 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 import RequestRow from './RequestRow';
-
 const RequestsPanel = React.memo(function RequestsPanel({
   panelRef,
   requestTab,
@@ -67,5 +66,4 @@ const RequestsPanel = React.memo(function RequestsPanel({
     </div>
   );
 });
-
 export default RequestsPanel;

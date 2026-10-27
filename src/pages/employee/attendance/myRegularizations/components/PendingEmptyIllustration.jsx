@@ -1,5 +1,4 @@
 import React from "react";
-
 const PendingEmptyIllustration = React.memo(function PendingEmptyIllustration() {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6">
@@ -15,5 +14,4 @@ const PendingEmptyIllustration = React.memo(function PendingEmptyIllustration() 
     </div>
   );
 });
-
 export default PendingEmptyIllustration;

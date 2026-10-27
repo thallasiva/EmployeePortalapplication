@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { greeting, fmtTime } from "../utils/formatters";
-
 const ProfileHeader = React.memo(function ProfileHeader({
   loading,
   initials,
@@ -30,7 +29,6 @@ const ProfileHeader = React.memo(function ProfileHeader({
       })}>
         {loading ? "…" : initials}
       </div>
-
       {/* Employee info */}
       <div className={cssClass({ flex: 1, minWidth: 200 })}>
         <div className={cssClass({ fontSize: 20, fontWeight: 800 })}>
@@ -43,10 +41,7 @@ const ProfileHeader = React.memo(function ProfileHeader({
           Joined: {joinDate}
         </div>
       </div>
-
       {/* Attendance info — display only, no action buttons */}
-     
-
       {/* Greeting */}
       <div className={cssClass({ textAlign: "right" })}>
         <div className={cssClass({ fontSize: 14, opacity: 0.85 })}>{greeting()}</div>
@@ -55,5 +50,4 @@ const ProfileHeader = React.memo(function ProfileHeader({
     </div>
   );
 });
-
 export default ProfileHeader;

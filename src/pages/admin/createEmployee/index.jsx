@@ -9,7 +9,6 @@ import StepEmployment from "./components/StepEmployment";
 import StepCompensation from "./components/StepCompensation";
 import StepBankStatutory from "./components/StepBankStatutory";
 import StepReview from "./components/StepReview";
-
 export default function CreateEmployee() {
   const {
     step,
@@ -26,16 +25,13 @@ export default function CreateEmployee() {
     navigate,
     setShowSuccessModal,
   } = useCreateEmployee();
-
   return (
     <div>
       <div className="emp-wizard__header">
         <h1>Add New Employee</h1>
         <p>Complete all steps to add a new employee to the organization.</p>
       </div>
-
       <WizardStepper step={step} />
-
       <div className="emp-wizard__card">
         {step === 0 && (
           <StepPersonal values={values} errors={errors} setField={setField} />
@@ -59,7 +55,6 @@ export default function CreateEmployee() {
           <StepReview values={values} departments={departments} members={members} />
         )}
       </div>
-
       <WizardFooter
         step={step}
         submitting={submitting}
@@ -68,7 +63,6 @@ export default function CreateEmployee() {
         onSubmit={handleSubmit}
         onCancel={() => navigate("/dashboard/employee")}
       />
-
       <SuccessModal
         isOpen={showSuccessModal}
         title="Success!"

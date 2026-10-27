@@ -1,5 +1,4 @@
 import React from "react";
-
 const Field = React.memo(function Field({ label, children, half }) {
   return (
     <div className={half ? "" : "col-span-2"}>
@@ -8,5 +7,4 @@ const Field = React.memo(function Field({ label, children, half }) {
     </div>
   );
 });
-
 export default Field;

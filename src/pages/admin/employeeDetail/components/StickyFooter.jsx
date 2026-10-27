@@ -2,7 +2,6 @@ import React from "react";
 import { Save, AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const StickyFooter = React.memo(function StickyFooter({
   saving, formErrors, onCancel, onSave,
 }) {
@@ -46,5 +45,4 @@ const StickyFooter = React.memo(function StickyFooter({
     </div>
   );
 });
-
 export default StickyFooter;

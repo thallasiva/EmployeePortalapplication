@@ -1,7 +1,6 @@
 import React from "react";
 import CtcTableRow from "./CtcTableRow";
 import { fmt, fmtM } from "../utils/ctcUtils";
-
 const CtcDetailBreakdown = React.memo(function CtcDetailBreakdown({ d }) {
   return (
     <div className="mt-3.5 px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#f18200]">
@@ -31,5 +30,4 @@ const CtcDetailBreakdown = React.memo(function CtcDetailBreakdown({ d }) {
     </div>
   );
 });
-
 export default CtcDetailBreakdown;

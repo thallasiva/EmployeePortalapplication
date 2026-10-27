@@ -5,11 +5,8 @@
 -- Run AFTER migration_033 (recruiter employees must exist).
 -- Safe to re-run: each table uses IF NOT EXISTS.
 -- =====================================================================
-
 USE hrms_db;
-
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 1. rec_job_requests
 -- ─────────────────────────────────────────────────────────────────────
@@ -39,7 +36,6 @@ CREATE TABLE IF NOT EXISTS rec_job_requests (
   created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at        TIMESTAMP      NULL,
-
   PRIMARY KEY (job_req_id),
   UNIQUE KEY uq_rec_job_code (job_req_code),
   KEY idx_rec_job_status    (assignment_status, job_status),
@@ -48,7 +44,6 @@ CREATE TABLE IF NOT EXISTS rec_job_requests (
   KEY idx_rec_job_title     (title),
   CONSTRAINT fk_rec_job_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 2. rec_job_recruiters  (many-to-many assignment)
 -- ─────────────────────────────────────────────────────────────────────
@@ -58,7 +53,6 @@ CREATE TABLE IF NOT EXISTS rec_job_recruiters (
   recruiter_id  INT       NOT NULL,
   assigned_by   INT       NOT NULL,
   assigned_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
   PRIMARY KEY (id),
   UNIQUE KEY uq_rec_job_recruiter (job_req_id, recruiter_id),
   KEY idx_rec_jr_recruiter (recruiter_id),
@@ -66,7 +60,6 @@ CREATE TABLE IF NOT EXISTS rec_job_recruiters (
   CONSTRAINT fk_rec_jr_recruiter FOREIGN KEY (recruiter_id) REFERENCES employees(employee_id),
   CONSTRAINT fk_rec_jr_assigned  FOREIGN KEY (assigned_by)  REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 3. rec_candidates
 -- ─────────────────────────────────────────────────────────────────────
@@ -99,7 +92,6 @@ CREATE TABLE IF NOT EXISTS rec_candidates (
   created_at               TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at               TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at               TIMESTAMP       NULL,
-
   PRIMARY KEY (candidate_id),
   UNIQUE KEY uq_rec_candidate_code (candidate_code),
   KEY idx_rec_cand_job       (job_req_id),
@@ -111,7 +103,6 @@ CREATE TABLE IF NOT EXISTS rec_candidates (
   CONSTRAINT fk_rec_cand_recruiter FOREIGN KEY (recruiter_id) REFERENCES employees(employee_id),
   CONSTRAINT fk_rec_cand_created   FOREIGN KEY (created_by)   REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 4. rec_interviews
 -- ─────────────────────────────────────────────────────────────────────
@@ -137,7 +128,6 @@ CREATE TABLE IF NOT EXISTS rec_interviews (
   feedback_by        INT          NULL,
   created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
   PRIMARY KEY (interview_id),
   UNIQUE KEY uq_rec_interview_code (interview_code),
   KEY idx_rec_iv_candidate (candidate_id),
@@ -149,7 +139,6 @@ CREATE TABLE IF NOT EXISTS rec_interviews (
   CONSTRAINT fk_rec_iv_job       FOREIGN KEY (job_req_id)   REFERENCES rec_job_requests(job_req_id),
   CONSTRAINT fk_rec_iv_scheduler FOREIGN KEY (scheduled_by) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 5. rec_offers
 -- ─────────────────────────────────────────────────────────────────────
@@ -177,7 +166,6 @@ CREATE TABLE IF NOT EXISTS rec_offers (
   responded_at         TIMESTAMP     NULL,
   created_at           TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at           TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
   PRIMARY KEY (offer_id),
   UNIQUE KEY uq_rec_offer_code     (offer_code),
   UNIQUE KEY uq_rec_offer_cand     (candidate_id),
@@ -187,7 +175,6 @@ CREATE TABLE IF NOT EXISTS rec_offers (
   CONSTRAINT fk_rec_offer_job      FOREIGN KEY (job_req_id)   REFERENCES rec_job_requests(job_req_id),
   CONSTRAINT fk_rec_offer_created  FOREIGN KEY (created_by)   REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 6. rec_onboarding
 -- ─────────────────────────────────────────────────────────────────────
@@ -210,7 +197,6 @@ CREATE TABLE IF NOT EXISTS rec_onboarding (
   updated_by              INT        NULL,
   created_at              TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at              TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
   PRIMARY KEY (onboarding_id),
   UNIQUE KEY uq_rec_onboard_cand (candidate_id),
   KEY idx_rec_onboard_offer  (offer_id),
@@ -219,7 +205,6 @@ CREATE TABLE IF NOT EXISTS rec_onboarding (
   CONSTRAINT fk_rec_onboard_offer   FOREIGN KEY (offer_id)     REFERENCES rec_offers(offer_id),
   CONSTRAINT fk_rec_onboard_created FOREIGN KEY (created_by)   REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 7. rec_audit_log
 -- ─────────────────────────────────────────────────────────────────────
@@ -234,7 +219,6 @@ CREATE TABLE IF NOT EXISTS rec_audit_log (
   performed_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ip_address    VARCHAR(45) NULL,
   user_agent    VARCHAR(500) NULL,
-
   PRIMARY KEY (log_id),
   KEY idx_rec_audit_entity  (entity_type, entity_id),
   KEY idx_rec_audit_user    (performed_by),
@@ -242,7 +226,5 @@ CREATE TABLE IF NOT EXISTS rec_audit_log (
   KEY idx_rec_audit_time    (performed_at),
   CONSTRAINT fk_rec_audit_user FOREIGN KEY (performed_by) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 SET FOREIGN_KEY_CHECKS = 1;
-
 SELECT 'Migration 034 — recruitment tables created.' AS status;

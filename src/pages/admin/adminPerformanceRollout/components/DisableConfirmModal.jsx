@@ -3,11 +3,9 @@ import { Square, AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { disableCycle } from "../../../../api/appraisal.api";
 import Modal from "./Modal";
-
 const DisableConfirmModal = React.memo(function DisableConfirmModal({ cycle, onClose, onDisabled }) {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-
   const confirm = async () => {
     setSaving(true); setErr("");
     try {
@@ -17,7 +15,6 @@ const DisableConfirmModal = React.memo(function DisableConfirmModal({ cycle, onC
     } catch (e) { setErr(e?.response?.data?.message || "Failed to disable."); }
     finally { setSaving(false); }
   };
-
   return (
     <Modal title="Stop Rollout?" onClose={onClose} width={440}>
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 16 })}>
@@ -43,5 +40,4 @@ const DisableConfirmModal = React.memo(function DisableConfirmModal({ cycle, onC
     </Modal>
   );
 });
-
 export default DisableConfirmModal;

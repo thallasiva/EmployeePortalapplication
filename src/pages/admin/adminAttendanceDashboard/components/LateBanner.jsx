@@ -1,6 +1,5 @@
 import React from "react";
 import { TrendingUp, ArrowRight } from "lucide-react";
-
 const LateBanner = React.memo(function LateBanner({ summary, onScrollToLate }) {
   return (
     <section
@@ -32,5 +31,4 @@ const LateBanner = React.memo(function LateBanner({ summary, onScrollToLate }) {
     </section>
   );
 });
-
 export default LateBanner;

@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { getMyLeaveBalances } from "../../../../../api/leaveRequest.api";
-
 export function useLeaveBalances() {
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [leaveData, setLeaveData] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     getMyLeaveBalances({ year })
@@ -30,6 +28,5 @@ export function useLeaveBalances() {
       .catch(() => setLeaveData([]))
       .finally(() => setLoading(false));
   }, [year]);
-
   return { year, setYear, leaveData, loading };
 }

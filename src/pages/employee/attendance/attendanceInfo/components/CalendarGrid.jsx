@@ -1,8 +1,6 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 // Each status: cell background, pill background, pill text color, label
 const STATUS_CFG = {
   P:    { cellBg: "#f0fdf4", pillBg: "#16a34a", pillColor: "#fff", label: "Present",  pill: "PRESENT"  },
@@ -13,12 +11,10 @@ const STATUS_CFG = {
   LV:   { cellBg: "#faf5ff", pillBg: "#9333ea", pillColor: "#fff", label: "Leave",    pill: "LEAVE"    },
   WO:   { cellBg: "#f8fafc", pillBg: null,       pillColor: null,   label: "Weekend",  pill: null       },
 };
-
 export default function CalendarGrid({ month, year, dayMap, selectedDate, onSelect, onPrevMonth, onNextMonth, loading }) {
   const firstDow    = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
   const todayStr    = new Date().toISOString().slice(0, 10);
-
   const cells = [];
   for (let i = 0; i < firstDow; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) {
@@ -26,10 +22,8 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
     const mon = String(month).padStart(2, "0");
     cells.push(`${year}-${mon}-${pad}`);
   }
-
   const monthName = new Date(year, month - 1, 1)
     .toLocaleString("default", { month: "long" });
-
   function resolveCode(dateStr, rec) {
     const dow = new Date(dateStr).getDay();
     if (dow === 0 || dow === 6) return "WO";
@@ -39,12 +33,9 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
     if (dateStr < todayStr) return "A";     // past weekday, no record = absent
     return null;                            // future
   }
-
   const CELL_BORDER = "1px solid #e2e8f0";
-
   return (
     <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,.06)", overflow: "hidden" }}>
-
       {/* ── Month nav ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: CELL_BORDER }}>
         <button onClick={onPrevMonth} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
@@ -55,7 +46,6 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
           <ChevronRight size={17} />
         </button>
       </div>
-
       {/* ── DOW row ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#f8fafc", borderBottom: CELL_BORDER }}>
         {DOW.map((d, i) => (
@@ -64,14 +54,12 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
           </div>
         ))}
       </div>
-
       {/* ── Day cells ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
         {cells.map((dateStr, idx) => {
           if (!dateStr) {
             return <div key={`b-${idx}`} style={{ minHeight: 80, background: "#f8fafc", borderBottom: CELL_BORDER, borderRight: CELL_BORDER }} />;
           }
-
           const rec        = dayMap?.get(dateStr);
           const code       = resolveCode(dateStr, rec);
           const cfg        = STATUS_CFG[code] || {};
@@ -82,7 +70,6 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
           const checkIn    = rec?.processed?.firstIn;
           const hasCheckIn = checkIn && checkIn !== "—";
           const canReg     = rec?.canRegularize;
-
           const cellStyle = {
             minHeight: 88,
             padding: "9px 9px 8px",
@@ -100,7 +87,6 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
               : cfg.cellBg || "#fff",
             boxShadow: isSelected ? "inset 0 0 0 2px #f18200" : "none",
           };
-
           return (
             <button
               key={dateStr}
@@ -127,7 +113,6 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fbbf24" }} title="Can regularize" />
                 )}
               </div>
-
               {/* Status pill */}
               {cfg.pill && (
                 <span style={{
@@ -139,7 +124,6 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
                   {cfg.pill}
                 </span>
               )}
-
               {/* Check-in time */}
               {hasCheckIn && (
                 <span style={{ fontSize: 9, fontWeight: 700, color: isSelected ? "#c2410c" : cfg.pillBg || "#94a3b8", lineHeight: 1 }}>
@@ -150,7 +134,6 @@ export default function CalendarGrid({ month, year, dayMap, selectedDate, onSele
           );
         })}
       </div>
-
       {/* ── Legend ── */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", padding: "10px 20px", borderTop: CELL_BORDER, background: "#f8fafc" }}>
         {[

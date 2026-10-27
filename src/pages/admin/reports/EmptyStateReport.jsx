@@ -1,7 +1,6 @@
 import React from "react";
 import { ReportPageHeader } from "../../../component/reports/ReportsLayout";
 import { CreditCard, Receipt, Wallet } from "lucide-react";
-
 const CONFIGS = {
   expense: {
     title: "Expense Report",
@@ -22,11 +21,9 @@ const CONFIGS = {
     features: ["Payment history", "Vendor payouts", "Bank reconciliation", "Transaction logs"],
   },
 };
-
 export default function EmptyStateReport({ type }) {
   const config = CONFIGS[type];
   if (!config) return null;
-
   return (
     <div className="report-page">
       <ReportPageHeader title={config.title} />

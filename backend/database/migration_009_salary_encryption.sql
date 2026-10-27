@@ -10,22 +10,17 @@
 --    salary data (who accessed what and when).
 --
 -- Run once per environment. Safe to re-run (IF NOT EXISTS guards).
-
 USE hrms_db;
 -- =============================================================
-
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- ── salary_structures ────────────────────────────────────────
 ALTER TABLE salary_structures
   ADD COLUMN IF NOT EXISTS salary_encrypted LONGTEXT DEFAULT NULL
     COMMENT 'AES-256-GCM encrypted JSON of all salary fields (application-managed)';
-
 -- ── payslips ─────────────────────────────────────────────────
 ALTER TABLE payslips
   ADD COLUMN IF NOT EXISTS salary_encrypted LONGTEXT DEFAULT NULL
     COMMENT 'AES-256-GCM encrypted JSON of all salary fields (application-managed)';
-
 -- ── salary_audit_log ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS salary_audit_log (
   id           BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -43,5 +38,4 @@ CREATE TABLE IF NOT EXISTS salary_audit_log (
   CONSTRAINT fk_sal_audit_user FOREIGN KEY (user_id)
     REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 SET FOREIGN_KEY_CHECKS = 1;

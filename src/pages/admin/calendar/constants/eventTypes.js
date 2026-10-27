@@ -7,12 +7,9 @@ export const EVENT_TYPES = {
   anniversary: { label: 'Anniversary', color: '#ec4899', bg: '#fdf2f8', icon: <PartyPopper size={13} /> },
   training:    { label: 'Training',    color: '#f97316', bg: '#fff7ed', icon: <BookOpen size={13} /> },
 };
-
 export const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
-
 export const ADDABLE_TYPES = ['training', 'review', 'anniversary'];

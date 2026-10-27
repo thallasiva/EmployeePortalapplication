@@ -2,7 +2,6 @@ import React from "react";
 import { ArrowLeft, Edit2, Save, X as Cancel } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
-
 const HeaderBar = React.memo(function HeaderBar({
   editMode, saving, onBack, onEdit, onCancel, onSave,
 }) {
@@ -68,5 +67,4 @@ const HeaderBar = React.memo(function HeaderBar({
     </div>
   );
 });
-
 export default HeaderBar;

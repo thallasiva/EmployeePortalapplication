@@ -1,6 +1,5 @@
 import { memo } from "react";
 import { Inbox } from "lucide-react";
-
 /**
  * Reusable empty-state illustration.
  *
@@ -25,5 +24,4 @@ const EmptyState = memo(function EmptyState({ title = "No data found", descripti
     </div>
   );
 });
-
 export default EmptyState;

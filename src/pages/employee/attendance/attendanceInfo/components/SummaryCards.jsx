@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Clock, CheckCircle2, XCircle, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
-
 const Stat = ({ icon, iconBg, label, value, sub, accent }) => (
   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-4 flex items-center gap-4 min-w-0 flex-1">
     <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
@@ -13,7 +12,6 @@ const Stat = ({ icon, iconBg, label, value, sub, accent }) => (
     </div>
   </div>
 );
-
 const SummaryCards = React.memo(function SummaryCards({ loading, summary, recordsByDate, dayMap }) {
   const stats = useMemo(() => {
     if (!dayMap) return { present: 0, absent: 0, late: 0, leave: 0, holidays: 0, working: 0 };
@@ -35,7 +33,6 @@ const SummaryCards = React.memo(function SummaryCards({ loading, summary, record
     });
     return { present, absent, late, leave, holidays, working };
   }, [dayMap]);
-
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
       <Stat
@@ -89,5 +86,4 @@ const SummaryCards = React.memo(function SummaryCards({ loading, summary, record
     </div>
   );
 });
-
 export default SummaryCards;

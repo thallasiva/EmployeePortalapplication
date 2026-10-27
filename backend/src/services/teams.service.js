@@ -1,24 +1,6 @@
 'use strict';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const https = require('https');
 const { azure } = require('../config/env');
-
-
 function httpsRequest(options, body) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
@@ -43,21 +25,17 @@ function httpsRequest(options, body) {
     req.end();
   });
 }
-
-
 async function getAccessToken() {
   const { tenantId, clientId, clientSecret } = azure;
   if (!tenantId || !clientId || !clientSecret) {
     throw new Error('Azure credentials not configured (AZURE_TENANT_ID / AZURE_CLIENT_ID / AZURE_CLIENT_SECRET missing in .env)');
   }
-
   const body = new URLSearchParams({
     grant_type: 'client_credentials',
     client_id: clientId,
     client_secret: clientSecret,
     scope: 'https://graph.microsoft.com/.default'
   }).toString();
-
   const result = await httpsRequest({
     hostname: 'login.microsoftonline.com',
     path: `/${tenantId}/oauth2/v2.0/token`,
@@ -67,28 +45,14 @@ async function getAccessToken() {
       'Content-Length': Buffer.byteLength(body)
     }
   }, body);
-
   return result.access_token;
 }
-
-
-
-
-
-
-
-
-
-
-
 async function createTeamsMeeting({ subject, startDateTime, endDateTime, candidateName }) {
   const { organizerUserId } = azure;
   if (!organizerUserId) {
     throw new Error('TEAMS_ORGANIZER_USER_ID not set in .env');
   }
-
   const token = await getAccessToken();
-
   const payload = JSON.stringify({
     subject: subject || `Interview — ${candidateName}`,
     startDateTime: startDateTime,
@@ -98,7 +62,6 @@ async function createTeamsMeeting({ subject, startDateTime, endDateTime, candida
       isDialInBypassEnabled: false
     }
   });
-
   const result = await httpsRequest({
     hostname: 'graph.microsoft.com',
     path: `/v1.0/users/${encodeURIComponent(organizerUserId)}/onlineMeetings`,
@@ -109,11 +72,9 @@ async function createTeamsMeeting({ subject, startDateTime, endDateTime, candida
       'Content-Length': Buffer.byteLength(payload)
     }
   }, payload);
-
   return {
     joinUrl: result.joinWebUrl,
     meetingId: result.id
   };
 }
-
 module.exports = { createTeamsMeeting };

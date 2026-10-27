@@ -6,7 +6,6 @@ import SectionHead from "./SectionHead";
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
 import Row from "./Row";
-
 const BankSection = React.memo(function BankSection({
   bd, editMode, bankForm, setB,
 }) {
@@ -43,5 +42,4 @@ const BankSection = React.memo(function BankSection({
     </div>
   );
 });
-
 export default BankSection;

@@ -1,5 +1,4 @@
 import React from "react";
-
 const FRow = React.memo(function FRow({ label, required, optional, children, span }) {
   return (
     <div className={`mb-4 ${span ? "col-span-full" : ""}`}>
@@ -14,5 +13,4 @@ const FRow = React.memo(function FRow({ label, required, optional, children, spa
     </div>
   );
 });
-
 export default FRow;

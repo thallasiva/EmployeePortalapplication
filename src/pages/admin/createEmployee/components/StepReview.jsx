@@ -1,12 +1,10 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { formatSalary, formatDate } from "../utils";
-
 const StepReview = React.memo(function StepReview({ values, departments, members }) {
   const deptName =
     departments.find((d) => String(d.department_id) === String(values.department_id))
       ?.department_name || "—";
-
   const managerName =
     values.reporting_to === "none"
       ? "None"
@@ -14,7 +12,6 @@ const StepReview = React.memo(function StepReview({ values, departments, members
           const m = members.find((x) => String(x.employee_id) === String(values.reporting_to));
           return m ? m.full_name || `${m.first_name || ""} ${m.last_name || ""}`.trim() : "—";
         })();
-
   return (
     <>
       <h2>Review &amp; Confirm</h2>
@@ -68,5 +65,4 @@ const StepReview = React.memo(function StepReview({ values, departments, members
     </>
   );
 });
-
 export default StepReview;

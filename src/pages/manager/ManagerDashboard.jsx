@@ -5,8 +5,6 @@ import { getLoggedInUser } from "../../lib/dateUtils";
 import { getManagerFullDashboard } from "../../api/timesheet.api";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
-
-
 import { cssClass, joinClasses } from "../../utils/classStyles";function getInitials(name) {
   return (name || "?").
   split(" ").
@@ -15,12 +13,10 @@ import { cssClass, joinClasses } from "../../utils/classStyles";function getInit
   slice(0, 2).
   toUpperCase();
 }
-
 function fmt(val) {
   if (!val) return "—";
   return String(val).slice(0, 5);
 }
-
 function timeAgo(dateStr) {
   if (!dateStr) return "—";
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -31,20 +27,16 @@ function timeAgo(dateStr) {
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
-
 const ATT_BADGE = {
   present: { cls: "approved", label: "Present" },
   absent: { cls: "rejected", label: "Absent" },
   late: { cls: "pending", label: "Late" },
   "half-day": { cls: "pending", label: "Half Day" }
 };
-
 const ACTIVITY_ICON = {
   timesheet: <FileClock size={14} className="text-blue-500" />,
   leave: <FileCheck size={14} className="text-violet-500" />
 };
-
-
 function KpiCard({ icon: Icon, value, label, iconBg, iconColor, to }) {
   const inner =
   <div className="admin-dash-card flex items-center gap-4 h-full">
@@ -56,47 +48,37 @@ function KpiCard({ icon: Icon, value, label, iconBg, iconColor, to }) {
         <p className="text-sm text-gray-500">{label}</p>
       </div>
     </div>;
-
   return to ? <Link to={to}>{inner}</Link> : inner;
 }
-
-
 const ManagerDashboard = () => {
   const user = getLoggedInUser();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   useEffect(() => {
     getManagerFullDashboard().
     then(setData).
     catch(() => setError("Failed to load dashboard data.")).
     finally(() => setLoading(false));
   }, []);
-
   const s = data?.summary || {};
   const team = data?.team || [];
   const activities = data?.recentActivities || [];
-
   const v = (key) => loading ? "—" : s[key] ?? 0;
-
   return (
     <div className="admin-dash space-y-6">
       <ManagerTabs />
-
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Team Overview</h1>
         <p className="text-gray-500 mt-1">
           {user?.name || "Reporting Manager"} · Live snapshot of your team
         </p>
       </div>
-
       {error &&
       <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       }
-
       {}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         <KpiCard icon={Users} value={v("totalTeam")} label="Team Size" iconBg="bg-blue-50" iconColor="text-blue-600" />
@@ -107,10 +89,8 @@ const ManagerDashboard = () => {
         <KpiCard icon={FileCheck} value={v("approvedTimesheets")} label="Approved Timesheets" iconBg="bg-teal-50" iconColor="text-teal-600" to="/manager/timesheets" />
         <KpiCard icon={FileX} value={v("rejectedTimesheets")} label="Rejected Timesheets" iconBg="bg-red-50" iconColor="text-red-600" to="/manager/timesheets" />
       </div>
-
       {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
         {}
         <div className="lg:col-span-2 admin-dash-card">
           <div className="flex items-center justify-between mb-4">
@@ -121,7 +101,6 @@ const ManagerDashboard = () => {
               Full view <ArrowRight size={12} className="inline -mt-0.5" />
             </Link>
           </div>
-
           {loading ?
           <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
           team.length === 0 ?
@@ -129,7 +108,6 @@ const ManagerDashboard = () => {
               No team members found. Ensure employees have{" "}
               <code className="text-xs bg-gray-100 px-1 rounded">reporting_to</code> set to your employee ID.
             </p> :
-
           <div className="overflow-x-auto">
               <table className="admin-att-table w-full">
                 <thead>
@@ -175,26 +153,22 @@ const ManagerDashboard = () => {
                           {m.work_hours != null ? `${Number(m.work_hours).toFixed(2)}h` : "—"}
                         </td>
                       </tr>);
-
                 })}
                 </tbody>
               </table>
             </div>
           }
         </div>
-
         {}
         <div className="admin-dash-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">Recent Team Activities</h2>
             <Activity size={16} className="text-gray-400" />
           </div>
-
           {loading ?
           <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
           activities.length === 0 ?
           <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p> :
-
           <div className="space-y-3">
               {activities.map((a, i) =>
             <div key={i} className="flex gap-3 items-start">
@@ -210,17 +184,13 @@ const ManagerDashboard = () => {
             )}
             </div>
           }
-
           <div className="mt-4 pt-4 border-t border-gray-100 space-y-1">
             <Link to="/manager/team/leave" className="block text-sm text-brand font-medium">Leave requests <ArrowRight size={12} className="inline -mt-0.5" /></Link>
             <Link to="/manager/team/regularizations" className="block text-sm text-brand font-medium">Regularizations <ArrowRight size={12} className="inline -mt-0.5" /></Link>
             <Link to="/manager/timesheets" className="block text-sm text-brand font-medium">Timesheets <ArrowRight size={12} className="inline -mt-0.5" /></Link>
           </div>
         </div>
-
       </div>
     </div>);
-
 };
-
 export default ManagerDashboard;

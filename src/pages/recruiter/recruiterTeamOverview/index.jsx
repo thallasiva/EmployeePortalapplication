@@ -8,7 +8,6 @@ import DepartmentBreakdown from "./components/DepartmentBreakdown";
 import TeamTable from "./components/TeamTable";
 import PendingLeaveApprovals from "./components/PendingLeaveApprovals";
 import "../../admin/adminDashboard.css";
-
 export default function RecruiterTeamOverview() {
   const {
     team,
@@ -21,10 +20,8 @@ export default function RecruiterTeamOverview() {
     reviewing,
     handleLeave,
   } = useTeamOverview();
-
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("All");
-
   const filteredTeam = useMemo(() => {
     const q = search.toLowerCase();
     return team.filter((e) => {
@@ -37,16 +34,12 @@ export default function RecruiterTeamOverview() {
       );
     });
   }, [team, search, deptFilter]);
-
   const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } =
     usePagination(filteredTeam);
-
   const handleDeptFilter = useCallback((dept) => setDeptFilter(dept), []);
-
   return (
     <div className="admin-dash space-y-6">
       <RecruiterTabs />
-
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Team Overview</h1>
@@ -60,7 +53,6 @@ export default function RecruiterTeamOverview() {
           </p>
         </div>
       </div>
-
       {loading ? (
         <p className="text-sm text-gray-400 text-center py-16">Loading team data...</p>
       ) : (
@@ -72,13 +64,11 @@ export default function RecruiterTeamOverview() {
             <KPICard icon={TrendingUp} label="Late Arrivals" value={kpis.lateToday} color="bg-amber-500" />
             <KPICard icon={CalendarCheck} label="Pending Leaves" value={kpis.pendingLeaves} color="bg-purple-500" />
           </div>
-
           <DepartmentBreakdown
             deptBreakdown={deptBreakdown}
             deptFilter={deptFilter}
             setDeptFilter={handleDeptFilter}
           />
-
           <TeamTable
             filteredTeam={filteredTeam}
             team={team}
@@ -97,7 +87,6 @@ export default function RecruiterTeamOverview() {
             pageSize={pageSize}
             setPageSize={setPageSize}
           />
-
           <PendingLeaveApprovals
             pendingLeavesRows={pendingLeavesRows}
             pendingLeaves={kpis.pendingLeaves}

@@ -14,7 +14,6 @@ const pdfParse = _pdf.default || _pdf;
 const mammoth  = require('mammoth');
 const OpenAI   = require('openai');
 const { callProcedure } = require('../../config/db');
-
 /* ── OpenAI singleton ── */
 let _openai = null;
 function getOpenAI() {
@@ -27,16 +26,13 @@ function getOpenAI() {
   _openai = new OpenAI({ apiKey: key });
   return _openai;
 }
-
 function getModel() {
   return process.env.OPENAI_MODEL || 'gpt-4o-mini';
 }
-
 /* ── Utilities ── */
 function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
 }
-
 function normalizeText(text = '') {
   return text
     .replace(/\r/g, '')
@@ -48,7 +44,6 @@ function normalizeText(text = '') {
     .replace(/[–—]/g, '-')
     .trim();
 }
-
 async function extractText(buffer, mimeType, fileName) {
   const ext = path.extname(fileName || '').replace('.', '').toLowerCase();
   switch (ext) {
@@ -71,7 +66,6 @@ async function extractText(buffer, mimeType, fileName) {
       throw new Error('Unsupported resume format. Upload PDF, DOC, DOCX or TXT.');
   }
 }
-
 /* ── Dynamic field loader ── */
 async function loadParserFields() {
   try {
@@ -103,7 +97,6 @@ async function loadParserFields() {
     { field_name: 'languages',           type: 'array'               },
   ];
 }
-
 /* ── Dynamic prompt builder ── */
 function buildPrompt(fields, resumeText) {
   const list = fields.map(f => `- ${f.field_name} (${f.type})`).join('\n');
@@ -128,7 +121,6 @@ Resume:
 ${resumeText.slice(0, 25000)}
 ---`;
 }
-
 function safeJson(text) {
   if (!text) return {};
   try {
@@ -137,7 +129,6 @@ function safeJson(text) {
     );
   } catch { return {}; }
 }
-
 /* ── Regex fallback helpers ── */
 function regexEmail(t)    { const m = t.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/); return m?m[0]:null; }
 function regexPhone(t)    { const m = t.match(/(?:\+91[- ]?)?[6-9]\d{9}/); return m?m[0]:null; }
@@ -170,7 +161,6 @@ function regexNoticePeriod(t) {
   if (days) return Number(days[1]);
   return null;
 }
-
 function regexFallback(text) {
   return {
     name:                regexName(text),
@@ -186,7 +176,6 @@ function regexFallback(text) {
     certifications: [], languages: [],
   };
 }
-
 /* ── OpenAI parsing ── */
 async function parseWithOpenAI(text, parserFields) {
   const client = getOpenAI();
@@ -208,7 +197,6 @@ async function parseWithOpenAI(text, parserFields) {
     return null;
   }
 }
-
 /* ── Dynamic field normalizer ── */
 function normalizeValue(value, type) {
   if (value === undefined || value === '') return type === 'array' ? [] : null;
@@ -220,7 +208,6 @@ function normalizeValue(value, type) {
     default:        return value;
   }
 }
-
 function mapDynamicFields(ai, parserFields) {
   const parsed = {};
   for (const field of parserFields) {
@@ -228,7 +215,6 @@ function mapDynamicFields(ai, parserFields) {
   }
   return parsed;
 }
-
 function validateParsedData(parsed, parserFields) {
   for (const field of parserFields) {
     if (field.required == 1 && (parsed[field.field_name] == null || parsed[field.field_name] === '')) {
@@ -237,25 +223,20 @@ function validateParsedData(parsed, parserFields) {
   }
   return parsed;
 }
-
 /* ── Core parse ── */
 async function parseResume(buffer, mimeType, fileName) {
   const parserFields = await loadParserFields();
   const resumeHash   = sha256(buffer);
   const rawText      = await extractText(buffer, mimeType, fileName);
-
   let ai = await parseWithOpenAI(rawText, parserFields);
   if (!ai || Object.keys(ai).length === 0) ai = regexFallback(rawText);
-
   const parsed = mapDynamicFields(ai, parserFields);
   validateParsedData(parsed, parserFields);
-
   parsed.rawText    = rawText;
   parsed.resumeHash = resumeHash;
   parsed.parsedBy   = getOpenAI() ? 'openai' : 'regex';
   return parsed;
 }
-
 /* ── Scoring ── */
 function calculateResumeScore(parsed) {
   let score = 0;
@@ -269,7 +250,6 @@ function calculateResumeScore(parsed) {
   if (parsed.summary)                 score += 5;
   return Math.min(score, 100);
 }
-
 function calculateJobMatch(parsed, job) {
   let score = 0;
   const candidateSkills = (parsed.skills || []).map(s => s.toLowerCase());
@@ -283,7 +263,6 @@ function calculateJobMatch(parsed, job) {
   if (parsed.certifications?.length) score += 10;
   return Math.round(score);
 }
-
 /* ── Flatten for full-text search ── */
 function flattenResume(parsed) {
   const json = {};
@@ -295,7 +274,6 @@ function flattenResume(parsed) {
   });
   return json;
 }
-
 /* ── Field summary for logs ── */
 function buildFieldsSummary(parsed) {
   const summary = {};
@@ -306,7 +284,6 @@ function buildFieldsSummary(parsed) {
   });
   return summary;
 }
-
 /* ── Normalize (add score + search doc) ── */
 function normalizeParsedResume(parsed) {
   parsed.resume_score     = calculateResumeScore(parsed);
@@ -314,7 +291,6 @@ function normalizeParsedResume(parsed) {
   parsed.parsed_date      = new Date();
   return parsed;
 }
-
 /* ── Duplicate check ── */
 async function checkDuplicate(parsed) {
   try {
@@ -334,7 +310,6 @@ async function checkDuplicate(parsed) {
     return [];
   }
 }
-
 /* ── Dynamic persistence ── */
 async function saveDynamicField(candidateId, field, value) {
   try {
@@ -345,7 +320,6 @@ async function saveDynamicField(candidateId, field, value) {
     console.error('[ResumeParser] saveDynamicField', field, err.message);
   }
 }
-
 async function persistParsedResume(candidateId, parsed) {
   // Save full JSON blob
   try {
@@ -370,7 +344,6 @@ async function persistParsedResume(candidateId, parsed) {
     await saveDynamicField(candidateId, field, parsed[field]);
   }
 }
-
 /* ── Parse log ── */
 async function logParse({ candidateId, parsed, filename, mimeType, fileSize, duration, status, error }) {
   try {
@@ -391,25 +364,21 @@ async function logParse({ candidateId, parsed, filename, mimeType, fileSize, dur
     console.error('[ResumeParser] logParse failed:', err.message);
   }
 }
-
 /* ── Full pipeline ── */
 async function processResume(candidateId, file) {
   const started = Date.now();
   try {
     const parsed = await parseResume(file.buffer, file.mimetype, file.originalname);
     const duplicate = await checkDuplicate(parsed);
-
     if (duplicate.length > 0) {
       return { success: false, duplicate: true, duplicateCandidate: duplicate[0], parsed };
     }
-
     await persistParsedResume(candidateId, parsed);
     await logParse({
       candidateId, parsed,
       filename: file.originalname, mimeType: file.mimetype, fileSize: file.size,
       duration: Date.now() - started, status: 'SUCCESS', error: null,
     });
-
     return { success: true, duplicate: false, parsed };
   } catch (err) {
     console.error('[ResumeParser] processResume failed:', err.message);
@@ -422,14 +391,12 @@ async function processResume(candidateId, file) {
     throw err;
   }
 }
-
 async function saveResume(candidateId, file) {
   const result = await processResume(candidateId, file);
   if (!result.success) return result;
   normalizeParsedResume(result.parsed);
   return result;
 }
-
 /* ── Exports ── */
 module.exports = {
   parseResume,

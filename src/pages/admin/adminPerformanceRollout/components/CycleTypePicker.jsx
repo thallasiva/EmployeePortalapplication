@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { CYCLE_TYPES } from "../constants";
-
 const CycleTypePicker = React.memo(function CycleTypePicker({ value, onChange }) {
   return (
     <div className={cssClass({ display: "flex", gap: 10, flexWrap: "wrap" })}>
@@ -20,5 +19,4 @@ const CycleTypePicker = React.memo(function CycleTypePicker({ value, onChange })
     </div>
   );
 });
-
 export default CycleTypePicker;

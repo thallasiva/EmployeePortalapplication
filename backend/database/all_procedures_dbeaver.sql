@@ -5,7 +5,6 @@
 -- Safe to re-run: each procedure is dropped and re-created with its current definition.
 -- =============================================================================
 USE hrms_db;
-
 DROP PROCEDURE IF EXISTS sp_accrue_earned_leave ;
 CREATE PROCEDURE `sp_accrue_earned_leave`(IN p_month INT, IN p_year INT)
 BEGIN
@@ -13,22 +12,18 @@ BEGIN
   DECLARE v_work_days INT DEFAULT 0;
   DECLARE v_d DATE;
   DECLARE v_last DATE;
-
   SELECT leave_type_id INTO v_lt_id FROM leave_types
    WHERE leave_type_name LIKE '%Earned%' OR leave_type_name LIKE '%EL%' OR leave_type_name LIKE '%PL%'
    ORDER BY leave_type_id ASC LIMIT 1;
-
   IF v_lt_id IS NULL THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No Earned Leave type configured';
   END IF;
-
   SET v_d    = DATE(CONCAT(p_year,'-',LPAD(p_month,2,'0'),'-01'));
   SET v_last = LAST_DAY(v_d);
   WHILE v_d <= v_last DO
     IF DAYOFWEEK(v_d) NOT IN (1,7) THEN SET v_work_days = v_work_days + 1; END IF;
     SET v_d = DATE_ADD(v_d, INTERVAL 1 DAY);
   END WHILE;
-
   INSERT INTO leave_balances
     (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
   SELECT e.employee_id, v_lt_id, p_year, 0,
@@ -43,10 +38,8 @@ BEGIN
   ON DUPLICATE KEY UPDATE
     granted = granted + VALUES(granted),
     balance = GREATEST(0, opening_balance + granted + VALUES(granted) - availed);
-
   SELECT v_lt_id AS leave_type_id, v_work_days AS calendar_work_days, ROW_COUNT() AS accrued;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_add_helpdesk_comment ;
 CREATE PROCEDURE `sp_add_helpdesk_comment`(
   IN p_ticket_id INT, IN p_commented_by INT, IN p_comment TEXT
@@ -55,7 +48,6 @@ BEGIN
   INSERT INTO helpdesk_comments (ticket_id, commented_by, comment) VALUES (p_ticket_id, p_commented_by, p_comment);
   SELECT LAST_INSERT_ID() AS comment_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_add_team_member ;
 CREATE PROCEDURE `sp_add_team_member`(
   IN p_team_id INT, IN p_employee_id INT, IN p_title VARCHAR(100), IN p_is_lead TINYINT
@@ -68,7 +60,6 @@ BEGIN
     UPDATE teams SET lead_employee_id = p_employee_id WHERE team_id = p_team_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_adjust_leave_balance ;
 CREATE PROCEDURE `sp_adjust_leave_balance`(
   IN p_employee_id   INT,
@@ -86,7 +77,6 @@ BEGIN
   ON DUPLICATE KEY UPDATE
     opening_balance = p_opening, granted = p_granted, availed = p_availed, balance = v_bal;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_admin_dashboard ;
 CREATE PROCEDURE `sp_admin_dashboard`()
 BEGIN
@@ -94,12 +84,10 @@ BEGIN
          SUM(status='approved')  AS approved_timesheets,
          COUNT(*)                AS total_timesheets
     FROM weekly_timesheets;
-
   SELECT (SELECT COUNT(*) FROM employees WHERE employee_status='Active') AS active_employees,
          (SELECT COUNT(*) FROM leave_requests WHERE status='Pending')    AS pending_leaves,
          (SELECT COUNT(*) FROM helpdesk_tickets WHERE status='Open')     AS open_tickets;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_admin_review_resignation ;
 CREATE PROCEDURE `sp_admin_review_resignation`(
   IN p_admin_id INT, IN p_resignation_id INT, IN p_status VARCHAR(20), IN p_remarks TEXT
@@ -110,7 +98,6 @@ BEGIN
    WHERE resignation_id = p_resignation_id;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_admin_timesheet_counts ;
 CREATE PROCEDURE `sp_admin_timesheet_counts`()
 BEGIN
@@ -118,16 +105,13 @@ BEGIN
          COALESCE(SUM(status = 'approved'), 0)  AS approved,
          COALESCE(SUM(status = 'rejected'), 0)  AS rejected
     FROM weekly_timesheets;
-
   SELECT COUNT(*) AS cnt
     FROM users u JOIN roles r ON r.role_id = u.role_id
    WHERE r.role_name = 'Employee' AND u.status = 'Active';
-
   SELECT COUNT(*) AS cnt
     FROM users u JOIN roles r ON r.role_id = u.role_id
    WHERE r.role_name = 'Reporting Manager' AND u.status = 'Active';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_create_session ;
 CREATE PROCEDURE `sp_ai_interview_create_session`(
   IN p_token           VARCHAR(64),
@@ -147,7 +131,6 @@ BEGIN
     (p_token, p_candidate_id, p_job_req_id, p_recruiter_id, p_candidate_name, p_candidate_email, p_job_title, p_questions_json, p_expires_at);
   SELECT LAST_INSERT_ID() AS session_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_get_report ;
 CREATE PROCEDURE `sp_ai_interview_get_report`(IN p_session_id INT)
 BEGIN
@@ -158,7 +141,6 @@ BEGIN
   WHERE  session_id = p_session_id
   LIMIT  1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_get_session ;
 CREATE PROCEDURE `sp_ai_interview_get_session`(IN p_token VARCHAR(64))
 BEGIN
@@ -169,7 +151,6 @@ BEGIN
   WHERE  token = p_token
   LIMIT  1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_list_by_recruiter ;
 CREATE PROCEDURE `sp_ai_interview_list_by_recruiter`(
   IN p_recruiter_id INT,
@@ -184,7 +165,6 @@ BEGIN
   ORDER  BY created_at DESC
   LIMIT  p_limit OFFSET p_offset;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_ai_interview_submit ;
 CREATE PROCEDURE `sp_ai_interview_submit`(
   IN p_token       VARCHAR(64),
@@ -202,7 +182,6 @@ BEGIN
     submitted_at    = NOW()
   WHERE token = p_token;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_all_leave_balances ;
 CREATE PROCEDURE `sp_all_leave_balances`(IN p_year INT)
 BEGIN
@@ -215,14 +194,11 @@ BEGIN
     LEFT JOIN departments d ON d.department_id = e.department_id
     LEFT JOIN employees m  ON m.employee_id    = e.reporting_to
    WHERE e.employee_status = 'Active' ORDER BY e.emp_code;
-
   SELECT leave_type_id, leave_type_name, annual_quota, carry_forward_limit
     FROM leave_types ORDER BY leave_type_name;
-
   SELECT lb.employee_id, lb.leave_type_id, lb.opening_balance, lb.granted, lb.availed, lb.balance
     FROM leave_balances lb WHERE lb.year = p_year;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_apply_leave ;
 CREATE PROCEDURE `sp_apply_leave`(
   IN  p_employee_id    INT,
@@ -240,7 +216,6 @@ BEGIN
   DECLARE v_balance DECIMAL(6,2) DEFAULT 0;
   DECLARE v_year INT;
   SET v_year = YEAR(p_from_date);
-
   SELECT IFNULL(lb.balance, lt.annual_quota) INTO v_balance
     FROM leave_types lt
     LEFT JOIN leave_balances lb
@@ -248,7 +223,6 @@ BEGIN
           AND lb.employee_id   = p_employee_id
           AND lb.year          = v_year
    WHERE lt.leave_type_id = p_leave_type_id LIMIT 1;
-
   IF v_balance < p_days THEN
     SET p_request_id = NULL;
     SET p_status_msg = CONCAT('Insufficient leave balance. Available: ', v_balance, ' day(s)');
@@ -261,7 +235,6 @@ BEGIN
     SET p_status_msg = 'OK';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_assign_manager ;
 CREATE PROCEDURE `sp_assign_manager`(
     IN p_employee_id INT,
@@ -270,29 +243,23 @@ CREATE PROCEDURE `sp_assign_manager`(
     IN p_reason TEXT
 )
 main_block: BEGIN
-
     DECLARE v_old_manager INT DEFAULT NULL;
     DECLARE v_employee_exists INT DEFAULT 0;
-
     SELECT COUNT(*)
     INTO v_employee_exists
     FROM employees
     WHERE employee_id = p_employee_id;
-
     IF v_employee_exists = 0 THEN
         LEAVE main_block;
     END IF;
-
     SELECT reporting_to
     INTO v_old_manager
     FROM employees
     WHERE employee_id = p_employee_id
     LIMIT 1;
-
     UPDATE employees
     SET reporting_to = p_new_manager_id
     WHERE employee_id = p_employee_id;
-
     INSERT INTO reporting_history (
         employee_id,
         old_manager_id,
@@ -309,9 +276,7 @@ main_block: BEGIN
         p_reason,
         'assign'
     );
-
 END main_block ;
-
 DROP PROCEDURE IF EXISTS sp_assign_salary_structure ;
 CREATE PROCEDURE `sp_assign_salary_structure`(
   IN p_employee_id  INT,
@@ -327,22 +292,18 @@ BEGIN
          is_active    = 0
    WHERE employee_id = p_employee_id
      AND is_active   = 1;
-
   -- Insert new assignment
   INSERT INTO employee_salary_assignments
     (employee_id, structure_id, ctc_annual, effective_from, is_active)
   VALUES
     (p_employee_id, p_structure_id, p_ctc_annual, p_effective_from, 1);
-
   SELECT LAST_INSERT_ID() AS assignment_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_assign_ticket ;
 CREATE PROCEDURE `sp_assign_ticket`(IN p_ticket_id INT, IN p_assigned_to INT)
 BEGIN
   UPDATE helpdesk_tickets SET assigned_to = p_assigned_to WHERE ticket_id = p_ticket_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_attendance_dashboard ;
 CREATE PROCEDURE `sp_attendance_dashboard`(
   IN p_date DATE
@@ -358,7 +319,6 @@ BEGIN
     (SELECT COUNT(*) FROM attendance WHERE attendance_date = p_date AND work_hours >= 9) AS met_nine_hour_rule,
     (SELECT ROUND(AVG(work_hours), 1) FROM attendance WHERE attendance_date = p_date AND work_hours > 0) AS avg_hours_per_day;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_attendance_report ;
 CREATE PROCEDURE `sp_attendance_report`(IN p_from_date DATE, IN p_to_date DATE, IN p_department_id INT)
 BEGIN
@@ -369,7 +329,6 @@ BEGIN
      AND (p_to_date       IS NULL OR a.attendance_date<=p_to_date)
      AND (p_department_id IS NULL OR e.department_id=p_department_id)
    GROUP BY a.status;
-
   SELECT a.attendance_id, a.employee_id, e.emp_code,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
          d.department_name, a.attendance_date, a.check_in, a.check_out, a.work_hours, a.late_by_minutes, a.status
@@ -381,7 +340,6 @@ BEGIN
      AND (p_department_id IS NULL OR e.department_id=p_department_id)
    ORDER BY a.attendance_date DESC, e.emp_code LIMIT 500;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_birthdays_anniversaries ;
 CREATE PROCEDURE `sp_birthdays_anniversaries`(IN p_month INT)
 BEGIN
@@ -391,7 +349,6 @@ BEGIN
    WHERE employee_status = 'Active'
      AND (MONTH(dob) = p_month OR MONTH(emp_joining_date) = p_month);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_break_end ;
 CREATE PROCEDURE `sp_break_end`(
     IN p_employee_id INT,
@@ -402,11 +359,9 @@ CREATE PROCEDURE `sp_break_end`(
     IN p_location VARCHAR(200)
 )
 BEGIN
-
     DECLARE v_last_type VARCHAR(10) DEFAULT NULL;
     DECLARE v_last_time TIME DEFAULT NULL;
     DECLARE v_break_minutes DECIMAL(10,2) DEFAULT 0;
-
     SELECT
         punch_type,
         punch_time
@@ -421,16 +376,12 @@ BEGIN
         punch_time DESC,
         punch_id DESC
     LIMIT 1;
-
     IF v_last_type IS NULL
        OR v_last_type <> 'OUT' THEN
-
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT =
             'You are not currently on a break';
-
     END IF;
-
     SET v_break_minutes =
         GREATEST(
             0,
@@ -438,7 +389,6 @@ BEGIN
                 TIMEDIFF(p_time, v_last_time)
             ) / 60
         );
-
     INSERT INTO attendance_punches (
         employee_id,
         attendance_date,
@@ -459,7 +409,6 @@ BEGIN
         p_lng,
         p_location
     );
-
     UPDATE attendance
     SET
         total_punches =
@@ -469,9 +418,7 @@ BEGIN
     WHERE
         employee_id = p_employee_id
         AND attendance_date = p_date;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_break_start ;
 CREATE PROCEDURE `sp_break_start`(
     IN p_employee_id INT,
@@ -482,10 +429,8 @@ CREATE PROCEDURE `sp_break_start`(
     IN p_location VARCHAR(200)
 )
 BEGIN
-
     DECLARE v_check_in TIME DEFAULT NULL;
     DECLARE v_last_type VARCHAR(10) DEFAULT NULL;
-
     SELECT check_in
     INTO v_check_in
     FROM attendance
@@ -493,15 +438,11 @@ BEGIN
         employee_id = p_employee_id
         AND attendance_date = p_date
     LIMIT 1;
-
     IF v_check_in IS NULL THEN
-
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT =
             'You must check in before starting a break';
-
     END IF;
-
     SELECT punch_type
     INTO v_last_type
     FROM attendance_punches
@@ -512,15 +453,11 @@ BEGIN
         punch_time DESC,
         punch_id DESC
     LIMIT 1;
-
     IF v_last_type = 'OUT' THEN
-
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT =
             'You are already on a break';
-
     END IF;
-
     INSERT INTO attendance_punches (
         employee_id,
         attendance_date,
@@ -541,15 +478,12 @@ BEGIN
         p_lng,
         p_location
     );
-
     UPDATE attendance
     SET total_punches = COALESCE(total_punches, 0) + 1
     WHERE
         employee_id = p_employee_id
         AND attendance_date = p_date;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_bulk_assign_manager ;
 CREATE PROCEDURE `sp_bulk_assign_manager`(
     IN p_employee_id INT,
@@ -558,29 +492,23 @@ CREATE PROCEDURE `sp_bulk_assign_manager`(
     IN p_reason TEXT
 )
 main_block: BEGIN
-
     DECLARE v_old_manager INT DEFAULT NULL;
     DECLARE v_employee_exists INT DEFAULT 0;
-
     SELECT COUNT(*)
     INTO v_employee_exists
     FROM employees
     WHERE employee_id = p_employee_id;
-
     IF v_employee_exists = 0 THEN
         LEAVE main_block;
     END IF;
-
     SELECT reporting_to
     INTO v_old_manager
     FROM employees
     WHERE employee_id = p_employee_id
     LIMIT 1;
-
     UPDATE employees
     SET reporting_to = p_new_manager_id
     WHERE employee_id = p_employee_id;
-
     INSERT INTO reporting_history (
         employee_id,
         old_manager_id,
@@ -597,9 +525,7 @@ main_block: BEGIN
         p_reason,
         'bulk_transfer'
     );
-
 END main_block ;
-
 DROP PROCEDURE IF EXISTS sp_bulk_import_holidays ;
 CREATE PROCEDURE `sp_bulk_import_holidays`(
   IN  p_json     JSON,
@@ -614,10 +540,8 @@ BEGIN
   DECLARE v_shift   VARCHAR(10);
   DECLARE v_loc     VARCHAR(100);
   DECLARE v_restr   TINYINT(1);
-
   SET p_imported = 0;
   SET v_total    = JSON_LENGTH(p_json);
-
   WHILE v_i < v_total DO
     SET v_name  = JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].holiday_name')));
     SET v_date  = JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].holiday_date')));
@@ -625,26 +549,21 @@ BEGIN
     SET v_shift = IFNULL(JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].shift'))), 'general');
     SET v_loc   = NULLIF(JSON_UNQUOTE(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].location'))), '');
     SET v_restr = IFNULL(JSON_EXTRACT(p_json, CONCAT('$[', v_i, '].is_restricted')), 0);
-
     IF v_name IS NOT NULL AND v_name <> 'null' AND v_date IS NOT NULL THEN
       INSERT INTO holidays (holiday_name, holiday_date, holiday_calendar, shift, location, is_restricted)
       VALUES (v_name, v_date, v_cal, v_shift, v_loc, v_restr);
       SET p_imported = p_imported + 1;
     END IF;
-
     SET v_i = v_i + 1;
   END WHILE;
-
   SELECT p_imported AS imported;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_cancel_delegation ;
 CREATE PROCEDURE `sp_cancel_delegation`(IN p_id INT)
 BEGIN
   UPDATE workflow_delegations SET status = 'Cancelled' WHERE id = p_id;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_cancel_leave_request ;
 CREATE PROCEDURE `sp_cancel_leave_request`(
   IN p_id INT, IN p_employee_id INT, OUT p_ok TINYINT, OUT p_msg VARCHAR(200)
@@ -661,14 +580,12 @@ BEGIN
     SET p_ok=1; SET p_msg='Cancelled';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_cancel_workflow_delegate ;
 CREATE PROCEDURE `sp_cancel_workflow_delegate`(IN p_id INT)
 BEGIN
   UPDATE workflow_delegates SET status = 'Cancelled' WHERE id = p_id;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_change_employee_role ;
 CREATE PROCEDURE `sp_change_employee_role`(
   IN p_employee_id INT,
@@ -676,41 +593,33 @@ CREATE PROCEDURE `sp_change_employee_role`(
 )
 BEGIN
   DECLARE v_user_id INT DEFAULT NULL;
-
   SELECT user_id INTO v_user_id
   FROM users
   WHERE employee_id = p_employee_id
   LIMIT 1;
-
   IF v_user_id IS NULL THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No user account linked to this employee';
   END IF;
-
   UPDATE users
   SET role_id = p_role_id
   WHERE employee_id = p_employee_id;
-
   SELECT 1 AS changed;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_change_password ;
 CREATE PROCEDURE `sp_change_password`(IN p_user_id INT, IN p_new_hash VARCHAR(255))
 BEGIN
   UPDATE users SET password_hash = p_new_hash WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_check_email_exists ;
 CREATE PROCEDURE `sp_check_email_exists`(IN p_email VARCHAR(120))
 BEGIN
   SELECT user_id FROM users WHERE email = p_email LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_check_employee_exists ;
 CREATE PROCEDURE `sp_check_employee_exists`(IN p_employee_id INT)
 BEGIN
   SELECT employee_id FROM employees WHERE employee_id = p_employee_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_check_role_permission ;
 CREATE PROCEDURE `sp_check_role_permission`(
   IN p_role_id INT,
@@ -725,7 +634,6 @@ BEGIN
     AND p.module = p_module
     AND p.action = p_action;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_close_ticket ;
 CREATE PROCEDURE `sp_close_ticket`(
   IN p_employee_id INT, IN p_ticket_id INT, OUT p_ok TINYINT, OUT p_msg VARCHAR(200)
@@ -741,13 +649,11 @@ BEGIN
     SET p_ok=1; SET p_msg='OK';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_complete_review ;
 CREATE PROCEDURE `sp_complete_review`(IN p_review_id INT)
 BEGIN
   UPDATE reviews SET status = 'Completed' WHERE review_id = p_review_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_consume_mfa_temp_token ;
 CREATE PROCEDURE `sp_consume_mfa_temp_token`(IN p_token_hash VARCHAR(64), OUT p_user_id INT)
 BEGIN
@@ -760,7 +666,6 @@ BEGIN
     SET p_user_id = NULL;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_count_teams ;
 CREATE PROCEDURE `sp_count_teams`(IN p_department_id INT, IN p_search VARCHAR(100))
 BEGIN
@@ -768,7 +673,6 @@ BEGIN
    WHERE (p_department_id IS NULL OR t.department_id=p_department_id)
      AND (p_search        IS NULL OR t.team_name LIKE p_search);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_appraisal_cycle ;
 CREATE PROCEDURE `sp_create_appraisal_cycle`(
   IN  p_admin_id    INT,
@@ -783,7 +687,6 @@ BEGIN
   SET p_cycle_id = LAST_INSERT_ID();
   SELECT * FROM appraisal_cycles WHERE cycle_id = p_cycle_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_designation ;
 CREATE PROCEDURE `sp_create_designation`(
   IN p_name VARCHAR(200), IN p_department_id INT, OUT p_id INT
@@ -793,7 +696,6 @@ BEGIN
   SET p_id = LAST_INSERT_ID();
   SELECT * FROM designations WHERE designation_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_employee ;
 CREATE PROCEDURE `sp_create_employee`(
   IN p_emp_code        VARCHAR(30),
@@ -815,15 +717,12 @@ CREATE PROCEDURE `sp_create_employee`(
 )
 BEGIN
   DECLARE v_code VARCHAR(30);
-
   START TRANSACTION;
-
   IF p_emp_code IS NULL OR p_emp_code = '' THEN
     SET v_code = CONCAT('EMP', LPAD(FLOOR(RAND() * 100000), 5, '0'));
   ELSE
     SET v_code = p_emp_code;
   END IF;
-
   INSERT INTO employees (
     emp_code, first_name, last_name, email, mobile, emp_job_title,
     department_id, designation_id, reporting_to, employee_type,
@@ -833,17 +732,13 @@ BEGIN
     p_department_id, p_designation_id, p_reporting_to, p_employee_type,
     'Active', p_joining_date, p_ctc, p_base_salary
   );
-
   SET p_employee_id = LAST_INSERT_ID();
-
   IF p_password_hash IS NOT NULL AND p_password_hash <> '' THEN
     INSERT INTO users (email, password_hash, role_id, employee_id, status)
     VALUES (p_email, p_password_hash, IFNULL(p_role_id, 2), p_employee_id, 'Active');
   END IF;
-
   COMMIT;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_extra_work_request ;
 CREATE PROCEDURE `sp_create_extra_work_request`(
   IN p_employee_id  INT, IN p_timesheet_id INT, IN p_work_date DATE,
@@ -856,7 +751,6 @@ BEGIN
   SET p_id = LAST_INSERT_ID();
   SELECT * FROM extra_work_requests WHERE extra_work_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_holiday ;
 CREATE PROCEDURE `sp_create_holiday`(
   IN  p_holiday_name     VARCHAR(100),
@@ -879,7 +773,6 @@ BEGIN
   );
   SET p_holiday_id = LAST_INSERT_ID();
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_it_cycle ;
 CREATE PROCEDURE `sp_create_it_cycle`(
   IN p_fy_label VARCHAR(20), IN p_fy_start_year INT,
@@ -892,7 +785,6 @@ BEGIN
   SET p_cycle_id = LAST_INSERT_ID();
   SELECT * FROM it_declaration_cycles WHERE cycle_id = p_cycle_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_org_delegation ;
 CREATE PROCEDURE `sp_create_org_delegation`(
   IN p_employee_id INT, IN p_delegate_id INT, IN p_module VARCHAR(100),
@@ -907,7 +799,6 @@ BEGIN
   SET p_delegation_id = LAST_INSERT_ID();
   SELECT * FROM workflow_delegates WHERE id=p_delegation_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_salary_template ;
 CREATE PROCEDURE `sp_create_salary_template`(
   IN p_name            VARCHAR(100),
@@ -930,7 +821,6 @@ BEGIN
   IF p_is_default = 1 THEN
     UPDATE salary_templates SET is_default = 0;
   END IF;
-
   INSERT INTO salary_templates (
     template_name, description, basic_pct, hra_pct, variable_pct,
     telephone_monthly, lta_annual, pf_applicable, pf_cap,
@@ -942,10 +832,8 @@ BEGIN
     p_gratuity, p_bonus, p_insurance,
     p_other, p_pt, p_is_default
   );
-
   SELECT LAST_INSERT_ID() AS template_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_create_task ;
 CREATE PROCEDURE `sp_create_task`(
   IN p_employee_id INT, IN p_task_name VARCHAR(200), IN p_project_name VARCHAR(200),
@@ -961,7 +849,6 @@ BEGIN
   SET p_task_id = LAST_INSERT_ID();
   SELECT * FROM employee_tasks WHERE task_id = p_task_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_dashboard_stats ;
 CREATE PROCEDURE `sp_dashboard_stats`()
 BEGIN
@@ -973,14 +860,12 @@ BEGIN
     (SELECT COUNT(*) FROM helpdesk_tickets WHERE status IN ('Open','In Progress')) AS open_tickets_count,
     (SELECT COUNT(*) FROM jobs WHERE status = 'Open') AS open_jobs_count;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_delete_designation ;
 CREATE PROCEDURE `sp_delete_designation`(IN p_id INT)
 BEGIN
   DELETE FROM designations WHERE designation_id = p_id;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_delete_holiday ;
 CREATE PROCEDURE `sp_delete_holiday`(
   IN p_holiday_id INT
@@ -988,34 +873,29 @@ CREATE PROCEDURE `sp_delete_holiday`(
 BEGIN
   DELETE FROM holidays WHERE holiday_id = p_holiday_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_delete_it_proof ;
 CREATE PROCEDURE `sp_delete_it_proof`(IN p_proof_id INT)
 BEGIN
   DELETE FROM it_proof_documents WHERE proof_id = p_proof_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_delete_salary_template ;
 CREATE PROCEDURE `sp_delete_salary_template`(IN p_id INT)
 BEGIN
   UPDATE salary_templates SET is_active = 0 WHERE template_id = p_id;
   SELECT ROW_COUNT() AS deleted;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_delete_task ;
 CREATE PROCEDURE `sp_delete_task`(IN p_task_id INT, IN p_employee_id INT, OUT p_affected INT)
 BEGIN
   DELETE FROM employee_tasks WHERE task_id = p_task_id AND employee_id = p_employee_id;
   SET p_affected = ROW_COUNT();
 END ;
-
 DROP PROCEDURE IF EXISTS sp_delete_work_schedule ;
 CREATE PROCEDURE `sp_delete_work_schedule`(IN p_employee_id INT)
 BEGIN
   DELETE FROM employee_work_schedules WHERE employee_id = p_employee_id;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_disable_appraisal_cycle ;
 CREATE PROCEDURE `sp_disable_appraisal_cycle`(
   IN p_admin_id INT, IN p_cycle_id INT, OUT p_ok TINYINT
@@ -1031,19 +911,16 @@ BEGIN
     SET p_ok = 1;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_disable_mfa ;
 CREATE PROCEDURE `sp_disable_mfa`(IN p_user_id INT)
 BEGIN
   UPDATE users SET mfa_secret = NULL, mfa_enabled = 0 WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_disable_mfa_full ;
 CREATE PROCEDURE `sp_disable_mfa_full`(IN p_user_id INT)
 BEGIN
   UPDATE users SET mfa_enabled = 0, mfa_secret = NULL, mfa_backup_codes = NULL WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_employee_checkin ;
 CREATE PROCEDURE `sp_employee_checkin`(
   IN p_employee_id INT, IN p_date DATE, IN p_time TIME, IN p_shift_start TIME,
@@ -1067,7 +944,6 @@ BEGIN
     checkin_lat=IF(check_in IS NULL,VALUES(checkin_lat),checkin_lat), checkin_lng=IF(check_in IS NULL,VALUES(checkin_lng),checkin_lng),
     checkin_location=IF(check_in IS NULL,VALUES(checkin_location),checkin_location);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_employee_checkout ;
 CREATE PROCEDURE `sp_employee_checkout`(
     IN p_employee_id INT,
@@ -1078,14 +954,12 @@ CREATE PROCEDURE `sp_employee_checkout`(
     IN p_location VARCHAR(200)
 )
 BEGIN
-
     DECLARE v_check_in TIME DEFAULT NULL;
     DECLARE v_last_punch ENUM('IN','OUT') DEFAULT NULL;
     DECLARE v_work_mins INT DEFAULT 0;
     DECLARE v_break_mins INT DEFAULT 0;
     DECLARE v_total_elapsed INT DEFAULT 0;
     DECLARE v_new_status VARCHAR(20) DEFAULT 'present';
-
     -- Get first check-in
     SELECT check_in
     INTO v_check_in
@@ -1093,16 +967,12 @@ BEGIN
     WHERE employee_id = p_employee_id
       AND attendance_date = p_date
     LIMIT 1;
-
     -- No check-in
     IF v_check_in IS NULL THEN
-
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT =
             'No check-in found for today';
-
     END IF;
-
     -- Get latest punch
     SELECT punch_type
     INTO v_last_punch
@@ -1111,16 +981,12 @@ BEGIN
       AND attendance_date = p_date
     ORDER BY punch_time DESC, punch_id DESC
     LIMIT 1;
-
     -- Prevent duplicate OUT
     IF v_last_punch = 'OUT' THEN
-
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT =
             'Already checked out';
-
     END IF;
-
     -- Insert OUT punch
     INSERT INTO attendance_punches (
         employee_id,
@@ -1142,10 +1008,8 @@ BEGIN
         p_lng,
         p_location
     );
-
     -- Calculate work minutes
     SET v_work_mins = (
-
         SELECT COALESCE(
             SUM(
                 TIMESTAMPDIFF(
@@ -1156,44 +1020,31 @@ BEGIN
             ),
             0
         )
-
         FROM (
-
             SELECT
                 punch_time,
                 ROW_NUMBER() OVER (
                     ORDER BY punch_time, punch_id
                 ) AS rn
-
             FROM attendance_punches
-
             WHERE employee_id = p_employee_id
               AND attendance_date = p_date
               AND punch_type = 'IN'
-
         ) in_punch
-
         JOIN (
-
             SELECT
                 punch_time,
                 ROW_NUMBER() OVER (
                     ORDER BY punch_time, punch_id
                 ) AS rn
-
             FROM attendance_punches
-
             WHERE employee_id = p_employee_id
               AND attendance_date = p_date
               AND punch_type = 'OUT'
-
         ) out_punch
-
             ON in_punch.rn = out_punch.rn
-
         WHERE out_punch.punch_time > in_punch.punch_time
     );
-
     -- Total elapsed time
     SET v_total_elapsed =
         TIMESTAMPDIFF(
@@ -1201,80 +1052,53 @@ BEGIN
             v_check_in,
             p_time
         );
-
     -- Handle overnight
     IF v_total_elapsed < 0 THEN
-
         SET v_total_elapsed =
             v_total_elapsed + 1440;
-
     END IF;
-
     -- Calculate break
     SET v_break_mins =
         GREATEST(
             0,
             v_total_elapsed - v_work_mins
         );
-
     -- Determine attendance status
     IF v_work_mins >= 540 THEN
-
         SET v_new_status = 'present';
-
     ELSEIF v_work_mins >= 360 THEN
-
         SET v_new_status = 'half_day';
-
     ELSE
-
         SET v_new_status = 'present';
-
     END IF;
-
     -- Update attendance
     UPDATE attendance
-
     SET
         check_out = p_time,
-
         work_hours =
             ROUND(
                 v_work_mins / 60.0,
                 2
             ),
-
         break_minutes = v_break_mins,
-
         total_punches =
             COALESCE(total_punches, 0) + 1,
-
         checkout_lat = p_lat,
-
         checkout_lng = p_lng,
-
         checkout_location = p_location,
-
         status = v_new_status,
-
         updated_at = NOW()
-
     WHERE employee_id = p_employee_id
       AND attendance_date = p_date;
-
     -- Return updated attendance
     SELECT
         a.*,
         ap_list.punches
-
     FROM attendance a
-
     LEFT JOIN (
-
         SELECT
             employee_id,
             attendance_date,
-
             JSON_ARRAYAGG(
                 JSON_OBJECT(
                     'time', punch_time,
@@ -1282,39 +1106,28 @@ BEGIN
                     'location', location
                 )
             ) AS punches
-
         FROM attendance_punches
-
         WHERE employee_id = p_employee_id
           AND attendance_date = p_date
-
         GROUP BY
             employee_id,
             attendance_date
-
     ) ap_list
-
         ON ap_list.employee_id = a.employee_id
        AND ap_list.attendance_date = a.attendance_date
-
     WHERE a.employee_id = p_employee_id
       AND a.attendance_date = p_date;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_employee_dashboard ;
 CREATE PROCEDURE `sp_employee_dashboard`(IN p_employee_id INT)
 BEGIN
   SELECT SUM(status='approved') AS approved, SUM(status='pending') AS pending,
          SUM(status='rejected') AS rejected, SUM(status='draft') AS draft
     FROM weekly_timesheets WHERE employee_id = p_employee_id;
-
   SELECT COUNT(*) AS open_tasks FROM employee_tasks
    WHERE employee_id = p_employee_id AND status NOT IN ('completed','in_timesheet');
-
   SELECT COUNT(*) AS pending_leaves FROM leave_requests
    WHERE employee_id = p_employee_id AND status = 'Pending';
-
   SELECT lt.leave_type_name, IFNULL(lb.balance, lt.annual_quota) AS balance
     FROM leave_types lt
     LEFT JOIN leave_balances lb
@@ -1323,7 +1136,6 @@ BEGIN
           AND lb.year          = YEAR(CURDATE())
    ORDER BY lt.leave_type_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_employee_summary_report ;
 CREATE PROCEDURE `sp_employee_summary_report`()
 BEGIN
@@ -1334,49 +1146,41 @@ BEGIN
    GROUP BY d.department_id, d.department_name ORDER BY d.department_name;
   SELECT employee_type, COUNT(*) AS total FROM employees WHERE employee_status='Active' GROUP BY employee_type;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_employee_timesheet_counts ;
 CREATE PROCEDURE `sp_employee_timesheet_counts`(IN p_employee_id INT)
 BEGIN
   SELECT SUM(status='draft') AS draft, SUM(status='pending') AS pending,
          SUM(status='approved') AS approved, SUM(status='rejected') AS rejected
     FROM weekly_timesheets WHERE employee_id = p_employee_id;
-
   SELECT COUNT(*) AS cnt FROM timesheet_entries WHERE employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_enable_mfa ;
 CREATE PROCEDURE `sp_enable_mfa`(IN p_user_id INT, IN p_encrypted_secret VARCHAR(500))
 BEGIN
   UPDATE users SET mfa_secret = p_encrypted_secret, mfa_enabled = 1 WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_enable_mfa_with_backup ;
 CREATE PROCEDURE `sp_enable_mfa_with_backup`(IN p_user_id INT, IN p_backup_codes_json TEXT)
 BEGIN
   UPDATE users SET mfa_enabled = 1, mfa_backup_codes = p_backup_codes_json WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_enroll_employee_appraisal ;
 CREATE PROCEDURE `sp_enroll_employee_appraisal`(IN p_cycle_id INT, IN p_employee_id INT, IN p_admin_id INT)
 BEGIN
   INSERT IGNORE INTO appraisal_enrollments (cycle_id, employee_id, enrolled_by)
   VALUES (p_cycle_id, p_employee_id, p_admin_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_find_employee_by_empcode ;
 CREATE PROCEDURE `sp_find_employee_by_empcode`(IN p_emp_code VARCHAR(30))
 BEGIN
   SELECT employee_id FROM employees WHERE emp_code = p_emp_code LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_find_salary_structure ;
 CREATE PROCEDURE `sp_find_salary_structure`(IN p_employee_id INT, IN p_effective_from DATE)
 BEGIN
   SELECT id FROM salary_structures
    WHERE employee_id = p_employee_id AND effective_from = p_effective_from LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_generate_payslip ;
 CREATE PROCEDURE `sp_generate_payslip`(
   IN p_employee_id INT,
@@ -1398,7 +1202,6 @@ BEGIN
   DECLARE v_lop_days DECIMAL(4,1) DEFAULT 0;
   DECLARE v_paid_days DECIMAL(4,1) DEFAULT 0;
   DECLARE v_per_day DECIMAL(12,2) DEFAULT 0;
-
   SELECT COALESCE(
     (SELECT esa.ctc_annual / 12
        FROM employee_salary_assignments esa
@@ -1413,12 +1216,10 @@ BEGIN
   INTO v_monthly_salary
   FROM employees e
   WHERE e.employee_id = p_employee_id;
-
   SET v_basic = ROUND(v_monthly_salary * 0.50, 2);
   SET v_hra = ROUND(v_monthly_salary * 0.20, 2);
   SET v_allowances = ROUND(v_monthly_salary * 0.30, 2);
   SET v_deductions = ROUND(LEAST(v_basic, 15000) * 0.12, 2);
-
   SELECT COUNT(*) INTO v_working_days
   FROM (
     SELECT DATE_ADD(STR_TO_DATE(CONCAT(p_year, '-', p_month, '-01'), '%Y-%m-%d'), INTERVAL seq.n DAY) AS work_date
@@ -1436,7 +1237,6 @@ BEGIN
       WHERE h.holiday_date = dates.work_date
         AND (h.holiday_calendar = e.holiday_calendar OR h.holiday_calendar IS NULL)
     );
-
   SELECT COALESCE(SUM(CASE WHEN a.status = 'half_day' THEN 0.5 ELSE 1 END), 0)
     INTO v_lop_days
     FROM attendance a
@@ -1450,13 +1250,11 @@ BEGIN
           AND lr.status = 'Approved'
           AND a.attendance_date BETWEEN lr.from_date AND lr.to_date
      );
-
   SET v_paid_days = GREATEST(v_working_days - v_lop_days, 0);
   SET v_per_day = IF(v_working_days > 0, v_monthly_salary / v_working_days, 0);
   SET v_gross = ROUND(v_per_day * v_paid_days, 2);
   SET v_net = GREATEST(ROUND(v_gross - v_deductions, 2), 0);
   SET v_ctc = ROUND(v_monthly_salary * 12, 2);
-
   INSERT INTO payslips (
     payroll_run_id, employee_id, month, year, basic, hra, allowances,
     gross_earnings, ctc, deductions, net_pay, working_days, paid_days, lop_days, status
@@ -1478,20 +1276,16 @@ BEGIN
     lop_days = v_lop_days,
     status = 'Generated',
     generated_on = NOW();
-
   SELECT payslip_id INTO p_payslip_id
     FROM payslips
    WHERE employee_id = p_employee_id AND month = p_month AND year = p_year;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_active_appraisal_cycle ;
 CREATE PROCEDURE `sp_get_active_appraisal_cycle`()
 BEGIN
   SELECT * FROM appraisal_cycles WHERE status = 'active' ORDER BY cycle_id DESC LIMIT 1;
-  
   SELECT * FROM appraisal_cycles ORDER BY cycle_id DESC LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_active_employees_basic ;
 CREATE PROCEDURE `sp_get_active_employees_basic`()
 BEGIN
@@ -1499,7 +1293,6 @@ BEGIN
          CONCAT(first_name,' ',IFNULL(last_name,'')) AS employee_name
     FROM employees WHERE employee_status='Active';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_all_appraisals ;
 CREATE PROCEDURE `sp_get_all_appraisals`(IN p_cycle_id INT, IN p_status VARCHAR(20), IN p_department_id INT)
 BEGIN
@@ -1516,8 +1309,6 @@ BEGIN
      AND (p_status        IS NULL OR sa.status       = p_status)
      AND (p_department_id IS NULL OR e.department_id = p_department_id)
    ORDER BY sa.submitted_at DESC;
-
-  
   SELECT e.employee_id, e.emp_code,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
          e.emp_job_title, d.department_name,
@@ -1530,47 +1321,36 @@ BEGIN
      AND ae.employee_id NOT IN (SELECT employee_id FROM self_appraisals WHERE cycle_id = p_cycle_id)
    ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_all_appraisal_cycles ;
 CREATE PROCEDURE `sp_get_all_appraisal_cycles`()
 BEGIN
   SELECT * FROM appraisal_cycles ORDER BY cycle_id DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_all_it_cycles ;
 CREATE PROCEDURE `sp_get_all_it_cycles`()
 BEGIN
   SELECT * FROM it_declaration_cycles ORDER BY cycle_id DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_all_it_declarations ;
 CREATE PROCEDURE `sp_get_all_it_declarations`(IN p_cycle_id INT)
 BEGIN
-  
   SELECT e.employee_id, e.emp_code,
          CONCAT(e.first_name,' ',e.last_name) AS employee_name,
          e.email, e.emp_job_title AS job_title, d.department_name
     FROM employees e
     LEFT JOIN departments d ON d.department_id = e.department_id
    ORDER BY e.first_name, e.last_name;
-
-  
   SELECT d.*, CONCAT(rev.first_name,' ',rev.last_name) AS reviewed_by_name
     FROM it_declarations d
     LEFT JOIN employees rev ON rev.employee_id = d.reviewed_by
    WHERE d.cycle_id = p_cycle_id;
-
-  
   SELECT i.* FROM it_declaration_items i
     JOIN it_declarations d ON d.declaration_id = i.declaration_id
    WHERE d.cycle_id = p_cycle_id;
-
-  
   SELECT p.* FROM it_proof_documents p
     JOIN it_declarations d ON d.declaration_id = p.declaration_id
    WHERE d.cycle_id = p_cycle_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_all_resignations ;
 CREATE PROCEDURE `sp_get_all_resignations`(
     IN p_status VARCHAR(30),
@@ -1604,7 +1384,6 @@ BEGIN
       )
     ORDER BY r.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_appraisal ;
 CREATE PROCEDURE `sp_get_appraisal`(IN p_appraisal_id INT)
 BEGIN
@@ -1613,7 +1392,6 @@ BEGIN
     JOIN employees e ON e.employee_id = sa.employee_id
    WHERE sa.appraisal_id = p_appraisal_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_appraisal_enrollments ;
 CREATE PROCEDURE `sp_get_appraisal_enrollments`(IN p_cycle_id INT)
 BEGIN
@@ -1631,19 +1409,16 @@ BEGIN
    WHERE ae.cycle_id = p_cycle_id
    ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_appraisal_ratings ;
 CREATE PROCEDURE `sp_get_appraisal_ratings`(IN p_appraisal_id INT)
 BEGIN
   SELECT * FROM appraisal_ratings WHERE appraisal_id = p_appraisal_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_appraisal_ratings_summary ;
 CREATE PROCEDURE `sp_get_appraisal_ratings_summary`(IN p_appraisal_id INT)
 BEGIN
   SELECT self_rating, manager_rating FROM appraisal_ratings WHERE appraisal_id = p_appraisal_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_attendance_regularization ;
 CREATE PROCEDURE `sp_get_attendance_regularization`(IN p_id INT)
 BEGIN
@@ -1654,7 +1429,6 @@ BEGIN
     LEFT JOIN employees rv ON rv.employee_id = r.reviewed_by
    WHERE r.regularization_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_auto_seed_employees ;
 CREATE PROCEDURE `sp_get_auto_seed_employees`()
 BEGIN
@@ -1665,13 +1439,11 @@ BEGIN
    WHERE e.employee_status='Active'
    ORDER BY e.employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_company ;
 CREATE PROCEDURE `sp_get_company`()
 BEGIN
   SELECT * FROM companies LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_delegation ;
 CREATE PROCEDURE `sp_get_delegation`(IN p_id INT)
 BEGIN
@@ -1683,19 +1455,16 @@ BEGIN
     LEFT JOIN employees dt ON dt.employee_id = wd.delegate_id
    WHERE wd.id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_departments ;
 CREATE PROCEDURE `sp_get_departments`()
 BEGIN
   SELECT * FROM departments ORDER BY department_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_designation ;
 CREATE PROCEDURE `sp_get_designation`(IN p_id INT)
 BEGIN
   SELECT * FROM designations WHERE designation_id = p_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_designations ;
 CREATE PROCEDURE `sp_get_designations`(IN p_department_id INT)
 BEGIN
@@ -1703,7 +1472,6 @@ BEGIN
    WHERE (p_department_id IS NULL OR department_id = p_department_id)
    ORDER BY designation_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_document ;
 CREATE PROCEDURE `sp_get_document`(IN p_id INT)
 BEGIN
@@ -1716,7 +1484,6 @@ BEGIN
     LEFT JOIN employees u ON u.employee_id=d.uploaded_by
    WHERE d.document_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_employee_directory ;
 CREATE PROCEDURE `sp_get_employee_directory`(
   IN p_location         VARCHAR(100),
@@ -1738,7 +1505,6 @@ BEGIN
      AND (p_holiday_calendar IS NULL OR e.holiday_calendar = p_holiday_calendar)
    ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_employee_display_name ;
 CREATE PROCEDURE `sp_get_employee_display_name`(IN p_employee_id INT)
 BEGIN
@@ -1747,7 +1513,6 @@ BEGIN
   WHERE employee_id = p_employee_id
   LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_employee_profile ;
 CREATE PROCEDURE `sp_get_employee_profile`(IN p_employee_id INT)
 BEGIN
@@ -1772,11 +1537,9 @@ BEGIN
     LEFT JOIN employee_contact_info ci ON ci.employee_id = e.employee_id
     LEFT JOIN employee_bank_details bd ON bd.employee_id = e.employee_id
    WHERE e.employee_id = p_employee_id;
-
   SELECT * FROM employee_contact_info WHERE employee_id = p_employee_id;
   SELECT * FROM employee_bank_details  WHERE employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_employee_salary_assignment ;
 CREATE PROCEDURE `sp_get_employee_salary_assignment`(
   IN p_employee_id INT
@@ -1800,7 +1563,6 @@ BEGIN
     AND esa.is_active   = 1
   ORDER BY esa.effective_from DESC
   LIMIT 1;
-
   -- Result set 2: structure component lines (with effective calc values)
   SELECT
     l.line_id,
@@ -1832,13 +1594,11 @@ BEGIN
     AND esa.is_active   = 1
   ORDER BY l.sort_order, c.sort_order;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_employee_team ;
 CREATE PROCEDURE `sp_get_employee_team`(
     IN p_employee_id INT
 )
 BEGIN
-
     SELECT
         e.*,
         d.department_name,
@@ -1857,21 +1617,17 @@ BEGIN
     LEFT JOIN employees m
         ON m.employee_id = e.reporting_to
     WHERE e.employee_id = p_employee_id;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_holiday_by_id ;
 CREATE PROCEDURE `sp_get_holiday_by_id`(IN p_holiday_id INT)
 BEGIN
   SELECT * FROM holidays WHERE holiday_id = p_holiday_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_it_declaration_by_id ;
 CREATE PROCEDURE `sp_get_it_declaration_by_id`(IN p_declaration_id INT)
 BEGIN
   SELECT * FROM it_declarations WHERE declaration_id = p_declaration_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_it_proof ;
 CREATE PROCEDURE `sp_get_it_proof`(IN p_proof_id INT, IN p_employee_id INT, IN p_is_admin TINYINT)
 BEGIN
@@ -1881,7 +1637,6 @@ BEGIN
     SELECT * FROM it_proof_documents WHERE proof_id = p_proof_id AND employee_id = p_employee_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_job ;
 CREATE PROCEDURE `sp_get_job`(IN p_id INT)
 BEGIN
@@ -1892,7 +1647,6 @@ BEGIN
     LEFT JOIN departments d ON d.department_id = j.department_id
    WHERE j.job_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_job_application ;
 CREATE PROCEDURE `sp_get_job_application`(IN p_id INT)
 BEGIN
@@ -1904,7 +1658,6 @@ BEGIN
     LEFT JOIN departments d ON d.department_id = j.department_id
    WHERE ja.application_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_latest_it_cycle ;
 CREATE PROCEDURE `sp_get_latest_it_cycle`()
 BEGIN
@@ -1913,7 +1666,6 @@ BEGIN
     LEFT JOIN employees e ON e.employee_id = c.created_by
    ORDER BY c.cycle_id DESC LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_latest_salary_structure ;
 CREATE PROCEDURE `sp_get_latest_salary_structure`(IN p_employee_id INT)
 BEGIN
@@ -1923,7 +1675,6 @@ BEGIN
    WHERE s.employee_id = p_employee_id
    ORDER BY s.effective_from DESC LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_leave_balances ;
 CREATE PROCEDURE `sp_get_leave_balances`(IN p_employee_id INT, IN p_year INT)
 BEGIN
@@ -1939,7 +1690,6 @@ BEGIN
           AND lb.year          = p_year
    ORDER BY lt.leave_type_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_leave_email_pair ;
 CREATE PROCEDURE `sp_get_leave_email_pair`(IN p_employee_id INT)
 BEGIN
@@ -1953,7 +1703,6 @@ BEGIN
   WHERE e.employee_id = p_employee_id
   LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_leave_request ;
 CREATE PROCEDURE `sp_get_leave_request`(IN p_id INT)
 BEGIN
@@ -1968,7 +1717,6 @@ BEGIN
     LEFT JOIN employees rv  ON rv.employee_id  = lr.reviewed_by
    WHERE lr.leave_request_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_leave_summary ;
 CREATE PROCEDURE `sp_get_leave_summary`(IN p_year INT, IN p_department_id INT, IN p_status VARCHAR(30))
 BEGIN
@@ -1983,19 +1731,15 @@ BEGIN
      AND (p_department_id IS NULL OR e.department_id  = p_department_id)
      AND (p_status        IS NULL OR e.employee_status = p_status)
    ORDER BY e.emp_code;
-
   SELECT leave_type_id, leave_type_name FROM leave_types ORDER BY leave_type_name;
-
   SELECT lb.employee_id, lb.leave_type_id, lb.opening_balance, lb.granted, lb.availed,
          GREATEST(0, lb.opening_balance + lb.granted - lb.availed) AS closing_balance
     FROM leave_balances lb WHERE lb.year = p_year;
-
   SELECT lr.employee_id, lr.leave_type_id, MONTH(lr.from_date) AS month, SUM(lr.days) AS days_taken
     FROM leave_requests lr
    WHERE lr.status = 'Approved' AND YEAR(lr.from_date) = p_year
    GROUP BY lr.employee_id, lr.leave_type_id, MONTH(lr.from_date);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_managers_list ;
 CREATE PROCEDURE `sp_get_managers_list`()
 BEGIN
@@ -2011,11 +1755,9 @@ BEGIN
    WHERE mgr.employee_status='Active'
    ORDER BY mgr.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_manager_details ;
 CREATE PROCEDURE `sp_get_manager_details`(IN p_manager_id INT)
 BEGIN
-  
   SELECT e.employee_id, e.emp_code, e.first_name, e.last_name, e.email, e.employee_status,
          e.reporting_to, e.emp_joining_date, e.employee_type,
          d.designation_name, dp.department_name, dp.department_id,
@@ -2024,8 +1766,6 @@ BEGIN
     LEFT JOIN designations d  ON d.designation_id  = e.designation_id
     LEFT JOIN departments  dp ON dp.department_id  = e.department_id
    WHERE e.employee_id=p_manager_id;
-
-  
   SELECT e.employee_id, e.emp_code, e.first_name, e.last_name, e.email, e.employee_status,
          e.reporting_to, e.emp_joining_date, e.employee_type,
          d.designation_name, dp.department_name, dp.department_id,
@@ -2034,8 +1774,6 @@ BEGIN
     LEFT JOIN designations d  ON d.designation_id  = e.designation_id
     LEFT JOIN departments  dp ON dp.department_id  = e.department_id
    WHERE e.reporting_to=p_manager_id AND e.employee_status != 'Terminated';
-
-  
   SELECT e.employee_id, e.emp_code, e.first_name, e.last_name, e.email, e.employee_status,
          e.reporting_to, e.emp_joining_date, e.employee_type,
          d.designation_name, dp.department_name, dp.department_id,
@@ -2048,19 +1786,16 @@ BEGIN
    )
    AND e.employee_status != 'Terminated';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_mfa_secret ;
 CREATE PROCEDURE `sp_get_mfa_secret`(IN p_user_id INT)
 BEGIN
   SELECT mfa_secret, mfa_enabled FROM users WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_mfa_status ;
 CREATE PROCEDURE `sp_get_mfa_status`(IN p_user_id INT)
 BEGIN
   SELECT email, mfa_enabled FROM users WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_monthly_attendance ;
 CREATE PROCEDURE `sp_get_monthly_attendance`(
     IN p_employee_id INT,
@@ -2068,95 +1803,65 @@ CREATE PROCEDURE `sp_get_monthly_attendance`(
     IN p_year INT
 )
 BEGIN
-
     SELECT
         a.*,
-
         COALESCE(
             pc.punch_count,
             0
         ) AS punch_count,
-
         COALESCE(
             pc.break_sessions,
             0
         ) AS break_sessions
-
     FROM attendance a
-
     LEFT JOIN (
-
         SELECT
             employee_id,
             attendance_date,
-
             COUNT(*) AS punch_count,
-
             GREATEST(
                 FLOOR(COUNT(*) / 2) - 1,
                 0
             ) AS break_sessions
-
         FROM attendance_punches
-
         WHERE employee_id = p_employee_id
-
           AND MONTH(attendance_date) = p_month
-
           AND YEAR(attendance_date) = p_year
-
         GROUP BY
             employee_id,
             attendance_date
-
     ) pc
-
         ON pc.employee_id = a.employee_id
        AND pc.attendance_date = a.attendance_date
-
     WHERE a.employee_id = p_employee_id
-
       AND MONTH(a.attendance_date) = p_month
-
       AND YEAR(a.attendance_date) = p_year
-
     ORDER BY
         a.attendance_date;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_my_appraisal ;
 CREATE PROCEDURE `sp_get_my_appraisal`(IN p_employee_id INT, IN p_cycle_id INT)
 BEGIN
-  
   SELECT * FROM self_appraisals WHERE cycle_id = p_cycle_id AND employee_id = p_employee_id;
-  
   SELECT ar.* FROM appraisal_ratings ar
     JOIN self_appraisals sa ON sa.appraisal_id = ar.appraisal_id
    WHERE sa.cycle_id = p_cycle_id AND sa.employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_my_it_declaration ;
 CREATE PROCEDURE `sp_get_my_it_declaration`(IN p_employee_id INT)
 BEGIN
-  
   SELECT c.*, CONCAT(e.first_name,' ',e.last_name) AS created_by_name
     FROM it_declaration_cycles c
     LEFT JOIN employees e ON e.employee_id = c.created_by
    ORDER BY c.cycle_id DESC LIMIT 1;
-
-  
   SELECT d.* FROM it_declarations d
     JOIN (SELECT cycle_id FROM it_declaration_cycles ORDER BY cycle_id DESC LIMIT 1) latest USING (cycle_id)
    WHERE d.employee_id = p_employee_id LIMIT 1;
-
-  
   SELECT i.* FROM it_declaration_items i
     JOIN it_declarations d ON d.declaration_id = i.declaration_id
     JOIN (SELECT cycle_id FROM it_declaration_cycles ORDER BY cycle_id DESC LIMIT 1) latest USING (cycle_id)
    WHERE d.employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_my_it_proofs ;
 CREATE PROCEDURE `sp_get_my_it_proofs`(IN p_employee_id INT)
 BEGIN
@@ -2170,7 +1875,6 @@ BEGIN
    )
    ORDER BY p.uploaded_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_my_resignations ;
 CREATE PROCEDURE `sp_get_my_resignations`(IN p_employee_id INT)
 BEGIN
@@ -2187,7 +1891,6 @@ BEGIN
    WHERE r.employee_id = p_employee_id
    ORDER BY r.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_my_timesheets ;
 CREATE PROCEDURE `sp_get_my_timesheets`(IN p_employee_id INT)
 BEGIN
@@ -2200,7 +1903,6 @@ BEGIN
    WHERE wt.employee_id = p_employee_id
    ORDER BY wt.week_start DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_org_chart ;
 CREATE PROCEDURE `sp_get_org_chart`()
 BEGIN
@@ -2213,7 +1915,6 @@ BEGIN
    WHERE e.employee_status = 'Active' AND e.has_left_organization = 0
    ORDER BY e.employee_id ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_org_employees ;
 CREATE PROCEDURE `sp_get_org_employees`(IN p_department_id INT, IN p_status VARCHAR(20))
 BEGIN
@@ -2228,7 +1929,6 @@ BEGIN
      AND (p_status        IS NULL OR e.employee_status = p_status)
    ORDER BY e.employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_org_history ;
 CREATE PROCEDURE `sp_get_org_history`(
   IN p_employee_id INT, IN p_manager_id INT, IN p_change_type VARCHAR(20),
@@ -2237,7 +1937,6 @@ CREATE PROCEDURE `sp_get_org_history`(
 BEGIN
 DECLARE v_limit INT DEFAULT 50;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = COALESCE(p_limit, 50);
     SET v_offset = COALESCE(p_offset, 0);
   SELECT rh.*,
@@ -2255,20 +1954,17 @@ DECLARE v_limit INT DEFAULT 50;
      AND (p_change_type IS NULL OR rh.change_type=p_change_type)
    ORDER BY rh.created_at DESC
     LIMIT v_offset, v_limit;
-
   SELECT COUNT(*) AS total FROM reporting_history rh
    WHERE (p_employee_id IS NULL OR rh.employee_id=p_employee_id)
      AND (p_manager_id  IS NULL OR rh.old_manager_id=p_manager_id OR rh.new_manager_id=p_manager_id)
      AND (p_change_type IS NULL OR rh.change_type=p_change_type);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_org_tree_data ;
 CREATE PROCEDURE `sp_get_org_tree_data`(
     IN p_department_id INT,
     IN p_status VARCHAR(20)
 )
 BEGIN
-
     -- Result 1: Employees
     SELECT
         e.employee_id,
@@ -2297,7 +1993,6 @@ BEGIN
                p_status COLLATE utf8mb4_unicode_ci
           )
     ORDER BY e.first_name;
-
     -- Result 2: Active Delegations
     SELECT
         wd.employee_id,
@@ -2307,7 +2002,6 @@ BEGIN
         ON d.employee_id = wd.delegate_employee_id
     WHERE wd.status = 'Active'
       AND wd.to_date >= CURDATE();
-
     -- Result 3: Direct Report Counts
     SELECT
         reporting_to,
@@ -2316,9 +2010,7 @@ BEGIN
     WHERE employee_status <> 'Terminated'
       AND reporting_to IS NOT NULL
     GROUP BY reporting_to;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_or_create_appraisal ;
 CREATE PROCEDURE `sp_get_or_create_appraisal`(
   IN  p_cycle_id         INT,
@@ -2331,7 +2023,6 @@ BEGIN
   SELECT appraisal_id, IF(status = 'submitted', 1, 0)
     INTO p_appraisal_id, p_is_submitted
     FROM self_appraisals WHERE cycle_id = p_cycle_id AND employee_id = p_employee_id LIMIT 1;
-
   IF p_appraisal_id IS NULL THEN
     INSERT INTO self_appraisals (cycle_id, employee_id, status, overall_comments)
     VALUES (p_cycle_id, p_employee_id, 'draft', p_overall_comments);
@@ -2341,7 +2032,6 @@ BEGIN
     UPDATE self_appraisals SET overall_comments = p_overall_comments WHERE appraisal_id = p_appraisal_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_or_create_it_declaration ;
 CREATE PROCEDURE `sp_get_or_create_it_declaration`(
   IN p_employee_id INT, IN p_cycle_id INT, OUT p_declaration_id INT
@@ -2357,7 +2047,6 @@ BEGIN
   SET p_declaration_id = v_id;
   SELECT * FROM it_declarations WHERE declaration_id=v_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_payroll_run ;
 CREATE PROCEDURE `sp_get_payroll_run`(IN p_id INT)
 BEGIN
@@ -2365,14 +2054,12 @@ BEGIN
     FROM payroll_runs pr
     LEFT JOIN employees e ON e.employee_id = pr.processed_by
    WHERE pr.payroll_run_id = p_id;
-
   SELECT p.*, e.emp_code, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name
     FROM payslips p
     JOIN employees e ON e.employee_id = p.employee_id
    WHERE p.payroll_run_id = p_id
    ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_payslip ;
 CREATE PROCEDURE `sp_get_payslip`(IN p_id INT)
 BEGIN
@@ -2386,7 +2073,6 @@ BEGIN
     LEFT JOIN designations des ON des.designation_id = e.designation_id
    WHERE p.payslip_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_payslip_full ;
 CREATE PROCEDURE `sp_get_payslip_full`(IN p_id INT)
 BEGIN
@@ -2406,13 +2092,11 @@ BEGIN
     LEFT JOIN employee_bank_details b ON b.employee_id = e.employee_id
    WHERE p.payslip_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_payslip_raw ;
 CREATE PROCEDURE `sp_get_payslip_raw`(IN p_id INT)
 BEGIN
   SELECT * FROM payslips WHERE payslip_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_referral ;
 CREATE PROCEDURE `sp_get_referral`(IN p_id INT)
 BEGIN
@@ -2423,7 +2107,6 @@ BEGIN
     JOIN jobs j      ON j.job_id      = r.job_id
    WHERE r.referral_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_request_hub ;
 CREATE PROCEDURE `sp_get_request_hub`(IN p_id INT)
 BEGIN
@@ -2436,7 +2119,6 @@ BEGIN
     LEFT JOIN departments d ON d.department_id = e.department_id
    WHERE rh.request_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_resignation_by_id ;
 CREATE PROCEDURE `sp_get_resignation_by_id`(IN p_resignation_id INT)
 BEGIN
@@ -2452,7 +2134,6 @@ BEGIN
     LEFT JOIN employees mgr  ON mgr.employee_id = r.manager_reviewed_by
    WHERE r.resignation_id = p_resignation_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_review ;
 CREATE PROCEDURE `sp_get_review`(IN p_review_id INT)
 BEGIN
@@ -2465,13 +2146,11 @@ BEGIN
     LEFT JOIN employees rv ON rv.employee_id   = r.reviewer_id
    WHERE r.review_id = p_review_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_role ;
 CREATE PROCEDURE `sp_get_role`(IN p_role_id INT)
 BEGIN
   SELECT * FROM roles WHERE role_id = p_role_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_role_permissions ;
 CREATE PROCEDURE `sp_get_role_permissions`(IN p_role_id INT)
 BEGIN
@@ -2481,7 +2160,6 @@ BEGIN
     LEFT JOIN role_permissions rp ON rp.permission_id = p.permission_id AND rp.role_id = p_role_id
    ORDER BY p.module, p.action;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_salary_assignment_history ;
 CREATE PROCEDURE `sp_get_salary_assignment_history`(IN p_employee_id INT)
 BEGIN
@@ -2494,13 +2172,11 @@ BEGIN
   WHERE esa.employee_id = p_employee_id
   ORDER BY esa.effective_from DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_salary_component ;
 CREATE PROCEDURE `sp_get_salary_component`(IN p_id INT)
 BEGIN
   SELECT * FROM salary_components WHERE component_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_salary_structure ;
 CREATE PROCEDURE `sp_get_salary_structure`(IN p_id INT)
 BEGIN
@@ -2509,7 +2185,6 @@ BEGIN
     LEFT JOIN salary_structure_lines l ON l.structure_id = s.structure_id AND l.is_active = 1
    WHERE s.structure_id = p_id
    GROUP BY s.structure_id;
-
   SELECT l.*, c.component_name, c.component_code, c.category,
          c.calc_type AS master_calc_type,
          c.percentage_value AS master_pct_value,
@@ -2525,25 +2200,21 @@ BEGIN
    WHERE l.structure_id = p_id AND l.is_active = 1
    ORDER BY l.sort_order, c.sort_order;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_salary_structure_raw ;
 CREATE PROCEDURE `sp_get_salary_structure_raw`(IN p_id INT)
 BEGIN
   SELECT * FROM salary_structures WHERE id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_salary_template ;
 CREATE PROCEDURE `sp_get_salary_template`(IN p_id INT)
 BEGIN
   SELECT * FROM salary_templates WHERE template_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_task ;
 CREATE PROCEDURE `sp_get_task`(IN p_task_id INT)
 BEGIN
   SELECT * FROM employee_tasks WHERE task_id = p_task_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_team_appraisals ;
 CREATE PROCEDURE `sp_get_team_appraisals`(IN p_manager_id INT, IN p_cycle_id INT)
 BEGIN
@@ -2559,7 +2230,6 @@ BEGIN
    WHERE e.reporting_to = p_manager_id AND e.employee_status = 'Active'
    ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_team_details ;
 CREATE PROCEDURE `sp_get_team_details`(IN p_team_id INT)
 BEGIN
@@ -2567,7 +2237,6 @@ BEGIN
     FROM teams t
     LEFT JOIN employees l ON l.employee_id = t.lead_employee_id
    WHERE t.team_id = p_team_id;
-
   SELECT tm.*, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
          e.emp_code, e.emp_job_title, d.department_name
     FROM team_members tm
@@ -2576,7 +2245,6 @@ BEGIN
    WHERE tm.team_id = p_team_id
    ORDER BY tm.is_lead DESC, e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_team_resignations ;
 CREATE PROCEDURE `sp_get_team_resignations`(IN p_manager_id INT, IN p_status VARCHAR(30))
 BEGIN
@@ -2594,7 +2262,6 @@ BEGIN
      AND (p_status IS NULL OR p_status = 'all' OR r.status = p_status)
    ORDER BY r.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_ticket_with_comments ;
 CREATE PROCEDURE `sp_get_ticket_with_comments`(IN p_ticket_id INT)
 BEGIN
@@ -2605,14 +2272,12 @@ BEGIN
     JOIN employees e ON e.employee_id = t.employee_id
     LEFT JOIN employees a ON a.employee_id = t.assigned_to
    WHERE t.ticket_id = p_ticket_id;
-
   SELECT c.*, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS commented_by_name
     FROM helpdesk_comments c
     JOIN employees e ON e.employee_id = c.commented_by
    WHERE c.ticket_id = p_ticket_id
    ORDER BY c.created_at ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_timesheet ;
 CREATE PROCEDURE `sp_get_timesheet`(IN p_timesheet_id INT)
 BEGIN
@@ -2624,7 +2289,6 @@ BEGIN
     LEFT JOIN employees m ON m.employee_id = wt.reviewed_by
    WHERE wt.timesheet_id = p_timesheet_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_timesheet_entries ;
 CREATE PROCEDURE `sp_get_timesheet_entries`(IN p_timesheet_id INT)
 BEGIN
@@ -2637,7 +2301,6 @@ BEGIN
    WHERE te.timesheet_id = p_timesheet_id
    ORDER BY te.work_date, te.start_time;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_today_attendance ;
 CREATE PROCEDURE `sp_get_today_attendance`(IN p_employee_id INT)
 BEGIN
@@ -2649,13 +2312,11 @@ BEGIN
          a.checkout_lat, a.checkout_lng, a.checkout_location
   FROM attendance a
   WHERE a.employee_id = p_employee_id AND a.attendance_date = CURDATE();
-
   SELECT punch_id, punch_type, DATE_FORMAT(punch_time,'%H:%i') AS punch_time, location
   FROM attendance_punches
   WHERE employee_id = p_employee_id AND attendance_date = CURDATE()
   ORDER BY punch_time ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_unassigned_employees ;
 CREATE PROCEDURE `sp_get_unassigned_employees`()
 BEGIN
@@ -2672,7 +2333,6 @@ BEGIN
      AND (u.role_id IS NULL OR u.role_id != 1)
    ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_user_by_id ;
 CREATE PROCEDURE `sp_get_user_by_id`(IN p_user_id INT)
 BEGIN
@@ -2685,7 +2345,6 @@ BEGIN
     LEFT JOIN employees e ON e.employee_id = u.employee_id
    WHERE u.user_id = p_user_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_user_for_login ;
 CREATE PROCEDURE `sp_get_user_for_login`(IN p_email VARCHAR(150))
 BEGIN
@@ -2698,19 +2357,16 @@ BEGIN
     LEFT JOIN employees e ON e.employee_id = u.employee_id
    WHERE u.email = p_email LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_user_mfa ;
 CREATE PROCEDURE `sp_get_user_mfa`(IN p_user_id INT)
 BEGIN
   SELECT email, mfa_enabled, mfa_secret, mfa_backup_codes FROM users WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_user_password_hash ;
 CREATE PROCEDURE `sp_get_user_password_hash`(IN p_user_id INT)
 BEGIN
   SELECT password_hash FROM users WHERE user_id = p_user_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_weekly_timesheet ;
 CREATE PROCEDURE `sp_get_weekly_timesheet`(
   IN p_employee_id INT, IN p_week_start DATE, IN p_week_end DATE, OUT p_ts_id INT
@@ -2725,7 +2381,6 @@ BEGIN
   END IF;
   SELECT * FROM weekly_timesheets WHERE timesheet_id = p_ts_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_workflow_delegate ;
 CREATE PROCEDURE `sp_get_workflow_delegate`(IN p_id INT)
 BEGIN
@@ -2737,7 +2392,6 @@ BEGIN
     JOIN employees d ON d.employee_id = wd.delegate_employee_id
    WHERE wd.id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_get_work_schedule ;
 CREATE PROCEDURE `sp_get_work_schedule`(IN p_employee_id INT)
 BEGIN
@@ -2748,7 +2402,6 @@ BEGIN
     LEFT JOIN departments d ON d.department_id = e.department_id
    WHERE ws.employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_helpdesk_report ;
 CREATE PROCEDURE `sp_helpdesk_report`(IN p_from_date DATETIME, IN p_to_date DATETIME)
 BEGIN
@@ -2756,18 +2409,15 @@ BEGIN
    WHERE (p_from_date IS NULL OR t.created_at>=p_from_date)
      AND (p_to_date   IS NULL OR t.created_at<=p_to_date)
    GROUP BY t.status;
-
   SELECT t.category, COUNT(*) AS total FROM helpdesk_tickets t
    WHERE (p_from_date IS NULL OR t.created_at>=p_from_date)
      AND (p_to_date   IS NULL OR t.created_at<=p_to_date)
    GROUP BY t.category;
-
   SELECT t.priority, COUNT(*) AS total FROM helpdesk_tickets t
    WHERE (p_from_date IS NULL OR t.created_at>=p_from_date)
      AND (p_to_date   IS NULL OR t.created_at<=p_to_date)
    GROUP BY t.priority;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_hiring_report ;
 CREATE PROCEDURE `sp_hiring_report`()
 BEGIN
@@ -2781,7 +2431,6 @@ BEGIN
    WHERE j.status='Open'
    ORDER BY j.posted_on DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_import_holiday ;
 CREATE PROCEDURE `sp_import_holiday`(
   IN p_name VARCHAR(200), IN p_date DATE, IN p_calendar VARCHAR(50),
@@ -2791,7 +2440,6 @@ BEGIN
   INSERT INTO holidays (holiday_name, holiday_date, holiday_calendar, shift, location, is_restricted)
   VALUES (p_name, p_date, p_calendar, p_shift, p_location, p_is_restricted);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_init_leave_balances_year ;
 CREATE PROCEDURE `sp_init_leave_balances_year`(IN p_year INT)
 BEGIN
@@ -2809,10 +2457,8 @@ BEGIN
           AND prev.leave_type_id = lt.leave_type_id
           AND prev.year          = p_year - 1
    WHERE e.employee_status = 'Active';
-
   SELECT ROW_COUNT() AS created;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_insert_it_declaration_item ;
 CREATE PROCEDURE `sp_insert_it_declaration_item`(
   IN p_declaration_id INT, IN p_section_key VARCHAR(100),
@@ -2824,7 +2470,6 @@ BEGIN
     (declaration_id, section_key, section_label, sub_label, declared_amount)
   VALUES (p_declaration_id, p_section_key, p_section_label, p_sub_label, p_declared_amount);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_insert_salary_audit_log ;
 CREATE PROCEDURE `sp_insert_salary_audit_log`(
   IN p_user_id INT,
@@ -2841,7 +2486,6 @@ BEGIN
   VALUES
     (p_user_id, p_employee_id, p_action, p_resource, p_ip_address, p_user_agent, p_status);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_issue_mfa_temp_token_hash ;
 CREATE PROCEDURE `sp_issue_mfa_temp_token_hash`(
   IN p_user_id    INT,
@@ -2852,14 +2496,12 @@ BEGIN
   DELETE FROM mfa_temp_tokens WHERE user_id = p_user_id OR expires_at < NOW();
   INSERT INTO mfa_temp_tokens (user_id, token_hash, expires_at) VALUES (p_user_id, p_token_hash, p_expires_at);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_issue_mfa_token ;
 CREATE PROCEDURE `sp_issue_mfa_token`(IN p_user_id INT, IN p_token VARCHAR(64), IN p_expires_at DATETIME)
 BEGIN
   DELETE FROM mfa_temp_tokens WHERE user_id = p_user_id OR expires_at < NOW();
   INSERT INTO mfa_temp_tokens (user_id, token, expires_at) VALUES (p_user_id, p_token, p_expires_at);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_is_enrolled ;
 CREATE PROCEDURE `sp_is_enrolled`(IN p_cycle_id INT, IN p_employee_id INT)
 BEGIN
@@ -2867,7 +2509,6 @@ BEGIN
     SELECT 1 FROM appraisal_enrollments WHERE cycle_id = p_cycle_id AND employee_id = p_employee_id
   ) AS enrolled;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_create_invitation ;
 CREATE PROCEDURE `sp_joining_create_invitation`(
   IN p_candidate_id    INT,
@@ -2888,10 +2529,8 @@ BEGIN
     status      = 'pending',
     expires_at  = p_expires_at,
     updated_at  = CURRENT_TIMESTAMP;
-
   SELECT * FROM joining_invitations WHERE token = p_token LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_by_offer ;
 CREATE PROCEDURE `sp_joining_get_by_offer`(IN p_offer_id INT)
 BEGIN
@@ -2903,20 +2542,16 @@ BEGIN
   ORDER  BY created_at DESC
   LIMIT  1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_employee_id_by_code ;
 CREATE PROCEDURE `sp_joining_get_employee_id_by_code`(
     IN p_emp_code VARCHAR(100)
 )
 BEGIN
-
     SELECT employee_id
     FROM employees
     WHERE emp_code = p_emp_code
     LIMIT 1;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_formality ;
 CREATE PROCEDURE `sp_joining_get_formality`(IN p_invitation_id INT)
 BEGIN
@@ -2930,7 +2565,6 @@ BEGIN
   WHERE ji.id = p_invitation_id
   LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_form_by_token ;
 CREATE PROCEDURE `sp_joining_get_form_by_token`(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -2948,7 +2582,6 @@ BEGIN
     AND ji.status NOT IN ('approved','rejected')
   LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_invitation ;
 CREATE PROCEDURE `sp_joining_get_invitation`(IN p_invitation_id INT)
 BEGIN
@@ -2957,13 +2590,11 @@ BEGIN
   WHERE  ji.id = p_invitation_id
   LIMIT  1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_get_my_documents ;
 CREATE PROCEDURE `sp_joining_get_my_documents`(
     IN p_employee_id INT
 )
 BEGIN
-
     SELECT
         jf.aadhar_doc_url,
         jf.pan_doc_url,
@@ -2983,9 +2614,7 @@ BEGIN
     WHERE e.employee_id = p_employee_id
     ORDER BY jf.updated_at DESC
     LIMIT 1;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_list_pending ;
 CREATE PROCEDURE `sp_joining_list_pending`(
     IN p_status VARCHAR(30)
@@ -2998,7 +2627,6 @@ CREATE PROCEDURE `sp_joining_list_pending`(
     IN p_offset INT
 )
 BEGIN
-
     SELECT
         ji.id,
         ji.candidate_id,
@@ -3010,7 +2638,6 @@ BEGIN
         ji.status AS invitation_status,
         ji.created_at,
         ji.expires_at,
-
         jf.id AS formality_id,
         jf.status AS formality_status,
         jf.submitted_at,
@@ -3018,19 +2645,15 @@ BEGIN
         jf.review_remarks,
         jf.full_name,
         jf.mobile
-
     FROM joining_invitations ji
-
     LEFT JOIN joining_formalities jf
         ON jf.invitation_id = ji.id
-
     WHERE
         (
             p_status IS NULL
             OR ji.status COLLATE utf8mb4_0900_ai_ci =
                p_status COLLATE utf8mb4_0900_ai_ci
         )
-
         AND
         (
             p_search IS NULL
@@ -3039,23 +2662,17 @@ BEGIN
             OR ji.candidate_email COLLATE utf8mb4_0900_ai_ci
                 LIKE CONCAT('%', p_search COLLATE utf8mb4_0900_ai_ci, '%')
         )
-
     ORDER BY ji.created_at DESC
     LIMIT p_limit OFFSET p_offset;
-
-
     SELECT
         COUNT(*) AS total
-
     FROM joining_invitations ji
-
     WHERE
         (
             p_status IS NULL
             OR ji.status COLLATE utf8mb4_0900_ai_ci =
                p_status COLLATE utf8mb4_0900_ai_ci
         )
-
         AND
         (
             p_search IS NULL
@@ -3064,9 +2681,7 @@ BEGIN
             OR ji.candidate_email COLLATE utf8mb4_0900_ai_ci
                 LIKE CONCAT('%', p_search COLLATE utf8mb4_0900_ai_ci, '%')
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_review ;
 CREATE PROCEDURE `sp_joining_review`(
   IN p_invitation_id   INT,
@@ -3087,7 +2702,6 @@ BEGIN
     WHEN 'reject'          THEN 'rejected'
     ELSE p_decision
   END;
-
   UPDATE joining_invitations SET
     status = CASE p_decision
                WHEN 'approve'         THEN 'approved'
@@ -3101,7 +2715,6 @@ BEGIN
                  END,
     updated_at = NOW()
   WHERE id = p_invitation_id;
-
   UPDATE joining_formalities SET
     status             = v_jf_status,
     hr_remarks         = p_remarks,
@@ -3113,7 +2726,6 @@ BEGIN
     admin_department   = COALESCE(p_department,   admin_department),
     updated_at         = NOW()
   WHERE invitation_id = p_invitation_id;
-
   SELECT ji.*, jf.status AS formality_status, jf.hr_remarks AS review_remarks,
          jf.reviewed_at, jf.admin_employee_id, jf.admin_designation,
          jf.admin_reporting_to, jf.admin_department
@@ -3121,7 +2733,6 @@ BEGIN
   LEFT JOIN joining_formalities jf ON jf.invitation_id = ji.id
   WHERE ji.id = p_invitation_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_save_formalities ;
 CREATE PROCEDURE `sp_joining_save_formalities`(
   IN p_invitation_id  INT,
@@ -3298,7 +2909,6 @@ BEGIN
   END IF;
   SELECT * FROM joining_formalities WHERE invitation_id = p_invitation_id LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_sync_identity_documents ;
 CREATE PROCEDURE `sp_joining_sync_identity_documents`(
     IN p_employee_id INT,
@@ -3307,31 +2917,23 @@ CREATE PROCEDURE `sp_joining_sync_identity_documents`(
     IN p_pan_doc_url TEXT
 )
 BEGIN
-
     DECLARE v_category_id INT DEFAULT NULL;
-
     SELECT category_id
     INTO v_category_id
     FROM document_categories
     WHERE category_name = 'Identity Documents'
     LIMIT 1;
-
     IF v_category_id IS NULL THEN
-
         INSERT INTO document_categories (
             category_name
         )
         VALUES (
             'Identity Documents'
         );
-
         SET v_category_id = LAST_INSERT_ID();
-
     END IF;
-
     IF p_aadhar_doc_url IS NOT NULL
        AND TRIM(p_aadhar_doc_url) <> '' THEN
-
         INSERT INTO documents (
             title,
             category_id,
@@ -3360,12 +2962,9 @@ BEGIN
         )
         ON DUPLICATE KEY UPDATE
             file_url = VALUES(file_url);
-
     END IF;
-
     IF p_pan_doc_url IS NOT NULL
        AND TRIM(p_pan_doc_url) <> '' THEN
-
         INSERT INTO documents (
             title,
             category_id,
@@ -3394,13 +2993,9 @@ BEGIN
         )
         ON DUPLICATE KEY UPDATE
             file_url = VALUES(file_url);
-
     END IF;
-
     SELECT v_category_id AS category_id;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_update_formality_documents ;
 CREATE PROCEDURE `sp_joining_update_formality_documents`(
     IN p_invitation_id INT,
@@ -3408,7 +3003,6 @@ CREATE PROCEDURE `sp_joining_update_formality_documents`(
     IN p_pan_doc_url TEXT
 )
 BEGIN
-
     UPDATE joining_formalities
     SET
         aadhar_doc_url = COALESCE(
@@ -3420,16 +3014,13 @@ BEGIN
             pan_doc_url
         )
     WHERE invitation_id = p_invitation_id;
-
     SELECT
         aadhar_doc_url,
         pan_doc_url
     FROM joining_formalities
     WHERE invitation_id = p_invitation_id
     LIMIT 1;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_joining_verify_token ;
 CREATE PROCEDURE `sp_joining_verify_token`(
   IN p_token VARCHAR(64) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -3457,7 +3048,6 @@ BEGIN
         )
   LIMIT 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_leave_report ;
 CREATE PROCEDURE `sp_leave_report`(IN p_year INT, IN p_department_id INT, IN p_status VARCHAR(20))
 BEGIN
@@ -3469,7 +3059,6 @@ BEGIN
      AND (p_department_id IS NULL OR e.department_id=p_department_id)
      AND (p_status        IS NULL OR lr.status=p_status)
    GROUP BY lt.leave_type_name, lr.status;
-
   SELECT lr.leave_request_id, lr.employee_id, e.emp_code,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
          d.department_name, lt.leave_type_name, lr.from_date, lr.to_date, lr.days, lr.status, lr.applied_on
@@ -3482,7 +3071,6 @@ BEGIN
      AND (p_status        IS NULL OR lr.status=p_status)
    ORDER BY lr.applied_on DESC LIMIT 500;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_all_timesheets ;
 CREATE PROCEDURE `sp_list_all_timesheets`(
     IN p_status VARCHAR(20),
@@ -3509,7 +3097,6 @@ BEGIN
     )
     ORDER BY wt.submitted_at DESC, wt.week_start DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_attendance ;
 CREATE PROCEDURE `sp_list_attendance`(
   IN p_employee_id  INT, IN p_department_id INT, IN p_from_date DATE,
@@ -3520,7 +3107,6 @@ BEGIN
     IF p_limit IS NULL OR p_limit <= 0 THEN
         SET p_limit = 1000000;
     END IF;
-
     IF p_offset IS NULL OR p_offset < 0 THEN
         SET p_offset = 0;
     END IF;
@@ -3538,7 +3124,6 @@ BEGIN
      AND (p_status        IS NULL OR a.status         = p_status)
    ORDER BY a.attendance_date DESC, a.employee_id
     LIMIT p_offset, p_limit;
-
   SELECT COUNT(*) AS total
     FROM attendance a
     JOIN employees e ON e.employee_id = a.employee_id
@@ -3549,7 +3134,6 @@ BEGIN
      AND (p_to_date       IS NULL OR a.attendance_date <= p_to_date)
      AND (p_status        IS NULL OR a.status         = p_status);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_attendance_regularization ;
 CREATE PROCEDURE `sp_list_attendance_regularization`(
     IN p_employee_id INT,
@@ -3559,13 +3143,10 @@ CREATE PROCEDURE `sp_list_attendance_regularization`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         r.*,
         e.emp_code,
@@ -3590,7 +3171,6 @@ BEGIN
         AND (p_reporting_to IS NULL OR e.reporting_to = p_reporting_to)
     ORDER BY r.created_at DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM attendance_regularization r
     INNER JOIN employees e
@@ -3599,9 +3179,7 @@ BEGIN
         (p_employee_id IS NULL OR r.employee_id = p_employee_id)
         AND (p_status IS NULL OR r.status = p_status)
         AND (p_reporting_to IS NULL OR e.reporting_to = p_reporting_to);
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_calendar_events ;
 CREATE PROCEDURE `sp_list_calendar_events`(
   IN p_employee_id INT, IN p_visibility VARCHAR(20), IN p_type VARCHAR(50),
@@ -3612,7 +3190,6 @@ BEGIN
   DECLARE v_offset INT DEFAULT 0;
   SET v_limit = COALESCE(p_limit, 50);
   SET v_offset = COALESCE(p_offset, 0);
-
   SELECT ce.*,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS created_by_name
     FROM calendar_events ce
@@ -3622,13 +3199,11 @@ BEGIN
      AND (p_to   IS NULL OR ce.event_date <= p_to)
    ORDER BY ce.event_date ASC
    LIMIT v_offset, v_limit;
-
   SELECT COUNT(*) AS total FROM calendar_events ce
    WHERE (p_type IS NULL OR ce.event_type = p_type)
      AND (p_from IS NULL OR ce.event_date >= p_from)
      AND (p_to   IS NULL OR ce.event_date <= p_to);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_designations ;
 CREATE PROCEDURE `sp_list_designations`(IN p_department_id INT)
 BEGIN
@@ -3636,7 +3211,6 @@ BEGIN
    WHERE (p_department_id IS NULL OR department_id = p_department_id)
    ORDER BY designation_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_documents ;
 CREATE PROCEDURE `sp_list_documents`(
   IN p_employee_id INT, IN p_category_id INT, IN p_visibility VARCHAR(20),
@@ -3646,7 +3220,6 @@ BEGIN
     IF p_limit IS NULL OR p_limit <= 0 THEN
         SET p_limit = 1000000;
     END IF;
-
     IF p_offset IS NULL OR p_offset < 0 THEN
         SET p_offset = 0;
     END IF;
@@ -3663,14 +3236,12 @@ BEGIN
      AND (p_search      IS NULL OR d.title LIKE p_search)
    ORDER BY d.created_at DESC
     LIMIT p_offset, p_limit;
-
   SELECT COUNT(*) AS total FROM documents d
    WHERE (p_employee_id IS NULL OR (d.employee_id=p_employee_id OR d.visibility='all'))
      AND (p_category_id IS NULL OR d.category_id=p_category_id)
      AND (p_visibility  IS NULL OR d.visibility=p_visibility)
      AND (p_search      IS NULL OR d.title LIKE p_search);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_employees ;
 CREATE PROCEDURE `sp_list_employees`(
     IN p_department INT,
@@ -3681,16 +3252,13 @@ CREATE PROCEDURE `sp_list_employees`(
     IN p_offset INT
 )
 BEGIN
-
     IF p_limit IS NULL OR p_limit <= 0 THEN
-
         SELECT
             e.*,
             d.department_name,
             ds.designation_name,
             CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS reporting_to_name,
             m.emp_code AS reporting_to_code,
-
             ci.current_address,
             ci.permanent_address,
             ci.personal_email,
@@ -3704,7 +3272,6 @@ BEGIN
             ci.permanent_address_line1,
             ci.permanent_address_line2,
             ci.permanent_address_line3,
-
             bd.bank_name,
             bd.account_number,
             bd.ifsc_code,
@@ -3714,14 +3281,12 @@ BEGIN
             bd.dd_payable_at,
             bd.account_holder_name,
             bd.payment_type,
-
             EXISTS (
                 SELECT 1
                 FROM resignations r
                 WHERE r.employee_id = e.employee_id
                   AND r.status IN ('pending','rm_approved','accepted')
             ) AS serving_notice
-
         FROM employees e
         LEFT JOIN departments d
             ON d.department_id = e.department_id
@@ -3733,7 +3298,6 @@ BEGIN
             ON ci.employee_id = e.employee_id
         LEFT JOIN employee_bank_details bd
             ON bd.employee_id = e.employee_id
-
         WHERE
             (p_reporting_to IS NULL OR e.reporting_to = p_reporting_to)
             AND (p_department IS NULL OR e.department_id = p_department)
@@ -3751,18 +3315,14 @@ BEGIN
                 OR e.email COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_search COLLATE utf8mb4_unicode_ci, '%')
                 OR e.emp_code COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_search COLLATE utf8mb4_unicode_ci, '%')
             )
-
         ORDER BY e.employee_id DESC;
-
     ELSE
-
         SELECT
             e.*,
             d.department_name,
             ds.designation_name,
             CONCAT(m.first_name,' ',IFNULL(m.last_name,'')) AS reporting_to_name,
             m.emp_code AS reporting_to_code,
-
             ci.current_address,
             ci.permanent_address,
             ci.personal_email,
@@ -3776,7 +3336,6 @@ BEGIN
             ci.permanent_address_line1,
             ci.permanent_address_line2,
             ci.permanent_address_line3,
-
             bd.bank_name,
             bd.account_number,
             bd.ifsc_code,
@@ -3786,14 +3345,12 @@ BEGIN
             bd.dd_payable_at,
             bd.account_holder_name,
             bd.payment_type,
-
             EXISTS (
                 SELECT 1
                 FROM resignations r
                 WHERE r.employee_id = e.employee_id
                   AND r.status IN ('pending','rm_approved','accepted')
             ) AS serving_notice
-
         FROM employees e
         LEFT JOIN departments d
             ON d.department_id = e.department_id
@@ -3805,7 +3362,6 @@ BEGIN
             ON ci.employee_id = e.employee_id
         LEFT JOIN employee_bank_details bd
             ON bd.employee_id = e.employee_id
-
         WHERE
             (p_reporting_to IS NULL OR e.reporting_to = p_reporting_to)
             AND (p_department IS NULL OR e.department_id = p_department)
@@ -3823,12 +3379,9 @@ BEGIN
                 OR e.email COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_search COLLATE utf8mb4_unicode_ci, '%')
                 OR e.emp_code COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_search COLLATE utf8mb4_unicode_ci, '%')
             )
-
         ORDER BY e.employee_id DESC
         LIMIT p_offset, p_limit;
-
     END IF;
-
     SELECT COUNT(*) AS total
     FROM employees e
     WHERE
@@ -3848,9 +3401,7 @@ BEGIN
             OR e.email COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_search COLLATE utf8mb4_unicode_ci, '%')
             OR e.emp_code COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_search COLLATE utf8mb4_unicode_ci, '%')
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_employees_with_roles ;
 CREATE PROCEDURE `sp_list_employees_with_roles`()
 BEGIN
@@ -3865,7 +3416,6 @@ BEGIN
   WHERE e.employee_status = 'Active'
   ORDER BY e.first_name, e.last_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_employee_salary_assignments ;
 CREATE PROCEDURE `sp_list_employee_salary_assignments`(
   IN p_department_id INT,
@@ -3901,7 +3451,6 @@ BEGIN
          e.emp_code LIKE CONCAT('%',p_search,'%'))
   ORDER BY d.department_name, e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_extra_work_requests ;
 CREATE PROCEDURE `sp_list_extra_work_requests`(IN p_employee_id INT)
 BEGIN
@@ -3911,7 +3460,6 @@ BEGIN
    WHERE ew.employee_id = p_employee_id
    ORDER BY ew.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_helpdesk_tickets ;
 CREATE PROCEDURE `sp_list_helpdesk_tickets`(
   IN p_employee_id INT, IN p_status VARCHAR(30), IN p_priority VARCHAR(20),
@@ -3922,7 +3470,6 @@ BEGIN
   IF p_limit IS NULL OR p_limit <= 0 THEN
         SET p_limit = 1000000;
     END IF;
-
     IF p_offset IS NULL OR p_offset < 0 THEN
         SET p_offset = 0;
     END IF;
@@ -3941,7 +3488,6 @@ BEGIN
      AND (p_search            IS NULL OR t.subject LIKE CONCAT('%',p_search,'%'))
    ORDER BY t.created_at DESC
     LIMIT p_offset, p_limit;
-
   SELECT COUNT(*) AS total
     FROM helpdesk_tickets t
     JOIN employees e ON e.employee_id = t.employee_id
@@ -3953,7 +3499,6 @@ BEGIN
      AND (p_forwarded_to_team IS NULL OR t.forwarded_to_team = p_forwarded_to_team)
      AND (p_search            IS NULL OR t.subject LIKE CONCAT('%',p_search,'%'));
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_holidays ;
 CREATE PROCEDURE `sp_list_holidays`(
   IN p_year             INT,
@@ -3982,7 +3527,6 @@ BEGIN
        AND (p_holiday_calendar IS NULL OR p_holiday_calendar = '' OR holiday_calendar = p_holiday_calendar)
      ORDER BY holiday_date ASC;
   END IF;
-
   SELECT COUNT(*) AS total
     FROM holidays
    WHERE (p_year             IS NULL OR p_year             = 0  OR YEAR(holiday_date) = p_year)
@@ -3990,7 +3534,6 @@ BEGIN
      AND (p_location         IS NULL OR p_location         = '' OR location         = p_location)
      AND (p_holiday_calendar IS NULL OR p_holiday_calendar = '' OR holiday_calendar = p_holiday_calendar);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_holiday_locations ;
 CREATE PROCEDURE `sp_list_holiday_locations`()
 BEGIN
@@ -3999,7 +3542,6 @@ BEGIN
    WHERE location IS NOT NULL AND location <> ''
    ORDER BY location ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_jobs ;
 CREATE PROCEDURE `sp_list_jobs`(
     IN p_status VARCHAR(20),
@@ -4009,13 +3551,10 @@ CREATE PROCEDURE `sp_list_jobs`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         j.*,
         d.department_name,
@@ -4047,7 +3586,6 @@ BEGIN
         )
     ORDER BY j.created_at DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM jobs j
     WHERE
@@ -4061,9 +3599,7 @@ BEGIN
             OR p_search = ''
             OR j.title LIKE CONCAT('%', p_search, '%')
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_job_applications ;
 CREATE PROCEDURE `sp_list_job_applications`(
     IN p_job_id INT,
@@ -4073,13 +3609,10 @@ CREATE PROCEDURE `sp_list_job_applications`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         ja.*,
         j.title AS job_title,
@@ -4105,7 +3638,6 @@ BEGIN
         )
     ORDER BY ja.applied_on DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM job_applications ja
     WHERE
@@ -4117,9 +3649,7 @@ BEGIN
             OR ja.applicant_name LIKE CONCAT('%', p_search, '%')
             OR ja.email LIKE CONCAT('%', p_search, '%')
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_leave_requests ;
 CREATE PROCEDURE `sp_list_leave_requests`(
     IN p_employee_id INT,
@@ -4134,10 +3664,8 @@ CREATE PROCEDURE `sp_list_leave_requests`(
 BEGIN
     DECLARE v_limit BIGINT;
     DECLARE v_offset BIGINT;
-
     SET v_limit = IFNULL(p_limit, 18446744073709551615);
     SET v_offset = IFNULL(p_offset, 0);
- 
     SELECT
         lr.*,
         e.emp_code,
@@ -4171,9 +3699,6 @@ BEGIN
             )
     ORDER BY lr.applied_on DESC
     LIMIT v_offset, v_limit;
-
-
- 
     SELECT
         COUNT(*) AS total
     FROM leave_requests lr
@@ -4194,9 +3719,7 @@ BEGIN
                     AND u.role_id = p_team_role_id
                 )
             );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_manager_extra_work ;
 CREATE PROCEDURE `sp_list_manager_extra_work`(IN p_manager_id INT)
 BEGIN
@@ -4206,7 +3729,6 @@ BEGIN
    WHERE e.reporting_to = p_manager_id
    ORDER BY ew.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_manager_timesheets ;
 CREATE PROCEDURE `sp_list_manager_timesheets`(IN p_manager_id INT, IN p_status VARCHAR(20))
 BEGIN
@@ -4222,13 +3744,11 @@ BEGIN
      AND (p_status IS NULL OR wt.status=p_status)
    ORDER BY wt.week_start DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_my_tasks ;
 CREATE PROCEDURE `sp_list_my_tasks`(IN p_employee_id INT)
 BEGIN
   SELECT * FROM employee_tasks WHERE employee_id = p_employee_id ORDER BY created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_org_delegations ;
 CREATE PROCEDURE `sp_list_org_delegations`(IN p_status VARCHAR(20), IN p_employee_id INT)
 BEGIN
@@ -4246,7 +3766,6 @@ BEGIN
      AND (p_employee_id IS NULL OR wd.employee_id=p_employee_id)
    ORDER BY wd.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_payroll_runs ;
 CREATE PROCEDURE `sp_list_payroll_runs`(
   IN p_year INT, IN p_status VARCHAR(20), IN p_limit INT, IN p_offset INT
@@ -4254,7 +3773,6 @@ CREATE PROCEDURE `sp_list_payroll_runs`(
 BEGIN
 DECLARE v_limit INT DEFAULT 50;
 DECLARE v_offset INT DEFAULT 0;
-
 SET v_limit = COALESCE(p_limit, 50);
 SET v_offset = COALESCE(p_offset, 0);
   SELECT pr.*, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS processed_by_name
@@ -4264,12 +3782,10 @@ SET v_offset = COALESCE(p_offset, 0);
      AND (p_status IS NULL OR pr.status = p_status)
    ORDER BY pr.year DESC, pr.month DESC
    LIMIT v_offset, v_limit;
-
   SELECT COUNT(*) AS total FROM payroll_runs pr
    WHERE (p_year   IS NULL OR pr.year   = p_year)
      AND (p_status IS NULL OR pr.status = p_status);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_payslips ;
 CREATE PROCEDURE `sp_list_payslips`(
   IN p_employee_id INT, IN p_month INT, IN p_year INT,
@@ -4280,7 +3796,6 @@ BEGIN
     IF p_limit IS NULL OR p_limit <= 0 THEN
         SET p_limit = 1000000;
     END IF;
-
     IF p_offset IS NULL OR p_offset < 0 THEN
         SET p_offset = 0;
     END IF;
@@ -4300,8 +3815,6 @@ BEGIN
      AND (p_payroll_run_id IS NULL OR p.payroll_run_id = p_payroll_run_id)
    ORDER BY p.year DESC, p.month DESC, e.first_name ASC
        LIMIT p_offset, p_limit;
-
-
   SELECT COUNT(*) AS total
     FROM payslips p
     JOIN employees e ON e.employee_id = p.employee_id
@@ -4312,13 +3825,11 @@ BEGIN
      AND (p_department_id  IS NULL OR e.department_id  = p_department_id)
      AND (p_payroll_run_id IS NULL OR p.payroll_run_id = p_payroll_run_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_permissions ;
 CREATE PROCEDURE `sp_list_permissions`()
 BEGIN
   SELECT * FROM permissions ORDER BY module, action;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_referrals ;
 CREATE PROCEDURE `sp_list_referrals`(
     IN p_referred_by INT,
@@ -4328,13 +3839,10 @@ CREATE PROCEDURE `sp_list_referrals`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         r.*,
         j.title AS job_title,
@@ -4354,16 +3862,13 @@ BEGIN
         AND (p_status IS NULL OR r.status = p_status)
     ORDER BY r.referred_on DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM referrals r
     WHERE
         (p_referred_by IS NULL OR r.referred_by = p_referred_by)
         AND (p_job_id IS NULL OR r.job_id = p_job_id)
         AND (p_status IS NULL OR r.status = p_status);
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_request_hub ;
 CREATE PROCEDURE `sp_list_request_hub`(
     IN p_employee_id INT,
@@ -4373,13 +3878,10 @@ CREATE PROCEDURE `sp_list_request_hub`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         rh.*,
         CONCAT(
@@ -4407,7 +3909,6 @@ BEGIN
         )
     ORDER BY rh.created_at DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM request_hub rh
     WHERE
@@ -4417,9 +3918,7 @@ BEGIN
             p_request_type IS NULL
             OR rh.request_type = p_request_type
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_reviews ;
 CREATE PROCEDURE `sp_list_reviews`(
     IN p_employee_id INT,
@@ -4430,13 +3929,10 @@ CREATE PROCEDURE `sp_list_reviews`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         r.*,
         rt.name AS review_type_name,
@@ -4469,7 +3965,6 @@ BEGIN
         )
     ORDER BY r.due_date DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM reviews r
     WHERE
@@ -4480,9 +3975,7 @@ BEGIN
             p_review_type_id IS NULL
             OR r.review_type_id = p_review_type_id
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_roles_basic ;
 CREATE PROCEDURE `sp_list_roles_basic`()
 BEGIN
@@ -4490,7 +3983,6 @@ BEGIN
   FROM roles
   ORDER BY role_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_salary_components ;
 CREATE PROCEDURE `sp_list_salary_components`(IN p_active_only TINYINT(1))
 BEGIN
@@ -4498,7 +3990,6 @@ BEGIN
    WHERE (p_active_only IS NULL OR is_active = p_active_only)
    ORDER BY category, sort_order, component_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_salary_structures ;
 CREATE PROCEDURE `sp_list_salary_structures`()
 BEGIN
@@ -4510,13 +4001,11 @@ BEGIN
    GROUP BY s.structure_id
    ORDER BY s.is_default DESC, s.structure_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_salary_templates ;
 CREATE PROCEDURE `sp_list_salary_templates`()
 BEGIN
   SELECT * FROM salary_templates WHERE is_active = 1 ORDER BY is_default DESC, template_name ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_teams ;
 CREATE PROCEDURE `sp_list_teams`(
     IN p_department_id INT,
@@ -4525,13 +4014,10 @@ CREATE PROCEDURE `sp_list_teams`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         t.*,
         d.department_name,
@@ -4562,7 +4048,6 @@ BEGIN
         )
     ORDER BY t.team_name ASC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM teams t
     WHERE
@@ -4575,9 +4060,7 @@ BEGIN
             OR p_search = ''
             OR t.team_name LIKE CONCAT('%', p_search, '%')
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_team_helpdesk ;
 CREATE PROCEDURE `sp_list_team_helpdesk`(
     IN p_manager_id INT,
@@ -4589,13 +4072,10 @@ CREATE PROCEDURE `sp_list_team_helpdesk`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         t.*,
         CONCAT(
@@ -4626,7 +4106,6 @@ BEGIN
         )
     ORDER BY t.created_at DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM helpdesk_tickets t
     INNER JOIN employees e
@@ -4641,9 +4120,7 @@ BEGIN
             OR p_search = ''
             OR t.subject LIKE CONCAT('%', p_search, '%')
         );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_workflow_delegates ;
 CREATE PROCEDURE `sp_list_workflow_delegates`(
     IN p_employee_id INT,
@@ -4652,13 +4129,10 @@ CREATE PROCEDURE `sp_list_workflow_delegates`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         wd.*,
         CONCAT(
@@ -4685,7 +4159,6 @@ BEGIN
         AND (p_status IS NULL OR wd.status = p_status)
     ORDER BY wd.created_at DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM workflow_delegates wd
     WHERE
@@ -4695,9 +4168,7 @@ BEGIN
             OR wd.delegate_employee_id = p_employee_id
         )
         AND (p_status IS NULL OR wd.status = p_status);
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_list_work_schedules ;
 CREATE PROCEDURE `sp_list_work_schedules`()
 BEGIN
@@ -4713,7 +4184,6 @@ BEGIN
      AND e.has_left_organization = 0
    ORDER BY e.first_name, e.last_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_login_fail ;
 CREATE PROCEDURE `sp_login_fail`(
   IN p_user_id INT, IN p_max_attempts INT, IN p_lockout_mins INT,
@@ -4733,14 +4203,12 @@ BEGIN
     SET p_locked = 0;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_login_success ;
 CREATE PROCEDURE `sp_login_success`(IN p_user_id INT)
 BEGIN
   UPDATE users SET last_login = NOW(), failed_login_attempts = 0, locked_until = NULL
    WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_log_reporting_history ;
 CREATE PROCEDURE `sp_log_reporting_history`(
   IN p_employee_id INT, IN p_old_manager_id INT, IN p_new_manager_id INT,
@@ -4750,7 +4218,6 @@ BEGIN
   INSERT INTO reporting_history (employee_id, old_manager_id, new_manager_id, changed_by, reason, change_type)
   VALUES (p_employee_id, p_old_manager_id, p_new_manager_id, p_changed_by, p_reason, p_change_type);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_manager_action_ticket ;
 CREATE PROCEDURE `sp_manager_action_ticket`(
     IN p_manager_id INT,
@@ -4762,13 +4229,10 @@ CREATE PROCEDURE `sp_manager_action_ticket`(
     OUT p_msg VARCHAR(200)
 )
 BEGIN
-
     DECLARE v_cnt INT DEFAULT 0;
     DECLARE v_status VARCHAR(30);
-
     SET p_ok = 0;
     SET p_msg = '';
-
     SELECT COUNT(*)
     INTO v_cnt
     FROM helpdesk_tickets t
@@ -4777,37 +4241,25 @@ BEGIN
     WHERE
         t.ticket_id = p_ticket_id
         AND e.reporting_to = p_manager_id;
-
     IF v_cnt = 0 THEN
-
         SET p_msg = 'Ticket does not belong to your team';
-
     ELSE
-
         SELECT status
         INTO v_status
         FROM helpdesk_tickets
         WHERE ticket_id = p_ticket_id
         LIMIT 1;
-
         IF v_status <> 'Open' THEN
-
             SET p_msg = 'Only Open tickets can be actioned by manager';
-
         ELSEIF LOWER(TRIM(p_action)) = 'approve' THEN
-
             IF p_forward_team IS NULL OR TRIM(p_forward_team) = '' THEN
-
                 SET p_msg = 'Forward team is required';
-
             ELSE
-
                 UPDATE helpdesk_tickets
                 SET
                     status = 'Forwarded',
                     forwarded_to_team = p_forward_team
                 WHERE ticket_id = p_ticket_id;
-
                 INSERT INTO helpdesk_comments (
                     ticket_id,
                     commented_by,
@@ -4818,20 +4270,15 @@ BEGIN
                     p_manager_id,
                     COALESCE(p_comment, '')
                 );
-
                 SET p_ok = 1;
                 SET p_msg = 'Ticket forwarded successfully';
-
             END IF;
-
         ELSEIF LOWER(TRIM(p_action)) = 'reject' THEN
-
             UPDATE helpdesk_tickets
             SET
                 status = 'Rejected',
                 resolved_at = NOW()
             WHERE ticket_id = p_ticket_id;
-
             INSERT INTO helpdesk_comments (
                 ticket_id,
                 commented_by,
@@ -4842,24 +4289,16 @@ BEGIN
                 p_manager_id,
                 COALESCE(p_comment, '')
             );
-
             SET p_ok = 1;
             SET p_msg = 'Ticket rejected successfully';
-
         ELSE
-
             SET p_msg = 'Invalid action. Use approve or reject';
-
         END IF;
-
     END IF;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_manager_full_dashboard ;
 CREATE PROCEDURE `sp_manager_full_dashboard`(IN p_manager_id INT)
 BEGIN
-  
   SELECT e.employee_id, e.emp_code,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS name,
          e.emp_job_title, d.department_name,
@@ -4869,22 +4308,16 @@ BEGIN
     LEFT JOIN departments d ON d.department_id=e.department_id
    WHERE e.reporting_to=p_manager_id AND e.employee_status='Active'
    ORDER BY e.first_name;
-
-  
   SELECT a.employee_id, a.status, a.check_in, a.check_out, a.work_hours, a.late_by_minutes
     FROM attendance a
     JOIN employees e ON e.employee_id=a.employee_id
    WHERE e.reporting_to=p_manager_id AND a.attendance_date=CURDATE();
-
-  
   SELECT SUM(wt.status='pending') AS pending,
          SUM(wt.status='approved') AS approved,
          SUM(wt.status='rejected') AS rejected
     FROM weekly_timesheets wt
     JOIN employees e ON e.employee_id=wt.employee_id
    WHERE e.reporting_to=p_manager_id;
-
-  
   SELECT * FROM (
     (SELECT 'timesheet' AS type,
             CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS actor,
@@ -4905,7 +4338,6 @@ BEGIN
     ORDER BY occurred_at DESC LIMIT 10
   ) AS activities;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_manager_review_resignation ;
 CREATE PROCEDURE `sp_manager_review_resignation`(
   IN p_manager_id INT, IN p_resignation_id INT,
@@ -4924,7 +4356,6 @@ BEGIN
     SET p_ok = 1;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_manager_timesheet_counts ;
 CREATE PROCEDURE `sp_manager_timesheet_counts`(IN p_manager_id INT)
 BEGIN
@@ -4935,13 +4366,11 @@ BEGIN
     JOIN employees e ON e.employee_id = wt.employee_id
    WHERE e.reporting_to = p_manager_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_mark_payslip_paid ;
 CREATE PROCEDURE `sp_mark_payslip_paid`(IN p_id INT)
 BEGIN
   UPDATE payslips SET status='Paid' WHERE payslip_id=p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_migrate_holidays_shift_location ;
 CREATE PROCEDURE `sp_migrate_holidays_shift_location`()
 BEGIN
@@ -4956,7 +4385,6 @@ BEGIN
       ADD COLUMN shift ENUM('general','mid','night') NOT NULL DEFAULT 'general' AFTER holiday_calendar;
     ALTER TABLE holidays ADD INDEX idx_holidays_shift (shift);
   END IF;
-
   -- Add location column if missing
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.COLUMNS
@@ -4968,11 +4396,9 @@ BEGIN
       ADD COLUMN location VARCHAR(100) DEFAULT NULL AFTER shift;
     ALTER TABLE holidays ADD INDEX idx_holidays_location (location);
   END IF;
-
   -- Back-fill existing rows
   UPDATE holidays SET shift = 'general' WHERE shift IS NULL OR shift = '';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_org_dashboard_stats ;
 CREATE PROCEDURE `sp_org_dashboard_stats`()
 BEGIN
@@ -4987,7 +4413,6 @@ BEGIN
   SELECT COUNT(*) AS cnt FROM workflow_delegates
    WHERE status='Active' AND to_date >= CURDATE();
 END ;
-
 DROP PROCEDURE IF EXISTS sp_payroll_report ;
 CREATE PROCEDURE `sp_payroll_report`(IN p_month INT, IN p_year INT, IN p_department_id INT)
 BEGIN
@@ -4999,7 +4424,6 @@ BEGIN
      AND (p_year          IS NULL OR p.year=p_year)
      AND (p_department_id IS NULL OR e.department_id=p_department_id)
    GROUP BY p.month, p.year ORDER BY p.year DESC, p.month DESC;
-
   SELECT p.payslip_id, p.employee_id, e.emp_code,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
          d.department_name, p.month, p.year, p.gross_earnings, p.deductions, p.net_pay, p.status
@@ -5011,7 +4435,6 @@ BEGIN
      AND (p_department_id IS NULL OR e.department_id=p_department_id)
    ORDER BY p.year DESC, p.month DESC LIMIT 500;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_recent_activities ;
 CREATE PROCEDURE `sp_recent_activities`(IN p_limit INT)
 BEGIN
@@ -5023,9 +4446,7 @@ BEGIN
     LEFT JOIN employees e ON e.employee_id = a.user_id
    ORDER BY a.created_at DESC
        LIMIT p_limit;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_admin_dashboard ;
 CREATE PROCEDURE `sp_rec_admin_dashboard`()
 BEGIN
@@ -5039,12 +4460,10 @@ BEGIN
     (SELECT COUNT(*) FROM rec_offers      WHERE status = 'Released')                                     AS offers_pending,
     (SELECT COUNT(*) FROM rec_offers      WHERE status = 'Accepted')                                     AS offers_accepted,
     (SELECT COUNT(*) FROM rec_onboarding  WHERE current_status != 'Completed')                           AS active_onboarding;
-
   -- result[1]: Candidate pipeline by status
   SELECT status, COUNT(*) AS count
   FROM   rec_candidates WHERE deleted_at IS NULL
   GROUP BY status ORDER BY count DESC;
-
   -- result[2]: Recruiter performance (last 30 days)
   SELECT CONCAT(e.first_name,' ',e.last_name) AS recruiter,
          COUNT(DISTINCT c.candidate_id)        AS candidates_added,
@@ -5070,11 +4489,9 @@ BEGIN
     GROUP BY rc.recruiter_id
   ) ol ON ol.recruiter_id = e.employee_id
   GROUP BY e.employee_id, e.first_name, e.last_name;
-
   -- result[3]: Recent job requests (last 5)
   SELECT job_req_id, job_req_code, title, client, assignment_status, created_at
   FROM   rec_job_requests WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 5;
-
   -- result[4]: Shortlisted candidates with recruiter name
   SELECT
     c.candidate_id,
@@ -5088,7 +4505,6 @@ BEGIN
     AND  c.deleted_at IS NULL
   ORDER  BY c.updated_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_assign_recruiters ;
 CREATE PROCEDURE `sp_rec_assign_recruiters`(
   IN p_job_req_id      INT,
@@ -5101,17 +4517,13 @@ BEGIN
   DECLARE v_count INT;
   DECLARE v_emp_id INT;
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_job_requests WHERE job_req_id = p_job_req_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Job request not found';
   END IF;
-
   SET v_count = JSON_LENGTH(p_recruiter_ids);
-
   START TRANSACTION;
     -- Clear existing assignments first
     DELETE FROM rec_job_recruiters WHERE job_req_id = p_job_req_id;
-
     -- Insert new assignments
     WHILE i < v_count DO
       SET v_emp_id = JSON_UNQUOTE(JSON_EXTRACT(p_recruiter_ids, CONCAT('$[',i,']')));
@@ -5119,14 +4531,11 @@ BEGIN
       VALUES (p_job_req_id, v_emp_id, p_assigned_by);
       SET i = i + 1;
     END WHILE;
-
     CALL sp_rec_audit('job_request', p_job_req_id, 'recruiters_assigned',
       NULL, p_recruiter_ids, p_assigned_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_job_request(p_job_req_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_audit ;
 CREATE PROCEDURE `sp_rec_audit`(
   IN p_entity_type  VARCHAR(50),
@@ -5144,7 +4553,6 @@ BEGIN
   VALUES
     (p_entity_type, p_entity_id, p_action, p_old_value, p_new_value, p_user_id, p_ip, p_ua);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_cancel_interview ;
 CREATE PROCEDURE `sp_rec_cancel_interview`(
   IN p_interview_id INT,
@@ -5159,7 +4567,6 @@ BEGIN
   CALL sp_rec_audit('interview', p_interview_id, 'cancelled', NULL, NULL, p_cancelled_by, p_ip, NULL);
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_check_duplicate_candidate ;
 CREATE PROCEDURE `sp_rec_check_duplicate_candidate`(
   IN p_email       VARCHAR(200),
@@ -5191,39 +4598,24 @@ BEGIN
     )
   ORDER BY c.created_at DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_check_duplicate_candidate_dynamic ;
 CREATE PROCEDURE `sp_rec_check_duplicate_candidate_dynamic`(
 IN p_email VARCHAR(200),
-
 IN p_phone VARCHAR(50),
-
 IN p_linkedin VARCHAR(300),
-
 IN p_resume_hash VARCHAR(200),
-
 IN p_github VARCHAR(300)
 )
 BEGIN
-
 SELECT *
-
 FROM rec_candidate
-
 WHERE
-
 email=p_email
-
 OR phone=p_phone
-
 OR linkedin_url=p_linkedin
-
 OR github_url=p_github
-
 OR resume_hash=p_resume_hash;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_create_candidate ;
 CREATE PROCEDURE `sp_rec_create_candidate`(
   IN  p_job_req_id             INT,
@@ -5252,14 +4644,11 @@ CREATE PROCEDURE `sp_rec_create_candidate`(
 BEGIN
   DECLARE v_code VARCHAR(20);
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_job_requests WHERE job_req_id = p_job_req_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Job request not found or inactive';
   END IF;
-
   START TRANSACTION;
     CALL sp_rec_next_code('CAN', 'rec_candidates', 'candidate_code', v_code);
-
     INSERT INTO rec_candidates (
       candidate_code, job_req_id, name, email, mobile, gender,
       total_experience, relevant_experience, current_ctc, expected_ctc,
@@ -5274,18 +4663,14 @@ BEGIN
       p_skill_set, p_source, p_pin_code, p_city, p_state, p_district,
       p_recruiter_id, 'Work in Progress', p_created_by
     );
-
     SET p_candidate_id   = LAST_INSERT_ID();
     SET p_candidate_code = v_code;
-
     CALL sp_rec_audit('candidate', p_candidate_id, 'created',
       NULL, JSON_OBJECT('code', v_code, 'name', p_name, 'job_req_id', p_job_req_id),
       p_created_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_candidate(p_candidate_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_create_job_request ;
 CREATE PROCEDURE `sp_rec_create_job_request`(
   IN  p_title             VARCHAR(200),
@@ -5318,16 +4703,12 @@ BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   -- Validate role: only user_id with role 1, 4 may create
   IF NOT EXISTS (SELECT 1 FROM users WHERE user_id = p_created_by AND role_id IN (1,4)) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient permissions to create job request';
   END IF;
-
   START TRANSACTION;
-
     CALL sp_rec_next_code('JOB', 'rec_job_requests', 'job_req_code', v_code);
-
     INSERT INTO rec_job_requests (
       job_req_code, title, client, company_dept,
       bill_rate, bill_currency, pay_rate, pay_currency,
@@ -5343,16 +4724,12 @@ BEGIN
       COALESCE(p_assignment_status,'Open'), p_opportunity_phone, p_skill_set, p_description,
       p_created_by
     );
-
     SET p_job_req_id   = LAST_INSERT_ID();
     SET p_job_req_code = v_code;
-
     CALL sp_rec_audit('job_request', p_job_req_id, 'created', NULL,
       JSON_OBJECT('code', v_code, 'title', p_title, 'client', p_client),
       p_created_by, p_ip, NULL);
-
   COMMIT;
-
   SELECT j.*,
          CONCAT(e.first_name,' ',e.last_name) AS created_by_name
   FROM   rec_job_requests j
@@ -5360,7 +4737,6 @@ BEGIN
   JOIN   employees e ON e.employee_id = u.employee_id
   WHERE  j.job_req_id = p_job_req_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_create_offer ;
 CREATE PROCEDURE `sp_rec_create_offer`(
   IN  p_candidate_id        INT,
@@ -5387,18 +4763,14 @@ CREATE PROCEDURE `sp_rec_create_offer`(
 BEGIN
   DECLARE v_code VARCHAR(20);
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_candidates WHERE candidate_id = p_candidate_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Candidate not found';
   END IF;
-
   IF EXISTS (SELECT 1 FROM rec_offers WHERE candidate_id = p_candidate_id AND status NOT IN ('Rejected')) THEN
     SIGNAL SQLSTATE '45004' SET MESSAGE_TEXT = 'An active offer already exists for this candidate';
   END IF;
-
   START TRANSACTION;
     CALL sp_rec_next_code('OFR', 'rec_offers', 'offer_code', v_code);
-
     INSERT INTO rec_offers (
       offer_code, candidate_id, job_req_id, designation, date_of_joining,
       basic, hra, telephone_allowance, leave_travel, special_allowance, gross_salary,
@@ -5410,21 +4782,16 @@ BEGIN
       p_pf_contribution, p_statutory_bonus, p_gratuity, p_esi, p_ctc, p_ctc_in_words,
       'Draft', p_created_by
     );
-
     SET p_offer_id   = LAST_INSERT_ID();
     SET p_offer_code = v_code;
-
     UPDATE rec_candidates SET status = 'Offer Released', updated_by = p_created_by
     WHERE candidate_id = p_candidate_id;
-
     CALL sp_rec_audit('offer', p_offer_id, 'created',
       NULL, JSON_OBJECT('code', v_code, 'ctc', p_ctc, 'candidate_id', p_candidate_id),
       p_created_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_offer(p_offer_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_create_onboarding ;
 CREATE PROCEDURE `sp_rec_create_onboarding`(
   IN  p_candidate_id   INT,
@@ -5436,32 +4803,24 @@ CREATE PROCEDURE `sp_rec_create_onboarding`(
 )
 BEGIN
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_offers WHERE offer_id = p_offer_id AND status = 'Accepted') THEN
     SIGNAL SQLSTATE '45006' SET MESSAGE_TEXT = 'Offer must be Accepted before creating onboarding';
   END IF;
-
   IF EXISTS (SELECT 1 FROM rec_onboarding WHERE candidate_id = p_candidate_id) THEN
     SIGNAL SQLSTATE '45007' SET MESSAGE_TEXT = 'Onboarding record already exists for this candidate';
   END IF;
-
   START TRANSACTION;
     INSERT INTO rec_onboarding (candidate_id, offer_id, effective_date, created_by)
     VALUES (p_candidate_id, p_offer_id, p_effective_date, p_created_by);
-
     SET p_onboarding_id = LAST_INSERT_ID();
-
     UPDATE rec_candidates SET status = 'Joining Formalities', updated_by = p_created_by
     WHERE candidate_id = p_candidate_id;
-
     CALL sp_rec_audit('onboarding', p_onboarding_id, 'created',
       NULL, JSON_OBJECT('candidate_id', p_candidate_id, 'effective_date', p_effective_date),
       p_created_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_onboarding(p_onboarding_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_delete_job_request ;
 CREATE PROCEDURE `sp_rec_delete_job_request`(
   IN p_job_req_id INT,
@@ -5472,16 +4831,13 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM rec_job_requests WHERE job_req_id = p_job_req_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Job request not found';
   END IF;
-
   IF EXISTS (SELECT 1 FROM rec_candidates WHERE job_req_id = p_job_req_id AND deleted_at IS NULL LIMIT 1) THEN
     SIGNAL SQLSTATE '45002' SET MESSAGE_TEXT = 'Cannot delete job request with active candidates';
   END IF;
-
   UPDATE rec_job_requests SET deleted_at = NOW(), updated_by = p_deleted_by WHERE job_req_id = p_job_req_id;
   CALL sp_rec_audit('job_request', p_job_req_id, 'deleted', NULL, NULL, p_deleted_by, p_ip, NULL);
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_finalize_onboarding ;
 CREATE PROCEDURE `sp_rec_finalize_onboarding`(
   IN p_onboarding_id INT,
@@ -5491,29 +4847,22 @@ CREATE PROCEDURE `sp_rec_finalize_onboarding`(
 BEGIN
   DECLARE v_cand_id INT;
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   SELECT candidate_id INTO v_cand_id FROM rec_onboarding
   WHERE onboarding_id = p_onboarding_id AND finalized_at IS NULL;
-
   IF v_cand_id IS NULL THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Onboarding record not found or already finalized';
   END IF;
-
   START TRANSACTION;
     UPDATE rec_onboarding SET
       current_status = 'Completed', finalized_at = NOW(), updated_by = p_finalized_by
     WHERE onboarding_id = p_onboarding_id;
-
     UPDATE rec_candidates SET status = 'Onboarded', updated_by = p_finalized_by
     WHERE candidate_id = v_cand_id;
-
     CALL sp_rec_audit('onboarding', p_onboarding_id, 'finalized',
       NULL, JSON_OBJECT('finalized_by', p_finalized_by), p_finalized_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_onboarding(p_onboarding_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_candidate ;
 CREATE PROCEDURE `sp_rec_get_candidate`(IN p_candidate_id INT)
 BEGIN
@@ -5531,7 +4880,6 @@ BEGIN
   JOIN   employees re ON re.employee_id = c.recruiter_id
   WHERE  c.candidate_id = p_candidate_id AND c.deleted_at IS NULL;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_candidate_education ;
 CREATE PROCEDURE `sp_rec_get_candidate_education`(
   IN p_candidate_id INT
@@ -5542,7 +4890,6 @@ BEGIN
   WHERE candidate_id = p_candidate_id
   ORDER BY year_of_pass DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_candidate_experience ;
 CREATE PROCEDURE `sp_rec_get_candidate_experience`(
   IN p_candidate_id INT
@@ -5555,7 +4902,6 @@ BEGIN
   WHERE candidate_id = p_candidate_id
   ORDER BY is_current DESC, start_year DESC, start_month DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_candidate_match_inputs ;
 CREATE PROCEDURE `sp_rec_get_candidate_match_inputs`(IN p_candidate_id INT)
 BEGIN
@@ -5563,7 +4909,6 @@ BEGIN
   FROM rec_candidates
   WHERE candidate_id = p_candidate_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_candidate_skills ;
 CREATE PROCEDURE `sp_rec_get_candidate_skills`(
   IN p_candidate_id INT
@@ -5574,7 +4919,6 @@ BEGIN
   WHERE candidate_id = p_candidate_id
   ORDER BY source DESC, skill_name ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_interview ;
 CREATE PROCEDURE `sp_rec_get_interview`(IN p_interview_id INT)
 BEGIN
@@ -5590,7 +4934,6 @@ BEGIN
   JOIN   employees eu ON eu.employee_id = su.employee_id
   WHERE  iv.interview_id = p_interview_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_job_match_inputs ;
 CREATE PROCEDURE `sp_rec_get_job_match_inputs`(IN p_job_req_id INT)
 BEGIN
@@ -5598,7 +4941,6 @@ BEGIN
   FROM rec_job_requests
   WHERE job_req_id = p_job_req_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_job_request ;
 CREATE PROCEDURE `sp_rec_get_job_request`(IN p_job_req_id INT)
 BEGIN
@@ -5617,7 +4959,6 @@ BEGIN
   JOIN   employees e ON e.employee_id = u.employee_id
   WHERE  j.job_req_id = p_job_req_id AND j.deleted_at IS NULL;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_match ;
 CREATE PROCEDURE `sp_rec_get_match`(
   IN p_candidate_id INT,
@@ -5630,7 +4971,6 @@ BEGIN
   JOIN   rec_job_requests j ON j.job_req_id   = m.job_req_id
   WHERE  m.candidate_id = p_candidate_id AND m.job_req_id = p_job_req_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_offer ;
 CREATE PROCEDURE `sp_rec_get_offer`(IN p_offer_id INT)
 BEGIN
@@ -5646,7 +4986,6 @@ BEGIN
   JOIN   employees eu ON eu.employee_id = cu.employee_id
   WHERE  o.offer_id = p_offer_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_onboarding ;
 CREATE PROCEDURE `sp_rec_get_onboarding`(IN p_onboarding_id INT)
 BEGIN
@@ -5661,21 +5000,14 @@ BEGIN
   JOIN   rec_job_requests j ON j.job_req_id = o.job_req_id
   WHERE  ob.onboarding_id = p_onboarding_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_parser_fields ;
 CREATE PROCEDURE `sp_rec_get_parser_fields`()
 BEGIN
-
 SELECT *
-
 FROM rec_parser_fields
-
 WHERE is_enabled=1
-
 ORDER BY display_order;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_parser_logs ;
 CREATE PROCEDURE `sp_rec_get_parser_logs`(
   IN p_candidate_id INT,
@@ -5683,7 +5015,6 @@ CREATE PROCEDURE `sp_rec_get_parser_logs`(
 )
 BEGIN
   SET p_limit = COALESCE(p_limit, 50);
-
   IF p_candidate_id IS NOT NULL THEN
     SELECT log_id, candidate_id, filename, file_size_bytes, mime_type,
            parsed_by, status, error_message, raw_text_length,
@@ -5701,7 +5032,6 @@ BEGIN
     LIMIT p_limit;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_recruiter_notification_targets ;
 CREATE PROCEDURE `sp_rec_get_recruiter_notification_targets`(IN p_recruiter_ids JSON)
 BEGIN
@@ -5715,13 +5045,11 @@ BEGIN
   ) ids ON ids.employee_id = e.employee_id
   WHERE e.employee_status = 'Active';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_get_recruiter_team_lead ;
 CREATE PROCEDURE `sp_rec_get_recruiter_team_lead`(
     IN p_recruiter_id INT
 )
 BEGIN
-
     SELECT
         tl.email AS tl_email,
         CONCAT(
@@ -5739,9 +5067,7 @@ BEGIN
         ON tl.employee_id = r.reporting_to
     WHERE r.employee_id = p_recruiter_id
     LIMIT 1;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_active_recruiters ;
 CREATE PROCEDURE `sp_rec_list_active_recruiters`()
 BEGIN
@@ -5758,7 +5084,6 @@ BEGIN
     AND e.employee_status = 'Active'
   ORDER BY e.first_name;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_candidates ;
 CREATE PROCEDURE `sp_rec_list_candidates`(
   IN p_job_req_id   INT,
@@ -5773,7 +5098,6 @@ CREATE PROCEDURE `sp_rec_list_candidates`(
 BEGIN
   SET p_limit  = COALESCE(p_limit, 20);
   SET p_offset = COALESCE(p_offset, 0);
-
   SELECT SQL_CALC_FOUND_ROWS
          c.candidate_id, c.candidate_code, c.job_req_id, c.name, c.email,
          c.mobile, c.gender, c.total_experience, c.relevant_experience,
@@ -5805,10 +5129,8 @@ BEGIN
     AND  (p_role_id != 5 OR c.recruiter_id = p_rec_emp_id)
   ORDER BY c.created_at DESC
   LIMIT p_limit OFFSET p_offset;
-
   SELECT FOUND_ROWS() AS total;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_interviews ;
 CREATE PROCEDURE `sp_rec_list_interviews`(
   IN p_candidate_id INT,
@@ -5824,7 +5146,6 @@ CREATE PROCEDURE `sp_rec_list_interviews`(
 BEGIN
   SET p_limit  = COALESCE(p_limit, 20);
   SET p_offset = COALESCE(p_offset, 0);
-
   SELECT SQL_CALC_FOUND_ROWS
          iv.interview_id, iv.interview_code, iv.candidate_id, iv.job_req_id,
          iv.level, iv.interview_type, iv.interview_date, iv.interview_time,
@@ -5849,10 +5170,8 @@ BEGIN
     AND  (p_role_id != 5 OR c.recruiter_id = p_rec_emp_id)
   ORDER BY iv.interview_date DESC, iv.interview_time DESC
   LIMIT p_limit OFFSET p_offset;
-
   SELECT FOUND_ROWS() AS total;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_job_requests ;
 CREATE PROCEDURE `sp_rec_list_job_requests`(
   IN p_assignment_status VARCHAR(20),
@@ -5866,7 +5185,6 @@ CREATE PROCEDURE `sp_rec_list_job_requests`(
 BEGIN
   SET p_limit  = COALESCE(p_limit, 20);
   SET p_offset = COALESCE(p_offset, 0);
-
   -- Result set 1: rows
   SELECT SQL_CALC_FOUND_ROWS
          j.job_req_id, j.job_req_code, j.title, j.client, j.company_dept,
@@ -5897,11 +5215,9 @@ BEGIN
          ))
   ORDER BY j.created_at DESC
   LIMIT  p_limit OFFSET p_offset;
-
   -- Result set 2: total count
   SELECT FOUND_ROWS() AS total;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_matches_by_job ;
 CREATE PROCEDURE `sp_rec_list_matches_by_job`(IN p_job_req_id INT)
 BEGIN
@@ -5921,7 +5237,6 @@ BEGIN
   WHERE  m.job_req_id = p_job_req_id
   ORDER  BY m.match_score DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_offers ;
 CREATE PROCEDURE `sp_rec_list_offers`(
   IN p_status  VARCHAR(20),
@@ -5932,7 +5247,6 @@ CREATE PROCEDURE `sp_rec_list_offers`(
 BEGIN
   SET p_limit  = COALESCE(p_limit, 20);
   SET p_offset = COALESCE(p_offset, 0);
-
   SELECT SQL_CALC_FOUND_ROWS
          o.offer_id, o.offer_code, o.candidate_id, o.job_req_id,
          o.designation, o.date_of_joining, o.ctc, o.ctc_in_words,
@@ -5947,10 +5261,8 @@ BEGIN
                            OR o.offer_code LIKE CONCAT('%',p_search,'%'))
   ORDER BY o.created_at DESC
   LIMIT p_limit OFFSET p_offset;
-
   SELECT FOUND_ROWS() AS total;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_list_onboarding ;
 CREATE PROCEDURE `sp_rec_list_onboarding`(
   IN p_status  VARCHAR(50),
@@ -5961,7 +5273,6 @@ CREATE PROCEDURE `sp_rec_list_onboarding`(
 BEGIN
   SET p_limit  = COALESCE(p_limit, 20);
   SET p_offset = COALESCE(p_offset, 0);
-
   SELECT SQL_CALC_FOUND_ROWS
          ob.onboarding_id, ob.candidate_id, ob.offer_id, ob.effective_date,
          ob.current_status, ob.employee_info_submitted, ob.photo_uploaded,
@@ -5976,10 +5287,8 @@ BEGIN
     AND  (p_search IS NULL OR c.name LIKE CONCAT('%',p_search,'%'))
   ORDER BY ob.created_at DESC
   LIMIT p_limit OFFSET p_offset;
-
   SELECT FOUND_ROWS() AS total;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_log_parser ;
 CREATE PROCEDURE `sp_rec_log_parser`(
   IN  p_candidate_id    INT,
@@ -6003,36 +5312,23 @@ BEGIN
     (p_candidate_id, p_filename, p_file_size_bytes, p_mime_type,
      p_parsed_by, p_status, p_error_message, p_raw_text_length,
      p_fields_found, p_duration_ms);
-
   SET p_log_id = LAST_INSERT_ID();
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_log_parser_dynamic ;
 CREATE PROCEDURE `sp_rec_log_parser_dynamic`(
 IN p_candidate_id BIGINT,
-
 IN p_file_name VARCHAR(300),
-
 IN p_mime_type VARCHAR(100),
-
 IN p_file_size BIGINT,
-
 IN p_parser_type VARCHAR(50),
-
 IN p_status VARCHAR(50),
-
 IN p_error TEXT,
-
 IN p_text_length BIGINT,
-
 IN p_summary JSON,
-
 IN p_duration BIGINT,
-
 IN p_json JSON
 )
 BEGIN
-
 INSERT INTO rec_parser_logs
 (
 candidate_id,
@@ -6047,7 +5343,6 @@ fields_summary,
 duration_ms,
 full_json
 )
-
 VALUES
 (
 p_candidate_id,
@@ -6062,9 +5357,7 @@ p_summary,
 p_duration,
 p_json
 );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_next_code ;
 CREATE PROCEDURE `sp_rec_next_code`(
   IN  p_prefix     VARCHAR(5),
@@ -6081,7 +5374,6 @@ BEGIN
   SET v_max = @mx;
   SET p_code = CONCAT(p_prefix, LPAD(v_max + 1, 3, '0'));
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_pipeline_report ;
 CREATE PROCEDURE `sp_rec_pipeline_report`(
   IN p_from_date    DATE,
@@ -6091,7 +5383,6 @@ CREATE PROCEDURE `sp_rec_pipeline_report`(
 BEGIN
   SET p_from_date = COALESCE(p_from_date, DATE_SUB(CURDATE(), INTERVAL 90 DAY));
   SET p_to_date   = COALESCE(p_to_date,   CURDATE());
-
   -- Funnel by status
   SELECT status, COUNT(*) AS count
   FROM   rec_candidates
@@ -6099,7 +5390,6 @@ BEGIN
     AND  created_at BETWEEN p_from_date AND DATE_ADD(p_to_date, INTERVAL 1 DAY)
     AND  (p_recruiter_id IS NULL OR recruiter_id = p_recruiter_id)
   GROUP BY status;
-
   -- Time to hire (avg days from candidate created to offer accepted)
   SELECT AVG(DATEDIFF(o.responded_at, c.created_at)) AS avg_days_to_hire,
          MIN(DATEDIFF(o.responded_at, c.created_at)) AS min_days,
@@ -6109,7 +5399,6 @@ BEGIN
   WHERE  o.status = 'Accepted'
     AND  c.created_at BETWEEN p_from_date AND DATE_ADD(p_to_date, INTERVAL 1 DAY)
     AND  (p_recruiter_id IS NULL OR c.recruiter_id = p_recruiter_id);
-
   -- Source breakdown
   SELECT source, COUNT(*) AS count,
          SUM(IF(status = 'Onboarded',1,0)) AS converted
@@ -6119,7 +5408,6 @@ BEGIN
     AND  (p_recruiter_id IS NULL OR recruiter_id = p_recruiter_id)
   GROUP BY source ORDER BY count DESC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_recruiter_dashboard ;
 CREATE PROCEDURE `sp_rec_recruiter_dashboard`(IN p_recruiter_emp_id INT)
 BEGIN
@@ -6131,7 +5419,6 @@ BEGIN
     (SELECT COUNT(*) FROM rec_job_recruiters jr
      JOIN rec_job_requests j ON j.job_req_id = jr.job_req_id AND j.deleted_at IS NULL
      WHERE jr.recruiter_id = p_recruiter_emp_id AND j.assignment_status = 'Open')                                                 AS my_open_jobs;
-
   -- My assigned jobs
   SELECT j.job_req_id, j.job_req_code, j.title, j.client, j.assignment_status,
          (SELECT COUNT(*) FROM rec_candidates c WHERE c.job_req_id = j.job_req_id
@@ -6140,7 +5427,6 @@ BEGIN
   JOIN   rec_job_recruiters jr ON jr.job_req_id = j.job_req_id AND jr.recruiter_id = p_recruiter_emp_id
   WHERE  j.deleted_at IS NULL AND j.assignment_status = 'Open'
   ORDER BY j.created_at DESC LIMIT 10;
-
   -- Upcoming interviews (next 7 days)
   SELECT iv.interview_id, iv.interview_code, iv.level, iv.interview_type,
          iv.interview_date, iv.interview_time, iv.interviewer, iv.status,
@@ -6151,7 +5437,6 @@ BEGIN
     AND  iv.interview_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
   ORDER BY iv.interview_date ASC, iv.interview_time ASC;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_release_offer ;
 CREATE PROCEDURE `sp_rec_release_offer`(
   IN p_offer_id    INT,
@@ -6166,7 +5451,6 @@ BEGIN
   CALL sp_rec_audit('offer', p_offer_id, 'released', NULL, NULL, p_released_by, p_ip, NULL);
   CALL sp_rec_get_offer(p_offer_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_respond_offer ;
 CREATE PROCEDURE `sp_rec_respond_offer`(
   IN p_offer_id      INT,
@@ -6177,32 +5461,24 @@ CREATE PROCEDURE `sp_rec_respond_offer`(
 BEGIN
   DECLARE v_cand_id INT;
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF p_response NOT IN ('Accepted','Rejected') THEN
     SIGNAL SQLSTATE '45005' SET MESSAGE_TEXT = 'Response must be Accepted or Rejected';
   END IF;
-
   IF NOT EXISTS (SELECT 1 FROM rec_offers WHERE offer_id = p_offer_id AND status = 'Released') THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Offer not found or not in Released state';
   END IF;
-
   SELECT candidate_id INTO v_cand_id FROM rec_offers WHERE offer_id = p_offer_id;
-
   START TRANSACTION;
     UPDATE rec_offers SET status = p_response, responded_at = NOW() WHERE offer_id = p_offer_id;
-
     UPDATE rec_candidates SET
       status = IF(p_response = 'Accepted', 'Offer Accepted', 'Offer Rejected'),
       updated_by = p_responded_by
     WHERE candidate_id = v_cand_id;
-
     CALL sp_rec_audit('offer', p_offer_id, LOWER(p_response),
       NULL, JSON_OBJECT('response', p_response), p_responded_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_offer(p_offer_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_save_candidate_education ;
 CREATE PROCEDURE `sp_rec_save_candidate_education`(
   IN p_candidate_id INT,
@@ -6214,24 +5490,18 @@ BEGIN
   DECLARE v_degree      VARCHAR(300);
   DECLARE v_institution VARCHAR(300);
   DECLARE v_year        SMALLINT;
-
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   START TRANSACTION;
-
   DELETE FROM rec_candidate_education WHERE candidate_id = p_candidate_id;
-
   SET v_len = JSON_LENGTH(p_edu_json);
-
   WHILE v_i < v_len DO
     SET v_degree      = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_edu_json, CONCAT('$[', v_i, '].degree'))));
     SET v_institution = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_edu_json, CONCAT('$[', v_i, '].institution'))));
     SET v_year        = CAST(JSON_EXTRACT(p_edu_json, CONCAT('$[', v_i, '].year')) AS SIGNED);
-
     IF v_degree IS NOT NULL AND v_degree <> '' AND v_degree <> 'null' THEN
       INSERT INTO rec_candidate_education (candidate_id, degree, institution, year_of_pass)
       VALUES (
@@ -6241,17 +5511,13 @@ BEGIN
         NULLIF(v_year, 0)
       );
     END IF;
-
     SET v_i = v_i + 1;
   END WHILE;
-
   COMMIT;
-
   SELECT COUNT(*) AS education_saved
   FROM rec_candidate_education
   WHERE candidate_id = p_candidate_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_save_candidate_experience ;
 CREATE PROCEDURE `sp_rec_save_candidate_experience`(
   IN p_candidate_id INT,
@@ -6268,19 +5534,14 @@ BEGIN
   DECLARE v_ey         SMALLINT;
   DECLARE v_current    TINYINT(1);
   DECLARE v_desc       TEXT;
-
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   START TRANSACTION;
-
   DELETE FROM rec_candidate_experience WHERE candidate_id = p_candidate_id;
-
   SET v_len = JSON_LENGTH(p_exp_json);
-
   WHILE v_i < v_len DO
     SET v_company = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].company_name'))));
     SET v_desig   = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].designation'))));
@@ -6290,7 +5551,6 @@ BEGIN
     SET v_ey      = CAST(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].end_year'))    AS SIGNED);
     SET v_current = CAST(COALESCE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].is_current')), 0) AS SIGNED);
     SET v_desc    = JSON_UNQUOTE(JSON_EXTRACT(p_exp_json, CONCAT('$[', v_i, '].description')));
-
     IF v_company IS NOT NULL AND v_company <> '' AND v_company <> 'null' THEN
       INSERT INTO rec_candidate_experience
         (candidate_id, company_name, designation, start_month, start_year,
@@ -6307,17 +5567,13 @@ BEGIN
         NULLIF(v_desc, 'null')
       );
     END IF;
-
     SET v_i = v_i + 1;
   END WHILE;
-
   COMMIT;
-
   SELECT COUNT(*) AS experience_saved
   FROM rec_candidate_experience
   WHERE candidate_id = p_candidate_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_save_candidate_skills ;
 CREATE PROCEDURE `sp_rec_save_candidate_skills`(
   IN p_candidate_id INT,
@@ -6327,23 +5583,18 @@ BEGIN
   DECLARE v_i   INT DEFAULT 0;
   DECLARE v_len INT DEFAULT 0;
   DECLARE v_skill VARCHAR(200);
-
   DECLARE EXIT HANDLER FOR SQLEXCEPTION
   BEGIN
     ROLLBACK;
     RESIGNAL;
   END;
-
   START TRANSACTION;
-
   -- Remove old resume-parsed skills for this candidate
   DELETE FROM rec_candidate_skills
   WHERE candidate_id = p_candidate_id
     AND source = 'resume';
-
   -- Insert fresh set
   SET v_len = JSON_LENGTH(p_skills_json);
-
   WHILE v_i < v_len DO
     SET v_skill = TRIM(JSON_UNQUOTE(JSON_EXTRACT(p_skills_json, CONCAT('$[', v_i, ']'))));
     IF v_skill IS NOT NULL AND v_skill <> '' AND CHAR_LENGTH(v_skill) <= 200 THEN
@@ -6352,41 +5603,32 @@ BEGIN
     END IF;
     SET v_i = v_i + 1;
   END WHILE;
-
   COMMIT;
-
   -- Return count of skills saved
   SELECT COUNT(*) AS skills_saved
   FROM rec_candidate_skills
   WHERE candidate_id = p_candidate_id AND source = 'resume';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_save_dynamic_field ;
 CREATE PROCEDURE `sp_rec_save_dynamic_field`(
 IN p_candidate_id BIGINT,
-
 IN p_field_name VARCHAR(100),
-
 IN p_field_value JSON
 )
 BEGIN
-
 INSERT INTO rec_candidate_dynamic_fields
 (
 candidate_id,
 field_name,
 field_value
 )
-
 VALUES
 (
 p_candidate_id,
 p_field_name,
 p_field_value
 );
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_schedule_interview ;
 CREATE PROCEDURE `sp_rec_schedule_interview`(
   IN  p_candidate_id      INT,
@@ -6410,21 +5652,17 @@ CREATE PROCEDURE `sp_rec_schedule_interview`(
 BEGIN
   DECLARE v_code VARCHAR(20);
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_candidates WHERE candidate_id = p_candidate_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Candidate not found';
   END IF;
-
   IF EXISTS (
     SELECT 1 FROM rec_interviews
     WHERE candidate_id = p_candidate_id AND level = p_level AND status = 'Scheduled'
   ) THEN
     SIGNAL SQLSTATE '45003' SET MESSAGE_TEXT = 'An active interview already exists for this candidate at this level';
   END IF;
-
   START TRANSACTION;
     CALL sp_rec_next_code('INT', 'rec_interviews', 'interview_code', v_code);
-
     INSERT INTO rec_interviews (
       interview_code, candidate_id, job_req_id, level, interview_type,
       interview_date, interview_time, duration_minutes, interviewer, candidate_type,
@@ -6437,23 +5675,18 @@ BEGIN
       p_teams_subject, p_teams_participants, p_teams_start, p_teams_end,
       'Scheduled', p_scheduled_by
     );
-
     SET p_interview_id   = LAST_INSERT_ID();
     SET p_interview_code = v_code;
-
     UPDATE rec_candidates
     SET status = 'Interview Scheduled', updated_by = p_scheduled_by
     WHERE candidate_id = p_candidate_id;
-
     CALL sp_rec_audit('interview', p_interview_id, 'scheduled',
       NULL, JSON_OBJECT('level', p_level, 'interview_type', p_interview_type,
                         'interview_date', p_interview_date, 'candidate_type', p_candidate_type),
       p_scheduled_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_interview(p_interview_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_set_interview_join_url ;
 CREATE PROCEDURE `sp_rec_set_interview_join_url`(
   IN p_interview_id INT,
@@ -6463,10 +5696,8 @@ BEGIN
   UPDATE rec_interviews
   SET teams_join_url = p_join_url
   WHERE interview_id = p_interview_id;
-
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_set_zoom_meeting_details ;
 CREATE PROCEDURE `sp_rec_set_zoom_meeting_details`(
   IN p_interview_id INT,
@@ -6479,7 +5710,6 @@ BEGIN
       teams_join_url = p_join_url
   WHERE interview_id = p_interview_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_submit_feedback ;
 CREATE PROCEDURE `sp_rec_submit_feedback`(
   IN p_interview_id       INT,
@@ -6493,16 +5723,13 @@ BEGIN
   DECLARE v_cand_id  INT;
   DECLARE v_level    VARCHAR(30);
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_interviews WHERE interview_id = p_interview_id AND status = 'Scheduled') THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Interview not found or already completed';
   END IF;
-
   SELECT candidate_id, level
   INTO   v_cand_id, v_level
   FROM   rec_interviews
   WHERE  interview_id = p_interview_id;
-
   START TRANSACTION;
     UPDATE rec_interviews SET
       feedback_status   = p_feedback_status,
@@ -6511,7 +5738,6 @@ BEGIN
       status            = 'Completed',
       feedback_by       = p_submitted_by
     WHERE interview_id = p_interview_id;
-
     -- Round progression logic
     IF p_feedback_status = 'Selected' THEN
       IF v_level = 'Final' THEN
@@ -6528,15 +5754,12 @@ BEGIN
       WHERE candidate_id = v_cand_id;
     END IF;
     -- 'Hold' → no status change
-
     CALL sp_rec_audit('interview', p_interview_id, 'feedback_submitted',
       NULL, JSON_OBJECT('feedback_status', p_feedback_status, 'level', v_level, 'shortlisted', p_shortlisted),
       p_submitted_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_interview(p_interview_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_submit_recruiter_feedback ;
 CREATE PROCEDURE `sp_rec_submit_recruiter_feedback`(
   IN p_interview_id         INT,
@@ -6549,16 +5772,13 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM rec_interviews WHERE interview_id = p_interview_id) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Interview not found';
   END IF;
-
   UPDATE rec_interviews
      SET recruiter_feedback_status   = p_feedback_status,
          recruiter_feedback_comments = p_feedback_comments,
          updated_at                  = NOW()
    WHERE interview_id = p_interview_id;
-
   CALL sp_rec_get_interview(p_interview_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_update_candidate_parse_status ;
 CREATE PROCEDURE `sp_rec_update_candidate_parse_status`(
   IN p_candidate_id         INT,
@@ -6581,10 +5801,8 @@ BEGIN
     current_designation  = p_current_designation,
     updated_at           = CURRENT_TIMESTAMP
   WHERE candidate_id = p_candidate_id;
-
   SELECT ROW_COUNT() AS rows_affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_update_candidate_status ;
 CREATE PROCEDURE `sp_rec_update_candidate_status`(
   IN p_candidate_id INT,
@@ -6594,24 +5812,18 @@ CREATE PROCEDURE `sp_rec_update_candidate_status`(
 )
 BEGIN
   DECLARE v_old_status VARCHAR(50);
-
   IF NOT EXISTS (SELECT 1 FROM rec_candidates WHERE candidate_id = p_candidate_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Candidate not found';
   END IF;
-
   SELECT status INTO v_old_status FROM rec_candidates WHERE candidate_id = p_candidate_id;
-
   UPDATE rec_candidates SET status = p_status, updated_by = p_updated_by
   WHERE  candidate_id = p_candidate_id;
-
   CALL sp_rec_audit('candidate', p_candidate_id, 'status_changed',
     JSON_OBJECT('status', v_old_status),
     JSON_OBJECT('status', p_status),
     p_updated_by, p_ip, NULL);
-
   SELECT candidate_id, candidate_code, name, status FROM rec_candidates WHERE candidate_id = p_candidate_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_update_job_request ;
 CREATE PROCEDURE `sp_rec_update_job_request`(
   IN p_job_req_id         INT,
@@ -6639,14 +5851,11 @@ CREATE PROCEDURE `sp_rec_update_job_request`(
 BEGIN
   DECLARE v_old JSON;
   DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-
   IF NOT EXISTS (SELECT 1 FROM rec_job_requests WHERE job_req_id = p_job_req_id AND deleted_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Job request not found';
   END IF;
-
   SELECT JSON_OBJECT('title', title,'assignment_status', assignment_status) INTO v_old
   FROM   rec_job_requests WHERE job_req_id = p_job_req_id;
-
   START TRANSACTION;
     UPDATE rec_job_requests SET
       title             = COALESCE(p_title,            title),
@@ -6669,15 +5878,12 @@ BEGIN
       description       = COALESCE(p_description,      description),
       updated_by        = p_updated_by
     WHERE job_req_id = p_job_req_id;
-
     CALL sp_rec_audit('job_request', p_job_req_id, 'updated',
       v_old, JSON_OBJECT('title', p_title,'assignment_status', p_assignment_status),
       p_updated_by, p_ip, NULL);
   COMMIT;
-
   CALL sp_rec_get_job_request(p_job_req_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_update_onboarding_task ;
 CREATE PROCEDURE `sp_rec_update_onboarding_task`(
   IN p_onboarding_id INT,
@@ -6688,14 +5894,11 @@ CREATE PROCEDURE `sp_rec_update_onboarding_task`(
 )
 BEGIN
   DECLARE v_old JSON;
-
   IF NOT EXISTS (SELECT 1 FROM rec_onboarding WHERE onboarding_id = p_onboarding_id AND finalized_at IS NULL) THEN
     SIGNAL SQLSTATE '45001' SET MESSAGE_TEXT = 'Onboarding record not found or already finalized';
   END IF;
-
   SELECT JSON_OBJECT(p_task_name, employee_info_submitted) INTO v_old
   FROM rec_onboarding WHERE onboarding_id = p_onboarding_id;
-
   CASE p_task_name
     WHEN 'employee_info_submitted' THEN UPDATE rec_onboarding SET employee_info_submitted = (p_task_value = '1' OR p_task_value = 'true') WHERE onboarding_id = p_onboarding_id;
     WHEN 'photo_uploaded'          THEN UPDATE rec_onboarding SET photo_uploaded          = (p_task_value = '1' OR p_task_value = 'true') WHERE onboarding_id = p_onboarding_id;
@@ -6707,15 +5910,11 @@ BEGIN
     WHEN 'hr_verified'             THEN UPDATE rec_onboarding SET hr_verified             = (p_task_value = '1' OR p_task_value = 'true') WHERE onboarding_id = p_onboarding_id;
     ELSE SIGNAL SQLSTATE '45008' SET MESSAGE_TEXT = 'Unknown onboarding task name';
   END CASE;
-
   UPDATE rec_onboarding SET updated_by = p_updated_by WHERE onboarding_id = p_onboarding_id;
-
   CALL sp_rec_audit('onboarding', p_onboarding_id, 'task_updated',
     v_old, JSON_OBJECT(p_task_name, p_task_value), p_updated_by, p_ip, NULL);
-
   CALL sp_rec_get_onboarding(p_onboarding_id);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rec_upsert_match ;
 CREATE PROCEDURE `sp_rec_upsert_match`(
   IN p_candidate_id   INT,
@@ -6742,14 +5941,12 @@ BEGIN
     missing_skills = p_missing_skills,
     recommendation = p_recommendation,
     computed_at    = NOW();
-
   SELECT m.*, c.name AS candidate_name, j.title AS job_title
   FROM   rec_resume_matches m
   JOIN   rec_candidates   c ON c.candidate_id = m.candidate_id
   JOIN   rec_job_requests j ON j.job_req_id   = m.job_req_id
   WHERE  m.candidate_id = p_candidate_id AND m.job_req_id = p_job_req_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_register_user ;
 CREATE PROCEDURE `sp_register_user`(
   IN p_first_name VARCHAR(80), IN p_last_name VARCHAR(80), IN p_email VARCHAR(150),
@@ -6772,14 +5969,12 @@ BEGIN
   VALUES (p_email, p_password_hash, IFNULL(p_role_id, 2), p_employee_id, 'Active');
   COMMIT;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_remove_structure_line ;
 CREATE PROCEDURE `sp_remove_structure_line`(IN p_structure_id INT, IN p_component_id INT)
 BEGIN
   UPDATE salary_structure_lines SET is_active = 0
    WHERE structure_id = p_structure_id AND component_id = p_component_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_remove_team_member ;
 CREATE PROCEDURE `sp_remove_team_member`(IN p_team_id INT, IN p_employee_id INT)
 BEGIN
@@ -6789,7 +5984,6 @@ BEGIN
   DELETE FROM team_members WHERE team_id=p_team_id AND employee_id=p_employee_id;
   UPDATE teams SET lead_employee_id=NULL WHERE team_id=p_team_id AND lead_employee_id=p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_reopen_ticket ;
 CREATE PROCEDURE `sp_reopen_ticket`(
   IN p_employee_id INT, IN p_ticket_id INT, IN p_comment TEXT,
@@ -6807,13 +6001,11 @@ BEGIN
     SET p_ok=1; SET p_msg='OK';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_replace_it_declaration_items ;
 CREATE PROCEDURE `sp_replace_it_declaration_items`(IN p_declaration_id INT)
 BEGIN
   DELETE FROM it_declaration_items WHERE declaration_id = p_declaration_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_report_emp_data ;
 CREATE PROCEDURE `sp_report_emp_data`()
 BEGIN
@@ -6833,7 +6025,6 @@ BEGIN
     LEFT JOIN employee_bank_details bd ON bd.employee_id = e.employee_id
    ORDER BY e.employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_report_leave_balance ;
 CREATE PROCEDURE `sp_report_leave_balance`()
 BEGIN
@@ -6856,7 +6047,6 @@ BEGIN
    GROUP BY e.employee_id
    ORDER BY e.emp_code;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_report_leave_summary_data ;
 CREATE PROCEDURE `sp_report_leave_summary_data`(IN p_from DATE, IN p_to DATE)
 BEGIN
@@ -6868,19 +6058,15 @@ BEGIN
     LEFT JOIN designations ds ON ds.designation_id = e.designation_id
    WHERE e.employee_status = 'Active'
    ORDER BY e.emp_code;
-
   SELECT leave_type_id, leave_type_name, NULL AS short_code FROM leave_types ORDER BY leave_type_id;
-
   SELECT lr.employee_id, lr.leave_type_id, IFNULL(SUM(lr.days), 0) AS days_availed
     FROM leave_requests lr
    WHERE lr.status = 'approved' AND lr.from_date >= p_from AND lr.to_date <= p_to
    GROUP BY lr.employee_id, lr.leave_type_id;
-
   SELECT lb.employee_id, lb.leave_type_id, lb.balance AS balance_days
     FROM leave_balances lb
    WHERE lb.year = YEAR(p_to);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_report_payslips_for_month ;
 CREATE PROCEDURE `sp_report_payslips_for_month`(IN p_month INT, IN p_year INT)
 BEGIN
@@ -6891,7 +6077,6 @@ BEGIN
    WHERE e.employee_status = 'Active'
    ORDER BY e.emp_code;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_report_pf_statement ;
 CREATE PROCEDURE `sp_report_pf_statement`(IN p_month INT, IN p_year INT)
 BEGIN
@@ -6905,7 +6090,6 @@ BEGIN
       OR (e.has_left_organization = 1 AND YEAR(e.emp_exit_date) = p_year AND MONTH(e.emp_exit_date) = p_month)
    ORDER BY e.emp_code;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_reset_password ;
 CREATE PROCEDURE `sp_reset_password`(IN p_token VARCHAR(64), IN p_new_hash VARCHAR(255), OUT p_ok TINYINT)
 BEGIN
@@ -6918,7 +6102,6 @@ BEGIN
     SET p_ok = 1;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_attendance_regularization ;
 CREATE PROCEDURE `sp_review_attendance_regularization`(
   IN p_id INT,
@@ -6933,12 +6116,10 @@ BEGIN
   DECLARE v_check_out      TIME;
   DECLARE v_approved_count INT DEFAULT 0;
   DECLARE v_work_hours     DECIMAL(5,2) DEFAULT 4.00;  -- default 4-hour credit
-
   SELECT employee_id, attendance_date, requested_check_in, requested_check_out
     INTO v_employee_id, v_date, v_check_in, v_check_out
     FROM attendance_regularization
    WHERE regularization_id = p_id;
-
   -- ── 5-day monthly limit check ──────────────────────────────
   IF p_decision = 'Approved' THEN
     SELECT COUNT(*) INTO v_approved_count
@@ -6948,13 +6129,11 @@ BEGIN
       AND YEAR(attendance_date)  = YEAR(v_date)
       AND status = 'Approved'
       AND regularization_id <> p_id;
-
     IF v_approved_count >= 5 THEN
       SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Regularization limit reached: maximum 5 approvals allowed per month';
     END IF;
   END IF;
-
   -- ── Update regularization record ───────────────────────────
   UPDATE attendance_regularization
      SET status      = p_decision,
@@ -6962,7 +6141,6 @@ BEGIN
          reviewed_on = NOW(),
          remarks     = p_remarks
    WHERE regularization_id = p_id;
-
   -- ── Apply to attendance on Approved ────────────────────────
   IF p_decision = 'Approved' THEN
     -- Calculate work hours: if both times given use them, else default to 4h credit
@@ -6977,7 +6155,6 @@ BEGIN
       -- No times provided — grant flat 4-hour credit
       SET v_work_hours = 4.00;
     END IF;
-
     INSERT INTO attendance (employee_id, attendance_date, check_in, check_out, work_hours, status, source)
     VALUES (v_employee_id, v_date, v_check_in, v_check_out, v_work_hours, 'present', 'regularization')
     ON DUPLICATE KEY UPDATE
@@ -6988,7 +6165,6 @@ BEGIN
       source     = 'regularization';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_extra_work ;
 CREATE PROCEDURE `sp_review_extra_work`(
   IN p_extra_work_id INT, IN p_decision VARCHAR(20),
@@ -7009,7 +6185,6 @@ BEGIN
   END IF;
   SELECT * FROM extra_work_requests WHERE extra_work_id=p_extra_work_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_it_declaration ;
 CREATE PROCEDURE `sp_review_it_declaration`(
   IN p_admin_id INT, IN p_declaration_id INT, IN p_status VARCHAR(30), IN p_remarks TEXT
@@ -7020,7 +6195,6 @@ BEGIN
    WHERE declaration_id=p_declaration_id;
   SELECT * FROM it_declarations WHERE declaration_id=p_declaration_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_it_proof ;
 CREATE PROCEDURE `sp_review_it_proof`(
   IN p_admin_id INT, IN p_proof_id INT, IN p_status VARCHAR(30), IN p_remarks TEXT
@@ -7031,7 +6205,6 @@ BEGIN
    WHERE proof_id=p_proof_id;
   SELECT * FROM it_proof_documents WHERE proof_id=p_proof_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_leave_request ;
 CREATE PROCEDURE `sp_review_leave_request`(
   IN p_id          INT,
@@ -7045,7 +6218,6 @@ BEGIN
   SELECT status, employee_id, leave_type_id, days, from_date
     INTO v_status, v_emp_id, v_leave_type, v_days, v_from
     FROM leave_requests WHERE leave_request_id = p_id LIMIT 1;
-
   IF v_status IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Leave request not found';
   ELSEIF v_status != 'Pending' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Only Pending leave requests can be reviewed';
   ELSEIF p_decision NOT IN ('Approved','Rejected') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid decision';
@@ -7060,7 +6232,6 @@ BEGIN
     END IF;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_report ;
 CREATE PROCEDURE `sp_review_report`(IN p_review_type_id INT, IN p_status VARCHAR(20))
 BEGIN
@@ -7069,7 +6240,6 @@ BEGIN
    WHERE (p_review_type_id IS NULL OR r.review_type_id=p_review_type_id)
      AND (p_status         IS NULL OR r.status=p_status)
    GROUP BY r.status;
-
   SELECT r.review_id, r.employee_id,
          CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
          rt.name AS review_type, r.status, r.overall_rating, r.due_date, r.submitted_on
@@ -7080,7 +6250,6 @@ BEGIN
      AND (p_status         IS NULL OR r.status=p_status)
    ORDER BY r.due_date DESC LIMIT 500;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_review_timesheet ;
 CREATE PROCEDURE `sp_review_timesheet`(
     IN p_timesheet_id INT,
@@ -7091,32 +6260,21 @@ CREATE PROCEDURE `sp_review_timesheet`(
     OUT p_msg VARCHAR(200)
 )
 BEGIN
-
     DECLARE v_status VARCHAR(20);
-
     SET p_ok = 0;
     SET p_msg = '';
-
     SELECT status
     INTO v_status
     FROM weekly_timesheets
     WHERE timesheet_id = p_timesheet_id
     LIMIT 1;
-
     IF v_status IS NULL THEN
-
         SET p_msg = 'Timesheet not found';
-
     ELSEIF LOWER(TRIM(p_decision)) NOT IN ('approved', 'rejected') THEN
-
         SET p_msg = 'Invalid decision. Use approved or rejected';
-
     ELSEIF LOWER(v_status) <> 'pending' THEN
-
         SET p_msg = 'Timesheet is not awaiting review';
-
     ELSE
-
         UPDATE weekly_timesheets
         SET
             status = LOWER(TRIM(p_decision)),
@@ -7124,9 +6282,7 @@ BEGIN
             reviewed_at = NOW(),
             comments = p_comments
         WHERE timesheet_id = p_timesheet_id;
-
         IF LOWER(TRIM(p_decision)) = 'approved' THEN
-
             UPDATE employee_tasks
             SET status = 'in_timesheet'
             WHERE task_id IN (
@@ -7136,20 +6292,15 @@ BEGIN
                     timesheet_id = p_timesheet_id
                     AND task_id IS NOT NULL
             );
-
         END IF;
-
         SET p_ok = 1;
         SET p_msg = CONCAT(
             'Timesheet ',
             LOWER(TRIM(p_decision)),
             ' successfully'
         );
-
     END IF;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_rollout_appraisal_cycle ;
 CREATE PROCEDURE `sp_rollout_appraisal_cycle`(
   IN  p_admin_id    INT,
@@ -7179,7 +6330,6 @@ BEGIN
     SET p_ok=1; SET p_msg='OK';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_run_payroll ;
 CREATE PROCEDURE `sp_run_payroll`(
   IN p_month       TINYINT,
@@ -7193,14 +6343,11 @@ BEGIN
   DECLARE v_payslip_id INT;
   DECLARE cur CURSOR FOR SELECT employee_id FROM employees WHERE employee_status = 'Active';
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
   INSERT INTO payroll_runs (month, year, status, processed_by, processed_on)
   VALUES (p_month, p_year, 'Processing', p_processed_by, NOW())
   ON DUPLICATE KEY UPDATE status = 'Processing', processed_by = p_processed_by, processed_on = NOW();
-
   SELECT payroll_run_id INTO p_payroll_run_id
   FROM payroll_runs WHERE month = p_month AND year = p_year;
-
   OPEN cur;
   read_loop: LOOP
     FETCH cur INTO v_employee_id;
@@ -7210,13 +6357,11 @@ BEGIN
     CALL sp_generate_payslip(v_employee_id, p_month, p_year, p_payroll_run_id, v_payslip_id);
   END LOOP;
   CLOSE cur;
-
   UPDATE payroll_runs pr
   SET status = 'Completed',
       total_amount = (SELECT IFNULL(SUM(net_pay),0) FROM payslips WHERE payroll_run_id = p_payroll_run_id)
   WHERE pr.payroll_run_id = p_payroll_run_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_save_appraisal_rating ;
 CREATE PROCEDURE `sp_save_appraisal_rating`(
   IN p_appraisal_id   INT,
@@ -7233,7 +6378,6 @@ BEGIN
     self_comments  = p_self_comments,
     parameter_label = COALESCE(p_parameter_label, parameter_label);
 END ;
-
 DROP PROCEDURE IF EXISTS sp_save_manager_appraisal_rating ;
 CREATE PROCEDURE `sp_save_manager_appraisal_rating`(
   IN p_appraisal_id  INT,
@@ -7246,7 +6390,6 @@ BEGIN
      SET manager_rating = p_mgr_rating, manager_comments = p_mgr_comments
    WHERE appraisal_id = p_appraisal_id AND parameter_key = p_parameter_key;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_save_structure_lines ;
 CREATE PROCEDURE `sp_save_structure_lines`(
   IN p_structure_id  INT,
@@ -7274,7 +6417,6 @@ BEGIN
     sort_order             = p_sort_order,
     is_active              = 1;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_save_timesheet_entries ;
 CREATE PROCEDURE `sp_save_timesheet_entries`(
   IN p_employee_id INT, IN p_week_start DATE, IN p_week_end DATE,
@@ -7283,34 +6425,25 @@ CREATE PROCEDURE `sp_save_timesheet_entries`(
 )
 main_block: BEGIN
   DECLARE v_status VARCHAR(20);
-
   SELECT timesheet_id, status INTO p_timesheet_id, v_status
     FROM weekly_timesheets
    WHERE employee_id=p_employee_id AND week_start=p_week_start LIMIT 1;
-
   IF p_timesheet_id IS NULL THEN
     INSERT INTO weekly_timesheets (employee_id, week_start, week_end, status)
     VALUES (p_employee_id, p_week_start, p_week_end, 'draft');
     SET p_timesheet_id = LAST_INSERT_ID();
     SET v_status = 'draft';
   END IF;
-
   IF v_status NOT IN ('draft','rejected') THEN
     SET p_ok=0;
     SET p_msg=CONCAT('Cannot edit a timesheet with status: ', v_status);
     LEAVE main_block;
   END IF;
-
-  
   UPDATE employee_tasks et
      JOIN timesheet_entries te ON te.task_id=et.task_id
     SET et.status='open'
   WHERE te.timesheet_id=p_timesheet_id AND te.task_id IS NOT NULL AND et.status='in_timesheet';
-
-  
   DELETE FROM timesheet_entries WHERE timesheet_id=p_timesheet_id;
-
-  
   INSERT INTO timesheet_entries
     (timesheet_id, employee_id, task_id, project_name, task_name,
      activity_desc, work_date, start_time, end_time, duration_hours)
@@ -7328,21 +6461,15 @@ main_block: BEGIN
       end_time      TIME           PATH '$.end_time',
       duration_hours DECIMAL(5,2)  PATH '$.duration_hours'
     )) j;
-
-  
   UPDATE employee_tasks et
      JOIN timesheet_entries te ON te.task_id=et.task_id
     SET et.status='in_timesheet'
   WHERE te.timesheet_id=p_timesheet_id AND te.task_id IS NOT NULL AND et.employee_id=p_employee_id;
-
-  
   UPDATE weekly_timesheets
      SET total_hours=(SELECT COALESCE(SUM(duration_hours),0) FROM timesheet_entries WHERE timesheet_id=p_timesheet_id)
    WHERE timesheet_id=p_timesheet_id;
-
   SET p_ok=1; SET p_msg='OK';
 END ;
-
 DROP PROCEDURE IF EXISTS sp_search_employees_org ;
 CREATE PROCEDURE `sp_search_employees_org`(
     IN p_q VARCHAR(200),
@@ -7351,9 +6478,7 @@ CREATE PROCEDURE `sp_search_employees_org`(
     IN p_status VARCHAR(20)
 )
 BEGIN
-
     SET p_q = IFNULL(p_q, '%');
-
     SELECT
         e.employee_id,
         e.emp_code,
@@ -7368,13 +6493,11 @@ BEGIN
         dp.department_name,
         dp.department_id,
         CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS full_name
-
     FROM employees e
     LEFT JOIN designations d
         ON d.designation_id = e.designation_id
     LEFT JOIN departments dp
         ON dp.department_id = e.department_id
-
     WHERE
     (
            e.first_name COLLATE utf8mb4_unicode_ci LIKE (p_q COLLATE utf8mb4_unicode_ci)
@@ -7385,47 +6508,38 @@ BEGIN
               COLLATE utf8mb4_unicode_ci
               LIKE (p_q COLLATE utf8mb4_unicode_ci)
     )
-
     AND (
         p_department_id IS NULL
         OR e.department_id = p_department_id
     )
-
     AND (
         p_designation_id IS NULL
         OR e.designation_id = p_designation_id
     )
-
     AND (
         p_status IS NULL
         OR e.employee_status COLLATE utf8mb4_unicode_ci =
            p_status COLLATE utf8mb4_unicode_ci
     )
-
     ORDER BY e.first_name
     LIMIT 30;
-
     SELECT
         employee_id,
         reporting_to,
         CONCAT(first_name,' ',IFNULL(last_name,'')) AS full_name
     FROM employees;
-
 END ;
-
 DROP PROCEDURE IF EXISTS sp_setup_mfa_secret ;
 CREATE PROCEDURE `sp_setup_mfa_secret`(IN p_user_id INT, IN p_encrypted_secret VARCHAR(500))
 BEGIN
   UPDATE users SET mfa_secret = p_encrypted_secret WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_set_reset_token ;
 CREATE PROCEDURE `sp_set_reset_token`(IN p_email VARCHAR(150), IN p_token VARCHAR(64), IN p_expiry DATETIME)
 BEGIN
   UPDATE users SET reset_token = p_token, reset_token_expiry = p_expiry WHERE email = p_email;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_submit_appraisal ;
 CREATE PROCEDURE `sp_submit_appraisal`(IN p_appraisal_id INT, IN p_overall_comments TEXT)
 BEGIN
@@ -7433,7 +6547,6 @@ BEGIN
      SET overall_comments = p_overall_comments, status = 'submitted', submitted_at = NOW()
    WHERE appraisal_id = p_appraisal_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_submit_resignation ;
 CREATE PROCEDURE `sp_submit_resignation`(
   IN  p_employee_id    INT,
@@ -7456,7 +6569,6 @@ BEGIN
   SELECT resignation_id INTO v_existing
     FROM resignations
    WHERE employee_id = p_employee_id AND status IN ('pending','rm_approved','accepted') LIMIT 1;
-
   IF v_existing IS NOT NULL THEN
     SET p_resignation_id = NULL;
     SET p_msg = 'You already have an active resignation request';
@@ -7469,7 +6581,6 @@ BEGIN
     SET p_msg = 'OK';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_submit_review ;
 CREATE PROCEDURE `sp_submit_review`(IN p_review_id INT, IN p_overall_rating TINYINT, IN p_comments TEXT)
 BEGIN
@@ -7477,7 +6588,6 @@ BEGIN
          status = 'Submitted', submitted_on = NOW()
    WHERE review_id = p_review_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_submit_timesheet ;
 CREATE PROCEDURE `sp_submit_timesheet`(
   IN p_employee_id INT, IN p_timesheet_id INT, OUT p_ok TINYINT, OUT p_msg VARCHAR(200)
@@ -7493,7 +6603,6 @@ BEGIN
     SET p_ok=1; SET p_msg='OK';
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_team_leave_calendar ;
 CREATE PROCEDURE `sp_team_leave_calendar`(
   IN p_year  INT,
@@ -7519,7 +6628,6 @@ BEGIN
   GROUP BY d.day_date
   ORDER BY d.day_date;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_toggle_it_cycle_status ;
 CREATE PROCEDURE `sp_toggle_it_cycle_status`(IN p_cycle_id INT, IN p_admin_id INT)
 BEGIN
@@ -7532,14 +6640,12 @@ BEGIN
   UPDATE it_declaration_cycles SET status=v_new, created_by=p_admin_id WHERE cycle_id=p_cycle_id;
   SELECT * FROM it_declaration_cycles WHERE cycle_id=p_cycle_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_toggle_salary_component ;
 CREATE PROCEDURE `sp_toggle_salary_component`(IN p_id INT, IN p_active TINYINT(1))
 BEGIN
   UPDATE salary_components SET is_active = p_active WHERE component_id = p_id AND is_system = 0;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_transfer_manager_team ;
 CREATE PROCEDURE `sp_transfer_manager_team`(
   IN p_old_manager_id INT, IN p_new_manager_id INT, IN p_changed_by INT, IN p_reason TEXT
@@ -7562,14 +6668,12 @@ BEGIN
   CLOSE cur;
   SELECT ROW_COUNT() AS transferred;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_unenroll_employee_appraisal ;
 CREATE PROCEDURE `sp_unenroll_employee_appraisal`(IN p_cycle_id INT, IN p_employee_id INT)
 BEGIN
   DELETE FROM appraisal_enrollments WHERE cycle_id = p_cycle_id AND employee_id = p_employee_id;
   SELECT ROW_COUNT() AS affected;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_appraisal_cycle ;
 CREATE PROCEDURE `sp_update_appraisal_cycle`(
   IN p_cycle_id INT, IN p_fy_label VARCHAR(50), IN p_deadline DATE, IN p_cycle_type VARCHAR(30)
@@ -7582,7 +6686,6 @@ BEGIN
    WHERE cycle_id = p_cycle_id;
   SELECT * FROM appraisal_cycles WHERE cycle_id = p_cycle_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_appraisal_status ;
 CREATE PROCEDURE `sp_update_appraisal_status`(IN p_appraisal_id INT, IN p_status VARCHAR(20))
 BEGIN
@@ -7592,7 +6695,6 @@ BEGIN
     JOIN employees e ON e.employee_id = sa.employee_id
    WHERE sa.appraisal_id = p_appraisal_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_designation ;
 CREATE PROCEDURE `sp_update_designation`(
   IN p_id INT, IN p_name VARCHAR(200), IN p_department_id INT
@@ -7604,7 +6706,6 @@ BEGIN
    WHERE designation_id = p_id;
   SELECT * FROM designations WHERE designation_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_employee_reporting_to ;
 CREATE PROCEDURE `sp_update_employee_reporting_to`(
   IN p_employee_id INT, IN p_reporting_to INT
@@ -7612,7 +6713,6 @@ CREATE PROCEDURE `sp_update_employee_reporting_to`(
 BEGIN
   UPDATE employees SET reporting_to = p_reporting_to WHERE employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_holiday ;
 CREATE PROCEDURE `sp_update_holiday`(
   IN p_holiday_id       INT,
@@ -7633,7 +6733,6 @@ BEGIN
          is_restricted    = IFNULL(p_is_restricted,    is_restricted)
    WHERE holiday_id = p_holiday_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_it_cycle ;
 CREATE PROCEDURE `sp_update_it_cycle`(
   IN p_cycle_id INT, IN p_fy_label VARCHAR(20), IN p_start_date DATE, IN p_end_date DATE
@@ -7646,7 +6745,6 @@ BEGIN
    WHERE cycle_id = p_cycle_id;
   SELECT * FROM it_declaration_cycles WHERE cycle_id = p_cycle_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_it_declaration_status ;
 CREATE PROCEDURE `sp_update_it_declaration_status`(
   IN p_declaration_id INT, IN p_status VARCHAR(30),
@@ -7658,19 +6756,16 @@ BEGIN
          submitted_at=p_submitted_at, admin_remarks=NULL
    WHERE declaration_id=p_declaration_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_job_application_status ;
 CREATE PROCEDURE `sp_update_job_application_status`(IN p_id INT, IN p_status VARCHAR(30))
 BEGIN
   UPDATE job_applications SET status=p_status WHERE application_id=p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_mfa_backup_codes ;
 CREATE PROCEDURE `sp_update_mfa_backup_codes`(IN p_user_id INT, IN p_backup_codes_json TEXT)
 BEGIN
   UPDATE users SET mfa_backup_codes = p_backup_codes_json WHERE user_id = p_user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_payslip_encrypted ;
 CREATE PROCEDURE `sp_update_payslip_encrypted`(IN p_id INT, IN p_encrypted BLOB)
 BEGIN
@@ -7681,13 +6776,11 @@ BEGIN
     deductions = NULL, net_pay = NULL
   WHERE payslip_id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_referral_status ;
 CREATE PROCEDURE `sp_update_referral_status`(IN p_id INT, IN p_status VARCHAR(30))
 BEGIN
   UPDATE referrals SET status=p_status WHERE referral_id=p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_request_hub_status ;
 CREATE PROCEDURE `sp_update_request_hub_status`(IN p_id INT, IN p_status VARCHAR(20), IN p_reviewed_by INT)
 BEGIN
@@ -7696,7 +6789,6 @@ BEGIN
          resolved_at=IF(p_status='Pending', NULL, NOW())
    WHERE request_id=p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_salary_encrypted ;
 CREATE PROCEDURE `sp_update_salary_encrypted`(IN p_id INT, IN p_encrypted_blob TEXT)
 BEGIN
@@ -7708,7 +6800,6 @@ BEGIN
     professional_tax  = NULL, income_tax       = NULL, ctc             = NULL
   WHERE id = p_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_salary_template ;
 CREATE PROCEDURE `sp_update_salary_template`(
   IN p_id              INT,
@@ -7732,7 +6823,6 @@ BEGIN
   IF p_is_default = 1 THEN
     UPDATE salary_templates SET is_default = 0 WHERE template_id != p_id;
   END IF;
-
   UPDATE salary_templates SET
     template_name       = p_name,
     description         = p_description,
@@ -7750,10 +6840,8 @@ BEGIN
     professional_tax    = p_pt,
     is_default          = p_is_default
   WHERE template_id = p_id;
-
   SELECT ROW_COUNT() AS updated;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_task ;
 CREATE PROCEDURE `sp_update_task`(
   IN p_task_id INT, IN p_employee_id INT,
@@ -7777,7 +6865,6 @@ BEGIN
   WHERE task_id = p_task_id AND employee_id = p_employee_id;
   SELECT * FROM employee_tasks WHERE task_id = p_task_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_team_member ;
 CREATE PROCEDURE `sp_update_team_member`(
   IN p_team_id INT, IN p_employee_id INT, IN p_title VARCHAR(100), IN p_is_lead TINYINT
@@ -7796,7 +6883,6 @@ BEGIN
     UPDATE teams SET lead_employee_id=p_employee_id WHERE team_id=p_team_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_update_ticket_status ;
 CREATE PROCEDURE `sp_update_ticket_status`(IN p_ticket_id INT, IN p_status VARCHAR(30))
 BEGIN
@@ -7806,7 +6892,6 @@ BEGIN
     UPDATE helpdesk_tickets SET status = p_status, resolved_at = NULL WHERE ticket_id = p_ticket_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upload_it_proof ;
 CREATE PROCEDURE `sp_upload_it_proof`(
   IN p_declaration_id INT, IN p_employee_id INT,
@@ -7823,7 +6908,6 @@ BEGIN
   SET p_proof_id = LAST_INSERT_ID();
   SELECT * FROM it_proof_documents WHERE proof_id = p_proof_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_bank_details ;
 CREATE PROCEDURE `sp_upsert_bank_details`(
   IN p_employee_id INT, IN p_bank_name VARCHAR(100), IN p_account_number VARCHAR(50),
@@ -7850,10 +6934,8 @@ BEGIN
     dd_payable_at       = COALESCE(p_dd_payable_at,    dd_payable_at),
     account_holder_name = COALESCE(p_account_holder,   account_holder_name),
     payment_type        = COALESCE(p_payment_type,     payment_type);
-
   SELECT * FROM employee_bank_details WHERE employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_contact_info ;
 CREATE PROCEDURE `sp_upsert_contact_info`(
   IN p_employee_id INT, IN p_current_address TEXT, IN p_permanent_address TEXT,
@@ -7890,10 +6972,8 @@ BEGIN
     permanent_address_line1    = COALESCE(p_permanent_address_line1,    permanent_address_line1),
     permanent_address_line2    = COALESCE(p_permanent_address_line2,    permanent_address_line2),
     permanent_address_line3    = COALESCE(p_permanent_address_line3,    permanent_address_line3);
-
   SELECT * FROM employee_contact_info WHERE employee_id = p_employee_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_leave_balance ;
 CREATE PROCEDURE `sp_upsert_leave_balance`(
   IN p_employee_id INT, IN p_leave_type_id INT, IN p_year INT,
@@ -7908,7 +6988,6 @@ BEGIN
     opening_balance = p_opening, granted = p_granted, availed = p_availed,
     balance = v_bal;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_role_permission ;
 CREATE PROCEDURE `sp_upsert_role_permission`(
   IN p_role_id INT, IN p_module VARCHAR(50), IN p_action VARCHAR(50), IN p_allowed TINYINT
@@ -7918,7 +6997,6 @@ BEGIN
   SELECT p_role_id, permission_id, p_allowed FROM permissions WHERE module = p_module AND action = p_action
   ON DUPLICATE KEY UPDATE allowed = p_allowed;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_salary_component ;
 CREATE PROCEDURE `sp_upsert_salary_component`(
   IN p_id               INT,
@@ -7979,7 +7057,6 @@ BEGIN
     SELECT p_id AS component_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_salary_structure ;
 CREATE PROCEDURE `sp_upsert_salary_structure`(
   IN p_id          INT,
@@ -8004,7 +7081,6 @@ BEGIN
     SELECT p_id AS structure_id;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_upsert_work_schedule ;
 CREATE PROCEDURE `sp_upsert_work_schedule`(
   IN p_employee_id     INT,
@@ -8029,7 +7105,6 @@ BEGIN
     updated_by       = p_admin_id,
     updated_at       = NOW();
 END ;
-
 DROP PROCEDURE IF EXISTS sp_verify_mfa_token ;
 CREATE PROCEDURE `sp_verify_mfa_token`(IN p_token VARCHAR(64), OUT p_user_id INT)
 BEGIN
@@ -8041,7 +7116,6 @@ BEGIN
   END IF;
   SELECT p_user_id AS user_id;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_verify_reset_token ;
 CREATE PROCEDURE `sp_verify_reset_token`(IN p_token VARCHAR(64), IN p_new_hash VARCHAR(255), OUT p_ok TINYINT)
 BEGIN
@@ -8056,7 +7130,6 @@ BEGIN
     SET p_ok = 0;
   END IF;
 END ;
-
 DROP PROCEDURE IF EXISTS sp_withdraw_resignation ;
 CREATE PROCEDURE `sp_withdraw_resignation`(
   IN p_employee_id INT, IN p_resignation_id INT, OUT p_ok TINYINT
@@ -8071,4 +7144,3 @@ BEGIN
     SET p_ok = 1;
   END IF;
 END ;
-

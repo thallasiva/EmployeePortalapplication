@@ -1,8 +1,6 @@
 import { memo } from "react";
-
 const ExtraWorkList = memo(function ExtraWorkList({ myExtraWork }) {
   if (!myExtraWork.length) return null;
-
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
       <p className="text-xs font-bold uppercase tracking-wide text-amber-600 mb-2">
@@ -25,5 +23,4 @@ const ExtraWorkList = memo(function ExtraWorkList({ myExtraWork }) {
     </div>
   );
 });
-
 export default ExtraWorkList;

@@ -4,7 +4,6 @@ import { Eye, EyeOff, Download, Loader2, ArrowRight } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import InteractivePieChart, { formatINR as fmtINR } from "../../../../../component/charts/InteractivePieChart";
 import { fmt } from "../utils/formatters";
-
 const PayslipCard = React.memo(function PayslipCard({
   loading,
   sal,
@@ -21,7 +20,6 @@ const PayslipCard = React.memo(function PayslipCard({
           View All <ArrowRight size={12} className="inline -mt-0.5" />
         </Link>
       </div>
-
       {loading ? (
         <div className={cssClass({ display: "flex", justifyContent: "center", padding: 30 })}>
           <Loader2 size={24} color="#f18200" className={cssClass({ animation: "spin 1s linear infinite" })} />
@@ -73,7 +71,6 @@ const PayslipCard = React.memo(function PayslipCard({
               </div>
             </div>
           )}
-
           {!sal.fromPayslip && (
             <div className={cssClass({
               fontSize: 11, color: "#f59e0b", background: "#fffbeb",
@@ -83,7 +80,6 @@ const PayslipCard = React.memo(function PayslipCard({
               Projected from salary structure — payslip not yet generated
             </div>
           )}
-
           <div className={cssClass({ display: "flex", gap: 10 })}>
             <button
               onClick={handleDownload}
@@ -114,5 +110,4 @@ const PayslipCard = React.memo(function PayslipCard({
     </div>
   );
 });
-
 export default PayslipCard;

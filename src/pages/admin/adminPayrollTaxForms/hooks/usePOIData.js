@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { listEmployees } from "../../../../api/employee.api";
 import { getAllITDeclarations } from "../../../../api/itDeclaration.api";
-
 export function usePOIData(year) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -23,6 +21,5 @@ export function usePOIData(year) {
       })
       .finally(() => setLoading(false));
   }, [year]);
-
   return { rows, loading };
 }

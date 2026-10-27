@@ -22,14 +22,11 @@
 -- Safe to re-run: removes/overwrites existing rows for these employees
 -- first, then inserts fresh ones.
 -- =====================================================================
-
 USE hrms_db;
-
 -- ---------------------------------------------------------------------
 -- 1. Salary structures (basic drives the earnings/deductions breakdown)
 -- ---------------------------------------------------------------------
 DELETE FROM salary_structures WHERE employee_id IN (1, 2, 3, 4, 5);
-
 INSERT INTO salary_structures (
   employee_id, basic, hra, conveyance, medical_allowance, special_allowance,
   pf_employee, pf_employer, professional_tax, income_tax, ctc, effective_from
@@ -44,7 +41,6 @@ INSERT INTO salary_structures (
   (4, 76000.00, 38000.00, 1600.00, 1250.00, 35150.00, 1800.00, 1800.00, 200.00, 0.00, 1845600.00, '2026-04-01'),
   -- EMP00005 - Night Shift Employee                  (Basic 30,000)
   (5, 30000.00, 15000.00, 1600.00, 1250.00, 12150.00, 1800.00, 1800.00, 200.00, 0.00, 741600.00,  '2026-04-01');
-
 -- ---------------------------------------------------------------------
 -- 2. Bank account details (shown on the payslip PDF)
 -- ---------------------------------------------------------------------
@@ -67,7 +63,6 @@ ON DUPLICATE KEY UPDATE
   bank_branch = VALUES(bank_branch),
   account_holder_name = VALUES(account_holder_name),
   payment_type = VALUES(payment_type);
-
 -- ---------------------------------------------------------------------
 -- 3. PF / ESI numbers (shown on the payslip PDF)
 -- ---------------------------------------------------------------------
@@ -76,7 +71,6 @@ UPDATE employees SET pf_number = 'PF/HYD/00123/002', esi_number = 'ESI100001002'
 UPDATE employees SET pf_number = 'PF/HYD/00123/003', esi_number = 'ESI100001003', pf_join_date = emp_joining_date WHERE employee_id = 3;
 UPDATE employees SET pf_number = 'PF/HYD/00123/004', esi_number = 'ESI100001004', pf_join_date = emp_joining_date WHERE employee_id = 4;
 UPDATE employees SET pf_number = 'PF/HYD/00123/005', esi_number = 'ESI100001005', pf_join_date = emp_joining_date WHERE employee_id = 5;
-
 -- ---------------------------------------------------------------------
 -- 4. Refresh this month's payslip for every employee so the new figures
 --    show up immediately on the Payslips page and in the downloaded PDF.
@@ -86,7 +80,6 @@ CALL sp_generate_payslip(2, MONTH(CURDATE()), YEAR(CURDATE()), NULL, @payslip_id
 CALL sp_generate_payslip(3, MONTH(CURDATE()), YEAR(CURDATE()), NULL, @payslip_id_3);
 CALL sp_generate_payslip(4, MONTH(CURDATE()), YEAR(CURDATE()), NULL, @payslip_id_4);
 CALL sp_generate_payslip(5, MONTH(CURDATE()), YEAR(CURDATE()), NULL, @payslip_id_5);
-
 SELECT @payslip_id_1 AS admin_payslip_id, @payslip_id_2 AS manager_payslip_id,
        @payslip_id_3 AS general_shift_payslip_id, @payslip_id_4 AS mid_shift_payslip_id,
        @payslip_id_5 AS night_shift_payslip_id;

@@ -1,6 +1,4 @@
-
 const { env } = require('../config/env');
-
 const logger = {
   info: (...args) => console.log(`[INFO]`, ...args),
   warn: (...args) => console.warn(`[WARN]`, ...args),
@@ -9,5 +7,4 @@ const logger = {
     if (env !== 'production') console.debug(`[DEBUG]`, ...args);
   }
 };
-
 module.exports = logger;

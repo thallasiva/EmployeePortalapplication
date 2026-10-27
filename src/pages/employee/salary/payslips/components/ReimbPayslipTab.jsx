@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { ClipboardList } from "lucide-react";
-
 const ReimbPayslipTab = React.memo(function ReimbPayslipTab() {
   return (
     <div className={cssClass({ border: "1px solid #e0e0e0", borderRadius: 8, padding: 60, textAlign: "center", background: "#fafbfc", minHeight: 260 })}>
@@ -12,5 +11,4 @@ const ReimbPayslipTab = React.memo(function ReimbPayslipTab() {
     </div>
   );
 });
-
 export default ReimbPayslipTab;

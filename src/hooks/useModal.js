@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-
 /**
  * Manages open/close state for modals and flyouts.
  * Optionally stores a payload (e.g. the row being edited).
@@ -24,19 +23,15 @@ import { useCallback, useState } from "react";
 export function useModal(initial = false) {
   const [open, setOpen] = useState(initial);
   const [data, setData] = useState(null);
-
   const show = useCallback((payload = null) => {
     setData(payload);
     setOpen(true);
   }, []);
-
   const hide = useCallback(() => {
     setOpen(false);
     // Delay clearing data so closing animation doesn't flicker
     setTimeout(() => setData(null), 200);
   }, []);
-
   const toggle = useCallback(() => setOpen((prev) => !prev), []);
-
   return { open, data, show, hide, toggle };
 }

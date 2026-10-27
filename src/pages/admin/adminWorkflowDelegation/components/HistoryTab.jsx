@@ -2,14 +2,12 @@ import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { fmtDate } from "../utils/formatters";
 import { SectionHead } from "./SharedUI";
-
 const TYPE_COLORS = {
   assign: { bg: "#dcfce7", color: "#16a34a" },
   transfer: { bg: "#dbeafe", color: "#2563eb" },
   bulk_transfer: { bg: "#ede9fe", color: "#7c3aed" },
   delegation: { bg: "#fef3c7", color: "#d97706" },
 };
-
 const HistoryTab = React.memo(function HistoryTab({ history }) {
   return (
     <div>
@@ -71,5 +69,4 @@ const HistoryTab = React.memo(function HistoryTab({ history }) {
     </div>
   );
 });
-
 export default HistoryTab;

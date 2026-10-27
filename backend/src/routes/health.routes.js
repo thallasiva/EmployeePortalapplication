@@ -11,10 +11,8 @@ const { query }    = require('../config/db');
 const nodemailer   = require('nodemailer');
 const fs           = require('fs');
 const path         = require('path');
-
 // Public ping
 router.get('/', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
-
 // Detailed health (admin/hr only)
 router.get('/detail',
   authenticate,
@@ -25,10 +23,8 @@ router.get('/detail',
     new ApiResponse(overall === 'ok' ? 200 : 503, { overall, checks }, 'Health check').send(res);
   })
 );
-
 async function runHealthChecks() {
   const results = [];
-
   // 1. Database
   try {
     const start = Date.now();
@@ -37,7 +33,6 @@ async function runHealthChecks() {
   } catch (e) {
     results.push({ name: 'database', status: 'error', error: e.message });
   }
-
   // 2. SMTP
   try {
     const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
@@ -52,7 +47,6 @@ async function runHealthChecks() {
   } catch (e) {
     results.push({ name: 'smtp', status: 'error', error: e.message });
   }
-
   // 3. OpenAI key
   const openAiKey = process.env.OPENAI_API_KEY || '';
   results.push({
@@ -60,7 +54,6 @@ async function runHealthChecks() {
     status: openAiKey.startsWith('sk-') ? 'ok' : 'error',
     error: openAiKey.startsWith('sk-') ? undefined : 'OPENAI_API_KEY not set or invalid'
   });
-
   // 4. Storage / uploads dir
   try {
     const uploadsDir = path.resolve(__dirname, '../../uploads');
@@ -69,7 +62,6 @@ async function runHealthChecks() {
   } catch (e) {
     results.push({ name: 'storage', status: 'error', error: e.message });
   }
-
   // 5. Required env vars
   const required = ['JWT_SECRET', 'DB_HOST', 'DB_NAME'];
   const missing  = required.filter(k => !process.env[k]);
@@ -78,8 +70,6 @@ async function runHealthChecks() {
     status: missing.length ? 'error' : 'ok',
     missing: missing.length ? missing : undefined
   });
-
   return results;
 }
-
 module.exports = router;

@@ -2,7 +2,6 @@ import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { getStoredUser } from "../data/auth";
 import LazyPage from "./LazyPage";
-
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"));
 const Employee = lazy(() => import("../pages/admin/Employee"));
 const EmployeeDetail = lazy(() => import("../pages/admin/EmployeeDetail"));
@@ -56,9 +55,7 @@ const SalaryComponents    = lazy(() => import("../pages/admin/SalaryComponents")
 const SalaryStructures    = lazy(() => import("../pages/admin/SalaryStructures"));
 const SalaryAssignments      = lazy(() => import("../pages/admin/SalaryAssignments"));
 const SalaryStructureEditor  = lazy(() => import("../pages/admin/SalaryStructureEditor"));
-
 const Page = LazyPage;
-
 const AdminRoutes = () =>
 {
   const user = getStoredUser();
@@ -123,5 +120,4 @@ const AdminRoutes = () =>
     </Routes>
   );
 };
-
 export default AdminRoutes;

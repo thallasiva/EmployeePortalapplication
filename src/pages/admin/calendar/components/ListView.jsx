@@ -2,7 +2,6 @@ import React from 'react';
 import { CalendarDays } from 'lucide-react';
 import { DAYS } from '../constants/eventTypes';
 import EventChip from './EventChip';
-
 const ListView = React.memo(function ListView({
   year,
   month,
@@ -14,7 +13,6 @@ const ListView = React.memo(function ListView({
     const d = new Date(k);
     return d.getFullYear() === year && d.getMonth() + 1 === month;
   });
-
   if (loading) {
     return (
       <div className="p-4">
@@ -22,7 +20,6 @@ const ListView = React.memo(function ListView({
       </div>
     );
   }
-
   if (monthEntries.length === 0) {
     return (
       <div className="p-4">
@@ -33,7 +30,6 @@ const ListView = React.memo(function ListView({
       </div>
     );
   }
-
   return (
     <div className="p-4">
       <div className="space-y-2">
@@ -64,5 +60,4 @@ const ListView = React.memo(function ListView({
     </div>
   );
 });
-
 export default ListView;

@@ -1,5 +1,4 @@
 import React from "react";
-
 const CtcTableRow = React.memo(function CtcTableRow({ label, monthly, annual, highlight }) {
   return (
     <div className={`grid grid-cols-3 px-4 py-2.5 border-b border-gray-100 ${highlight ? "bg-orange-50" : ""}`}>
@@ -9,5 +8,4 @@ const CtcTableRow = React.memo(function CtcTableRow({ label, monthly, annual, hi
     </div>
   );
 });
-
 export default CtcTableRow;

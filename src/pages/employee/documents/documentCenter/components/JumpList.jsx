@@ -1,5 +1,4 @@
 import React from "react";
-
 const JumpList = React.memo(function JumpList({ title = "JUMP TO", items, onJump }) {
   return (
     <aside className="w-[170px] border-r border-[#edf1f5] px-3 py-3 shrink-0">
@@ -18,5 +17,4 @@ const JumpList = React.memo(function JumpList({ title = "JUMP TO", items, onJump
     </aside>
   );
 });
-
 export default JumpList;

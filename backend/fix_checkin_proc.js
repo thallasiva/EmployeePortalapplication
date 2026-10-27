@@ -1,7 +1,6 @@
 'use strict';
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-
 async function run() {
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
@@ -11,7 +10,6 @@ async function run() {
     database: process.env.DB_NAME || 'hrms_db',
     multipleStatements: false,
   });
-
   // Add location columns safely (skip if already exists)
   const locationCols = [
     ['checkin_lat',       'DECIMAL(10,6) DEFAULT NULL'],
@@ -21,7 +19,6 @@ async function run() {
     ['checkout_lng',      'DECIMAL(10,6) DEFAULT NULL'],
     ['checkout_location', 'VARCHAR(200)  DEFAULT NULL'],
   ];
-
   for (const [col, def] of locationCols) {
     try {
       await conn.query(`ALTER TABLE attendance ADD COLUMN ${col} ${def}`);
@@ -34,7 +31,6 @@ async function run() {
       }
     }
   }
-
   const procs = [
     [`DROP PROCEDURE IF EXISTS sp_employee_checkin`, 'drop sp_employee_checkin'],
     [`CREATE PROCEDURE sp_employee_checkin (
@@ -80,7 +76,6 @@ BEGIN
     checkin_lng      = IF(check_in IS NULL, p_lng, checkin_lng),
     checkin_location = IF(check_in IS NULL, p_location, checkin_location);
 END`, 'create sp_employee_checkin (7 params)'],
-
     [`DROP PROCEDURE IF EXISTS sp_employee_checkout`, 'drop sp_employee_checkout'],
     [`CREATE PROCEDURE sp_employee_checkout (
   IN p_employee_id INT,
@@ -112,7 +107,6 @@ BEGIN
   WHERE employee_id = p_employee_id AND attendance_date = p_date;
 END`, 'create sp_employee_checkout (6 params)'],
   ];
-
   for (const [sql, label] of procs) {
     try {
       await conn.query(sql);
@@ -121,9 +115,7 @@ END`, 'create sp_employee_checkout (6 params)'],
       console.error('ERR ' + label + ': ' + err.message);
     }
   }
-
   await conn.end();
   console.log('\nDone. Restart backend and test check-in again.');
 }
-
 run().catch(err => { console.error(err); process.exit(1); });

@@ -3,7 +3,6 @@ import { Search, ChevronRight } from "lucide-react";
 import { cssClass, joinClasses } from "../../../../../utils/classStyles";
 import { SECTIONS } from "../constants";
 import UpcomingPanel from "./UpcomingPanel";
-
 const FilterSidebar = React.memo(function FilterSidebar({
   activeFilter, setActiveFilter,
   search, setSearch,
@@ -16,7 +15,6 @@ const FilterSidebar = React.memo(function FilterSidebar({
       {/* Filter Panel */}
       <div className="bg-white rounded-lg shadow p-4">
         <h3 className="font-semibold text-gray-800 mb-4">Filters</h3>
-
         <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Activities</h4>
         <div className="space-y-1 mb-5">
           {SECTIONS.map(({ key, label, icon, color }) => {
@@ -53,7 +51,6 @@ const FilterSidebar = React.memo(function FilterSidebar({
             );
           })}
         </div>
-
         <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Search</h4>
         <div className="relative">
           <input
@@ -66,9 +63,7 @@ const FilterSidebar = React.memo(function FilterSidebar({
           <Search className="absolute right-3 top-2.5 w-4 h-4 text-gray-400" />
         </div>
       </div>
-
       <UpcomingPanel employees={employees} holidays={holidays} />
-
       {/* Quick Links */}
       <div className="bg-white rounded-lg shadow p-4">
         <p className={cssClass({ fontSize: 13, fontWeight: 600, color: "#1a2233", margin: "0 0 10px" })}>
@@ -97,5 +92,4 @@ const FilterSidebar = React.memo(function FilterSidebar({
     </div>
   );
 });
-
 export default FilterSidebar;

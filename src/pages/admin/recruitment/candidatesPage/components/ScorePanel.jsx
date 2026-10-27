@@ -2,7 +2,6 @@ import React from "react";
 import { REC_CLASS } from "../constants";
 import { scoreTextCls, scoreBgCls, safeArr } from "../utils";
 import { Target, Wrench, CalendarDays, Check, X, ArrowRight } from "lucide-react";
-
 const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
   const ovr = Number(score.matchScore) || 0;
   const skl = Number(score.skillScore) || 0;
@@ -11,14 +10,12 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
   const recCls = REC_CLASS[rec] || "bg-gray-100 text-gray-700";
   const matched = safeArr(score.matched);
   const miss2 = safeArr(score.missing);
-
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-200">
         <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Resume Match Score</span>
         <span className={`text-[11px] font-bold px-3 py-0.5 rounded-full ${recCls}`}>{rec}</span>
       </div>
-
       <div className="grid grid-cols-3 gap-px bg-gray-200">
         {[
           { label: "Overall Match", value: ovr, icon: <Target size={12} /> },
@@ -36,7 +33,6 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
           </div>
         )}
       </div>
-
       <div className="p-4">
         {matched.length > 0 &&
           <div className="mb-2.5">
@@ -70,5 +66,4 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
     </div>
   );
 });
-
 export default ScorePanel;

@@ -3,14 +3,11 @@ import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND, TEAMS, STATUS_COLOR } from "../constants";
 import { managerAction } from "../../../../../api/helpdesk.api";
-
 const ManagerDecisionPanel = React.memo(({ ticket, onUpdated }) => {
   const sc = STATUS_COLOR[ticket.status] || STATUS_COLOR["Open"];
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
-
   const alreadyActioned = ticket.status !== "Open";
-
   const doApprove = async () => {
     // Ask which team to forward to
     const teamList = TEAMS.join("\n");
@@ -28,7 +25,6 @@ const ManagerDecisionPanel = React.memo(({ ticket, onUpdated }) => {
       setError(e?.response?.data?.message || "Action failed.");
     } finally { setLoading(false); }
   };
-
   const doReject = async () => {
     const reason = window.prompt("Reason for rejection (required):");
     if (reason === null) return; // cancelled
@@ -41,14 +37,12 @@ const ManagerDecisionPanel = React.memo(({ ticket, onUpdated }) => {
       setError(e?.response?.data?.message || "Action failed.");
     } finally { setLoading(false); }
   };
-
   return (
     <div className={cssClass({ padding: "16px 24px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 })}>
       <p className={cssClass({ fontSize: 10, color: "#94a3b8", fontWeight: 600,
         textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" })}>
         Manager Decision
       </p>
-
       {alreadyActioned ? (
         <div className={cssClass({ padding: "10px 14px", borderRadius: 8, background: sc.bg,
           border: `1px solid ${sc.color}33`, fontSize: 13, color: sc.color, fontWeight: 600 })}>
@@ -88,6 +82,5 @@ const ManagerDecisionPanel = React.memo(({ ticket, onUpdated }) => {
     </div>
   );
 });
-
 ManagerDecisionPanel.displayName = "ManagerDecisionPanel";
 export default ManagerDecisionPanel;

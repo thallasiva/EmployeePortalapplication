@@ -2,11 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Save, RotateCcw, Loader2, Lock } from "lucide-react";
 import { emailPermissionsApi } from "../../../../../api/settings.api";
 import { Btn, Toast } from "../components/SharedUI";
-
 const ROLES = ["Super Admin","HR Manager","Manager","Employee","Recruiter","Finance"];
 const MODULES = ["Leave","Attendance","Payroll","Recruitment","Onboarding","Performance","Helpdesk","Announcements"];
 const PERM_TYPES = ["Send Email","Receive Email","Configure Templates"];
-
 const buildDefault = () =>
   MODULES.map(() =>
     ROLES.map((_, ri) => PERM_TYPES.map((_, pi) => {
@@ -15,15 +13,12 @@ const buildDefault = () =>
       return ri === 0;                      // Configure: only Admin
     }))
   );
-
 export default function EmailPermissions() {
   const [perms, setPerms] = useState(buildDefault);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
-
   const showToast = (msg, type = "success") => { setToast({ message: msg, type }); setTimeout(() => setToast(null), 3000); };
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -40,9 +35,7 @@ export default function EmailPermissions() {
     } catch { /* use defaults */ }
     finally { setLoading(false); }
   }, []);
-
   useEffect(() => { load(); }, [load]);
-
   const toggle = (mi, ri, pi) => {
     setPerms(prev => {
       const next = prev.map(m => m.map(r => [...r]));
@@ -50,7 +43,6 @@ export default function EmailPermissions() {
       return next;
     });
   };
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -68,19 +60,15 @@ export default function EmailPermissions() {
     } catch { showToast("Save failed", "error"); }
     finally { setSaving(false); }
   };
-
   const handleReset = () => { setPerms(buildDefault()); showToast("Reset to defaults", "info"); };
-
   if (loading) return (
     <div className="flex items-center justify-center h-40">
       <Loader2 size={24} className="animate-spin text-[#f18200]" />
     </div>
   );
-
   return (
     <div className="space-y-5">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
-
       <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-x-auto">
         <table className="w-full text-[12px] min-w-[700px]">
           <thead className="bg-[#f8fafc] border-b border-[#f1f5f9]">
@@ -127,7 +115,6 @@ export default function EmailPermissions() {
           </tbody>
         </table>
       </div>
-
       {/* Legend */}
       <div className="flex items-center gap-6 text-[12px] text-[#64748b] bg-[#f8fafc] rounded-xl p-3">
         <Lock size={13} className="text-[#94a3b8]" />
@@ -137,7 +124,6 @@ export default function EmailPermissions() {
           </span>
         ))}
       </div>
-
       <div className="flex gap-3 justify-end">
         <Btn variant="outline" icon={<RotateCcw size={13} />} onClick={handleReset}>Reset</Btn>
         <Btn icon={saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}

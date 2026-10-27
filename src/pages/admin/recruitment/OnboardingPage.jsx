@@ -12,7 +12,6 @@ import
   } from
   "../../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../../utils/ToastControllers";
-
 const FORMALITY_STEPS = [
   { key: "employee_info_submitted", label: "Employee Info Submitted", boolean: true },
   { key: "photo_uploaded", label: "Photo Uploaded", boolean: true },
@@ -22,8 +21,6 @@ const FORMALITY_STEPS = [
   { key: "insurance_nomination", label: "Insurance Nomination", boolean: false },
   { key: "pf_declaration", label: "PF Declaration", boolean: false },
   { key: "hr_verified", label: "HR Verification", boolean: true }];
-
-
 const ENUM_OPTS = {
   joining_formalities: ["Pending", "In Progress", "Completed"],
   team_life_insurance: ["Pending", "Nominated", "Confirmed"],
@@ -31,7 +28,6 @@ const ENUM_OPTS = {
   insurance_nomination: ["Pending", "Submitted", "Confirmed"],
   pf_declaration: ["Pending", "Submitted", "Approved"]
 };
-
 const STEP_STATUS_CLS = {
   Pending: "bg-red-100 text-red-600",
   "In Progress": "bg-amber-100 text-amber-600",
@@ -41,13 +37,11 @@ const STEP_STATUS_CLS = {
   Submitted: "bg-violet-100 text-violet-600",
   Approved: "bg-emerald-100 text-emerald-600"
 };
-
 function fmt(v)
 {
   if (!v && v !== 0) return "—";
   return "₹" + Number(v).toLocaleString("en-IN");
 }
-
 function StepBadge({ value, boolean: isBool })
 {
   if (isBool)
@@ -59,7 +53,6 @@ function StepBadge({ value, boolean: isBool })
   const cls = STEP_STATUS_CLS[value] ?? "bg-gray-100 text-gray-500";
   return <span className={`px-2.5 py-[2px] rounded-full text-[11px] font-bold ${cls}`}>{value || "Pending"}</span>;
 }
-
 export default function OnboardingPage({ role })
 {
   const [records, setRecords] = useState([]);
@@ -69,12 +62,9 @@ export default function OnboardingPage({ role })
   const [detailLoading, setDetailLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [updating, setUpdating] = useState(false);
-
   const isAdmin = role === 1;
   const isTL = role === 3;
-
   const canEdit = isAdmin || isTL;
-
   const loadRecords = useCallback(async () =>
   {
     setLoading(true);
@@ -87,9 +77,7 @@ export default function OnboardingPage({ role })
       apiErrorToast(err, "Failed to load onboarding records");
     } finally { setLoading(false); }
   }, []);
-
   useEffect(() => { loadRecords(); }, [loadRecords]);
-
   async function openDetail(row)
   {
     setActiveTab(0);
@@ -102,7 +90,6 @@ export default function OnboardingPage({ role })
     } catch { } finally
     { setDetailLoading(false); }
   }
-
   async function handleUpdateTask(onboardingId, taskName, taskValue)
   {
     setUpdating(true);
@@ -116,7 +103,6 @@ export default function OnboardingPage({ role })
       apiErrorToast(err, "Failed to update task");
     } finally { setUpdating(false); }
   }
-
   async function handleFinalize(onboardingId)
   {
     setUpdating(true);
@@ -131,13 +117,11 @@ export default function OnboardingPage({ role })
       apiErrorToast(err, "Failed to finalize onboarding");
     } finally { setUpdating(false); }
   }
-
   const visible = records.filter((r) =>
   {
     const q = search.toLowerCase();
     return !q || (r.candidate_name || "").toLowerCase().includes(q) || (r.candidate_code || "").toLowerCase().includes(q);
   });
-
   const completedSteps = detail ?
     FORMALITY_STEPS.filter((s) =>
     {
@@ -146,7 +130,6 @@ export default function OnboardingPage({ role })
     }).length :
     0;
   const totalSteps = FORMALITY_STEPS.length;
-
   const columns = [
     { header: "ID", key: "onboarding_id", width: 60 },
     {
@@ -170,10 +153,7 @@ export default function OnboardingPage({ role })
         <Btn size="sm" variant="ghost" icon={<Eye size={13} />}
           onClick={(e) => { e.stopPropagation(); openDetail(row); }}>View</Btn>
     }];
-
-
   const tabs = ["Joining Formalities", "Offer Summary"];
-
   return (
     <div>
       <PageHeader
@@ -181,8 +161,6 @@ export default function OnboardingPage({ role })
         title="Onboarding"
         subtitle="Track joining formalities and finalize employee onboarding"
         action={<Btn variant="secondary" icon={<RefreshCw size={14} />} onClick={loadRecords} />} />
-
-
       <div className="flex gap-2.5 mb-5 flex-wrap">
         {[
           { label: "Total", count: records.length, colorCls: "text-gray-500", bgCls: "bg-gray-100" },
@@ -195,7 +173,6 @@ export default function OnboardingPage({ role })
             </div>
           )}
       </div>
-
       <Card className="!p-0">
         <div className="flex items-center gap-3 px-[18px] py-3.5 border-b border-gray-100">
           <SearchBar value={search} onChange={setSearch} placeholder="Search by candidate name or code…" />
@@ -208,7 +185,6 @@ export default function OnboardingPage({ role })
           <Table columns={columns} data={visible} onRowClick={(r) => openDetail(r)} />
         }
       </Card>
-
       { }
       <Modal open={!!detail} onClose={() => setDetail(null)}
         title={`Onboarding — ${detail?.candidate_name || ""}`} width={640}
@@ -223,7 +199,6 @@ export default function OnboardingPage({ role })
             <Btn variant="secondary" onClick={() => setDetail(null)}>Close</Btn>
           </div>
         }>
-
         {detail &&
           <div>
             {detailLoading &&
@@ -231,7 +206,6 @@ export default function OnboardingPage({ role })
                 <Loader2 size={14} /> Loading details…
               </div>
             }
-
             { }
             <div className="mb-4">
               <div className="flex justify-between text-[12px] text-gray-500 mb-1.5">
@@ -244,12 +218,9 @@ export default function OnboardingPage({ role })
                 <div
                   className={`h-full rounded-full transition-all duration-400 ${completedSteps === totalSteps ? "bg-emerald-500" : "bg-[#f18200]"}`}
                   style={{ width: `${completedSteps / totalSteps * 100}%` }} />
-
               </div>
             </div>
-
             <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
-
             {activeTab === 0 &&
               <div className="mt-3.5">
                 {FORMALITY_STEPS.map((step, i) =>
@@ -274,24 +245,19 @@ export default function OnboardingPage({ role })
                             disabled={updating}
                             className={`cursor-pointer px-3 py-[3px] rounded-full border-0 text-[11px] font-bold ${value === true || value === 1 ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"}`
                             }>
-
                             {value === true || value === 1 ? <span className="inline-flex items-center gap-1"><Check size={12} /> Done</span> : "Pending"}
                           </button> :
-
                           <select
                             value={value || "Pending"}
                             onChange={(e) => handleUpdateTask(detail.onboarding_id, step.key, e.target.value)}
                             disabled={updating}
                             className="text-[12px] font-semibold border border-gray-200 rounded-full px-2.5 py-[2px] bg-transparent cursor-pointer outline-none"
                             style={{ fontFamily: "inherit" }}>
-
                             {(ENUM_OPTS[step.key] || ["Pending", "In Progress", "Completed"]).map((s) => <option key={s}>{s}</option>)}
                           </select>)
-
                       }
                       {!canEdit && <StepBadge value={step.boolean ? value === true || value === 1 : value} boolean={step.boolean} />}
                     </div>);
-
                 })}
                 <div className="mt-3.5">
                   <Field label="Effective Date">
@@ -302,7 +268,6 @@ export default function OnboardingPage({ role })
                 </div>
               </div>
             }
-
             {activeTab === 1 &&
               <div className="mt-3.5">
                 <div className="grid grid-cols-2 gap-x-5 mb-3.5">
@@ -326,7 +291,6 @@ export default function OnboardingPage({ role })
                       </div>
                     }
                   </div> :
-
                   <div className="text-center py-8 text-gray-400 text-[13px]">
                     No offer data linked to this onboarding record.
                   </div>
@@ -337,5 +301,4 @@ export default function OnboardingPage({ role })
         }
       </Modal>
     </div>);
-
 }

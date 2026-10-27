@@ -2,7 +2,6 @@ const BaseService = require('./base.service');
 const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
-
 class LeaveRequestService extends BaseService {
   constructor() {
     super('leave_requests', 'leave_request_id', [
@@ -10,13 +9,10 @@ class LeaveRequestService extends BaseService {
     'days', 'reason', 'status', 'reviewed_by', 'remarks', 'is_cancel_request']
     );
   }
-
-
   async _getEmailPair(employeeId) {
     const results = await callProcedure('sp_get_leave_email_pair(?)', [employeeId]);
     return (results[0] ?? [])[0] ?? {};
   }
-
   async list({ employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset } = {}) {
     const results = await callProcedure(
       'sp_list_leave_requests(?, ?, ?, ?, ?, ?, ?, ?)',
@@ -29,16 +25,13 @@ class LeaveRequestService extends BaseService {
       limit != null ? Math.min(Number(limit), 10000) : null,
       limit != null ? Number(offset || 0) : null,
       team_role_id ?? null]
-
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getDetails(id) {
     const results = await callProcedure('sp_get_leave_request(?)', [id]);
     return (results[0] ?? results)[0] ?? null;
   }
-
   async apply(data) {
     const { results, outs } = await callProcedureWithOuts('sp_apply_leave(?, ?, ?, ?, ?, ?, ?, ?, @request_id, @status_msg)', [
     data.employee_id, data.leave_type_id, data.from_date, data.from_session || null,
@@ -46,10 +39,7 @@ class LeaveRequestService extends BaseService {
     );
     const { request_id, status_msg } = outs;
     if (!request_id) throw ApiError.badRequest(status_msg || 'Unable to submit leave request');
-
     const leave = await this.getDetails(request_id);
-
-
     const pair = await this._getEmailPair(data.employee_id);
     notify.leaveApplied({
       managerEmail: pair.mgr_email || null,
@@ -63,10 +53,8 @@ class LeaveRequestService extends BaseService {
       reason: data.reason || '',
       leaveRequestId: request_id
     });
-
     return leave;
   }
-
   async review(id, { decision, reviewed_by, remarks }) {
     try {
       await callProcedure('sp_review_leave_request(?, ?, ?, ?)', [id, decision, reviewed_by, remarks || null]);
@@ -75,8 +63,6 @@ class LeaveRequestService extends BaseService {
       throw err;
     }
     const leave = await this.getDetails(id);
-
-
     if (leave) {
       const pair = await this._getEmailPair(leave.employee_id);
       const reviewerResults = await callProcedure('sp_get_employee_display_name(?)', [reviewed_by]);
@@ -96,11 +82,8 @@ class LeaveRequestService extends BaseService {
     }
     return leave;
   }
-
   async cancel(id, employeeId) {
-
     const leaveBeforeCancel = await this.getDetails(id);
-
     const { outs } = await callProcedureWithOuts('sp_cancel_leave_request(?, ?, @ok, @msg)', [id, employeeId]);
     const { ok, msg: cancelMsg } = outs;
     if (!ok) {
@@ -109,8 +92,6 @@ class LeaveRequestService extends BaseService {
       if (msg.includes('your own')) throw ApiError.forbidden(msg);
       throw ApiError.conflict(msg);
     }
-
-
     if (leaveBeforeCancel) {
       const pair = await this._getEmailPair(leaveBeforeCancel.employee_id || employeeId);
       notify.leaveCancelled({
@@ -124,24 +105,19 @@ class LeaveRequestService extends BaseService {
     }
     return this.getDetails(id);
   }
-
   async balances(employeeId, year) {
     const targetYear = year || new Date().getFullYear();
     const results = await callProcedure('sp_get_leave_balances(?, ?)', [employeeId, targetYear]);
     return results[0] ?? results;
   }
-
   async allBalances(year) {
     const targetYear = Number(year) || new Date().getFullYear();
     const results = await callProcedure('sp_all_leave_balances(?)', [targetYear]);
-
     const employees = results[0] ?? [];
     const leaveTypes = results[1] ?? [];
     const balances = results[2] ?? [];
-
     const balMap = {};
     balances.forEach((b) => {balMap[`${b.employee_id}_${b.leave_type_id}`] = b;});
-
     const result = employees.map((emp) => ({
       ...emp,
       balances: leaveTypes.map((lt) => {
@@ -158,10 +134,8 @@ class LeaveRequestService extends BaseService {
         };
       })
     }));
-
     return { employees: result, leaveTypes, year: targetYear };
   }
-
   async accrueEarnedLeave(month, year) {
     const m = Number(month);
     const y = Number(year);
@@ -170,7 +144,6 @@ class LeaveRequestService extends BaseService {
     const out = (results[0] ?? [])[0] ?? {};
     return { accrued: out.accrued ?? 0, skipped: 0, earnedPerEmployee: null, month: m, year: y, leaveTypeId: out.leave_type_id };
   }
-
   async adjustBalance({ employeeId, leaveTypeId, year, opening_balance, granted, availed }) {
     const targetYear = Number(year) || new Date().getFullYear();
     const ob = Number(opening_balance) || 0;
@@ -180,18 +153,15 @@ class LeaveRequestService extends BaseService {
     await callProcedure('sp_adjust_leave_balance(?, ?, ?, ?, ?, ?)', [employeeId, leaveTypeId, targetYear, ob, gr, av]);
     return { employeeId, leaveTypeId, year: targetYear, opening_balance: ob, granted: gr, availed: av, balance: bal };
   }
-
   async initializeBalancesForYear(year) {
     const targetYear = Number(year) || new Date().getFullYear();
     const results = await callProcedure('sp_init_leave_balances_year(?)', [targetYear]);
     const created = (results[0] ?? [])[0]?.created ?? 0;
     return { year: targetYear, created, skipped: 0 };
   }
-
   async importBalances(rows, year) {
     const targetYear = Number(year) || new Date().getFullYear();
     let imported = 0,errors = [];
-
     for (const row of rows) {
       try {
         await this.adjustBalance({
@@ -209,30 +179,23 @@ class LeaveRequestService extends BaseService {
     }
     return { imported, errors, year: targetYear };
   }
-
   async leaveSummary(year, { department_id, status } = {}) {
     const targetYear = Number(year) || new Date().getFullYear();
-
     const results = await callProcedure(
       'sp_get_leave_summary(?, ?, ?)',
       [targetYear, department_id ?? null, status ?? null]
     );
-
     const employees = results[0] ?? [];
     const leaveTypes = results[1] ?? [];
     const balances = results[2] ?? [];
     const monthlyRows = results[3] ?? [];
-
     const balMap = {};
     balances.forEach((b) => {balMap[`${b.employee_id}_${b.leave_type_id}`] = b;});
-
     const monthMap = {};
     monthlyRows.forEach((r) => {
       monthMap[`${r.employee_id}_${r.leave_type_id}_${r.month}`] = Number(r.days_taken) || 0;
     });
-
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
     const result = employees.map((emp) => ({
       employee_id: emp.employee_id,
       emp_code: emp.emp_code,
@@ -257,9 +220,7 @@ class LeaveRequestService extends BaseService {
         };
       })
     }));
-
     return { employees: result, leaveTypes, year: targetYear, months: MONTHS };
   }
 }
-
 module.exports = new LeaveRequestService();

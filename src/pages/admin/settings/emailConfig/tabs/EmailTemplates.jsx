@@ -2,11 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Search, Eye, Edit2, Copy, Trash2, X, Send, Mail, Loader2, LayoutTemplate, Save, ChevronLeft, ChevronRight } from "lucide-react";
 import { Btn, Badge, ConfirmDialog, Toast } from "../components/SharedUI";
 import { emailTemplatesApi } from "../../../../../api/settings.api";
-
 const PER = 8;
 const CATEGORIES = ["Onboarding","Leave","Attendance","Payroll","Recruitment","Performance","Helpdesk","Announcements","System"];
 const CAT_COLORS  = { Onboarding:"#6366f1",Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#3b82f6",Recruitment:"#8b5cf6",Performance:"#ec4899",Helpdesk:"#14b8a6",Announcements:"#f97316",System:"#64748b" };
-
 const SAMPLES = {
   "{{EmployeeName}}":"Rajan Kumar","{{EmployeeId}}":"EMP1042","{{Department}}":"Engineering",
   "{{Designation}}":"Senior Developer","{{ManagerName}}":"Priya Sharma","{{LeaveType}}":"Casual Leave",
@@ -17,16 +15,13 @@ const SAMPLES = {
   "{{ExpiryDate}}":"31 Dec 2026","{{SupportLink}}":"https://support.company.com","{{Year}}":"2026",
   "{{Status}}":"Approved","{{Remarks}}":"Approved as requested","{{ActionBy}}":"HR Admin",
 };
-
 // Action button HTML snippets rendered in preview
 const ACTION_VARS = {
   "{{ApproveButton}}": `<a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">Approve</a>`,
   "{{RejectButton}}":  `<a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Reject</a>`,
   "{{ActionButtons}}": `<div style="margin:20px 0;"><a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">Approve</a><a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Reject</a></div>`,
 };
-
 const ALL_VARS = [...Object.keys(SAMPLES), ...Object.keys(ACTION_VARS)];
-
 const renderPreview = (body) => {
   let result = body || "";
   // Replace action button vars first (they produce raw HTML)
@@ -37,7 +32,6 @@ const renderPreview = (body) => {
   });
   return result;
 };
-
 /* ── Editor Modal ── */
 function TemplateModal({ tpl, onClose, onSave }) {
   const isNew = !tpl?.id;
@@ -48,9 +42,7 @@ function TemplateModal({ tpl, onClose, onSave }) {
   const [tab, setTab] = useState("edit");
   const [saving, setSaving] = useState(false);
   const bodyRef = useRef(null);
-
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-
   const insertVar = (v) => {
     const el = bodyRef.current;
     if (!el) { set("body", form.body + v); return; }
@@ -60,7 +52,6 @@ function TemplateModal({ tpl, onClose, onSave }) {
     set("body", newVal);
     setTimeout(() => { el.focus(); el.setSelectionRange(start + v.length, start + v.length); }, 0);
   };
-
   const handleSave = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
@@ -68,7 +59,6 @@ function TemplateModal({ tpl, onClose, onSave }) {
     catch { }
     finally { setSaving(false); }
   };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
@@ -85,7 +75,6 @@ function TemplateModal({ tpl, onClose, onSave }) {
               }`}>{t}</button>
           ))}
         </div>
-
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {tab === "edit" ? (
             <div className="space-y-4">
@@ -161,7 +150,6 @@ function TemplateModal({ tpl, onClose, onSave }) {
             </div>
           )}
         </div>
-
         <div className="px-6 py-4 border-t border-[#f1f5f9] flex gap-3 justify-end shrink-0">
           <Btn variant="outline" onClick={onClose}>Cancel</Btn>
           <Btn onClick={handleSave} disabled={saving}
@@ -173,7 +161,6 @@ function TemplateModal({ tpl, onClose, onSave }) {
     </div>
   );
 }
-
 /* ── Preview Modal ── */
 function PreviewModal({ tpl, onClose }) {
   if (!tpl) return null;
@@ -204,7 +191,6 @@ function PreviewModal({ tpl, onClose }) {
     </div>
   );
 }
-
 export default function EmailTemplates() {
   const [templates, setTemplates] = useState([]);
   const [total, setTotal] = useState(0);
@@ -216,9 +202,7 @@ export default function EmailTemplates() {
   const [modal, setModal] = useState(null);   // null | { mode:"edit"|"preview", item }
   const [confirm, setConfirm] = useState(null);
   const [toast, setToast] = useState(null);
-
   const showToast = (msg, type = "success") => { setToast({ message: msg, type }); setTimeout(() => setToast(null), 3000); };
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -228,10 +212,8 @@ export default function EmailTemplates() {
     } catch { showToast("Failed to load templates", "error"); }
     finally { setLoading(false); }
   }, [search, category, status, page]);
-
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [search, category, status]);
-
   const handleSave = async (form) => {
     if (modal?.item?.id) {
       await emailTemplatesApi.update(modal.item.id, form);
@@ -242,19 +224,15 @@ export default function EmailTemplates() {
     }
     load();
   };
-
   const handleClone = async (id) => {
     try { await emailTemplatesApi.clone(id); showToast("Template cloned"); load(); }
     catch { showToast("Clone failed", "error"); }
   };
-
   const handleDelete = async (id) => {
     try { await emailTemplatesApi.delete(id); showToast("Deleted"); load(); }
     catch { showToast("Delete failed", "error"); }
   };
-
   const totalPages = Math.max(1, Math.ceil(total / PER));
-
   return (
     <div className="space-y-5">
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
@@ -267,7 +245,6 @@ export default function EmailTemplates() {
       {modal?.mode === "preview" && (
         <PreviewModal tpl={modal.item} onClose={() => setModal(null)} />
       )}
-
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -287,7 +264,6 @@ export default function EmailTemplates() {
         </select>
         <Btn icon={<Plus size={14} />} onClick={() => setModal({ mode:"edit", item: null })}>New Template</Btn>
       </div>
-
       {/* Grid */}
       {loading ? (
         <div className="flex items-center justify-center h-40">
@@ -326,7 +302,6 @@ export default function EmailTemplates() {
           ))}
         </div>
       )}
-
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-1">

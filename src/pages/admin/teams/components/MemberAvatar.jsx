@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import { getAvatarColor, getInitials } from "../utils";
-
 const MemberAvatar = React.memo(function MemberAvatar({ name, size = "sm" }) {
   return (
     <span
@@ -15,5 +14,4 @@ const MemberAvatar = React.memo(function MemberAvatar({ name, size = "sm" }) {
     </span>
   );
 });
-
 export default MemberAvatar;

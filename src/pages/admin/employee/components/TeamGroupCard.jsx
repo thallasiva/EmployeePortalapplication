@@ -4,11 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import { getInitials, avatarColor } from "../utils";
 import StatusChip from "./StatusChip";
-
 const TeamGroupCard = React.memo(function TeamGroupCard({ department, employees }) {
   const [expanded, setExpanded] = useState(true);
   const navigate = useNavigate();
-
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <button
@@ -33,7 +31,6 @@ const TeamGroupCard = React.memo(function TeamGroupCard({ department, employees 
           <ChevronRight size={16} className="text-gray-400" />
         )}
       </button>
-
       {expanded && (
         <div className="border-t border-gray-100 divide-y divide-gray-50">
           {employees.map((emp) => {
@@ -71,5 +68,4 @@ const TeamGroupCard = React.memo(function TeamGroupCard({ department, employees 
     </div>
   );
 });
-
 export default TeamGroupCard;

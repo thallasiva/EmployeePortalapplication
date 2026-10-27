@@ -2,19 +2,14 @@
 -- HRMS Backend - Database Schema
 -- Database: MySQL 8.0+
 -- =====================================================================
-
 CREATE DATABASE IF NOT EXISTS hrms_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
-
 USE hrms_db;
-
 SET FOREIGN_KEY_CHECKS = 0;
-
 -- =====================================================================
 -- 1. ORGANIZATION STRUCTURE
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS companies (
   company_id    INT AUTO_INCREMENT PRIMARY KEY,
   company_name  VARCHAR(150) NOT NULL,
@@ -24,13 +19,11 @@ CREATE TABLE IF NOT EXISTS companies (
   created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS roles (
   role_id    INT AUTO_INCREMENT PRIMARY KEY,
   role_name  VARCHAR(60) NOT NULL UNIQUE,
   description VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS departments (
   department_id   INT AUTO_INCREMENT PRIMARY KEY,
   department_name VARCHAR(100) NOT NULL,
@@ -38,20 +31,17 @@ CREATE TABLE IF NOT EXISTS departments (
   created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_department_company FOREIGN KEY (company_id) REFERENCES companies(company_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS designations (
   designation_id   INT AUTO_INCREMENT PRIMARY KEY,
   designation_name VARCHAR(100) NOT NULL,
   department_id    INT DEFAULT NULL,
   CONSTRAINT fk_designation_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS leadership_roles (
   leadership_role_id INT AUTO_INCREMENT PRIMARY KEY,
   role_name          VARCHAR(100) NOT NULL,
   description        VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS offices (
   office_id    INT AUTO_INCREMENT PRIMARY KEY,
   office_name  VARCHAR(100) NOT NULL,
@@ -59,11 +49,9 @@ CREATE TABLE IF NOT EXISTS offices (
   address      VARCHAR(255) DEFAULT NULL,
   holiday_calendar VARCHAR(100) DEFAULT 'India - Default'
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 2. EMPLOYEES & AUTH
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS employees (
   employee_id     INT AUTO_INCREMENT PRIMARY KEY,
   emp_code        VARCHAR(30) UNIQUE,
@@ -114,7 +102,6 @@ CREATE TABLE IF NOT EXISTS employees (
   CONSTRAINT fk_employee_office FOREIGN KEY (office_id) REFERENCES offices(office_id) ON DELETE SET NULL,
   CONSTRAINT fk_employee_manager FOREIGN KEY (reporting_to) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS employee_contact_info (
   employee_id          INT PRIMARY KEY,
   current_address      VARCHAR(255) DEFAULT NULL,
@@ -132,29 +119,23 @@ CREATE TABLE IF NOT EXISTS employee_contact_info (
   permanent_address_line3 VARCHAR(255) DEFAULT NULL,
   CONSTRAINT fk_contact_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 CREATE TABLE employee_bank_details (
     employee_id INT PRIMARY KEY,
-
     bank_name VARCHAR(100) DEFAULT NULL,
     account_number VARCHAR(40) DEFAULT NULL,
     account_type VARCHAR(30) DEFAULT NULL,
     bank_branch VARCHAR(100) DEFAULT NULL,
     dd_payable_at VARCHAR(100) DEFAULT NULL,
     ifsc_code VARCHAR(20) DEFAULT NULL,
-
     account_holder_name VARCHAR(100) DEFAULT NULL,
     payment_type VARCHAR(30) DEFAULT NULL,
-
     pan_number VARCHAR(20) DEFAULT NULL,
     pf_number VARCHAR(30) DEFAULT NULL,
     uan_number VARCHAR(30) DEFAULT NULL,
     esi_number VARCHAR(30) DEFAULT NULL,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS users (
   user_id       INT AUTO_INCREMENT PRIMARY KEY,
   email         VARCHAR(150) NOT NULL UNIQUE,
@@ -170,11 +151,9 @@ CREATE TABLE IF NOT EXISTS users (
   CONSTRAINT fk_user_role FOREIGN KEY (role_id) REFERENCES roles(role_id),
   CONSTRAINT fk_user_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 3. TEAMS
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS teams (
   team_id        INT AUTO_INCREMENT PRIMARY KEY,
   team_name      VARCHAR(100) NOT NULL,
@@ -185,7 +164,6 @@ CREATE TABLE IF NOT EXISTS teams (
   CONSTRAINT fk_team_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL,
   CONSTRAINT fk_team_lead FOREIGN KEY (lead_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS team_members (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   team_id     INT NOT NULL,
@@ -197,11 +175,9 @@ CREATE TABLE IF NOT EXISTS team_members (
   CONSTRAINT fk_member_team FOREIGN KEY (team_id) REFERENCES teams(team_id) ON DELETE CASCADE,
   CONSTRAINT fk_member_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 4. ATTENDANCE
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS attendance (
   attendance_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
   employee_id     INT NOT NULL,
@@ -217,7 +193,6 @@ CREATE TABLE IF NOT EXISTS attendance (
   UNIQUE KEY uq_attendance_emp_date (employee_id, attendance_date),
   CONSTRAINT fk_attendance_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS attendance_regularization (
   regularization_id INT AUTO_INCREMENT PRIMARY KEY,
   employee_id        INT NOT NULL,
@@ -233,11 +208,9 @@ CREATE TABLE IF NOT EXISTS attendance_regularization (
   CONSTRAINT fk_regularization_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_regularization_reviewer FOREIGN KEY (reviewed_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 5. LEAVE MANAGEMENT
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS leave_types (
   leave_type_id    INT AUTO_INCREMENT PRIMARY KEY,
   leave_type_name  VARCHAR(60) NOT NULL UNIQUE,
@@ -246,7 +219,6 @@ CREATE TABLE IF NOT EXISTS leave_types (
   requires_proof   TINYINT(1) DEFAULT 0,
   description      VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS leave_balances (
   id              INT AUTO_INCREMENT PRIMARY KEY,
   employee_id     INT NOT NULL,
@@ -260,7 +232,6 @@ CREATE TABLE IF NOT EXISTS leave_balances (
   CONSTRAINT fk_balance_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_balance_leave_type FOREIGN KEY (leave_type_id) REFERENCES leave_types(leave_type_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS leave_requests (
   leave_request_id INT AUTO_INCREMENT PRIMARY KEY,
   employee_id       INT NOT NULL,
@@ -281,7 +252,6 @@ CREATE TABLE IF NOT EXISTS leave_requests (
   CONSTRAINT fk_leave_type FOREIGN KEY (leave_type_id) REFERENCES leave_types(leave_type_id) ON DELETE CASCADE,
   CONSTRAINT fk_leave_reviewer FOREIGN KEY (reviewed_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS holidays (
   holiday_id       INT AUTO_INCREMENT PRIMARY KEY,
   holiday_name     VARCHAR(100) NOT NULL,
@@ -294,11 +264,9 @@ CREATE TABLE IF NOT EXISTS holidays (
   INDEX idx_holidays_location (location),
   INDEX idx_holidays_date     (holiday_date)
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 6. PAYROLL
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS salary_structures (
   id               INT AUTO_INCREMENT PRIMARY KEY,
   employee_id      INT NOT NULL,
@@ -316,7 +284,6 @@ CREATE TABLE IF NOT EXISTS salary_structures (
   created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_salary_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS payroll_runs (
   payroll_run_id INT AUTO_INCREMENT PRIMARY KEY,
   month          TINYINT NOT NULL,
@@ -329,42 +296,34 @@ CREATE TABLE IF NOT EXISTS payroll_runs (
   UNIQUE KEY uq_payroll_period (month, year),
   CONSTRAINT fk_payroll_processed_by FOREIGN KEY (processed_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS payslips (
   payslip_id     INT AUTO_INCREMENT PRIMARY KEY,
   payroll_run_id INT DEFAULT NULL,
   employee_id    INT NOT NULL,
   month          TINYINT NOT NULL,
   year           INT NOT NULL,
-
   -- Salary components (sourced from salary_structures on generation)
   basic          DECIMAL(12,2) DEFAULT 0,
   hra            DECIMAL(12,2) DEFAULT 0,
   allowances     DECIMAL(12,2) DEFAULT 0,  -- conveyance + medical_allowance + special_allowance
-
   -- Totals
   gross_earnings DECIMAL(12,2) DEFAULT 0,  -- basic + hra + allowances (pro-rated for LOP)
   ctc            DECIMAL(12,2) DEFAULT 0,  -- gross + employer PF (or salary_structures.ctc)
   deductions     DECIMAL(12,2) DEFAULT 0,  -- pf_employee + professional_tax + income_tax
   net_pay        DECIMAL(12,2) DEFAULT 0,  -- gross_earnings - deductions
-
   -- Attendance
   working_days   DECIMAL(4,1) DEFAULT 0,
   paid_days      DECIMAL(4,1) DEFAULT 0,
   lop_days       DECIMAL(4,1) DEFAULT 0,   -- Loss of Pay days (absent)
-
   status         ENUM('Generated','Paid','On Hold') DEFAULT 'Generated',
   generated_on   DATETIME DEFAULT CURRENT_TIMESTAMP,
-
   UNIQUE KEY uq_payslip_period (employee_id, month, year),
   CONSTRAINT fk_payslip_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_payslip_run     FOREIGN KEY (payroll_run_id) REFERENCES payroll_runs(payroll_run_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 7. HIRING
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS jobs (
   job_id          INT AUTO_INCREMENT PRIMARY KEY,
   title           VARCHAR(150) NOT NULL,
@@ -380,7 +339,6 @@ CREATE TABLE IF NOT EXISTS jobs (
   CONSTRAINT fk_job_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL,
   CONSTRAINT fk_job_created_by FOREIGN KEY (created_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS job_applications (
   application_id INT AUTO_INCREMENT PRIMARY KEY,
   job_id         INT NOT NULL,
@@ -395,7 +353,6 @@ CREATE TABLE IF NOT EXISTS job_applications (
   CONSTRAINT fk_application_job FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE,
   CONSTRAINT fk_application_employee FOREIGN KEY (applicant_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS referrals (
   referral_id     INT AUTO_INCREMENT PRIMARY KEY,
   job_id          INT NOT NULL,
@@ -409,18 +366,15 @@ CREATE TABLE IF NOT EXISTS referrals (
   CONSTRAINT fk_referral_job FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE,
   CONSTRAINT fk_referral_employee FOREIGN KEY (referred_by) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 8. PERFORMANCE REVIEWS
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS review_types (
   review_type_id INT AUTO_INCREMENT PRIMARY KEY,
   name           VARCHAR(100) NOT NULL,
   description    VARCHAR(255) DEFAULT NULL,
   frequency      VARCHAR(30) DEFAULT 'Annual'
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS reviews (
   review_id      INT AUTO_INCREMENT PRIMARY KEY,
   review_type_id INT NOT NULL,
@@ -438,11 +392,9 @@ CREATE TABLE IF NOT EXISTS reviews (
   CONSTRAINT fk_review_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_review_reviewer FOREIGN KEY (reviewer_id) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 9. HELPDESK
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS helpdesk_tickets (
   ticket_id    INT AUTO_INCREMENT PRIMARY KEY,
   employee_id  INT NOT NULL,
@@ -458,7 +410,6 @@ CREATE TABLE IF NOT EXISTS helpdesk_tickets (
   CONSTRAINT fk_ticket_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_ticket_assignee FOREIGN KEY (assigned_to) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS helpdesk_comments (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   ticket_id     INT NOT NULL,
@@ -468,16 +419,13 @@ CREATE TABLE IF NOT EXISTS helpdesk_comments (
   CONSTRAINT fk_comment_ticket FOREIGN KEY (ticket_id) REFERENCES helpdesk_tickets(ticket_id) ON DELETE CASCADE,
   CONSTRAINT fk_comment_employee FOREIGN KEY (commented_by) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 10. DOCUMENTS
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS document_categories (
   category_id   INT AUTO_INCREMENT PRIMARY KEY,
   category_name VARCHAR(60) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS documents (
   document_id  INT AUTO_INCREMENT PRIMARY KEY,
   title        VARCHAR(150) NOT NULL,
@@ -494,18 +442,15 @@ CREATE TABLE IF NOT EXISTS documents (
   CONSTRAINT fk_document_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_document_uploader FOREIGN KEY (uploaded_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 11. PERMISSIONS / RBAC
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS permissions (
   permission_id INT AUTO_INCREMENT PRIMARY KEY,
   module        VARCHAR(60) NOT NULL,
   action        ENUM('view','add','edit','delete') NOT NULL,
   UNIQUE KEY uq_permission (module, action)
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS role_permissions (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   role_id       INT NOT NULL,
@@ -515,11 +460,9 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   CONSTRAINT fk_rp_role FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE,
   CONSTRAINT fk_rp_permission FOREIGN KEY (permission_id) REFERENCES permissions(permission_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 12. WORKFLOWS / REQUEST HUB / CALENDAR EVENTS
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS workflow_delegates (
   id                   INT AUTO_INCREMENT PRIMARY KEY,
   employee_id          INT NOT NULL,
@@ -532,7 +475,6 @@ CREATE TABLE IF NOT EXISTS workflow_delegates (
   CONSTRAINT fk_delegate_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_delegate_delegate FOREIGN KEY (delegate_employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS request_hub (
   request_id   INT AUTO_INCREMENT PRIMARY KEY,
   employee_id  INT NOT NULL,
@@ -546,7 +488,6 @@ CREATE TABLE IF NOT EXISTS request_hub (
   CONSTRAINT fk_request_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_request_reviewer FOREIGN KEY (reviewed_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS calendar_events (
   event_id    INT AUTO_INCREMENT PRIMARY KEY,
   title       VARCHAR(150) NOT NULL,
@@ -557,11 +498,9 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_event_creator FOREIGN KEY (created_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 13. REPORTING HISTORY (Org Hierarchy Audit Trail)
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS reporting_history (
   id              BIGINT AUTO_INCREMENT PRIMARY KEY,
   employee_id     INT NOT NULL,
@@ -576,11 +515,9 @@ CREATE TABLE IF NOT EXISTS reporting_history (
   CONSTRAINT fk_rh_new_mgr    FOREIGN KEY (new_manager_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
   CONSTRAINT fk_rh_changed_by FOREIGN KEY (changed_by)     REFERENCES employees(employee_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- 14. AUDIT LOG
 -- =====================================================================
-
 CREATE TABLE IF NOT EXISTS audit_logs (
   id          BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id     INT DEFAULT NULL,
@@ -590,11 +527,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   details     JSON DEFAULT NULL,
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-
 -- =====================================================================
 -- INDEXES
 -- =====================================================================
-
 CREATE INDEX idx_employees_department ON employees(department_id);
 CREATE INDEX idx_employees_status ON employees(employee_status);
 CREATE INDEX idx_attendance_date ON attendance(attendance_date);
@@ -603,5 +538,4 @@ CREATE INDEX idx_leave_requests_employee ON leave_requests(employee_id);
 CREATE INDEX idx_payslips_period ON payslips(month, year);
 CREATE INDEX idx_helpdesk_status ON helpdesk_tickets(status);
 CREATE INDEX idx_documents_category ON documents(category_id);
-
 SET FOREIGN_KEY_CHECKS = 1;

@@ -1,10 +1,8 @@
 import { AVATAR_COLORS, SECTIONS } from "../constants";
-
 export function fmtDate(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 export function timeAgo(iso) {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
@@ -17,22 +15,18 @@ export function timeAgo(iso) {
   if (days < 30) return `${days}d ago`;
   return fmtDate(iso);
 }
-
 export function fullName(emp) {
   return [emp.first_name, emp.last_name].filter(Boolean).join(" ").trim() || emp.email;
 }
-
 export function avatarColor(name = "") {
   let h = 0;
   for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
   return AVATAR_COLORS[h % AVATAR_COLORS.length];
 }
-
 export function initials(name = "") {
   const p = name.trim().split(/\s+/);
   return (p.length >= 2 ? p[0][0] + p[1][0] : name.slice(0, 2)).toUpperCase();
 }
-
 export function anniversaryThisYear(dateStr) {
   if (!dateStr) return null;
   // The people directory sends birthdays as "MM-DD" (no year).
@@ -43,20 +37,17 @@ export function anniversaryThisYear(dateStr) {
   const now = new Date();
   return new Date(now.getFullYear(), d.getMonth(), d.getDate());
 }
-
 export function daysFromToday(target) {
   const now = new Date(); now.setHours(0, 0, 0, 0);
   const t = new Date(target); t.setHours(0, 0, 0, 0);
   return Math.round((t - now) / 86_400_000);
 }
-
 export function labelForDays(offset) {
   if (offset === 0) return "Today";
   if (offset === 1) return "Tomorrow";
   if (offset > 0) return `In ${offset} days`;
   return `${Math.abs(offset)}d ago`;
 }
-
 export function yearsCompleted(dateStr) {
   if (!dateStr) return 0;
   const then = new Date(dateStr); const now = new Date();
@@ -65,17 +56,13 @@ export function yearsCompleted(dateStr) {
   if (m < 0 || (m === 0 && now.getDate() < then.getDate())) y--;
   return Math.max(0, y);
 }
-
 export function sectionCfg(key) {
   return SECTIONS.find((s) => s.key === key) || SECTIONS[0];
 }
-
 export function buildMockFeed(holidays) {
   const now = Date.now();
   const t = (daysAgo) => new Date(now - daysAgo * 86_400_000).toISOString();
-
   const items = [];
-
   items.push({
     id: "ann-1", section: "announcement", emoji: null,
     title: "Q3 Company All-Hands Meeting",
@@ -98,7 +85,6 @@ export function buildMockFeed(holidays) {
     chips: ["Deadline: 31 Jul 2026", "Benefits"],
     timestamp: t(5), sortTs: now - 5 * 86_400_000,
   });
-
   for (const h of holidays) {
     const off = daysFromToday(h.holiday_date);
     if (off < -7 || off > 60) continue;
@@ -113,7 +99,6 @@ export function buildMockFeed(holidays) {
       sortTs: new Date(h.holiday_date).getTime(),
     });
   }
-
   items.push({
     id: "kudo-1", section: "recognition", emoji: null,
     title: "Kudos Received!",
@@ -137,7 +122,6 @@ export function buildMockFeed(holidays) {
     chips: ["Team Win", "Engineering"],
     timestamp: t(7), sortTs: now - 7 * 86_400_000,
   });
-
   items.push({
     id: "event-1", section: "event", emoji: null,
     title: "Team Outing — Adventure Park",
@@ -159,7 +143,6 @@ export function buildMockFeed(holidays) {
     chips: ["25 Jul 2026", "Sports Complex", "Register by 10 Jul"],
     timestamp: t(8), sortTs: now - 8 * 86_400_000,
   });
-
   items.push({
     id: "hd-1", section: "helpdesk", emoji: null,
     title: "IT Support — Laptop Replacement",
@@ -176,6 +159,5 @@ export function buildMockFeed(holidays) {
     status: "open",
     timestamp: t(3), sortTs: now - 3 * 86_400_000,
   });
-
   return items.sort((a, b) => b.sortTs - a.sortTs);
 }

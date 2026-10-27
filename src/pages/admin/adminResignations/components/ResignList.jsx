@@ -2,7 +2,6 @@ import React from "react";
 import { LogOut, AlertTriangle } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import ResignRow from "./ResignRow";
-
 const ResignList = React.memo(function ResignList({ loading, error, visible, paged, onReview }) {
   if (loading) {
     return (
@@ -31,5 +30,4 @@ const ResignList = React.memo(function ResignList({ loading, error, visible, pag
     </div>
   );
 });
-
 export default ResignList;

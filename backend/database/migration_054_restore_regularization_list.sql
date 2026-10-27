@@ -3,7 +3,6 @@
 -- GET /api/attendance/regularizations). It was dropped from hrms_db on 2026-09-25.
 -- Run with: node src/database/runSql.js migration_054_restore_regularization_list.sql
 -- =============================================================
-
 DROP PROCEDURE IF EXISTS sp_list_attendance_regularization;
 DELIMITER $$
 CREATE PROCEDURE `sp_list_attendance_regularization`(
@@ -14,13 +13,10 @@ CREATE PROCEDURE `sp_list_attendance_regularization`(
     IN p_offset INT
 )
 BEGIN
-
     DECLARE v_limit INT DEFAULT 10;
     DECLARE v_offset INT DEFAULT 0;
-
     SET v_limit = GREATEST(IFNULL(p_limit, 10), 1);
     SET v_offset = GREATEST(IFNULL(p_offset, 0), 0);
-
     SELECT
         r.*,
         e.emp_code,
@@ -45,7 +41,6 @@ BEGIN
         AND (p_reporting_to IS NULL OR e.reporting_to = p_reporting_to)
     ORDER BY r.created_at DESC
     LIMIT v_limit OFFSET v_offset;
-
     SELECT COUNT(*) AS total
     FROM attendance_regularization r
     INNER JOIN employees e
@@ -54,8 +49,6 @@ BEGIN
         (p_employee_id IS NULL OR r.employee_id = p_employee_id)
         AND (p_status IS NULL OR r.status = p_status)
         AND (p_reporting_to IS NULL OR e.reporting_to = p_reporting_to);
-
 END $$
 DELIMITER ;
-
 SELECT 'migration_054_restore_regularization_list done' AS status;

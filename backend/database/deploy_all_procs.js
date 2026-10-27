@@ -11,9 +11,7 @@ const BACKEND_DIR = process.env.BACKEND_DIR || '/var/EmployeePortalapplication/b
 // Load dotenv and mysql2 from backend node_modules (not from /tmp which has none)
 require(path.join(BACKEND_DIR, 'node_modules', 'dotenv')).config({ path: path.join(BACKEND_DIR, '.env') });
 const mysql = require(path.join(BACKEND_DIR, 'node_modules', 'mysql2', 'promise'));
-
 const DB_DIR = path.join(BACKEND_DIR, 'database');
-
 // Order matters - patches must come after the base procedures they patch
 const SQL_FILES = [
   'all_procedures.sql',
@@ -40,27 +38,21 @@ const SQL_FILES = [
   'patch_joining_token_expiry_fix.sql',
   'create_missing_procs.sql',
 ];
-
 function parseProcedures(sql) {
   // Normalize line endings
   sql = sql.replace(/\r\n/g, '\n');
-  
   const blocks = [];
-  
   // Split on DELIMITER changes
   const delimiterPattern = /^DELIMITER\s+(\S+)\s*$/gim;
   let currentDelimiter = ';';
   let pos = 0;
   let match;
-  
   const segments = [];
   let lastPos = 0;
-  
   // Find all DELIMITER lines and split content between them
   const delimLines = [];
   const lines = sql.split('\n');
   let lineStart = 0;
-  
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
     if (trimmed.toUpperCase().startsWith('DELIMITER')) {
@@ -70,21 +62,17 @@ function parseProcedures(sql) {
       }
     }
   }
-  
   if (delimLines.length === 0) {
     // No DELIMITER directives - split on semicolons
     return sql.split(';')
       .map(s => s.trim())
       .filter(s => s.length > 0 && !s.startsWith('--'));
   }
-  
   // Process with delimiter changes
   let curDelim = ';';
   let curBlock = [];
-  
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
-    
     // Check if this is a DELIMITER line
     const delimMatch = trimmed.match(/^DELIMITER\s+(\S+)\s*$/i);
     if (delimMatch) {
@@ -104,10 +92,8 @@ function parseProcedures(sql) {
       curDelim = newDelim;
       continue;
     }
-    
     curBlock.push(lines[i]);
   }
-  
   // Handle remaining content
   if (curBlock.length > 0) {
     const blockText = curBlock.join('\n');
@@ -117,28 +103,21 @@ function parseProcedures(sql) {
       if (pt && !pt.startsWith('--')) blocks.push(pt);
     });
   }
-  
   return blocks;
 }
-
 async function deployFile(conn, filePath) {
   if (!fs.existsSync(filePath)) {
     console.log(`  SKIP (not found): ${path.basename(filePath)}`);
     return { ok: 0, fail: 0, skip: 1 };
   }
-  
   const sql = fs.readFileSync(filePath, 'utf8');
   const blocks = parseProcedures(sql);
-  
   let ok = 0, fail = 0;
-  
   for (const block of blocks) {
     const upper = block.toUpperCase().trim();
-    
     // Only execute meaningful statements
     if (!upper || upper.length < 5) continue;
     if (upper.startsWith('--') || upper.startsWith('#')) continue;
-    
     // Skip pure SET statements that aren't important
     if (upper === 'SET GLOBAL LOG_BIN_TRUST_FUNCTION_CREATORS = 1' ||
         upper === 'SET NAMES UTF8MB4' ||
@@ -147,7 +126,6 @@ async function deployFile(conn, filePath) {
       try { await conn.query(block); } catch(e) {}
       continue;
     }
-    
     try {
       await conn.query(block);
       ok++;
@@ -160,7 +138,6 @@ async function deployFile(conn, filePath) {
       // Ignore common non-errors
       if (e.code === 'ER_EMPTY_QUERY') continue;
       if (e.message.includes("doesn't exist") && upper.startsWith('DROP')) continue;
-      
       if (upper.startsWith('CREATE') && upper.includes('PROCEDURE')) {
         const nameMatch = block.match(/PROCEDURE\s+`?(\w+)`?\s*\(/i);
         console.log(`  ✗ ${nameMatch?.[1] || 'unknown'}: ${e.message.substring(0, 100)}`);
@@ -168,17 +145,14 @@ async function deployFile(conn, filePath) {
       }
     }
   }
-  
   return { ok, fail, skip: 0 };
 }
-
 async function main() {
   console.log('='.repeat(60));
   console.log('HRMS Stored Procedure Deployment');
   console.log('Host:', process.env.DB_HOST);
   console.log('DB:  ', process.env.DB_NAME);
   console.log('='.repeat(60));
-  
   const conn = await mysql.createConnection({
     host:     process.env.DB_HOST,
     port:     Number(process.env.DB_PORT) || 3306,
@@ -187,12 +161,9 @@ async function main() {
     database: process.env.DB_NAME,
     multipleStatements: false,
   });
-  
   // Allow stored procedures
   try { await conn.query('SET GLOBAL log_bin_trust_function_creators = 1'); } catch(e) {}
-  
   let totalOk = 0, totalFail = 0;
-  
   for (const file of SQL_FILES) {
     const filePath = path.join(DB_DIR, file);
     console.log(`\n[FILE] ${file}`);
@@ -201,13 +172,10 @@ async function main() {
     totalFail += result.fail;
     if (result.skip) console.log('  (skipped)');
   }
-  
   await conn.end();
-  
   console.log('\n' + '='.repeat(60));
   console.log(`DONE — ${totalOk} executed, ${totalFail} failed`);
   console.log('='.repeat(60));
-  
   // Verify key procedures exist
   const verify = await mysql.createConnection({
     host: process.env.DB_HOST, port: Number(process.env.DB_PORT) || 3306,
@@ -218,7 +186,6 @@ async function main() {
     [process.env.DB_NAME]
   );
   console.log(`\nTotal procedures now in ${process.env.DB_NAME}: ${rows[0].cnt}`);
-  
   const keyProcs = ['sp_dashboard_stats','sp_attendance_dashboard','sp_rec_admin_dashboard',
                     'sp_joining_list_pending','sp_rec_list_active_recruiters','sp_recent_activities',
                     'sp_list_leave_requests','sp_get_user_for_login'];
@@ -229,8 +196,6 @@ async function main() {
   const existSet = new Set(existing.map(r => r.ROUTINE_NAME));
   console.log('\nKey procedure check:');
   keyProcs.forEach(p => console.log(`  ${existSet.has(p) ? '✓' : '✗'} ${p}`));
-  
   await verify.end();
 }
-
 main().catch(e => { console.error('FATAL:', e.message); process.exit(1); });

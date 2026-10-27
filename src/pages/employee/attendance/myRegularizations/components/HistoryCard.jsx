@@ -1,6 +1,5 @@
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
 const HistoryCard = React.memo(function HistoryCard({ record, expanded, onToggle, onViewDetails }) {
   return (
     <div className="border border-sky-200 rounded-lg bg-white overflow-hidden">
@@ -26,7 +25,6 @@ const HistoryCard = React.memo(function HistoryCard({ record, expanded, onToggle
           </span>
         </div>
       </button>
-
       {expanded && (
         <>
           <div className="px-4 py-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -53,5 +51,4 @@ const HistoryCard = React.memo(function HistoryCard({ record, expanded, onToggle
     </div>
   );
 });
-
 export default HistoryCard;

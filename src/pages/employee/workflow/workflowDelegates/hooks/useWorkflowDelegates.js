@@ -4,7 +4,6 @@ import { getStoredUser } from "../../../../../data/auth";
 import { successToast } from "../../../../../utils/ToastControllers";
 import { WORKFLOWS } from "../constants";
 import { delegateStatus } from "../utils";
-
 export function useWorkflowDelegates() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,17 +12,14 @@ export function useWorkflowDelegates() {
   const [oooFrom, setOooFrom] = useState("");
   const [oooTo, setOooTo] = useState("");
   const [oooEnabled, setOooEnabled] = useState(false);
-
   const user = getStoredUser();
   const myId = user?.employeeId;
-
   useEffect(() => {
     getEmployeeDirectory()
       .then((rows) => setEmployees(Array.isArray(rows) ? rows : rows?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
   const applyOoo = useCallback(() => {
     if (!oooFrom || !oooTo) return;
     setDelegates((prev) => {
@@ -37,7 +33,6 @@ export function useWorkflowDelegates() {
     });
     successToast("OOO dates applied to all configured delegates.");
   }, [oooFrom, oooTo]);
-
   const handleChange = useCallback((wfId, field, value) => {
     setDelegates((prev) => ({
       ...prev,
@@ -49,7 +44,6 @@ export function useWorkflowDelegates() {
       },
     }));
   }, []);
-
   const handleRemove = useCallback((wfId) => {
     setDelegates((prev) => {
       const next = { ...prev };
@@ -57,7 +51,6 @@ export function useWorkflowDelegates() {
       return next;
     });
   }, []);
-
   const handleSaveAll = useCallback(async () => {
     setSaving(true);
     await new Promise((r) => setTimeout(r, 600));
@@ -69,14 +62,11 @@ export function useWorkflowDelegates() {
         : "Delegate settings cleared."
     );
   }, [delegates]);
-
   const activeDelegates = Object.values(delegates).filter((d) => {
     const s = delegateStatus(d?.from, d?.to);
     return d?.delegateId && s === "active";
   }).length;
-
   const configuredCount = Object.values(delegates).filter((d) => d?.delegateId).length;
-
   return {
     employees, loading, delegates, saving,
     oooFrom, oooTo, oooEnabled,

@@ -1,5 +1,4 @@
 const Joi = require('joi');
-
 const createEmployeeSchema = Joi.object({
   emp_code: Joi.string().max(30).allow('', null),
   first_name: Joi.string().max(80).required(),
@@ -30,8 +29,6 @@ const createEmployeeSchema = Joi.object({
   assigned_member: Joi.string().max(100).allow('', null),
   role_id: Joi.number().integer().valid(1, 2, 3),
   password: Joi.string().min(6).max(100).allow('', null),
-
-
   father_name: Joi.string().max(100).allow('', null),
   spouse_name: Joi.string().max(100).allow('', null),
   aadhaar_number: Joi.string().max(20).allow('', null),
@@ -44,8 +41,6 @@ const createEmployeeSchema = Joi.object({
   pf_join_date: Joi.date().allow('', null),
   esi_number: Joi.string().max(40).allow('', null),
   has_left_organization: Joi.boolean().truthy(1, '1').falsy(0, '0').allow(null),
-
-
   contactInfo: Joi.object({
     current_address: Joi.string().max(255).allow('', null),
     permanent_address: Joi.string().max(255).allow('', null),
@@ -74,12 +69,10 @@ const createEmployeeSchema = Joi.object({
     payment_type: Joi.string().max(30).allow('', null)
   }).optional()
 });
-
 const updateEmployeeSchema = createEmployeeSchema.fork(
   ['first_name', 'email'],
   (schema) => schema.optional()
 );
-
 const contactInfoSchema = Joi.object({
   current_address: Joi.string().max(255).allow('', null),
   permanent_address: Joi.string().max(255).allow('', null),
@@ -95,7 +88,6 @@ const contactInfoSchema = Joi.object({
   permanent_address_line2: Joi.string().max(255).allow('', null),
   permanent_address_line3: Joi.string().max(255).allow('', null)
 });
-
 const bankDetailsSchema = Joi.object({
   bank_name: Joi.string().max(100).allow('', null),
   account_number: Joi.string().max(40).allow('', null),
@@ -108,13 +100,11 @@ const bankDetailsSchema = Joi.object({
   account_holder_name: Joi.string().max(100).allow('', null),
   payment_type: Joi.string().max(30).allow('', null)
 });
-
 const directoryQuerySchema = Joi.object({
   location: Joi.string().allow('', null),
   department: Joi.string().allow('', null),
   holidayCalendar: Joi.string().allow('', null)
 });
-
 module.exports = {
   createEmployeeSchema,
   updateEmployeeSchema,

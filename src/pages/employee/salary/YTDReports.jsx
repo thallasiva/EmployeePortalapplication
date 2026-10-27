@@ -10,17 +10,13 @@ import {
 } from "../../../lib/dateUtils";
 import InteractivePieChart, { formatINR } from "../../../component/charts/InteractivePieChart";
 import { cssClass } from "../../../utils/classStyles";
-
 const tblFmt = (n) => {
   const num = Number(n) || 0;
   return num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
-
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
-
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const FISCAL_ORDER = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2];
-
 /* ── Summary stat card ── */
 function StatCard({ icon, label, value, color, bgColor, sub }) {
   return (
@@ -36,7 +32,6 @@ function StatCard({ icon, label, value, color, bgColor, sub }) {
     </div>
   );
 }
-
 /* ── Bar chart (SVG) ── */
 function BarChart({ data }) {
   const max = Math.max(...data.map((d) => d.value), 1);
@@ -68,7 +63,6 @@ function BarChart({ data }) {
     </svg>
   );
 }
-
 /* ── Collapsible section header row ── */
 function SectionHeader({ label, expanded, onToggle, colCount }) {
   return (
@@ -82,16 +76,13 @@ function SectionHeader({ label, expanded, onToggle, colCount }) {
     </tr>
   );
 }
-
 export default function YTDReports() {
   const [fiscalYearStart, setFiscalYearStart] = useState(String(getCurrentFiscalYearStart()));
   const [payslips, setPayslips] = useState([]);
   const [structure, setStructure] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({ income: true, deduction: true, days: true, blanks: true });
-
   const toggle = (key) => setExpanded((p) => ({ ...p, [key]: !p[key] }));
-
   useEffect(() => {
     Promise.all([
       getMyPayslips({ limit: 24 }).then((r) => (Array.isArray(r) ? r : r?.data ?? [])),
@@ -101,10 +92,8 @@ export default function YTDReports() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
   const fiscalMonths = getFiscalMonthColumns(fiscalYearStart);
   const fyLabel = getFiscalYearRangeLabel(fiscalYearStart);
-
   const monthData = useMemo(() => {
     const fiscalYear = Number(fiscalYearStart);
     return FISCAL_ORDER.map((mIdx) => {
@@ -141,7 +130,6 @@ export default function YTDReports() {
       };
     });
   }, [payslips, structure, fiscalYearStart]);
-
   const totals = useMemo(() => {
     const sum = (k) => monthData.reduce((a, m) => a + (m[k] || 0), 0);
     return {
@@ -151,9 +139,7 @@ export default function YTDReports() {
       workDays: sum("workDays"), daysInMonth: sum("daysInMonth"),
     };
   }, [monthData]);
-
   const totalDeductions = totals.pf + totals.profTax + totals.incomeTax;
-
   const pieData = [
     { label: "Basic", value: totals.basic, color: "#f18200" },
     { label: "HRA", value: totals.hra, color: "#fb923c" },
@@ -161,10 +147,8 @@ export default function YTDReports() {
     { label: "LTA", value: totals.lta, color: "#f59e0b" },
     { label: "Other", value: totals.telephone, color: "#10b981" },
   ].filter((d) => d.value > 0);
-
   const barData = monthData.map((m) => ({ label: m.label, value: m.netPay }));
   const colCount = fiscalMonths.length + 2;
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
@@ -172,7 +156,6 @@ export default function YTDReports() {
       </div>
     );
   }
-
   /* ── Data row component ── */
   const DataRow = ({ label, dataKey, totalVal, bold, highlight }) => (
     <tr
@@ -207,7 +190,6 @@ export default function YTDReports() {
       ))}
     </tr>
   );
-
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* ── Page Header ── */}
@@ -224,7 +206,6 @@ export default function YTDReports() {
           </button>
         </div>
       </div>
-
       {/* ── Summary Stat Cards ── */}
       <div className="px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -260,7 +241,6 @@ export default function YTDReports() {
           sub={`of 12 in ${fyLabel}`}
         />
       </div>
-
       {/* ── YTD Table ── */}
       <div className="px-6 pb-6">
         <div className="bg-white border border-[#e8eef5] rounded-xl overflow-hidden shadow-sm">
@@ -269,7 +249,6 @@ export default function YTDReports() {
             <span className="text-[14px] font-bold text-[#1e293b]">Monthly Breakdown</span>
             <span className="text-[12px] text-[#94a3b8]">{fyLabel}</span>
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[12px]">
               <thead>
@@ -300,7 +279,6 @@ export default function YTDReports() {
                     <DataRow label="Gross Salary" dataKey="gross" totalVal={totals.gross} bold />
                   </>
                 )}
-
                 {/* Deductions */}
                 <SectionHeader label="Deductions" expanded={expanded.deduction} onToggle={() => toggle("deduction")} colCount={colCount} />
                 {expanded.deduction && (
@@ -324,7 +302,6 @@ export default function YTDReports() {
                     </tr>
                   </>
                 )}
-
                 {/* Days */}
                 <SectionHeader label="Days" expanded={expanded.days} onToggle={() => toggle("days")} colCount={colCount} />
                 {expanded.days && (
@@ -333,7 +310,6 @@ export default function YTDReports() {
                     <DataRow label="Days in Month" dataKey="daysInMonth" totalVal={totals.daysInMonth} bold />
                   </>
                 )}
-
                 {/* Net Pay */}
                 <SectionHeader label="Net Pay" expanded={expanded.blanks} onToggle={() => toggle("blanks")} colCount={colCount} />
                 {expanded.blanks && (
@@ -344,7 +320,6 @@ export default function YTDReports() {
           </div>
         </div>
       </div>
-
       {/* ── Charts ── */}
       <div className="px-6 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Earnings Breakdown */}
@@ -368,7 +343,6 @@ export default function YTDReports() {
             </div>
           </div>
         </div>
-
         {/* Monthly Net Pay Trend */}
         <div className="bg-white border border-[#e8eef5] rounded-xl shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[#e8eef5]">

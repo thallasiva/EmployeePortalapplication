@@ -18,18 +18,14 @@ import {
   Tabs,
   timeAgo } from
 "./kudosFeedbackShared";
-
 const PAGE_SIZE = 20;
-
 // role 4 is "HR Manager" in the roles table (the web constant predates the rename)
 const ROLE_HR_MANAGER = ROLE_RECRUITER_LEAD;
-
 function useKudosList(params) {
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const key = JSON.stringify(params);
-
   const load = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -42,11 +38,9 @@ function useKudosList(params) {
       setLoading(false);
     }
   }, [key]);
-
   useEffect(() => {load(1);}, [load]);
   return { rows, meta, loading, reload: () => load(1), loadMore: () => load((meta?.page || 1) + 1) };
 }
-
 const KudosFeed = ({ params, perspective, empty }) => {
   const { rows, meta, loading, loadMore } = useKudosList(params);
   if (loading && rows.length === 0) return <Loading />;
@@ -60,9 +54,7 @@ const KudosFeed = ({ params, perspective, empty }) => {
         </div>
       }
     </div>);
-
 };
-
 const lastRecognisedBadge = (value) => {
   if (!value) return { text: "Never", cls: "bg-rose-50 text-rose-700" };
   const days = (Date.now() - new Date(String(value).replace(" ", "T")).getTime()) / 86400000;
@@ -70,7 +62,6 @@ const lastRecognisedBadge = (value) => {
   if (days > 30) return { text: timeAgo(value), cls: "bg-orange-50 text-orange-700" };
   return { text: timeAgo(value), cls: "bg-emerald-50 text-emerald-700" };
 };
-
 const TeamTable = ({ team, onKudos, onFeedback }) => {
   if (!team) return <Loading />;
   if (team.length === 0) {
@@ -117,19 +108,15 @@ const TeamTable = ({ team, onKudos, onFeedback }) => {
                   </div>
                 </td>
               </tr>);
-
           })}
         </tbody>
       </table>
     </div>);
-
 };
-
 const Kudos = () => {
   const role = resolveRoleForUser(getStoredUser());
   const isManager = role === ROLE_REPORTING_MANAGER;
   const isHr = role === ROLE_HR_MANAGER;
-
   const [tab, setTab] = useState("received");
   const [summary, setSummary] = useState(null);
   const [top, setTop] = useState([]);
@@ -137,34 +124,26 @@ const Kudos = () => {
   const [kudosModal, setKudosModal] = useState(null); // { preset: [] }
   const [feedbackFor, setFeedbackFor] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [wallCategory, setWallCategory] = useState("");
   const [wallDepartment, setWallDepartment] = useState("");
-
   useEffect(() => {
     getKfSummary().then(setSummary).catch(() => {});
     listTopRecognised({ months: 3 }).then(setTop).catch(() => {});
     if (isManager) getKfTeam().then(setTeam).catch(() => setTeam([]));
   }, [isManager, refreshKey]);
-
   useEffect(() => {
     listKfCategories({ type: "kudos" }).then(setCategories).catch(() => {});
     if (isHr) listDepartments().then(setDepartments).catch(() => {});
   }, [isHr]);
-
   const refresh = () => setRefreshKey((k) => k + 1);
-
   const tabs = [
   { key: "received", label: "Received" },
   { key: "sent", label: "Sent" },
   { key: "wall", label: isHr ? "Organisation Kudos" : "Kudos Wall" },
   ...(isManager ? [{ key: "team", label: "My Team" }, { key: "teamKudos", label: "Team Kudos" }] : [])];
-
-
   const giveButton = <PrimaryButton onClick={() => setKudosModal({ preset: [] })}><Send size={15} /> Give Kudos</PrimaryButton>;
-
   return (
     <div className="space-y-6">
       {kudosModal &&
@@ -177,7 +156,6 @@ const Kudos = () => {
       {feedbackFor &&
       <GiveFeedbackModal presetEmployee={feedbackFor} onClose={() => setFeedbackFor(null)} onSent={refresh} />
       }
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Kudos &amp; Recognition</h1>
@@ -194,7 +172,6 @@ const Kudos = () => {
           {giveButton}
         </div>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={<Heart size={22} className="text-rose-500" />} label="Received" value={summary?.kudos_received} accent="bg-rose-50" />
         <StatCard icon={<Zap size={22} className="text-[#f18200]" />} label="Given" value={summary?.kudos_given} />
@@ -204,7 +181,6 @@ const Kudos = () => {
         <StatCard icon={<Trophy size={22} className="text-emerald-600" />} label="Top category" value={summary?.by_category?.[0]?.category_name || "–"} accent="bg-emerald-50" />
         }
       </div>
-
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <section className="xl:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm">
           <div className="px-5 pt-3">
@@ -259,7 +235,6 @@ const Kudos = () => {
             }
           </div>
         </section>
-
         <aside className="space-y-5">
           <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <h2 className="text-base font-bold text-slate-900 mb-3">You were recognised for</h2>
@@ -296,7 +271,5 @@ const Kudos = () => {
         </aside>
       </div>
     </div>);
-
 };
-
 export default Kudos;

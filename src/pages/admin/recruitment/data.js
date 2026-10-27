@@ -10,12 +10,10 @@ import
   UserPlus,
   Users,
 } from "lucide-react";
-
 export const RECRUITERS = [
   { key: "Mike W.", name: "Mike Williams", email: "recruiter@yopmail.com" },
   { key: "Emily D.", name: "Emily Davis", email: "recruiter2@yopmail.com" },
 ];
-
 export const JOB_REQUESTS = [
   {
     "Job Title": "Sr. React Developer",
@@ -66,7 +64,6 @@ export const JOB_REQUESTS = [
     Status: "Work in Progress",
   },
 ];
-
 export const CANDIDATES = [
   {
     "Job ID": "JOB-001",
@@ -111,7 +108,6 @@ export const CANDIDATES = [
     Source: "Naukri",
   },
 ];
-
 export const INTERVIEWS = [
   {
     candidate: "Ravi Kumar",
@@ -150,7 +146,6 @@ export const OFFER_ROWS = [
     Status: "Offer Released and Accepted",
   },
 ];
-
 export const ONBOARDING_ROWS = [
   {
     Candidate: "Meera K.",
@@ -160,7 +155,6 @@ export const ONBOARDING_ROWS = [
     "Review Forms Submitted": "Yes",
   },
 ];
-
 export const ONBOARDING_TASKS = [
   {
     Task: "Upload Documents",
@@ -193,7 +187,6 @@ export const ONBOARDING_TASKS = [
     Action: "View",
   },
 ];
-
 export const EMPLOYEES = [
   {
     EMPID: "EMP101",
@@ -212,7 +205,6 @@ export const EMPLOYEES = [
     STATUS: "Active",
   },
 ];
-
 export const STATUS_REFERENCE = [
   "Work in Progress",
   "Schedule Interview",
@@ -221,7 +213,6 @@ export const STATUS_REFERENCE = [
   "In Progress",
   "Onboarded",
 ];
-
 export const ADMIN_REPORTS_DONUTS = [
   {
     title: "Candidate Funnel",
@@ -251,13 +242,11 @@ export const ADMIN_REPORTS_DONUTS = [
     ],
   },
 ];
-
 export const ADMIN_REPORTS_HIRING_TREND = {
   labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
   present: [15, 22, 28, 34, 42, 50, 58],
   absent: [5, 7, 9, 10, 8, 7, 5],
 };
-
 export const ADMIN_REPORTS_LEAVE = [
   { label: "Jan", annual: 12, casual: 8, medical: 5, others: 3 },
   { label: "Feb", annual: 15, casual: 10, medical: 4, others: 2 },
@@ -265,11 +254,9 @@ export const ADMIN_REPORTS_LEAVE = [
   { label: "Apr", annual: 14, casual: 9, medical: 7, others: 3 },
   { label: "May", annual: 20, casual: 11, medical: 5, others: 5 },
 ];
-
 export function badgeColor(value = "")
 {
   const normalized = String(value).toLowerCase();
-
   if (
     normalized.includes("completed") ||
     normalized.includes("accepted") ||
@@ -281,7 +268,6 @@ export function badgeColor(value = "")
   {
     return "green";
   }
-
   if (
     normalized.includes("pending") ||
     normalized.includes("open") ||
@@ -292,7 +278,6 @@ export function badgeColor(value = "")
   {
     return "blue";
   }
-
   if (
     normalized.includes("hold") ||
     normalized.includes("rejected") ||
@@ -302,15 +287,12 @@ export function badgeColor(value = "")
   {
     return "red";
   }
-
   if (normalized.includes("closed"))
   {
     return "gray";
   }
-
   return "gray";
 }
-
 export function roleInfo(user)
 {
   const roleId = user?.role ?? user?.roleId;
@@ -326,13 +308,11 @@ export function roleInfo(user)
       return { id: 5, label: "Recruiter", tabClass: "bg-orange-100 text-orange-700" };
   }
 }
-
 export function getRecruiterKey(user)
 {
   const email = user?.email || "";
   return email.includes("recruiter2") ? "Emily D." : "Mike W.";
 }
-
 export const TABS = {
   1: [
     { key: "dashboard",  label: "Dashboard",  icon: LayoutDashboard },
@@ -352,9 +332,6 @@ export const TABS = {
     { key: "interviews",    label: "Interviews",   icon: CalendarCheck },
   ],
 };
-
-
-
 export const badgeClasses = {
   blue: "bg-blue-100 text-blue-800",
   green: "bg-green-100 text-green-800",
@@ -363,7 +340,6 @@ export const badgeClasses = {
   red: "bg-red-100 text-red-800",
   purple: "bg-violet-100 text-violet-800",
 };
-
 export const statToneClasses = {
   brand: { note: "text-brand-500", icon: "bg-brand-50 text-brand-500" },
   indigo: { note: "text-indigo-500", icon: "bg-indigo-50 text-indigo-500" },
@@ -371,10 +347,6 @@ export const statToneClasses = {
   purple: { note: "text-violet-600", icon: "bg-violet-50 text-violet-600" },
   red: { note: "text-red-500", icon: "bg-red-50 text-red-500" },
 };
-
-
-
-
 export const inputClass = "w-full rounded border-[0.5px] border-gray-300 bg-white px-[9px] py-[7px] text-sm text-gray-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20";
 export const inputErrorClass = "border-red-600 focus:border-red-600 focus:ring-red-600/20";
 export const labelTextClass = "mb-1 block text-xs font-bold text-gray-700";

@@ -1,11 +1,9 @@
 import React from "react";
 import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import { fmtINR, fmtPct } from "./salaryHelpers";
-
 export default function ComponentTable({ lines, computed, onEdit, onRemove }) {
   const byCode = {};
   for (const c of computed?.components ?? []) byCode[c.component_code] = c;
-
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[860px]">
@@ -22,7 +20,6 @@ export default function ComponentTable({ lines, computed, onEdit, onRemove }) {
             ))}
           </tr>
         </thead>
-
         <tbody>
           {lines.length === 0 ? (
             <tr>
@@ -36,12 +33,10 @@ export default function ComponentTable({ lines, computed, onEdit, onRemove }) {
               const monthly = comp?.monthly_amount ?? 0;
               const annual  = comp?.annual_amount  ?? 0;
               const ct      = line.effective_calc_type || line.calc_type;
-
               const basedOn =
                 ct === "Percentage"   ? (line.effective_pct_of || line.percentage_of || "—")
                 : ct === "Formula"    ? "Formula"
                 : "—";
-
               const valueCell =
                 ct === "Percentage"
                   ? fmtPct(line.effective_pct ?? line.percentage_value)
@@ -52,7 +47,6 @@ export default function ComponentTable({ lines, computed, onEdit, onRemove }) {
                       {(line.effective_formula || line.formula_expr || "").slice(0, 22)}…
                     </code>
                   );
-
               return (
                 <tr key={line.component_id} className="border-b border-gray-50 hover:bg-gray-50">
                   <td className="px-3 py-3 text-xs text-gray-400">
@@ -105,7 +99,6 @@ export default function ComponentTable({ lines, computed, onEdit, onRemove }) {
             })
           )}
         </tbody>
-
         {lines.length > 0 && (() => {
           const totalMonthly = lines.reduce((s, l) => {
             const c = byCode[l.component_code];

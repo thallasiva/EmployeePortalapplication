@@ -13,26 +13,20 @@ import TransferTab from "./components/TransferTab";
 import DelegationTab from "./components/DelegationTab";
 import HistoryTab from "./components/HistoryTab";
 import ManagerDetailModal from "./components/ManagerDetailModal";
-
 export default function AdminWorkflowDelegation() {
   const { search } = useLocation();
-
   const initialTab = useMemo(() => {
     const p = new URLSearchParams(search).get("tab");
     return (p && URL_TAB_MAP[p]) || "overview";
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   const [activeTab, setActiveTab] = useState(initialTab);
   const [selectedNode, setSelectedNode] = useState(null);
-
   useEffect(() => {
     const p = new URLSearchParams(search).get("tab");
     const key = (p && URL_TAB_MAP[p]) || null;
     if (key && key !== activeTab) setActiveTab(key);
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const data = useWorkflowData(activeTab);
-
   return (
     <div className={cssClass({ padding: "24px", maxWidth: 1200, margin: "0 auto", fontFamily: "inherit" })}>
       {/* Page header */}
@@ -62,10 +56,8 @@ export default function AdminWorkflowDelegation() {
           Refresh
         </button>
       </div>
-
       {/* Navigation tabs */}
       <TabBar tabs={TABS} activeTab={activeTab} setActiveTab={setActiveTab} stats={data.stats} />
-
       {/* Active tab content */}
       <div>
         {activeTab === "overview" && (
@@ -150,7 +142,6 @@ export default function AdminWorkflowDelegation() {
         )}
         {activeTab === "history" && <HistoryTab history={data.history} />}
       </div>
-
       {/* Employee detail modal */}
       {selectedNode && (
         <ManagerDetailModal
@@ -158,7 +149,6 @@ export default function AdminWorkflowDelegation() {
           onClose={() => setSelectedNode(null)}
         />
       )}
-
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );

@@ -1,5 +1,4 @@
 import apiClient from './client';
-
 export const listSalaryTemplates  = ()         => apiClient.get('/salary-templates').then(r => r.data.data);
 export const getSalaryTemplate    = (id)       => apiClient.get(`/salary-templates/${id}`).then(r => r.data.data);
 export const createSalaryTemplate = (data)     => apiClient.post('/salary-templates', data).then(r => r.data.data);

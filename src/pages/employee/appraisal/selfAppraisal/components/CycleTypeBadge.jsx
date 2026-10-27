@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { CYCLE_TYPE_MAP } from "../constants";
 import { Trophy } from "lucide-react";
-
 const CycleTypeBadge = React.memo(function CycleTypeBadge({ type }) {
   const t = CYCLE_TYPE_MAP[type] || {
     label: type || "Yearly",
@@ -29,5 +28,4 @@ const CycleTypeBadge = React.memo(function CycleTypeBadge({ type }) {
     </span>
   );
 });
-
 export default CycleTypeBadge;

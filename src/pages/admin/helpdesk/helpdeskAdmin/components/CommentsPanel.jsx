@@ -4,11 +4,9 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import { addComment } from "../../../../../api/helpdesk.api";
 import { fmtDate } from "../utils/dateUtils";
-
 const CommentsPanel = React.memo(({ ticket, onUpdated }) => {
   const [comment,    setComment]    = useState("");
   const [commenting, setCommenting] = useState(false);
-
   const doComment = async () => {
     if (!comment.trim()) return;
     setCommenting(true);
@@ -18,14 +16,12 @@ const CommentsPanel = React.memo(({ ticket, onUpdated }) => {
       onUpdated();
     } catch { } finally { setCommenting(false); }
   };
-
   return (
     <div className={cssClass({ padding: "16px 24px", flex: 1 })}>
       <p className={cssClass({ fontSize: 10, color: "#94a3b8", fontWeight: 600,
         textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" })}>
         Comments {ticket.comments?.length ? `(${ticket.comments.length})` : ""}
       </p>
-
       {ticket.comments?.length > 0 && (
         <div className={cssClass({ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 })}>
           {ticket.comments.map((c, i) => (
@@ -39,7 +35,6 @@ const CommentsPanel = React.memo(({ ticket, onUpdated }) => {
           ))}
         </div>
       )}
-
       <div className={cssClass({ display: "flex", gap: 8 })}>
         <textarea
           value={comment}
@@ -62,6 +57,5 @@ const CommentsPanel = React.memo(({ ticket, onUpdated }) => {
     </div>
   );
 });
-
 CommentsPanel.displayName = "CommentsPanel";
 export default CommentsPanel;

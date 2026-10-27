@@ -5,7 +5,6 @@ import { fmtDate } from "../utils";
 import Avatar from "./Avatar";
 import SectionLabel from "./SectionLabel";
 import InfoChip from "./InfoChip";
-
 const MyProfile = React.memo(function MyProfile({ self }) {
   return (
     <div className="bg-white rounded-[14px] border border-slate-200 overflow-hidden">
@@ -53,5 +52,4 @@ const MyProfile = React.memo(function MyProfile({ self }) {
     </div>
   );
 });
-
 export default MyProfile;

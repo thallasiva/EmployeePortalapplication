@@ -1,16 +1,13 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { SHIFTS } from "../constants";
-
 const CSVPreviewTable = React.memo(({ preview }) => {
   const shiftCount = (s) => preview.filter((r) => r.shift === s).length;
-
   return (
     <div className={cssClass({ marginBottom: 18 })}>
       <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 10 })}>
         Preview — {preview.length} holidays will be imported:
       </div>
-
       {/* shift count pills */}
       <div className={cssClass({ display: "flex", gap: 8, marginBottom: 12 })}>
         {SHIFTS.map((s) => (
@@ -21,7 +18,6 @@ const CSVPreviewTable = React.memo(({ preview }) => {
           </div>
         ))}
       </div>
-
       {/* preview table */}
       <div className={cssClass({ border: "1px solid #e9eaec", borderRadius: 8, overflow: "hidden", fontSize: 12 })}>
         <table className={cssClass({ width: "100%", borderCollapse: "collapse" })}>
@@ -72,6 +68,5 @@ const CSVPreviewTable = React.memo(({ preview }) => {
     </div>
   );
 });
-
 CSVPreviewTable.displayName = "CSVPreviewTable";
 export default CSVPreviewTable;

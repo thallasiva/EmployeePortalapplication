@@ -3,11 +3,8 @@
 -- Run this if sp_get_user_for_login (or any auth SP) is missing.
 -- Safe to re-run — uses DROP PROCEDURE IF EXISTS before each CREATE.
 -- =====================================================================
-
 USE hrms_db;
-
 DELIMITER $$
-
 DROP PROCEDURE IF EXISTS sp_get_user_for_login $$
 CREATE PROCEDURE sp_get_user_for_login (IN p_email VARCHAR(150))
 BEGIN
@@ -20,7 +17,6 @@ BEGIN
     LEFT JOIN employees e ON e.employee_id = u.employee_id
    WHERE u.email = p_email LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_user_by_id $$
 CREATE PROCEDURE sp_get_user_by_id (IN p_user_id INT)
 BEGIN
@@ -33,14 +29,12 @@ BEGIN
     LEFT JOIN employees e ON e.employee_id = u.employee_id
    WHERE u.user_id = p_user_id LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_login_success $$
 CREATE PROCEDURE sp_login_success (IN p_user_id INT)
 BEGIN
   UPDATE users SET last_login = NOW(), failed_login_attempts = 0, locked_until = NULL
    WHERE user_id = p_user_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_login_fail $$
 CREATE PROCEDURE sp_login_fail (
   IN p_user_id INT, IN p_max_attempts INT, IN p_lockout_mins INT,
@@ -60,7 +54,6 @@ BEGIN
     SET p_locked = 0;
   END IF;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_register_user $$
 CREATE PROCEDURE sp_register_user (
   IN p_first_name VARCHAR(80), IN p_last_name VARCHAR(80), IN p_email VARCHAR(150),
@@ -83,31 +76,26 @@ BEGIN
   VALUES (p_email, p_password_hash, IFNULL(p_role_id, 2), p_employee_id, 'Active');
   COMMIT;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_check_email_exists $$
 CREATE PROCEDURE sp_check_email_exists (IN p_email VARCHAR(150))
 BEGIN
   SELECT user_id FROM users WHERE email = p_email LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_get_user_password_hash $$
 CREATE PROCEDURE sp_get_user_password_hash (IN p_user_id INT)
 BEGIN
   SELECT password_hash FROM users WHERE user_id = p_user_id LIMIT 1;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_change_password $$
 CREATE PROCEDURE sp_change_password (IN p_user_id INT, IN p_new_hash VARCHAR(255))
 BEGIN
   UPDATE users SET password_hash = p_new_hash WHERE user_id = p_user_id;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_set_reset_token $$
 CREATE PROCEDURE sp_set_reset_token (IN p_email VARCHAR(150), IN p_token VARCHAR(64), IN p_expiry DATETIME)
 BEGIN
   UPDATE users SET reset_token = p_token, reset_token_expiry = p_expiry WHERE email = p_email;
 END $$
-
 DROP PROCEDURE IF EXISTS sp_verify_reset_token $$
 CREATE PROCEDURE sp_verify_reset_token (IN p_token VARCHAR(64), IN p_new_hash VARCHAR(255), OUT p_ok TINYINT)
 BEGIN
@@ -122,7 +110,5 @@ BEGIN
     SET p_ok = 0;
   END IF;
 END $$
-
 DELIMITER ;
-
 SELECT 'Auth procedures patched successfully.' AS status;

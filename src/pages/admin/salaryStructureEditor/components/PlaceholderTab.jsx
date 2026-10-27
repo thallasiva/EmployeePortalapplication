@@ -1,6 +1,5 @@
 import React from "react";
 import { FlaskConical } from "lucide-react";
-
 const PlaceholderTab = React.memo(function PlaceholderTab({ title, sub }) {
   return (
     <div className="flex flex-col items-center justify-center h-full py-24 text-gray-400">
@@ -12,5 +11,4 @@ const PlaceholderTab = React.memo(function PlaceholderTab({ title, sub }) {
     </div>
   );
 });
-
 export default PlaceholderTab;

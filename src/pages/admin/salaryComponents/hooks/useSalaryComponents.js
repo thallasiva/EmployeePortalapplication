@@ -10,7 +10,6 @@ import {
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { getErrorMessage } from "../../../../api/client";
 import { CATEGORIES } from "../constants";
-
 export function useSalaryComponents() {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +19,6 @@ export function useSalaryComponents() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -31,11 +29,9 @@ export function useSalaryComponents() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     load();
   }, [load]);
-
   const filtered = useMemo(
     () =>
       components.filter((c) => {
@@ -51,7 +47,6 @@ export function useSalaryComponents() {
       }),
     [components, showInactive, catFilter, search]
   );
-
   const grouped = useMemo(
     () =>
       CATEGORIES.reduce((acc, cat) => {
@@ -60,22 +55,18 @@ export function useSalaryComponents() {
       }, {}),
     [filtered]
   );
-
   const openCreate = useCallback(() => {
     setEditing(null);
     setFormOpen(true);
   }, []);
-
   const openEdit = useCallback((c) => {
     setEditing(c);
     setFormOpen(true);
   }, []);
-
   const closeForm = useCallback(() => {
     setFormOpen(false);
     setEditing(null);
   }, []);
-
   const handleSave = useCallback(
     async (data) => {
       setSaving(true);
@@ -97,7 +88,6 @@ export function useSalaryComponents() {
     },
     [editing, closeForm, load]
   );
-
   const handleToggle = useCallback(
     async (c) => {
       try {
@@ -110,7 +100,6 @@ export function useSalaryComponents() {
     },
     [load]
   );
-
   return {
     components,
     loading,

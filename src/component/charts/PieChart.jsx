@@ -1,18 +1,10 @@
 import React from "react";
-
-
-
-
-
-
-
 import { cssClass, joinClasses } from "../../utils/classStyles";
 const PieChart = ({ title, data, centerLabel }) => {
   const sum = data.reduce((acc, d) => acc + d.value, 0);
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   let cumulative = 0;
-
   return (
     <div className="admin-dash-card">
       {title &&
@@ -28,7 +20,6 @@ const PieChart = ({ title, data, centerLabel }) => {
               fill="none"
               stroke="#f1f5f9"
               strokeWidth="14" />
-
             {sum > 0 &&
             data.map((d) => {
               if (!d.value) return null;
@@ -47,8 +38,6 @@ const PieChart = ({ title, data, centerLabel }) => {
                   strokeWidth="14"
                   strokeDasharray={`${dash} ${circumference - dash}`}
                   strokeDashoffset={-offset} />);
-
-
             })}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -65,12 +54,10 @@ const PieChart = ({ title, data, centerLabel }) => {
           <li
             key={d.label}
             className="flex items-center justify-between text-sm gap-2">
-
               <span className="flex items-center gap-2 text-gray-600 truncate">
                 <span
                 className={joinClasses("w-2.5 h-2.5 rounded-full shrink-0", cssClass(
                   { background: d.color }))} />
-
                 {d.label}
               </span>
               <span className="font-semibold text-gray-800">{d.value}</span>
@@ -79,7 +66,5 @@ const PieChart = ({ title, data, centerLabel }) => {
         </ul>
       </div>
     </div>);
-
 };
-
 export default PieChart;

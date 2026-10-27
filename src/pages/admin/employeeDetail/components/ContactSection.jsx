@@ -4,7 +4,6 @@ import { cssClass } from "../../../../utils/classStyles";
 import SectionHead from "./SectionHead";
 import FormInput from "./FormInput";
 import Row from "./Row";
-
 const ContactSection = React.memo(function ContactSection({
   ci, editMode, contForm, setC,
 }) {
@@ -41,5 +40,4 @@ const ContactSection = React.memo(function ContactSection({
     </div>
   );
 });
-
 export default ContactSection;

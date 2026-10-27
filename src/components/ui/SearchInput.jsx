@@ -1,6 +1,5 @@
 import { memo, useRef } from "react";
 import { Search, X } from "lucide-react";
-
 /**
  * Controlled search input with clear button.
  *
@@ -13,13 +12,11 @@ import { Search, X } from "lucide-react";
 const SearchInput = memo(function SearchInput({ value, onChange, placeholder = "Search...", className = "", autoFocus = false })
 {
   const inputRef = useRef(null);
-
   const handleClear = () =>
   {
     onChange("");
     inputRef.current?.focus();
   };
-
   return (
     <div className={`relative ${className}`}>
       <Search
@@ -50,5 +47,4 @@ const SearchInput = memo(function SearchInput({ value, onChange, placeholder = "
     </div>
   );
 });
-
 export default SearchInput;

@@ -1,5 +1,4 @@
 import React from "react";
-
 const Row = React.memo(function Row({ label, value }) {
   return (
     <div>
@@ -8,5 +7,4 @@ const Row = React.memo(function Row({ label, value }) {
     </div>
   );
 });
-
 export default Row;

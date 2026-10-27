@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 // Generic white card with an optional header (icon + title + subtitle + right slot).
 export default function Card({ title, subtitle, icon, right, children, pad = 18, style = {} }) {
   return (

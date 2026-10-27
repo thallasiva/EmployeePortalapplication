@@ -2,7 +2,6 @@ import React from "react";
 import { STATUS_CLS, FB_CLS } from "../constants";
 import RoundBadge from "./RoundBadge";
 import { Star } from "lucide-react";
-
 const RoundRow = React.memo(function RoundRow({
   iv,
   canFeedback,
@@ -15,7 +14,6 @@ const RoundRow = React.memo(function RoundRow({
   const fc = FB_CLS[iv.feedback_status];
   const rfc = FB_CLS[iv.recruiter_feedback_status];
   const isExternal = (iv.candidate_type || "External") === "External";
-
   return (
     <div
       className={`grid items-center gap-3 px-4 py-3 border-b border-gray-100 ${
@@ -45,7 +43,6 @@ const RoundRow = React.memo(function RoundRow({
       <span className={`text-[11px] font-bold px-2.5 py-[3px] rounded-full whitespace-nowrap ${ss}`}>
         {iv.status}
       </span>
-
       <div className="space-y-1">
         <div className="flex items-center gap-1">
           <span className="text-[10px] text-gray-400 w-12 shrink-0">HR:</span>
@@ -77,7 +74,6 @@ const RoundRow = React.memo(function RoundRow({
           </div>
         )}
       </div>
-
       <div className="text-[11px] text-gray-400">{iv.interview_code}</div>
       <div className="flex flex-col gap-1 shrink-0">
         <button
@@ -107,5 +103,4 @@ const RoundRow = React.memo(function RoundRow({
     </div>
   );
 });
-
 export default RoundRow;

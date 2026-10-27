@@ -1,7 +1,6 @@
 import React from "react";
 import { YEARS } from "../constants";
 import { Download } from "lucide-react";
-
 const ReportToolbar = React.memo(function ReportToolbar({
   year,
   onYearChange,
@@ -30,7 +29,6 @@ const ReportToolbar = React.memo(function ReportToolbar({
             </option>
           ))}
         </select>
-
         <select
           className="border rounded-lg px-3 py-1.5 text-sm"
           value={statusFilter}
@@ -41,7 +39,6 @@ const ReportToolbar = React.memo(function ReportToolbar({
           <option value="Inactive">Inactive</option>
           <option value="On Notice">On Notice</option>
         </select>
-
         <input
           type="text"
           placeholder="Search employee / dept…"
@@ -49,7 +46,6 @@ const ReportToolbar = React.memo(function ReportToolbar({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
-
         <button
           onClick={onExportCSV}
           disabled={!hasData}
@@ -61,5 +57,4 @@ const ReportToolbar = React.memo(function ReportToolbar({
     </div>
   );
 });
-
 export default ReportToolbar;

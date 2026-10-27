@@ -1,15 +1,12 @@
 import { STATIC_DEPARTMENTS, STATIC_EMPLOYEES } from "./staticData";
-
 const BLOOD_GROUPS = ["A +ve", "B +ve", "O +ve", "AB +ve", "A -ve"];
 const LOCATIONS = ["Hyderabad", "Bangalore", "Chennai", "Mumbai"];
 const HOLIDAY_CALENDARS = ["India - Default", "Telangana", "Karnataka"];
-
 export const PEOPLE_FILTER_DEFAULTS = {
   location: "all",
   department: "all",
   holidayCalendar: "all",
 };
-
 export function getPeopleFilterOptions() {
   return {
     locations: [
@@ -29,11 +26,9 @@ export function getPeopleFilterOptions() {
     ],
   };
 }
-
 export function formatEmployeeCode(employeeId) {
   return `#2022040${String(employeeId).padStart(3, "0")}`;
 }
-
 export function getPeopleDirectory() {
   return STATIC_EMPLOYEES.filter((e) => e.role !== 1).map((emp, index) => {
     const lastName = emp.lasst_name || emp.last_name || "";
@@ -58,7 +53,6 @@ export function getPeopleDirectory() {
     };
   });
 }
-
 export function filterPeopleByCriteria(people, filters) {
   return people.filter((p) => {
     if (filters.location !== "all" && p.location !== filters.location) {

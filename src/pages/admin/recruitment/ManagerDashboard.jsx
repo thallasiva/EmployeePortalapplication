@@ -7,27 +7,22 @@ import { statGridClass } from "./data";
 import { useNavigate } from "react-router-dom";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
-
 function ManagerDashboard() {
   const router = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     getDashboard()
       .then(setData)
       .catch(err => apiErrorToast(err, "Failed to load dashboard"))
       .finally(() => setLoading(false));
   }, []);
-
   const s = data?.stats || {};
-
   if (loading) return (
     <div className="flex items-center justify-center gap-2.5 p-[60px] text-gray-500">
       <Loader2 size={20} /> Loading dashboard…
     </div>
   );
-
   return (
     <>
       <div className="flex justify-end mb-4">
@@ -56,7 +51,6 @@ function ManagerDashboard() {
           </div>
         </Card>
       )}
-
       {data?.shortlistedCandidates?.length > 0 && (
         <Card title="Shortlisted Candidates">
           <div className="overflow-x-auto">
@@ -95,5 +89,4 @@ function ManagerDashboard() {
     </>
   );
 }
-
 export default ManagerDashboard;

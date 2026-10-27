@@ -20,10 +20,8 @@ import {
   TYPE_STYLE,
   timeAgo } from
 "./kudosFeedbackShared";
-
 // role 4 is "HR Manager" in the roles table (the web constant predates the rename)
 const ROLE_HR_MANAGER = ROLE_RECRUITER_LEAD;
-
 const FeedbackItem = ({ f, perspective }) => {
   const person = perspective === "sent" ? f.to_name : f.from_name;
   const role = perspective === "sent" ? f.to_designation : f.from_is_manager ? "Your manager" : f.from_designation;
@@ -56,15 +54,12 @@ const FeedbackItem = ({ f, perspective }) => {
         <p className="text-xs text-slate-400 mt-2">{timeAgo(f.created_at)}</p>
       </div>
     </article>);
-
 };
-
 const FeedbackList = ({ scope, perspective, emptyAction }) => {
   const [type, setType] = useState("");
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const load = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -77,9 +72,7 @@ const FeedbackList = ({ scope, perspective, emptyAction }) => {
       setLoading(false);
     }
   }, [scope, type]);
-
   useEffect(() => {load(1);}, [load]);
-
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-2" role="group" aria-label="Filter by type">
@@ -102,7 +95,6 @@ const FeedbackList = ({ scope, perspective, emptyAction }) => {
         title={type ? `No ${type.toLowerCase()} feedback` : "Nothing here yet"}
         text={perspective === "received" ? "Ask your teammates for feedback to grow faster." : undefined}
         action={emptyAction} /> :
-
       <>
           {rows.map((f) => <FeedbackItem key={f.feedback_id} f={f} perspective={perspective} />)}
           {meta && meta.page < meta.totalPages &&
@@ -113,26 +105,20 @@ const FeedbackList = ({ scope, perspective, emptyAction }) => {
         </>
       }
     </div>);
-
 };
-
 const STATUS_STYLE = {
   pending: "bg-orange-50 text-orange-700",
   completed: "bg-emerald-50 text-emerald-700",
   declined: "bg-slate-100 text-slate-500"
 };
-
 const RequestsPanel = ({ refreshKey, onRespond, onChanged }) => {
   const [incoming, setIncoming] = useState(null);
   const [outgoing, setOutgoing] = useState(null);
-
   const load = useCallback(() => {
     listFeedbackRequests({ scope: "incoming" }).then(setIncoming).catch(() => setIncoming([]));
     listFeedbackRequests({ scope: "outgoing" }).then(setOutgoing).catch(() => setOutgoing([]));
   }, []);
-
   useEffect(() => {load();}, [load, refreshKey]);
-
   const decline = async (r) => {
     if (!window.confirm(`Decline ${r.requester_name}'s request for feedback on "${r.topic}"?`)) return;
     try {
@@ -144,9 +130,7 @@ const RequestsPanel = ({ refreshKey, onRespond, onChanged }) => {
       toast.error(getErrorMessage(err, "Could not decline request"));
     }
   };
-
   const pending = (incoming || []).filter((r) => r.status === "pending");
-
   return (
     <div className="space-y-6">
       <div>
@@ -192,22 +176,17 @@ const RequestsPanel = ({ refreshKey, onRespond, onChanged }) => {
         }
       </div>
     </div>);
-
 };
-
 const Feedback = () => {
   const role = resolveRoleForUser(getStoredUser());
   const isManager = role === ROLE_REPORTING_MANAGER;
   const isHr = role === ROLE_HR_MANAGER;
-
   const [tab, setTab] = useState("received");
   const [summary, setSummary] = useState(null);
   const [modal, setModal] = useState(null); // 'give' | 'request' | { request } | { kudos }
   const [refreshKey, setRefreshKey] = useState(0);
-
   useEffect(() => {getKfSummary().then(setSummary).catch(() => {});}, [refreshKey]);
   const refresh = () => setRefreshKey((k) => k + 1);
-
   const pendingCount = Number(summary?.pending_requests || 0);
   const tabs = [
   { key: "received", label: "Received" },
@@ -215,17 +194,13 @@ const Feedback = () => {
   { key: "requests", label: "Requests", count: pendingCount },
   ...(isManager ? [{ key: "team", label: "Team Feedback" }] : []),
   ...(isHr ? [{ key: "report", label: "Feedback Report" }] : [])];
-
-
   const requestButton = <SecondaryButton onClick={() => setModal("request")}><Inbox size={15} /> Request Feedback</SecondaryButton>;
-
   return (
     <div className="space-y-6">
       {modal === "give" && <GiveFeedbackModal onClose={() => setModal(null)} onSent={refresh} teamOnly={false} />}
       {modal === "request" && <RequestFeedbackModal onClose={() => setModal(null)} onSent={refresh} />}
       {modal?.request && <GiveFeedbackModal request={modal.request} onClose={() => setModal(null)} onSent={refresh} />}
       {modal?.kudos && <GiveKudosModal preset={[modal.kudos]} onClose={() => setModal(null)} onSent={refresh} />}
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Feedback</h1>
@@ -240,7 +215,6 @@ const Feedback = () => {
           <PrimaryButton onClick={() => setModal("give")}><Send size={15} /> Give Feedback</PrimaryButton>
         </div>
       </div>
-
       {tab !== "report" &&
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={<Star size={22} className="text-amber-500" />} label="Received" value={summary?.feedback_received} accent="bg-amber-50" />
@@ -253,7 +227,6 @@ const Feedback = () => {
           accent="bg-blue-50" />
         </div>
       }
-
       <section className="bg-white rounded-2xl border border-slate-100 shadow-sm">
         <div className="px-5 pt-3">
           <Tabs tabs={tabs} active={tab} onChange={setTab} label="Feedback views" />
@@ -279,7 +252,5 @@ const Feedback = () => {
         </div>
       </section>
     </div>);
-
 };
-
 export default Feedback;

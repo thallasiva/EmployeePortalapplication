@@ -7,10 +7,8 @@
 --  Run in MySQL Workbench -> Execute All.  Run it ONCE, then restart the backend.
 --  CONVERT TO keeps your data; it only changes collation metadata.
 -- ============================================================================
-
 -- 1) Database default -> MySQL 8 native collation
 ALTER DATABASE `hrms_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-
 -- 2) Convert every base table in one pass
 DROP PROCEDURE IF EXISTS _fix_collation_all;
 DELIMITER $$
@@ -33,10 +31,8 @@ BEGIN
   CLOSE cur;
 END$$
 DELIMITER ;
-
 CALL _fix_collation_all();
 DROP PROCEDURE _fix_collation_all;
-
 -- 3) Verify — should return NO rows (nothing left on the old collation)
 SELECT table_name, table_collation
 FROM information_schema.tables

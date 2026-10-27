@@ -4,16 +4,13 @@ import { ORANGE } from "../constants";
 import { fmtINR } from "../utils";
 import { usePOIData } from "../hooks/usePOIData";
 import Table from "./Table";
-
 const POIOverview = React.memo(function POIOverview({ year }) {
   const { rows, loading } = usePOIData(year);
-
   const submitted = useMemo(() => rows.filter((r) => r.declaration).length, [rows]);
   const withPOI = useMemo(
     () => rows.filter((r) => r.declaration?.poi_status).length,
     [rows]
   );
-
   const stats = useMemo(
     () => [
       { label: "Total Employees", value: rows.length, color: ORANGE },
@@ -23,7 +20,6 @@ const POIOverview = React.memo(function POIOverview({ year }) {
     ],
     [rows.length, submitted, withPOI]
   );
-
   const cols = useMemo(
     () => [
       { key: "emp_code", label: "Emp Code" },
@@ -114,12 +110,10 @@ const POIOverview = React.memo(function POIOverview({ year }) {
     ],
     []
   );
-
   if (loading)
     return (
       <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>
     );
-
   return (
     <>
       <div className={cssClass({ display: "flex", gap: 16, marginBottom: 16 })}>
@@ -147,5 +141,4 @@ const POIOverview = React.memo(function POIOverview({ year }) {
     </>
   );
 });
-
 export default POIOverview;

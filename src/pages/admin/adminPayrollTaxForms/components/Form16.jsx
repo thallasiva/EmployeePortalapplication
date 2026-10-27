@@ -4,10 +4,8 @@ import { ORANGE } from "../constants";
 import { fmtINR } from "../utils";
 import { useForm16Data } from "../hooks/useForm16Data";
 import Table from "./Table";
-
 const Form16 = React.memo(function Form16({ year }) {
   const { rows, loading } = useForm16Data(year);
-
   const cols = useMemo(
     () => [
       { key: "emp_code", label: "Emp Code" },
@@ -115,12 +113,10 @@ const Form16 = React.memo(function Form16({ year }) {
     ],
     [year]
   );
-
   if (loading)
     return (
       <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>
     );
-
   return (
     <>
       <div className={cssClass({ marginBottom: 12, fontSize: 13, color: "#666" })}>
@@ -130,5 +126,4 @@ const Form16 = React.memo(function Form16({ year }) {
     </>
   );
 });
-
 export default Form16;

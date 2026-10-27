@@ -1,7 +1,6 @@
 import React from "react";
 import Btn from "../../Btn";
 import { RECRUITERS } from "../constants";
-
 const RecruiterDropdown = React.memo(function RecruiterDropdown({ jobId, assignments, onToggle, onDone }) {
   return (
     <div className="absolute left-0 top-11 z-50 w-64 rounded-lg border border-gray-200 bg-white shadow-xl">
@@ -26,5 +25,4 @@ const RecruiterDropdown = React.memo(function RecruiterDropdown({ jobId, assignm
     </div>
   );
 });
-
 export default RecruiterDropdown;

@@ -6,26 +6,21 @@ import Stat from "./Stat";
 import { statGridClass } from "./data";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
-
 function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     getDashboard()
       .then(setData)
       .catch(err => apiErrorToast(err, "Failed to load dashboard"))
       .finally(() => setLoading(false));
   }, []);
-
   const s = data?.stats || {};
-
   if (loading) return (
     <div className="flex items-center justify-center gap-2.5 py-[60px] text-gray-500">
       <Loader2 size={20} /> Loading dashboard…
     </div>
   );
-
   return (
     <>
       <div className={statGridClass}>
@@ -34,7 +29,6 @@ function AdminDashboard() {
         <Stat icon={FileCheck}    label="Pending Offers"     value={s.offers_pending   ?? "—"} note="Awaiting response" tone="green" />
         <Stat icon={Users}        label="Onboarding"         value={s.active_onboarding?? "—"} note="In progress" tone="purple" />
       </div>
-
       <div className="grid grid-cols-2 gap-4 mt-4">
         <Card title="Candidate Pipeline">
           <DataTable
@@ -49,7 +43,6 @@ function AdminDashboard() {
           />
         </Card>
       </div>
-
       {data?.shortlistedCandidates?.length > 0 && (
         <div className="mt-4">
           <Card title="Shortlisted Candidates">
@@ -87,7 +80,6 @@ function AdminDashboard() {
           </Card>
         </div>
       )}
-
       {data?.recruiterPerf?.length > 0 && (
        <div className="mt-4">
           <Card title="Recruiter Performance (Last 30 Days)">
@@ -106,5 +98,4 @@ function AdminDashboard() {
     </>
   );
 }
-
 export default AdminDashboard;

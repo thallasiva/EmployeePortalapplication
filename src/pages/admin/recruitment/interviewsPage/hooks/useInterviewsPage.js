@@ -11,7 +11,6 @@ import {
 import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK_INT, BLANK_FB, LEVEL_ORDER } from "../constants";
 import { INTERVIEW_LEVELS, INTERVIEW_TYPES } from "../mockData";
-
 export function useInterviewsPage(role) {
   const [interviews, setInterviews] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -28,7 +27,6 @@ export function useInterviewsPage(role) {
   const [fb, setFb] = useState(BLANK_FB);
   const [fbRecruiter, setFbRecruiter] = useState(BLANK_FB);
   const [saving, setSaving] = useState(false);
-
   const isAdmin = role === 1;
   const isTL = role === 3 || role === 4;
   const isRecruiter = role === 5;
@@ -37,12 +35,10 @@ export function useInterviewsPage(role) {
   const canSchedule = isHRMgr || isTL || isRecruiter;
   const canFeedback = isAdmin || isTL;
   const canRecruiterFeedback = isRecruiter;
-
   useEffect(() => {
     listCandidates({ limit: 500 }).then((r) => setCandidates(r?.data ?? [])).catch(() => {});
     listJobs({ limit: 200 }).then((r) => setJobs(r?.data ?? [])).catch(() => {});
   }, []);
-
   const loadInterviews = useCallback(async () => {
     setLoading(true);
     try {
@@ -58,11 +54,9 @@ export function useInterviewsPage(role) {
       setLoading(false);
     }
   }, [filterLevel, filterStatus, search]);
-
   useEffect(() => {
     loadInterviews();
   }, [loadInterviews]);
-
   const handleSchedule = useCallback(async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -70,7 +64,6 @@ export function useInterviewsPage(role) {
       const participants = form.toAddresses
         ? form.toAddresses.split(";").map((s) => s.trim()).filter(Boolean).join(", ")
         : form.teamsParticipants || null;
-
       await scheduleInterview({
         candidateId: Number(form.candidateId),
         jobReqId: Number(form.jobReqId) || null,
@@ -97,7 +90,6 @@ export function useInterviewsPage(role) {
       setSaving(false);
     }
   }, [form, loadInterviews]);
-
   const handleFeedback = useCallback(async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -117,7 +109,6 @@ export function useInterviewsPage(role) {
       setSaving(false);
     }
   }, [fbOpen, fb, loadInterviews]);
-
   const handleRecruiterFeedback = useCallback(async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -136,17 +127,14 @@ export function useInterviewsPage(role) {
       setSaving(false);
     }
   }, [fbRecruiterOpen, fbRecruiter, loadInterviews]);
-
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   }, []);
-
   const handleFbChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFb((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }, []);
-
   const openFeedback = useCallback((row) => {
     setFbOpen(row);
     setFb({
@@ -161,7 +149,6 @@ export function useInterviewsPage(role) {
       shortlisted: !!row.shortlisted,
     });
   }, []);
-
   const openRecruiterFeedback = useCallback((row) => {
     setFbRecruiterOpen(row);
     setFbRecruiter({
@@ -170,7 +157,6 @@ export function useInterviewsPage(role) {
       shortlisted: false,
     });
   }, []);
-
   const groups = useMemo(() => {
     const filtered = interviews.filter((iv) => {
       const q = search.toLowerCase();
@@ -181,7 +167,6 @@ export function useInterviewsPage(role) {
         (iv.job_title || "").toLowerCase().includes(q);
       return matchQ && (!filterLevel || iv.level === filterLevel) && (!filterStatus || iv.status === filterStatus);
     });
-
     const grouped = {};
     for (const iv of filtered) {
       const key = iv.candidate_id;
@@ -197,7 +182,6 @@ export function useInterviewsPage(role) {
     }
     return Object.values(grouped);
   }, [interviews, search, filterLevel, filterStatus]);
-
   const candidateOpts = useMemo(
     () => candidates.map((c) => ({ value: String(c.candidate_id), label: c.candidate_code + " — " + c.name })),
     [candidates]
@@ -219,7 +203,6 @@ export function useInterviewsPage(role) {
     ],
     []
   );
-
   return {
     interviews,
     loading,

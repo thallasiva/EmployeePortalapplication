@@ -1,7 +1,6 @@
 import React from "react";
 import { BRAND } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
-
 const Avatar = React.memo(function Avatar({ name, size = 38, color = BRAND }) {
   const initials = (name || "?")
     .split(" ")
@@ -9,7 +8,6 @@ const Avatar = React.memo(function Avatar({ name, size = 38, color = BRAND }) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   return (
     <div className={cssClass({
       width: size, height: size, borderRadius: "50%", background: color,
@@ -20,5 +18,4 @@ const Avatar = React.memo(function Avatar({ name, size = 38, color = BRAND }) {
     </div>
   );
 });
-
 export default Avatar;

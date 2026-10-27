@@ -6,7 +6,6 @@ import {
 import { listEmployees } from "../../../api/employee.api";
 import { getDepartmentName } from "../../../utils/employeeDisplay";import { cssClass, joinClasses } from "../../../utils/classStyles";
 import { User } from "lucide-react";
-
 function EmployeeBarChart({ employees }) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const data = useMemo(() => {
@@ -20,9 +19,7 @@ function EmployeeBarChart({ employees }) {
     });
     return counts;
   }, [employees]);
-
   const yMax = Math.max(...data.map((d) => d.active), 1);
-
   return (
     <div className="report-chart-card">
       <div className="report-chart-card__header">
@@ -42,21 +39,17 @@ function EmployeeBarChart({ employees }) {
         )}
       </div>
     </div>);
-
 }
-
 export default function EmployeeReport() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
   useEffect(() => {
     listEmployees({ limit: 500 }).
     then(({ data }) => setEmployees(data || [])).
     catch(() => {}).
     finally(() => setLoading(false));
   }, []);
-
   const active = employees.filter((e) => e.employee_status === "Active").length;
   const inactive = employees.filter((e) => e.employee_status !== "Active").length;
   const thisMonth = useMemo(() => {
@@ -67,14 +60,11 @@ export default function EmployeeReport() {
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
   }, [employees]);
-
   const stats = [
   { label: "Total Employees", value: employees.length, color: "#f97316", trend: "All time" },
   { label: "Active", value: active, color: "#22c55e", trend: "Currently active" },
   { label: "New This Month", value: thisMonth, color: "#3b82f6", trend: "Joined this month" },
   { label: "Inactive", value: inactive, color: "#ef4444", trend: "Not active" }];
-
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return employees;
@@ -83,9 +73,7 @@ export default function EmployeeReport() {
     some((v) => (v || "").toLowerCase().includes(q))
     );
   }, [employees, search]);
-
   if (loading) return <div className="report-page"><p className="text-sm text-gray-400 p-6">Loading…</p></div>;
-
   return (
     <div className="report-page">
       <ReportPageHeader title="Employee Report" />
@@ -126,12 +114,10 @@ export default function EmployeeReport() {
                     <td>{emp.emp_joining_date ? new Date(emp.emp_joining_date).toLocaleDateString("en-GB") : "—"}</td>
                     <td><ReportStatusBadge status={emp.employee_status || "Active"} /></td>
                   </tr>);
-
               })}
             </tbody>
           </table>
         </div>
       </div>
     </div>);
-
 }

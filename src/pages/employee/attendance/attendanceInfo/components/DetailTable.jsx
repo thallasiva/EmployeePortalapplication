@@ -1,5 +1,4 @@
 import React from "react";
-
 const DetailTable = React.memo(function DetailTable({ headers, values }) {
   return (
     <div className="overflow-x-auto border border-[#e8edf2] rounded">
@@ -29,5 +28,4 @@ const DetailTable = React.memo(function DetailTable({ headers, values }) {
     </div>
   );
 });
-
 export default DetailTable;

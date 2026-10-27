@@ -4,23 +4,18 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { LANDLORD_RELATIONS } from "../constants";
 import { getFYMonths, countMonths, blankHouse } from "../utils/hraHelpers";
 import Modal from "./Modal";
-
 function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
   const fyMonths = getFYMonths();
   const houses = hraData.houses && hraData.houses.length ? hraData.houses : [blankHouse(fyMonths)];
   const [tab, setTab] = useState(0);
-
   const setHouses = (h) => setHraData((prev) => ({ ...prev, houses: h }));
   const upd = (i, k, v) => setHouses(houses.map((h, idx) => (idx === i ? { ...h, [k]: v } : h)));
-
   const totalAnnual = houses.reduce(
     (s, h) => s + (Number(h.monthlyRent) || 0) * countMonths(h.from, h.to),
     0
   );
-
   const h = houses[tab] || blankHouse(fyMonths);
   const annualRent = (Number(h.monthlyRent) || 0) * countMonths(h.from, h.to);
-
   const inp = {
     width: "100%", boxSizing: "border-box", padding: "7px 10px",
     border: "1px solid #d1d5db", borderRadius: 4, fontSize: 13,
@@ -28,7 +23,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
   };
   const lbl = { fontSize: 12, color: "#374151", marginBottom: 4, display: "block" };
   const req = <span className={cssClass({ color: "red" })}>*</span>;
-
   return (
     <Modal
       title="HRA Exemption (Sec. 10(13A))"
@@ -51,7 +45,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           <span className={cssClass({ fontWeight: 700 })}>this financial year</span>
         </div>
       </div>
-
       {}
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, marginBottom: 16, flexWrap: "wrap" })}>
         {houses.map((_, i) => (
@@ -71,7 +64,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           + Add house
         </button>
       </div>
-
       {}
       <div className={cssClass({ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px", marginBottom: 14 })}>
         <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 12 })}>Rent Period & Amount</div>
@@ -110,7 +102,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           </div>
         </div>
       </div>
-
       {}
       <div className={cssClass({ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px", marginBottom: 14 })}>
         <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 12 })}>Rental Address</div>
@@ -133,7 +124,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           </div>
         </div>
       </div>
-
       {}
       <div className={cssClass({ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px", marginBottom: 14 })}>
         <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 10 })}>Landlord Details</div>
@@ -160,7 +150,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
             ))}
           </div>
         </div>
-
         {h.landlordHasPan && (
           <>
             <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 })}>
@@ -204,7 +193,6 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           </>
         )}
       </div>
-
       {houses.length > 1 && (
         <button type="button"
           onClick={() => {
@@ -222,5 +210,4 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
     </Modal>
   );
 }
-
 export default React.memo(ModalHRA);

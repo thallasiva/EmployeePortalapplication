@@ -13,11 +13,9 @@ import BankSection from "./components/BankSection";
 import ContactSection from "./components/ContactSection";
 import StickyFooter from "./components/StickyFooter";
 import { BRAND } from "./constants";
-
 export default function EmployeeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const {
     employee, loading, saving, editMode,
     form, bankForm, contForm,
@@ -28,7 +26,6 @@ export default function EmployeeDetail() {
     handleCtcChange,
     enterEdit, cancelEdit, handleSave,
   } = useEmployeeDetail(id);
-
   if (loading) {
     return (
       <div className={cssClass({ display: "flex", justifyContent: "center", padding: 60 })}>
@@ -39,10 +36,8 @@ export default function EmployeeDetail() {
   if (!employee) {
     return <div className={cssClass({ textAlign: "center", padding: 60, color: "#6b7280" })}>Employee not found.</div>;
   }
-
   const bd = employee.bankDetails || {};
   const ci = employee.contactInfo || {};
-
   return (
     <div className={joinClasses("emp-wizard", cssClass({ maxWidth: 900, margin: "0 auto", padding: "24px 16px" }))}>
       <HeaderBar editMode={editMode} saving={saving} onBack={() => navigate(-1)} onEdit={enterEdit} onCancel={cancelEdit} onSave={handleSave} />

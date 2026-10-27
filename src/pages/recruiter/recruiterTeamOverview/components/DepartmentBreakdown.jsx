@@ -1,6 +1,5 @@
 import React from "react";
 import { Building2 } from "lucide-react";
-
 const DepartmentBreakdown = React.memo(function DepartmentBreakdown({
   deptBreakdown,
   deptFilter,
@@ -45,5 +44,4 @@ const DepartmentBreakdown = React.memo(function DepartmentBreakdown({
     </div>
   );
 });
-
 export default DepartmentBreakdown;

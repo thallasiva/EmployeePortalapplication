@@ -3,16 +3,13 @@ import { listLeaveRequests, reviewLeaveRequest } from "../../../../api/leaveRequ
 import { listAttendance } from "../../../../api/attendance.api";
 import { listEmployees } from "../../../../api/employee.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
-
 export function useTeamOverview() {
   const [team, setTeam] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [att, setAtt] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(null);
-
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-
   const load = useCallback(() => {
     setLoading(true);
     Promise.all([
@@ -27,11 +24,9 @@ export function useTeamOverview() {
         .catch(() => {}),
     ]).finally(() => setLoading(false));
   }, [today]);
-
   useEffect(() => {
     load();
   }, [load]);
-
   const kpis = useMemo(
     () => ({
       presentToday: att.filter((a) => (a.status || "").toLowerCase() === "present").length,
@@ -41,14 +36,12 @@ export function useTeamOverview() {
     }),
     [att, leaves]
   );
-
   const departments = useMemo(() => {
     const s = new Set(
       team.map((e) => e.department_name || e.department || "").filter(Boolean)
     );
     return ["All", ...Array.from(s).sort()];
   }, [team]);
-
   const deptBreakdown = useMemo(() => {
     const map = {};
     team.forEach((e) => {
@@ -57,12 +50,10 @@ export function useTeamOverview() {
     });
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [team]);
-
   const pendingLeavesRows = useMemo(
     () => leaves.filter((l) => l.status === "Pending").slice(0, 8),
     [leaves]
   );
-
   const handleLeave = useCallback(
     async (id, action) => {
       setReviewing(id);
@@ -80,7 +71,6 @@ export function useTeamOverview() {
     },
     [load]
   );
-
   return {
     team,
     att,

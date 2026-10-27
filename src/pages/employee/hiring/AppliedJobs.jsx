@@ -2,10 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import HiringProfileCardsIllustration from "./HiringProfileCardsIllustration";
 import { APPLIED_JOBS } from "../../../data/hiringFilters";
-
 export default function AppliedJobs({ onApplyForJob }) {
   const [search, setSearch] = useState("");
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return APPLIED_JOBS.filter((row) => {
@@ -16,11 +14,9 @@ export default function AppliedJobs({ onApplyForJob }) {
       );
     });
   }, [search]);
-
   return (
     <div className="hiring-simple-page">
       <h1 className="hiring-simple-page__title">Applied Jobs</h1>
-
       <div className="hiring-search-wrap">
         <input
           type="search"
@@ -31,14 +27,12 @@ export default function AppliedJobs({ onApplyForJob }) {
         />
         <Search size={18} className="hiring-search__icon" />
       </div>
-
       <div className="hiring-results hiring-results--simple">
         <div className="hiring-results__header hiring-results__header--applied">
           <span>Job details</span>
           <span>Application Status</span>
           <span>Applied</span>
         </div>
-
         <div className="hiring-results__body">
           {filtered.length === 0 ? (
             <div className="hiring-empty hiring-empty--cta">

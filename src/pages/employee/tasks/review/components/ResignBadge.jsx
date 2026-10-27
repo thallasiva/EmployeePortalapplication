@@ -1,12 +1,10 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { RESIGN_STATUS_CONFIG } from "../constants";
-
 const LABELS = {
   pending: "Pending", rm_approved: "RM Approved", rm_rejected: "RM Rejected",
   accepted: "Accepted", rejected: "Rejected", withdrawn: "Withdrawn",
 };
-
 const ResignBadge = React.memo(function ResignBadge({ status }) {
   const cfg = RESIGN_STATUS_CONFIG[status] || RESIGN_STATUS_CONFIG.pending;
   return (
@@ -20,5 +18,4 @@ const ResignBadge = React.memo(function ResignBadge({ status }) {
     </span>
   );
 });
-
 export default ResignBadge;

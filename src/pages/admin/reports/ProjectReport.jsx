@@ -1,7 +1,6 @@
 import React from "react";
 import { ReportPageHeader } from "../../../component/reports/ReportsLayout";
 import { FolderOpen } from "lucide-react";
-
 export default function ProjectReport() {
   return (
     <div className="report-page">

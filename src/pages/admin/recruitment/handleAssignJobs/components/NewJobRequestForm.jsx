@@ -2,7 +2,6 @@ import React from "react";
 import Card from "../../Card";
 import Btn from "../../Btn";
 import { gridClass, inputClass, labelTextClass, footerActionsClass } from "../constants";
-
 const NewJobRequestForm = React.memo(function NewJobRequestForm() {
   return (
     <Card title="New Job Request">
@@ -90,5 +89,4 @@ const NewJobRequestForm = React.memo(function NewJobRequestForm() {
     </Card>
   );
 });
-
 export default NewJobRequestForm;

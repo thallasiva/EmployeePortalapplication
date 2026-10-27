@@ -15,22 +15,17 @@ import HolidayCard from "./components/HolidayCard";
 import QuickAccessCard from "./components/QuickAccessCard";
 import ITDeclarationCard from "./components/ITDeclarationCard";
 import POICard from "./components/POICard";
-
 export default function Dashboard() {
   const now = new Date();
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
-
   const [showSal, setShowSal] = useState(false);
   const [downloading, setDownloading] = useState(false);
-
   const {
     user, holidays, leaveBalance, todayAtt, setTodayAtt, monthAtt, loading, sal, payslipLabel,
   } = useDashboardData({ month, year });
-
   const { checkIn, checkOut, elapsed, workHours, checkingIn, checkingOut, handleCheckIn, handleCheckOut, checkinLocation, checkoutLocation } =
     useAttendance({ todayAtt, setTodayAtt });
-
   // Derived employee info
   const empName = user
     ? `${user.first_name || user.name || ""}${user.last_name ? " " + user.last_name : ""}`.trim()
@@ -44,14 +39,12 @@ export default function Dashboard() {
   const initials = empName
     ? empName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "?";
-
   // Derived payroll stats
   const paidDays = sal.fromPayslip ? sal.paidDays : sal.basic > 0 ? 26 : 0;
   const workDays = sal.fromPayslip ? sal.workingDays : sal.basic > 0 ? 26 : 0;
   const lopDays = sal.fromPayslip ? sal.lopDays : 0;
   const presentDays = monthAtt?.present_days ?? monthAtt?.presentDays ?? 0;
   const todayLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-
   const handleDownload = useCallback(async () => {
     setDownloading(true);
     try {
@@ -64,7 +57,6 @@ export default function Dashboard() {
       setDownloading(false);
     }
   }, [month, year]);
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f0f4f8", padding: 20 })}>
       <ProfileHeader
@@ -74,12 +66,10 @@ export default function Dashboard() {
         elapsed={elapsed} checkingIn={checkingIn} checkingOut={checkingOut}
         handleCheckIn={handleCheckIn} handleCheckOut={handleCheckOut} todayAtt={todayAtt} checkinLocation={checkinLocation} checkoutLocation={checkoutLocation}
       />
-
       <SummaryTiles
         loading={loading} showSal={showSal} sal={sal}
         paidDays={paidDays} workDays={workDays} lopDays={lopDays} presentDays={presentDays}
       />
-
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 18 })}>
         <AttendanceCard
           loading={loading} todayAtt={todayAtt} checkIn={checkIn} checkOut={checkOut}
@@ -99,7 +89,6 @@ export default function Dashboard() {
         <ITDeclarationCard />
         <POICard />
       </div>
-
       <div className={cssClass({ marginTop: 36, display: "flex", justifyContent: "center", gap: 20, fontSize: 12, color: "#94a3b8" })}>
         <span>Privacy Policy</span><span>|</span><span>Terms of Service</span>
       </div>

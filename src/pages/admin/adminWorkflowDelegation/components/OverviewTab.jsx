@@ -5,7 +5,6 @@ import { BRAND } from "../constants/tabs";
 import { fmtDate } from "../utils/formatters";
 import StatCard from "./StatCard";
 import OrgChartWithSidebar from "./OrgChartWithSidebar";
-
 const OverviewTab = React.memo(function OverviewTab({
   stats,
   delegations,
@@ -36,7 +35,6 @@ const OverviewTab = React.memo(function OverviewTab({
         />
         <StatCard icon={Shield} label="Active Delegations" value={stats?.delegated_workflows} color={BRAND} />
       </div>
-
       {/* Org chart with sidebar */}
       <OrgChartWithSidebar
         loading={loading}
@@ -53,7 +51,6 @@ const OverviewTab = React.memo(function OverviewTab({
         focusedPath={focusedPath}
         setFocusedPath={setFocusedPath}
       />
-
       {/* Alert cards */}
       <div className={cssClass({ display: "flex", gap: 14, flexWrap: "wrap" })}>
         {stats?.without_manager > 0 && (
@@ -78,7 +75,6 @@ const OverviewTab = React.memo(function OverviewTab({
             </button>
           </div>
         )}
-
         {delegations.filter((d) => d.status === "Active").length > 0 && (
           <div className={cssClass({
             flex: 1, minWidth: 240, background: "#fff8f0", border: "1px solid #fed7aa",
@@ -108,5 +104,4 @@ const OverviewTab = React.memo(function OverviewTab({
     </div>
   );
 });
-
 export default OverviewTab;

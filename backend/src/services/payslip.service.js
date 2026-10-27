@@ -8,50 +8,29 @@ const { rupeesInWords } = require('../utils/numberToWords');
 const { calculateEarningsDeductionsBreakdown } = require('../utils/payslipBreakdown');
 const { encryptSalaryFields, applyVisibility } = require('../utils/encryption');
 const salaryAssignmentSvc = require('./salaryAssignment.service');
-
-
-
-
-
-
-
-
 function isGratuityEligible(joiningDate, month, year) {
   if (!joiningDate) return false;
   const joined = new Date(joiningDate);
-
   const refDate = new Date(year, month - 1, 1);
   const msInDay = 86400000;
   const daysDiff = Math.floor((refDate - joined) / msInDay);
-
   return daysDiff >= 1700;
 }
-
-
-
-
-
-
 function buildFromStructure(components, ctx, gratuityEligible = true) {
   const earnings = components.
   filter((c) => c.category === 'Earning' && c.show_on_payslip !== 0 && !c._deferred).
   map((c) => {
-
     const isGratuity = /gratuity/i.test(c.component_name || '') || c.component_code === 'GRATUITY';
     const amount = !gratuityEligible && isGratuity ? 0 : c.monthly_amount || 0;
     return { label: (c.component_name || c.component_code).toUpperCase(), amount };
   }).
   filter((c) => c.amount > 0);
-
   const structDeductions = components.
   filter((c) => c.category === 'Deduction' && c.show_on_payslip !== 0 && !c._deferred).
   map((c) => ({ label: (c.component_name || c.component_code).toUpperCase(), amount: c.monthly_amount || 0 })).
   filter((c) => c.amount > 0);
-
   const basicMonthly = ctx.BASIC || 0;
   const totalEarnings = earnings.reduce((s, e) => s + e.amount, 0);
-
-
   const pfWage = Math.min(basicMonthly, 15000);
   const pf = Math.round(pfWage * 0.12);
   const eps = Math.round(pfWage * 0.0833);
@@ -62,11 +41,8 @@ function buildFromStructure(components, ctx, gratuityEligible = true) {
   const esiEmployee = esiApplicable ? Math.round(totalEarnings * 0.0075) : 0;
   const esiEmployer = esiApplicable ? Math.round(totalEarnings * 0.0325) : 0;
   const professionalTax = totalEarnings <= 15000 ? 0 : totalEarnings <= 20000 ? 150 : 200;
-
-
   const deductions = [...structDeductions];
   const hasLabel = (lbl) => deductions.some((d) => d.label === lbl || d.label.replace(/\s+/g, '') === lbl.replace(/\s+/g, ''));
-
   if (!hasLabel('PF') && !hasLabel('EMP PF') && !hasLabel('EMPPF')) {
     deductions.push({ label: 'PF', amount: pf });
   }
@@ -79,17 +55,12 @@ function buildFromStructure(components, ctx, gratuityEligible = true) {
   if (!hasLabel('INCOME TAX') && !hasLabel('INCOMETAX') && !hasLabel('TDS')) {
     deductions.push({ label: 'INCOME TAX', amount: 0 });
   }
-
   return { earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax, pf };
 }
-
 const MONTH_NAMES = [
 'January', 'February', 'March', 'April', 'May', 'June',
 'July', 'August', 'September', 'October', 'November', 'December'];
-
-
 const formatINR = (value) => `Rs. ${Number(value || 0).toLocaleString('en-IN')}`;
-
 class PayslipService extends BaseService {
   constructor() {
     super('payslips', 'payslip_id', [
@@ -97,7 +68,6 @@ class PayslipService extends BaseService {
     'gross_earnings', 'ctc', 'deductions', 'net_pay', 'working_days', 'paid_days', 'lop_days', 'status']
     );
   }
-
   async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser } = {}) {
     const results = await callProcedure(
       'sp_list_payslips(?, ?, ?, ?, ?, ?, ?, ?)',
@@ -110,21 +80,17 @@ class PayslipService extends BaseService {
       payroll_run_id ?? null,
       limit != null ? Number(limit) : null,
       limit != null ? Number(offset || 0) : null]
-
     );
     const rows = results[0] ?? [];
     const total = (results[1] ?? [])[0]?.total ?? 0;
-
     const normalised = rows.map((r) => {
       const ctc = Number(r.ctc) > 0 ? Number(r.ctc) : Number(r.ctc_computed) || 0;
       const { ctc_computed, ...rest } = r;
       const normalRow = { ...rest, ctc };
       return applyVisibility(normalRow, reqUser, r.employee_id);
     });
-
     return { rows: normalised, total };
   }
-
   async getDetails(id) {
     const results = await callProcedure('sp_get_payslip(?)', [id]);
     const row = (results[0] ?? [])[0] ?? null;
@@ -133,18 +99,12 @@ class PayslipService extends BaseService {
     const { ctc_computed, ...rest } = row;
     return { ...rest, ctc };
   }
-
   async getFullDetails(id) {
     const results = await callProcedure('sp_get_payslip_full(?)', [id]);
     const row = (results[0] ?? [])[0] ?? null;
     if (!row) return null;
-
-
     let earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax;
-
-
     const gratuityEligible = isGratuityEligible(row.emp_joining_date, row.month, row.year);
-
     // Payslips processed from attendance carry their exact (LOP-prorated) breakdown.
     const stored = await query('SELECT breakdown_json FROM payslips WHERE payslip_id = ?', [id]).catch(() => []);
     let storedBreakdown = stored[0]?.breakdown_json || null;
@@ -160,7 +120,6 @@ class PayslipService extends BaseService {
       esiEmployer = esiEmployee ? Math.round(totalEarnings * 0.0325) : 0;
       professionalTax = deductions.find((d) => /PROF/i.test(d.label))?.amount || 0;
     }
-
     if (!earnings) try {
       const structured = await salaryAssignmentSvc.computePayslipBreakdown(row.emp_id);
       if (structured && structured.components?.length) {
@@ -168,22 +127,17 @@ class PayslipService extends BaseService {
         buildFromStructure(structured.components, structured.ctx, gratuityEligible));
       }
     } catch {}
-
-
     if (!earnings) {
       const basic = Number(row.basic) || 0;
       ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
       calculateEarningsDeductionsBreakdown(basic));
-
       if (!gratuityEligible) {
         const gIdx = earnings.findIndex((e) => /gratuity/i.test(e.label));
         if (gIdx !== -1) earnings[gIdx].amount = 0;
       }
     }
-
     const pfMonthly = deductions.find((d) => d.label === 'PF' || d.label === 'EMP PF')?.amount || 0;
     const professionTaxMonthly = deductions.find((d) => /prof/i.test(d.label))?.amount || 0;
-
     const regimeRows = await query('SELECT tax_regime FROM employees WHERE employee_id = ? LIMIT 1', [row.emp_id]);
     const proofRows = await query(`SELECT p.section_key, p.investment_type, p.actual_amount
       FROM it_proof_documents p
@@ -192,13 +146,10 @@ class PayslipService extends BaseService {
       earnings, pfMonthly, professionTaxMonthly, approvedProofs: proofRows,
       taxRegime: regimeRows[0]?.tax_regime || 'old', month: row.month, year: row.year
     });
-
     const incomeTaxDeduction = deductions.find((d) => /income.?tax|tds/i.test(d.label));
     if (incomeTaxDeduction) incomeTaxDeduction.amount = tds.incomeTax.monthlyProjectedTax;
-
     const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);
     const netSalary = Math.max(0, totalEarnings - totalDeductions);
-
     return {
       payslip_id: row.payslip_id,
       month: row.month,
@@ -237,14 +188,12 @@ class PayslipService extends BaseService {
       eps, epf, edli, esi_employer: esiEmployer, tds
     };
   }
-
   async generate({ employee_id, month, year, payroll_run_id }) {
     const { outs: out } = await callProcedureWithOuts('sp_generate_payslip(?, ?, ?, ?, @payslip_id)', [
     employee_id, month, year, payroll_run_id || null]
     );
     const payslipId = out.payslip_id;
     if (!payslipId) throw ApiError.internal('Failed to generate payslip');
-
     const approvedInputs = await query(`SELECT COALESCE(SUM(amount),0) AS total FROM payroll_inputs
       WHERE employee_id=? AND month=? AND year=? AND status='APPROVED'`, [employee_id, month, year]);
     const variableEarnings = Number(approvedInputs[0]?.total || 0);
@@ -252,8 +201,6 @@ class PayslipService extends BaseService {
       await query(`UPDATE payslips SET gross_earnings = gross_earnings + ?, net_pay = net_pay + ? WHERE payslip_id=?`,
         [variableEarnings, variableEarnings, payslipId]);
     }
-
-
     const rawResults = await callProcedure('sp_get_payslip_raw(?)', [payslipId]);
     const rawRow = (rawResults[0] ?? [])[0] ?? null;
     if (rawRow) {
@@ -262,32 +209,25 @@ class PayslipService extends BaseService {
         await callProcedure('sp_update_payslip_encrypted(?, ?)', [payslipId, encrypted]);
       }
     }
-
     return this.getDetails(payslipId);
   }
-
   async markPaid(id) {
     const exists = await this.existsById(id);
     if (!exists) throw ApiError.notFound('Payslip not found');
     await callProcedure('sp_mark_payslip_paid(?)', [id]);
     return this.getDetails(id);
   }
-
   async generateAllAndNotify({ month, year }) {
     const results = await callProcedure('sp_get_active_employees_basic()');
     const employees = results[0] ?? [];
-
     const monthLabel = MONTH_NAMES[Number(month) - 1] || month;
     const genResults = [];
     let generated = 0;
     let emailed = 0;
-
     for (const emp of employees) {
       try {
         const payslip = await this.generate({ employee_id: emp.employee_id, month, year, payroll_run_id: null });
         generated += 1;
-
-
         notify.payslipReleased({
           employeeEmail: emp.email,
           employeeName: emp.employee_name.trim(),
@@ -312,9 +252,7 @@ class PayslipService extends BaseService {
         });
       }
     }
-
     return { month: Number(month), year: Number(year), generated, emailed, results: genResults };
   }
 }
-
 module.exports = new PayslipService();

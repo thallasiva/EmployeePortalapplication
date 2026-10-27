@@ -11,10 +11,8 @@ import React, {
   useState,
 } from "react";
 import ErrorBoundary from "../../component/ErrorBoundary";
-
 const LazyInsightsPanel = lazy(() => import("./LazyInsightsPanel"));
 const ThemeContext = React.createContext(null);
-
 function ThemeProvider({ children })
 {
   const [theme, setTheme] = useState("light");
@@ -22,12 +20,9 @@ function ThemeProvider({ children })
   {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   }, []);
-
   const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
-
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
-
 function useTheme()
 {
   const context = useContext(ThemeContext);
@@ -37,25 +32,20 @@ function useTheme()
   }
   return context;
 }
-
 function useDebounce(value, delay)
 {
   const [debouncedValue, setDebouncedValue] = useState(value);
-
   useEffect(() =>
   {
     const timer = window.setTimeout(() => setDebouncedValue(value), delay);
     return () => window.clearTimeout(timer);
   }, [value, delay]);
-
   return debouncedValue;
 }
-
 function useThrottle(value, delay)
 {
   const [throttledValue, setThrottledValue] = useState(value);
   const lastRun = useRef(0);
-
   useEffect(() =>
   {
     const now = Date.now();
@@ -65,10 +55,8 @@ function useThrottle(value, delay)
       setThrottledValue(value);
     }
   }, [value, delay]);
-
   return throttledValue;
 }
-
 function calculatePrimes(limit)
 {
   const primes = [];
@@ -90,7 +78,6 @@ function calculatePrimes(limit)
   }
   return primes;
 }
-
 const MemoizedSummaryCard = memo(function MemoizedSummaryCard({ title, description, value })
 {
   return (
@@ -101,12 +88,10 @@ const MemoizedSummaryCard = memo(function MemoizedSummaryCard({ title, descripti
     </div>
   );
 });
-
 function PrimeDemo()
 {
   const [limit, setLimit] = useState(180);
   const primes = useMemo(() => calculatePrimes(limit), [limit]);
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -133,22 +118,18 @@ function PrimeDemo()
     </div>
   );
 }
-
 function MemoizedListDemo()
 {
   const [selectedItem, setSelectedItem] = useState("Alpha");
   const handleSelect = useCallback((value) => setSelectedItem(value), []);
-
   const items = useMemo(
     () => ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"],
     []
   );
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <h3 className="text-lg font-semibold text-slate-800">React.memo + useCallback</h3>
       <p className="mb-4 text-sm text-slate-600">Memoized child rows avoid repeated rendering when the selected item changes.</p>
-
       <div className="flex flex-wrap gap-2">
         {items.map((item) => (
           <MemoizedSummaryCard
@@ -159,7 +140,6 @@ function MemoizedListDemo()
           />
         ))}
       </div>
-
       <div className="mt-4 flex flex-wrap gap-2">
         {items.map((item) => (
           <button
@@ -174,19 +154,16 @@ function MemoizedListDemo()
     </div>
   );
 }
-
 function SearchAndThrottleDemo()
 {
   const [query, setQuery] = useState("");
   const [count, setCount] = useState(0);
   const debouncedQuery = useDebounce(query, 400);
   const throttledCount = useThrottle(count, 700);
-
   useEffect(() =>
   {
     setCount((prev) => prev + 1);
   }, [debouncedQuery]);
-
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -201,7 +178,6 @@ function SearchAndThrottleDemo()
         <p className="mt-3 text-sm text-slate-700">Live input: {query || "—"}</p>
         <p className="text-sm text-slate-700">Debounced output: {debouncedQuery || "—"}</p>
       </div>
-
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <h3 className="text-lg font-semibold text-slate-800">Throttle</h3>
         <p className="mb-3 text-sm text-slate-600">Actions are limited so the UI remains responsive under rapid events.</p>
@@ -216,7 +192,6 @@ function SearchAndThrottleDemo()
     </div>
   );
 }
-
 function VirtualListDemo()
 {
   const items = useMemo(
@@ -226,14 +201,12 @@ function VirtualListDemo()
   const [scrollTop, setScrollTop] = useState(0);
   const rowHeight = 36;
   const viewportHeight = 280;
-
   const startIndex = Math.floor(scrollTop / rowHeight);
   const endIndex = Math.min(items.length, startIndex + Math.ceil(viewportHeight / rowHeight) + 4);
   const visibleItems = useMemo(
     () => items.slice(startIndex, endIndex),
     [items, startIndex, endIndex]
   );
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <h3 className="text-lg font-semibold text-slate-800">Virtualization</h3>
@@ -259,26 +232,22 @@ function VirtualListDemo()
     </div>
   );
 }
-
 function ErrorDemo({ shouldThrow })
 {
   if (shouldThrow)
   {
     throw new Error("This demo intentionally triggered an error");
   }
-
   return (
     <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
       The error boundary is ready. Click the button to see a controlled fallback.
     </div>
   );
 }
-
 function PerformanceShowcaseContent()
 {
   const { theme, toggleTheme } = useTheme();
   const [shouldThrow, setShouldThrow] = useState(false);
-
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-800 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -299,14 +268,12 @@ function PerformanceShowcaseContent()
             </button>
           </div>
         </div>
-
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MemoizedSummaryCard title="Lazy Loading" description="Loads expensive modules on demand" value="On demand" />
           <MemoizedSummaryCard title="Memoization" description="Avoids repeated work in render-heavy UI" value="Cached" />
           <MemoizedSummaryCard title="Data handling" description="Debounce and throttle keep interactions smooth" value="Responsive" />
           <MemoizedSummaryCard title="Reliability" description="Error boundaries preserve the rest of the app" value="Safe" />
         </div>
-
         <Profiler
           id="showcase-grid"
           onRender={(id, phase, actualDuration) =>
@@ -322,15 +289,12 @@ function PerformanceShowcaseContent()
             <MemoizedListDemo />
           </div>
         </Profiler>
-
         <SearchAndThrottleDemo />
         <VirtualListDemo />
-
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <Suspense fallback={<div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600">Loading lazy section…</div>}>
             <LazyInsightsPanel />
           </Suspense>
-
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <h3 className="text-lg font-semibold text-slate-800">Error Boundary</h3>
             <p className="mt-2 text-sm text-slate-600">Use it to isolate failures and preserve the rest of the interface.</p>
@@ -347,7 +311,6 @@ function PerformanceShowcaseContent()
             </div>
           </div>
         </div>
-
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <h3 className="text-lg font-semibold text-slate-800">Where to use each tool</h3>
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -373,7 +336,6 @@ function PerformanceShowcaseContent()
     </div>
   );
 }
-
 export default function ReactPerformanceShowcase()
 {
   return (

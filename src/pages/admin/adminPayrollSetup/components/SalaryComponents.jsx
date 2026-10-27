@@ -4,13 +4,10 @@ import { ORANGE } from "../constants";
 import { fmtINR } from "../utils";
 import { useSalaryStructures } from "../hooks/useSalaryStructures";
 import Table from "./Table";
-
 const SalaryComponents = React.memo(function SalaryComponents() {
   const [search, setSearch] = useState("");
   const { filtered, loading } = useSalaryStructures(search);
-
   const handleSearch = useCallback((e) => setSearch(e.target.value), []);
-
   const cols = useMemo(
     () => [
       { key: "emp_code", label: "Emp Code" },
@@ -76,12 +73,10 @@ const SalaryComponents = React.memo(function SalaryComponents() {
     ],
     []
   );
-
   if (loading)
     return (
       <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>
     );
-
   return (
     <>
       <div
@@ -112,5 +107,4 @@ const SalaryComponents = React.memo(function SalaryComponents() {
     </>
   );
 });
-
 export default SalaryComponents;

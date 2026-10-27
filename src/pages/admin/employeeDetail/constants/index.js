@@ -1,7 +1,5 @@
 import * as Yup from "yup";
-
 export const BRAND = "#f18200";
-
 export const baseInp = (hasErr) => ({
   border: `1px solid ${hasErr ? "#dc2626" : "#d1d5db"}`,
   borderRadius: 7,
@@ -13,42 +11,33 @@ export const baseInp = (hasErr) => ({
   background: hasErr ? "#fff5f5" : "#fff",
   transition: "border-color .15s",
 });
-
 export const inp = baseInp(false);
-
 export const GENDER_OPTIONS = [
   { value: "Male", label: "Male" },
   { value: "Female", label: "Female" },
   { value: "Other", label: "Other" },
 ];
-
 export const MARITAL_OPTIONS = [
   { value: "Single", label: "Single" },
   { value: "Married", label: "Married" },
   { value: "Divorced", label: "Divorced" },
   { value: "Widowed", label: "Widowed" },
 ];
-
 export const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
   (v) => ({ value: v, label: v })
 );
-
 export const EMPLOYEE_TYPE_OPTIONS = ["Full-Time", "Part-Time", "Contract", "Intern"].map(
   (v) => ({ value: v, label: v })
 );
-
 export const EMPLOYEE_STATUS_OPTIONS = ["Active", "Inactive", "Resigned", "Terminated"].map(
   (v) => ({ value: v, label: v })
 );
-
 export const ACCOUNT_TYPE_OPTIONS = ["Savings", "Current", "Salary"].map(
   (v) => ({ value: v, label: v })
 );
-
 export const PAYMENT_TYPE_OPTIONS = ["NEFT", "RTGS", "IMPS", "Cheque", "Cash"].map(
   (v) => ({ value: v, label: v })
 );
-
 export const employeeSchema = Yup.object({
   first_name: Yup.string().trim().required("First name is required"),
   last_name: Yup.string().nullable(),

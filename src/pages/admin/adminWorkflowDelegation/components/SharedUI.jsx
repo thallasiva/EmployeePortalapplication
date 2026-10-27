@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants/tabs";
-
 export const Dot = React.memo(function Dot({ color, label }) {
   return (
     <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6b7280" })}>
@@ -10,7 +9,6 @@ export const Dot = React.memo(function Dot({ color, label }) {
     </div>
   );
 });
-
 export const SectionHead = React.memo(function SectionHead({ children }) {
   return (
     <div className={cssClass({ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 16 })}>
@@ -18,7 +16,6 @@ export const SectionHead = React.memo(function SectionHead({ children }) {
     </div>
   );
 });
-
 export const Input = React.memo(function Input({ style, ...props }) {
   return (
     <input
@@ -30,7 +27,6 @@ export const Input = React.memo(function Input({ style, ...props }) {
     />
   );
 });
-
 export const Btn = React.memo(function Btn({ children, onClick, disabled, variant = "primary", style: s = {} }) {
   return (
     <button

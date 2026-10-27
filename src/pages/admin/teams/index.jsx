@@ -6,7 +6,6 @@ import TeamsHeader from "./components/TeamsHeader";
 import TeamsStats from "./components/TeamsStats";
 import TeamsGrid from "./components/TeamsGrid";
 import TeamsComparison from "./components/TeamsComparison";
-
 export default function Teams() {
   const {
     rows,
@@ -23,7 +22,6 @@ export default function Teams() {
     fetchData,
     toggleExpanded,
   } = useTeams();
-
   return (
     <div className="teams-page">
       <TeamsHeader
@@ -32,7 +30,6 @@ export default function Teams() {
         onRefresh={fetchData}
         onCreateClick={() => setModalOpen(true)}
       />
-
       {!loading && !error && (
         <TeamsStats
           totalEmployees={rows.length}
@@ -40,7 +37,6 @@ export default function Teams() {
           visibleCount={allTeams.length}
         />
       )}
-
       <TeamsGrid
         loading={loading}
         error={error}
@@ -50,11 +46,9 @@ export default function Teams() {
         onToggle={toggleExpanded}
         onRetry={fetchData}
       />
-
       {!loading && (
         <TeamsComparison allTeams={allTeams} />
       )}
-
       <CreateTeamModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

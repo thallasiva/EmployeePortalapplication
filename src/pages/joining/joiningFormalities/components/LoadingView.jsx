@@ -1,5 +1,4 @@
 import React from "react";
-
 const LoadingView = React.memo(function LoadingView() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -10,5 +9,4 @@ const LoadingView = React.memo(function LoadingView() {
     </div>
   );
 });
-
 export default LoadingView;

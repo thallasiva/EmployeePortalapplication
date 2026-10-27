@@ -2,10 +2,8 @@ import React from "react";
 import Card from "../../Card";
 import DataTable from "../../DataTable";
 import { JOB_REQUESTS } from "../constants";
-
 const MyTasksView = React.memo(function MyTasksView({ recruiterKey }) {
   const myJobs = JOB_REQUESTS.filter((job) => job["Select Recruiter"] === recruiterKey);
-
   return (
     <Card title="My Tasks">
       <DataTable
@@ -15,5 +13,4 @@ const MyTasksView = React.memo(function MyTasksView({ recruiterKey }) {
     </Card>
   );
 });
-
 export default MyTasksView;

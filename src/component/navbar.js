@@ -4,13 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { isAdmin, isRecruiter, isRecruiterLead, isReportingManager, logoutUser } from "../data/auth";
 import { API_BASE_URL } from "../api/client";
 import { cssClass } from "../utils/classStyles";
-
 const SERVER_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
-
 export const Navbar = ({ toggleSidebar, user }) => {
   const navigate = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
-
   const displayName = user?.name || user?.email || "User";
   const roleLabel = isAdmin(user) ?
   "Administrator" :
@@ -21,21 +18,17 @@ export const Navbar = ({ toggleSidebar, user }) => {
   isRecruiter(user) ?
   "Recruiter" :
   "Employee";
-
   const rawPhoto = user?.profilePhoto || null;
   const photoUrl = rawPhoto ?
   rawPhoto.startsWith("http") ? rawPhoto : `${SERVER_ORIGIN}${rawPhoto}` :
   null;
-
   function doLogout() {
     logoutUser();
     navigate("/login");
   }
-
   return (
     <>
       <header className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2 bg-white border-b border-gray-200 shadow-sm">
-
         {}
         <div className="flex items-center gap-3">
           <button
@@ -46,14 +39,12 @@ export const Navbar = ({ toggleSidebar, user }) => {
             <Menu size={22} />
           </button>
         </div>
-
         {}
         <div className="flex items-center gap-2">
           <div className="text-right hidden sm:block mr-1">
             <p className="text-sm font-semibold text-gray-900 leading-tight">{displayName}</p>
             <p className="text-xs text-gray-400 font-medium">{roleLabel}</p>
           </div>
-
           {}
           {photoUrl ?
           <img
@@ -61,19 +52,15 @@ export const Navbar = ({ toggleSidebar, user }) => {
             alt={displayName}
             onError={(e) => {e.target.style.display = "none";e.target.nextSibling.style.display = "flex";}}
             className="w-9 h-9 rounded-full object-cover border-2 border-orange-200 flex-shrink-0" /> :
-
           null}
-
           {}
           <div
             aria-hidden
             className={`w-9 h-9 rounded-full bg-orange-50 border-2 border-orange-200 ${photoUrl ? "hidden" : "flex"} items-center justify-center flex-shrink-0`}>
             <User size={19} strokeWidth={1.8} className="text-[#f18200]" />
           </div>
-
           {}
           <div className="w-px h-7 bg-gray-200 mx-1" />
-
           {}
           <button
             type="button"
@@ -85,7 +72,6 @@ export const Navbar = ({ toggleSidebar, user }) => {
           </button>
         </div>
       </header>
-
       {}
       {showLogout &&
       <div
@@ -116,5 +102,4 @@ export const Navbar = ({ toggleSidebar, user }) => {
         </div>
       }
     </>);
-
 };

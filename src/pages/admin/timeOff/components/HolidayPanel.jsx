@@ -4,10 +4,8 @@ import { cssClass } from "../../../../utils/classStyles";
 import { SHIFTS } from "../constants";
 import Btn from "./Btn";
 import ShiftHolidayTable from "./ShiftHolidayTable";
-
 const HolidayPanel = React.memo(({ shift, year, locationFilter, allHolidays, loading, onShiftChange, onAddHoliday, onEdit, onDelete }) => {
   const currentShift = SHIFTS.find((s) => s.key === shift);
-
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #e9eaec", borderRadius: 14,
       boxShadow: "0 1px 6px #0000000a", overflow: "hidden" })}>
@@ -36,7 +34,6 @@ const HolidayPanel = React.memo(({ shift, year, locationFilter, allHolidays, loa
           );
         })}
       </div>
-
       {/* shift info bar */}
       <div className={cssClass({ padding: "12px 20px", display: "flex", alignItems: "center", gap: 10,
         background: currentShift.bg, borderBottom: `1px solid ${currentShift.border}` })}>
@@ -54,7 +51,6 @@ const HolidayPanel = React.memo(({ shift, year, locationFilter, allHolidays, loa
           </Btn>
         </div>
       </div>
-
       {/* table area */}
       <div className={cssClass({ padding: "18px 20px" })}>
         {loading ? (
@@ -73,6 +69,5 @@ const HolidayPanel = React.memo(({ shift, year, locationFilter, allHolidays, loa
     </div>
   );
 });
-
 HolidayPanel.displayName = "HolidayPanel";
 export default HolidayPanel;

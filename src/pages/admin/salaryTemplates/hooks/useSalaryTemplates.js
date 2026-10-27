@@ -7,21 +7,17 @@ import {
 } from "../../../../api/salaryTemplate.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { getErrorMessage } from "../../../../api/client";
-
 export function useSalaryTemplates() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     try { setTemplates(await listSalaryTemplates()); }
     catch { errorToast(ERR.LOAD_FAILED("salary templates")); }
     finally { setLoading(false); }
   }, []);
-
   useEffect(() => { load(); }, [load]);
-
   const saveTemplate = useCallback(async (data, editing, onSuccess) => {
     setSaving(true);
     try {
@@ -38,7 +34,6 @@ export function useSalaryTemplates() {
       apiErrorToast(err, "Failed to save template");
     } finally { setSaving(false); }
   }, [load]);
-
   const deleteTemplate = useCallback(async (t) => {
     if (!window.confirm(`Delete "${t.template_name}"?`)) return;
     try {
@@ -49,6 +44,5 @@ export function useSalaryTemplates() {
       apiErrorToast(err, "Failed to delete");
     }
   }, [load]);
-
   return { templates, loading, saving, saveTemplate, deleteTemplate };
 }

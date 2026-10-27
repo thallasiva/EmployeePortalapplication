@@ -7,7 +7,6 @@ import ExtraWorkList from "./ExtraWorkList";
 import ExtraWorkModal from "./ExtraWorkModal";
 import AddTaskModal from "../AddTaskModal";
 import { Check, Lock } from "lucide-react";
-
 const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
   const {
     setWeekOffset,
@@ -25,11 +24,9 @@ const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
     updateEntry, updateHours, addRow, removeRow,
     handleSave, handleSubmit, handleExtraWorkSubmit, handleUpdateTask,
   } = useTimesheetTab(jumpTo);
-
   return (
     <div className="space-y-4">
       <TimesheetWeekNav dates={dates} timesheet={timesheet} setWeekOffset={setWeekOffset} />
-
       {timesheet?.status === "rejected" && timesheet.comments && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
           <strong>Rejection reason:</strong> {timesheet.comments}
@@ -48,7 +45,6 @@ const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
           <Lock size={14} className="inline -mt-0.5" /> This timesheet has been <strong>approved</strong> and is locked from editing.
         </div>
       )}
-
       {loading ? (
         <div className="ts-loading">Loading…</div>
       ) : (
@@ -76,7 +72,6 @@ const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
           <ExtraWorkList myExtraWork={myExtraWork} />
         </>
       )}
-
       {showExtraWork && (
         <ExtraWorkModal
           timesheetId={timesheet?.timesheet_id}
@@ -91,5 +86,4 @@ const TimesheetTab = memo(function TimesheetTab({ jumpTo = null }) {
     </div>
   );
 });
-
 export default TimesheetTab;

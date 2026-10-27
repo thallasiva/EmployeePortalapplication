@@ -1,7 +1,6 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { SORT_OPTIONS } from "../constants";
-
 const TableFilters = React.memo(function TableFilters({ search, onSearch, sortBy, onSort }) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -32,5 +31,4 @@ const TableFilters = React.memo(function TableFilters({ search, onSearch, sortBy
     </div>
   );
 });
-
 export default TableFilters;

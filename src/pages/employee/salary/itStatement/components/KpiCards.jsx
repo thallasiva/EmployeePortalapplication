@@ -1,8 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-
 const tbl = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 const KpiCard = React.memo(function KpiCard({ label, value, isLabel, green, orange }) {
   return (
     <div className={cssClass({ background: "#fff", border: "1px solid #d5dbe3", borderRadius: 6, padding: "10px 16px", flex: 1, minWidth: 0 })}>
@@ -14,7 +12,6 @@ const KpiCard = React.memo(function KpiCard({ label, value, isLabel, green, oran
     </div>
   );
 });
-
 const KpiCards = React.memo(function KpiCards({ isNew, stdDed, ch8Ded, totalTax, monthlyTDS }) {
   return (
     <div className={cssClass({ display: "flex", gap: 10, marginBottom: 16 })}>
@@ -26,5 +23,4 @@ const KpiCards = React.memo(function KpiCards({ isNew, stdDed, ch8Ded, totalTax,
     </div>
   );
 });
-
 export default KpiCards;

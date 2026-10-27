@@ -1,5 +1,4 @@
 import React from "react";
-
 export const DetailRow = React.memo(function DetailRow({ label, value }) {
   return (
     <div className="flex gap-2 mb-2.5 text-[13px]">
@@ -8,7 +7,6 @@ export const DetailRow = React.memo(function DetailRow({ label, value }) {
     </div>
   );
 });
-
 export const TwoColGrid = React.memo(function TwoColGrid({ children }) {
   return (
     <div className="grid grid-cols-2 gap-x-5">

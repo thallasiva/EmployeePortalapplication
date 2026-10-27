@@ -1,6 +1,5 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
-
 async function run() {
   const conn = await mysql.createConnection({
     host:     process.env.DB_HOST,
@@ -9,9 +8,7 @@ async function run() {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
   });
-
   console.log('Connected to', process.env.DB_NAME);
-
   await conn.query(`
     CREATE TABLE IF NOT EXISTS ai_interview_sessions (
       session_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,9 +35,7 @@ async function run() {
       INDEX idx_status    (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
-
   console.log('✓ Table ai_interview_sessions created (or already exists)');
   await conn.end();
 }
-
 run().catch(err => { console.error('✗', err.message); process.exit(1); });

@@ -1,7 +1,6 @@
 import React from "react";
 import { CheckCircle } from "lucide-react";
 import { TABS } from "../constants";
-
 const TabNav = React.memo(function TabNav({ tab, visited, goTo }) {
   return (
     <div className="bg-[#f18200] px-4 py-4 shadow-sm">
@@ -33,5 +32,4 @@ const TabNav = React.memo(function TabNav({ tab, visited, goTo }) {
     </div>
   );
 });
-
 export default TabNav;

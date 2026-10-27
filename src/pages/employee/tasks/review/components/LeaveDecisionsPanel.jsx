@@ -5,18 +5,14 @@ import { empName } from "../utils";
 import { useLeaveData } from "../hooks/useLeaveData";
 import LeaveCard from "./LeaveCard";
 import StatChip from "./StatChip";
-
 const isPending = (r) => ["pending", "Pending"].includes(r.status);
-
 const LeaveDecisionsPanel = React.memo(function LeaveDecisionsPanel({ search, statusFilter }) {
   const { rows, loading, isPrivileged } = useLeaveData("decisions");
-
   const byTab = useMemo(() => {
     if (statusFilter === "pending") return rows.filter(isPending);
     if (statusFilter === "decided") return rows.filter((r) => !isPending(r));
     return rows;
   }, [rows, statusFilter]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return byTab;
@@ -26,7 +22,6 @@ const LeaveDecisionsPanel = React.memo(function LeaveDecisionsPanel({ search, st
         .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [byTab, search]);
-
   if (loading) {
     return (
       <div className={cssClass({ display: "flex", flexDirection: "column", gap: 10 })}>
@@ -36,9 +31,7 @@ const LeaveDecisionsPanel = React.memo(function LeaveDecisionsPanel({ search, st
       </div>
     );
   }
-
   const pendingCount = rows.filter(isPending).length;
-
   return (
     <>
       {rows.length > 0 && (
@@ -68,5 +61,4 @@ const LeaveDecisionsPanel = React.memo(function LeaveDecisionsPanel({ search, st
     </>
   );
 });
-
 export default LeaveDecisionsPanel;

@@ -7,7 +7,6 @@
 --   feedback_requests    "please give me feedback" requests, answered by employee_feedback
 -- Run with: node src/database/runSql.js migration_056_kudos_feedback.sql
 -- =============================================================
-
 CREATE TABLE IF NOT EXISTS kudos_categories (
   category_id    INT AUTO_INCREMENT PRIMARY KEY,
   category_name  VARCHAR(60) NOT NULL,
@@ -19,7 +18,6 @@ CREATE TABLE IF NOT EXISTS kudos_categories (
   updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_kudos_category (category_type, category_name)
 );
-
 CREATE TABLE IF NOT EXISTS kudos (
   kudos_id          INT AUTO_INCREMENT PRIMARY KEY,
   from_employee_id  INT NOT NULL,
@@ -34,7 +32,6 @@ CREATE TABLE IF NOT EXISTS kudos (
   CONSTRAINT fk_kudos_to FOREIGN KEY (to_employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_kudos_category FOREIGN KEY (category_id) REFERENCES kudos_categories (category_id) ON DELETE SET NULL
 );
-
 CREATE TABLE IF NOT EXISTS feedback_requests (
   request_id             INT AUTO_INCREMENT PRIMARY KEY,
   requester_employee_id  INT NOT NULL,
@@ -49,7 +46,6 @@ CREATE TABLE IF NOT EXISTS feedback_requests (
   CONSTRAINT fk_fbreq_requester FOREIGN KEY (requester_employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE,
   CONSTRAINT fk_fbreq_reviewer FOREIGN KEY (reviewer_employee_id) REFERENCES employees (employee_id) ON DELETE CASCADE
 );
-
 CREATE TABLE IF NOT EXISTS employee_feedback (
   feedback_id       INT AUTO_INCREMENT PRIMARY KEY,
   from_employee_id  INT NOT NULL,
@@ -67,7 +63,6 @@ CREATE TABLE IF NOT EXISTS employee_feedback (
   CONSTRAINT fk_feedback_category FOREIGN KEY (category_id) REFERENCES kudos_categories (category_id) ON DELETE SET NULL,
   CONSTRAINT fk_feedback_request FOREIGN KEY (request_id) REFERENCES feedback_requests (request_id) ON DELETE SET NULL
 );
-
 INSERT IGNORE INTO kudos_categories (category_name, description, color, category_type) VALUES
   ('Teamwork',       'Helped others succeed together',             '#f18200', 'kudos'),
   ('Innovation',     'New ideas that improved how we work',        '#7c3aed', 'kudos'),
@@ -78,5 +73,4 @@ INSERT IGNORE INTO kudos_categories (category_name, description, color, category
   ('Communication',  'Clarity, listening and keeping others informed', '#0e7490', 'feedback'),
   ('Delivery',       'Quality and timeliness of work',             '#16a34a', 'feedback'),
   ('Collaboration',  'Working with peers and other teams',         '#f18200', 'feedback');
-
 SELECT 'migration_056_kudos_feedback done' AS status;

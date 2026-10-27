@@ -2,11 +2,9 @@ import React from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmtDate } from "../utils/dateUtils";
-
 const StatusBanner = React.memo(function StatusBanner({ appraisal, params, cycle }) {
   const isSubmitted = appraisal?.status === "submitted";
   const isDraft     = !isSubmitted && appraisal?.status === "draft";
-
   if (isSubmitted) {
     return (
       <div className={cssClass({
@@ -25,7 +23,6 @@ const StatusBanner = React.memo(function StatusBanner({ appraisal, params, cycle
       </div>
     );
   }
-
   if (isDraft) {
     return (
       <div className={cssClass({
@@ -40,8 +37,6 @@ const StatusBanner = React.memo(function StatusBanner({ appraisal, params, cycle
       </div>
     );
   }
-
   return null;
 });
-
 export default StatusBanner;

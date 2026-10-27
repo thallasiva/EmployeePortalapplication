@@ -14,9 +14,7 @@
 --
 -- Safe to re-run — uses ON DUPLICATE KEY / DELETE + re-INSERT pattern.
 -- =====================================================================
-
 USE hrms_db;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 1. Roles
 -- ─────────────────────────────────────────────────────────────────────
@@ -26,14 +24,12 @@ INSERT INTO roles (role_id, role_name, description) VALUES
 ON DUPLICATE KEY UPDATE
   role_name   = VALUES(role_name),
   description = VALUES(description);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 2. Recruitment department
 -- ─────────────────────────────────────────────────────────────────────
 INSERT INTO departments (department_id, department_name, company_id) VALUES
   (8, 'Recruitment', 1)
 ON DUPLICATE KEY UPDATE department_name = VALUES(department_name);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 3. Designations
 -- ─────────────────────────────────────────────────────────────────────
@@ -43,7 +39,6 @@ INSERT INTO designations (designation_id, designation_name, department_id) VALUE
 ON DUPLICATE KEY UPDATE
   designation_name = VALUES(designation_name),
   department_id    = VALUES(department_id);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 4. Remove existing rows for these IDs (idempotent)
 -- ─────────────────────────────────────────────────────────────────────
@@ -53,11 +48,9 @@ DELETE FROM employee_bank_details WHERE employee_id IN (21, 22, 23);
 DELETE FROM users                 WHERE employee_id IN (21, 22, 23);
 DELETE FROM employees             WHERE employee_id IN (21, 22, 23);
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 5. Employees
 -- ─────────────────────────────────────────────────────────────────────
-
 -- Recruiter Team Lead
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -68,7 +61,6 @@ INSERT INTO employees (
   'Recruiter Team Lead', 8, 18,
   'Full-Time', 'Active', 'general', '2021-04-01', 'new'
 );
-
 -- Recruiter 1
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -79,7 +71,6 @@ INSERT INTO employees (
   'Recruiter', 8, 19, 21,
   'Full-Time', 'Active', 'general', '2022-07-15', 'new'
 );
-
 -- Recruiter 2
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -90,23 +81,19 @@ INSERT INTO employees (
   'Recruiter', 8, 19, 21,
   'Full-Time', 'Active', 'general', '2023-01-10', 'new'
 );
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 6. User accounts  (password: Test@123)
 -- ─────────────────────────────────────────────────────────────────────
 -- hash generated: bcrypt('Test@123', 10) = $2a$10$foYEOSL4CBGFcBKjoEwz4u8AiyjD/BqTYcWr71ZuFjS9VGeG21CTG
 DELETE FROM users WHERE user_id IN (21, 22, 23);
-
 INSERT INTO users (user_id, email, password_hash, role_id, employee_id, status) VALUES
   (21, 'teamlead@yopmail.com',   '$2a$10$foYEOSL4CBGFcBKjoEwz4u8AiyjD/BqTYcWr71ZuFjS9VGeG21CTG', 4, 21, 'Active'),
   (22, 'recruiter1@yopmail.com', '$2a$10$foYEOSL4CBGFcBKjoEwz4u8AiyjD/BqTYcWr71ZuFjS9VGeG21CTG', 5, 22, 'Active'),
   (23, 'recruiter2@yopmail.com', '$2a$10$foYEOSL4CBGFcBKjoEwz4u8AiyjD/BqTYcWr71ZuFjS9VGeG21CTG', 5, 23, 'Active');
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 7. Leave balances (Sick + Earned Leave for current year)
 -- ─────────────────────────────────────────────────────────────────────
 DELETE FROM leave_balances WHERE employee_id IN (21, 22, 23);
-
 INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, granted, availed, balance) VALUES
   -- Sarah Johnson (Team Lead)
   (21, 1, YEAR(CURDATE()), 0, 10, 0, 10),   -- Sick Leave
@@ -120,7 +107,6 @@ INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, g
   (23, 1, YEAR(CURDATE()), 0, 10, 0, 10),
   (23, 2, YEAR(CURDATE()), 0, 15, 0, 15),
   (23, 3, YEAR(CURDATE()), 0,  5, 0,  5);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 8. Also update staticData login mapping:
 --    Frontend static users already have teamlead@yopmail.com (role 4)
@@ -128,12 +114,10 @@ INSERT INTO leave_balances (employee_id, leave_type_id, year, opening_balance, g
 --    recruiter1@yopmail.com and recruiter2@yopmail.com are DB-only;
 --    recruiter@yopmail.com maps to Mike Williams in the static file.
 -- ─────────────────────────────────────────────────────────────────────
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 9. Salary structures (basic package for display in payroll screens)
 -- ─────────────────────────────────────────────────────────────────────
 DELETE FROM salary_structures WHERE employee_id IN (21, 22, 23);
-
 INSERT INTO salary_structures (
   employee_id, effective_date,
   basic, hra, special_allowance, medical_allowance, travel_allowance,
@@ -155,6 +139,5 @@ INSERT INTO salary_structures (
    42000, 16800,  8200, 1250, 1250,
    5040,  5040,   200,  1800,
    69500,  62460,  74540);
-
 -- Done.
 SELECT 'Migration 033 complete — 3 recruiter employees inserted.' AS status;

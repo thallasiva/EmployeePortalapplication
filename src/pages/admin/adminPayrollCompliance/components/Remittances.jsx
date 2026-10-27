@@ -4,11 +4,9 @@ import { listPayslips } from "../../../../api/payroll.api";
 import { ORANGE, MONTHS } from "../constants";
 import { fmtINR } from "../utils";
 import PayrollTable from "./PayrollTable";
-
 function Remittances({ month, year }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     setLoading(true);
     listPayslips({ month, year, limit: 500 })
@@ -29,7 +27,6 @@ function Remittances({ month, year }) {
       })
       .finally(() => setLoading(false));
   }, [month, year]);
-
   const totals = rows.reduce(
     (acc, r) => ({
       pf: acc.pf + r.pf, er_pf: acc.er_pf + r.er_pf, eps: acc.eps + r.eps,
@@ -37,7 +34,6 @@ function Remittances({ month, year }) {
     }),
     { pf: 0, er_pf: 0, eps: 0, esi: 0, pt: 0, estTDS: 0 }
   );
-
   const remitRows = [
     { category: "EPF — Employee Contribution (12%)", amount: totals.pf, due: "15th of next month" },
     { category: "EPF — Employer Contribution (3.67%)", amount: totals.er_pf, due: "15th of next month" },
@@ -46,7 +42,6 @@ function Remittances({ month, year }) {
     { category: "Professional Tax", amount: totals.pt, due: "Last working day" },
     { category: "TDS (Estimated)", amount: totals.estTDS, due: "7th of next month" },
   ];
-
   const cols = [
     { key: "category", label: "Statutory Component" },
     {
@@ -66,11 +61,9 @@ function Remittances({ month, year }) {
       ),
     },
   ];
-
   if (loading) {
     return <div className={cssClass({ padding: 40, textAlign: "center", color: "#aaa" })}>Loading…</div>;
   }
-
   const total = remitRows.reduce((s, r) => s + r.amount, 0);
   return (
     <>
@@ -87,5 +80,4 @@ function Remittances({ month, year }) {
     </>
   );
 }
-
 export default React.memo(Remittances);

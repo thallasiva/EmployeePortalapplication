@@ -5,9 +5,7 @@ import {
   Sparkles, ChevronRight
 } from "lucide-react";
 import { VIEW } from "../constants";
-
 const BRAND = "#f18200";
-
 const DOC_CARDS = [
   {
     view: VIEW.DOCUMENTS,
@@ -55,11 +53,9 @@ const DOC_CARDS = [
     desc: "Tax, statutory & declaration forms",
   },
 ];
-
 const HomeView = React.memo(function HomeView({ setView }) {
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[#f8f9fc] -m-4 p-6 space-y-7">
-
       {/* ── Hero Banner ─────────────────────────────────────────── */}
       <div
         className="relative overflow-hidden rounded-2xl p-6 flex items-center justify-between gap-4"
@@ -91,7 +87,6 @@ const HomeView = React.memo(function HomeView({ setView }) {
           </div>
         </div>
       </div>
-
       {/* ── Document Categories ─────────────────────────────────── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -125,7 +120,6 @@ const HomeView = React.memo(function HomeView({ setView }) {
           ))}
         </div>
       </div>
-
       {/* ── Letter Requests ─────────────────────────────────────── */}
       <div className="space-y-3">
         <h3 className="text-[15px] font-bold text-gray-800">Request a Letter</h3>
@@ -151,7 +145,6 @@ const HomeView = React.memo(function HomeView({ setView }) {
               className="text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all"
             />
           </div>
-
           <div className="flex gap-4 mt-3 pt-3 border-t border-gray-50">
             <div className="flex items-center gap-1.5">
               <Clock3 size={13} className="text-orange-400" />
@@ -168,9 +161,7 @@ const HomeView = React.memo(function HomeView({ setView }) {
           </div>
         </button>
       </div>
-
     </div>
   );
 });
-
 export default HomeView;

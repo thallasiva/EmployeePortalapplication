@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { clearAuthSession } from "../api/client";
 import { getHomePath, normalizeRole, resolveRoleForUser, ROLE_ADMIN, ROLE_EMPLOYEE, ROLE_REPORTING_MANAGER, ROLE_RECRUITER, ROLE_RECRUITER_LEAD } from "../data/auth";
-
 /* ─── helpers ────────────────────────────────────────────────────────────── */
 function readStoredUser() {
   try {
@@ -11,14 +10,11 @@ function readStoredUser() {
     return null;
   }
 }
-
 /* ─── context ────────────────────────────────────────────────────────────── */
 const AuthContext = createContext(null);
-
 /* ─── provider ───────────────────────────────────────────────────────────── */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(readStoredUser);
-
   /* sync across tabs */
   useEffect(() => {
     const handler = (e) => {
@@ -29,17 +25,14 @@ export function AuthProvider({ children }) {
     window.addEventListener("storage", handler);
     return () => window.removeEventListener("storage", handler);
   }, []);
-
   const login = useCallback((userData) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   }, []);
-
   const logout = useCallback(() => {
     clearAuthSession();
     setUser(null);
   }, []);
-
   const updateUser = useCallback((patch) => {
     setUser((prev) => {
       if (!prev) return prev;
@@ -48,7 +41,6 @@ export function AuthProvider({ children }) {
       return next;
     });
   }, []);
-
   const value = useMemo(() => {
     const role = resolveRoleForUser(user);
     return {
@@ -66,15 +58,12 @@ export function AuthProvider({ children }) {
       updateUser,
     };
   }, [user, login, logout, updateUser]);
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
 /* ─── hook ───────────────────────────────────────────────────────────────── */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
   return ctx;
 }
-
 export default AuthContext;

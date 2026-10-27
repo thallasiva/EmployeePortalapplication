@@ -1,7 +1,6 @@
 import React from 'react';
 import { MONTHS, EVENT_TYPES } from '../constants/eventTypes';
 import { cssClass, joinClasses } from '../../../../utils/classStyles';
-
 const UpcomingEvents = React.memo(function UpcomingEvents({ loading, upcomingEvents, today }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
@@ -56,5 +55,4 @@ const UpcomingEvents = React.memo(function UpcomingEvents({ loading, upcomingEve
     </div>
   );
 });
-
 export default UpcomingEvents;

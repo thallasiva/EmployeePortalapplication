@@ -1,6 +1,5 @@
 import React from "react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const StatCard = React.memo(function StatCard({ icon: Icon, label, value, color, sub }) {
   return (
     <div className={cssClass({
@@ -26,5 +25,4 @@ const StatCard = React.memo(function StatCard({ icon: Icon, label, value, color,
     </div>
   );
 });
-
 export default StatCard;

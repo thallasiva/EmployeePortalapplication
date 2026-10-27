@@ -3,7 +3,6 @@ import Btn from "./Btn";
 import { badgeColor, ONBOARDING_TASKS } from "./data";
 import Stat from "./Stat";
 import Card from "./Card";
-
 function OnboardingTab()
 {
   return (

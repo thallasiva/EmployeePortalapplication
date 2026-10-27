@@ -4,7 +4,6 @@ import { importHolidays } from '../../../../api/holiday.api';
 import { parseHolidayCsv } from '../../../../utils/holidayImport';
 import { successToast, errorToast } from '../../../../utils/ToastControllers';
 import { cssClass } from '../../../../utils/classStyles';
-
 const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModal({
   onClose,
   onImported,
@@ -13,13 +12,11 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
   const [fileName, setFileName] = useState('');
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState('');
-
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
     setError('');
-
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -47,7 +44,6 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
     reader.onerror = () => { setError('Could not read the selected file.'); };
     reader.readAsText(file);
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
@@ -62,14 +58,12 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
             <X size={18} />
           </button>
         </div>
-
         <div className="px-5 py-4 space-y-3">
           <p className="text-sm text-gray-600">
             Upload a CSV file with columns <strong>Holiday Name</strong> and{' '}
             <strong>Date</strong> (YYYY-MM-DD). Optional columns:{' '}
             <strong>Shift</strong>, <strong>Location</strong>, <strong>Restricted</strong>.
           </p>
-
           <div
             className={cssClass({
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -106,7 +100,6 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
               ⬇ Download Template
             </button>
           </div>
-
           <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-8 text-center cursor-pointer hover:border-brand hover:bg-brand-50/40">
             <Upload size={24} className="text-gray-400" />
             <span className="text-sm font-medium text-gray-700">
@@ -121,11 +114,9 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
               disabled={importing}
             />
           </label>
-
           {importing && <p className="text-sm text-brand">Importing holidays...</p>}
           {error && <p className="text-sm text-rose-600">{error}</p>}
         </div>
-
         <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-3">
           <button
             type="button"
@@ -139,5 +130,4 @@ const ImportHolidayCalendarModal = React.memo(function ImportHolidayCalendarModa
     </div>
   );
 });
-
 export default ImportHolidayCalendarModal;

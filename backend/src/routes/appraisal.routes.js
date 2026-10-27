@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const c = require('../controllers/appraisal.controller');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
-
 router.use(authenticate);
 router.get('/cycle', c.getCycle);
 router.get('/cycles', c.getAllCycles);
@@ -21,5 +20,4 @@ router.put('/:id/status', authorizeRoles('Admin'), c.updateStatus);
 router.get('/enrollments', authorizeRoles('Admin'), c.getEnrollments);
 router.post('/enrollments', authorizeRoles('Admin'), c.enrollEmployees);
 router.delete('/enrollments/:employeeId', authorizeRoles('Admin'), c.unenrollEmployee);
-
 module.exports = router;

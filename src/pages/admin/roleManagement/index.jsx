@@ -4,7 +4,6 @@ import PageHeader from "./components/PageHeader";
 import EmployeeList from "./components/EmployeeList";
 import RoleAssignPanel from "./components/RoleAssignPanel";
 import JobRolesPanel from "./components/JobRolesPanel";
-
 export default function RoleManagement() {
   const {
     roles,
@@ -23,11 +22,9 @@ export default function RoleManagement() {
     getRoleLabel,
     getRoleStyle
   } = useRoleManagement();
-
   return (
     <div className="px-7 py-6" style={{ maxWidth: 1400, margin: "0 auto" }}>
       <PageHeader />
-
       <div className="grid gap-5 items-start" style={{ gridTemplateColumns: "1fr 340px 280px" }}>
         <EmployeeList
           filtered={filtered}
@@ -39,7 +36,6 @@ export default function RoleManagement() {
           getRoleLabel={getRoleLabel}
           getRoleStyle={getRoleStyle}
         />
-
         <RoleAssignPanel
           selected={selected}
           roles={roles}
@@ -50,7 +46,6 @@ export default function RoleManagement() {
           getRoleLabel={getRoleLabel}
           getRoleStyle={getRoleStyle}
         />
-
         <JobRolesPanel
           selected={selected}
           onDesignationSaved={handleDesignationSaved}

@@ -1,6 +1,5 @@
 import React from "react";
 import { INPUT_CLS } from "../constants";
-
 const CompanyProfile = React.memo(function CompanyProfile({ selectedCompany, profile, setProfile }) {
   return (
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
@@ -46,5 +45,4 @@ const CompanyProfile = React.memo(function CompanyProfile({ selectedCompany, pro
     </section>
   );
 });
-
 export default CompanyProfile;

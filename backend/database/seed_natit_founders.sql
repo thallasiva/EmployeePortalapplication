@@ -11,14 +11,11 @@
 --
 -- Password (all accounts): Natit@2024
 -- =====================================================================
-
 USE hrms_db;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 1. TRUNCATE all employee-dependent tables
 -- ─────────────────────────────────────────────────────────────────────
 SET FOREIGN_KEY_CHECKS = 0;
-
 TRUNCATE TABLE reporting_history;
 TRUNCATE TABLE workflow_delegates;
 TRUNCATE TABLE it_proof_documents;
@@ -43,9 +40,7 @@ TRUNCATE TABLE employee_contact_info;
 TRUNCATE TABLE team_members;
 TRUNCATE TABLE users;
 TRUNCATE TABLE employees;
-
 SET FOREIGN_KEY_CHECKS = 1;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 2. Departments (upsert)
 -- ─────────────────────────────────────────────────────────────────────
@@ -60,7 +55,6 @@ INSERT INTO departments (department_id, department_name, company_id) VALUES
   (8, 'Management',      1),
   (9, 'Technology',      1)
 ON DUPLICATE KEY UPDATE department_name = VALUES(department_name);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 3. Designations (upsert)
 -- ─────────────────────────────────────────────────────────────────────
@@ -87,11 +81,9 @@ INSERT INTO designations (designation_id, designation_name, department_id) VALUE
   (20, 'Director',                 8),
   (21, 'Promoter & Director',      8)
 ON DUPLICATE KEY UPDATE designation_name = VALUES(designation_name);
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 4. Employees
 -- ─────────────────────────────────────────────────────────────────────
-
 -- Lenin Kumar — CEO / Admin
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -102,7 +94,6 @@ INSERT INTO employees (
   'Chief Executive Officer', 8, 18,
   NULL, 'Full-Time', 'Active', 'general', '2015-01-01', 'new'
 );
-
 -- Tirumala Rao — Managing Director / Reporting Manager
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -113,7 +104,6 @@ INSERT INTO employees (
   'Managing Director', 8, 19,
   1, 'Full-Time', 'Active', 'general', '2015-01-01', 'new'
 );
-
 -- Seetharamaiah — Promoter & Director
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -124,7 +114,6 @@ INSERT INTO employees (
   'Promoter & Director', 8, 21,
   2, 'Full-Time', 'Active', 'general', '2015-01-01', 'new'
 );
-
 -- Srinivas Rao — Promoter & Director
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -135,7 +124,6 @@ INSERT INTO employees (
   'Promoter & Director', 8, 21,
   2, 'Full-Time', 'Active', 'general', '2015-01-01', 'new'
 );
-
 -- Radhey Shyam — Promoter & Director
 INSERT INTO employees (
   employee_id, emp_code, first_name, last_name, email, mobile,
@@ -146,7 +134,6 @@ INSERT INTO employees (
   'Promoter & Director', 8, 21,
   2, 'Full-Time', 'Active', 'general', '2015-01-01', 'new'
 );
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 5. Login accounts  (password: Natit@2024)
 --    role_id: 1=Admin  2=Employee  3=Reporting Manager
@@ -157,7 +144,6 @@ INSERT INTO users (user_id, email, password_hash, role_id, employee_id, status) 
   (3, 'seetharamaiah@yopmail.com', '$2a$10$qqJZdvL7ZuS1m5ypmkPDcOaVIORNSFarEBpl9LP1yEGmKrTmY50DW', 2, 3, 'Active'),
   (4, 'srinivasrao@yopmail.com',   '$2a$10$qqJZdvL7ZuS1m5ypmkPDcOaVIORNSFarEBpl9LP1yEGmKrTmY50DW', 2, 4, 'Active'),
   (5, 'radheysham@yopmail.com',    '$2a$10$qqJZdvL7ZuS1m5ypmkPDcOaVIORNSFarEBpl9LP1yEGmKrTmY50DW', 2, 5, 'Active');
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 6. Leave balances (current year)
 -- ─────────────────────────────────────────────────────────────────────
@@ -166,7 +152,6 @@ SELECT e.employee_id, lt.leave_type_id, YEAR(CURDATE()), 0, lt.annual_quota, 0, 
 FROM employees e
 CROSS JOIN leave_types lt
 WHERE lt.annual_quota > 0 AND e.employee_status = 'Active';
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 7. Holidays
 -- ─────────────────────────────────────────────────────────────────────
@@ -180,7 +165,6 @@ INSERT INTO holidays (holiday_name, holiday_date, holiday_calendar, is_restricte
   ('Diwali',              CONCAT(YEAR(CURDATE()), '-10-20'), 'NAT IT - Default', 0, 'general'),
   ('Diwali (Laxmi Puja)', CONCAT(YEAR(CURDATE()), '-10-21'), 'NAT IT - Default', 1, 'general'),
   ('Christmas',           CONCAT(YEAR(CURDATE()), '-12-25'), 'NAT IT - Default', 0, 'general');
-
 -- ─────────────────────────────────────────────────────────────────────
 -- Login credentials (password: Natit@2024)
 --   Admin            : leninkumar@yopmail.com

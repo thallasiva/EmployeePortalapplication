@@ -3,9 +3,7 @@
 -- Fixes: "Unknown column 'd.name'" + wrong tables (jobs vs rec_job_requests)
 -- Safe to re-run. Run: node src/database/runSql.js patch_fix_rec_admin_dashboard.sql
 -- ─────────────────────────────────────────────────────────────────────────────
-
 DROP PROCEDURE IF EXISTS sp_rec_admin_dashboard;
-
 DELIMITER $$
 CREATE PROCEDURE sp_rec_admin_dashboard()
 BEGIN
@@ -19,12 +17,10 @@ BEGIN
     (SELECT COUNT(*) FROM rec_offers      WHERE status = 'Released')                                     AS offers_pending,
     (SELECT COUNT(*) FROM rec_offers      WHERE status = 'Accepted')                                     AS offers_accepted,
     (SELECT COUNT(*) FROM rec_onboarding  WHERE current_status != 'Completed')                           AS active_onboarding;
-
   -- result[1]: Candidate pipeline by status
   SELECT status, COUNT(*) AS count
   FROM   rec_candidates WHERE deleted_at IS NULL
   GROUP BY status ORDER BY count DESC;
-
   -- result[2]: Recruiter performance (last 30 days)
   SELECT CONCAT(e.first_name,' ',e.last_name) AS recruiter,
          COUNT(DISTINCT c.candidate_id)        AS candidates_added,
@@ -50,11 +46,9 @@ BEGIN
     GROUP BY rc.recruiter_id
   ) ol ON ol.recruiter_id = e.employee_id
   GROUP BY e.employee_id, e.first_name, e.last_name;
-
   -- result[3]: Recent job requests (last 5)
   SELECT job_req_id, job_req_code, title, client, assignment_status, created_at
   FROM   rec_job_requests WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 5;
-
   -- result[4]: Shortlisted candidates with recruiter name
   SELECT
     c.candidate_id,

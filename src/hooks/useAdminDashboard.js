@@ -3,37 +3,18 @@ import { getDashboardStats, getAttendanceDashboard, getRecentActivities } from "
 import { listLeaveRequests } from "../api/leaveRequest.api";
 import { listAttendance } from "../api/attendance.api";
 import { getAdminDashboardMetrics } from "../data/adminDashboardData";
-
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
-
 const EMPTY_LIST = { data: [], meta: { total: 0 } };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export function useAdminDashboard() {
   const [metrics, setMetrics] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     let cancelled = false;
     const date = todayIso();
-
     async function load() {
       const [statsR, attendanceR, pendingR, onLeaveR, lateR, absentR, recentR] = await Promise.allSettled([
       getDashboardStats(),
@@ -44,26 +25,18 @@ export function useAdminDashboard() {
       listAttendance({ from_date: date, to_date: date, status: "absent", limit: 50 }),
       getRecentActivities(6)]
       );
-
       if (cancelled) return;
-
       const results = [statsR, attendanceR, pendingR, onLeaveR, lateR, absentR, recentR];
       const failures = results.filter((r) => r.status === "rejected");
-
       failures.forEach((f) => {
-
         console.error("[useAdminDashboard] a dashboard request failed:", f.reason);
       });
-
-
-
       if (failures.length === results.length) {
         setError(failures[0]?.reason || new Error("Failed to load dashboard data"));
         setMetrics(getAdminDashboardMetrics());
         setLoading(false);
         return;
       }
-
       const stats = statsR.status === "fulfilled" ? statsR.value || {} : {};
       const attendance = attendanceR.status === "fulfilled" ? attendanceR.value || {} : {};
       const pending = pendingR.status === "fulfilled" ? pendingR.value : EMPTY_LIST;
@@ -71,7 +44,6 @@ export function useAdminDashboard() {
       const late = lateR.status === "fulfilled" ? lateR.value : EMPTY_LIST;
       const absent = absentR.status === "fulfilled" ? absentR.value : EMPTY_LIST;
       const recent = recentR.status === "fulfilled" ? recentR.value : [];
-
       const totalEmployees = Number(stats?.employees_count) || 0;
       const presentToday = Number(attendance?.present_today) || 0;
       const absentToday = Number(attendance?.absent_today) || 0;
@@ -80,7 +52,6 @@ export function useAdminDashboard() {
       const attendanceRate = totalEmployees ?
       Math.round(presentToday / totalEmployees * 100) :
       0;
-
       setMetrics({
         totalEmployees,
         companies: Number(stats?.companies_count) || 0,
@@ -127,7 +98,6 @@ export function useAdminDashboard() {
         openJobs: Number(stats?.open_jobs_count) || 0,
         salariesCount: Number(stats?.salaries_count) || 0
       });
-
       setActivities(
         (recent || []).map((a) => ({
           id: a.id,
@@ -135,16 +105,13 @@ export function useAdminDashboard() {
           time: a.created_at
         }))
       );
-
       setError(failures.length ? failures[0].reason : null);
       setLoading(false);
     }
-
     load();
     return () => {
       cancelled = true;
     };
   }, []);
-
   return { metrics: metrics ?? getAdminDashboardMetrics(), activities, loading, error };
 }

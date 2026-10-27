@@ -1,7 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { STATUS_CFG } from "../constants";
-
 const StatusBadge = React.memo(function StatusBadge({ status }) {
   const cfg = STATUS_CFG[status] || STATUS_CFG["new"];
   const { label, bg, color, Icon } = cfg;
@@ -17,5 +16,4 @@ const StatusBadge = React.memo(function StatusBadge({ status }) {
     </span>
   );
 });
-
 export default StatusBadge;

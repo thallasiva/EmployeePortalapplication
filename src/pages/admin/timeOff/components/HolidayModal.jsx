@@ -3,12 +3,10 @@ import { MapPin, Check } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { SHIFTS, B, EMPTY_FORM } from "../constants";
 import Btn from "./Btn";
-
 const HolidayModal = React.memo(({ initial, locations, defaultShift, onClose, onSave }) => {
   const [form, setForm] = useState({ ...EMPTY_FORM, shift: defaultShift, ...(initial || {}) });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.holiday_name.trim() || !form.holiday_date) { alert("Name and date required"); return; }
@@ -16,9 +14,7 @@ const HolidayModal = React.memo(({ initial, locations, defaultShift, onClose, on
     try { await onSave(form); }
     catch (err) { alert(err.message); setSaving(false); }
   };
-
   const shiftInfo = SHIFTS.find((s) => s.key === form.shift);
-
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 9999,
       display: "flex", alignItems: "center", justifyContent: "center" })}>
@@ -114,6 +110,5 @@ const HolidayModal = React.memo(({ initial, locations, defaultShift, onClose, on
     </div>
   );
 });
-
 HolidayModal.displayName = "HolidayModal";
 export default HolidayModal;

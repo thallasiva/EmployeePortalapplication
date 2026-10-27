@@ -2,7 +2,6 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { GROUPS, SECTION_MAP } from "../constants";
 import { X, Check } from "lucide-react";
-
 const ViewDetailsModal = React.memo(function ViewDetailsModal({ onClose, totals }) {
   return (
     <div className={cssClass({ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "32px 16px", overflowY: "auto" })}>
@@ -58,5 +57,4 @@ const ViewDetailsModal = React.memo(function ViewDetailsModal({ onClose, totals 
     </div>
   );
 });
-
 export default ViewDetailsModal;

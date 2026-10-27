@@ -11,40 +11,32 @@ import { calcDateDiff, fmtDate, fmtDuration } from "../utils/dateUtils";
 import TaskModal from "./TaskModal";
 import ExtraWorkModal from "./ExtraWorkModal";
 import { Zap, Pencil, Trash2, CalendarDays, Clock, Timer } from "lucide-react";
-
 const MyTasksTab = memo(function MyTasksTab() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [showExtraWork, setShowExtraWork] = useState(false);
   const [err, setErr] = useState("");
-
   const load = useCallback(async () => {
     try { setTasks(await getMyTasks()); }
     catch { setErr("Failed to load tasks"); }
     finally { setLoading(false); }
   }, []);
-
   useEffect(() => { load(); }, [load]);
-
   const handleSave = async (form) => {
     if (modal === "create") await createTask(form);
     else await updateTask(modal.task_id, form);
     await load();
   };
-
   const handleDelete = async (taskId) => {
     if (!window.confirm("Delete this task?")) return;
     try { await deleteTask(taskId); await load(); }
     catch { setErr("Delete failed"); }
   };
-
   const handleExtraWorkSubmit = async (form) => {
     await createExtraWorkRequest(form);
   };
-
   if (loading) return <div className="ts-loading">Loading tasks…</div>;
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -59,7 +51,6 @@ const MyTasksTab = memo(function MyTasksTab() {
         </div>
       </div>
       {err && <p className="text-sm text-red-500">{err}</p>}
-
       {tasks?.length === 0 ? (
         <div className="ts-empty">No tasks yet. Create your first task to start logging work.</div>
       ) : (
@@ -93,7 +84,6 @@ const MyTasksTab = memo(function MyTasksTab() {
                     </div>
                   )}
                 </div>
-
                 {(t.start_date || t.start_time || days || totalH) && (
                   <div className="flex flex-wrap gap-2 pl-4">
                     {t.start_date && (
@@ -121,7 +111,6 @@ const MyTasksTab = memo(function MyTasksTab() {
           })}
         </div>
       )}
-
       {modal && (
         <TaskModal
           task={modal === "create" ? null : modal}
@@ -131,7 +120,6 @@ const MyTasksTab = memo(function MyTasksTab() {
           onOpenExtraWork={() => setShowExtraWork(true)}
         />
       )}
-
       {showExtraWork && (
         <ExtraWorkModal
           timesheetId={null}
@@ -143,5 +131,4 @@ const MyTasksTab = memo(function MyTasksTab() {
     </div>
   );
 });
-
 export default MyTasksTab;

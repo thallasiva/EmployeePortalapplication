@@ -3,10 +3,8 @@ import { sectionCfg, timeAgo } from "../utils";
 import Avatar from "./Avatar";
 import StatusBadge from "./StatusBadge";
 import { ArrowRight } from "lucide-react";
-
 const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
   const sec = sectionCfg(item.section);
-
   return (
     <div style={{
       background: "#fff", border: "1px solid #e8edf2",
@@ -23,20 +21,17 @@ const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
       }}>
         {item.emoji || <span style={{ color: sec.color, display: "flex" }}>{sec.icon}</span>}
       </div>
-
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#1a2233" }}>{item.title}</span>
           {item.status && <StatusBadge status={item.status} />}
         </div>
-
         {item.description && (
           <p style={{ fontSize: 12.5, color: "#4b5563", margin: "0 0 6px", lineHeight: 1.5 }}>
             {item.description}
           </p>
         )}
-
         {item.chips && item.chips.length > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
             {item.chips.map((chip, i) => (
@@ -49,7 +44,6 @@ const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
             ))}
           </div>
         )}
-
         {item.fromName && (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 7,
@@ -62,7 +56,6 @@ const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
             </span>
           </div>
         )}
-
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 2 }}>
           <span style={{ fontSize: 11, color: "#9ca8b5" }}>
             {sec.label} · {item.timeLabel || timeAgo(item.timestamp)}
@@ -83,5 +76,4 @@ const ActivityCard = React.memo(function ActivityCard({ item, navigate }) {
     </div>
   );
 });
-
 export default ActivityCard;

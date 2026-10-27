@@ -3,20 +3,16 @@
  * Run: node fix_last3.js
  */
 const mysql = require('mysql2/promise');
-
 if (!process.env.PROD_DB_PASSWORD) {
   console.error('Set PROD_DB_PASSWORD (the production DB password is no longer stored in this file).');
   process.exit(1);
 }
-
 const DB_CONFIG = {
   host: 'hrms.c02gczm2cgx8.us-east-1.rds.amazonaws.com',
   port: 4306, user: 'HRMSadmin', password: process.env.PROD_DB_PASSWORD,
   database: 'hrms_db', connectTimeout: 30000,
 };
-
 const FIXES = [
-
   // ── sp_assign_manager ───────────────────────────────────────────────────────
   `DROP PROCEDURE IF EXISTS sp_assign_manager`,
   `CREATE PROCEDURE sp_assign_manager (
@@ -41,7 +37,6 @@ BEGIN
       (p_employee_id, v_old_manager, p_new_manager_id, p_changed_by, p_reason, 'assign');
   END IF;
 END`,
-
   // ── sp_bulk_assign_manager ──────────────────────────────────────────────────
   `DROP PROCEDURE IF EXISTS sp_bulk_assign_manager`,
   `CREATE PROCEDURE sp_bulk_assign_manager (
@@ -66,7 +61,6 @@ BEGIN
       (p_employee_id, v_old_manager, p_new_manager_id, p_changed_by, p_reason, 'bulk_transfer');
   END IF;
 END`,
-
   // ── sp_manager_action_ticket ────────────────────────────────────────────────
   `DROP PROCEDURE IF EXISTS sp_manager_action_ticket`,
   `CREATE PROCEDURE sp_manager_action_ticket (
@@ -117,11 +111,9 @@ BEGIN
   END IF;
 END`,
 ];
-
 async function main() {
   const conn = await mysql.createConnection(DB_CONFIG);
   console.log('Connected!\n');
-
   let ok = 0, err = 0;
   for (const sql of FIXES) {
     const name = sql.match(/(?:DROP PROCEDURE IF EXISTS|CREATE PROCEDURE)\s+(\w+)/i)?.[1] || '?';
@@ -132,13 +124,11 @@ async function main() {
       if (sql.startsWith('CREATE')) { console.log(`  ERR ${name}: ${e.message}`); err++; }
     }
   }
-
   const [rows] = await conn.execute(
     "SELECT COUNT(*) AS cnt FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA=? AND ROUTINE_TYPE='PROCEDURE'",
     ['hrms_db']
   );
   await conn.end();
-
   console.log('\n' + '='.repeat(50));
   console.log(`Fixed: ${ok}  |  Errors: ${err}`);
   console.log(`Total procedures in DB: ${rows[0].cnt}`);

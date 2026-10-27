@@ -5,21 +5,17 @@ import { listSalaryStructures } from '../../api/payroll.api';
 import { getStoredUser } from '../../data/auth';
 import { isSalaryVisible, formatSalary } from '../../utils/salaryMask';
 import { getDepartmentName } from '../../utils/employeeDisplay';import { cssClass, joinClasses } from "../../utils/classStyles";
-
 const AVATAR_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6", "#22c55e", "#ef4444"];
 function initials(name = "") {return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "?";}
 function avatarColor(name = "") {let h = 0;for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];}
-
 const PayrollReports = () => {
   const user = getStoredUser();
   const canSeeSalary = isSalaryVisible(user);
-
   const [employees, setEmployees] = useState([]);
   const [salaryMap, setSalaryMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
-
   useEffect(() => {
     Promise.all([
     listEmployees({ limit: 500 }),
@@ -27,7 +23,6 @@ const PayrollReports = () => {
     ).then(([empRes, salRes]) => {
       const emps = empRes.data || [];
       setEmployees(emps);
-
       const map = {};
       (salRes.data || []).forEach((s) => {
         if (!map[s.employee_id] || new Date(s.effective_date) > new Date(map[s.employee_id].effective_date)) {
@@ -38,12 +33,10 @@ const PayrollReports = () => {
     }).catch(() => {}).
     finally(() => setLoading(false));
   }, [canSeeSalary]);
-
   const departments = useMemo(() => {
     const set = new Set(employees.map((e) => getDepartmentName(e)).filter(Boolean));
     return ["", ...Array.from(set).sort()];
   }, [employees]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return employees.filter((e) => {
@@ -53,7 +46,6 @@ const PayrollReports = () => {
       return matchQ && matchD;
     });
   }, [employees, search, deptFilter]);
-
   const handleExport = () => {
     const rows = [["Name", "Email", "Department", "Job Title", "Status", "Gross Salary", "Account No"]];
     filtered.forEach((e) => {
@@ -67,7 +59,6 @@ const PayrollReports = () => {
     a.download = `payroll-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
-
   return (
     <div className="space-y-4">
       {}
@@ -90,16 +81,13 @@ const PayrollReports = () => {
           }
         </div>
       </div>
-
       {!canSeeSalary &&
       <div className="px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
           Salary and bank details are restricted to administrators only.
         </div>
       }
-
       {loading ?
       <div className="py-12 text-center text-sm text-gray-400">Loading…</div> :
-
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -154,7 +142,6 @@ const PayrollReports = () => {
                         </td>
                       </>}
                     </tr>);
-
               })}
                 {!filtered.length &&
               <tr><td colSpan={canSeeSalary ? 7 : 5} className="text-center text-gray-400 py-10 text-sm">No employees found.</td></tr>
@@ -165,7 +152,5 @@ const PayrollReports = () => {
         </div>
       }
     </div>);
-
 };
-
 export default PayrollReports;

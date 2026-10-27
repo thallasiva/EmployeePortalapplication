@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { inp } from "../constants";
-
 const StructureForm = React.memo(function StructureForm({ initial, onSave, onClose, saving }) {
   const [name, setName] = useState(initial?.structure_name ?? "");
   const [desc, setDesc] = useState(initial?.description ?? "");
   const [isDefault, setDef] = useState(!!initial?.is_default);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
@@ -73,5 +71,4 @@ const StructureForm = React.memo(function StructureForm({ initial, onSave, onClo
     </div>
   );
 });
-
 export default StructureForm;

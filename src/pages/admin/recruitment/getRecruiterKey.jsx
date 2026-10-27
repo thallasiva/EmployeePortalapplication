@@ -1,5 +1,4 @@
 import { RECRUITERS } from "./data";
-
 function getRecruiterKey(user)
 {
   const email = user?.email?.toLowerCase();

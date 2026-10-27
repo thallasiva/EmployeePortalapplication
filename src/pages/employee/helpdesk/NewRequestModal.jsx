@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { X, ChevronDown, Paperclip, Plus } from "lucide-react";
-
 const CATEGORIES = [
   { value: "", label: "Select Category.." },
   { value: "it", label: "IT Support" },
@@ -9,25 +8,20 @@ const CATEGORIES = [
   { value: "facilities", label: "Facilities" },
   { value: "other", label: "Other" },
 ];
-
 const PRIORITIES = [
   { value: "high", label: "High", dot: "bg-red-500" },
   { value: "medium", label: "Medium", dot: "bg-amber-400" },
   { value: "low", label: "Low", dot: "bg-emerald-500" },
 ];
-
 const FILE_TYPES =
   "File Types: pdf, .xls, .xlsx, .doc, .docx, .txt, .ppt, .pptx, .gif, .jpg, .jpeg, .png";
-
 export default function NewRequestModal({ open, onClose, onSubmit }) {
   const [category, setCategory] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("high");
   const [ccList, setCcList] = useState([]);
-
   if (!open) return null;
-
   const reset = () => {
     setCategory("");
     setSubject("");
@@ -35,12 +29,10 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
     setPriority("high");
     setCcList([]);
   };
-
   const handleClose = () => {
     reset();
     onClose();
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!subject.trim() || !description.trim()) return;
@@ -56,9 +48,7 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
     reset();
     onClose();
   };
-
   const priorityMeta = PRIORITIES.find((p) => p.value === priority) ?? PRIORITIES[0];
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/25">
       <div
@@ -82,7 +72,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
             <X size={14} />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           <div>
             <label className="block text-xs text-slate-500 mb-1.5">Category</label>
@@ -104,7 +93,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
               />
             </div>
           </div>
-
           <div>
             <label className="block text-xs text-slate-500 mb-1.5">
               Subject <span className="text-red-500">*</span>
@@ -118,7 +106,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
               required
             />
           </div>
-
           <div>
             <label className="block text-xs text-slate-500 mb-1.5">
               Description <span className="text-red-500">*</span>
@@ -132,7 +119,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
               required
             />
           </div>
-
           <div className="flex flex-wrap items-start justify-between gap-2 text-sm">
             <button
               type="button"
@@ -145,7 +131,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
               {FILE_TYPES}
             </span>
           </div>
-
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 pt-1">
             <div>
               <label className="block text-xs text-slate-500 mb-2">CC to</label>
@@ -171,7 +156,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
                 </ul>
               )}
             </div>
-
             <div className="sm:w-48">
               <label className="block text-xs text-slate-500 mb-1.5">Priority</label>
               <div className="relative">
@@ -196,7 +180,6 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
               </div>
             </div>
           </div>
-
           <div className="flex justify-center gap-4 pt-4">
             <button
               type="submit"

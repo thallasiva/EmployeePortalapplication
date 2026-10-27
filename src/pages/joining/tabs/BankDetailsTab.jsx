@@ -1,17 +1,14 @@
 import React from "react";
 import { Landmark, CheckCircle, Check, AlertTriangle } from "lucide-react";
-
 export default function BankDetailsTab({ form }) {
   const acc = form.accountNumber || "";
   const masked = acc.length > 4 ? "*".repeat(acc.length - 4) + acc.slice(-4) : acc;
-
   const Row = ({ label, value }) => (
     <div className="flex items-center justify-between py-3 border-b border-amber-50 last:border-0">
       <span className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide">{label}</span>
       <span className="text-[13px] font-semibold text-gray-800">{value || <span className="text-gray-300 italic font-normal">—</span>}</span>
     </div>
   );
-
   return (
     <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
       <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-[#f18200] to-[#f18200]">

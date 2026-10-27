@@ -1,8 +1,3 @@
-
-
-
-
-
 const isExternal = (url) => {
   if (!url || typeof url !== "string") return false;
   if (url.startsWith("data:") || url.startsWith("blob:")) return false;
@@ -10,7 +5,6 @@ const isExternal = (url) => {
   if (url.startsWith(window.location.origin)) return false;
   return /^https?:\/\//i.test(url);
 };
-
 if (typeof window !== "undefined") {
   const originalFetch = window.fetch;
   window.fetch = function blockedFetch(input, init) {
@@ -21,7 +15,6 @@ if (typeof window !== "undefined") {
     }
     return originalFetch.call(this, input, init);
   };
-
   const XHR = window.XMLHttpRequest;
   const open = XHR.prototype.open;
   XHR.prototype.open = function blockedOpen(method, url, ...rest) {

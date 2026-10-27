@@ -5,7 +5,6 @@ import {
   ADMIN_LEAVE_MONTHLY_CHART,
   ADMIN_LEAVE_MONTHLY_SERIES,
 } from '../../../../data/adminLeaveData';
-
 const AnalyticsSection = React.memo(function AnalyticsSection({
   requestChart,
   totalRequests,
@@ -39,5 +38,4 @@ const AnalyticsSection = React.memo(function AnalyticsSection({
     </section>
   );
 });
-
 export default AnalyticsSection;

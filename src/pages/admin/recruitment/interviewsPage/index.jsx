@@ -7,7 +7,6 @@ import ScheduleSlideOver from "./components/ScheduleSlideOver";
 import { HrFeedbackModal, RecruiterFeedbackModal } from "./components/FeedbackModal";
 import ViewInterviewModal from "./components/ViewInterviewModal";
 import { BLANK_INT } from "./constants";
-
 export default function InterviewsPage({ role }) {
   const {
     interviews,
@@ -32,7 +31,6 @@ export default function InterviewsPage({ role }) {
     handleChange, handleFbChange,
     openFeedback, openRecruiterFeedback,
   } = useInterviewsPage(role);
-
   return (
     <div>
       <PageHeader
@@ -50,7 +48,6 @@ export default function InterviewsPage({ role }) {
           )
         }
       />
-
       {/* Summary pills */}
       <div className="flex gap-2.5 mb-5 flex-wrap">
         {[
@@ -65,7 +62,6 @@ export default function InterviewsPage({ role }) {
           </div>
         ))}
       </div>
-
       {/* Filters */}
       <Card className="!p-0 mb-4">
         <div className="flex items-center gap-3 px-4 py-3 flex-wrap">
@@ -77,7 +73,6 @@ export default function InterviewsPage({ role }) {
           </div>
         </div>
       </Card>
-
       {/* Candidate accordions */}
       {loading ? (
         <div className="flex items-center justify-center gap-2.5 py-12 text-gray-500">
@@ -108,7 +103,6 @@ export default function InterviewsPage({ role }) {
           ))}
         </div>
       )}
-
       <ScheduleSlideOver
         open={schedOpen}
         isExternal={isExternal}
@@ -120,7 +114,6 @@ export default function InterviewsPage({ role }) {
         onChange={handleChange}
         onSubmit={handleSchedule}
       />
-
       <HrFeedbackModal
         fbOpen={fbOpen}
         fb={fb}
@@ -129,7 +122,6 @@ export default function InterviewsPage({ role }) {
         onChange={handleFbChange}
         onSubmit={handleFeedback}
       />
-
       <RecruiterFeedbackModal
         fbRecruiterOpen={fbRecruiterOpen}
         fbRecruiter={fbRecruiter}
@@ -139,7 +131,6 @@ export default function InterviewsPage({ role }) {
         onChangeComments={(e) => setFbRecruiter((f) => ({ ...f, feedbackComments: e.target.value }))}
         onSubmit={handleRecruiterFeedback}
       />
-
       <ViewInterviewModal
         viewIv={viewIv}
         canFeedback={canFeedback}

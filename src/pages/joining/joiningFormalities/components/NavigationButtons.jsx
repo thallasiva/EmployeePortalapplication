@@ -1,7 +1,6 @@
 import React from "react";
 import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { TABS } from "../constants";
-
 const NavigationButtons = React.memo(function NavigationButtons({
   tab,
   saving,
@@ -37,5 +36,4 @@ const NavigationButtons = React.memo(function NavigationButtons({
     </div>
   );
 });
-
 export default NavigationButtons;

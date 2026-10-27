@@ -1,6 +1,5 @@
 import React from "react";
 import Field from "./Field";
-
 const StepBankStatutory = React.memo(function StepBankStatutory({ values, setField }) {
   return (
     <>
@@ -75,7 +74,6 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
           <input type="date" value={values.access_card_to_date} onChange={(e) => setField("access_card_to_date", e.target.value)} />
         </Field>
       </div>
-
       <h2>Bank Details</h2>
       <div className="emp-wizard__grid">
         <Field label="Bank Name">
@@ -112,7 +110,6 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
           </select>
         </Field>
       </div>
-
       <h2>Contact &amp; Address</h2>
       <div className="emp-wizard__grid">
         <Field label="Contact Name">
@@ -149,5 +146,4 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
     </>
   );
 });
-
 export default StepBankStatutory;

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { usePagination } from "../../../../components/Pagination";
 import apiClient from "../../../../api/client";
-
 export function useResignations() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +8,6 @@ export function useResignations() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [reviewing, setReviewing] = useState(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -22,9 +20,7 @@ export function useResignations() {
     }
     setLoading(false);
   }, []);
-
   useEffect(() => { load(); }, [load]);
-
   const visible = useMemo(() => rows.filter((r) => {
     const matchStatus = filter === "all" || r.status === filter;
     const q = search.toLowerCase();
@@ -35,16 +31,13 @@ export function useResignations() {
       r.department_name?.toLowerCase().includes(q);
     return matchStatus && matchSearch;
   }), [rows, filter, search]);
-
   const counts = useMemo(() => ({
     pending:     rows.filter((r) => r.status === "pending").length,
     rm_approved: rows.filter((r) => r.status === "rm_approved").length,
     accepted:    rows.filter((r) => r.status === "accepted").length,
     rejected:    rows.filter((r) => ["rejected", "rm_rejected"].includes(r.status)).length,
   }), [rows]);
-
   const pagination = usePagination(visible);
-
   return {
     loading, error,
     search, setSearch, filter, setFilter,

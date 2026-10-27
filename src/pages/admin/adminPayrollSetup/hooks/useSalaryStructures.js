@@ -1,16 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { listSalaryStructures } from "../../../../api/payroll.api";
-
 export function useSalaryStructures(search) {
   const [structs, setStructs] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     listSalaryStructures({ limit: 500 })
       .then((r) => setStructs(r.data || []))
       .finally(() => setLoading(false));
   }, []);
-
   const filtered = useMemo(
     () =>
       structs.filter((s) => {
@@ -19,6 +16,5 @@ export function useSalaryStructures(search) {
       }),
     [structs, search]
   );
-
   return { structs, filtered, loading };
 }

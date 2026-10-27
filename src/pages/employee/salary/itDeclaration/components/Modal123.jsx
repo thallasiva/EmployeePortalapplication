@@ -4,12 +4,10 @@ import { SEC123_ITEMS } from "../constants";
 import { fmt } from "../utils/formatters";
 import Modal from "./Modal";
 import AmtRow from "./AmtRow";
-
 function Modal123({ values, setValues, onClose }) {
   const total = SEC123_ITEMS.reduce((s, item) => s + (Number(values[item.label]) || 0), 0);
   const effective = Math.min(total, 150000);
   const pct = Math.min((effective / 150000) * 100, 100);
-
   return (
     <Modal
       title="Tax-Saving Investments (80C / 80CCD)"
@@ -55,5 +53,4 @@ function Modal123({ values, setValues, onClose }) {
     </Modal>
   );
 }
-
 export default React.memo(Modal123);

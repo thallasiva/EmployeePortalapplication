@@ -1,27 +1,10 @@
 'use strict';
-
-
-
-
-
-
-
-
-
-
-
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 const { email: emailCfg } = require('../config/env');
-
-
 const BRAND_LOGO = path.join(__dirname, '../../public/logo_full.jpeg');
 const SIGNATURE = path.join(__dirname, '../../public/logo.png');
-
-
-
-
 function fmtINR(n) {
   const num = Number(n) || 0;
   if (!num) return '-';
@@ -39,10 +22,6 @@ function fmtDateSlash(d) {
   return String(dt.getDate()).padStart(2, '0') + '/' +
   String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear();
 }
-
-
-
-
 function co() {
   return {
     name: emailCfg.companyName || 'HRMS',
@@ -55,7 +34,6 @@ function co() {
     logoPath: emailCfg.logoPath || ''
   };
 }
-
 function resolveLogoPath(logoPath) {
   if (!logoPath) return null;
   const abs = path.isAbsolute(logoPath) ?
@@ -63,10 +41,6 @@ function resolveLogoPath(logoPath) {
   path.resolve(process.cwd(), logoPath);
   return fs.existsSync(abs) ? abs : null;
 }
-
-
-
-
 function generateOfferLetterPdf(opts) {
   const {
     candidateName = 'Candidate',
@@ -87,34 +61,25 @@ function generateOfferLetterPdf(opts) {
     gratuity = 0,
     esi = 0
   } = opts;
-
   const C = co();
   const logoFile = resolveLogoPath(C.logoPath);
-
   const hrMgrName = hrManagerName || C.hrManagerName || '';
   const ctcNum = Number(ctc) || 0;
   const mo = (v) => Math.round((Number(v) || 0) / 12);
-
-
   const MARGIN = 50;
   const PW = 595.28;
   const PH = 841.89;
   const BW = PW - MARGIN * 2;
-
-
   const LOGO_H = 75;
   const FTR_H = 50;
   const CONTENT_TOP = MARGIN + LOGO_H + 8;
   const CONTENT_BOTTOM = PH - MARGIN - FTR_H - 8;
-
-
   const COL_NAVY = '#1a3c6e';
   const COL_DARK = '#1a1a1a';
   const COL_MID = '#333333';
   const COL_GREY = '#666666';
   const COL_GOLD = '#c8a130';
   const COL_WHITE = '#ffffff';
-
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: MARGIN, size: 'A4', autoFirstPage: false,
       info: { Title: 'Offer Letter', Author: C.name } });
@@ -122,26 +87,18 @@ function generateOfferLetterPdf(opts) {
     doc.on('data', (c) => chunks.push(c));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
-
-
     let _drawingChrome = false;
     doc.on('pageAdded', () => {
       if (_drawingChrome) return;
       _drawingChrome = true;
-
-
-
       doc.page.margins.bottom = MARGIN;
       drawHeader();
       drawFooter();
       doc.page.margins.bottom = MARGIN + FTR_H + 12;
-
       doc.font('Helvetica').fontSize(10).fillColor(COL_MID);
       doc.y = CONTENT_TOP;
       _drawingChrome = false;
     });
-
-
     let VERD = 'Helvetica';
     let VERDB = 'Helvetica-Bold';
     try {
@@ -154,19 +111,11 @@ function generateOfferLetterPdf(opts) {
         VERDB = 'Verdana-Bold';
       }
     } catch (e) {}
-
     const FTR_LINE1 = 'HRMS';
     const FTR_LINE2 = 'SY.#90/1,  Plot No.21, Sruthi Sadan ,2nd Floor,  Gachibowli, Hyderabad, RR District  PIN: 500032  PH:040-23006287 / 90108 77718  CIN: U72900TG2010PTC066694';
-
-
-
-
-
     function ensureSpace(needed) {
       if (doc.y + needed > CONTENT_BOTTOM) {newPage();}
     }
-
-
     function drawHeader() {
       const logoW = 120,logoH = 40;
       const lx = MARGIN + BW - logoW;
@@ -183,8 +132,6 @@ function generateOfferLetterPdf(opts) {
         text(C.name, lx, ly + 10, { width: logoW, align: 'right' });
       }
     }
-
-
     function drawFooter() {
       const fy = PH - MARGIN - FTR_H + 4;
       doc.moveTo(MARGIN, fy - 4).lineTo(MARGIN + BW, fy - 4).
@@ -194,33 +141,21 @@ function generateOfferLetterPdf(opts) {
       doc.font(VERD).fontSize(10.5).fillColor('#FF0066').
       text(FTR_LINE2, MARGIN, fy + 15, { width: BW, align: 'center', lineBreak: false });
     }
-
-
-
     function drawHRBlock() {
       const sigW = 100,sigH = 40;
       const blockH = sigH + 44;
-
       ensureSpace(blockH + 16);
       doc.moveDown(1.2);
-
       const blockY = doc.y;
       const rx = MARGIN + BW;
-
-
       try {
         if (fs.existsSync(SIGNATURE)) {
           doc.image(SIGNATURE, rx - sigW, blockY, { width: sigW, height: sigH, fit: [sigW, sigH] });
         }
       } catch (e) {}
-
       const textY = blockY + sigH + 4;
-
-
       doc.font(VERDB).fontSize(9).fillColor(COL_DARK).
       text('HR Manager', MARGIN, textY, { width: BW, align: 'right', lineBreak: false });
-
-
       if (hrMgrName) {
         doc.font(VERD).fontSize(9).fillColor(COL_MID).
         text(hrMgrName, MARGIN, textY + 13, { width: BW, align: 'right', lineBreak: false });
@@ -233,13 +168,9 @@ function generateOfferLetterPdf(opts) {
         doc.y = textY + 28;
       }
     }
-
-
     function newPage() {
       doc.addPage({ margin: MARGIN, size: 'A4' });
     }
-
-
     function text(str, opts2) {
       doc.font('Helvetica').fontSize(10).fillColor(COL_MID).
       text(str, MARGIN, doc.y, { width: BW, lineGap: 1, ...opts2 });
@@ -287,30 +218,18 @@ function generateOfferLetterPdf(opts) {
       strokeColor('#dddddd').lineWidth(0.5).stroke();
       doc.moveDown(0.3);
     }
-
-
-
-
     newPage();
-
-
     const refCode = offerCode || C.name.replace(/\s+/g, '').slice(0, 3).toUpperCase() + '/HR/' + new Date().getFullYear() + '/001';
     const issueDate = fmtDateSlash(new Date());
     doc.font('Helvetica').fontSize(10).fillColor(COL_DARK).
     text(refCode, MARGIN, doc.y, { continued: true, width: BW }).
     text('Dt: ' + issueDate, { align: 'right' });
     doc.moveDown(1);
-
-
     boldText(candidateName);
     doc.moveDown(0.5);
-
-
     doc.font('Helvetica-Bold').fontSize(14).fillColor(COL_DARK).
     text('Offer Letter', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.5);
-
-
     text('Dear ' + candidateName + ',');
     doc.moveDown(0.3);
     text(
@@ -319,26 +238,16 @@ function generateOfferLetterPdf(opts) {
       '“' + jobTitle + '” in our company with the following terms and conditions.'
     );
     doc.moveDown(0.5);
-
-
-
-
-
-
     clauseTitle('01. DATE OF JOINING:');
     clauseBody(
       'As agreed during the discussion, you are requested to join the services on or before ' +
       fmtDate(dateOfJoining) + '.'
     );
-
-
     clauseTitle('02. DESIGNATION:');
     clauseBody(
       'You will be designated as “' + jobTitle + '” and reporting’s to the authority ' +
       'notified by the Management from time to time.'
     );
-
-
     clauseTitle('03. PLACE OF POSTING:');
     clauseBody(
       'Your place of posting is as discussed during the interview. However, the Management may place you on any ' +
@@ -346,22 +255,16 @@ function generateOfferLetterPdf(opts) {
       'may be necessary, in its absolute discretion from time to time, subject to the provision that your ' +
       'remuneration and facilities are not adversely affected.'
     );
-
-
     clauseTitle('04. PROBATION:');
     clauseBody(
       'You will be on probation for three months from the date of joining.  Your probationary period will be ' +
       'assumed to have been extended until such time you are informed in writing.'
     );
-
-
     clauseTitle('05.  COMPENSATION & BENEFITS:');
     clauseBody(
       'Please refer to Annexure II for the details as applicable to you. Your job title and compensation have ' +
       'been discussed with you and we have mutually agreed upon the same.'
     );
-
-
     clauseTitle('06.  DOUBLE EMPLOYMENT / OFFICE OF THE PROFIT:');
     clauseBody(
       'Company’s employees are whole time employees and they should not carry out any other job / employment ' +
@@ -371,15 +274,11 @@ function generateOfferLetterPdf(opts) {
       'the salary received by You from the Company, for the period for which You have engaged in the said ' +
       'Double Employment.'
     );
-
-
     clauseTitle('07.  SERVICE RULES');
     clauseBody(
       'You will be governed by the service rules and regulations including conduct, discipline and any such ' +
       'other rules or orders of the Company that may come in force from time to time.'
     );
-
-
     clauseTitle('08.   CONFIDENTIALITY');
     clauseBody(
       'The contents of the Agreement and any information passed on by the Company to You (“Confidential ' +
@@ -401,15 +300,11 @@ function generateOfferLetterPdf(opts) {
       'shall also have the right to pursue any other rights or remedies available at law or equity for such a breach.'
     );
     clauseBody('The provisions of this Clause shall survive the termination of your Appointment.');
-
-
     clauseTitle('09. MEDICAL FITNESS:');
     clauseBody(
       'You are required to submit a Medical Fitness Certificate certified by a Medical Practitioner at ' +
       'the time of joining.'
     );
-
-
     clauseTitle('10. TERMINATION:');
     subHeading('During Probation Period:');
     subBody('Your services can be terminated by giving 30 days’ notice or payment of 30-days gross salary.');
@@ -434,14 +329,10 @@ function generateOfferLetterPdf(opts) {
       'Note: Your services are terminated by the company with immediate effect in case of disciplinary, ' +
       'non-performance and ethical matters in probation period and on confirmation of employment.'
     );
-
-
     clauseTitle('11. RETIREMENT FROM SERVICES:');
     clauseBody(
       'You will automatically retire from the services of the company on attaining the superannuating age of 58 years.'
     );
-
-
     clauseTitle('12. INDEMNITY:');
     clauseBody(
       'You agree to indemnify and keep safe the Company from and against claims, demands, actions, liabilities, ' +
@@ -451,24 +342,18 @@ function generateOfferLetterPdf(opts) {
       'and, (c) breach of any applicable laws/ terms or this Agreement by You, by reason of any actions ' +
       'undertaken by You arising out of his obligations under this Agreement.'
     );
-
-
     clauseTitle('13. ABANDONMENT:');
     clauseBody(
       'Any unauthorized absence from work for a continuous period of 5 working days (including absence upon ' +
       'leave applied for but not granted), shall automatically terminate your employment without any notice ' +
       'obligation on the company.'
     );
-
-
     clauseTitle('14. VARIABLE PAY:');
     clauseBody(
       'Employee should be active and not serving notice period at the time of disbursement of Variable Pay. ' +
       'Variable Pay will be disbursed on completion of one-year service with the Company. Variable Pay will ' +
       'be paid based on Individual and Company performance.'
     );
-
-
     clauseTitle('15. GENERAL');
     clauseBody(
       'The company will deduct all applicable Taxes and you will be responsible for your Tax liabilities ' +
@@ -520,8 +405,6 @@ function generateOfferLetterPdf(opts) {
       'arising out of or pertaining to this Offer Letter shall be subject to the exclusive jurisdiction of ' +
       'the competent Courts at Hyderabad, Telangana.'
     );
-
-
     ensureSpace(70);
     doc.moveDown(0.4);
     text('We look forward for a long and mutually rewarding association.');
@@ -530,8 +413,6 @@ function generateOfferLetterPdf(opts) {
     doc.moveDown(1.2);
     boldText('HR Manager');
     text(C.name);
-
-
     ensureSpace(100);
     doc.moveDown(0.6);
     hr();
@@ -548,8 +429,6 @@ function generateOfferLetterPdf(opts) {
     text('Signature\t:  ___________________________');
     doc.moveDown(0.4);
     text('Date\t\t:  ________________');
-
-
     ensureSpace(80);
     doc.moveDown(0.6);
     hr();
@@ -558,34 +437,22 @@ function generateOfferLetterPdf(opts) {
     doc.moveDown(0.1);
     text(C.name + '.');
     text(C.reportTo || C.address);
-
-
-
-
     newPage();
-
     doc.font('Helvetica-Bold').fontSize(14).fillColor(COL_NAVY).
     text('ANNEXURE I', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.6);
-
-
     const tblHdrText =
     'List of Documents/ Information to be submitted on Date Of Joining to facilitate Joining, ' +
     'Background verification / Validation and Appointment process at ' + C.name;
-
     const A1_X = MARGIN;
     const A1_W = BW;
     const A1_COL = 50;
-
-
     ensureSpace(40);
     const a1Hy = doc.y;
     doc.rect(A1_X, a1Hy, A1_W, 36).fillColor(COL_NAVY).fill();
     doc.font('Helvetica-Bold').fontSize(9).fillColor(COL_WHITE).
     text(tblHdrText, A1_X + 6, a1Hy + 6, { width: A1_W - 12, lineGap: 2 });
     doc.y = a1Hy + 38;
-
-
     ensureSpace(22);
     const a1Sh = doc.y;
     doc.rect(A1_X, a1Sh, A1_COL, 20).fillColor('#e8edf5').fill();
@@ -596,7 +463,6 @@ function generateOfferLetterPdf(opts) {
     doc.font('Helvetica-Bold').fontSize(9).fillColor(COL_DARK).
     text('Particulars', A1_X + A1_COL + 6, a1Sh + 5, { width: A1_W - A1_COL - 10, lineBreak: false });
     doc.y = a1Sh + 22;
-
     const annexIItems = [
     '1 copy of this Offer letter duly signed and dated by you',
     'Passport sized photographs - 2',
@@ -608,10 +474,7 @@ function generateOfferLetterPdf(opts) {
     'Joinees family (Parents, Spouse, Children) details including their DOB',
     'Blood Group of Self',
     'If you have stated in your application to ' + C.name + ' that you are differently abled, please bring the disability certificate as per the prescribed format, duly filed & signed.'];
-
-
     annexIItems.forEach((item, idx) => {
-
       const rowH = item.length > 100 ? 36 : item.length > 60 ? 28 : 22;
       ensureSpace(rowH + 4);
       const ry = doc.y;
@@ -626,7 +489,6 @@ function generateOfferLetterPdf(opts) {
       text(item, A1_X + A1_COL + 6, ry + 6, { width: A1_W - A1_COL - 12, lineGap: 2 });
       doc.y = ry + rowH + 2;
     });
-
     ensureSpace(50);
     doc.moveDown(0.6);
     doc.font('Helvetica-Bold').fontSize(9).fillColor('#cc0000').
@@ -639,13 +501,7 @@ function generateOfferLetterPdf(opts) {
     doc.font('Helvetica').fontSize(9).fillColor(COL_GREY).
     text('Please contact us via ' + C.email + ' for any queries regarding your employment offer.',
     MARGIN, doc.y, { width: BW });
-
-
-
-
     newPage();
-
-
     doc.font('Helvetica-Bold').fontSize(13).fillColor(COL_NAVY).
     text('COMPENSATION', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.4);
@@ -660,15 +516,10 @@ function generateOfferLetterPdf(opts) {
       'termination of employment.',
       MARGIN, doc.y, { width: BW, lineGap: 2 }
     );
-
     doc.moveDown(1.0);
-
-
     doc.font('Helvetica-Bold').fontSize(13).fillColor(COL_NAVY).
     text('ANNEXURE II', MARGIN, doc.y, { width: BW });
     doc.moveDown(0.5);
-
-
     const T_X = MARGIN;
     const T_W = BW;
     const T_C1 = T_X + 280;
@@ -677,16 +528,12 @@ function generateOfferLetterPdf(opts) {
     const T_W1 = 105;
     const T_W2 = T_X + T_W - T_C2 - 2;
     const T_RH = 24;
-
-
     ensureSpace(T_RH + 6);
     const ttY = doc.y;
     doc.rect(T_X, ttY, T_W, T_RH).fillColor(COL_NAVY).fill();
     doc.font('Helvetica-Bold').fontSize(11).fillColor(COL_WHITE).
     text('CTC STRUCTURE', T_X, ttY + 6, { width: T_W, align: 'center' });
     doc.y = ttY + T_RH + 2;
-
-
     ensureSpace(T_RH + 4);
     const thY = doc.y;
     doc.rect(T_X, thY, T_W, T_RH).fillColor('#2c5282').fill();
@@ -697,7 +544,6 @@ function generateOfferLetterPdf(opts) {
     doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COL_WHITE).
     text('YEARLY', T_C2, thY + 7, { width: T_W2, align: 'right', lineBreak: false });
     doc.y = thY + T_RH + 2;
-
     function ctcRow(label, annualVal, isBold, isSub, blank) {
       const yearly = blank ? 0 : Number(annualVal) || 0;
       const monthly = mo(yearly);
@@ -706,10 +552,8 @@ function generateOfferLetterPdf(opts) {
       const bgColor = isBold ? '#dbeafe' : isSub ? '#f0f4ff' : COL_WHITE;
       doc.rect(T_X, ry, T_W, T_RH).fillColor(bgColor).fill();
       doc.rect(T_X, ry, T_W, T_RH).strokeColor('#c8d4e8').lineWidth(0.5).stroke();
-
       const fn = isBold ? 'Helvetica-Bold' : 'Helvetica';
       const fc = isBold ? COL_NAVY : COL_DARK;
-
       doc.font(fn).fontSize(10).fillColor(fc).
       text(label, T_X + 8, ry + 6, { width: T_W0, lineBreak: false });
       if (!blank) {
@@ -720,8 +564,6 @@ function generateOfferLetterPdf(opts) {
       }
       doc.y = ry + T_RH + 2;
     }
-
-
     ctcRow('Basic', basic, false, false);
     ctcRow('HRA', hra, false, false);
     ctcRow('Telephone Allowance', telephoneAllowance, false, false);
@@ -736,12 +578,8 @@ function generateOfferLetterPdf(opts) {
     ctcRow('Total Employer Contribution',
     pfContribution + statutoryBonus + gratuity + esi, true, false);
     ctcRow('CTC', ctcNum, true, false);
-
-
     drawHRBlock();
-
     doc.end();
   });
 }
-
 module.exports = { generateOfferLetterPdf };

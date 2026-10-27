@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { menuPermissionsApi } from "../api/settings.api";
-
 const CACHE_KEY = "hrms_menu_permissions";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
 /**
  * Map the stored user's roleName to the key used in MenuPermissionBuilder.
  * The auth service returns `roleName` from the DB (e.g. "Admin", "HR Manager", "Finance", etc.)
@@ -19,7 +17,6 @@ function resolveRoleName(user) {
   if (n === 4 || n === 5) return "Recruiter";
   return "Employee";
 }
-
 function isSuperAdmin(user) {
   // Super Admin = role 1 AND roleName is "Admin" (or no roleName — legacy super admin)
   const n = Number(user?.role);
@@ -27,11 +24,9 @@ function isSuperAdmin(user) {
   const rn = user?.roleName?.toLowerCase?.() || "admin";
   return rn === "admin" || rn === "super admin" || rn === "super_admin";
 }
-
 export function useMenuPermissions(user) {
   const [perms, setPerms] = useState(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     // Try cache first
     try {
@@ -42,7 +37,6 @@ export function useMenuPermissions(user) {
         return;
       }
     } catch {}
-
     menuPermissionsApi.get()
       .then(data => {
         setPerms(data || {});
@@ -53,7 +47,6 @@ export function useMenuPermissions(user) {
       .catch(() => setPerms({}))
       .finally(() => setLoading(false));
   }, []);
-
   /**
    * isAllowed(menuId) → boolean
    * - Super Admin → always true
@@ -61,18 +54,14 @@ export function useMenuPermissions(user) {
    */
   const isAllowed = (menuId) => {
     if (isSuperAdmin(user)) return true;
-
     const roleName = resolveRoleName(user);
     if (!perms || !perms[roleName]) return true; // no config saved yet = open access
-
     const rolePerms = perms[roleName];
     if (typeof rolePerms[menuId] === "boolean") return rolePerms[menuId];
     return true; // unset item = allowed
   };
-
   return { isAllowed, loading, isSuperAdmin: isSuperAdmin(user) };
 }
-
 /** Call this after saving MenuPermissionBuilder to force a fresh fetch next time */
 export function bustMenuPermissionsCache() {
   try { localStorage.removeItem(CACHE_KEY); } catch {}

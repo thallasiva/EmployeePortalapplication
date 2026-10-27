@@ -1,6 +1,5 @@
 import { CalendarDays, ChartColumn, TrendingUp, Trophy } from "lucide-react";
 export const BRAND = "#f18200";
-
 export const CYCLE_TYPE_MAP = {
   monthly:    { label: "Monthly",     color: "#7c3aed", bg: "#f3e8ff", icon: <CalendarDays size={13} /> },
   quarterly:  { label: "Quarterly",   color: "#0369a1", bg: "#e0f2fe", icon: <ChartColumn size={13} /> },

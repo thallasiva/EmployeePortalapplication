@@ -2,15 +2,14 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   AlertCircle, AlertTriangle, CheckCircle2, Clock,
-  Code2, Loader2, Mic, MicOff, Phone,
-  VideoOff, Eye, EyeOff, WifiOff, Save, SkipForward, Timer,
+  ArrowRight, Building2, Bot, Code2, ListChecks, MessageCircle,
+  Loader2, Mic, MicOff, Phone, VideoOff, Eye, EyeOff, WifiOff, Save, SkipForward, Timer,
 } from "lucide-react";
 import {
   answerAIInterview, completeAIInterview,
   getAIInterviewSession, sendAIInterviewOtp, verifyAIInterviewOtp, startAIInterview,
   logAIInterviewProctoring, saveAIInterviewDraft,
 } from "../../api/recruitment.api";
-
 /* ─── Theme ──────────────────────────────────────────────────────────────── */
 const C = {
   bg:"#0d0f1a", card:"#161929", panel:"#111422", border:"#252840",
@@ -19,10 +18,8 @@ const C = {
 };
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const formatTime  = s => `${String(Math.floor(Math.max(s,0)/60)).padStart(2,"0")}:${String(Math.max(s,0)%60).padStart(2,"0")}`;
-
 // Default time limits per question type (seconds). Backend question.timeLimit overrides.
 const TYPE_TIME = { MCQ: 120, TEXT: 120, SCENARIO: 300, SYSTEM_DESIGN: 900, CODING: 600, CODE: 600, DEFAULT: 120 };
-
 function speak(text, onEnd) {
   if (!window.speechSynthesis || !text) { onEnd?.(); return; }
   window.speechSynthesis.cancel();
@@ -31,7 +28,6 @@ function speak(text, onEnd) {
   u.onend = onEnd; u.onerror = onEnd;
   window.speechSynthesis.speak(u);
 }
-
 /* ─── Global CSS ─────────────────────────────────────────────────────────── */
 const STYLE = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
@@ -59,7 +55,6 @@ const STYLE = `
 .btn-ghost{background:none;border:1px solid #252840;border-radius:10px;color:#8892a4;cursor:pointer;padding:8px 14px;font-size:13px;display:flex;align-items:center;gap:6px;transition:border-color .2s,color .2s;}
 .btn-ghost:hover{border-color:#6c63ff;color:#6c63ff;}
 `;
-
 /* ─── AI Avatar ──────────────────────────────────────────────────────────── */
 function AiAvatar({ size=80, speaking=false }) {
   const r = size/2;
@@ -82,14 +77,12 @@ function AiAvatar({ size=80, speaking=false }) {
     </div>
   );
 }
-
 /* ─── Question timer bar (for coding questions) ──────────────────────────── */
 function QuestionTimerBar({ seconds, total, label = "Question time limit" }) {
   const pct     = Math.max(0, (seconds / total) * 100);
   const isWarn  = seconds <= 60;
   const isUrgent= seconds <= 20;
   const color   = isUrgent ? C.danger : isWarn ? C.warn : C.teal;
-
   return (
     <div style={{background:C.panel,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
@@ -104,14 +97,14 @@ function QuestionTimerBar({ seconds, total, label = "Question time limit" }) {
         <div style={{width:`${pct}%`,height:"100%",background:`linear-gradient(90deg,${color},${color}99)`,borderRadius:3,transition:"width 1s linear,background .5s"}}/>
       </div>
       {isWarn && (
-        <p style={{margin:"6px 0 0",fontSize:11,color,fontWeight:600}}>
-          {isUrgent ? (label.toLowerCase().includes("coding") ? "⚠ Time almost up — your code will be submitted soon!" : "⚠ Time almost up — this question will be skipped soon.") : "Less than 1 minute remaining for this question."}
+        <p style={{display:"flex",alignItems:"center",gap:5,margin:"6px 0 0",fontSize:11,color,fontWeight:600}}>
+          {isUrgent && <AlertTriangle size={13} aria-hidden="true" />}
+          {isUrgent ? (label.toLowerCase().includes("coding") ? "Time almost up — your code will be submitted soon!" : "Time almost up — this question will be skipped soon.") : "Less than 1 minute remaining for this question."}
         </p>
       )}
     </div>
   );
 }
-
 /* ─── Skip countdown ring (for MCQ / text questions) ────────────────────── */
 function SkipRing({ seconds, total, onSkip }) {
   const r = 20, circ = 2 * Math.PI * r;
@@ -133,27 +126,22 @@ function SkipRing({ seconds, total, onSkip }) {
     </div>
   );
 }
-
 /* ─── Webcam + canvas face detection ─────────────────────────────────────── */
 function CandidateVideo({ stream, name, onFaceStatus }) {
   const videoRef  = useRef(null);
   const canvasRef = useRef(null);
   const [faceWarn,   setFaceWarn]   = useState(false);
   const [camBlocked, setCamBlocked] = useState(false);
-
   useEffect(() => {
     if (videoRef.current && stream) videoRef.current.srcObject = stream;
   }, [stream]);
-
   useEffect(() => {
     if (!stream) return;
     const canvas = canvasRef.current;
     const ctx    = canvas.getContext("2d");
     const video  = videoRef.current;
-
     async function detectFace() {
       if (!video || video.readyState < 2) return;
-
       if (typeof window.FaceDetector === "function") {
         try {
           const faces = await new window.FaceDetector({ fastMode: true, maxDetectedFaces: 2 }).detect(video);
@@ -166,7 +154,6 @@ function CandidateVideo({ stream, name, onFaceStatus }) {
           // Fall through to the compatibility detector below.
         }
       }
-
       ctx.drawImage(video, 0, 0, 160, 120);
       const { data } = ctx.getImageData(30, 10, 100, 100);
       let skinPx = 0;
@@ -185,12 +172,10 @@ function CandidateVideo({ stream, name, onFaceStatus }) {
       setFaceWarn(noFace && !tooBlack);
       onFaceStatus?.({ noFace, camBlocked: tooBlack });
     }
-
     detectFace();
     const id = setInterval(detectFace, 2500);
     return () => clearInterval(id);
   }, [stream, onFaceStatus]);
-
   return (
     <div style={{position:"relative",background:"#000",width:"100%",height:"100%"}}>
       <canvas ref={canvasRef} width="160" height="120" style={{display:"none"}}/>
@@ -221,7 +206,6 @@ function CandidateVideo({ stream, name, onFaceStatus }) {
     </div>
   );
 }
-
 /* ─── Tab-switch modal ───────────────────────────────────────────────────── */
 function TabWarningModal({ count, maxWarnings, onDismiss }) {
   const isLast = count >= maxWarnings;
@@ -243,7 +227,6 @@ function TabWarningModal({ count, maxWarnings, onDismiss }) {
     </div>
   );
 }
-
 /* ─── Progress bar ───────────────────────────────────────────────────────── */
 function ProgressBar({ current, total }) {
   if (!total) return null;
@@ -258,7 +241,6 @@ function ProgressBar({ current, total }) {
     </div>
   );
 }
-
 /* ─── MCQ ────────────────────────────────────────────────────────────────── */
 function MCQOptions({ options, selected, onChange }) {
   return (
@@ -276,7 +258,6 @@ function MCQOptions({ options, selected, onChange }) {
     </div>
   );
 }
-
 /* ─── Code editor ────────────────────────────────────────────────────────── */
 function CodeEditor({ value, onChange, language = "javascript" }) {
   return (
@@ -289,12 +270,10 @@ function CodeEditor({ value, onChange, language = "javascript" }) {
     </div>
   );
 }
-
 /* ─── Interview Room ─────────────────────────────────────────────────────── */
 function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   onAnswer, onFinish, aiSpeaking, violations, maxViolations,
   tabWarning, onDismissWarning, offline }) {
-
   const [textAnswer, setTextAnswer] = useState("");
   const [mcqAnswer,  setMcqAnswer]  = useState("");
   const [codeAnswer, setCodeAnswer] = useState("// Write your code here\n");
@@ -303,21 +282,18 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   const [faceStatus, setFaceStatus] = useState({});
   const [draftSaved, setDraftSaved] = useState(false);
   const [qSecs,      setQSecs]      = useState(0);   // per-question countdown
-
   const recognitionRef = useRef(null);
   const answerRef      = useRef("");
   const draftTimer     = useRef(null);
   const qTimer         = useRef(null);
   const skippedRef     = useRef(false);
   const qTimeTotalRef  = useRef(0);
-
   const qType  = question?.type?.toUpperCase() || "TEXT";
   const isMCQ  = qType === "MCQ" || (Array.isArray(question?.options) && question.options.length);
   const isCode = qType === "CODING" || qType === "CODE";
   const qNum   = question?.questionNumber || 1;
   const qTotal = sessionInfo?.totalQuestions || null;
   const qId    = String(question?.id || question?.questionNumber || qNum);
-
   // Per-question time limit: use question.timeLimit if set, else type default
   const getQTime = () => {
     if (question?.timeLimit && Number(question.timeLimit) > 0) return Number(question.timeLimit);
@@ -327,19 +303,16 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
     if (isMCQ)  return TYPE_TIME.MCQ;
     return TYPE_TIME.TEXT;
   };
-
   // ── Reset + start countdown on each new question ────────────────────────
   useEffect(() => {
     setTextAnswer(""); setMcqAnswer(""); setCodeAnswer("// Write your code here\n");
     setInterim(""); setDraftSaved(false);
     skippedRef.current = false;
     answerRef.current  = "";
-
     const limit = getQTime();
     qTimeTotalRef.current = limit;
     setQSecs(limit);
     clearInterval(qTimer.current);
-
     qTimer.current = setInterval(() => {
       setQSecs(s => {
         if (s <= 1) {
@@ -357,15 +330,12 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
         return s - 1;
       });
     }, 1000);
-
     return () => clearInterval(qTimer.current);
   }, [qId]); // eslint-disable-line
-
   // Keep a ref of codeAnswer for use inside the timer callback
   const codeAnswerRef = useRef(codeAnswer);
   useEffect(() => { codeAnswerRef.current = codeAnswer; }, [codeAnswer]);
   useEffect(() => { answerRef.current = textAnswer; }, [textAnswer]);
-
   function scheduleDraft(val) {
     clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
@@ -373,10 +343,8 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
       catch (_) {}
     }, 2000);
   }
-
   function getAnswer()  { if (isMCQ) return mcqAnswer; if (isCode) return codeAnswer; return textAnswer; }
   function canSubmit()  { if (isMCQ) return Boolean(mcqAnswer); if (isCode) return codeAnswer.trim().length > 20; return textAnswer.trim().length > 0; }
-
   function handleSubmit() {
     if (!canSubmit()) return;
     stopListening();
@@ -384,14 +352,12 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
     clearInterval(qTimer.current);
     onAnswer(getAnswer(), qId);
   }
-
   function handleManualSkip() {
     skippedRef.current = true;
     clearInterval(qTimer.current);
     stopListening();
     onAnswer("(skipped by candidate)", qId);
   }
-
   function startListening() {
     if (!Recognition || listening) return;
     window.speechSynthesis?.cancel();
@@ -414,24 +380,19 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
     rec.onend   = () => { setListening(false); setInterim(""); };
     recognitionRef.current = rec; rec.start(); setListening(true);
   }
-
   function stopListening() {
     try { recognitionRef.current?.stop(); } catch (_) {}
     recognitionRef.current = null; setListening(false); setInterim("");
   }
-
   const timeColor = remaining < 60 ? C.danger : remaining < 180 ? C.warn : C.muted;
-
   return (
     <>
       {tabWarning && <TabWarningModal count={violations} maxWarnings={maxViolations} onDismiss={onDismissWarning}/>}
-
       <div style={{height:"100vh",display:"flex",flexDirection:"column",background:C.bg,fontFamily:"'Inter',sans-serif",color:C.text,overflow:"hidden"}}>
-
         {/* ── Top banner ── */}
         <div className="slide-down" style={{background:C.card,borderBottom:`1px solid ${C.border}`,padding:"14px 24px",display:"flex",alignItems:"flex-start",gap:12,minHeight:64}}>
           <div style={{background:`${C.accent}22`,border:`1px solid ${C.accent}44`,borderRadius:8,padding:"4px 10px",fontSize:12,fontWeight:800,color:C.accent,flexShrink:0,marginTop:2}}>
-            {isCode ? "💻 CODE" : isMCQ ? "📋 MCQ" : "🎙 Q"}{qNum}
+            {isCode ? <><Code2 size={13} aria-hidden="true" /> CODE</> : isMCQ ? <><ListChecks size={13} aria-hidden="true" /> MCQ</> : <><MessageCircle size={13} aria-hidden="true" /> Q</>}{qNum}
           </div>
           <p style={{margin:0,fontSize:15,lineHeight:1.55,color:aiSpeaking?C.muted:C.text,fontStyle:aiSpeaking?"italic":"normal",flex:1}}>
             {aiSpeaking ? "Avya is speaking…" : question?.question}
@@ -441,10 +402,8 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
             {offline && <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:C.danger,fontWeight:700}}><WifiOff size={10}/>Offline</div>}
           </div>
         </div>
-
         {/* ── Main split ── */}
         <div style={{flex:1,display:"flex",overflow:"hidden"}}>
-
           {/* AI panel */}
           <div style={{flex:"0 0 42%",background:C.panel,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",borderRight:`1px solid ${C.border}`}}>
             <AiAvatar size={110} speaking={aiSpeaking}/>
@@ -452,7 +411,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
             <div style={{position:"absolute",bottom:16,left:16,background:"rgba(0,0,0,.55)",borderRadius:6,padding:"4px 10px",fontSize:13,fontWeight:600}}>Avya · AI Interviewer</div>
             {violations > 0 && (
               <div style={{position:"absolute",top:12,right:12,background:`${C.warn}22`,border:`1px solid ${C.warn}`,borderRadius:8,padding:"4px 10px",fontSize:11,fontWeight:700,color:C.warn}}>
-                ⚠ {violations}/{maxViolations} tab switch{violations > 1?"es":""}
+                <AlertTriangle size={12} aria-hidden="true" /> {violations}/{maxViolations} tab switch{violations > 1?"es":""}
               </div>
             )}
             {(faceStatus.noFace || faceStatus.camBlocked) && !aiSpeaking && (
@@ -461,14 +420,12 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
               </div>
             )}
           </div>
-
           {/* Candidate side */}
           <div style={{flex:"0 0 58%",display:"flex",flexDirection:"column",overflow:"hidden"}}>
             {/* Webcam */}
             <div style={{flex:"0 0 42%",position:"relative"}}>
               <CandidateVideo stream={stream} name={sessionInfo?.candidateName} onFaceStatus={setFaceStatus}/>
             </div>
-
             {/* Answer area */}
             <div style={{flex:1,background:C.card,borderTop:`1px solid ${C.border}`,padding:"10px 14px",overflow:"auto"}}>
               {!isCode && <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current || TYPE_TIME.TEXT} label="Answer time limit — next question starts automatically"/>}
@@ -493,7 +450,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
                       style={{background:listening?C.danger:C.accent,border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                       {listening?<MicOff size={16} color="#fff"/>:<Mic size={16} color="#fff"/>}
                     </button>
-                    {listening && <span style={{color:C.accent,fontSize:12,fontWeight:600}}>🔴 Listening…</span>}
+                    {listening && <span style={{display:"flex",alignItems:"center",gap:4,color:C.accent,fontSize:12,fontWeight:600}}><Mic size={12} aria-hidden="true" />Listening…</span>}
                     {draftSaved && <span style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:C.success,fontWeight:600}}><Save size={10}/>Saved</span>}
                   </div>
                 </div>
@@ -501,7 +458,6 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
             </div>
           </div>
         </div>
-
         {/* ── Bottom bar ── */}
         <div style={{background:C.panel,borderTop:`1px solid ${C.border}`,padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
           {/* Session timer */}
@@ -511,7 +467,6 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
             <span style={{color:C.border}}>|</span>
             <span style={{color:C.muted,fontSize:13}}>{sessionInfo?.jobTitle||"AI Interview"}</span>
           </div>
-
           {/* Skip ring (MCQ / text only) + Submit */}
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             {!isCode && !canSubmit() && qSecs > 0 && (
@@ -521,10 +476,9 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
               </div>
             )}
             <button onClick={handleSubmit} disabled={!canSubmit()} className="btn-primary" style={{padding:"10px 28px",fontSize:14}}>
-              {isCode?"Submit Code →":"Save & Next →"}
+              {isCode ? "Submit Code" : "Save & Next"} <ArrowRight size={14} aria-hidden="true" />
             </button>
           </div>
-
           {/* Right controls */}
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <button className="btn-ghost" style={{borderColor:faceStatus.noFace?C.warn:"",color:faceStatus.noFace?C.warn:""}}>
@@ -543,7 +497,6 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
     </>
   );
 }
-
 /* ─── Join screen ────────────────────────────────────────────────────────── */
 function JoinScreen({ session, error, onJoin }) {
   const mins = Math.round((session?.durationSeconds||0)/60);
@@ -553,7 +506,7 @@ function JoinScreen({ session, error, onJoin }) {
         <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>AI Interview</div>
         <h1 style={{fontSize:26,fontWeight:800,color:C.text,margin:"0 0 10px"}}>{session?.jobTitle||"Interview"}</h1>
         <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,color:C.muted,fontSize:13,marginBottom:30}}>
-          <span>🏢 {session?.company||"HRMS"}</span>
+          <span style={{display:"flex",alignItems:"center",gap:4}}><Building2 size={14} aria-hidden="true" />{session?.company||"HRMS"}</span>
           <span style={{color:C.border}}>•</span>
           <span><Clock size={12} style={{verticalAlign:"middle",marginRight:3}}/>{mins} min{mins!==1?"s":""}</span>
         </div>
@@ -569,7 +522,6 @@ function JoinScreen({ session, error, onJoin }) {
     </div>
   );
 }
-
 /* ─── OTP screen ─────────────────────────────────────────────────────────── */
 function OtpScreen({ email, token, devCode, onVerify }) {
   const [otp,setOtp]      = useState("");
@@ -577,11 +529,9 @@ function OtpScreen({ email, token, devCode, onVerify }) {
   const [err,setErr]      = useState("");
   const [resent,setResent]= useState(false);
   const [devHint,setDevHint] = useState(devCode || "");
-
   // Dev-mode convenience: when SMTP is not configured the backend returns the
   // code so local testing isn't blocked. Prefill it so it can be verified in one click.
   useEffect(()=>{ if (devCode) { setDevHint(devCode); setOtp(String(devCode).slice(0,6)); } },[devCode]);
-
   async function verify() {
     if (otp.length !== 6) { setErr("Enter the 6-digit code"); return; }
     setBusy(true);
@@ -592,7 +542,7 @@ function OtpScreen({ email, token, devCode, onVerify }) {
   return (
     <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#1a1060 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
       <div className="fade-in" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:22,padding:"40px 36px",width:340,textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,.55)"}}>
-        <div style={{width:56,height:56,borderRadius:16,background:`linear-gradient(135deg,${C.accent},#5b52d4)`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",fontSize:26}}>🤖</div>
+        <div style={{width:56,height:56,borderRadius:16,background:`linear-gradient(135deg,${C.accent},#5b52d4)`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><Bot size={28} color="#fff" aria-hidden="true" /></div>
         <h2 style={{color:C.text,fontSize:22,fontWeight:800,margin:"0 0 8px"}}>Verify your identity</h2>
         <p style={{color:C.muted,fontSize:13,margin:"0 0 24px"}}>6-digit OTP sent to<br/><strong style={{color:C.text}}>{email||"your email"}</strong></p>
         <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:18}}>
@@ -606,12 +556,11 @@ function OtpScreen({ email, token, devCode, onVerify }) {
         {devHint && <p style={{color:C.warn,fontSize:12,margin:"0 0 10px",lineHeight:1.4}}>Dev mode (email not configured): code <strong style={{letterSpacing:2}}>{devHint}</strong> — set SMTP in .env for real delivery.</p>}
         {err && <p style={{color:C.danger,fontSize:12,margin:"0 0 10px"}}>{err}</p>}
         <button className="btn-primary" onClick={verify} disabled={busy} style={{width:"100%",padding:"13px 0",fontSize:15}}>{busy?"Verifying…":"Verify OTP"}</button>
-        <button onClick={async()=>{ if (resent || busy) return; try { const r = await sendAIInterviewOtp(token); if (r?.devMode && r?.devCode) { setDevHint(r.devCode); setOtp(String(r.devCode).slice(0,6)); } else { setOtp(""); } setResent(true); setErr(""); setTimeout(()=>setResent(false),30000); } catch (error) { setErr(error?.response?.data?.message || "Could not resend code"); } }} style={{background:"none",border:"none",color:resent?C.muted:C.accent,cursor:"pointer",marginTop:14,fontSize:13,fontWeight:600}}>{resent?"OTP resent ✓":"Resend OTP"}</button>
+        <button onClick={async()=>{ if (resent || busy) return; try { const r = await sendAIInterviewOtp(token); if (r?.devMode && r?.devCode) { setDevHint(r.devCode); setOtp(String(r.devCode).slice(0,6)); } else { setOtp(""); } setResent(true); setErr(""); setTimeout(()=>setResent(false),30000); } catch (error) { setErr(error?.response?.data?.message || "Could not resend code"); } }} style={{background:"none",border:"none",color:resent?C.muted:C.accent,cursor:"pointer",marginTop:14,fontSize:13,fontWeight:600,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:4}}>{resent?<><CheckCircle2 size={13} aria-hidden="true" />OTP resent</>:"Resend OTP"}</button>
       </div>
     </div>
   );
 }
-
 /* ─── Avya intro ─────────────────────────────────────────────────────────── */
 function AiSpeakingIntro({ onSkip }) {
   useEffect(()=>{
@@ -625,11 +574,10 @@ function AiSpeakingIntro({ onSkip }) {
       <AiAvatar size={160} speaking={true}/>
       <p style={{color:C.text,fontSize:20,fontWeight:700,marginTop:40}}>Avya</p>
       <p style={{color:C.muted,fontSize:14}}>AI Interviewer · HRMS</p>
-      <button onClick={onSkip} style={{position:"absolute",bottom:44,background:"none",border:`1px solid ${C.border}`,borderRadius:20,color:C.muted,cursor:"pointer",fontSize:14,fontWeight:600,padding:"8px 20px"}}>Skip →</button>
+      <button onClick={onSkip} style={{position:"absolute",bottom:44,background:"none",border:`1px solid ${C.border}`,borderRadius:20,color:C.muted,cursor:"pointer",fontSize:14,fontWeight:600,padding:"8px 20px",display:"inline-flex",alignItems:"center",gap:6}}>Skip <ArrowRight size={14} aria-hidden="true" /></button>
     </div>
   );
 }
-
 /* ─── Main ───────────────────────────────────────────────────────────────── */
 export default function TakeInterview() {
   const { token } = useParams();
@@ -646,21 +594,17 @@ export default function TakeInterview() {
   const [offline,   setOffline]   = useState(!navigator.onLine);
   const MAX_VIOLATIONS = 3;
   const handleFinishRef = useRef(null);
-
   useEffect(()=>{ const el=document.createElement("style"); el.textContent=STYLE; document.head.appendChild(el); return ()=>el.remove(); },[]);
-
   useEffect(()=>{
     const up=()=>setOffline(false), down=()=>setOffline(true);
     window.addEventListener("online",up); window.addEventListener("offline",down);
     return ()=>{ window.removeEventListener("online",up); window.removeEventListener("offline",down); };
   },[]);
-
   useEffect(()=>{
     getAIInterviewSession(token)
       .then(async data=>{ setSession(data); setRemaining(data.remainingSeconds||data.durationSeconds||0); const otpRes = await sendAIInterviewOtp(token); if (otpRes?.devMode && otpRes?.devCode) setDevCode(otpRes.devCode); setScreen("otp"); })
       .catch(err=>{ setError(err?.response?.data?.message||"This interview link is invalid or expired."); setScreen("error"); });
   },[token]);
-
   // Tab-switch proctoring
   useEffect(()=>{
     if(screen!=="interview") return;
@@ -679,7 +623,6 @@ export default function TakeInterview() {
     document.addEventListener("visibilitychange",handler);
     return ()=>document.removeEventListener("visibilitychange",handler);
   },[screen,token]); // eslint-disable-line
-
   // Session countdown from expiresAt
   useEffect(()=>{
     if(!session?.expiresAt||screen!=="interview") return;
@@ -690,9 +633,7 @@ export default function TakeInterview() {
     };
     tick(); const id=setInterval(tick,1000); return ()=>clearInterval(id);
   },[session?.expiresAt,screen,token]); // eslint-disable-line
-
   function endStream(){ stream?.getTracks().forEach(t=>t.stop()); setStream(null); window.speechSynthesis?.cancel(); }
-
   async function requestCamera(){
     if(!navigator.mediaDevices?.getUserMedia){
       setError("Camera access is not supported in this browser.");
@@ -707,7 +648,6 @@ export default function TakeInterview() {
       return false;
     }
   }
-
   function setNextQuestion(data){
     setQuestion({...data.question,questionNumber:data.questionNumber});
     setRemaining(data.remainingSeconds);
@@ -716,27 +656,22 @@ export default function TakeInterview() {
     setAiSpeaking(true);
     speak(data.question?.question,()=>setAiSpeaking(false));
   }
-
   const handleJoin        = async ()=>{
     const cameraReady = await requestCamera();
     if (cameraReady) setScreen("intro");
   };
-
   const handleIntroDone = useCallback(()=>{
     setScreen("working");
     startAIInterview(token)
       .then(data=>setNextQuestion(data))
       .catch(err=>{ setError(err?.response?.data?.message||"Unable to start interview."); setScreen("error"); });
   },[token]); // eslint-disable-line
-
   const handleFinish = useCallback(async()=>{
     endStream(); setScreen("working");
     try{ await completeAIInterview(token); }catch(_){}
     setScreen("done");
   },[token,stream]); // eslint-disable-line
-
   useEffect(()=>{ handleFinishRef.current=handleFinish; },[handleFinish]);
-
   async function handleAnswer(answer,questionId){
     setScreen("working");
     try{
@@ -748,14 +683,12 @@ export default function TakeInterview() {
       setError(err?.response?.data?.message||"Answer could not be saved."); setScreen("error");
     }
   }
-
   if(screen==="loading"||screen==="working") return (
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif",color:C.text}}>
       <Loader2 size={46} color={C.accent} style={{animation:"spin 1s linear infinite"}}/>
       <p style={{marginTop:20,color:C.muted,fontSize:15}}>{screen==="working"?"Avya is reviewing your answer…":"Loading interview…"}</p>
     </div>
   );
-
   if(screen==="error") return (
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif",color:C.text,textAlign:"center",padding:20}}>
       <AlertCircle size={60} color={C.danger}/>
@@ -763,21 +696,18 @@ export default function TakeInterview() {
       <p style={{color:C.muted,maxWidth:340}}>{error}</p>
     </div>
   );
-
   if(screen==="done") return (
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif",color:C.text,textAlign:"center",padding:20}}>
       <CheckCircle2 size={80} color={C.success}/>
       <h1 style={{fontSize:30,marginTop:20}}>Interview Complete!</h1>
       <p style={{color:C.muted,maxWidth:400,fontSize:15,lineHeight:1.6}}>Thank you for your time. Your responses have been securely recorded and will be reviewed by the recruitment team.</p>
-      {violations>0 && <p style={{color:C.warn,fontSize:13,marginTop:8}}>⚠ {violations} tab-switch violation{violations>1?"s":""} were recorded.</p>}
+      {violations>0 && <p style={{display:"flex",alignItems:"center",gap:5,color:C.warn,fontSize:13,marginTop:8}}><AlertTriangle size={14} aria-hidden="true" />{violations} tab-switch violation{violations>1?"s":""} were recorded.</p>}
       <p style={{color:C.muted,fontSize:13,marginTop:8}}>You may now close this window.</p>
     </div>
   );
-
   if(screen==="join")  return <JoinScreen session={session} error={error} onJoin={handleJoin}/>;
   if(screen==="otp")   return <OtpScreen  email={session?.candidateEmail} token={token} devCode={devCode} onVerify={()=>setScreen("join")}/>;
   if(screen==="intro") return <AiSpeakingIntro onSkip={handleIntroDone}/>;
-
   return (
     <InterviewRoom
       token={token} question={question} sessionInfo={session}

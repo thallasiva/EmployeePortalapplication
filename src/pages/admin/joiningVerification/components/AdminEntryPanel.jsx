@@ -1,7 +1,6 @@
 import React from "react";
 import { AdminCombo, AdminSelect } from "./SharedUI";
 import { DESIGNATION_LIST, DEPARTMENT_LIST } from "../constants";
-
 const AdminEntryPanel = React.memo(function AdminEntryPanel({
   detail,
   adminFields,
@@ -14,13 +13,11 @@ const AdminEntryPanel = React.memo(function AdminEntryPanel({
     detail.formality_status
   );
   if (!show) return null;
-
   const hasSaved =
     detail.admin_employee_id ||
     detail.admin_designation ||
     detail.admin_reporting_to ||
     detail.admin_department;
-
   return (
     <div
       className="rounded-xl border-2 p-4 mb-4"
@@ -37,7 +34,6 @@ const AdminEntryPanel = React.memo(function AdminEntryPanel({
           Admin Entry — Visible to HR Only
         </span>
       </div>
-
       {hasSaved && (
         <div className="mb-3 p-3 rounded-lg border border-amber-200 bg-white">
           <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-2">
@@ -71,7 +67,6 @@ const AdminEntryPanel = React.memo(function AdminEntryPanel({
           </div>
         </div>
       )}
-
       <div className="grid grid-cols-2 gap-3">
         <div className="mb-2">
           <label className="block text-[11px] font-semibold text-amber-800 uppercase tracking-wide mb-0.5">
@@ -127,5 +122,4 @@ const AdminEntryPanel = React.memo(function AdminEntryPanel({
     </div>
   );
 });
-
 export default AdminEntryPanel;

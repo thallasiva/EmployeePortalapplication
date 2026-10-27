@@ -2,12 +2,10 @@ const { callProcedure } = require("../../config/db");
 const BaseService = require("../base.service");
 const ApiError = require("../../utils/ApiError");
 const notify = require("../mailNotify.service");
-
 class JobRequestService extends BaseService {
   constructor() {
     super("rec_job_requests", "job_req_id");
   }
-
   async list({ assignmentStatus, jobStatus, search, roleId, recruiterEmpId, limit = 20, offset = 0 } = {}) {
     const results = await callProcedure(
       "sp_rec_list_job_requests(?, ?, ?, ?, ?, ?, ?)",
@@ -15,14 +13,12 @@ class JobRequestService extends BaseService {
     );
     return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getById(jobReqId) {
     const results = await callProcedure("sp_rec_get_job_request(?)", [jobReqId]);
     const row = (results[0] ?? [])[0];
     if (!row) throw new ApiError(404, "Job request not found");
     return row;
   }
-
   async create(data, createdBy, ip) {
     const results = await callProcedure(
       "sp_rec_create_job_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @job_req_id, @job_req_code)",
@@ -47,11 +43,9 @@ class JobRequestService extends BaseService {
       data.description,
       createdBy,
       ip]
-
     );
     return (results[0] ?? [])[0];
   }
-
   async update(jobReqId, data, updatedBy, ip) {
     const results = await callProcedure(
       "sp_rec_update_job_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -77,26 +71,20 @@ class JobRequestService extends BaseService {
       data.description || null,
       updatedBy,
       ip]
-
     );
     return (results[0] ?? [])[0];
   }
-
-
   async _getRecruiterTL(recruiterId) {
     if (!recruiterId) return {};
     const results = await callProcedure('sp_rec_get_recruiter_team_lead(?)', [recruiterId]);
     return (results[0] ?? [])[0] ?? {};
   }
-
   async assignRecruiters(jobReqId, recruiterIds, assignedBy, ip) {
     const results = await callProcedure(
       "sp_rec_assign_recruiters(?, ?, ?, ?)",
       [jobReqId, JSON.stringify(recruiterIds), assignedBy, ip]
     );
     const result = (results[0] ?? [])[0];
-
-
     if (Array.isArray(recruiterIds) && recruiterIds.length) {
       try {
         const job = await this.getById(jobReqId);
@@ -112,13 +100,9 @@ class JobRequestService extends BaseService {
           vacancies: job.vacancies || 1,
           skillSet: job.skill_set || job.skillSet || ''
         };
-
-
         notify.recruiterAssigned(
           recruiters.map((r) => ({ email: r.email, name: r.name, ...jobInfo }))
         );
-
-
         const tlSeen = new Set();
         for (const r of recruiters) {
           const tl = await this._getRecruiterTL(r.employee_id || r.recruiter_id || null);
@@ -138,7 +122,6 @@ class JobRequestService extends BaseService {
     }
     return result;
   }
-
   async delete(jobReqId, deletedBy, ip) {
     const results = await callProcedure(
       "sp_rec_delete_job_request(?, ?, ?)",
@@ -147,5 +130,4 @@ class JobRequestService extends BaseService {
     return (results[0] ?? [])[0];
   }
 }
-
 module.exports = new JobRequestService();

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Pencil, Trash2, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { pct, money, yn } from "../utils";
-
 const TemplateCard = React.memo(function TemplateCard({ t, onEdit, onDelete }) {
   const [open, setOpen] = useState(false);
   return (
@@ -39,7 +38,6 @@ const TemplateCard = React.memo(function TemplateCard({ t, onEdit, onDelete }) {
           </button>
         </div>
       </div>
-
       {open &&
       <div className="border-t border-gray-100 px-5 py-4">
           <table className="w-full text-xs text-gray-600">
@@ -70,5 +68,4 @@ const TemplateCard = React.memo(function TemplateCard({ t, onEdit, onDelete }) {
     </div>
   );
 });
-
 export default TemplateCard;

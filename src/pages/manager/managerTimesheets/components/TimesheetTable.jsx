@@ -2,7 +2,6 @@ import React from "react";
 import Pagination from "../../../../components/Pagination";
 import StatusBadge from "./StatusBadge";
 import { formatHours, formatDate } from "../utils";
-
 const TimesheetTable = React.memo(function TimesheetTable({
   loading,
   timesheets,
@@ -91,5 +90,4 @@ const TimesheetTable = React.memo(function TimesheetTable({
     </div>
   );
 });
-
 export default TimesheetTable;

@@ -2,7 +2,6 @@ import { memo } from "react";
 import { ChevronRight } from "lucide-react";
 import { BRAND, BRAND_LIGHT, BRAND_BORDER } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
-
 /**
  * Single topic row inside the CategoryView.
  * Single responsibility: render one topic card + fire onSelect.
@@ -10,7 +9,6 @@ import { cssClass } from "../../../../utils/classStyles";
 const TopicCard = memo(function TopicCard({ topic, isOdd, onSelect }) {
   const { Icon } = topic;
   const oddBg = isOdd ? "#f9fafb" : "#fff";
-
   return (
     <div
       onClick={() => onSelect(topic)}
@@ -38,5 +36,4 @@ const TopicCard = memo(function TopicCard({ topic, isOdd, onSelect }) {
     </div>
   );
 });
-
 export default TopicCard;

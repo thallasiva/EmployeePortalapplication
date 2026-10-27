@@ -1,61 +1,49 @@
 import axios from "axios";
-
 export const API_BASE_URL =
 process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-
 export function getAccessToken() {
   return localStorage.getItem("accessToken");
 }
 export function getRefreshToken() {
   return localStorage.getItem("refreshToken");
 }
-
 export function setAuthTokens({ accessToken, refreshToken } = {}) {
   if (accessToken) localStorage.setItem("accessToken", accessToken);
   if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
 }
-
 export function clearAuthSession() {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
 }
-
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
   withCredentials: true
 });
-
 // Attach Bearer token from localStorage on every request
 apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-
 let isRefreshing = false;
 let pendingRequests = [];
-
 const onRefreshed = (ok) => {
   pendingRequests.forEach((cb) => cb(ok));
   pendingRequests = [];
 };
-
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const { config, response } = error;
-
     if (!response) return Promise.reject(error);
-
     const isAuthEndpoint =
     config?.url?.includes("/auth/login") ||
     config?.url?.includes("/auth/refresh") ||
     config?.url?.includes("/auth/register") ||
     config?.url?.includes("/auth/mfa");
-
     if (response.status === 401 && !config._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -66,7 +54,6 @@ apiClient.interceptors.response.use(
           });
         });
       }
-
       isRefreshing = true;
       try {
         const refreshToken = getRefreshToken();
@@ -91,32 +78,23 @@ apiClient.interceptors.response.use(
         isRefreshing = false;
       }
     }
-
     return Promise.reject(error);
   }
 );
-
-
 export function unwrap(response) {
   return response?.data?.data;
 }
-
-
 export function unwrapList(response) {
   return {
     data: response?.data?.data ?? [],
     meta: response?.data?.meta
   };
 }
-
-
 export function getErrorMessage(error, fallback = "Something went wrong. Please try again.") {
   return (
     error?.response?.data?.message ||
     error?.response?.data?.errors?.[0]?.message ||
     error?.message ||
     fallback);
-
 }
-
 export default apiClient;

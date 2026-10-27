@@ -1,7 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-
 const Modal = React.memo(function Modal({ title, onClose, children, width = 480 }) {
   return (
     <div className={cssClass({ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" })}>
@@ -15,5 +14,4 @@ const Modal = React.memo(function Modal({ title, onClose, children, width = 480 
     </div>
   );
 });
-
 export default Modal;

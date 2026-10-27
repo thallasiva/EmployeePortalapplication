@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { cssClass } from "../../../../../utils/classStyles";
 import { QUICK_LINKS } from "../constants";
 import { ArrowRight } from "lucide-react";
-
 const QuickAccessCard = React.memo(function QuickAccessCard() {
   return (
     <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20 })}>
@@ -27,5 +26,4 @@ const QuickAccessCard = React.memo(function QuickAccessCard() {
     </div>
   );
 });
-
 export default QuickAccessCard;

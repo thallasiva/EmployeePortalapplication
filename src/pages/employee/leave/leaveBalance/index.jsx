@@ -7,17 +7,13 @@ import { useLeaveBalances } from "./hooks/useLeaveBalances";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import LeaveCard from "./components/LeaveCard";
 import SkeletonCard from "./components/SkeletonCard";
-
 const SKELETON_KEYS = [1, 2, 3, 4, 5, 6];
-
 const LeaveBalances = React.memo(function LeaveBalances() {
   const navigate = useNavigate();
   const { year, setYear, leaveData, loading } = useLeaveBalances();
   const [selectedLeave, setSelectedLeave] = useState(null);
-
   const handleViewDetails = useCallback((title) => setSelectedLeave(title), []);
   const handleBack = useCallback(() => setSelectedLeave(null), []);
-
   if (selectedLeave) {
     return (
       <div className="min-h-screen bg-[#ececec] p-6">
@@ -30,7 +26,6 @@ const LeaveBalances = React.memo(function LeaveBalances() {
       </div>
     );
   }
-
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 })}>
@@ -63,7 +58,6 @@ const LeaveBalances = React.memo(function LeaveBalances() {
           />
         </div>
       </div>
-
       {loading ? (
         <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))", gap: 14 })}>
           {SKELETON_KEYS.map((n) => <SkeletonCard key={n} />)}
@@ -89,5 +83,4 @@ const LeaveBalances = React.memo(function LeaveBalances() {
     </div>
   );
 });
-
 export default LeaveBalances;

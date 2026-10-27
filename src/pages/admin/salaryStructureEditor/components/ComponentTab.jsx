@@ -2,7 +2,6 @@ import React from "react";
 import { Plus, ArrowUp, ArrowDown, Copy } from "lucide-react";
 import { TAB_META } from "../../salary/salaryHelpers";
 import ComponentTable from "../../salary/ComponentTable";
-
 const ComponentTab = React.memo(function ComponentTab({
   tab,
   lines,
@@ -62,5 +61,4 @@ const ComponentTab = React.memo(function ComponentTab({
     </div>
   );
 });
-
 export default ComponentTab;

@@ -7,32 +7,27 @@ import {
   ReportAvatar,
   ReportStatusBadge } from
 "../../../component/reports/ReportsLayout";import { cssClass, joinClasses } from "../../../utils/classStyles";
-
 const ROLE_COLORS = {
   Admin: "bg-purple-100 text-purple-700",
   HR: "bg-blue-100 text-blue-700",
   Manager: "bg-amber-100 text-amber-700",
   Employee: "bg-gray-100 text-gray-600"
 };
-
 export default function UserReport() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("All");
-
   useEffect(() => {
     listEmployees({ limit: 500 }).
     then((data) => setEmployees(Array.isArray(data) ? data : [])).
     catch(() => setEmployees([])).
     finally(() => setLoading(false));
   }, []);
-
   const departments = useMemo(() => {
     const depts = [...new Set(employees.map((e) => getDepartmentName(e)).filter(Boolean))].sort();
     return ["All", ...depts];
   }, [employees]);
-
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return employees.filter((e) => {
@@ -42,15 +37,12 @@ export default function UserReport() {
       return matchSearch && matchDept;
     });
   }, [employees, search, deptFilter]);
-
   const activeCount = employees.filter((e) => e.employee_status === "Active").length;
   const inactiveCount = employees.filter((e) => e.employee_status !== "Active").length;
   const deptCount = new Set(employees.map((e) => getDepartmentName(e))).size;
-
   return (
     <div className="report-page">
       <ReportPageHeader title="User Report" />
-
       {}
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
@@ -68,7 +60,6 @@ export default function UserReport() {
           </div>
         )}
       </div>
-
       <div className="report-table-section">
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <h3 className="font-semibold text-gray-800 text-sm flex-1">User List</h3>
@@ -80,17 +71,14 @@ export default function UserReport() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="text-sm outline-none w-40" />
-
           </div>
           <select
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
             className="h-9 px-2 border border-gray-200 rounded text-sm outline-none bg-white">
-
             {departments.map((d) => <option key={d}>{d}</option>)}
           </select>
         </div>
-
         {loading ?
         <div className="flex items-center justify-center h-40 text-gray-400 text-sm">Loading users…</div> :
         filtered.length === 0 ?
@@ -98,7 +86,6 @@ export default function UserReport() {
             <Users size={32} className="opacity-30" />
             <p className="text-sm">No users found.</p>
           </div> :
-
         <div className={cssClass({ overflowX: "auto" })}>
             <table className="report-data-table">
               <thead>
@@ -148,7 +135,6 @@ export default function UserReport() {
                         <ReportStatusBadge status={emp.employee_status === "Active" ? "Active" : "Inactive"} />
                       </td>
                     </tr>);
-
               })}
               </tbody>
             </table>
@@ -156,5 +142,4 @@ export default function UserReport() {
         }
       </div>
     </div>);
-
 }

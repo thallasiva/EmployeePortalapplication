@@ -1,12 +1,9 @@
-
 export const FISCAL_YEAR_START_MONTH = 3;
-
 export function getCurrentFiscalYearStart() {
   const now = new Date();
   const year = now.getFullYear();
   return now.getMonth() >= FISCAL_YEAR_START_MONTH ? year : year - 1;
 }
-
 export function getYearOptions(rangeBefore = 8, rangeAfter = 3) {
   const current = new Date().getFullYear();
   const years = [];
@@ -15,17 +12,14 @@ export function getYearOptions(rangeBefore = 8, rangeAfter = 3) {
   }
   return years;
 }
-
 export function getFiscalYearLabel(startYear) {
   const start = Number(startYear);
   return `${start} - ${start + 1}`;
 }
-
 export function getFiscalYearRangeLabel(startYear) {
   const start = Number(startYear);
   return `01 Apr, ${start} - 31 Mar, ${start + 1}`;
 }
-
 export function getFiscalMonthColumns(fiscalYearStart) {
   const start = Number(fiscalYearStart);
   const monthNames = [
@@ -41,7 +35,6 @@ export function getFiscalMonthColumns(fiscalYearStart) {
   "Jan",
   "Feb",
   "Mar"];
-
   const keys = [
   "apr",
   "may",
@@ -55,32 +48,26 @@ export function getFiscalMonthColumns(fiscalYearStart) {
   "jan",
   "feb",
   "mar"];
-
-
   return monthNames.map((name, index) => {
     const year = index < 9 ? start : start + 1;
     return { key: keys[index], label: `${name} ${year}` };
   });
 }
-
 export function formatMonthYear(date = new Date()) {
   return date.toLocaleDateString("en-GB", {
     month: "short",
     year: "numeric"
   });
 }
-
 export function getCurrentPayslipMonthLabel() {
   return formatMonthYear(new Date());
 }
-
 export function toISODateString(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
-
 export function getLoggedInUser() {
   try {
     return JSON.parse(localStorage.getItem("user") || "{}");
@@ -88,7 +75,6 @@ export function getLoggedInUser() {
     return {};
   }
 }
-
 export function getUserGreetingName() {
   const user = getLoggedInUser();
   if (user?.name) {
@@ -99,7 +85,6 @@ export function getUserGreetingName() {
   }
   return "there";
 }
-
 export function getUserInitials(name) {
   if (!name) return "TM";
   const parts = name.trim().split(/\s+/);
@@ -108,8 +93,6 @@ export function getUserInitials(name) {
   }
   return name.slice(0, 2).toUpperCase();
 }
-
-
 export function holidaysForYear(year, monthDayList) {
   return monthDayList.map(({ month, day }) => {
     const m = String(month).padStart(2, "0");

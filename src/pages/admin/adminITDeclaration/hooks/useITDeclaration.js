@@ -3,7 +3,6 @@ import { usePagination } from "../../../../components/Pagination";
 import {
   getAllITCycles, toggleITCycle, getAllITDeclarations,
 } from "../../../../api/itDeclaration.api";
-
 export function useITDeclaration() {
   const [cycle, setCycle] = useState(null);
   const [data, setData] = useState({ declarations: [] });
@@ -12,7 +11,6 @@ export function useITDeclaration() {
   const [tab, setTab] = useState("submissions");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -26,9 +24,7 @@ export function useITDeclaration() {
     } catch {}
     setLoading(false);
   }, []);
-
   useEffect(() => { load(); }, [load]);
-
   const handleToggle = useCallback(async () => {
     if (!cycle) return;
     setToggling(true);
@@ -41,9 +37,7 @@ export function useITDeclaration() {
     }
     setToggling(false);
   }, [cycle, load]);
-
   const isActive = cycle?.status === "active";
-
   const visible = useMemo(() => {
     let list = data.declarations || [];
     if (filter !== "all") {
@@ -59,7 +53,6 @@ export function useITDeclaration() {
     }
     return list;
   }, [data.declarations, filter, search]);
-
   const stats = useMemo(() => {
     const list = data.declarations || [];
     return {
@@ -70,9 +63,7 @@ export function useITDeclaration() {
       not_started: list.filter((r) => !r.declaration?.status || r.declaration?.status === "not_started").length,
     };
   }, [data.declarations]);
-
   const pagination = usePagination(visible);
-
   return {
     cycle, loading, toggling, tab, setTab,
     search, setSearch, filter, setFilter,

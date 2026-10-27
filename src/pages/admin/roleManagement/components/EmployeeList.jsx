@@ -1,7 +1,6 @@
 import React from "react";
 import { Search, Loader2, CheckCircle } from "lucide-react";
 import { ROLE_ICONS } from "../constants";
-
 const EmployeeList = React.memo(function EmployeeList({
   filtered,
   loading,
@@ -28,7 +27,6 @@ const EmployeeList = React.memo(function EmployeeList({
           />
         </div>
       </div>
-
       {loading ? (
         <div className="flex items-center justify-center gap-2.5 p-12 text-gray-500">
           <Loader2 size={18} className="animate-spin" /> Loading…
@@ -78,5 +76,4 @@ const EmployeeList = React.memo(function EmployeeList({
     </div>
   );
 });
-
 export default EmployeeList;

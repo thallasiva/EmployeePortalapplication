@@ -1,5 +1,4 @@
 import React from "react";
-
 export const SearchBar = React.memo(function SearchBar({ value, onChange, placeholder = "Search..." }) {
   return (
     <div className="relative inline-flex items-center">
