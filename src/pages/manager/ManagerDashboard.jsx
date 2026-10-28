@@ -192,6 +192,7 @@ const ManagerDashboard = () => {
             <Link to="/manager/timesheets" className="block text-sm text-brand font-medium">Timesheets <ArrowRight size={12} className="inline -mt-0.5" /></Link>
           </div>
         </div>
+
       </div>
     </div>);
 };

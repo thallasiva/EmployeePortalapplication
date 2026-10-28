@@ -354,6 +354,32 @@ export default function YTDReports() {
           </div>
         </div>
       </div>
+
+      {/* ── Charts (below table) ──────────────────────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 16px" }}>Earnings Breakdown</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <InteractivePieChart data={pieData} size={160} donut title="Earnings" valueFormatter={formatINR} />
+            <div style={{ flex: 1 }}>
+              {pieData.map((d) => (
+                <div key={d.label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f8fafc" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: d.color, display: "inline-block" }} />
+                    <span style={{ fontSize: 12, color: "#64748b" }}>{d.label}</span>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{fmt(d.value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: "0 0 8px" }}>Monthly Net Pay Trend</p>
+          <BarChart data={barData} />
+        </div>
+      </div>
     </div>
   );
 }

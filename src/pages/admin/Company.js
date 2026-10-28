@@ -224,5 +224,6 @@ export default function Company() {
           </div>
         </div>
       </div>
-    </div>);
+    </div>
+  );
 }

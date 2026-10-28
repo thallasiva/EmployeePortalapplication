@@ -474,7 +474,40 @@
   }
   /* ── Legacy compat ──────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply bg-brand text-white font-semibold rounded-lg transition-all duration-200 shadow-sm;
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+    box-shadow: var(--shadow-brand);
+  }
+  .btn-primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+  .btn-primary:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text-body);
+    border-color: var(--border);
+    box-shadow: var(--shadow-xs);
+  }
+  .btn-secondary:hover { background: var(--surface-subtle); border-color: #d1d5db; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: transparent;
+  }
+  .btn-ghost:hover { background: var(--surface-subtle); color: var(--text-body); }
+
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+  }
+  .btn-danger:hover { background: #b91c1c; }
+
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: var(--fs-sm);
+    border-radius: var(--radius-sm);
   }
   .btn-primary:hover { @apply bg-brand-600 shadow-md; }
   .link-brand  { @apply text-brand font-medium hover:text-brand-600 hover:underline; }

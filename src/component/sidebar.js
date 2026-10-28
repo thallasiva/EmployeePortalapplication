@@ -79,6 +79,7 @@ export const Sidebar = ({ open }) =>
     }
   }, [pathname]);
   const adminItems = [
+    // ── Core ──────────────────────────────────────────────
     {
       label: "Dashboard", permId: "dashboard",
       icon: <Home size={20} />,
@@ -299,6 +300,7 @@ export const Sidebar = ({ open }) =>
     ]
   };
   const employeeItems = [
+    // ── Core ──────────────────────────────────────────────
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
@@ -402,6 +404,7 @@ export const Sidebar = ({ open }) =>
       icon: <Layers size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/request-hub"
     },
+    // ── Career & Exit ──────────────────────────────────────
     {
       label: "Hiring",
       icon: <UserRoundPlus size={20} strokeWidth={1.75} />,
@@ -414,6 +417,7 @@ export const Sidebar = ({ open }) =>
       icon: <LogOut size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/resignation"
     },
+    // ── Config ─────────────────────────────────────────────
     {
       label: "Workflow Delegates",
       icon: <GitBranch size={20} strokeWidth={1.75} />,

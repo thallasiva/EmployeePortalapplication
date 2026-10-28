@@ -246,7 +246,7 @@ export default function Profile() {
       {}
       <nav className="admin-profile__tabs-wrap" aria-label="Profile sections">
         <div className="admin-profile__tabs">
-          {TABS.map((tab) => {
+          {TABS.map(tab => {
             const Icon = tab.icon;
             return (
               <button key={tab.id} type="button"
