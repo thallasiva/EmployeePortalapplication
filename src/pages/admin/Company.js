@@ -298,21 +298,7 @@ export default function Company() {
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
-}
-
-export default function Company() {
-  const [company, setCompany] = useState(COMPANIES[0]);
-  return (
-    <div className="min-h-screen bg-slate-50 pb-12">
-      <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between mb-6">
-        <div>
-          <p className="text-xs text-slate-400">Admin / Company</p>
-          <h1 className="text-lg font-semibold text-slate-800">Company Profile</h1>
-        </div>
-        <CompanySwitcher companies={COMPANIES} selected={company} onSelect={setCompany} />
-      </div>
-    </div>);
 }
