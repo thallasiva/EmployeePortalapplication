@@ -1,6 +1,5 @@
 import React from 'react';
 import PermissionAllowTable from './PermissionAllowTable';
-
 const manageAllRows = [
   {
     key: 'employeeDirectory',
@@ -18,7 +17,6 @@ const manageAllRows = [
     description: 'Permissions that affect all manage module screens.',
   },
 ];
-
 const ManageAllTab = ({ values, onToggle }) =>
 {
   return (
@@ -29,5 +27,4 @@ const ManageAllTab = ({ values, onToggle }) =>
     />
   );
 };
-
 export default ManageAllTab;

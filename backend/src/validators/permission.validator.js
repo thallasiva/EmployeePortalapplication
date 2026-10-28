@@ -1,5 +1,4 @@
 const Joi = require('joi');
-
 const updateRolePermissionsSchema = Joi.object({
   permissions: Joi.array()
     .items(
@@ -12,5 +11,4 @@ const updateRolePermissionsSchema = Joi.object({
     .min(1)
     .required(),
 });
-
 module.exports = { updateRolePermissionsSchema };

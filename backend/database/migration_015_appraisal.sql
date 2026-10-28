@@ -1,7 +1,5 @@
 -- ── Appraisal Cycles ──────────────────────────────────────────────────────────
-
 USE hrms_db;
-
 CREATE TABLE IF NOT EXISTS appraisal_cycles (
   cycle_id      INT AUTO_INCREMENT PRIMARY KEY,
   fy_label      VARCHAR(50)  NOT NULL DEFAULT 'FY 2025-2026',
@@ -12,11 +10,9 @@ CREATE TABLE IF NOT EXISTS appraisal_cycles (
   created_at    DATETIME DEFAULT NOW(),
   updated_at    DATETIME DEFAULT NOW() ON UPDATE NOW()
 );
-
 -- Seed one cycle (inactive by default)
 INSERT IGNORE INTO appraisal_cycles (cycle_id, fy_label, status, deadline)
 VALUES (1, 'FY 2025-2026', 'inactive', '2026-09-30');
-
 -- ── Self Appraisals (one per employee per cycle) ──────────────────────────────
 CREATE TABLE IF NOT EXISTS self_appraisals (
   appraisal_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,7 +27,6 @@ CREATE TABLE IF NOT EXISTS self_appraisals (
   FOREIGN KEY (cycle_id)    REFERENCES appraisal_cycles(cycle_id),
   FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 );
-
 -- ── Per-parameter Ratings ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS appraisal_ratings (
   rating_id         INT AUTO_INCREMENT PRIMARY KEY,

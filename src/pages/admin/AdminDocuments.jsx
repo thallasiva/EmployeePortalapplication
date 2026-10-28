@@ -14,32 +14,26 @@ import {
 } from "../../data/adminDocumentsData";
 import { successToast } from "../../utils/ToastControllers";
 import "./adminDocuments.css";
-
 function DocIcon({ icon, size = 18 }) {
   if (icon === "slides") return <Presentation size={size} />;
   if (icon === "sheet") return <FileSpreadsheet size={size} />;
   return <FileText size={size} />;
 }
-
 function formatFileSize(bytes) {
   if (!bytes) return "—";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-
 function UploadDocumentModal({ open, onClose, onUpload }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("policies");
   const [file, setFile] = useState(null);
-
   if (!open) return null;
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return;
-
     const ext = file?.name?.split(".").pop()?.toUpperCase() || "PDF";
     onUpload({
       title: title.trim(),
@@ -49,14 +43,12 @@ function UploadDocumentModal({ open, onClose, onUpload }) {
       size: formatFileSize(file?.size),
       icon: ext === "PPTX" ? "slides" : ext === "XLSX" ? "sheet" : "pdf",
     });
-
     setTitle("");
     setDescription("");
     setCategory("policies");
     setFile(null);
     onClose();
   };
-
   return (
     <div className="admin-docs-modal-backdrop" onClick={onClose}>
       <div className="admin-docs-modal" onClick={(e) => e.stopPropagation()}>
@@ -123,18 +115,15 @@ function UploadDocumentModal({ open, onClose, onUpload }) {
     </div>
   );
 }
-
 export default function AdminDocuments() {
   const [documents, setDocuments] = useState(() => getAdminDocuments());
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [uploadOpen, setUploadOpen] = useState(false);
-
   const recentDocs = useMemo(
     () => documents.filter((d) => d.recent).slice(0, 5),
     [documents]
   );
-
   const filteredDocs = useMemo(() => {
     const query = search.trim().toLowerCase();
     return documents.filter((doc) => {
@@ -147,13 +136,11 @@ export default function AdminDocuments() {
       return matchesTab && matchesSearch;
     });
   }, [documents, activeTab, search]);
-
   const handleUpload = (payload) => {
     addAdminDocument(payload);
     setDocuments([...getAdminDocuments()]);
     successToast("Document uploaded");
   };
-
   return (
     <div className="admin-docs">
       <div className="admin-docs__header">
@@ -177,7 +164,6 @@ export default function AdminDocuments() {
           Upload Document
         </button>
       </div>
-
       <div className="admin-docs__search">
         <Search size={16} className="admin-docs__search-icon" />
         <input
@@ -187,7 +173,6 @@ export default function AdminDocuments() {
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
-
       {recentDocs.length > 0 && (
         <section>
           <p className="admin-docs__section-label">Recently Accessed</p>
@@ -206,7 +191,6 @@ export default function AdminDocuments() {
           </div>
         </section>
       )}
-
       <div className="admin-docs__tabs">
         {DOCUMENT_CATEGORIES.map((tab) => (
           <button
@@ -219,7 +203,6 @@ export default function AdminDocuments() {
           </button>
         ))}
       </div>
-
       <section className="admin-docs__list">
         {filteredDocs.length === 0 ? (
           <p className="admin-docs__empty">No documents found.</p>
@@ -245,7 +228,6 @@ export default function AdminDocuments() {
           ))
         )}
       </section>
-
       <UploadDocumentModal
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}

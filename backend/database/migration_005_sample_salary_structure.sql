@@ -12,11 +12,8 @@
 -- Safe to re-run: removes any existing salary_structures rows for this
 -- employee first, then inserts the new one.
 -- =====================================================================
-
 USE hrms_db;
-
 DELETE FROM salary_structures WHERE employee_id = 3;
-
 INSERT INTO salary_structures (
   employee_id, basic, hra, conveyance, medical_allowance, special_allowance,
   pf_employee, pf_employer, professional_tax, income_tax, ctc, effective_from
@@ -34,7 +31,6 @@ INSERT INTO salary_structures (
   621600.00,-- ctc (annual)
   '2026-04-01'
 );
-
 -- Refresh this month's payslip so the new figures show up immediately.
 CALL sp_generate_payslip(3, MONTH(CURDATE()), YEAR(CURDATE()), NULL, @payslip_id);
 SELECT @payslip_id AS payslip_id;

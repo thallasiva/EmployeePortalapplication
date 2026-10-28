@@ -1,12 +1,12 @@
 import React from "react";
 import { ReportPageHeader } from "../../../component/reports/ReportsLayout";
-
+import { FolderOpen } from "lucide-react";
 export default function ProjectReport() {
   return (
     <div className="report-page">
       <ReportPageHeader title="Project Report" />
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-        <div className="text-6xl mb-4">📂</div>
+        <div className="mb-4 flex justify-center text-slate-300"><FolderOpen size={56} /></div>
         <h2 className="text-xl font-semibold text-gray-700 mb-2">Project Report Coming Soon</h2>
         <p className="text-sm text-gray-400 max-w-sm mb-8">
           Track project timelines, team assignments, milestones, and delivery status across all active projects.

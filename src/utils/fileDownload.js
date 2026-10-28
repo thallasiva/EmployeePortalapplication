@@ -9,7 +9,6 @@ export function downloadBlob(blob, filename) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-
 export async function downloadFromUrl(url, filename) {
   const response = await fetch(url);
   if (!response.ok) {

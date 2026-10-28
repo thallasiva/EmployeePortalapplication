@@ -1,8 +1,6 @@
 -- ── Migration 016: IT Declaration & Proof of Investment ─────────────────────
 -- Run: mysql -u root -p hrms_db < migration_016_it_declaration.sql
-
 USE hrms_db;
-
 -- 1. Admin creates one cycle per financial year
 CREATE TABLE IF NOT EXISTS it_declaration_cycles (
   cycle_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -15,11 +13,9 @@ CREATE TABLE IF NOT EXISTS it_declaration_cycles (
   created_at    DATETIME DEFAULT NOW(),
   FOREIGN KEY (created_by) REFERENCES employees(employee_id) ON DELETE SET NULL
 );
-
 -- Seed current FY
 INSERT IGNORE INTO it_declaration_cycles (fy_label, fy_start_year, status, start_date, end_date)
 VALUES ('2025-2026', 2025, 'inactive', '2025-04-01', '2026-02-28');
-
 -- 2. One declaration record per employee per cycle
 CREATE TABLE IF NOT EXISTS it_declarations (
   declaration_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +34,6 @@ CREATE TABLE IF NOT EXISTS it_declarations (
   FOREIGN KEY (employee_id)  REFERENCES employees(employee_id),
   FOREIGN KEY (reviewed_by)  REFERENCES employees(employee_id) ON DELETE SET NULL
 );
-
 -- 3. Line items within each declaration
 CREATE TABLE IF NOT EXISTS it_declaration_items (
   item_id        INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,7 +44,6 @@ CREATE TABLE IF NOT EXISTS it_declaration_items (
   declared_amount DECIMAL(12,2) DEFAULT 0,
   FOREIGN KEY (declaration_id) REFERENCES it_declarations(declaration_id) ON DELETE CASCADE
 );
-
 -- 4. Proof of investment documents
 CREATE TABLE IF NOT EXISTS it_proof_documents (
   proof_id       INT AUTO_INCREMENT PRIMARY KEY,

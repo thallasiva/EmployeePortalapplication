@@ -1,5 +1,4 @@
 import React from 'react';
-
 const LeadershipRole = ({ roles, onViewPermission }) =>
 {
   return (
@@ -11,9 +10,7 @@ const LeadershipRole = ({ roles, onViewPermission }) =>
               <h3 className="text-lg font-semibold text-brand">{role.title}</h3>
               <img src={role.image} alt="avatar" className="h-10 w-10 rounded-full" />
             </div>
-
             <p className="mb-4 text-sm text-gray-600">{role.description}</p>
-
             <button
               type="button"
               onClick={() => onViewPermission(role)}
@@ -27,5 +24,4 @@ const LeadershipRole = ({ roles, onViewPermission }) =>
     </div>
   );
 };
-
 export default LeadershipRole;

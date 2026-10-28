@@ -5,29 +5,25 @@ const {
   checkInSchema,
   checkOutSchema,
   createRegularizationSchema,
-  reviewRegularizationSchema,
+  reviewRegularizationSchema
 } = require('../validators/attendance.validator');
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
-
 const router = express.Router();
-
 router.use(authenticate);
-
-// Self-service check-in/out
 router.post('/check-in', validate(checkInSchema), controller.checkIn);
 router.post('/check-out', validate(checkOutSchema), controller.checkOut);
+router.post('/break-start', controller.breakStart);
+router.post('/break-end',   controller.breakEnd);
 router.get('/me/today', controller.today);
 router.get('/me/monthly', controller.monthly);
-
-// Admin / manager views
+router.get('/me/swipes', controller.swipes);
 router.get('/', requirePermission('attendance', 'view'), controller.list);
 router.get('/dashboard', requirePermission('attendance', 'view'), controller.dashboard);
 router.get('/team-leave-calendar', requirePermission('attendance', 'view'), controller.teamLeaveCalendar);
 router.get('/employees/:employeeId/today', requirePermission('attendance', 'view'), controller.today);
 router.get('/employees/:employeeId/monthly', requirePermission('attendance', 'view'), controller.monthly);
-
-// Regularization requests
+router.get('/employees/:employeeId/swipes', requirePermission('attendance', 'view'), controller.swipes);
 router.get('/regularizations', requirePermission('attendance', 'view'), controller.listRegularizations);
 router.post('/regularizations', validate(createRegularizationSchema), controller.createRegularization);
 router.put(
@@ -36,5 +32,4 @@ router.put(
   validate(reviewRegularizationSchema),
   controller.reviewRegularization
 );
-
 module.exports = router;

@@ -7,7 +7,6 @@ export const DEPARTMENTS = [
   "Operations",
   "Finance",
 ];
-
 export const DEPARTMENT_BADGE = {
   Engineering: "teams-badge--engineering",
   Product: "teams-badge--product",
@@ -17,7 +16,6 @@ export const DEPARTMENT_BADGE = {
   Operations: "teams-badge--operations",
   Finance: "teams-badge--finance",
 };
-
 export const INITIAL_TEAMS = [
   {
     id: "platform",

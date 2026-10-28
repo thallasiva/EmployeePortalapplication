@@ -1,27 +1,15 @@
 import React from "react";
 import { formatINR } from "../../component/charts/InteractivePieChart";
-import "./payslipPrint.css";
-
+import "./payslipPrint.css";import { cssClass, joinClasses } from "../../utils/classStyles";
 const FY_MONTH_LABELS = ["APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR"];
-
 const num = (value) => Number(value || 0).toLocaleString("en-IN");
-
-/**
- * Renders the printable payslip sheet markup (header, employee/bank info,
- * earnings/deductions, net pay, TDS Details, Chapter VI-A, Income Tax
- * Deduction grid and Tax Paid Details). Shared between the on-screen
- * PayslipPrintView and the off-screen renderer used for PDF export, so the
- * downloaded PDF always matches the on-screen template.
- */
 export default function PayslipSheet({ data }) {
   if (!data) return null;
-
   const { employee, bank, company, earnings, deductions, tds, month_name, year, working_days, paid_days, lop_days } = data;
   const { rows: tdsRows = [], chapterVIA = [], incomeTax = {}, taxPaidByMonth = {} } = tds || {};
-
   return (
     <div className="payslip-print-sheet">
-      {/* Header */}
+      {}
       <div className="payslip-print-header">
         <div>
           <h1>{company.company_name}</h1>
@@ -29,12 +17,10 @@ export default function PayslipSheet({ data }) {
         </div>
         <div className="payslip-print-logo">{company.company_name}</div>
       </div>
-
       <div className="payslip-print-title">
         Payslip for the month of {month_name} - {year}
       </div>
-
-      {/* Employee info */}
+      {}
       <table className="payslip-print-table">
         <tbody>
           <tr>
@@ -75,8 +61,7 @@ export default function PayslipSheet({ data }) {
           </tr>
         </tbody>
       </table>
-
-      {/* Earnings / Deductions */}
+      {}
       <div className="payslip-print-columns">
         <table className="payslip-print-table">
           <thead>
@@ -86,15 +71,14 @@ export default function PayslipSheet({ data }) {
             </tr>
           </thead>
           <tbody>
-            {earnings.map((row) => (
-              <tr key={row.label}>
+            {earnings.map((row) =>
+            <tr key={row.label}>
                 <td>{row.label}</td>
                 <td className="payslip-print-amount">{num(row.amount)}</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
-
         <table className="payslip-print-table">
           <thead>
             <tr>
@@ -103,24 +87,23 @@ export default function PayslipSheet({ data }) {
             </tr>
           </thead>
           <tbody>
-            {deductions.map((row) => (
-              <tr key={row.label}>
+            {deductions.map((row) =>
+            <tr key={row.label}>
                 <td>{row.label}</td>
                 <td className="payslip-print-amount">{num(row.amount)}</td>
               </tr>
-            ))}
-            {deductions.length === 0 && (
-              <tr>
+            )}
+            {deductions.length === 0 &&
+            <tr>
                 <td>—</td>
                 <td className="payslip-print-amount">0</td>
               </tr>
-            )}
+            }
           </tbody>
         </table>
       </div>
-
       <div className="payslip-print-columns">
-        <table className="payslip-print-table" style={{ marginBottom: 0 }}>
+        <table className={joinClasses("payslip-print-table", cssClass({ marginBottom: 0 }))}>
           <tbody>
             <tr className="payslip-print-total-row">
               <td>Total Earnings</td>
@@ -128,7 +111,7 @@ export default function PayslipSheet({ data }) {
             </tr>
           </tbody>
         </table>
-        <table className="payslip-print-table" style={{ marginBottom: 0 }}>
+        <table className={joinClasses("payslip-print-table", cssClass({ marginBottom: 0 }))}>
           <tbody>
             <tr className="payslip-print-total-row">
               <td>Total Deduction</td>
@@ -137,16 +120,14 @@ export default function PayslipSheet({ data }) {
           </tbody>
         </table>
       </div>
-
-      {/* Net pay */}
+      {}
       <div className="payslip-print-netpay">
         <p className="netpay-line">Net Pay for the month : {formatINR(data.net_pay)}</p>
         <p className="netpay-words">({data.net_pay_words})</p>
       </div>
-
-      {/* Employer Statutory Contributions (CTC components) */}
-      {(data.eps || data.epf || data.edli || data.esi_employer) && (
-        <>
+      {}
+      {(data.eps || data.epf || data.edli || data.esi_employer) &&
+      <>
           <div className="payslip-print-section-title">Employer Statutory Contributions (CTC)</div>
           <table className="payslip-print-table">
             <thead>
@@ -157,40 +138,39 @@ export default function PayslipSheet({ data }) {
               </tr>
             </thead>
             <tbody>
-              {data.eps != null && (
-                <tr>
+              {data.eps != null &&
+            <tr>
                   <td>EPS — Employer Pension Fund (8.33%)</td>
                   <td className="payslip-print-amount">8.33%</td>
                   <td className="payslip-print-amount">{num(data.eps)}</td>
                 </tr>
-              )}
-              {data.epf != null && (
-                <tr>
+            }
+              {data.epf != null &&
+            <tr>
                   <td>EPF — Employer Provident Fund (3.67%)</td>
                   <td className="payslip-print-amount">3.67%</td>
                   <td className="payslip-print-amount">{num(data.epf)}</td>
                 </tr>
-              )}
-              {data.edli != null && (
-                <tr>
+            }
+              {data.edli != null &&
+            <tr>
                   <td>EDLI — Employees Deposit Linked Insurance (0.5%)</td>
                   <td className="payslip-print-amount">0.50%</td>
                   <td className="payslip-print-amount">{num(data.edli)}</td>
                 </tr>
-              )}
-              {data.esi_employer > 0 && (
-                <tr>
+            }
+              {data.esi_employer > 0 &&
+            <tr>
                   <td>ESI — Employer Contribution (3.25%)</td>
                   <td className="payslip-print-amount">3.25%</td>
                   <td className="payslip-print-amount">{num(data.esi_employer)}</td>
                 </tr>
-              )}
+            }
             </tbody>
           </table>
         </>
-      )}
-
-      {/* TDS Details */}
+      }
+      {}
       <div className="payslip-print-section-title">TDS Details</div>
       <table className="payslip-print-table">
         <thead>
@@ -202,18 +182,17 @@ export default function PayslipSheet({ data }) {
           </tr>
         </thead>
         <tbody>
-          {tdsRows.map((row) => (
-            <tr key={row.label}>
+          {tdsRows.map((row) =>
+          <tr key={row.label}>
               <td>{row.label}</td>
               <td className="payslip-print-amount">{num(row.gross)}</td>
               <td className="payslip-print-amount">{row.exempt ? num(row.exempt) : "—"}</td>
               <td className="payslip-print-amount">{num(row.taxable)}</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
-
-      {/* Chapter VI-A */}
+      {}
       <div className="payslip-print-section-title">Deduction Under Chapter VI-A</div>
       <table className="payslip-print-table">
         <thead>
@@ -223,23 +202,21 @@ export default function PayslipSheet({ data }) {
           </tr>
         </thead>
         <tbody>
-          {chapterVIA.length > 0 ? (
-            chapterVIA.map((row) => (
-              <tr key={row.label}>
+          {chapterVIA.length > 0 ?
+          chapterVIA.map((row) =>
+          <tr key={row.label}>
                 <td>{row.label}</td>
                 <td className="payslip-print-amount">{num(row.amount)}</td>
               </tr>
-            ))
-          ) : (
-            <tr>
+          ) :
+          <tr>
               <td>—</td>
               <td className="payslip-print-amount">0</td>
             </tr>
-          )}
+          }
         </tbody>
       </table>
-
-      {/* Income Tax Deduction */}
+      {}
       <div className="payslip-print-section-title">Income Tax Deduction</div>
       <div className="payslip-print-taxgrid">
         <div><span>Gross Salary</span><span>{num(incomeTax.grossSalary)}</span></div>
@@ -253,43 +230,40 @@ export default function PayslipSheet({ data }) {
         <div><span>Tax to be Deducted</span><span>{num(incomeTax.taxToBeDeducted)}</span></div>
         <div><span>Monthly Projected Tax</span><span>{num(incomeTax.monthlyProjectedTax)}</span></div>
       </div>
-
-      {/* Tax Paid Details */}
+      {}
       <div className="payslip-print-section-title">Tax Paid Details</div>
       <table className="payslip-print-monthgrid">
         <thead>
           <tr>
-            {FY_MONTH_LABELS.slice(0, 6).map((m) => (
-              <th key={m}>{m}</th>
-            ))}
+            {FY_MONTH_LABELS.slice(0, 6).map((m) =>
+            <th key={m}>{m}</th>
+            )}
           </tr>
         </thead>
         <tbody>
           <tr>
-            {FY_MONTH_LABELS.slice(0, 6).map((m) => (
-              <td key={m}>{taxPaidByMonth[m] != null ? num(taxPaidByMonth[m]) : ""}</td>
-            ))}
+            {FY_MONTH_LABELS.slice(0, 6).map((m) =>
+            <td key={m}>{taxPaidByMonth[m] != null ? num(taxPaidByMonth[m]) : ""}</td>
+            )}
           </tr>
         </tbody>
         <thead>
           <tr>
-            {FY_MONTH_LABELS.slice(6).map((m) => (
-              <th key={m}>{m}</th>
-            ))}
+            {FY_MONTH_LABELS.slice(6).map((m) =>
+            <th key={m}>{m}</th>
+            )}
           </tr>
         </thead>
         <tbody>
           <tr>
-            {FY_MONTH_LABELS.slice(6).map((m) => (
-              <td key={m}>{taxPaidByMonth[m] != null ? num(taxPaidByMonth[m]) : ""}</td>
-            ))}
+            {FY_MONTH_LABELS.slice(6).map((m) =>
+            <td key={m}>{taxPaidByMonth[m] != null ? num(taxPaidByMonth[m]) : ""}</td>
+            )}
           </tr>
         </tbody>
       </table>
-
       <p className="payslip-print-footer">
         This is a computer generated payslip and does not require a signature
       </p>
-    </div>
-  );
+    </div>);
 }

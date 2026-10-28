@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { listAttendance } from "../../api/attendance.api";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
-
 function getInitials(name) {
   return (name || "?")
     .split(" ")
@@ -11,24 +10,20 @@ function getInitials(name) {
     .slice(0, 2)
     .toUpperCase();
 }
-
 function fmt(val) {
   if (!val) return "—";
   return String(val).slice(0, 5);
 }
-
 const STATUS_BADGE = {
   present: "approved",
   absent: "rejected",
   late: "pending",
   "half-day": "pending",
 };
-
 const TeamAttendance = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-
   useEffect(() => {
     setLoading(true);
     listAttendance({ from_date: date, to_date: date, limit: 200 })
@@ -36,11 +31,9 @@ const TeamAttendance = () => {
       .catch(() => setRecords([]))
       .finally(() => setLoading(false));
   }, [date]);
-
   return (
     <div className="admin-dash space-y-4">
       <ManagerTabs />
-
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Team Attendance</h1>
@@ -54,7 +47,6 @@ const TeamAttendance = () => {
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-blue-400"
         />
       </div>
-
       <div className="admin-dash-card !p-0 overflow-hidden">
         <div className="overflow-x-auto">
           {loading ? (
@@ -112,5 +104,4 @@ const TeamAttendance = () => {
     </div>
   );
 };
-
 export default TeamAttendance;

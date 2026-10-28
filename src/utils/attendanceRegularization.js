@@ -4,7 +4,6 @@ export const REGULARIZATION_TIMES = {
   production: "9 Hrs",
   hours: "9.0h",
 };
-
 export function applyAttendanceRegularization(employee) {
   return {
     ...employee,
@@ -25,7 +24,6 @@ export function applyAttendanceRegularization(employee) {
           : employee.status,
   };
 }
-
 export function enrichAdminEmployee(employee) {
   const isAbsent = employee.status === "absent" || employee.status === "leave";
   return {
@@ -40,7 +38,6 @@ export function enrichAdminEmployee(employee) {
     regularized: employee.regularized ?? false,
   };
 }
-
 export function enrichReportAttendanceRow(row) {
   return {
     id: row.id ?? `${row.name}-${row.date}`,

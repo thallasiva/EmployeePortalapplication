@@ -12,21 +12,18 @@ export const REPORT_NAV = [
   { path: "user", label: "User" },
   { path: "downloads", label: "⬇ Downloads" },
 ];
-
 export const PROJECT_STATS = [
   { label: "Total Projects", value: 300, trend: "+10.54% from last month", positive: true, barColor: "#ec4899", barWidth: 75 },
   { label: "Completed Projects", value: 250, trend: "+12.84% from last month", positive: true, barColor: "#22c55e", barWidth: 83 },
   { label: "Pending Projects", value: 50, trend: "-10.75% from last month", positive: false, barColor: "#ef4444", barWidth: 17 },
   { label: "New Projects", value: 30, trend: "+15.74% from last month", positive: true, barColor: "#8b5cf6", barWidth: 10 },
 ];
-
 export const PROJECT_CHART = [
   { name: "Pending", value: 30, color: "#06b6d4" },
   { name: "Inprogress", value: 20, color: "#eab308" },
   { name: "On Hold", value: 10, color: "#8b5cf6" },
   { name: "Completed", value: 40, color: "#22c55e" },
 ];
-
 export const PROJECT_LIST = [
   { id: "PRO-001", name: "Office Management App", leader: "Anthony Lewis", teamCount: 5, extraTeam: 2, deadline: "12 Sep 2024", priority: "Low", status: "Active" },
   { id: "PRO-002", name: "Hospital Administration", leader: "Maria Garcia", teamCount: 4, extraTeam: 3, deadline: "20 Oct 2024", priority: "Medium", status: "Active" },
@@ -34,21 +31,18 @@ export const PROJECT_LIST = [
   { id: "PRO-004", name: "POS Admin Software", leader: "Sarah Chen", teamCount: 3, extraTeam: 2, deadline: "18 Dec 2024", priority: "Low", status: "Active" },
   { id: "PRO-005", name: "Chat & Call Mobile App", leader: "John Gibbs", teamCount: 5, extraTeam: 4, deadline: "02 Jan 2025", priority: "Medium", status: "Active" },
 ];
-
 export const TASK_STATS = [
   { label: "Total Tasks", value: 800, fraction: null },
   { label: "Completed", value: 800, fraction: "4/7" },
   { label: "Pending", value: 800, fraction: "2/7" },
   { label: "In Progress", value: 800, fraction: "1/7" },
 ];
-
 export const TASK_CHART = [
   { name: "Completed", value: 40, color: "#22c55e" },
   { name: "Pending", value: 30, color: "#3b82f6" },
   { name: "Inprogress", value: 20, color: "#eab308" },
   { name: "On Hold", value: 10, color: "#8b5cf6" },
 ];
-
 export const TASK_LIST = [
   { name: "Patient Appointment Booking", project: "Hospital Administration", created: "12/01/2024", due: "20/01/2024", priority: "Low", status: "Completed" },
   { name: "Payment Gateway", project: "Educational Platform", created: "15/01/2024", due: "25/01/2024", priority: "Medium", status: "Inprogress" },
@@ -56,14 +50,12 @@ export const TASK_LIST = [
   { name: "Video Conferencing Module", project: "Chat & Call Mobile App", created: "20/01/2024", due: "30/01/2024", priority: "Low", status: "On Hold" },
   { name: "Services List & Grid View", project: "POS Admin Software", created: "22/01/2024", due: "02/02/2024", priority: "Low", status: "Pending" },
 ];
-
 export const EMPLOYEE_STATS = [
   { label: "Total Employee", value: 600, icon: "users", color: "#f97316", trend: "+20.01% from last week" },
   { label: "Active Employee", value: 600, icon: "check", color: "#22c55e", trend: "+20.01% from last week" },
   { label: "New Employee", value: 600, icon: "user-plus", color: "#3b82f6", trend: "+20.01% from last week" },
   { label: "Inactive Employee", value: 600, icon: "user-x", color: "#ef4444", trend: "+20.01% from last week" },
 ];
-
 export const EMPLOYEE_CHART = [
   { label: "Feb", active: 80, inactive: 20 },
   { label: "Mar", active: 95, inactive: 25 },
@@ -75,7 +67,6 @@ export const EMPLOYEE_CHART = [
   { label: "Sep", active: 140, inactive: 10 },
   { label: "Oct", active: 135, inactive: 14 },
 ];
-
 export const EMPLOYEE_LIST = [
   { id: "EMP001", name: "Anthony Lewis", role: "Finance", email: "[email protected]", department: "Finance", phone: "(123) 4567 890", joining: "14/01/2024", status: "Active" },
   { id: "EMP002", name: "Brian Villalobos", role: "Developer", email: "[email protected]", department: "Application Development", phone: "(123) 4567 891", joining: "15/01/2024", status: "Active" },
@@ -83,20 +74,17 @@ export const EMPLOYEE_LIST = [
   { id: "EMP004", name: "Stephan Peralt", role: "Executive Officer", email: "[email protected]", department: "Finance", phone: "(123) 4567 893", joining: "17/01/2024", status: "Active" },
   { id: "EMP005", name: "Doglas Martini", role: "Manager", email: "[email protected]", department: "Finance", phone: "(123) 4567 894", joining: "18/01/2024", status: "Active" },
 ];
-
 export const ATTENDANCE_STATS = [
   { label: "Total Working Days", value: 25, icon: "calendar", color: "#f97316", trend: "+20.01% from last month", barWidth: 80 },
   { label: "Total Leave Taken", value: 12, icon: "leave", color: "#3b82f6", trend: "+20.01% from last month", barWidth: 48 },
   { label: "Total Holidays", value: 6, icon: "holiday", color: "#ec4899", trend: "+20.01% from last month", barWidth: 24 },
   { label: "Total Halfdays", value: 5, icon: "halfday", color: "#eab308", trend: "+20.01% from last month", barWidth: 20 },
 ];
-
 export const ATTENDANCE_LINE = {
   present: [40, 55, 50, 65, 70, 85, 75, 80, 90],
   absent: [20, 25, 30, 35, 40, 45, 35, 30, 25],
   labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"],
 };
-
 export const ATTENDANCE_LIST = [
   { id: 1, name: "Anthony Lewis", role: "Finance", date: "14/01/2024", checkIn: "09:00 AM", status: "Present", checkOut: "06:45 PM", break: "30 Min", late: "32 Min", overtime: "20 Min", production: "8.55 Hrs", productionGood: true },
   { id: 2, name: "Brian Villalobos", role: "Developer", date: "15/01/2024", checkIn: "09:15 AM", status: "Present", checkOut: "06:30 PM", break: "45 Min", late: "15 Min", overtime: "10 Min", production: "7.54 Hrs", productionGood: false },
@@ -104,14 +92,12 @@ export const ATTENDANCE_LIST = [
   { id: 4, name: "Stephan Peralt", role: "Executive Officer", date: "17/01/2024", checkIn: "09:05 AM", status: "Present", checkOut: "06:40 PM", break: "35 Min", late: "5 Min", overtime: "15 Min", production: "8.20 Hrs", productionGood: true },
   { id: 5, name: "Doglas Martini", role: "Manager", date: "18/01/2024", checkIn: "09:20 AM", status: "Present", checkOut: "06:25 PM", break: "40 Min", late: "20 Min", overtime: "5 Min", production: "7.80 Hrs", productionGood: false },
 ];
-
 export const LEAVE_STATS = [
   { label: "Total Leaves", value: 15, trend: "+17.02%", icon: "total", color: "#3b82f6" },
   { label: "Approved Leaves", value: 5, trend: "+17.02%", icon: "approved", color: "#22c55e" },
   { label: "Pending Requests", value: 5, trend: "+17.02%", icon: "pending", color: "#eab308" },
   { label: "Rejected Leaves", value: 5, trend: "+17.02%", icon: "rejected", color: "#ef4444" },
 ];
-
 export const LEAVE_CHART = [
   { label: "Jan", annual: 12, casual: 8, medical: 5, others: 3 },
   { label: "Feb", annual: 15, casual: 10, medical: 4, others: 2 },
@@ -126,7 +112,6 @@ export const LEAVE_CHART = [
   { label: "Nov", annual: 18, casual: 11, medical: 8, others: 5 },
   { label: "Dec", annual: 24, casual: 16, medical: 7, others: 6 },
 ];
-
 export const LEAVE_LIST = [
   { id: "LV-001", name: "Michael Walker", role: "CEO", company: "BrightWave Innovations", created: "12/01/2024", due: "20/01/2024", amount: "$2,500", status: "Approved" },
   { id: "LV-002", name: "Sarah Chen", role: "VP Engineering", company: "Stellar Solutions", created: "15/01/2024", due: "25/01/2024", amount: "$1,800", status: "Pending" },
@@ -134,20 +119,17 @@ export const LEAVE_LIST = [
   { id: "LV-004", name: "Maria Garcia", role: "Sales Director", company: "EcoVision Enterprises", created: "20/01/2024", due: "30/01/2024", amount: "$1,500", status: "Rejected" },
   { id: "LV-005", name: "John Gibbs", role: "Sales Director", company: "Aurora Technologies", created: "22/01/2024", due: "02/02/2024", amount: "$2,100", status: "Pending" },
 ];
-
 export const DAILY_STATS = [
   { label: "Total Present", value: 300, icon: "present", color: "#f97316" },
   { label: "Completed Tasks", value: 100, icon: "completed", color: "#22c55e" },
   { label: "Total Absent", value: 15, icon: "absent", color: "#ef4444" },
   { label: "Pending Tasks", value: 125, icon: "pending", color: "#3b82f6" },
 ];
-
 export const DAILY_LINE = {
   present: [60, 55, 70, 65, 70],
   absent: [20, 25, 60, 45, 80],
   labels: ["Jan", "Feb", "Mar", "Apr", "May"],
 };
-
 export const DAILY_LIST = [
   { name: "Anthony Lewis", role: "Finance", date: "14/01/2024", department: "Finance", status: "Present" },
   { name: "Brian Villalobos", role: "Developer", date: "15/01/2024", department: "Application Development", status: "Present" },
@@ -155,7 +137,6 @@ export const DAILY_LIST = [
   { name: "Stephan Peralt", role: "Executive Officer", date: "17/01/2024", department: "Finance", status: "Present" },
   { name: "Doglas Martini", role: "Manager", date: "18/01/2024", department: "Finance", status: "Present" },
 ];
-
 export const GENERIC_REPORTS = {
   expense: {
     title: "Expense Report",

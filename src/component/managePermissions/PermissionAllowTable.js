@@ -1,5 +1,4 @@
 import React from 'react';
-
 const ToggleSwitch = ({ enabled, onToggle }) =>
 {
   return (
@@ -15,7 +14,6 @@ const ToggleSwitch = ({ enabled, onToggle }) =>
     </button>
   );
 };
-
 const PermissionAllowTable = ({ rows, values, onToggle }) =>
 {
   return (
@@ -24,7 +22,6 @@ const PermissionAllowTable = ({ rows, values, onToggle }) =>
         <div className="px-5 py-3 text-sm font-semibold text-slate-800">Rule Description</div>
         <div className="px-5 py-3 text-center text-sm font-semibold text-slate-800">Allow?</div>
       </div>
-
       {rows.map((row, index) => (
         <div
           key={row.key}
@@ -34,7 +31,6 @@ const PermissionAllowTable = ({ rows, values, onToggle }) =>
             <p className="text-sm font-medium text-slate-800">{row.label}</p>
             <p className="text-xs text-slate-500">{row.description}</p>
           </div>
-
           <div className="flex justify-center px-5 py-4">
             <ToggleSwitch
               enabled={values[row.key]}
@@ -46,5 +42,4 @@ const PermissionAllowTable = ({ rows, values, onToggle }) =>
     </div>
   );
 };
-
 export default PermissionAllowTable;

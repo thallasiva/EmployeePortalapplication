@@ -1,7 +1,6 @@
 import React from "react";
 import { X, ChevronDown } from "lucide-react";
 import { getPeopleFilterOptions } from "../../../data/peopleDirectory";
-
 function FilterSelect({ label, value, onChange, options }) {
   return (
     <div>
@@ -26,7 +25,6 @@ function FilterSelect({ label, value, onChange, options }) {
     </div>
   );
 }
-
 export default function PeopleFilterPanel({
   draft,
   onDraftChange,
@@ -35,7 +33,6 @@ export default function PeopleFilterPanel({
   onClose,
 }) {
   const options = getPeopleFilterOptions();
-
   return (
     <div className="absolute inset-y-0 right-0 z-30 w-[280px] flex flex-col bg-white border-l border-slate-200 shadow-xl">
       <div className="flex items-center justify-between px-4 py-3 bg-slate-100/90 border-b border-slate-200">
@@ -49,7 +46,6 @@ export default function PeopleFilterPanel({
           <X size={14} />
         </button>
       </div>
-
       <div className="flex-1 flex flex-col px-4 pt-4 pb-4 min-h-0">
         <div className="space-y-4">
           <FilterSelect
@@ -71,9 +67,7 @@ export default function PeopleFilterPanel({
             options={options.holidayCalendars}
           />
         </div>
-
         <div className="flex-1" />
-
         <div className="flex gap-3 pt-4">
           <button
             type="button"

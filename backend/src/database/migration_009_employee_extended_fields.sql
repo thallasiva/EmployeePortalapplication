@@ -1,6 +1,5 @@
 -- Migration 009: Add missing employee columns from EMP Data template
 -- Run: node src/database/runSql.js migration_009_employee_extended_fields.sql
-
 ALTER TABLE employees
   ADD COLUMN IF NOT EXISTS biometric_id           VARCHAR(50)    DEFAULT NULL AFTER emp_code,
   ADD COLUMN IF NOT EXISTS actual_dob             DATE           DEFAULT NULL AFTER dob,

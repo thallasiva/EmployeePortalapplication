@@ -1,6 +1,6 @@
 # HRMS Backend - API Reference
 
-Base URL: `http://localhost:5000/api`
+Base URL: `https://backend.natsoft.io/api`
 
 All endpoints (except `/auth/*`) require:
 ```

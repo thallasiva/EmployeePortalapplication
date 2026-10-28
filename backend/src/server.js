@@ -2,13 +2,40 @@ const app = require('./app');
 const { port, env, jwt, salaryEncryptionKey } = require('./config/env');
 const { testConnection, query } = require('./config/db');
 const logger = require('./utils/logger');
-
-// ── Auto-migrations ──────────────────────────────────────────────────────────
-// Safely adds missing columns on every startup (idempotent).
-// Uses information_schema so it never errors if the column already exists.
+function getPreferredPort(startPort) {
+  const requestedPort = Number(startPort);
+  if (!Number.isFinite(requestedPort) || requestedPort <= 0) {
+    return 5000;
+  }
+  return requestedPort;
+}
+function listenWithFallback(startPort) {
+  return new Promise((resolve, reject) => {
+    const tryListen = (candidatePort, attempt) => {
+      const server = app.listen(candidatePort, () => {
+        logger.info(`HRMS backend listening on http://localhost:${candidatePort}`);
+        resolve(server);
+      });
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE' && attempt < 10) {
+          logger.warn(`Port ${candidatePort} is already in use. Trying ${candidatePort + 1}...`);
+          server.close(() => tryListen(candidatePort + 1, attempt + 1));
+          return;
+        }
+        if (err.code === 'EADDRINUSE') {
+          logger.error(`Unable to start backend: no free port found after trying ${candidatePort}.`);
+          reject(err);
+          return;
+        }
+        logger.error('Backend server failed to start:', err.message);
+        reject(err);
+      });
+    };
+    tryListen(getPreferredPort(startPort), 1);
+  });
+}
 async function runAutoMigrations() {
   try {
-    // ── Migration 030: holidays.shift + holidays.location ────────────────────
     const shiftExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'holidays' AND COLUMN_NAME = 'shift'`
@@ -22,8 +49,6 @@ async function runAutoMigrations() {
       await query(`UPDATE holidays SET shift = 'general' WHERE shift IS NULL`);
       logger.info('[MIGRATION] holidays.shift + holidays.location columns added');
     }
-
-    // ── Migration 031: reporting_history table ────────────────────────────────
     const rhExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reporting_history'`
@@ -47,8 +72,6 @@ async function runAutoMigrations() {
       `);
       logger.info('[MIGRATION] reporting_history table created');
     }
-
-    // ── Migration 032a: create workflow_delegates if missing ─────────────────
     const wdTableExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'workflow_delegates'`
@@ -71,8 +94,6 @@ async function runAutoMigrations() {
       `);
       logger.info('[MIGRATION] workflow_delegates table created');
     }
-
-    // ── Migration 032b: workflow_delegates.reason column ─────────────────────
     const wdReasonExists = await query(
       `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'workflow_delegates' AND COLUMN_NAME = 'reason'`
@@ -81,19 +102,13 @@ async function runAutoMigrations() {
       await query(`ALTER TABLE workflow_delegates ADD COLUMN reason VARCHAR(255) DEFAULT NULL AFTER to_date`);
       logger.info('[MIGRATION] workflow_delegates.reason column added');
     }
-
-    // ── Migration 033: seed org hierarchy ONLY if nobody has reporting_to set ──
-    // This runs once on a fresh DB. After that, manual assignments in the UI
-    // are preserved — we no longer overwrite on every restart.
     {
       const assigned = await query(
         `SELECT COUNT(*) AS cnt FROM employees WHERE reporting_to IS NOT NULL AND employee_status = 'Active'`
       );
       const alreadySeeded = Number(assigned[0]?.cnt) > 0;
-
       if (!alreadySeeded) {
         logger.info('[MIGRATION] No hierarchy set — running initial org hierarchy seed…');
-
         const emps = await query(`
           SELECT e.employee_id, CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS full_name,
                  e.department_id, e.designation_id, d.designation_name
@@ -102,65 +117,49 @@ async function runAutoMigrations() {
            WHERE e.employee_status = 'Active'
            ORDER BY e.employee_id
         `);
-
         if (emps.length > 1) {
           function rankDesig(name = '') {
             const n = (name || '').toLowerCase();
             if (/ceo|chief executive|president|founder|managing director/.test(n)) return 6;
-            if (/cto|cfo|coo|cpo|chief/.test(n))   return 5;
+            if (/cto|cfo|coo|cpo|chief/.test(n)) return 5;
             if (/vp|vice president|director/.test(n)) return 4;
-            if (/head|manager|lead/.test(n))          return 3;
+            if (/head|manager|lead/.test(n)) return 3;
             if (/senior|sr\.|principal|specialist/.test(n)) return 2;
             return 1;
           }
-
-          emps.forEach(e => { e._rank = rankDesig(e.designation_name); });
+          emps.forEach((e) => {e._rank = rankDesig(e.designation_name);});
           const sorted = [...emps].sort((a, b) => b._rank - a._rank || a.employee_id - b.employee_id);
           const ceo = sorted[0];
-
-          // CEO has no manager
           await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [ceo.employee_id]);
-
           for (const emp of sorted) {
             if (emp.employee_id === ceo.employee_id) continue;
-            const higher = sorted.filter(e => e._rank > emp._rank && e.employee_id !== emp.employee_id);
+            const higher = sorted.filter((e) => e._rank > emp._rank && e.employee_id !== emp.employee_id);
             let manager;
             if (higher.length) {
-              const minRank  = Math.min(...higher.map(e => e._rank));
-              const direct   = higher.filter(e => e._rank === minRank);
-              const sameDept = direct.filter(e => e.department_id === emp.department_id);
+              const minRank = Math.min(...higher.map((e) => e._rank));
+              const direct = higher.filter((e) => e._rank === minRank);
+              const sameDept = direct.filter((e) => e.department_id === emp.department_id);
               manager = sameDept[0] || direct[0];
             } else {
               manager = ceo;
             }
             await query(`UPDATE employees SET reporting_to = ? WHERE employee_id = ?`,
-              [manager.employee_id, emp.employee_id]);
+            [manager.employee_id, emp.employee_id]);
             logger.info(`[MIGRATION] ${emp.full_name} → ${manager.full_name}`);
           }
-
           logger.info(`[MIGRATION] Initial org hierarchy seeded for ${emps.length} employees`);
         }
       } else {
         logger.info('[MIGRATION] Org hierarchy already set — skipping auto-seed (preserving manual assignments)');
       }
     }
-
-    // ── Migration 034: ensure Admin user's employee is always the org root ───
-    // Runs every startup but only touches reporting_to for the admin employee
-    // and anyone else stuck with NULL reporting_to who isn't the admin.
     {
-      // Find the employee linked to the Admin role (role_id = 1)
       const adminRows = await query(
         `SELECT u.employee_id FROM users u WHERE u.role_id = 1 AND u.employee_id IS NOT NULL LIMIT 1`
       );
       if (adminRows.length && adminRows[0].employee_id) {
         const adminEmpId = adminRows[0].employee_id;
-
-        // Admin employee must have reporting_to = NULL (they're the root)
         await query(`UPDATE employees SET reporting_to = NULL WHERE employee_id = ?`, [adminEmpId]);
-
-        // Any OTHER active employee with reporting_to = NULL (orphaned roots)
-        // should report to the admin employee
         await query(
           `UPDATE employees
               SET reporting_to = ?
@@ -169,60 +168,117 @@ async function runAutoMigrations() {
               AND employee_status = 'Active'`,
           [adminEmpId, adminEmpId]
         );
-
         logger.info(`[MIGRATION 034] Org root fixed → employee_id=${adminEmpId} is the CEO`);
       }
     }
-
   } catch (err) {
     logger.warn('[MIGRATION] Auto-migration warning:', err.message);
   }
 }
-
-// ── Cron: Earned Leave auto-accrual ─────────────────────────────────────────
-// Runs on 1st of every month at 18:00 (6 PM) server time
-// Credits workingDays/14 earned leave to every active employee
 function startCronJobs() {
   try {
     const cron = require('node-cron');
     const leaveService = require('./services/leaveRequest.service');
-
-    // "0 18 1 * *" = minute 0, hour 18, day 1, every month, every weekday
+    const notify = require('./services/mailNotify.service');
+    const { callProcedure } = require('./config/db');
     cron.schedule('0 18 1 * *', async () => {
       const now = new Date();
-      // Credit previous month's earned leave
       const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
-      const prevYear  = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+      const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
       logger.info(`[CRON] Starting earned leave accrual for ${prevMonth}/${prevYear}`);
       try {
         const result = await leaveService.accrueEarnedLeave(prevMonth, prevYear);
-        logger.info(`[CRON] Earned leave accrual done — ${result.accrued} accrued, ${result.skipped} skipped`);
+        logger.info(`[CRON] Earned leave accrual done — ${result.accrued} accrued`);
       } catch (err) {
         logger.error('[CRON] Earned leave accrual failed:', err.message);
       }
     }, { timezone: 'Asia/Kolkata' });
-
-    logger.info('[CRON] Earned leave scheduler registered (1st of month at 18:00 IST)');
+    cron.schedule('0 11 * * 1-6', async () => {
+      logger.info('[CRON] Running missing check-in scan…');
+      try {
+        const results = await callProcedure('sp_get_missing_checkins()');
+        const rows = results[0] ?? [];
+        if (rows.length) {
+          notify.missingCheckInBulk(rows.map((r) => ({
+            employeeEmail: r.email,
+            employeeName: r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
+            date: r.attendance_date || new Date().toISOString().split('T')[0]
+          })));
+          logger.info(`[CRON] Missing check-in alerts queued for ${rows.length} employees`);
+        } else {
+          logger.info('[CRON] No missing check-ins today');
+        }
+      } catch (err) {
+        logger.warn('[CRON] Missing check-in scan failed:', err.message);
+      }
+    }, { timezone: 'Asia/Kolkata' });
+    cron.schedule('0 19 * * 1-6', async () => {
+      logger.info('[CRON] Running missing check-out scan…');
+      try {
+        const results = await callProcedure('sp_get_missing_checkouts()');
+        const rows = results[0] ?? [];
+        if (rows.length) {
+          notify.missingCheckOutBulk(rows.map((r) => ({
+            employeeEmail: r.email,
+            employeeName: r.employee_name || `${r.first_name || ''} ${r.last_name || ''}`.trim(),
+            date: r.attendance_date || new Date().toISOString().split('T')[0]
+          })));
+          logger.info(`[CRON] Missing check-out alerts queued for ${rows.length} employees`);
+        } else {
+          logger.info('[CRON] No missing check-outs today');
+        }
+      } catch (err) {
+        logger.warn('[CRON] Missing check-out scan failed:', err.message);
+      }
+    }, { timezone: 'Asia/Kolkata' });
+    cron.schedule('0 9 * * *', async () => {
+      logger.info('[CRON] Running document expiry scan…');
+      for (const days of [30, 7]) {
+        try {
+          const results = await callProcedure('sp_get_expiring_documents(?)', [days]);
+          const rows = results[0] ?? [];
+          if (rows.length) {
+            notify.documentExpiryBulk(rows.map((r) => ({
+              employeeEmail: r.email,
+              employeeName: r.employee_name || (r.first_name + ' ' + (r.last_name || '')).trim(),
+              documentName: r.document_name || r.doc_type || 'Document',
+              expiryDate: r.expiry_date,
+              daysLeft: days
+            })));
+            logger.info('[CRON] Document expiry alerts (' + days + 'd) queued for ' + rows.length + ' employees');
+          }
+        } catch (err) {
+          logger.warn('[CRON] Document expiry scan (' + days + 'd) failed:', err.message);
+        }
+      }
+    }, { timezone: 'Asia/Kolkata' });
+    logger.info('[CRON] All scheduled jobs registered (IST timezone)');
   } catch (err) {
-    logger.warn('[CRON] node-cron not available — scheduled accrual disabled:', err.message);
+    logger.warn('[CRON] node-cron not available -- scheduled jobs disabled:', err.message);
   }
 }
-
-// ── Production security guardrails ────────────────────────────────────────────
+function startEmailWorker() {
+  try {
+    const { createWorker } = require('./services/email/mailQueue');
+    const { processQueuedJob } = require('./services/email.service');
+    createWorker(processQueuedJob);
+    logger.info('[EMAIL] BullMQ worker started -- processing email queue');
+  } catch (err) {
+    logger.warn('[EMAIL] BullMQ worker could not start (Redis may be unavailable):', err.message);
+  }
+}
 function enforceSecrets() {
   const WEAK_SECRETS = [
-    'dev_secret_change_me',
-    'dev_refresh_secret_change_me',
-    'secret',
-    'changeme',
-    'password',
-    '',
-  ];
-
+  'dev_secret_change_me',
+  'dev_refresh_secret_change_me',
+  'secret',
+  'changeme',
+  'password',
+  ''];
   if (env === 'production') {
     if (WEAK_SECRETS.includes(jwt.secret)) {
       logger.error('FATAL: JWT_SECRET is set to a default/weak value. Set a strong random secret before running in production.');
-      logger.error('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+      logger.error('Generate one with: node -e "console.log(require(\"crypto\").randomBytes(64).toString(\"hex\"))"');
       process.exit(1);
     }
     if (WEAK_SECRETS.includes(jwt.refreshSecret)) {
@@ -231,41 +287,54 @@ function enforceSecrets() {
     }
     if (!salaryEncryptionKey || salaryEncryptionKey.length < 64 || salaryEncryptionKey === 'replace_with_64_char_hex_string') {
       logger.error('FATAL: SALARY_ENCRYPTION_KEY is missing or is still the placeholder value.');
-      logger.error('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+      logger.error('Generate one with: node -e "console.log(require(\"crypto\").randomBytes(32).toString(\"hex\"))"');
       process.exit(1);
     }
   } else {
-    // Non-production: warn but don't crash
     if (WEAK_SECRETS.includes(jwt.secret)) {
       logger.warn('WARNING: JWT_SECRET is using a weak default. Set a strong value before deploying to production.');
     }
   }
 }
-
 enforceSecrets();
-
+function checkSmtpConfig() {
+  const { email: emailCfg } = require('./config/env');
+  const missing = [];
+  if (!emailCfg.host) missing.push('SMTP_HOST');
+  if (!emailCfg.user) missing.push('SMTP_USER');
+  if (!emailCfg.pass) missing.push('SMTP_PASS');
+  if (missing.length) {
+    logger.warn('------------------------------------------------------------');
+    logger.warn('[EMAIL] SMTP is NOT configured - all emails will be skipped.');
+    logger.warn('[EMAIL] Missing in .env: ' + missing.join(', '));
+    logger.warn('[EMAIL] Set SMTP_HOST, SMTP_USER, SMTP_PASS then restart.');
+    logger.warn('------------------------------------------------------------');
+  } else {
+    logger.info('[EMAIL] SMTP configured -> ' + emailCfg.host + ':' + emailCfg.port + ' (user: ' + emailCfg.user + ')');
+  }
+}
 (async () => {
+  let dbReady = false;
   try {
     await testConnection();
+    dbReady = true;
     logger.info('Connected to MySQL database');
   } catch (err) {
-    logger.error('Failed to connect to MySQL database:', err.message);
-    logger.error('Make sure the database is running and .env is configured correctly.');
-    process.exit(1);
+    logger.warn('Database unavailable at startup:', err.message);
+    logger.warn('The backend will continue in degraded mode. Configure MySQL and restart to enable full database features.');
   }
-
-  await runAutoMigrations();
+  app.locals.dbConnected = dbReady;
+  if (dbReady) {
+    await runAutoMigrations();
+  }
+  checkSmtpConfig();
   startCronJobs();
-
-  const server = app.listen(port, () => {
-    logger.info(`HRMS backend listening on http://localhost:${port}`);
-  });
-
+  startEmailWorker();
+  const server = await listenWithFallback(port);
   const shutdown = (signal) => {
-    logger.info(`${signal} received, shutting down...`);
+    logger.info(signal + ' received, shutting down...');
     server.close(() => process.exit(0));
   };
-
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 })();

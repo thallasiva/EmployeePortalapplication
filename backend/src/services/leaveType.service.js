@@ -1,5 +1,4 @@
 const BaseService = require('./base.service');
-
 class LeaveTypeService extends BaseService {
   constructor() {
     super('leave_types', 'leave_type_id', [
@@ -7,5 +6,4 @@ class LeaveTypeService extends BaseService {
     ]);
   }
 }
-
 module.exports = new LeaveTypeService();

@@ -1,5 +1,4 @@
 const Joi = require('joi');
-
 const createJobSchema = Joi.object({
   title: Joi.string().max(150).required(),
   department_id: Joi.number().integer().optional().allow(null),
@@ -10,9 +9,7 @@ const createJobSchema = Joi.object({
   posted_on: Joi.date().iso().optional().allow(null),
   closing_date: Joi.date().iso().optional().allow(null),
 });
-
 const updateJobSchema = createJobSchema.fork(['title'], (s) => s.optional());
-
 const createApplicationSchema = Joi.object({
   job_id: Joi.number().integer().required(),
   applicant_name: Joi.string().max(120).required(),
@@ -22,11 +19,9 @@ const createApplicationSchema = Joi.object({
   source: Joi.string().max(50).optional().allow('', null),
   applicant_employee_id: Joi.number().integer().optional().allow(null),
 });
-
 const updateApplicationStatusSchema = Joi.object({
   status: Joi.string().valid('Applied', 'Shortlisted', 'Interview', 'Offered', 'Rejected', 'Hired').required(),
 });
-
 const createReferralSchema = Joi.object({
   job_id: Joi.number().integer().required(),
   candidate_name: Joi.string().max(120).required(),
@@ -34,11 +29,9 @@ const createReferralSchema = Joi.object({
   candidate_mobile: Joi.string().max(20).optional().allow('', null),
   resume_url: Joi.string().max(255).optional().allow('', null),
 });
-
 const updateReferralStatusSchema = Joi.object({
   status: Joi.string().valid('Submitted', 'Shortlisted', 'Interview', 'Hired', 'Rejected').required(),
 });
-
 module.exports = {
   createJobSchema,
   updateJobSchema,

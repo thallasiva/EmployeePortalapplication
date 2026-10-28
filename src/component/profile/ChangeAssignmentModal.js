@@ -1,5 +1,4 @@
 import React from "react";
-
 const ChangeAssignmentModal = ({
   isOpen,
   title,
@@ -14,13 +13,11 @@ const ChangeAssignmentModal = ({
   if (!isOpen) {
     return null;
   }
-
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/35 px-4 pt-6">
       <div className="w-full max-w-3xl rounded-md bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
           <h2 className="text-[22px] font-semibold text-slate-800">{title}</h2>
-
           <button
             type="button"
             onClick={onClose}
@@ -29,7 +26,6 @@ const ChangeAssignmentModal = ({
             X
           </button>
         </div>
-
         <div className="px-5 py-8">
           {mode === "select" ? (
             <select
@@ -53,7 +49,6 @@ const ChangeAssignmentModal = ({
               className="h-14 w-full rounded border border-slate-200 px-4 text-base text-slate-700 outline-none"
             />
           )}
-
           <div className="mt-8 flex flex-wrap gap-5">
             <button
               type="button"
@@ -62,7 +57,6 @@ const ChangeAssignmentModal = ({
             >
               Add
             </button>
-
             <button
               type="button"
               onClick={onClose}
@@ -76,5 +70,4 @@ const ChangeAssignmentModal = ({
     </div>
   );
 };
-
 export default ChangeAssignmentModal;

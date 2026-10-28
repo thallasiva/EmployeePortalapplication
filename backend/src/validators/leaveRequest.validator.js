@@ -1,5 +1,4 @@
 const Joi = require('joi');
-
 const applyLeaveSchema = Joi.object({
   leave_type_id: Joi.number().integer().required(),
   from_date: Joi.date().iso().required(),
@@ -9,10 +8,8 @@ const applyLeaveSchema = Joi.object({
   days: Joi.number().positive().required(),
   reason: Joi.string().max(255).optional().allow('', null),
 });
-
 const reviewLeaveSchema = Joi.object({
   decision: Joi.string().valid('Approved', 'Rejected').required(),
   remarks: Joi.string().max(255).optional().allow('', null),
 });
-
 module.exports = { applyLeaveSchema, reviewLeaveSchema };

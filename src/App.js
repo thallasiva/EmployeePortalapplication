@@ -1,7 +1,6 @@
 import { ToastContainer } from 'react-toastify';
 import './App.css';
 import AppRoutes from './approutes';
-
 function App()
 {
   return (
@@ -22,5 +21,4 @@ function App()
     </>
   );
 }
-
 export default App;

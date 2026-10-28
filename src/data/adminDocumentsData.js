@@ -5,7 +5,6 @@ export const DOCUMENT_CATEGORIES = [
   { id: "templates", label: "Templates" },
   { id: "forms", label: "Forms" },
 ];
-
 export const INITIAL_ADMIN_DOCUMENTS = [
   {
     id: "doc-1",
@@ -128,17 +127,13 @@ export const INITIAL_ADMIN_DOCUMENTS = [
     recent: false,
   },
 ];
-
 let documentStore = [...INITIAL_ADMIN_DOCUMENTS];
-
 export function getAdminDocuments() {
   return documentStore;
 }
-
 export function getRecentDocuments(limit = 5) {
   return documentStore.filter((d) => d.recent).slice(0, limit);
 }
-
 export function addAdminDocument(payload) {
   const newDoc = {
     id: `doc-${Date.now()}`,

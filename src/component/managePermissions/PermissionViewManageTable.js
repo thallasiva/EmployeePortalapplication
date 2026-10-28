@@ -1,5 +1,4 @@
 import React from 'react';
-
 const ToggleSwitch = ({ enabled, onToggle }) =>
 {
   return (
@@ -15,7 +14,6 @@ const ToggleSwitch = ({ enabled, onToggle }) =>
     </button>
   );
 };
-
 const PermissionViewManageTable = ({ rows, values, onToggle }) =>
 {
   return (
@@ -25,7 +23,6 @@ const PermissionViewManageTable = ({ rows, values, onToggle }) =>
         <div className="px-5 py-3 text-center text-sm font-semibold text-slate-800">View</div>
         <div className="px-5 py-3 text-center text-sm font-semibold text-slate-800">Manage</div>
       </div>
-
       {rows.map((row, index) => (
         <div
           key={row.key}
@@ -35,14 +32,12 @@ const PermissionViewManageTable = ({ rows, values, onToggle }) =>
             <p className="text-sm font-medium text-slate-800">{row.label}</p>
             <p className="text-xs text-slate-500">{row.description}</p>
           </div>
-
           <div className="flex justify-center px-5 py-4">
             <ToggleSwitch
               enabled={values[row.key].view}
               onToggle={() => onToggle(row.key, 'view')}
             />
           </div>
-
           <div className="flex justify-center px-5 py-4">
             <ToggleSwitch
               enabled={values[row.key].manage}
@@ -54,5 +49,4 @@ const PermissionViewManageTable = ({ rows, values, onToggle }) =>
     </div>
   );
 };
-
 export default PermissionViewManageTable;

@@ -1,22 +1,13 @@
 import apiClient, { unwrap } from "./client";
-
-/** POST /auth/login -> { accessToken, refreshToken, user } OR { mfaRequired, mfaTempToken } */
 export const login = (email, password) =>
-  apiClient.post("/auth/login", { email, password }).then(unwrap);
-
-/** POST /auth/register */
+apiClient.post("/auth/login", { email, password }).then(unwrap);
 export const register = (payload) =>
-  apiClient.post("/auth/register", payload).then(unwrap);
-
-/** POST /auth/refresh — cookies handled automatically */
+apiClient.post("/auth/register", payload).then(unwrap);
 export const refresh = () =>
-  apiClient.post("/auth/refresh", {}).then(unwrap);
-
-/** GET /auth/me — cached for 60 s so repeated calls across components share one fetch */
+apiClient.post("/auth/refresh", {}).then(unwrap);
 let _meCache = null;
 let _meCacheAt = 0;
 const ME_TTL = 60_000;
-
 export const getCurrentUser = () => {
   const now = Date.now();
   if (_meCache && now - _meCacheAt < ME_TTL) return Promise.resolve(_meCache);
@@ -26,44 +17,22 @@ export const getCurrentUser = () => {
     return data;
   });
 };
-
-/** Bust the /me cache after logout or profile updates */
-export const bustMeCache = () => { _meCache = null; _meCacheAt = 0; };
-
-/** POST /auth/change-password */
+export const bustMeCache = () => {_meCache = null;_meCacheAt = 0;};
 export const changePassword = (currentPassword, newPassword) =>
-  apiClient.post("/auth/change-password", { currentPassword, newPassword }).then(unwrap);
-
-/** POST /auth/forgot-password */
+apiClient.post("/auth/change-password", { currentPassword, newPassword }).then(unwrap);
 export const forgotPassword = (email) =>
-  apiClient.post("/auth/forgot-password", { email }).then(unwrap);
-
-/** POST /auth/reset-password */
+apiClient.post("/auth/forgot-password", { email }).then(unwrap);
 export const resetPassword = (token, newPassword) =>
-  apiClient.post("/auth/reset-password", { token, newPassword }).then(unwrap);
-
-/** POST /auth/logout — server clears httpOnly cookies */
+apiClient.post("/auth/reset-password", { token, newPassword }).then(unwrap);
 export const logout = () =>
-  apiClient.post("/auth/logout", {}).then(unwrap).finally(bustMeCache);
-
-/* ── MFA ─────────────────────────────────────────────────────────────── */
-
-/** POST /auth/mfa/verify — verify TOTP code after login */
+apiClient.post("/auth/logout", {}).then(unwrap).finally(bustMeCache);
 export const verifyMfa = (mfaTempToken, code) =>
-  apiClient.post("/auth/mfa/verify", { mfaTempToken, code }).then(unwrap);
-
-/** GET /auth/mfa/status */
+apiClient.post("/auth/mfa/verify", { mfaTempToken, code }).then(unwrap);
 export const getMfaStatus = () =>
-  apiClient.get("/auth/mfa/status").then(unwrap);
-
-/** POST /auth/mfa/setup — generate TOTP secret + QR code */
+apiClient.get("/auth/mfa/status").then(unwrap);
 export const setupMfa = () =>
-  apiClient.post("/auth/mfa/setup", {}).then(unwrap);
-
-/** POST /auth/mfa/enable — confirm TOTP code to activate MFA */
+apiClient.post("/auth/mfa/setup", {}).then(unwrap);
 export const enableMfa = (code) =>
-  apiClient.post("/auth/mfa/enable", { code }).then(unwrap);
-
-/** POST /auth/mfa/disable — turn off MFA */
+apiClient.post("/auth/mfa/enable", { code }).then(unwrap);
 export const disableMfa = (code) =>
-  apiClient.post("/auth/mfa/disable", { code }).then(unwrap);
+apiClient.post("/auth/mfa/disable", { code }).then(unwrap);

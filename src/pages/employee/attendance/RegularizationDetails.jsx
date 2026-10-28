@@ -1,9 +1,7 @@
 import React from "react";
 import { ChevronLeft } from "lucide-react";
-
 export default function RegularizationDetails({ record, onBack }) {
   if (!record) return null;
-
   return (
     <div className="space-y-4">
       <button
@@ -14,7 +12,6 @@ export default function RegularizationDetails({ record, onBack }) {
         <ChevronLeft size={16} />
         Back to History
       </button>
-
       <div className="bg-white border border-sky-200 rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <p className="text-sm text-slate-600">
@@ -27,7 +24,6 @@ export default function RegularizationDetails({ record, onBack }) {
             {record.status}
           </span>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-amber-50/80 border-b border-amber-100">
           <div className="px-4 py-3 bg-amber-50/90">
             <p className="text-xs text-slate-500">Remarks</p>
@@ -43,7 +39,6 @@ export default function RegularizationDetails({ record, onBack }) {
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-8 space-y-3">
           <h3 className="text-sm font-medium text-slate-700">
@@ -86,7 +81,6 @@ export default function RegularizationDetails({ record, onBack }) {
             </table>
           </div>
         </div>
-
         <div className="lg:col-span-4">
           <div className="bg-white border border-slate-200 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-slate-700 mb-4">

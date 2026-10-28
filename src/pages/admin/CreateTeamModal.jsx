@@ -1,37 +1,30 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { DEPARTMENTS } from "../../data/teamsData";
-
 export default function CreateTeamModal({ open, onClose, onCreate }) {
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [description, setDescription] = useState("");
-
   if (!open) return null;
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim() || !department) return;
-
     onCreate({
       name: name.trim(),
       department,
       description: description.trim(),
     });
-
     setName("");
     setDepartment("");
     setDescription("");
     onClose();
   };
-
   const handleClose = () => {
     setName("");
     setDepartment("");
     setDescription("");
     onClose();
   };
-
   return (
     <div className="teams-modal-backdrop" onClick={handleClose}>
       <div
@@ -58,7 +51,6 @@ export default function CreateTeamModal({ open, onClose, onCreate }) {
             <X size={18} />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="teams-modal__form">
           <div className="teams-modal__field">
             <label htmlFor="team-name">
@@ -73,7 +65,6 @@ export default function CreateTeamModal({ open, onClose, onCreate }) {
               required
             />
           </div>
-
           <div className="teams-modal__field">
             <label htmlFor="team-department">
               Department <span className="teams-modal__required">*</span>
@@ -92,7 +83,6 @@ export default function CreateTeamModal({ open, onClose, onCreate }) {
               ))}
             </select>
           </div>
-
           <div className="teams-modal__field">
             <label htmlFor="team-description">Description</label>
             <textarea
@@ -103,7 +93,6 @@ export default function CreateTeamModal({ open, onClose, onCreate }) {
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-
           <div className="teams-modal__footer">
             <button
               type="button"

@@ -1,14 +1,8 @@
 const BaseService = require('./base.service');
-const { query, callProcedure } = require('../config/db');
-
-const LIST_SELECT = `
-  SELECT a.*, e.emp_code, CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name,
-         d.department_name
-    FROM attendance a
-    JOIN employees e ON e.employee_id = a.employee_id
-    LEFT JOIN departments d ON d.department_id = e.department_id
-`;
-
+const { callProcedure, query } = require('../config/db');
+function indiaDate() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+}
 class AttendanceService extends BaseService {
   constructor() {
     super('attendance', 'attendance_id', [
@@ -16,93 +10,97 @@ class AttendanceService extends BaseService {
       'work_hours', 'late_by_minutes', 'status', 'source',
     ]);
   }
-
   async list({ employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset } = {}) {
-    const where = [];
-    const params = [];
-
-    if (reporting_to) {
-      where.push('e.reporting_to = ?');
-      params.push(reporting_to);
-    }
-    if (employee_id) {
-      where.push('a.employee_id = ?');
-      params.push(employee_id);
-    }
-    if (department_id) {
-      where.push('e.department_id = ?');
-      params.push(department_id);
-    }
-    if (from_date) {
-      where.push('a.attendance_date >= ?');
-      params.push(from_date);
-    }
-    if (to_date) {
-      where.push('a.attendance_date <= ?');
-      params.push(to_date);
-    }
-    if (status) {
-      where.push('a.status = ?');
-      params.push(status);
-    }
-
-    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
-    let sql = `${LIST_SELECT} ${whereSql} ORDER BY a.attendance_date DESC, a.employee_id`;
-    if (limit !== undefined) {
-      sql += ' LIMIT ? OFFSET ?';
-      params.push(Number(limit), Number(offset || 0));
-    }
-
-    const rows = await query(sql, params);
-    const countRows = await query(
-      `SELECT COUNT(*) AS total FROM attendance a JOIN employees e ON e.employee_id = a.employee_id ${whereSql}`,
-      where.length ? params.slice(0, params.length - (limit !== undefined ? 2 : 0)) : []
+    const results = await callProcedure(
+      'sp_list_attendance(?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        employee_id   ?? null,
+        department_id ?? null,
+        from_date     ?? null,
+        to_date       ?? null,
+        status        ?? null,
+        reporting_to  ?? null,
+        limit != null ? Number(limit)       : null,
+        limit != null ? Number(offset || 0) : null,
+      ]
     );
-    return { rows, total: countRows[0]?.total || 0 };
+    return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
   }
-
   async getToday(employeeId) {
-    const rows = await query(`${LIST_SELECT} WHERE a.employee_id = ? AND a.attendance_date = CURDATE()`, [employeeId]);
-    return rows[0] || null;
+    const results = await callProcedure('sp_get_today_attendance(?)', [employeeId]);
+    const row = (results[0] ?? [])[0] ?? null;
+    if (!row) return null;
+    // Attach punches from result set 1
+    const punches = results[1] ?? [];
+    return { ...row, punches };
   }
-
   async monthly(employeeId, month, year) {
+    const results = await callProcedure('sp_get_monthly_attendance(?, ?, ?)', [employeeId, month, year]);
+    return results[0] ?? [];
+  }
+  async swipes(employeeId, date) {
     return query(
-      `${LIST_SELECT} WHERE a.employee_id = ? AND MONTH(a.attendance_date) = ? AND YEAR(a.attendance_date) = ?
-       ORDER BY a.attendance_date ASC`,
-      [employeeId, month, year]
+      `SELECT punch_id, punch_type, DATE_FORMAT(punch_time, '%H:%i') AS punch_time, location
+         FROM attendance_punches
+        WHERE employee_id = ? AND attendance_date = ?
+        ORDER BY punch_time ASC, punch_id ASC`,
+      [employeeId, date]
     );
   }
-
-  async checkIn(employeeId, { date, time, shift_start } = {}) {
-    const checkDate = date || new Date().toISOString().slice(0, 10);
+  async checkIn(employeeId, { date, time, shift_start, lat, lng, location } = {}) {
+    const checkDate = date || indiaDate();
     const checkTime = time || new Date().toTimeString().slice(0, 8);
-    await callProcedure('sp_employee_checkin(?, ?, ?, ?)', [
-      employeeId,
-      checkDate,
-      checkTime,
-      shift_start || '09:30:00',
+    // Always use 7-param version (lat/lng/location default to NULL if not provided)
+    await callProcedure('sp_employee_checkin(?, ?, ?, ?, ?, ?, ?)', [
+      employeeId, checkDate, checkTime, shift_start || '09:30:00',
+      lat != null ? Number(lat) : null,
+      lng != null ? Number(lng) : null,
+      location || null,
     ]);
     return this.getToday(employeeId);
   }
-
-  async checkOut(employeeId, { date, time } = {}) {
-    const checkDate = date || new Date().toISOString().slice(0, 10);
-    const checkTime = time || new Date().toTimeString().slice(0, 8);
-    await callProcedure('sp_employee_checkout(?, ?, ?)', [employeeId, checkDate, checkTime]);
+  async breakStart(employeeId, { date, time, lat, lng, location } = {}) {
+    const d = date || new Date().toISOString().slice(0, 10);
+    const t = time || new Date().toTimeString().slice(0, 8);
+    await callProcedure('sp_break_start(?, ?, ?, ?, ?, ?)', [
+      employeeId, d, t,
+      lat  != null ? Number(lat)  : null,
+      lng  != null ? Number(lng)  : null,
+      location || null,
+    ]);
     return this.getToday(employeeId);
   }
-
+  async breakEnd(employeeId, { date, time, lat, lng, location } = {}) {
+    const d = date || new Date().toISOString().slice(0, 10);
+    const t = time || new Date().toTimeString().slice(0, 8);
+    await callProcedure('sp_break_end(?, ?, ?, ?, ?, ?)', [
+      employeeId, d, t,
+      lat  != null ? Number(lat)  : null,
+      lng  != null ? Number(lng)  : null,
+      location || null,
+    ]);
+    return this.getToday(employeeId);
+  }
+  async checkOut(employeeId, { date, time, lat, lng, location } = {}) {
+    const checkDate = date || indiaDate();
+    const checkTime = time || new Date().toTimeString().slice(0, 8);
+    // Always use 6-param version (lat/lng/location default to NULL if not provided)
+    await callProcedure('sp_employee_checkout(?, ?, ?, ?, ?, ?)', [
+      employeeId, checkDate, checkTime,
+      lat != null ? Number(lat) : null,
+      lng != null ? Number(lng) : null,
+      location || null,
+    ]);
+    return this.getToday(employeeId);
+  }
   async dashboard(date) {
     const checkDate = date || new Date().toISOString().slice(0, 10);
     const results = await callProcedure('sp_attendance_dashboard(?)', [checkDate]);
     return results[0]?.[0] || null;
   }
-
   async teamLeaveCalendar(year, month) {
     const results = await callProcedure('sp_team_leave_calendar(?, ?)', [year, month]);
     return results[0] || [];
   }
 }
-
 module.exports = new AttendanceService();

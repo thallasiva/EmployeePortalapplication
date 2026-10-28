@@ -1,24 +1,7 @@
-/**
- * Simplified, approximate Indian income-tax / TDS computation used to
- * populate the "TDS Details", "Deduction Under Chapter VI-A", "Income Tax
- * Deduction" and "Tax Paid Details" sections of a payslip.
- *
- * IMPORTANT: This is a simplified estimate for payslip display purposes
- * only (no real income-tax engine exists in this system). It uses the
- * old-regime slab rates with the Section 87A rebate and a flat 4%
- * education/health cess, and projects each earnings component to an
- * annual figure by multiplying the monthly amount by 12.
- */
-
 const STANDARD_DEDUCTION = 50000;
-
-// Old-regime slabs (non-senior citizen), FY default.
 function slabTax(taxableIncome) {
   let income = Math.max(0, Number(taxableIncome) || 0);
-
-  // Section 87A rebate: no tax if total income <= 5,00,000
   if (income <= 500000) return 0;
-
   let tax = 0;
   if (income > 1000000) {
     tax += (income - 1000000) * 0.3;
@@ -33,57 +16,47 @@ function slabTax(taxableIncome) {
   }
   return Math.round(tax);
 }
-
 const FY_MONTH_ORDER = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-
-// Calendar month (1-12) -> 1-based position within the Apr-Mar financial year.
 function fyMonthIndex(month) {
   const m = Number(month);
   return m >= 4 ? m - 3 : m + 9;
 }
-
-/**
- * @param {Object} params
- * @param {{label: string, amount: number}[]} params.earnings - monthly earnings components
- * @param {number} params.pfMonthly - monthly employee PF deduction
- * @param {number} params.professionTaxMonthly - monthly professional tax deduction
- * @param {number} params.month - payslip month (1-12)
- * @param {number} params.year - payslip year
- * @returns {Object} TDS / income-tax section data
- */
-function computeTdsSection({ earnings = [], pfMonthly = 0, professionTaxMonthly = 0, month, year }) {
-  const tdsRows = earnings
-    .filter((e) => Number(e.amount) > 0)
-    .map((e) => {
-      const gross = Math.round(Number(e.amount) * 12);
-      return { label: e.label, gross, exempt: 0, taxable: gross };
-    });
-
+function computeTdsSection({ earnings = [], pfMonthly = 0, professionTaxMonthly = 0, approvedProofs = [], taxRegime = 'old', month, year }) {
+  const tdsRows = earnings.
+  filter((e) => Number(e.amount) > 0).
+  map((e) => {
+    const gross = Math.round(Number(e.amount) * 12);
+    return { label: e.label, gross, exempt: 0, taxable: gross };
+  });
   const grossSalary = tdsRows.reduce((sum, r) => sum + r.gross, 0);
-
   const pfAnnual = Math.round((Number(pfMonthly) || 0) * 12);
-  const chapterVIA = pfAnnual > 0 ? [{ label: 'PF', amount: pfAnnual }] : [];
+  const proofTotals = approvedProofs.reduce((totals, proof) => {
+    const key = String(proof.section_key || '').toUpperCase();
+    const type = String(proof.investment_type || '').toLowerCase();
+    const section = key || (type.includes('medical') ? '80D' : type.includes('nps') ? '80CCD(1B)' : '80C');
+    totals[section] = (totals[section] || 0) + Number(proof.actual_amount || 0);
+    return totals;
+  }, {});
+  const oldRegime = String(taxRegime || 'old').toLowerCase() !== 'new';
+  const chapterVIA = oldRegime ? [
+    { label: '80C / PF', amount: Math.min(150000, pfAnnual + (proofTotals['80C'] || 0)) },
+    { label: '80CCD(1B)', amount: Math.min(50000, proofTotals['80CCD(1B)'] || 0) },
+    { label: '80D', amount: Math.min(50000, proofTotals['80D'] || 0) }
+  ].filter(x => x.amount > 0) : [];
   const totalVIADeduction = chapterVIA.reduce((sum, r) => sum + r.amount, 0);
-
   const professionTax = Math.round((Number(professionTaxMonthly) || 0) * 12);
-
   const totalIncome = Math.max(0, grossSalary - STANDARD_DEDUCTION - totalVIADeduction);
   const totalTax = slabTax(totalIncome);
   const educationCess = Math.round(totalTax * 0.04);
-
   const taxDeductedPrevEmployer = 0;
   const monthsElapsed = fyMonthIndex(month);
-  // Monthly Projected Tax: the employee's annual tax liability (incl. cess)
-  // spread evenly across the 12 months of the financial year.
   const monthlyProjectedTax = Math.round((totalTax + educationCess) / 12);
   const taxDeductedTillDate = monthlyProjectedTax * monthsElapsed;
   const taxToBeDeducted = totalTax + educationCess - taxDeductedPrevEmployer;
-
   const taxPaidByMonth = {};
   FY_MONTH_ORDER.forEach((m, idx) => {
     taxPaidByMonth[m] = idx < monthsElapsed ? monthlyProjectedTax : null;
   });
-
   return {
     rows: tdsRows,
     chapterVIA,
@@ -98,10 +71,9 @@ function computeTdsSection({ earnings = [], pfMonthly = 0, professionTaxMonthly 
       taxDeductedPrevEmployer,
       taxDeductedTillDate,
       taxToBeDeducted,
-      monthlyProjectedTax,
+      monthlyProjectedTax
     },
-    taxPaidByMonth,
+    taxPaidByMonth
   };
 }
-
 module.exports = { computeTdsSection, slabTax, fyMonthIndex, FY_MONTH_ORDER };

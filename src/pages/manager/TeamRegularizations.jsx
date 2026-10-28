@@ -1,31 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import { listRegularizations, reviewRegularization } from "../../api/attendance.api";
-import { successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
-
 const STATUS_BADGE = {
   Pending: "pending",
   Approved: "approved",
   Rejected: "rejected",
 };
-
 function formatDate(val) {
   if (!val) return "—";
   const d = new Date(val);
   return isNaN(d) ? String(val) : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
-
 function fmt(val) {
   if (!val) return "—";
   return String(val).slice(0, 5);
 }
-
 const TeamRegularizations = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const load = () => {
     setLoading(true);
     listRegularizations({ limit: 200 })
@@ -33,9 +28,7 @@ const TeamRegularizations = () => {
       .catch(() => setRequests([]))
       .finally(() => setLoading(false));
   };
-
   useEffect(() => { load(); }, []);
-
   const updateStatus = (id, decision) => {
     reviewRegularization(id, { decision })
       .then(() => {
@@ -43,20 +36,17 @@ const TeamRegularizations = () => {
         load();
       })
       .catch((err) => {
-        errorToast(err?.response?.data?.message || "Failed to update request.");
+        apiErrorToast(err, "Failed to update request.");
         load();
       });
   };
-
   return (
     <div className="admin-dash space-y-4">
       <ManagerTabs />
-
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Regularization Requests</h1>
         <p className="text-gray-500 mt-1">Review attendance regularization requests from your team.</p>
       </div>
-
       <div className="space-y-3">
         {loading ? (
           <p className="text-sm text-gray-400 text-center py-8">Loading requests…</p>
@@ -82,7 +72,6 @@ const TeamRegularizations = () => {
                   <p className="text-xs text-gray-400 mt-1">Remarks: {r.remarks}</p>
                 )}
               </div>
-
               <div className="flex items-center gap-3">
                 <span className={`admin-status-badge ${STATUS_BADGE[r.status] || "pending"}`}>
                   {r.status}
@@ -113,5 +102,4 @@ const TeamRegularizations = () => {
     </div>
   );
 };
-
 export default TeamRegularizations;

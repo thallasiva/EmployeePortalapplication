@@ -1,5 +1,5 @@
 import React from "react";
-
+import { X } from "lucide-react";
 const SuccessModal = ({
   isOpen,
   title = "Success",
@@ -13,18 +13,15 @@ const SuccessModal = ({
   if (!isOpen) {
     return null;
   }
-
   const handleConfirm = () => {
     if (typeof onConfirm === "function") {
       onConfirm();
     }
-
     const event = new CustomEvent(eventName, {
       detail: eventDetail,
     });
     window.dispatchEvent(event);
   };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 py-8">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
@@ -37,11 +34,11 @@ const SuccessModal = ({
             type="button"
             onClick={onClose}
             className="text-slate-500 hover:text-slate-900"
+            aria-label="Close"
           >
-            ×
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
-
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
@@ -62,5 +59,4 @@ const SuccessModal = ({
     </div>
   );
 };
-
 export default SuccessModal;

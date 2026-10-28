@@ -2,11 +2,9 @@ import React, { useMemo, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import HiringProfileCardsIllustration from "./HiringProfileCardsIllustration";
 import { MY_REFERRALS, REFERRAL_JOB_OPTIONS } from "../../../data/hiringFilters";
-
 export default function MyReferrals({ onReferCandidate }) {
   const [search, setSearch] = useState("");
   const [jobFilter, setJobFilter] = useState("all");
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return MY_REFERRALS.filter((row) => {
@@ -15,11 +13,9 @@ export default function MyReferrals({ onReferCandidate }) {
       return true;
     });
   }, [search, jobFilter]);
-
   return (
     <div className="hiring-simple-page">
       <h1 className="hiring-simple-page__title">My Referrals</h1>
-
       <div className="hiring-simple-page__toolbar">
         <div className="hiring-search-wrap hiring-search-wrap--inline">
           <input
@@ -31,7 +27,6 @@ export default function MyReferrals({ onReferCandidate }) {
           />
           <Search size={18} className="hiring-search__icon" />
         </div>
-
         <div className="hiring-select-wrap">
           <select
             className="hiring-select"
@@ -48,14 +43,12 @@ export default function MyReferrals({ onReferCandidate }) {
           <ChevronDown size={16} className="hiring-select__chevron" />
         </div>
       </div>
-
       <div className="hiring-results hiring-results--simple">
         <div className="hiring-results__header hiring-results__header--3col">
           <span>Candidate Name</span>
           <span>Referred in</span>
           <span>Status</span>
         </div>
-
         <div className="hiring-results__body">
           {filtered.length === 0 ? (
             <div className="hiring-empty hiring-empty--cta">

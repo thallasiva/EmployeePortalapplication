@@ -1,6 +1,3 @@
-/**
- * Standard success response envelope.
- */
 class ApiResponse {
   constructor(statusCode, data = null, message = 'Success', meta = undefined) {
     this.success = statusCode < 400;
@@ -9,10 +6,8 @@ class ApiResponse {
     this.data = data;
     if (meta) this.meta = meta;
   }
-
   send(res) {
     return res.status(this.statusCode).json(this);
   }
 }
-
 module.exports = ApiResponse;

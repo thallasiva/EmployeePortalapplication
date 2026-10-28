@@ -1,109 +1,98 @@
-// AppRoutes.jsx
-
-import React from "react";
+import React, { lazy } from "react";
 import {
   Navigate,
   Route,
   Routes,
-  useLocation,
-} from "react-router-dom";
-
-import Layout from "./component/layout";
-
-import AdminRoutes from "./routes/AdminRoutes";
-import EmployeeRoutes from "./routes/EmployeeRoutes";
-import ManagerRoutes from "./routes/ManagerRoutes";
-
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import Register from "./pages/Register";
-import PayslipPrintView from "./pages/payslip/PayslipPrintView";
-import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager } from "./data/auth";
-
-const AppRoutes = () => {
+  useLocation } from
+"react-router-dom";
+import LazyPage from "./routes/LazyPage";
+import PerformanceDemoRoute from "./routes/PerformanceDemoRoute";
+import { getStoredUser, getHomePath, isAdmin, isEmployee, isReportingManager, isRecruitmentRole, canViewTeamOverview } from "./data/auth";
+const Layout = lazy(() => import("./component/layout"));
+const AdminRoutes = lazy(() => import("./routes/AdminRoutes"));
+const EmployeeRoutes = lazy(() => import("./routes/EmployeeRoutes"));
+const ManagerRoutes = lazy(() => import("./routes/ManagerRoutes"));
+const RecruiterRoutes = lazy(() => import("./routes/RecruiterRoutes"));
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Register = lazy(() => import("./pages/Register"));
+const PayslipPrintView = lazy(() => import("./pages/payslip/PayslipPrintView"));
+const JoiningFormalities = lazy(() => import("./pages/joining/JoiningFormalities"));
+const TakeInterview = lazy(() => import("./pages/aiInterview/TakeInterview"));
+const AppRoutes = () =>
+{
   const location = useLocation();
   const user = getStoredUser();
   void location.key;
-
   return (
     <Routes>
-
-      {/* DEFAULT */}
+      {}
       <Route
         path="/"
-        element={<Navigate to={getHomePath(user)} replace />}
-      />
-
-      {/* AUTH */}
+        element={<Navigate to={getHomePath(user)} replace />} />
+      {}
       <Route
         path="/login"
-        element={<Login />}
-      />
-
+        element={<LazyPage label="Loading login..."><Login /></LazyPage>} />
       <Route
         path="/forgotpwd"
-        element={<ForgotPassword />}
-      />
-
+        element={<LazyPage label="Loading reset page..."><ForgotPassword /></LazyPage>} />
       <Route
         path="/register"
-        element={<Register />}
-      />
-
-      {/* PRINTABLE PAYSLIP — full-page view, accessible to any authenticated user
-          (the backend enforces self-access or payroll:view permission) */}
+        element={<LazyPage label="Loading registration..."><Register /></LazyPage>} />
+      {}
       <Route
         path="/payslip/:id/print"
-        element={user ? <PayslipPrintView /> : <Navigate to="/login" replace />}
-      />
-
-      {/* ADMIN */}
+        element={user ? <LazyPage label="Loading payslip..."><PayslipPrintView /></LazyPage> : <Navigate to="/login" replace />} />
+      {}
+      <Route path="/joining/:token" element={<LazyPage label="Loading..."><JoiningFormalities /></LazyPage>} />
+      {/* AI Interview — public, no auth required */}
+      <Route path="/ai-interview/:token" element={<LazyPage label="Loading interview..."><TakeInterview /></LazyPage>} />
+      <Route path="/performance-showcase" element={<PerformanceDemoRoute />} />
+      {}
       <Route
         path="/dashboard/*"
         element={
-          isAdmin(user) ? (
-            <Layout />
-          ) : (
-            <Navigate to={getHomePath(user)} replace />
-          )
-        }
-      >
-        <Route path="*" element={<AdminRoutes />} />
+        isAdmin(user) ?
+        <Layout /> :
+        <Navigate to={getHomePath(user)} replace />
+        }>
+        <Route path="*" element={<LazyPage label="Loading admin module..."><AdminRoutes /></LazyPage>} />
       </Route>
-
-      {/* REPORTING MANAGER */}
+      {}
       <Route
         path="/manager/*"
         element={
-          isReportingManager(user) ? (
-            <Layout />
-          ) : (
-            <Navigate to={getHomePath(user)} replace />
-          )
-        }
-      >
-        <Route path="*" element={<ManagerRoutes />} />
+        canViewTeamOverview(user) ?
+        <Layout /> :
+        <Navigate to={getHomePath(user)} replace />
+        }>
+        <Route path="*" element={<LazyPage label="Loading manager module..."><ManagerRoutes /></LazyPage>} />
       </Route>
-
-      {/* EMPLOYEE */}
+      {}
       <Route
         path="/employee/*"
         element={
-          isEmployee(user) || isReportingManager(user) ? (
-            <Layout />
-          ) : (
-            <Navigate to={getHomePath(user)} replace />
-          )
-        }
-      >
+        isEmployee(user) || isReportingManager(user) || isRecruitmentRole(user) ?
+        <Layout /> :
+        <Navigate to={getHomePath(user)} replace />
+        }>
         <Route
           path="*"
-          element={<EmployeeRoutes />}
-        />
+          element={<LazyPage label="Loading employee module..."><EmployeeRoutes /></LazyPage>} />
       </Route>
-
-    </Routes>
-  );
+      {}
+      <Route
+        path="/recruiter/*"
+        element={
+        isRecruitmentRole(user) ?
+        <Layout /> :
+        <Navigate to={getHomePath(user)} replace />
+        }>
+        <Route path="*" element={<LazyPage label="Loading recruiter module..."><RecruiterRoutes /></LazyPage>} />
+      </Route>
+      {}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>);
 };
-
 export default AppRoutes;

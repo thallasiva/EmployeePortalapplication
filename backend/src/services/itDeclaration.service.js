@@ -1,293 +1,191 @@
 const path = require('path');
-const fs   = require('fs');
-const { query } = require('../config/db');
-const ApiError  = require('../utils/ApiError');
-
-/* ── Cycle ───────────────────────────────────────────────────────────────── */
+const fs = require('fs');
+const { query, callProcedure } = require('../config/db');
+const ApiError = require('../utils/ApiError');
 async function getLatestCycle() {
-  const [row] = await query(
-    `SELECT c.*, CONCAT(e.first_name,' ',e.last_name) AS created_by_name
-     FROM it_declaration_cycles c
-     LEFT JOIN employees e ON e.employee_id = c.created_by
-     ORDER BY c.cycle_id DESC LIMIT 1`
-  );
-  return row || null;
+  const results = await callProcedure('sp_get_latest_it_cycle()');
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function getAllCycles() {
-  return query(`SELECT * FROM it_declaration_cycles ORDER BY cycle_id DESC`);
+  const results = await callProcedure('sp_get_all_it_cycles()');
+  return results[0] ?? [];
 }
-
 async function createCycle(adminEmployeeId, { fy_label, fy_start_year, start_date, end_date }) {
   if (!fy_label || !fy_start_year) throw ApiError.badRequest('fy_label and fy_start_year are required');
-  const result = await query(
-    `INSERT INTO it_declaration_cycles (fy_label, fy_start_year, start_date, end_date, created_by)
-     VALUES (?,?,?,?,?)`,
-    [fy_label, fy_start_year, start_date || null, end_date || null, adminEmployeeId]
+  const results = await callProcedure('sp_create_it_cycle(?, ?, ?, ?, ?, @cycle_id)', [
+  fy_label, fy_start_year, start_date || null, end_date || null, adminEmployeeId]
   );
-  const [row] = await query(`SELECT * FROM it_declaration_cycles WHERE cycle_id=?`, [result.insertId]);
-  return row;
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function updateCycle(cycleId, data) {
-  const fields = [];
-  const vals   = [];
-  ['fy_label','start_date','end_date'].forEach(k => {
-    if (data[k] !== undefined) { fields.push(`${k}=?`); vals.push(data[k]); }
-  });
-  if (!fields.length) throw ApiError.badRequest('Nothing to update');
-  vals.push(cycleId);
-  await query(`UPDATE it_declaration_cycles SET ${fields.join(',')} WHERE cycle_id=?`, vals);
-  const [row] = await query(`SELECT * FROM it_declaration_cycles WHERE cycle_id=?`, [cycleId]);
-  return row;
+  const { fy_label = null, start_date = null, end_date = null } = data;
+  if (!fy_label && !start_date && !end_date) throw ApiError.badRequest('Nothing to update');
+  const results = await callProcedure('sp_update_it_cycle(?, ?, ?, ?)', [
+  cycleId, fy_label ?? null, start_date ?? null, end_date ?? null]
+  );
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function toggleCycleStatus(cycleId, adminEmployeeId) {
-  const [cycle] = await query(`SELECT * FROM it_declaration_cycles WHERE cycle_id=?`, [cycleId]);
-  if (!cycle) throw ApiError.notFound('Cycle not found');
-  // deactivate all others first
-  await query(`UPDATE it_declaration_cycles SET status='inactive'`);
-  const newStatus = cycle.status === 'active' ? 'inactive' : 'active';
-  await query(
-    `UPDATE it_declaration_cycles SET status=?, created_by=? WHERE cycle_id=?`,
-    [newStatus, adminEmployeeId, cycleId]
-  );
-  const [row] = await query(`SELECT * FROM it_declaration_cycles WHERE cycle_id=?`, [cycleId]);
-  return row;
+  const results = await callProcedure('sp_toggle_it_cycle_status(?, ?)', [cycleId, adminEmployeeId]);
+  return (results[0] ?? [])[0] ?? null;
 }
-
-/* ── Employee Declaration ─────────────────────────────────────────────────── */
 async function getOrCreateDeclaration(employeeId, cycleId) {
-  let [decl] = await query(
-    `SELECT * FROM it_declarations WHERE employee_id=? AND cycle_id=?`,
-    [employeeId, cycleId]
+  const results = await callProcedure('sp_get_or_create_it_declaration(?, ?, @decl_id)', [
+  employeeId, cycleId]
   );
-  if (!decl) {
-    const r = await query(
-      `INSERT INTO it_declarations (cycle_id, employee_id) VALUES (?,?)`,
-      [cycleId, employeeId]
-    );
-    [decl] = await query(`SELECT * FROM it_declarations WHERE declaration_id=?`, [r.insertId]);
-  }
-  return decl;
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function getMyDeclaration(employeeId) {
-  const cycle = await getLatestCycle();
-  if (!cycle) return { cycle: null, declaration: null, items: [] };
-
-  let [decl] = await query(
-    `SELECT * FROM it_declarations WHERE employee_id=? AND cycle_id=?`,
-    [employeeId, cycle.cycle_id]
-  );
-  const items = decl
-    ? await query(`SELECT * FROM it_declaration_items WHERE declaration_id=?`, [decl.declaration_id])
-    : [];
-
-  return { cycle, declaration: decl || null, items };
+  const results = await callProcedure('sp_get_my_it_declaration(?)', [employeeId]);
+  const cycle = (results[0] ?? [])[0] ?? null;
+  const declaration = (results[1] ?? [])[0] ?? null;
+  const items = results[2] ?? [];
+  return { cycle, declaration, items };
 }
-
 async function saveMyDeclaration(employeeId, { items, submit }) {
   const cycle = await getLatestCycle();
   if (!cycle) throw ApiError.notFound('No IT declaration cycle found');
   if (cycle.status !== 'active') throw ApiError.badRequest('IT Declaration cycle is not active');
-
+  if ((items || []).some((it) => Number(it?.declared_amount) > 0 && !it.section_key)) {
+    throw ApiError.badRequest('Each declared item needs a section_key');
+  }
   const decl = await getOrCreateDeclaration(employeeId, cycle.cycle_id);
   if (decl.status === 'submitted' || decl.status === 'approved') {
     throw ApiError.badRequest('Declaration already submitted');
   }
-
-  // Replace items
-  await query(`DELETE FROM it_declaration_items WHERE declaration_id=?`, [decl.declaration_id]);
+  await callProcedure('sp_replace_it_declaration_items(?)', [decl.declaration_id]);
   let total = 0;
   if (Array.isArray(items) && items.length) {
     for (const it of items) {
       const amt = Number(it.declared_amount) || 0;
       if (amt > 0) {
-        await query(
-          `INSERT INTO it_declaration_items (declaration_id, section_key, section_label, sub_label, declared_amount)
-           VALUES (?,?,?,?,?)`,
-          [decl.declaration_id, it.section_key, it.section_label, it.sub_label || null, amt]
+        await callProcedure('sp_insert_it_declaration_item(?, ?, ?, ?, ?)', [
+        decl.declaration_id, it.section_key, it.section_label, it.sub_label || null, amt]
         );
         total += amt;
       }
     }
   }
-
-  const newStatus  = submit ? 'submitted' : 'draft';
+  const newStatus = submit ? 'submitted' : 'draft';
   const submittedAt = submit ? new Date() : null;
-  await query(
-    `UPDATE it_declarations SET status=?, total_declared=?, submitted_at=?, admin_remarks=NULL WHERE declaration_id=?`,
-    [newStatus, total, submittedAt, decl.declaration_id]
+  await callProcedure('sp_update_it_declaration_status(?, ?, ?, ?)', [
+  decl.declaration_id, newStatus, total, submittedAt]
   );
-
   return getMyDeclaration(employeeId);
 }
-
-/* ── Proof of Investment ──────────────────────────────────────────────────── */
 async function getMyProofs(employeeId) {
-  const cycle = await getLatestCycle();
-  if (!cycle) return [];
-  const [decl] = await query(
-    `SELECT * FROM it_declarations WHERE employee_id=? AND cycle_id=?`,
-    [employeeId, cycle.cycle_id]
-  );
-  if (!decl) return [];
-  return query(
-    `SELECT p.*, CONCAT(e.first_name,' ',e.last_name) AS reviewed_by_name
-     FROM it_proof_documents p
-     LEFT JOIN employees e ON e.employee_id = p.reviewed_by
-     WHERE p.declaration_id=? ORDER BY p.uploaded_at DESC`,
-    [decl.declaration_id]
-  );
+  const results = await callProcedure('sp_get_my_it_proofs(?)', [employeeId]);
+  return results[0] ?? [];
 }
-
 async function uploadProof(employeeId, { investment_type, section_key, declared_amount, actual_amount }, file) {
+  if (!file) throw ApiError.badRequest('A PDF, JPG, or PNG proof document is required');
+  if (!investment_type) throw ApiError.badRequest('Investment type is required');
   const cycle = await getLatestCycle();
   if (!cycle) throw ApiError.notFound('No IT declaration cycle');
   if (cycle.status !== 'active') throw ApiError.badRequest('IT Declaration cycle is not active');
-
   const decl = await getOrCreateDeclaration(employeeId, cycle.cycle_id);
-
-  const result = await query(
-    `INSERT INTO it_proof_documents
-       (declaration_id, employee_id, investment_type, section_key, declared_amount, actual_amount, file_name, file_path)
-     VALUES (?,?,?,?,?,?,?,?)`,
-    [
-      decl.declaration_id, employeeId, investment_type,
-      section_key || null,
-      Number(declared_amount) || 0,
-      Number(actual_amount) || 0,
-      file ? file.originalname : null,
-      file ? file.filename     : null,
-    ]
+  const results = await callProcedure('sp_upload_it_proof(?, ?, ?, ?, ?, ?, ?, ?, @proof_id)', [
+  decl.declaration_id, employeeId, investment_type,
+  section_key || null,
+  Number(declared_amount) || 0,
+  Number(actual_amount) || 0,
+  file ? file.originalname : null,
+  file ? file.filename : null]
   );
-  const [row] = await query(`SELECT * FROM it_proof_documents WHERE proof_id=?`, [result.insertId]);
-  return row;
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function deleteMyProof(employeeId, proofId) {
-  const [proof] = await query(
-    `SELECT p.* FROM it_proof_documents p WHERE p.proof_id=? AND p.employee_id=?`,
-    [proofId, employeeId]
-  );
+  const proofResults = await callProcedure('sp_get_it_proof(?, ?, ?)', [proofId, employeeId, 0]);
+  const proof = (proofResults[0] ?? [])[0] ?? null;
   if (!proof) throw ApiError.notFound('Proof not found');
   if (proof.status !== 'pending') throw ApiError.badRequest('Only pending proofs can be deleted');
-
   if (proof.file_path) {
     const { upload: uploadConfig } = require('../config/env');
     const filePath = path.resolve(process.cwd(), uploadConfig.dir, proof.file_path);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   }
-  await query(`DELETE FROM it_proof_documents WHERE proof_id=?`, [proofId]);
+  await callProcedure('sp_delete_it_proof(?)', [proofId]);
   return { deleted: true };
 }
-
-/* ── Admin ────────────────────────────────────────────────────────────────── */
 async function getAllDeclarations({ cycleId, status, search } = {}) {
-  const cycle = cycleId
-    ? (await query(`SELECT * FROM it_declaration_cycles WHERE cycle_id=?`, [cycleId]))[0]
-    : await getLatestCycle();
-
-  // All employees
-  const employees = await query(
-    `SELECT e.employee_id, e.emp_code,
-            CONCAT(e.first_name,' ',e.last_name) AS employee_name,
-            e.email, e.emp_job_title AS job_title, d.department_name
-     FROM employees e
-     LEFT JOIN departments d ON d.department_id = e.department_id
-     ORDER BY e.first_name, e.last_name`
-  );
-
-  if (!cycle) return { cycle: null, declarations: employees.map(e => ({ ...e, declaration: null, items: [], proofs: [] })) };
-
-  const decls = await query(
-    `SELECT d.*,
-            CONCAT(rev.first_name,' ',rev.last_name) AS reviewed_by_name
-     FROM it_declarations d
-     LEFT JOIN employees rev ON rev.employee_id = d.reviewed_by
-     WHERE d.cycle_id=?`,
-    [cycle.cycle_id]
-  );
-  const declMap = {};
-  decls.forEach(d => { declMap[d.employee_id] = d; });
-
-  // Items + proofs per declaration
-  const declIds = decls.map(d => d.declaration_id).filter(Boolean);
-  let itemMap = {}, proofMap = {};
-  if (declIds.length) {
-    const items = await query(
-      `SELECT * FROM it_declaration_items WHERE declaration_id IN (${declIds.map(()=>'?').join(',')})`,
-      declIds
-    );
-    items.forEach(i => { if (!itemMap[i.declaration_id]) itemMap[i.declaration_id] = []; itemMap[i.declaration_id].push(i); });
-
-    const proofs = await query(
-      `SELECT * FROM it_proof_documents WHERE declaration_id IN (${declIds.map(()=>'?').join(',')})`,
-      declIds
-    );
-    proofs.forEach(p => { if (!proofMap[p.declaration_id]) proofMap[p.declaration_id] = []; proofMap[p.declaration_id].push(p); });
+  let cycle;
+  if (cycleId) {
+    const results = await callProcedure('sp_get_it_declaration_by_id(?)', [cycleId]);
+    const cyclesResult = await callProcedure('sp_get_all_it_cycles()');
+    cycle = (cyclesResult[0] ?? []).find((c) => c.cycle_id == cycleId) ?? null;
+  } else {
+    cycle = await getLatestCycle();
   }
-
-  let list = employees.map(emp => {
+  if (!cycle) {
+    const empResults = await callProcedure('sp_get_all_it_declarations(NULL)');
+    const employees = empResults[0] ?? [];
+    return { cycle: null, declarations: employees.map((e) => ({ ...e, declaration: null, items: [], proofs: [] })) };
+  }
+  const results = await callProcedure('sp_get_all_it_declarations(?)', [cycle.cycle_id]);
+  const employees = results[0] ?? [];
+  const decls = results[1] ?? [];
+  const allItems = results[2] ?? [];
+  const allProofs = results[3] ?? [];
+  const declMap = {};
+  decls.forEach((d) => {declMap[d.employee_id] = d;});
+  const itemMap = {};
+  allItems.forEach((i) => {
+    if (!itemMap[i.declaration_id]) itemMap[i.declaration_id] = [];
+    itemMap[i.declaration_id].push(i);
+  });
+  const proofMap = {};
+  allProofs.forEach((p) => {
+    if (!proofMap[p.declaration_id]) proofMap[p.declaration_id] = [];
+    proofMap[p.declaration_id].push(p);
+  });
+  let list = employees.map((emp) => {
     const decl = declMap[emp.employee_id] || null;
     return {
       ...emp,
       declaration: decl,
-      items:  decl ? (itemMap[decl.declaration_id]  || []) : [],
-      proofs: decl ? (proofMap[decl.declaration_id] || []) : [],
+      items: decl ? itemMap[decl.declaration_id] || [] : [],
+      proofs: decl ? proofMap[decl.declaration_id] || [] : []
     };
   });
-
   if (status && status !== 'all') {
-    list = list.filter(r => (r.declaration?.status || 'not_started') === status);
+    list = list.filter((r) => (r.declaration?.status || 'not_started') === status);
   }
   if (search) {
     const q = search.toLowerCase();
-    list = list.filter(r =>
-      r.employee_name?.toLowerCase().includes(q) ||
-      r.emp_code?.toLowerCase().includes(q) ||
-      r.department_name?.toLowerCase().includes(q)
+    list = list.filter((r) =>
+    r.employee_name?.toLowerCase().includes(q) ||
+    r.emp_code?.toLowerCase().includes(q) ||
+    r.department_name?.toLowerCase().includes(q)
     );
   }
-
   return { cycle, declarations: list };
 }
-
 async function reviewDeclaration(adminEmployeeId, declarationId, { status, admin_remarks }) {
-  if (!['approved','rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
-  await query(
-    `UPDATE it_declarations SET status=?, admin_remarks=?, reviewed_by=?, reviewed_at=NOW() WHERE declaration_id=?`,
-    [status, admin_remarks || null, adminEmployeeId, declarationId]
+  if (!['approved', 'rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
+  const results = await callProcedure('sp_review_it_declaration(?, ?, ?, ?)', [
+  adminEmployeeId, declarationId, status, admin_remarks || null]
   );
-  const [row] = await query(`SELECT * FROM it_declarations WHERE declaration_id=?`, [declarationId]);
-  return row;
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function reviewProof(adminEmployeeId, proofId, { status, admin_remarks }) {
-  if (!['verified','rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
-  await query(
-    `UPDATE it_proof_documents SET status=?, admin_remarks=?, reviewed_by=?, reviewed_at=NOW() WHERE proof_id=?`,
-    [status, admin_remarks || null, adminEmployeeId, proofId]
+  if (!['verified', 'rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
+  const results = await callProcedure('sp_review_it_proof(?, ?, ?, ?)', [
+  adminEmployeeId, proofId, status, admin_remarks || null]
   );
-  const [row] = await query(`SELECT * FROM it_proof_documents WHERE proof_id=?`, [proofId]);
-  return row;
+  return (results[0] ?? [])[0] ?? null;
 }
-
 async function getProofFile(proofId, employeeId, isAdmin) {
-  const where = isAdmin ? `proof_id=?` : `proof_id=? AND employee_id=?`;
-  const params = isAdmin ? [proofId] : [proofId, employeeId];
-  const [proof] = await query(`SELECT * FROM it_proof_documents WHERE ${where}`, params);
+  const results = await callProcedure('sp_get_it_proof(?, ?, ?)', [proofId, employeeId ?? null, isAdmin ? 1 : 0]);
+  const proof = (results[0] ?? [])[0] ?? null;
   if (!proof || !proof.file_path) throw ApiError.notFound('File not found');
   const { upload: uploadConfig } = require('../config/env');
   const filePath = path.resolve(process.cwd(), uploadConfig.dir, proof.file_path);
   if (!fs.existsSync(filePath)) throw ApiError.notFound('File not found on disk');
   return { filePath, fileName: proof.file_name || proof.file_path };
 }
-
 module.exports = {
   getLatestCycle, getAllCycles, createCycle, updateCycle, toggleCycleStatus,
   getMyDeclaration, saveMyDeclaration,
   getMyProofs, uploadProof, deleteMyProof,
-  getAllDeclarations, reviewDeclaration, reviewProof, getProofFile,
+  getAllDeclarations, reviewDeclaration, reviewProof, getProofFile
 };

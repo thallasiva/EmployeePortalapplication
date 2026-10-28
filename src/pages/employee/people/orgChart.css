@@ -3,18 +3,15 @@
   justify-content: center;
   min-width: 100%;
 }
-
 .org-tree ul {
   display: flex;
   padding-top: 20px;
   position: relative;
   justify-content: center;
 }
-
 .org-tree > ul {
   padding-top: 0;
 }
-
 .org-tree li {
   display: flex;
   flex-direction: column;
@@ -23,11 +20,9 @@
   position: relative;
   padding: 20px 10px 0;
 }
-
 .org-tree > ul > li {
   padding-top: 0;
 }
-
 .org-tree li::before,
 .org-tree li::after {
   content: "";
@@ -38,41 +33,33 @@
   width: 50%;
   height: 20px;
 }
-
 .org-tree li::after {
   right: auto;
   left: 50%;
   border-left: 1px solid #cbd5e1;
 }
-
 .org-tree li:only-child::after,
 .org-tree li:only-child::before {
   display: none;
 }
-
 .org-tree li:only-child {
   padding-top: 0;
 }
-
 .org-tree li:first-child::before,
 .org-tree li:last-child::after {
   border: 0 none;
 }
-
 .org-tree li:last-child::before {
   border-right: 1px solid #cbd5e1;
   border-radius: 0 6px 0 0;
 }
-
 .org-tree li:first-child::after {
   border-radius: 6px 0 0 0;
 }
-
 .org-tree > ul > li::before,
 .org-tree > ul > li::after {
   display: none;
 }
-
 .org-tree ul ul::before {
   content: "";
   position: absolute;
@@ -82,7 +69,6 @@
   width: 0;
   height: 20px;
 }
-
 .org-card {
   display: flex;
   flex-direction: column;
@@ -97,16 +83,13 @@
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
-
 .org-card--highlight {
   border-color: #f18200;
   box-shadow: 0 0 0 3px rgba(241, 130, 0, 0.15);
 }
-
 .org-card--dim {
   opacity: 0.35;
 }
-
 .org-avatar {
   width: 36px;
   height: 36px;
@@ -119,7 +102,6 @@
   margin-bottom: 3px;
   flex-shrink: 0;
 }
-
 .org-name {
   font-size: 12px;
   font-weight: 600;
@@ -130,7 +112,6 @@
   text-overflow: ellipsis;
   max-width: 140px;
 }
-
 .org-title {
   font-size: 10px;
   color: #64748b;
@@ -140,7 +121,6 @@
   text-overflow: ellipsis;
   max-width: 140px;
 }
-
 .org-badge {
   margin-top: 3px;
   font-size: 10px;
