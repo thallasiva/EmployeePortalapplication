@@ -137,7 +137,7 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
               <button
                 type="button"
                 onClick={() =>
-                  setCcList((prev) => [...prev, `colleague${prev.length + 1}@natit.com`])
+                  setCcList((prev) => [...prev, `colleague${prev.length + 1}@example.com`])
                 }
                 className="inline-flex items-center gap-2 text-sky-600 text-sm font-medium"
               >

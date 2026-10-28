@@ -1,6 +1,6 @@
-import apiClient from "./client";
+import apiClient, { API_BASE_URL } from "./client";
 import axios from "axios";
-const BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const BASE = API_BASE_URL;
 export const verifyJoiningToken = (token) =>
 axios.get(`${BASE}/joining/verify`, { params: { token } }).then((r) => r.data.data);
 export const getJoiningForm = (token) =>

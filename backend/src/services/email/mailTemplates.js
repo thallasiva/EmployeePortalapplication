@@ -11,7 +11,7 @@ const fmtDT = (d) => {
 };
 const fmtINR = (n) => n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '₹0';
 const co = (override) => esc(override || emailCfg.companyName || 'HRMS');
-const feUrl = () => emailCfg.frontendUrl || 'http://localhost:3000';
+const feUrl = () => emailCfg.frontendUrl || 'https://d2t478frm973wh.cloudfront.net';
 const ORANGE = '#f18200';
 const NAVY = '#1e3a5f';
 const CREAM = '#FFF8F0';
@@ -26,7 +26,7 @@ function getLogoTag() {
     _logoCache = `<img src="${esc(envLogo)}" alt="${co()}" style="height:48px;max-width:160px;object-fit:contain;display:block">`;
     return _logoCache;
   }
-  const backendUrl = (emailCfg.backendUrl || 'https://backend.natsoft.io').replace(/\/$/, '');
+  const backendUrl = (emailCfg.backendUrl || 'https://d2t478frm973wh.cloudfront.net').replace(/\/$/, '');
   const logoFileExists = fs.existsSync(DEFAULT_LOGO_PATH);
   if (logoFileExists) {
     _logoCache = `<img src="${backendUrl}/public/logo.png" alt="${co()}" style="height:48px;max-width:160px;object-fit:contain;display:block">`;

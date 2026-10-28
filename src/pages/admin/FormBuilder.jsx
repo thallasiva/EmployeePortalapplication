@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Eye, Save, Trash2, Edit2, X, GripVertical, Copy, Type, Hash, Calendar, List, CheckSquare, Circle, AlignLeft, Upload, Star, ToggleLeft, ChevronDown, ArrowLeft, Check } from "lucide-react";
+import { Plus, Eye, Save, Trash2, Edit2, Copy, Type, Hash, Calendar, List, CheckSquare, Circle, AlignLeft, Upload, Star, ToggleLeft, ChevronDown, ArrowLeft, Check } from "lucide-react";
 import { getRolesForSelect } from "../../data/auth";
 import { formsApi } from "../../api/settings.api";
-const BRAND = "#f18200";
 const FIELD_TYPES = [
   { type: "text", label: "Text Input", icon: <Type size={14} />, desc: "Single line text" },
   { type: "number", label: "Number", icon: <Hash size={14} />, desc: "Numeric input" },
@@ -16,12 +15,6 @@ const FIELD_TYPES = [
   { type: "toggle", label: "Yes/No", icon: <ToggleLeft size={14} />, desc: "Boolean toggle" },
 ];
 const CATS = ["HR", "Payroll", "Leave", "Attendance", "Performance", "Recruitment", "General"];
-const SEED_FORMS = [
-  { id: 1, name: "Employee Onboarding Form", fields: 8, category: "HR", status: "Published", published: true, assignedRoles: [1, 2, 3], updated: "01 Aug 2026" },
-  { id: 2, name: "Leave Request Form", fields: 5, category: "Leave", status: "Published", published: true, assignedRoles: [1, 2, 3, 4, 5], updated: "29 Jul 2026" },
-  { id: 3, name: "Performance Review Form", fields: 12, category: "Performance", status: "Draft", published: false, assignedRoles: [1, 3], updated: "28 Jul 2026" },
-  { id: 4, name: "Expense Claim Form", fields: 7, category: "General", status: "Published", published: true, assignedRoles: [1, 2, 4], updated: "25 Jul 2026" },
-];
 let _nextId = 100;
 const newField = (type) =>
 {
@@ -263,36 +256,54 @@ function BuilderView({ form, onBack, onSave })
 /* ── Main page ── */
 export default function FormBuilder()
 {
-  const [forms, setForms] = useState(SEED_FORMS);
+  const [forms, setForms] = useState([]);
   const [editing, setEditing] = useState(null); // null = list view
   const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     formsApi.list().then(data => {
-      if (Array.isArray(data) && data.length > 0) setForms(data);
-    }).catch(() => {});
+      if (Array.isArray(data)) setForms(data.map((form) => ({
+        ...form,
+        assignedRoles: form.assigned_roles || form.assignedRoles || [],
+        updated: form.updated_at || form.updated,
+        fields: Array.isArray(form.fields) ? form.fields : [],
+      })));
+    }).catch(() => setToast("Unable to load forms from the server.")).finally(() => setLoading(false));
   }, []);
-  const handleSave = (data) =>
+  const handleSave = async (data) =>
   {
     const payload = {
       ...data,
-      id: data.id || Date.now(),
       fields: Array.isArray(data.fields) ? data.fields : [],
       status: data.published ? "Published" : "Draft",
       published: data.published ?? data.status === "Published",
       assignedRoles: data.assignedRoles || []
     };
-    setForms((p) => p.find((f) => f.id === payload.id)
-      ? p.map((f) => (f.id === payload.id ? { ...f, ...payload } : f))
-      : [...p, payload]
-    );
-    setEditing(null);
-    setToast("Form saved successfully!");
-    setTimeout(() => setToast(""), 3000);
+    try {
+      const saved = payload.id
+        ? await formsApi.update(payload.id, payload)
+        : await formsApi.create(payload);
+      const normalized = {
+        ...saved,
+        assignedRoles: saved.assigned_roles || saved.assignedRoles || payload.assignedRoles,
+        updated: saved.updated_at || "Just now",
+        fields: Array.isArray(saved.fields) ? saved.fields : payload.fields,
+      };
+      setForms((previous) => payload.id
+        ? previous.map((form) => Number(form.id) === Number(payload.id) ? normalized : form)
+        : [normalized, ...previous]);
+      setEditing(null);
+      setToast("Form saved successfully.");
+      setTimeout(() => setToast(""), 3000);
+    } catch {
+      setToast("Unable to save the form. Please try again.");
+    }
   };
   if (editing !== null)
   {
     return (
       <div className="min-h-screen bg-[#f0f4f8] flex flex-col">
+        {toast && <div role="status" className="fixed top-4 right-4 z-50 rounded-xl bg-red-600 px-4 py-3 text-[13px] font-semibold text-white shadow-lg">{toast}</div>}
         <BuilderView form={editing} onBack={() => setEditing(null)} onSave={handleSave} />
       </div>
     );
@@ -300,7 +311,7 @@ export default function FormBuilder()
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {toast && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2">
+        <div role="status" className={`fixed top-4 right-4 z-50 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}>
           <Check size={14} className="inline -mt-0.5" /> {toast}
         </div>
       )}
@@ -344,7 +355,7 @@ export default function FormBuilder()
             <span className="col-span-2 text-center">Status</span>
             <span className="col-span-2 text-right">Actions</span>
           </div>
-          {forms.map(f => (
+          {loading ? <p className="p-8 text-center text-sm text-slate-400">Loading forms…</p> : forms.length === 0 ? <p className="p-8 text-center text-sm text-slate-400">No forms created yet.</p> : forms.map(f => (
             <div key={f.id} className="grid grid-cols-12 px-5 py-4 border-b border-[#f8fafc] items-center hover:bg-[#fafbff]">
               <div className="col-span-4">
                 <p className="text-[13px] font-semibold text-[#1e293b]">{f.name}</p>
@@ -362,11 +373,21 @@ export default function FormBuilder()
                 </span>
               </div>
               <div className="col-span-2 flex justify-end gap-2">
-                <button onClick={() => setEditing(f)} title="Edit"
+                <button onClick={async () => {
+                  try {
+                    const form = await formsApi.get(f.id);
+                    setEditing({ ...form, assignedRoles: form.assigned_roles || form.assignedRoles || [], fields: Array.isArray(form.fields) ? form.fields : [] });
+                  } catch { setToast("Unable to load the selected form."); }
+                }} title="Edit"
                   className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#fff8f0] text-[#94a3b8] hover:text-[#f18200]">
                   <Edit2 size={13} />
                 </button>
-                <button onClick={async () => { try { await formsApi.delete(f.id); } catch {} setForms(p => p.filter(x => x.id !== f.id)); }} title="Delete"
+                <button onClick={async () => {
+                  try {
+                    await formsApi.delete(f.id);
+                    setForms(p => p.filter(x => x.id !== f.id));
+                  } catch { setToast("Unable to delete the form."); }
+                }} title="Delete"
                   className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-50 text-[#94a3b8] hover:text-red-500">
                   <Trash2 size={13} />
                 </button>

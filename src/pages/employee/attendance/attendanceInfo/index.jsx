@@ -84,13 +84,15 @@ function buildDayMap(records = [], year, month) {
 export default function AttendanceInfo() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(8);
+  const [month, setMonth] = useState(now.getMonth() + 1);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [today, setToday] = useState(null);
   const [swipes, setSwipes] = useState([]);
   const [swipesLoading, setSwipesLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(() => `${now.getFullYear()}-08-01`);
+  const [selectedDate, setSelectedDate] = useState(
+    () => padDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
+  );
   /* fetch monthly records */
   useEffect(() => {
     setLoading(true);
@@ -168,7 +170,7 @@ export default function AttendanceInfo() {
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orange-300">Attendance overview</p>
               <h2 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
-                Your August, at a glance
+                Your {new Date(year, month - 1).toLocaleDateString("en-US", { month: "long" })}, at a glance
               </h2>
               <p className="mt-1 max-w-xl text-sm text-slate-300">
                 Review every day, punch time, and attendance status from one clear monthly view.

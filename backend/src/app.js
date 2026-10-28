@@ -95,7 +95,7 @@ const authLimiter = rateLimit({
 });
 const payrollLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 60,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many payroll requests. Please slow down.' }

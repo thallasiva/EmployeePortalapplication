@@ -8,6 +8,11 @@ async function ensureTables() {
     value TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`);
+  await query(`CREATE TABLE IF NOT EXISTS hr_app_settings (
+    \`key\` VARCHAR(100) PRIMARY KEY,
+    value JSON NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`);
   await query(`CREATE TABLE IF NOT EXISTS hr_email_templates (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
@@ -60,6 +65,7 @@ async function ensureTables() {
     category VARCHAR(100),
     status ENUM('Draft','Published') DEFAULT 'Draft',
     fields JSON,
+    assigned_roles JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`);
@@ -67,10 +73,15 @@ async function ensureTables() {
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
     widgets JSON,
+    role_name VARCHAR(100) NOT NULL DEFAULT 'Admin',
     is_active TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`);
+  const formRoleColumn = await query("SHOW COLUMNS FROM hr_custom_forms LIKE 'assigned_roles'");
+  if (!formRoleColumn.length) await query('ALTER TABLE hr_custom_forms ADD COLUMN assigned_roles JSON NULL');
+  const dashboardRoleColumn = await query("SHOW COLUMNS FROM hr_custom_dashboards LIKE 'role_name'");
+  if (!dashboardRoleColumn.length) await query("ALTER TABLE hr_custom_dashboards ADD COLUMN role_name VARCHAR(100) NOT NULL DEFAULT 'Admin'");
   await query(`CREATE TABLE IF NOT EXISTS hr_custom_reports (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
@@ -286,7 +297,11 @@ async function saveMenuPermissions(data) {
 ════════════════════════════════════ */
 async function listForms() {
   await ensureTables();
-  const rows = await query('SELECT id, name, category, status, updated_at, JSON_LENGTH(fields) AS field_count FROM hr_custom_forms ORDER BY updated_at DESC');
+  const rows = await query('SELECT id, name, category, status, fields, assigned_roles, updated_at, JSON_LENGTH(fields) AS field_count FROM hr_custom_forms ORDER BY updated_at DESC');
+  rows.forEach((row) => {
+    try { row.fields = JSON.parse(row.fields || '[]'); } catch { row.fields = []; }
+    try { row.assigned_roles = JSON.parse(row.assigned_roles || '[]'); } catch { row.assigned_roles = []; }
+  });
   return rows;
 }
 async function getForm(id) {
@@ -294,21 +309,22 @@ async function getForm(id) {
   const rows = await query('SELECT * FROM hr_custom_forms WHERE id=?', [id]);
   if (!rows[0]) return null;
   try { rows[0].fields = JSON.parse(rows[0].fields || '[]'); } catch {}
+  try { rows[0].assigned_roles = JSON.parse(rows[0].assigned_roles || '[]'); } catch {}
   return rows[0];
 }
 async function createForm(data) {
   await ensureTables();
   const r = await query(
-    'INSERT INTO hr_custom_forms (name, category, status, fields) VALUES (?,?,?,?)',
-    [data.name, data.category, data.status || 'Draft', JSON.stringify(data.fields || [])]
+    'INSERT INTO hr_custom_forms (name, category, status, fields, assigned_roles) VALUES (?,?,?,?,?)',
+    [data.name, data.category, data.status || 'Draft', JSON.stringify(data.fields || []), JSON.stringify(data.assignedRoles || [])]
   );
   return getForm(r.insertId);
 }
 async function updateForm(id, data) {
   await ensureTables();
   await query(
-    'UPDATE hr_custom_forms SET name=?, category=?, status=?, fields=?, updated_at=NOW() WHERE id=?',
-    [data.name, data.category, data.status, JSON.stringify(data.fields || []), id]
+    'UPDATE hr_custom_forms SET name=?, category=?, status=?, fields=?, assigned_roles=?, updated_at=NOW() WHERE id=?',
+    [data.name, data.category, data.status, JSON.stringify(data.fields || []), JSON.stringify(data.assignedRoles || []), id]
   );
   return getForm(id);
 }
@@ -321,7 +337,7 @@ async function deleteForm(id) {
 ════════════════════════════════════ */
 async function listDashboards() {
   await ensureTables();
-  return query('SELECT id, name, is_active, updated_at, JSON_LENGTH(widgets) AS widget_count FROM hr_custom_dashboards ORDER BY updated_at DESC');
+  return query('SELECT id, name, role_name, is_active, updated_at, JSON_LENGTH(widgets) AS widget_count FROM hr_custom_dashboards ORDER BY updated_at DESC');
 }
 async function getDashboard(id) {
   await ensureTables();
@@ -332,19 +348,30 @@ async function getDashboard(id) {
 }
 async function createDashboard(data) {
   await ensureTables();
+  const roleName = data.roleName || 'Admin';
+  if (data.is_active) await query('UPDATE hr_custom_dashboards SET is_active=0 WHERE role_name=?', [roleName]);
   const r = await query(
-    'INSERT INTO hr_custom_dashboards (name, widgets, is_active) VALUES (?,?,?)',
-    [data.name, JSON.stringify(data.widgets || []), data.is_active ? 1 : 0]
+    'INSERT INTO hr_custom_dashboards (name, widgets, role_name, is_active) VALUES (?,?,?,?)',
+    [data.name, JSON.stringify(data.widgets || []), roleName, data.is_active ? 1 : 0]
   );
   return getDashboard(r.insertId);
 }
 async function updateDashboard(id, data) {
   await ensureTables();
+  const roleName = data.roleName || 'Admin';
+  if (data.is_active) await query('UPDATE hr_custom_dashboards SET is_active=0 WHERE role_name=? AND id<>?', [roleName, id]);
   await query(
-    'UPDATE hr_custom_dashboards SET name=?, widgets=?, is_active=?, updated_at=NOW() WHERE id=?',
-    [data.name, JSON.stringify(data.widgets || []), data.is_active ? 1 : 0, id]
+    'UPDATE hr_custom_dashboards SET name=?, widgets=?, role_name=?, is_active=?, updated_at=NOW() WHERE id=?',
+    [data.name, JSON.stringify(data.widgets || []), roleName, data.is_active ? 1 : 0, id]
   );
   return getDashboard(id);
+}
+async function getActiveDashboard(roleName) {
+  await ensureTables();
+  const rows = await query('SELECT * FROM hr_custom_dashboards WHERE role_name=? AND is_active=1 ORDER BY updated_at DESC LIMIT 1', [roleName]);
+  if (!rows[0]) return null;
+  try { rows[0].widgets = JSON.parse(rows[0].widgets || '[]'); } catch { rows[0].widgets = []; }
+  return rows[0];
 }
 async function deleteDashboard(id) {
   await ensureTables();
@@ -355,7 +382,12 @@ async function deleteDashboard(id) {
 ════════════════════════════════════ */
 async function listReports() {
   await ensureTables();
-  return query('SELECT id, name, module, format, updated_at FROM hr_custom_reports ORDER BY updated_at DESC');
+  const rows = await query('SELECT id, name, module, format, columns, filters, updated_at FROM hr_custom_reports ORDER BY updated_at DESC');
+  rows.forEach((row) => {
+    try { row.columns = JSON.parse(row.columns || '[]'); } catch { row.columns = []; }
+    try { row.filters = JSON.parse(row.filters || '[]'); } catch { row.filters = []; }
+  });
+  return rows;
 }
 async function getReport(id) {
   await ensureTables();
@@ -444,6 +476,27 @@ async function saveNotificationPreferences(data) {
   );
   return data;
 }
+async function getGeneralSettings() {
+  await ensureTables();
+  const rows = await query('SELECT `key`, value FROM hr_app_settings WHERE `key` IN (?, ?)', ['company_profile', 'company_schedule']);
+  const settings = {};
+  rows.forEach((row) => {
+    try { settings[row.key] = JSON.parse(row.value); }
+    catch { settings[row.key] = row.value; }
+  });
+  return settings;
+}
+async function saveGeneralSettings(data) {
+  await ensureTables();
+  for (const key of ['company_profile', 'company_schedule']) {
+    if (data[key] === undefined) continue;
+    await query(
+      'INSERT INTO hr_app_settings (`key`, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value=VALUES(value), updated_at=NOW()',
+      [key, JSON.stringify(data[key])]
+    );
+  }
+  return getGeneralSettings();
+}
 module.exports = {
   getSmtp, saveSmtp,
   listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate, cloneTemplate,
@@ -452,8 +505,9 @@ module.exports = {
   getEmailPermissions, saveEmailPermissions,
   getMenuPermissions, saveMenuPermissions,
   listForms, getForm, createForm, updateForm, deleteForm,
-  listDashboards, getDashboard, createDashboard, updateDashboard, deleteDashboard,
+  listDashboards, getDashboard, createDashboard, updateDashboard, deleteDashboard, getActiveDashboard,
   listReports, getReport, createReport, updateReport, deleteReport,
   listNotifications, markRead, markAllRead, deleteNotification, createNotification,
   getNotificationPreferences, saveNotificationPreferences,
+  getGeneralSettings, saveGeneralSettings,
 };

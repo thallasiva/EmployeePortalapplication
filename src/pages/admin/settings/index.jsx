@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Save } from "lucide-react";
 import { useSettingsState } from "./hooks/useSettingsState";
 import { useEmployeeSchedules } from "./hooks/useEmployeeSchedules";
 import SettingsHeader from "./components/SettingsHeader";
@@ -10,6 +11,7 @@ export default function Settings() {
     companyOpen, setCompanyOpen,
     profile, schedule,
     selectCompany, setProfile, setSchedule, toggleDay,
+    save, saving,
   } = useSettingsState();
   const [scheduleTab, setScheduleTab] = useState("company");
   const empScheduleState = useEmployeeSchedules();
@@ -34,6 +36,12 @@ export default function Settings() {
   };
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button type="button" onClick={save} disabled={saving}
+          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+          <Save size={15} /> {saving ? "Saving…" : "Save General Settings"}
+        </button>
+      </div>
       <SettingsHeader
         selectedCompany={selectedCompany}
         selectedCompanyId={selectedCompanyId}

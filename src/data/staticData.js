@@ -56,8 +56,7 @@ export const STATIC_ROLES = [
 { role_id: 4, role_name: "Recruiter Team Lead" },
 { role_id: 5, role_name: "Recruiter" }];
 export const STATIC_COMPANIES = [
-{ company_id: 1, company_name: "NAT IT Services" },
-{ company_id: 2, company_name: "NAT IT Solutions Pvt Ltd" }];
+{ company_id: 1, company_name: "HRMS" }];
 export const STATIC_DEPARTMENTS = [
 { department_id: 1, department_name: "Engineering" },
 { department_id: 2, department_name: "Human Resources" },
@@ -71,7 +70,7 @@ export const STATIC_DESIGNATIONS = [
 { designation_id: 5, designation_name: "Accountant", department_id: 3 }];
 export const STATIC_DASHBOARD_STATS = {
   employees_count: 24,
-  companies_count: 3,
+  companies_count: 1,
   leaves_count: 8,
   salaries_count: 24
 };

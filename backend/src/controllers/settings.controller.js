@@ -1,11 +1,21 @@
 'use strict';
 const asyncHandler = require('express-async-handler');
 const svc = require('../services/settings.service');
+const { verifySmtp, clearSmtpCache } = require('../services/email.service');
 const ApiResponse = require('../utils/ApiResponse');
 /* ── SMTP ── */
 const getSmtp    = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getSmtp(), 'OK').send(res));
-const saveSmtp   = asyncHandler(async (req, res) => new ApiResponse(200, await svc.saveSmtp(req.body), 'Saved').send(res));
-const testSmtp   = asyncHandler(async (req, res) => new ApiResponse(200, { success: true, message: 'SMTP connection successful' }, 'Test passed').send(res));
+const saveSmtp   = asyncHandler(async (req, res) => {
+  const settings = await svc.saveSmtp(req.body);
+  clearSmtpCache();
+  return new ApiResponse(200, settings, 'Saved').send(res);
+});
+const testSmtp   = asyncHandler(async (req, res) => {
+  const result = await verifySmtp(req.body);
+  return new ApiResponse(result.ok ? 200 : 502, result, result.ok ? 'SMTP connection verified' : 'SMTP connection failed').send(res);
+});
+const getGeneralSettings = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getGeneralSettings(), 'OK').send(res));
+const saveGeneralSettings = asyncHandler(async (req, res) => new ApiResponse(200, await svc.saveGeneralSettings(req.body), 'Saved').send(res));
 /* ── TEMPLATES ── */
 const listTemplates   = asyncHandler(async (req, res) => new ApiResponse(200, await svc.listTemplates(req.query), 'OK').send(res));
 const getTemplate     = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getTemplate(req.params.id), 'OK').send(res));
@@ -38,6 +48,7 @@ const deleteForm  = asyncHandler(async (req, res) => { await svc.deleteForm(req.
 /* ── DASHBOARDS ── */
 const listDashboards  = asyncHandler(async (req, res) => new ApiResponse(200, await svc.listDashboards(), 'OK').send(res));
 const getDashboard    = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getDashboard(req.params.id), 'OK').send(res));
+const getMyDashboard  = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getActiveDashboard(req.user.roleName), 'OK').send(res));
 const createDashboard = asyncHandler(async (req, res) => new ApiResponse(201, await svc.createDashboard(req.body), 'Created').send(res));
 const updateDashboard = asyncHandler(async (req, res) => new ApiResponse(200, await svc.updateDashboard(req.params.id, req.body), 'Updated').send(res));
 const deleteDashboard = asyncHandler(async (req, res) => { await svc.deleteDashboard(req.params.id); new ApiResponse(200, null, 'Deleted').send(res); });
@@ -54,6 +65,7 @@ const markAllRead        = asyncHandler(async (req, res) => { await svc.markAllR
 const deleteNotification = asyncHandler(async (req, res) => { await svc.deleteNotification(req.params.id); new ApiResponse(200, null, 'Deleted').send(res); });
 const createNotification = asyncHandler(async (req, res) => new ApiResponse(201, await svc.createNotification(req.body), 'Created').send(res));
 module.exports = {
+  getGeneralSettings, saveGeneralSettings,
   getSmtp, saveSmtp, testSmtp,
   listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate, cloneTemplate,
   listLogs, retryLog, getLogStats,
@@ -61,7 +73,7 @@ module.exports = {
   getEmailPerms, saveEmailPerms,
   getMenuPerms, saveMenuPerms,
   listForms, getForm, createForm, updateForm, deleteForm,
-  listDashboards, getDashboard, createDashboard, updateDashboard, deleteDashboard,
+  listDashboards, getDashboard, getMyDashboard, createDashboard, updateDashboard, deleteDashboard,
   listReports, getReport, createReport, updateReport, deleteReport,
   listNotifications, markRead, markAllRead, deleteNotification, createNotification,
 };

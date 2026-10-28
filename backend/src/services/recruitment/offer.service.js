@@ -129,9 +129,9 @@ class OfferService extends BaseService {
               dateOfJoining: ctcData.dateOfJoining || '',
               ctc: ctcData.ctc || 0,
               ctcInWords: ctcData.ctcInWords || '',
-              companyName: process.env.COMPANY_NAME || 'NAT IT Services Pvt Ltd',
-              companyEmail: process.env.COMPANY_EMAIL || 'hr@natit.in',
-              reportTo: process.env.COMPANY_NAME || 'NAT IT Services Pvt Ltd',
+              companyName: process.env.COMPANY_NAME || 'HRMS',
+              companyEmail: process.env.COMPANY_EMAIL || '',
+              reportTo: process.env.COMPANY_NAME || 'HRMS',
               basic: ctcData.basic || 0,
               hra: ctcData.hra || 0,
               telephoneAllowance: ctcData.telephoneAllowance || 0,
@@ -174,7 +174,7 @@ class OfferService extends BaseService {
             console.error('[offer] No invitation token available -- email not sent');
             return;
           }
-          const joiningUrl = (process.env.FRONTEND_URL || 'http://localhost:3000') +
+          const joiningUrl = (process.env.FRONTEND_URL || 'https://d2t478frm973wh.cloudfront.net') +
           '/joining/' + invitation.token;
           notify.joiningInvitation({
             candidateName, candidateEmail, jobTitle, joiningUrl,

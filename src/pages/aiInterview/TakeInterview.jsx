@@ -282,8 +282,12 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   const [faceStatus, setFaceStatus] = useState({});
   const [draftSaved, setDraftSaved] = useState(false);
   const [qSecs,      setQSecs]      = useState(0);   // per-question countdown
+  const [quickSkipSecs, setQuickSkipSecs] = useState(0);
   const recognitionRef = useRef(null);
   const answerRef      = useRef("");
+  const mcqAnswerRef   = useRef("");
+  const codeAnswerRef  = useRef(codeAnswer);
+  const answerPresentRef = useRef(false);
   const draftTimer     = useRef(null);
   const qTimer         = useRef(null);
   const skippedRef     = useRef(false);
@@ -294,6 +298,15 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   const qNum   = question?.questionNumber || 1;
   const qTotal = sessionInfo?.totalQuestions || null;
   const qId    = String(question?.id || question?.questionNumber || qNum);
+  const quickSkipTotal = Number(sessionInfo?.quickResponseTimeoutSeconds ?? 20);
+  const hasAnswer = isMCQ
+    ? Boolean(mcqAnswer)
+    : isCode
+      ? Boolean(codeAnswer.trim() && codeAnswer.trim() !== "// Write your code here")
+      : Boolean(textAnswer.trim());
+  answerPresentRef.current = hasAnswer;
+  mcqAnswerRef.current = mcqAnswer;
+  codeAnswerRef.current = codeAnswer;
   // Per-question time limit: use question.timeLimit if set, else type default
   const getQTime = () => {
     if (question?.timeLimit && Number(question.timeLimit) > 0) return Number(question.timeLimit);
@@ -305,10 +318,14 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
   };
   // ── Reset + start countdown on each new question ────────────────────────
   useEffect(() => {
-    setTextAnswer(""); setMcqAnswer(""); setCodeAnswer("// Write your code here\n");
+    const savedDraft = question?.draft || "";
+    setTextAnswer(isCode || isMCQ ? "" : savedDraft);
+    setMcqAnswer(isMCQ ? savedDraft : "");
+    setCodeAnswer(isCode ? savedDraft || "// Write your code here\n" : "// Write your code here\n");
     setInterim(""); setDraftSaved(false);
     skippedRef.current = false;
-    answerRef.current  = "";
+    answerRef.current  = isCode || isMCQ ? "" : savedDraft;
+    setQuickSkipSecs(quickSkipTotal);
     const limit = getQTime();
     qTimeTotalRef.current = limit;
     setQSecs(limit);
@@ -320,9 +337,9 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
           if (!skippedRef.current) {
             skippedRef.current = true;
             // for coding: submit whatever they wrote; others: mark skipped
-            const ans = isCode
-              ? (codeAnswerRef.current?.trim().length > 20 ? codeAnswerRef.current : "(time expired — no submission)")
-              : "(skipped — no response)";
+            const ans = answerPresentRef.current
+              ? (isMCQ ? mcqAnswerRef.current : isCode ? codeAnswerRef.current : answerRef.current)
+              : "(skipped — question time expired)";
             onAnswer(ans, qId);
           }
           return 0;
@@ -331,11 +348,29 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
       });
     }, 1000);
     return () => clearInterval(qTimer.current);
-  }, [qId]); // eslint-disable-line
+  }, [qId, quickSkipTotal]); // eslint-disable-line
   // Keep a ref of codeAnswer for use inside the timer callback
-  const codeAnswerRef = useRef(codeAnswer);
   useEffect(() => { codeAnswerRef.current = codeAnswer; }, [codeAnswer]);
   useEffect(() => { answerRef.current = textAnswer; }, [textAnswer]);
+  useEffect(() => {
+    if (quickSkipTotal <= 0 || aiSpeaking || quickSkipSecs <= 0) return undefined;
+    const timer = setInterval(() => {
+      if (answerPresentRef.current) return;
+      setQuickSkipSecs(seconds => {
+        if (seconds <= 1) {
+          clearInterval(timer);
+          if (!skippedRef.current) {
+            skippedRef.current = true;
+            stopListening();
+            onAnswer("(auto-skipped — no response)", qId);
+          }
+          return 0;
+        }
+        return seconds - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [qId, quickSkipTotal, aiSpeaking, quickSkipSecs === 0]); // eslint-disable-line
   function scheduleDraft(val) {
     clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(async () => {
@@ -344,7 +379,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
     }, 2000);
   }
   function getAnswer()  { if (isMCQ) return mcqAnswer; if (isCode) return codeAnswer; return textAnswer; }
-  function canSubmit()  { if (isMCQ) return Boolean(mcqAnswer); if (isCode) return codeAnswer.trim().length > 20; return textAnswer.trim().length > 0; }
+  function canSubmit()  { return hasAnswer; }
   function handleSubmit() {
     if (!canSubmit()) return;
     stopListening();
@@ -428,7 +463,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
             </div>
             {/* Answer area */}
             <div style={{flex:1,background:C.card,borderTop:`1px solid ${C.border}`,padding:"10px 14px",overflow:"auto"}}>
-              {!isCode && <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current || TYPE_TIME.TEXT} label="Answer time limit — next question starts automatically"/>}
+              {!isCode && <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current || TYPE_TIME.TEXT} label="Maximum time for this question"/>}
               {isCode ? (
                 <>
                   <QuestionTimerBar seconds={qSecs} total={qTimeTotalRef.current||TYPE_TIME.CODING} label={question?.problemSize === "large" ? "Large coding time limit" : "Coding time limit"}/>
@@ -436,7 +471,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
                 </>
               ) : isMCQ ? (
                 <>
-                  <MCQOptions options={question.options} selected={mcqAnswer} onChange={v => { setMcqAnswer(v); skippedRef.current = true; clearInterval(qTimer.current); }}/>
+                  <MCQOptions options={question.options} selected={mcqAnswer} onChange={v => { setMcqAnswer(v); scheduleDraft(v); }}/>
                 </>
               ) : (
                 <div>
@@ -469,10 +504,12 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
           </div>
           {/* Skip ring (MCQ / text only) + Submit */}
           <div style={{display:"flex",alignItems:"center",gap:12}}>
-            {!isCode && !canSubmit() && qSecs > 0 && (
+            {!canSubmit() && quickSkipTotal > 0 && quickSkipSecs > 0 && (
               <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <SkipRing seconds={qSecs} total={qTimeTotalRef.current||60} onSkip={handleManualSkip}/>
-                <span style={{fontSize:11,color:C.muted}}>or tap to skip</span>
+                <SkipRing seconds={quickSkipSecs} total={quickSkipTotal} onSkip={handleManualSkip}/>
+                <div style={{fontSize:11,color:quickSkipSecs<=5?C.danger:C.muted}}>
+                  {quickSkipSecs<=5 ? `No answer detected. Auto-skip in ${quickSkipSecs}s.` : `Auto-skip if unanswered in ${quickSkipSecs}s.`}
+                </div>
               </div>
             )}
             <button onClick={handleSubmit} disabled={!canSubmit()} className="btn-primary" style={{padding:"10px 28px",fontSize:14}}>
@@ -649,7 +686,7 @@ export default function TakeInterview() {
     }
   }
   function setNextQuestion(data){
-    setQuestion({...data.question,questionNumber:data.questionNumber});
+    setQuestion({...data.question,questionNumber:data.questionNumber,draft:data.savedDraft || ""});
     setRemaining(data.remainingSeconds);
     setSession(prev=>({...prev,expiresAt:data.expiresAt}));
     setScreen("interview");
@@ -663,7 +700,7 @@ export default function TakeInterview() {
   const handleIntroDone = useCallback(()=>{
     setScreen("working");
     startAIInterview(token)
-      .then(data=>setNextQuestion(data))
+      .then(data=>{ if(data.complete){ endStream(); setScreen("done"); return; } setNextQuestion(data); })
       .catch(err=>{ setError(err?.response?.data?.message||"Unable to start interview."); setScreen("error"); });
   },[token]); // eslint-disable-line
   const handleFinish = useCallback(async()=>{
@@ -679,6 +716,10 @@ export default function TakeInterview() {
       if(data.complete){ endStream(); setScreen("done"); return; }
       setNextQuestion(data);
     }catch(err){
+      if(err?.response?.status===409){
+        try{ const current=await startAIInterview(token); if(current.complete){ endStream(); setScreen("done"); } else setNextQuestion(current); return; }
+        catch(recoveryError){ setError(recoveryError?.response?.data?.message||"Unable to restore the current interview question."); setScreen("error"); return; }
+      }
       if(!navigator.onLine){ setScreen("interview"); return; }
       setError(err?.response?.data?.message||"Answer could not be saved."); setScreen("error");
     }

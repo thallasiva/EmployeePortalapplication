@@ -4,8 +4,8 @@ import {
 } from "lucide-react";
 import { Row, Sec, TblHead } from "./SharedUI";
 import { fmt, parse } from "../utils";
-const API_BASE =
-  process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
+import { API_BASE_URL } from "../../../../api/client";
+const API_BASE = API_BASE_URL.replace(/\/api\/?$/, "");
 /** Resolve a URL that may be a base64 data-URL or a relative server path */
 function resolveUrl(url) {
   if (!url) return null;

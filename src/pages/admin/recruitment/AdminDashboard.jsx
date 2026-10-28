@@ -6,6 +6,7 @@ import Stat from "./Stat";
 import { statGridClass } from "./data";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
+import RoleDashboardWidgets from "../../../component/RoleDashboardWidgets";
 function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ function AdminDashboard() {
   );
   return (
     <>
+      <RoleDashboardWidgets data={{ ...s, openJobs: s.open_jobs, recruitmentRows: data?.recentJobs || [] }} />
       <div className={statGridClass}>
         <Stat icon={Briefcase}    label="Open Requirements"  value={s.open_jobs        ?? "—"} note="Actively hiring" />
         <Stat icon={CalendarCheck} label="Interviews Active"  value={s.in_interview     ?? "—"} note="In pipeline" tone="indigo" />

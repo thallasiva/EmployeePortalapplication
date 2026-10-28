@@ -4,6 +4,7 @@ import { Users, CalendarDays, Clock, UserX, AlertTriangle, Building2, ClipboardC
 import { useAdminDashboard } from "../../hooks/useAdminDashboard";
 import LeaveEmployeeDetailTable from "../../component/admin/LeaveEmployeeDetailTable";
 import AdminChatbot from "../../component/admin/AdminChatbot";
+import RoleDashboardWidgets from "../../component/RoleDashboardWidgets";
 import { getStoredUser } from "../../data/auth";
 import "../../component/admin/adminChatbot.css";
 import "./adminDashboard.css";
@@ -60,6 +61,7 @@ export default function Dashboard() {
         </div>
         {loading && <span className="text-xs text-gray-400">Refreshing dashboard…</span>}
       </div>
+      <RoleDashboardWidgets data={metrics} />
       <section>
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
           Today at a glance

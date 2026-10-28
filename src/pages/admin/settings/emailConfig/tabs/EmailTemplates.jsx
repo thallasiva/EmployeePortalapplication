@@ -8,7 +8,7 @@ const CAT_COLORS  = { Onboarding:"#6366f1",Leave:"#10b981",Attendance:"#f59e0b",
 const SAMPLES = {
   "{{EmployeeName}}":"Rajan Kumar","{{EmployeeId}}":"EMP1042","{{Department}}":"Engineering",
   "{{Designation}}":"Senior Developer","{{ManagerName}}":"Priya Sharma","{{LeaveType}}":"Casual Leave",
-  "{{FromDate}}":"10 Aug 2026","{{ToDate}}":"12 Aug 2026","{{CompanyName}}":"NAT IT Pvt. Ltd.",
+  "{{FromDate}}":"10 Aug 2026","{{ToDate}}":"12 Aug 2026","{{CompanyName}}":"HRMS",
   "{{InterviewDate}}":"15 Aug 2026","{{InterviewTime}}":"11:00 AM","{{JobTitle}}":"UI Developer",
   "{{OfferDate}}":"05 Aug 2026","{{JoiningDate}}":"01 Sep 2026","{{Month}}":"July 2026",
   "{{Amount}}":"₹4,500","{{PolicyName}}":"Health Insurance","{{DocumentName}}":"Passport",

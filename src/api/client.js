@@ -1,6 +1,6 @@
 import axios from "axios";
 export const API_BASE_URL =
-process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+  process.env.REACT_APP_API_URL || "https://d2t478frm973wh.cloudfront.net/api";
 export function getAccessToken() {
   return localStorage.getItem("accessToken");
 }

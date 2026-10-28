@@ -15,7 +15,7 @@ export const POLICIES = [
     date: "17 Jun, 2021",
     file: "Information Security Policy.pdf",
     description:
-      "NAT IT is committed to maintaining and improving information security within its practices and minimizing risk exposure."
+      "HRMS is committed to maintaining and improving information security within its practices and minimizing risk exposure."
   },
   {
     id: "instant-messenger",

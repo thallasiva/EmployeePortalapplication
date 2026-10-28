@@ -1,5 +1,5 @@
 export const POSITION_TYPES = ['Contract', 'Contract to Hire', 'Direct Hire'];
-export const BUSINESS_UNITS = ['Nat IT', 'Natsoft'];
+export const BUSINESS_UNITS = ['HRMS'];
 export const ASSIGNMENT_STATUSES = ['Open', 'Closed', 'Completed', 'Hold'];
 export const JOB_STATUSES = ['Active', 'In Active'];
 export const INTERVIEW_LEVELS = ['Round 1', 'Round 2', 'Round 3', 'HR', 'Final'];
@@ -24,41 +24,41 @@ export const MOCK_RECRUITERS = [
 { id: 23, name: 'Emily Chen', email: 'recruiter2@yopmail.com', role: 'Recruiter' }];
 export const MOCK_JOBS = [
 {
-  id: 'JOB001', title: 'Java Developer', client: 'ABC Ltd', company: 'Nat IT',
+  id: 'JOB001', title: 'Java Developer', client: 'ABC Ltd', company: 'HRMS',
   billRate: 65, payRate: 50, positionType: 'Contract', jobStatus: 'Active',
-  businessUnit: 'Nat IT', assignmentStatus: 'Open', openings: 3,
+  businessUnit: 'HRMS', assignmentStatus: 'Open', openings: 3,
   description: 'Looking for an experienced Java Developer with Spring Boot, Microservices, and MySQL expertise. Must have 4+ years of hands-on development experience.',
   skills: ['Java', 'Spring Boot', 'MySQL', 'Microservices'],
   assignedRecruiters: [22], createdDate: '2026-06-01', totalCandidates: 4
 },
 {
-  id: 'JOB002', title: 'React Developer', client: 'XYZ Corp', company: 'Natsoft',
+  id: 'JOB002', title: 'React Developer', client: 'XYZ Corp', company: 'HRMS',
   billRate: 75, payRate: 58, positionType: 'Contract to Hire', jobStatus: 'Active',
-  businessUnit: 'Natsoft', assignmentStatus: 'Open', openings: 2,
+  businessUnit: 'HRMS', assignmentStatus: 'Open', openings: 2,
   description: 'React.js developer with experience in Redux, TypeScript, and REST API integration. Remote-friendly role with client-facing responsibilities.',
   skills: ['React', 'Redux', 'TypeScript', 'REST APIs'],
   assignedRecruiters: [22, 23], createdDate: '2026-06-05', totalCandidates: 3
 },
 {
-  id: 'JOB003', title: 'QA Engineer', client: 'Tech Solutions', company: 'Nat IT',
+  id: 'JOB003', title: 'QA Engineer', client: 'Tech Solutions', company: 'HRMS',
   billRate: 55, payRate: 42, positionType: 'Direct Hire', jobStatus: 'Active',
-  businessUnit: 'Nat IT', assignmentStatus: 'Open', openings: 2,
+  businessUnit: 'HRMS', assignmentStatus: 'Open', openings: 2,
   description: 'Manual and Automation QA with Selenium, TestNG, and JIRA experience. Financial domain preferred.',
   skills: ['Selenium', 'TestNG', 'JIRA', 'SQL'],
   assignedRecruiters: [23], createdDate: '2026-06-08', totalCandidates: 2
 },
 {
-  id: 'JOB004', title: '.NET Developer', client: 'Innovate Ltd', company: 'Nat IT',
+  id: 'JOB004', title: '.NET Developer', client: 'Innovate Ltd', company: 'HRMS',
   billRate: 70, payRate: 55, positionType: 'Contract', jobStatus: 'Active',
-  businessUnit: 'Nat IT', assignmentStatus: 'Completed', openings: 1,
+  businessUnit: 'HRMS', assignmentStatus: 'Completed', openings: 1,
   description: '.NET / C# developer with Azure cloud and WPF experience. Strong communication skills required.',
   skills: ['.NET', 'C#', 'Azure', 'WPF'],
   assignedRecruiters: [22], createdDate: '2026-06-10', totalCandidates: 5
 },
 {
-  id: 'JOB005', title: 'UI/UX Designer', client: 'Pixel Pvt Ltd', company: 'Natsoft',
+  id: 'JOB005', title: 'UI/UX Designer', client: 'Pixel Pvt Ltd', company: 'HRMS',
   billRate: 60, payRate: 45, positionType: 'Direct Hire', jobStatus: 'In Active',
-  businessUnit: 'Natsoft', assignmentStatus: 'Hold', openings: 1,
+  businessUnit: 'HRMS', assignmentStatus: 'Hold', openings: 1,
   description: 'UI/UX Designer with Figma, Adobe XD, and user research experience.',
   skills: ['Figma', 'Adobe XD', 'Prototyping'],
   assignedRecruiters: [], createdDate: '2026-06-12', totalCandidates: 1
@@ -140,7 +140,7 @@ export const MOCK_INTERVIEWS = [
   date: '2026-06-25', time: '11:30',
   interviewer: 'Sarah Johnson',
   teamsSubject: 'L2 Technical Round - John Doe',
-  teamsParticipants: 'sarah.johnson@natit.com, alex.t@natit.com',
+  teamsParticipants: 'sarah.johnson@example.com, alex.t@example.com',
   status: 'Completed',
   feedbackStatus: 'Selected', feedbackComments: 'Excellent system design skills. Highly recommended.',
   shortlisted: true

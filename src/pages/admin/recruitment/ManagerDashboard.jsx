@@ -7,6 +7,7 @@ import { statGridClass } from "./data";
 import { useNavigate } from "react-router-dom";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
+import RoleDashboardWidgets from "../../../component/RoleDashboardWidgets";
 function ManagerDashboard() {
   const router = useNavigate();
   const [data, setData] = useState(null);
@@ -25,6 +26,11 @@ function ManagerDashboard() {
   );
   return (
     <>
+      <RoleDashboardWidgets data={{
+        ...s,
+        openJobs: s.open_jobs,
+        recruitmentRows: data?.candidatePipeline || [],
+      }} />
       <div className="flex justify-end mb-4">
         <button onClick={() => router("/recruiter/recruitment/create-new")}
           className="px-4 py-2 bg-orange-500 text-white rounded">

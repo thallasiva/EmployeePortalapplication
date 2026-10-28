@@ -6,6 +6,7 @@ import Stat from "./Stat";
 import { statGridClass } from "./data";
 import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
+import RoleDashboardWidgets from "../../../component/RoleDashboardWidgets";
 function RecruiterDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,11 @@ function RecruiterDashboard() {
   );
   return (
     <>
+      <RoleDashboardWidgets data={{
+        ...s,
+        openJobs: s.my_open_jobs,
+        recruitmentRows: data?.assignedJobs || [],
+      }} />
       <div className={statGridClass}>
         <Stat icon={Briefcase}    label="My Open Jobs"       value={s.my_open_jobs    ?? "—"} note="Assigned to me" />
         <Stat icon={Users}        label="My Candidates"      value={s.my_candidates   ?? "—"} note="Profiles added" tone="indigo" />

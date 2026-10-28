@@ -10,7 +10,7 @@ if (typeof window !== "undefined") {
   window.fetch = function blockedFetch(input, init) {
     const url = typeof input === "string" ? input : input?.url;
     if (isExternal(url)) {
-      console.warn("[NAT IT] Blocked fetch:", url);
+      console.warn("[HRMS] Blocked fetch:", url);
       return Promise.reject(new Error("Network disabled — use static data only"));
     }
     return originalFetch.call(this, input, init);
@@ -19,7 +19,7 @@ if (typeof window !== "undefined") {
   const open = XHR.prototype.open;
   XHR.prototype.open = function blockedOpen(method, url, ...rest) {
     if (isExternal(url)) {
-      console.warn("[NAT IT] Blocked XHR:", method, url);
+      console.warn("[HRMS] Blocked XHR:", method, url);
       throw new Error("Network disabled — use static data only");
     }
     return open.call(this, method, url, ...rest);

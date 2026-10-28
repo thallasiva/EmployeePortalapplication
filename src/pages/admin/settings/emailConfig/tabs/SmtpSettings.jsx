@@ -35,19 +35,19 @@ export default function SmtpSettings() {
     setLoading(true);
     smtpApi.get()
       .then(data => { if (data && Object.keys(data).length) setForm(prev => ({ ...prev, ...data })); })
-      .catch(() => {})
+      .catch(() => showToast("Unable to load SMTP settings.", "error"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [showToast]);
   const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(p => ({ ...p, [k]: "" })); };
   const handleTest = async () => {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setTestState("testing");
     try {
-      await smtpApi.test();
+      await smtpApi.test(form);
       setTestState("success");
       setLastTested(new Date().toLocaleString("en-IN", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" }));
-      showToast("Test email sent successfully!");
+      showToast("SMTP connection verified successfully.");
     } catch {
       setTestState("fail");
       showToast("SMTP connection failed. Check settings.", "error");

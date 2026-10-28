@@ -22,13 +22,13 @@ const TABS = [
 { id: "payroll", label: "Payroll", icon: Wallet },
 { id: "timeoff", label: "Time Off", icon: Calendar },
 { id: "reviews", label: "Reviews", icon: Star }];
-const NAT_SOFT = {
-  name: "Nat Soft",
-  address: "Plot No. 42, Tech Park Road, Madhapur",
-  city: "Hyderabad, Telangana – 500081",
-  phone: "+91 40 2345 6789",
-  email: "hr@natsoft.in",
-  web: "www.natsoft.in"
+const HRMS_COMPANY = {
+  name: "HRMS",
+  address: "—",
+  city: "—",
+  phone: "—",
+  email: "",
+  web: ""
 };
 export default function Profile() {
   const storedUser = getStoredUser();
@@ -110,7 +110,7 @@ export default function Profile() {
               fontSize: 13, fontWeight: 800, color: "#fff", letterSpacing: "-.01em",
               fontFamily: "'Plus Jakarta Sans','Inter',sans-serif"
             })}>
-              {NAT_SOFT.name}
+              {HRMS_COMPANY.name}
             </div>
           </div>
           <button type="button" className="admin-profile__cover-btn">Edit Cover</button>
@@ -187,17 +187,17 @@ export default function Profile() {
                   fontFamily: "'Plus Jakarta Sans','Inter',sans-serif",
                   letterSpacing: "-.02em", lineHeight: 1.1
                 })}>
-                  {NAT_SOFT.name}
+                  {HRMS_COMPANY.name}
                 </div>
                 {}
                 <div className={cssClass({ display: "flex", alignItems: "flex-start", gap: 5, marginTop: 8 })}>
                   <MapPin size={13} color="#f18200" className={cssClass({ marginTop: 2, flexShrink: 0 })} />
                   <div>
                     <div className={cssClass({ fontSize: 12, color: "#374151", fontWeight: 500, lineHeight: 1.5 })}>
-                      {NAT_SOFT.address}
+                      {HRMS_COMPANY.address}
                     </div>
                     <div className={cssClass({ fontSize: 12, color: "#6b7280", lineHeight: 1.5 })}>
-                      {NAT_SOFT.city}
+                      {HRMS_COMPANY.city}
                     </div>
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export default function Profile() {
                   <Phone size={12} color="#f18200" />
                 </div>
                 <span className={cssClass({ fontSize: 12, color: "#374151", fontWeight: 500 })}>
-                  {NAT_SOFT.phone}
+                  {HRMS_COMPANY.phone}
                 </span>
               </div>
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 8 })}>
@@ -226,7 +226,7 @@ export default function Profile() {
                   <Mail size={12} color="#f18200" />
                 </div>
                 <span className={cssClass({ fontSize: 12, color: "#374151", fontWeight: 500 })}>
-                  {NAT_SOFT.email}
+                  {HRMS_COMPANY.email || "—"}
                 </span>
               </div>
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 8 })}>
@@ -236,7 +236,7 @@ export default function Profile() {
                   <Globe size={12} color="#f18200" />
                 </div>
                 <span className={cssClass({ fontSize: 12, color: "#f18200", fontWeight: 600 })}>
-                  {NAT_SOFT.web}
+                  {HRMS_COMPANY.web || "—"}
                 </span>
               </div>
             </div>

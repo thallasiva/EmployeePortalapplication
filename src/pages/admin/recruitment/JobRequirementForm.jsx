@@ -52,8 +52,7 @@ export default function JobRequirementForm()
               label="Business Unit"
               required
               options={[
-              "Nat IT",
-              "Natsoft",
+              "HRMS",
               "Healthcare",
               "Finance"]
               } />

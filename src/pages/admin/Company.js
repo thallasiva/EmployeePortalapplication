@@ -5,94 +5,19 @@ const COMPANIES = [
   id: 'hrms',
   name: 'HRMS',
   short: 'HRMS',
-  logo: 'https://www.hrms.local/assets/images/logo.png',
+  logo: '',
   banner: 'linear-gradient(135deg, #f18200 0%, #e05c00 100%)',
-  address: 'Plot no. 21, Sruthi Sadan, Gachibowli, Hyderabad, Telangana',
-  phone: '+91 9010877718',
-  email: 'hr@hrms.local',
-  website: 'https://www.hrms.local',
+  address: '—',
+  phone: '',
+  email: '',
+  website: '',
   language: 'English',
   currency: 'Indian Rupee (₹)',
   source: 'Direct',
-  createdOn: '01 Jan 2004',
+  createdOn: '—',
   lastModified: 'Today',
-  tags: ['IT Services', 'Consulting', 'Product'],
-  about: 'HRMS is a newly emerging one-stop solution provider for all your IT needs. It currently focuses on Consulting services, Application Implementations, Support and Maintenance. We provide a complete suite of All IT services to our clients.',
-  products: [
-  { name: 'HiTrack', url: 'https://www.natsoft.us/hitrack', desc: 'Project tracking & management platform' },
-  { name: 'Optio', url: 'https://www.natsoft.us/optio', desc: 'Business intelligence & analytics tool' },
-  { name: 'NatCoin', url: 'https://www.natsoft.us/nat-coin', desc: 'Blockchain-powered digital asset solution' },
-  { name: 'Gauge', url: 'https://www.natsoft.us/gauge', desc: 'Performance monitoring & KPI dashboard' }],
-  services: [
-  { name: 'Blockchain', url: 'https://www.natsoft.us/blockchain' },
-  { name: 'Legacy Modernization', url: 'https://www.natsoft.us/modernization' },
-  { name: 'Artificial Intelligence', url: 'https://www.natsoft.us/ai-ml' },
-  { name: 'Salesforce', url: 'https://www.natsoft.us/salesforce' },
-  { name: 'Cloud', url: 'https://www.natsoft.us/cloud' },
-  { name: 'Power Apps', url: 'https://www.natsoft.us/powerapps' },
-  { name: 'Data Solutions', url: 'https://www.natsoft.us/data-solutions' },
-  { name: 'System Integration', url: 'https://www.natsoft.us/system-integration' }],
-  social: { linkedin: 'https://www.linkedin.com/company/hrms', twitter: 'https://twitter.com/hrms', instagram: 'https://instagram.com/hrms' }
-},
-{
-  id: 'natsoft-corp',
-  name: 'Natsoft Corporation',
-  short: 'Natsoft Corp',
-  logo: 'https://natsoft.us/assets/images/logo.png',
-  banner: 'linear-gradient(135deg, #1a56db 0%, #0e3a8a 100%)',
-  address: '100 Technology Drive, Austin, TX 78701, United States',
-  phone: '+1 (512) 900-0000',
-  email: 'contact@natsoft.us',
-  website: 'https://natsoft.us',
-  language: 'English',
-  currency: 'US Dollar ($)',
-  source: 'Parent',
-  createdOn: '15 Mar 2015',
-  lastModified: 'Today',
-  tags: ['Digital Transformation', 'Legacy Modernization', 'Global'],
-  about: 'Natsoft Corporation is a global digital transformation services company. Reach the future faster with fully automated legacy modernization and migration solutions that deliver success every time.',
-  products: [],
-  services: [],
-  social: { linkedin: 'https://www.linkedin.com/company/natsoft' }
-},
-{
-  id: 'kognitic',
-  name: 'Kognitic',
-  short: 'Kognitic',
-  logo: 'https://kognitic.com/_astro/logo-kognitic.NzrletX4_Z12DURN.webp',
-  banner: 'linear-gradient(135deg, #059669 0%, #065f46 100%)',
-  address: 'United States',
-  phone: '',
-  email: 'info@kognitic.com',
-  website: 'https://natsoft.us',
-  language: 'English',
-  currency: 'US Dollar ($)',
-  source: 'Subsidiary',
-  createdOn: '01 Jan 2020',
-  lastModified: 'Today',
-  tags: ['Life Sciences', 'AI', 'Commercial Decision Engine'],
-  about: 'Kognitic is The Commercial Decision Engine for Life Sciences — delivering intelligent, data-driven commercial insights that help life sciences organizations make faster, smarter decisions.',
-  products: [],
-  services: [],
-  social: {}
-},
-{
-  id: 'updraftworks',
-  name: 'UpdraftWorks',
-  short: 'UpdraftWorks',
-  logo: 'https://updraftworks.com/images/theme-images/new-logo-1.png',
-  banner: 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)',
-  address: 'United States',
-  phone: '',
-  email: 'info@updraftworks.com',
-  website: 'https://updraftworks.com',
-  language: 'English',
-  currency: 'US Dollar ($)',
-  source: 'Partner',
-  createdOn: '01 Jan 2021',
-  lastModified: 'Today',
-  tags: ['Technology', 'Innovation', 'Consulting'],
-  about: 'UpdraftWorks delivers cutting-edge technology solutions and consulting services to help businesses transform and grow.',
+  tags: ['HRMS'],
+  about: 'HRMS company profile.',
   products: [],
   services: [],
   social: {}
@@ -186,17 +111,17 @@ export default function Company() {
                   <div><p className="text-[11px] text-slate-400">Phone</p><p className="text-slate-700 font-medium">{company.phone}</p></div>
                 </div>
               }
-              <div className="flex items-start gap-2">
+              {company.email && <div className="flex items-start gap-2">
                 <Mail size={13} className="text-slate-400 mt-0.5 shrink-0" />
                 <div><p className="text-[11px] text-slate-400">Email</p>
                   <a href={`mailto:${company.email}`} className="text-brand font-medium hover:underline break-all">{company.email}</a></div>
-              </div>
-              <div className="flex items-start gap-2">
+              </div>}
+              {company.website && <div className="flex items-start gap-2">
                 <Globe size={13} className="text-slate-400 mt-0.5 shrink-0" />
                 <div><p className="text-[11px] text-slate-400">Website</p>
                   <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-brand font-medium hover:underline flex items-center gap-1">
                     {company.website.replace('https://', '')} <ExternalLink size={10} /></a></div>
-              </div>
+              </div>}
               <div className="flex items-start gap-2">
                 <Activity size={13} className="text-slate-400 mt-0.5 shrink-0" />
                 <div><p className="text-[11px] text-slate-400">Created On</p><p className="text-slate-700 font-medium">{company.createdOn}</p></div>
@@ -262,7 +187,7 @@ export default function Company() {
                 <div className="border border-slate-200 rounded-xl p-4">
                   <p className="text-xs text-slate-400 mb-1">Contact</p>
                   {company.phone && <p className="text-sm font-medium text-slate-700 flex items-center gap-1"><Phone size={13} className="text-brand shrink-0" />{company.phone}</p>}
-                  <p className="text-sm font-medium text-brand flex items-center gap-1 mt-1"><Mail size={13} className="shrink-0" />{company.email}</p>
+                  {company.email && <p className="text-sm font-medium text-brand flex items-center gap-1 mt-1"><Mail size={13} className="shrink-0" />{company.email}</p>}
                 </div>
               </div>
               {company.products.length > 0 &&

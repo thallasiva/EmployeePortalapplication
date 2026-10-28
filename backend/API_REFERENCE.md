@@ -863,7 +863,7 @@ Auth: Bearer
 ### POST /companies
 Permission: `settings:add`
 ```json
-{ "company_name": "NAT IT Services", "address": "Hyderabad, India", "email": "info@natit.com", "phone": "+91-40-12345678" }
+{ "company_name": "HRMS", "address": "—", "email": "", "phone": "" }
 ```
 
 ### PUT /companies/:id

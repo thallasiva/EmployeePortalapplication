@@ -1,8 +1,8 @@
 import React from "react";
 import { CheckCircle, FileText, ExternalLink } from "lucide-react";
 import { Sec } from "./SharedUI";
-const API_BASE =
-  process.env.REACT_APP_API_URL?.replace("/api", "") || "http://localhost:5000";
+import { API_BASE_URL } from "../../../../api/client";
+const API_BASE = API_BASE_URL.replace(/\/api\/?$/, "");
 const DocumentsSection = React.memo(function DocumentsSection({ detail }) {
   return (
     <Sec icon={FileText} title="Document Acknowledgments & Uploads">

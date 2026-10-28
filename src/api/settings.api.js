@@ -1,12 +1,16 @@
 import client from './client';
 const BASE = '/settings';
+export const generalSettingsApi = {
+  get:  () => client.get(`${BASE}/general`).then(r => r.data?.data || {}),
+  save: (data) => client.put(`${BASE}/general`, data).then(r => r.data?.data || {}),
+};
 /* ═══════════════════════════════
    SMTP
 ═══════════════════════════════ */
 export const smtpApi = {
   get:  ()     => client.get(`${BASE}/smtp`).then(r => r.data?.data || {}),
   save: (data) => client.put(`${BASE}/smtp`, data).then(r => r.data?.data),
-  test: ()     => client.post(`${BASE}/smtp/test`).then(r => r.data?.data),
+  test: (data) => client.post(`${BASE}/smtp/test`, data).then(r => r.data?.data),
 };
 /* ═══════════════════════════════
    EMAIL TEMPLATES
@@ -66,6 +70,7 @@ export const formsApi = {
 ═══════════════════════════════ */
 export const dashboardsApi = {
   list:   ()         => client.get(`${BASE}/dashboards`).then(r => r.data?.data || []),
+  mine:   ()         => client.get(`${BASE}/dashboards/me`).then(r => r.data?.data || null),
   get:    (id)       => client.get(`${BASE}/dashboards/${id}`).then(r => r.data?.data),
   create: (data)     => client.post(`${BASE}/dashboards`, data).then(r => r.data?.data),
   update: (id, data) => client.put(`${BASE}/dashboards/${id}`, data).then(r => r.data?.data),

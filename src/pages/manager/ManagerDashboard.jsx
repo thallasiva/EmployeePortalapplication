@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Clock, FileCheck, FileClock, FileX, UserX,
 import { getLoggedInUser } from "../../lib/dateUtils";
 import { getManagerFullDashboard } from "../../api/timesheet.api";
 import ManagerTabs from "./ManagerTabs";
+import RoleDashboardWidgets from "../../component/RoleDashboardWidgets";
 import "../admin/adminDashboard.css";
 import { cssClass, joinClasses } from "../../utils/classStyles";function getInitials(name) {
   return (name || "?").
@@ -79,6 +80,7 @@ const ManagerDashboard = () => {
           {error}
         </div>
       }
+      <RoleDashboardWidgets data={s} />
       {}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         <KpiCard icon={Users} value={v("totalTeam")} label="Team Size" iconBg="bg-blue-50" iconColor="text-blue-600" />

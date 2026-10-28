@@ -11,8 +11,7 @@ INSERT INTO roles (role_id, role_name, description) VALUES
 ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
 -- Company
 INSERT INTO companies (company_id, company_name, address, email) VALUES
-  (1, 'NAT IT Services', 'Hyderabad, India', 'info@natit.com'),
-  (2, 'NAT IT Solutions Pvt Ltd', 'Bangalore, India', 'info@natitsolutions.com')
+  (1, 'HRMS', '—', '')
 ON DUPLICATE KEY UPDATE company_name = VALUES(company_name);
 -- Departments
 INSERT INTO departments (department_id, department_name, company_id) VALUES

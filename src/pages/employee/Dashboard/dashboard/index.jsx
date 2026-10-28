@@ -15,6 +15,7 @@ import HolidayCard from "./components/HolidayCard";
 import QuickAccessCard from "./components/QuickAccessCard";
 import ITDeclarationCard from "./components/ITDeclarationCard";
 import POICard from "./components/POICard";
+import RoleDashboardWidgets from "../../../../component/RoleDashboardWidgets";
 export default function Dashboard() {
   const now = new Date();
   const month = now.getMonth() + 1;
@@ -66,6 +67,13 @@ export default function Dashboard() {
         elapsed={elapsed} checkingIn={checkingIn} checkingOut={checkingOut}
         handleCheckIn={handleCheckIn} handleCheckOut={handleCheckOut} todayAtt={todayAtt} checkinLocation={checkinLocation} checkoutLocation={checkoutLocation}
       />
+      <RoleDashboardWidgets data={{
+        presentDays,
+        attendanceRate: monthAtt?.attendance_rate ?? monthAtt?.attendanceRate,
+        leaveBalance: leaveBalance.length,
+        netPay: sal.net,
+        calendarEvents: holidays,
+      }} />
       <SummaryTiles
         loading={loading} showSal={showSal} sal={sal}
         paidDays={paidDays} workDays={workDays} lopDays={lopDays} presentDays={presentDays}

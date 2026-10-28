@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Plus, Download, Play, Save, Trash2, Edit2, X, Check, FileText, BarChart2, PieChart, Table2, Filter, ChevronDown, Eye, ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Download, Play, Save, Trash2, Edit2, Check, BarChart2, PieChart, Table2, ArrowLeft } from "lucide-react";
 import { reportsApi } from "../../api/settings.api";
+import apiClient from "../../api/client";
+import { listEmployees } from "../../api/employee.api";
+import { jsPDF } from "jspdf";
 const BRAND = "#f18200";
 const MODULES = {
   Employees: ["Name", "Employee ID", "Department", "Designation", "Email", "Phone", "Join Date", "Status", "Gender", "Location"],
@@ -25,28 +28,37 @@ const FORMATS = [
   { id: "bar", label: "Bar Chart", icon: <BarChart2 size={14} /> },
   { id: "pie", label: "Pie Chart", icon: <PieChart size={14} /> },
 ];
-const SAVED_REPORTS = [
-  { id: 1, name: "Monthly Headcount", module: "Employees", format: "table", updated: "01 Aug 2026" },
-  { id: 2, name: "Leave Utilization", module: "Leave", format: "bar", updated: "29 Jul 2026" },
-  { id: 3, name: "Payroll Summary", module: "Payroll", format: "table", updated: "28 Jul 2026" },
-];
-const SAMPLE_ROWS = [
-  ["EMP001", "Ravi Kumar", "Engineering", "Senior Dev", "Active", "Bangalore"],
-  ["EMP002", "Priya Shah", "HR", "HR Manager", "Active", "Mumbai"],
-  ["EMP003", "Arjun Mehta", "Finance", "Analyst", "Active", "Delhi"],
-  ["EMP004", "Sneha Patel", "Marketing", "Executive", "On Leave", "Pune"],
-];
-function MiniBarChart({ cols })
+const COLUMN_ALIASES = {
+  "Employee": ["employee_name", "name", "full_name"], "Name": ["employee_name", "name", "full_name"],
+  "Employee ID": ["emp_code", "employee_id", "employee_number"], "Department": ["department_name", "department", "dept_name"],
+  "Designation": ["designation", "emp_job_title", "job_title"], "Join Date": ["emp_joining_date", "joining_date"],
+  "Date": ["date", "attendance_date", "created_at"], "Check In": ["check_in", "check_in_time", "first_in"],
+  "Check Out": ["check_out", "check_out_time", "last_out"], "Hours Worked": ["work_hours", "hours_worked", "total_hours"],
+  "Late By": ["late_by_minutes", "late_by"], "From": ["from_date", "start_date"], "To": ["to_date", "end_date"],
+  "Days": ["days", "leave_days"], "Month": ["month", "pay_month"], "Gross": ["gross_earnings", "gross_salary", "gross"],
+  "Net Pay": ["net_pay", "net_salary"], "Job Title": ["job_title", "title"], "Candidate": ["candidate_name", "candidate"],
+  "Applied On": ["applied_at", "created_at"],
+};
+function columnValue(row, label) {
+  const keys = [...(COLUMN_ALIASES[label] || []), label.toLowerCase().replace(/[^a-z0-9]/g, "_")];
+  const key = keys.find((candidate) => row[candidate] !== undefined);
+  return key ? row[key] ?? "—" : "—";
+}
+function MiniBarChart({ cols, rows })
 {
-  const bars = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"].map((m, i) => ({ m, v: 40 + Math.floor(Math.random() * 50) }));
+  const bars = rows.slice(0, 6).map((row, i) => ({
+    label: String(row.month || row.department_name || row.status || i + 1).slice(0, 8),
+    value: Number(row.total || row.count || row.employee_count || row.value || 0),
+  }));
+  const max = Math.max(1, ...bars.map((bar) => bar.value));
   return (
     <div className="bg-white border border-[#e2e8f0] rounded-xl p-5">
       <p className="text-[12px] font-bold text-[#64748b] mb-3">{cols.slice(0, 2).join(" vs ") || "Report Chart"}</p>
       <div className="flex items-end gap-2 h-32">
-        {bars.map(({ m, v }) => (
-          <div key={m} className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-full rounded-t" style={{ height: `${v}%`, background: BRAND, opacity: 0.8 }} />
-            <span className="text-[10px] text-[#94a3b8]">{m}</span>
+        {bars.map(({ label, value }) => (
+          <div key={label} className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-full rounded-t" style={{ height: `${Math.max(4, value / max * 100)}%`, background: BRAND, opacity: 0.8 }} />
+            <span className="text-[10px] text-[#94a3b8]">{label}</span>
           </div>
         ))}
       </div>
@@ -62,16 +74,90 @@ function BuilderView({ report, onBack, onSave })
   const [format, setFormat] = useState(report.format || "table");
   const [ran, setRan] = useState(false);
   const [running, setRunning] = useState(false);
+  const [rows, setRows] = useState([]);
+  const [runError, setRunError] = useState("");
   const cols = MODULES[module] || [];
   const filts = FILTERS_FOR[module] || [];
   const toggleCol = (c) => setSelCols(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
   const toggleFilt = (f) => setSelFilts(p => p.includes(f) ? p.filter(x => x !== f) : [...p, f]);
-  const runReport = () =>
-  {
-    setRunning(true);
-    setTimeout(() => { setRunning(false); setRan(true); }, 1200);
+  const exportReport = (kind) => {
+    const matrix = [selCols, ...visibleRows];
+    const filename = (name || "report").trim().replace(/[^a-z0-9_-]+/gi, "_");
+    if (kind === "PDF") {
+      const pdf = new jsPDF();
+      let y = 18;
+      pdf.setFontSize(14);
+      pdf.text(name || "Report", 12, y);
+      pdf.setFontSize(9);
+      y += 10;
+      matrix.forEach((row) => {
+        const lines = pdf.splitTextToSize(row.map((cell) => String(cell ?? "")).join("  |  "), 185);
+        const height = lines.length * 5 + 2;
+        if (y + height > 285) {
+          pdf.addPage();
+          y = 15;
+        }
+        pdf.text(lines, 12, y);
+        y += height;
+      });
+      pdf.save(`${filename}.pdf`);
+      return;
+    }
+    const delimiter = kind === "Excel" ? "\t" : ",";
+    const content = matrix
+      .map((row) => row.map((cell) => {
+        const value = String(cell ?? "").replace(/[\r\n\t]+/g, " ");
+        return kind === "Excel" ? value : `"${value.replace(/"/g, '""')}"`;
+      }).join(delimiter))
+      .join("\r\n");
+    const extension = kind === "Excel" ? "xls" : "csv";
+    const type = kind === "Excel" ? "application/vnd.ms-excel" : "text/csv;charset=utf-8";
+    const url = URL.createObjectURL(new Blob(["\uFEFF", content], { type }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${filename}.${extension}`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
-  const visibleRows = SAMPLE_ROWS.map(r => r.slice(0, selCols.length || 4));
+  const runReport = async () => {
+    setRunning(true);
+    setRunError("");
+    const now = new Date();
+    const params = {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      from_date: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10),
+      to_date: now.toISOString().slice(0, 10),
+    };
+    const endpoints = {
+      Employees: ["/reports/employees", null, "byDepartment"],
+      Attendance: ["/reports/attendance", params, "details"],
+      Leave: ["/reports/leave", params, "details"],
+      Payroll: ["/reports/payroll", params, "details"],
+      Recruitment: ["/reports/hiring", null, "openJobs"],
+      Performance: ["/reports/reviews", null, "details"],
+      Helpdesk: ["/reports/helpdesk", params, "byStatus"],
+    };
+    try {
+      if (module === "Employees") {
+        const result = await listEmployees({ page: 1, limit: 100 });
+        setRows(result.data);
+        setRan(true);
+        return;
+      }
+      const [url, query, resultKey] = endpoints[module];
+      const response = await apiClient.get(url, { params: query || undefined });
+      const data = response.data?.data || {};
+      setRows(Array.isArray(data) ? data : data[resultKey] || []);
+      setRan(true);
+    } catch (error) {
+      setRunError(error?.response?.data?.message || "Unable to run this report.");
+      setRan(false);
+    } finally {
+      setRunning(false);
+    }
+  };
+  const visibleRows = rows.map((row) => selCols.map((column) => columnValue(row, column)));
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       {/* Toolbar */}
@@ -100,7 +186,7 @@ function BuilderView({ report, onBack, onSave })
             <p className="text-[12px] font-bold text-[#94a3b8] uppercase tracking-wider mb-3">Data Module</p>
             <div className="grid grid-cols-2 gap-2">
               {Object.keys(MODULES).map(m => (
-                <button key={m} onClick={() => { setModule(m); setSelCols(MODULES[m].slice(0, 4)); setSelFilts([]); setRan(false); }}
+                <button key={m} onClick={() => { setModule(m); setSelCols(MODULES[m].slice(0, 4)); setSelFilts([]); setRan(false); setRows([]); setRunError(""); }}
                   className={`h-[32px] px-2 rounded-lg text-[11px] font-semibold border transition-all ${module === m ? "bg-[#f18200] text-white border-[#f18200]" : "border-[#e2e8f0] text-[#64748b] hover:border-[#f18200]/40"}`}>
                   {m}
                 </button>
@@ -152,13 +238,14 @@ function BuilderView({ report, onBack, onSave })
               {ran && (
                 <div className="flex gap-2">
                   {["CSV", "Excel", "PDF"].map(fmt => (
-                    <button key={fmt} className="flex items-center gap-1 h-[28px] px-3 border border-[#e2e8f0] rounded-lg text-[11px] font-semibold text-[#64748b] hover:border-[#f18200] hover:text-[#f18200]">
+                    <button key={fmt} onClick={() => exportReport(fmt)} className="flex items-center gap-1 h-[28px] px-3 border border-[#e2e8f0] rounded-lg text-[11px] font-semibold text-[#64748b] hover:border-[#f18200] hover:text-[#f18200]">
                       <Download size={10} />{fmt}
                     </button>
                   ))}
                 </div>
               )}
             </div>
+            {runError && <p className="px-5 py-3 text-sm text-red-600">{runError}</p>}
             {!ran ? (
               <div className="p-16 flex flex-col items-center gap-3 text-center">
                 <BarChart2 size={40} className="text-[#e2e8f0]" />
@@ -177,6 +264,7 @@ function BuilderView({ report, onBack, onSave })
                       {row.map((cell, j) => <span key={j} className="text-[12px] text-[#374151] truncate">{cell}</span>)}
                     </div>
                   ))}
+                  {visibleRows.length === 0 && <p className="px-5 py-8 text-center text-sm text-slate-400">No matching records.</p>}
                   <div className="px-5 py-3 text-[11px] text-[#94a3b8]">
                     Showing {visibleRows.length} of {visibleRows.length} results
                   </div>
@@ -184,7 +272,7 @@ function BuilderView({ report, onBack, onSave })
               </div>
             ) : (
               <div className="p-5">
-                <MiniBarChart cols={selCols} />
+                <MiniBarChart cols={selCols} rows={rows} />
               </div>
             )}
           </div>
@@ -195,13 +283,13 @@ function BuilderView({ report, onBack, onSave })
 }
 export default function ReportBuilder()
 {
-  const [reports, setReports] = useState(SAVED_REPORTS);
+  const [reports, setReports] = useState([]);
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState("");
   useEffect(() => {
     reportsApi.list().then(data => {
-      if (Array.isArray(data) && data.length > 0) setReports(data);
-    }).catch(() => {});
+      if (Array.isArray(data)) setReports(data.map((report) => ({ ...report, updated: report.updated_at || report.updated })));
+    }).catch(() => setToast("Unable to load saved reports."));
   }, []);
   const handleSave = async (data) => {
     try {
@@ -213,18 +301,22 @@ export default function ReportBuilder()
         setReports(p => [created, ...p]);
       }
     } catch {
-      setReports(p => data.id && p.find(r => r.id === data.id)
-        ? p.map(r => r.id === data.id ? { ...r, ...data } : r)
-        : [...p, { ...data, id: Date.now() }]
-      );
+      setToast("Unable to save report to the server.");
+      setTimeout(() => setToast(""), 3000);
+      return;
     }
     setEditing(null);
     setToast("Report saved!"); setTimeout(() => setToast(""), 3000);
   };
-  if (editing !== null) return <BuilderView report={editing} onBack={() => setEditing(null)} onSave={handleSave} />;
+  if (editing !== null) return (
+    <div>
+      {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
+      <BuilderView report={editing} onBack={() => setEditing(null)} onSave={handleSave} />
+    </div>
+  );
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
-      {toast && <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2"><Check size={15} />{toast}</div>}
+      {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#fff8f0] border border-[#fed7aa] flex items-center justify-center">
@@ -260,7 +352,7 @@ export default function ReportBuilder()
               <span className="col-span-2 text-[12px] text-[#94a3b8]">{r.updated}</span>
               <div className="col-span-1 flex justify-end gap-1">
                 <button onClick={() => setEditing(r)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#fff8f0] text-[#94a3b8] hover:text-[#f18200]"><Edit2 size={12} /></button>
-                <button onClick={async () => { try { await reportsApi.delete(r.id); } catch {} setReports(p => p.filter(x => x.id !== r.id)); }} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-50 text-[#94a3b8] hover:text-red-500"><Trash2 size={12} /></button>
+                <button onClick={async () => { try { await reportsApi.delete(r.id); setReports(p => p.filter(x => x.id !== r.id)); } catch { setToast("Unable to delete report."); setTimeout(() => setToast(""), 3000); } }} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-50 text-[#94a3b8] hover:text-red-500"><Trash2 size={12} /></button>
               </div>
             </div>
           ))}

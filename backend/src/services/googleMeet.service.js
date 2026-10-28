@@ -66,7 +66,7 @@ async function createGoogleMeetMeeting({ summary, startDateTime, endDateTime, ca
   }
   const event = {
     summary,
-    description: `Interview scheduled via NAT IT HRMS Portal for ${candidateName}`,
+    description: `Interview scheduled via HRMS Portal for ${candidateName}`,
     start: { dateTime: startDateTime, timeZone },
     end: { dateTime: endDateTime, timeZone },
     // The OAuth-authorized calendar owner is already the organizer. Adding it

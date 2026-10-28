@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Save, Trash2, Eye, Edit2, LayoutDashboard, BarChart2, PieChart, TrendingUp, Users, Clock, Calendar, FileText, X, Check, Maximize2, GripVertical, ArrowUp, ArrowLeft } from "lucide-react";
+import { Plus, Save, Trash2, Edit2, LayoutDashboard, BarChart2, PieChart, TrendingUp, Users, Clock, Calendar, FileText, Check, ArrowLeft } from "lucide-react";
 import { dashboardsApi } from "../../api/settings.api";
 const BRAND = "#f18200";
 const WIDGET_CATALOG = [
@@ -13,11 +13,8 @@ const WIDGET_CATALOG = [
   { type: "calendar", label: "Event Calendar", icon: <Calendar size={16} />, desc: "Upcoming events", w: 2, h: 2 },
 ];
 const SOURCES = ["Employees", "Attendance", "Leave", "Payroll", "Recruitment", "Performance", "Helpdesk"];
-const PRESETS = [
-  { id: 1, name: "HR Overview Dashboard", widgets: 6, updated: "01 Aug 2026", active: true },
-  { id: 2, name: "Payroll Summary", widgets: 4, updated: "28 Jul 2026", active: false },
-  { id: 3, name: "Recruitment Pipeline", widgets: 5, updated: "25 Jul 2026", active: false },
-];
+const DASHBOARD_ROLES = ["Admin", "Employee", "HR Manager", "Recruiter", "Reporting Manager", "Recruiter Team Lead"];
+const isPublished = (value) => value === true || Number(value) === 1;
 let _wid = 100;
 const mkWidget = (type) =>
 {
@@ -27,7 +24,6 @@ const mkWidget = (type) =>
 /* ── Widget visual preview ── */
 function WidgetCard({ widget, onSelect, selected, onDelete })
 {
-  const isDouble = widget.span === "col-span-2";
   const inner = () =>
   {
     switch (widget.type)
@@ -36,10 +32,10 @@ function WidgetCard({ widget, onSelect, selected, onDelete })
         return (
           <div className="flex flex-col items-center justify-center h-full">
             <p className="text-[28px] font-extrabold" style={{ color: widget.color || BRAND }}>
-              {widget.type === "attendance" ? "92%" : widget.type === "headcount" ? "248" : "1,284"}
+              —
             </p>
             <p className="text-[11px] text-[#94a3b8] mt-1 font-medium">{widget.label}</p>
-            <p className="text-[10px] text-emerald-500 mt-0.5 inline-flex items-center gap-0.5"><ArrowUp size={10} /> 4.2% vs last month</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Live value on role dashboard</p>
           </div>
         );
       case "bar":
@@ -77,12 +73,7 @@ function WidgetCard({ widget, onSelect, selected, onDelete })
           <div className="flex flex-col h-full">
             <p className="text-[11px] font-semibold text-[#64748b] mb-2">{widget.label}</p>
             <div className="flex-1 space-y-1 overflow-hidden">
-              {["Engineering", "Marketing", "HR", "Finance"].map(d => (
-                <div key={d} className="flex justify-between text-[11px]">
-                  <span className="text-[#374151]">{d}</span>
-                  <span className="font-bold text-[#1e293b]">{Math.floor(Math.random() * 50 + 10)}</span>
-                </div>
-              ))}
+              <p className="text-[11px] text-slate-400">Live {widget.source.toLowerCase()} data appears on the assigned role dashboard.</p>
             </div>
           </div>
         );
@@ -91,12 +82,7 @@ function WidgetCard({ widget, onSelect, selected, onDelete })
           <div className="flex flex-col h-full">
             <p className="text-[11px] font-semibold text-[#64748b] mb-2">{widget.label}</p>
             <div className="space-y-1.5 flex-1 overflow-hidden">
-              {[["Team Meeting", "09:00", "#f18200"], ["Payroll Run", "14:00", "#6366f1"], ["Onboarding", "10:30", "#10b981"]].map(([e, t, c]) => (
-                <div key={e} className="flex items-center gap-2 p-1.5 rounded-lg" style={{ background: c + "15" }}>
-                  <div className="w-1 h-full min-h-[20px] rounded-full" style={{ background: c }} />
-                  <div><p className="text-[10px] font-semibold" style={{ color: c }}>{e}</p><p className="text-[9px] text-[#94a3b8]">{t}</p></div>
-                </div>
-              ))}
+              <p className="text-[11px] text-slate-400">Live calendar data appears on the assigned role dashboard.</p>
             </div>
           </div>
         );
@@ -124,6 +110,8 @@ function Builder({ dash, onBack, onSave })
   const [widgets, setWidgets] = useState(dash.widgets || []);
   const [selected, setSelected] = useState(null);
   const [name, setName] = useState(dash.name || "My Dashboard");
+  const [roleName, setRoleName] = useState(dash.roleName || dash.role_name || "Admin");
+  const [active, setActive] = useState(isPublished(dash.is_active ?? dash.active));
   const addWidget = (type) =>
   {
     const w = mkWidget(type);
@@ -141,8 +129,16 @@ function Builder({ dash, onBack, onSave })
         <div className="w-px h-5 bg-[#e2e8f0]" />
         <input value={name} onChange={e => setName(e.target.value)}
           className="h-[34px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] font-bold outline-none focus:border-[#f18200] w-56" />
+        <select value={roleName} onChange={(e) => setRoleName(e.target.value)}
+          className="h-[34px] border border-[#e2e8f0] rounded-lg px-3 text-[12px]">
+          {DASHBOARD_ROLES.map((role) => <option key={role}>{role}</option>)}
+        </select>
+        <label className="inline-flex items-center gap-2 text-xs text-slate-600">
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+          Publish to role
+        </label>
         <div className="ml-auto flex gap-2">
-          <button onClick={() => onSave({ ...dash, name, widgetCount: widgets.length, updated: "Now" })}
+          <button onClick={() => onSave({ ...dash, name, roleName, is_active: active, widgets })}
             className="flex items-center gap-1.5 h-[34px] px-4 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[12px] font-bold">
             <Save size={13} /> Save
           </button>
@@ -229,27 +225,60 @@ function Builder({ dash, onBack, onSave })
 }
 export default function DashboardBuilder()
 {
-  const [dashboards, setDashboards] = useState(PRESETS);
+  const [dashboards, setDashboards] = useState([]);
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     dashboardsApi.list().then(data => {
-      if (Array.isArray(data) && data.length > 0) setDashboards(data);
-    }).catch(() => {});
+      if (Array.isArray(data)) setDashboards(data.map((dashboard) => ({
+        ...dashboard,
+        roleName: dashboard.role_name || dashboard.roleName || "Admin",
+        widgets: Number(dashboard.widget_count || dashboard.widgets || 0),
+        active: isPublished(dashboard.is_active ?? dashboard.active),
+        updated: dashboard.updated_at || dashboard.updated || "—",
+      })));
+    }).catch(() => setToast("Unable to load dashboards from the server.")).finally(() => setLoading(false));
   }, []);
-  const handleSave = (data) =>
-  {
-    setDashboards(p => data.id && p.find(d => d.id === data.id)
-      ? p.map(d => d.id === data.id ? { ...d, ...data } : d)
-      : [...p, { ...data, id: Date.now(), widgets: 0, updated: "Now" }]
-    );
-    setEditing(null);
-    setToast("Dashboard saved!"); setTimeout(() => setToast(""), 3000);
+  const handleSave = async (data) => {
+    try {
+      const saved = data.id
+        ? await dashboardsApi.update(data.id, data)
+        : await dashboardsApi.create(data);
+      const normalized = {
+        ...saved,
+        roleName: saved.role_name || saved.roleName || data.roleName,
+        widgets: Array.isArray(saved.widgets) ? saved.widgets.length : data.widgets.length,
+        active: isPublished(saved.is_active ?? data.is_active),
+        updated: saved.updated_at || "Just now",
+      };
+      setDashboards((previous) => {
+        const remaining = previous.map((dashboard) => (
+          data.is_active && dashboard.roleName === normalized.roleName
+            ? { ...dashboard, active: false }
+            : dashboard
+        ));
+        return data.id
+          ? remaining.map((dashboard) => dashboard.id === data.id ? normalized : dashboard)
+          : [normalized, ...remaining];
+      });
+      setEditing(null);
+      setToast("Dashboard saved.");
+      setTimeout(() => setToast(""), 3000);
+    } catch {
+      setToast("Unable to save dashboard. Please try again.");
+      setTimeout(() => setToast(""), 3000);
+    }
   };
-  if (editing !== null) return <div className="min-h-screen bg-[#f0f4f8]"><Builder dash={editing} onBack={() => setEditing(null)} onSave={handleSave} /></div>;
+  if (editing !== null) return (
+    <div className="min-h-screen bg-[#f0f4f8]">
+      {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
+      <Builder dash={editing} onBack={() => setEditing(null)} onSave={handleSave} />
+    </div>
+  );
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
-      {toast && <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2"><Check size={15} />{toast}</div>}
+      {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#fff8f0] border border-[#fed7aa] flex items-center justify-center">
@@ -260,12 +289,14 @@ export default function DashboardBuilder()
             <p className="text-[13px] text-[#94a3b8]">Create custom dashboards with drag-and-drop widgets</p>
           </div>
         </div>
-        <button onClick={() => setEditing({ name: "New Dashboard", widgets: [] })}
+        <button onClick={() => setEditing({ name: "New Dashboard", roleName: "Admin", is_active: false, widgets: [] })}
           className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">
           <Plus size={15} /> New Dashboard
         </button>
       </div>
       <div className="px-6 pb-10 grid grid-cols-3 gap-5">
+        {loading && <p className="col-span-3 py-10 text-center text-sm text-slate-400">Loading dashboards…</p>}
+        {!loading && dashboards.length === 0 && <p className="col-span-3 py-10 text-center text-sm text-slate-400">No saved dashboards. Create one to configure a role home page.</p>}
         {dashboards.map(d => (
           <div key={d.id} className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             {/* Mini preview */}
@@ -278,16 +309,19 @@ export default function DashboardBuilder()
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[14px] font-bold text-[#1e293b]">{d.name}</p>
-                  <p className="text-[11px] text-[#94a3b8] mt-0.5">{d.widgets} widgets · Updated {d.updated}</p>
+                  <p className="text-[11px] text-[#94a3b8] mt-0.5">{d.widgets} widgets · {d.roleName} · Updated {d.updated}</p>
                 </div>
                 {d.active && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-bold">Active</span>}
               </div>
               <div className="flex gap-2 mt-4">
-                <button onClick={() => setEditing(d)}
+                <button onClick={async () => {
+                  try { setEditing(await dashboardsApi.get(d.id)); }
+                  catch { setToast("Unable to load the selected dashboard."); }
+                }}
                   className="flex-1 flex items-center justify-center gap-1.5 h-[34px] border border-[#e2e8f0] rounded-lg text-[12px] font-semibold text-[#64748b] hover:border-[#f18200] hover:text-[#f18200] transition-colors">
                   <Edit2 size={12} /> Edit
                 </button>
-                <button onClick={async () => { try { await dashboardsApi.delete(d.id); } catch {} setDashboards(p => p.filter(x => x.id !== d.id)); }}
+                <button onClick={async () => { try { await dashboardsApi.delete(d.id); setDashboards(p => p.filter(x => x.id !== d.id)); } catch { setToast("Unable to delete dashboard."); } }}
                   className="w-[34px] h-[34px] flex items-center justify-center border border-[#e2e8f0] rounded-lg text-[#94a3b8] hover:border-red-200 hover:text-red-500 transition-colors">
                   <Trash2 size={12} />
                 </button>
@@ -296,7 +330,7 @@ export default function DashboardBuilder()
           </div>
         ))}
         {/* Add card */}
-        <button onClick={() => setEditing({ name: "New Dashboard", widgets: [] })}
+        <button onClick={() => setEditing({ name: "New Dashboard", roleName: "Admin", is_active: false, widgets: [] })}
           className="rounded-2xl border-2 border-dashed border-[#e2e8f0] h-[240px] flex flex-col items-center justify-center gap-3 hover:border-[#f18200] hover:bg-[#fff8f0] transition-all text-[#94a3b8] hover:text-[#f18200]">
           <Plus size={24} />
           <span className="text-[13px] font-semibold">Create Dashboard</span>

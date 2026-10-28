@@ -69,7 +69,7 @@ const review = asyncHandler(async (req, res) => {
       jobTitle,
       remarks,
       changesFields,
-      joiningUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/joining/${token}`
+      joiningUrl: `${process.env.FRONTEND_URL || 'https://d2t478frm973wh.cloudfront.net'}/joining/${token}`
     });
   } else if (decision === 'reject') {
     notify.joiningRejected({ candidateName: name, candidateEmail: email, jobTitle, remarks });
@@ -86,7 +86,7 @@ const getByOffer = asyncHandler(async (req, res) => {
 });
 const resendInvitation = asyncHandler(async (req, res) => {
   const data = await joiningSvc.getInvitation(Number(req.params.id));
-  const joiningUrl = (process.env.FRONTEND_URL || 'http://localhost:3000') +
+  const joiningUrl = (process.env.FRONTEND_URL || 'https://d2t478frm973wh.cloudfront.net') +
   '/joining/' + data.token;
   notify.joiningInvitation({
     candidateName: data.candidate_name || 'Candidate',

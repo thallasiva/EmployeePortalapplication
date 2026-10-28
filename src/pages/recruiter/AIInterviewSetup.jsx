@@ -105,8 +105,8 @@ function ReportModal({ sessionId, onClose }) {
               display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20
             }}>
               <div style={{ background: LIGHT, borderRadius: 10, padding: 16, textAlign: "center" }}>
-                <div style={{ fontSize: 40, fontWeight: 800, color: PRIMARY }}>{report.overall_score}</div>
-                <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>OVERALL SCORE / 100</div>
+                <div style={{ fontSize: report.overall_score == null ? 16 : 40, fontWeight: 800, color: PRIMARY }}>{report.overall_score == null ? "Not scored" : report.overall_score}</div>
+                <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>{report.overall_score == null ? "RECRUITER REVIEW REQUIRED" : "OVERALL SCORE / 100"}</div>
               </div>
               <div style={{ background: "#f9fafb", borderRadius: 10, padding: 16, textAlign: "center" }}>
                 <div style={{
@@ -116,6 +116,11 @@ function ReportModal({ sessionId, onClose }) {
                 <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginTop: 4 }}>RECOMMENDATION</div>
               </div>
             </div>
+            {(report.evaluationMethod === "unavailable" || report.evaluationMethod === "response_length_fallback") && (
+              <div role="alert" style={{ background: "#fffbeb", border: "1px solid #fcd34d", color: "#92400e", borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 13 }}>
+                {report.evaluationNote || "AI evaluation was unavailable. Please review the interview answers manually; no reliable automated competence score is available."}
+              </div>
+            )}
             {report.summary && (
               <div style={{ background: "#f9fafb", borderRadius: 10, padding: 14, marginBottom: 16, fontSize: 14, color: "#374151" }}>
                 {report.summary}
@@ -151,6 +156,11 @@ function ReportModal({ sessionId, onClose }) {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {report.experienceAlignment != null && (
+              <div style={{ background: LIGHT, borderRadius: 8, padding: "10px 12px", marginBottom: 16, fontSize: 13, color: "#374151" }}>
+                <strong>Experience alignment:</strong> {report.experienceAlignment}/100
               </div>
             )}
             {/* Q&A breakdown */}
@@ -195,7 +205,7 @@ export default function AIInterviewSetup() {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs]             = useState([]);
   const [form, setForm] = useState({
-    candidateId: "", jobReqId: "", durationMinutes: 20,
+    candidateId: "", jobReqId: "", durationMinutes: 20, questionCount: 8, interviewMode: "balanced", quickResponseTimeoutSeconds: 20,
   });
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeUploading, setResumeUploading] = useState(false);
@@ -229,10 +239,13 @@ export default function AIInterviewSetup() {
         candidateId:     Number(form.candidateId),
         jobReqId:        Number(form.jobReqId),
         durationMinutes: Number(form.durationMinutes),
+        questionCount:   Number(form.questionCount),
+        interviewMode:   form.interviewMode,
+        quickResponseTimeoutSeconds: Number(form.quickResponseTimeoutSeconds),
       });
       successToast("AI interview invitation sent to candidate!");
       setSent(true);
-      setTimeout(() => { setSent(false); setForm({ candidateId: "", jobReqId: "", durationMinutes: 20 }); }, 3000);
+      setTimeout(() => { setSent(false); setResumeFile(null); setForm({ candidateId: "", jobReqId: "", durationMinutes: 20, questionCount: 8, interviewMode: "balanced", quickResponseTimeoutSeconds: 20 }); }, 3000);
     } catch (e) {
       errorToast(e?.message || "Failed to send invitation");
     } finally {
@@ -345,7 +358,27 @@ export default function AIInterviewSetup() {
                 </label>
                 <div style={{ marginTop: 5, color: "#9ca3af", fontSize: 11 }}>Questions will be tailored to the uploaded resume, skills, and projects.</div>
               </Field>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
+              {form.jobReqId && (() => {
+                const selectedJob = jobs.find(job => String(job.job_req_id) === String(form.jobReqId));
+                const skills = selectedJob?.skill_set || selectedJob?.required_skills || "";
+                return (
+                  <div style={{ background: "#f9fafb", border: `1px solid ${BORDER}`, borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: 13 }}>
+                    <strong style={{ color: "#374151" }}>Role requirements:</strong>
+                    <div style={{ color: "#6b7280", marginTop: 4 }}>{skills || "No required skills listed on this requisition."}</div>
+                  </div>
+                );
+              })()}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <Field label="Question count">
+                  <Select
+                    value={form.questionCount}
+                    onChange={e => setForm(f => ({ ...f, questionCount: Number(e.target.value) }))}
+                  >
+                    {[5, 8, 10, 12].map(n => (
+                      <option key={n} value={n}>{n} questions</option>
+                    ))}
+                  </Select>
+                </Field>
                 <Field label="Interview duration (hard limit)">
                   <Select
                     value={form.durationMinutes}
@@ -356,15 +389,46 @@ export default function AIInterviewSetup() {
                     ))}
                   </Select>
                 </Field>
+                <Field label="Interview style">
+                  <Select
+                    value={form.interviewMode}
+                    onChange={e => setForm(f => ({ ...f, interviewMode: e.target.value }))}
+                  >
+                    <option value="screening">Screening — broad skills coverage</option>
+                    <option value="balanced">Balanced — standard depth</option>
+                    <option value="deep_dive">Deep dive — detailed follow-ups</option>
+                  </Select>
+                </Field>
+                <Field label="No-answer auto-skip timeout">
+                  <Select
+                    value={form.quickResponseTimeoutSeconds}
+                    onChange={e => setForm(f => ({ ...f, quickResponseTimeoutSeconds: Number(e.target.value) }))}
+                  >
+                    {[
+                      [20, "20 seconds — quick response"],
+                      [30, "30 seconds"],
+                      [45, "45 seconds"],
+                      [60, "60 seconds"],
+                      [90, "90 seconds — complex questions"],
+                      [120, "120 seconds — senior / deep dive"],
+                      [0, "Disabled — use full question timer"],
+                    ].map(([seconds, label]) => (
+                      <option key={seconds} value={seconds}>{label}</option>
+                    ))}
+                  </Select>
+                  <div style={{ marginTop: 5, color: "#6b7280", fontSize: 11 }}>
+                    Applies only while the candidate has not started an answer. The separate question timer still applies.
+                  </div>
+                </Field>
               </div>
               {/* Info box */}
               <div style={{
                 background: LIGHT, border: `1px solid ${BORDER}`,
                 borderRadius: 10, padding: 14, marginBottom: 20, fontSize: 13, color: "#374151"
               }}>
-                <strong>How it works:</strong> the AI selects one role-specific question at a time,
-                evaluates each answer, and chooses the next follow-up, skill, and difficulty dynamically.
-                The server enforces the selected duration and the recruiter receives a full evidence-based report.
+                <strong>How it works:</strong> the AI prepares a {form.questionCount}-question interview for the selected role.
+                Questions are calibrated to the candidate&apos;s experience, and follow-ups adapt to each response.
+                The candidate can speak or type answers; the recruiter receives the transcript and evaluation report.
               </div>
               <Btn loading={sending} onClick={handleSend}>
                 {sending ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={15} />}

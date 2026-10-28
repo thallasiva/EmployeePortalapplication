@@ -67,18 +67,18 @@ export const SEED_TEMPLATES = [
 ];
 // ─── Seed logs ───
 export const SEED_LOGS = [
-  { id:1,  dt:"05 Aug 2026, 09:45 AM", to:"john.doe@natit.com",     subject:"Welcome to NAT IT, John Doe!",           module:"General",     status:"Sent",    error:"",                   retry:0 },
-  { id:2,  dt:"05 Aug 2026, 09:30 AM", to:"raju.kumar@natit.com",   subject:"Interview Invitation for SR Engineer",   module:"Recruitment", status:"Sent",    error:"",                   retry:0 },
-  { id:3,  dt:"05 Aug 2026, 08:50 AM", to:"kiranreddy@natit.com",   subject:"Your Casual Leave has been Approved",    module:"Leave",       status:"Sent",    error:"",                   retry:0 },
-  { id:4,  dt:"05 Aug 2026, 08:45 AM", to:"meera.shah@natit.com",   subject:"Your Payslip for July 2026",             module:"Payroll",     status:"Failed",  error:"SMTP timeout",       retry:2 },
-  { id:5,  dt:"05 Aug 2026, 08:30 AM", to:"arif.sani@natit.com",    subject:"Expense Approved – ₹4,500",              module:"Expenses",    status:"Sent",    error:"",                   retry:0 },
-  { id:6,  dt:"05 Aug 2026, 07:55 AM", to:"priya.singh@natit.com",  subject:"Reset Your Password – NAT IT HRMS",      module:"Security",    status:"Sent",    error:"",                   retry:0 },
-  { id:7,  dt:"05 Aug 2026, 07:25 AM", to:"vikas.m@natit.com",      subject:"Important Announcement from NAT IT",     module:"Notifications",status:"Sent",   error:"",                   retry:0 },
-  { id:8,  dt:"04 Aug 2026, 06:15 PM", to:"suresh.p@natit.com",     subject:"Attendance Regularization Approved",     module:"Attendance",  status:"Pending", error:"",                   retry:0 },
-  { id:9,  dt:"04 Aug 2026, 05:45 PM", to:"neha.gupta@natit.com",   subject:"Your Sick Leave has been Rejected",      module:"Leave",       status:"Sent",    error:"",                   retry:0 },
-  { id:10, dt:"04 Aug 2026, 04:30 PM", to:"robert.m@natit.com",     subject:"Interview Invitation for UI Developer",  module:"Recruitment", status:"Failed",  error:"Invalid recipient",  retry:1 },
-  { id:11, dt:"04 Aug 2026, 03:00 PM", to:"anita.k@natit.com",      subject:"Work Anniversary – Happy 3rd Year!",     module:"General",     status:"Sent",    error:"",                   retry:0 },
-  { id:12, dt:"04 Aug 2026, 02:00 PM", to:"deepak.r@natit.com",     subject:"Offer Letter from NAT IT",               module:"Recruitment", status:"Queued",  error:"",                   retry:0 },
+  { id:1,  dt:"05 Aug 2026, 09:45 AM", to:"john.doe@example.com",     subject:"Welcome to HRMS, John Doe!",           module:"General",     status:"Sent",    error:"",                   retry:0 },
+  { id:2,  dt:"05 Aug 2026, 09:30 AM", to:"raju.kumar@example.com",   subject:"Interview Invitation for SR Engineer",   module:"Recruitment", status:"Sent",    error:"",                   retry:0 },
+  { id:3,  dt:"05 Aug 2026, 08:50 AM", to:"kiranreddy@example.com",   subject:"Your Casual Leave has been Approved",    module:"Leave",       status:"Sent",    error:"",                   retry:0 },
+  { id:4,  dt:"05 Aug 2026, 08:45 AM", to:"meera.shah@example.com",   subject:"Your Payslip for July 2026",             module:"Payroll",     status:"Failed",  error:"SMTP timeout",       retry:2 },
+  { id:5,  dt:"05 Aug 2026, 08:30 AM", to:"arif.sani@example.com",    subject:"Expense Approved – ₹4,500",              module:"Expenses",    status:"Sent",    error:"",                   retry:0 },
+  { id:6,  dt:"05 Aug 2026, 07:55 AM", to:"priya.singh@example.com",  subject:"Reset Your Password – HRMS",             module:"Security",    status:"Sent",    error:"",                   retry:0 },
+  { id:7,  dt:"05 Aug 2026, 07:25 AM", to:"vikas.m@example.com",      subject:"Important Announcement from HRMS",      module:"Notifications",status:"Sent",   error:"",                   retry:0 },
+  { id:8,  dt:"04 Aug 2026, 06:15 PM", to:"suresh.p@example.com",     subject:"Attendance Regularization Approved",     module:"Attendance",  status:"Pending", error:"",                   retry:0 },
+  { id:9,  dt:"04 Aug 2026, 05:45 PM", to:"neha.gupta@example.com",   subject:"Your Sick Leave has been Rejected",      module:"Leave",       status:"Sent",    error:"",                   retry:0 },
+  { id:10, dt:"04 Aug 2026, 04:30 PM", to:"robert.m@example.com",     subject:"Interview Invitation for UI Developer",   module:"Recruitment", status:"Failed",  error:"Invalid recipient",  retry:1 },
+  { id:11, dt:"04 Aug 2026, 03:00 PM", to:"anita.k@example.com",      subject:"Work Anniversary – Happy 3rd Year!",      module:"General",     status:"Sent",    error:"",                   retry:0 },
+  { id:12, dt:"04 Aug 2026, 02:00 PM", to:"deepak.r@example.com",     subject:"Offer Letter from HRMS",                  module:"Recruitment", status:"Queued",  error:"",                   retry:0 },
 ];
 // ─── Seed schedules ───
 export const SEED_SCHEDULES = [

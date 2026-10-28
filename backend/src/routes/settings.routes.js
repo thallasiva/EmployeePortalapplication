@@ -6,6 +6,7 @@ const { authenticate, authorizeRoles } = require('../middleware/auth');
 // needed by all users (sidebar menu permissions, their own notifications, preferences).
 const OPEN_TO_ALL_USERS = [
   ['GET', /^\/menu-permissions$/],
+  ['GET', /^\/dashboards\/me$/],
   ['GET', /^\/notifications$/],
   ['PATCH', /^\/notifications\/(read-all|\d+\/read)$/],
   ['GET', /^\/notification-preferences$/],
@@ -22,6 +23,8 @@ router.use((req, res, next) => {
   next();
 });
 /* SMTP */
+router.get('/general', c.getGeneralSettings);
+router.put('/general', c.saveGeneralSettings);
 router.get('/smtp',          c.getSmtp);
 router.put('/smtp',          c.saveSmtp);
 router.post('/smtp/test',    c.testSmtp);
@@ -55,6 +58,7 @@ router.get('/forms/:id',      c.getForm);
 router.put('/forms/:id',      c.updateForm);
 router.delete('/forms/:id',   c.deleteForm);
 /* Dashboard Builder */
+router.get('/dashboards/me',   c.getMyDashboard);
 router.get('/dashboards',         c.listDashboards);
 router.post('/dashboards',        c.createDashboard);
 router.get('/dashboards/:id',     c.getDashboard);

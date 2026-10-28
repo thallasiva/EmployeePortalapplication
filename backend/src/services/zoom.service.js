@@ -74,7 +74,7 @@ async function createZoomMeeting({ topic, startDateTime, durationMins = 60, time
     start_time: startDateTime,
     duration: durationMins,
     timezone: timeZone,
-    agenda: `Interview with ${candidateName} — NAT IT HRMS Portal`,
+    agenda: `Interview with ${candidateName} — HRMS Portal`,
     settings: {
       host_video: true,
       participant_video: true,

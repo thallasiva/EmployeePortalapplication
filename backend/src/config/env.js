@@ -42,8 +42,8 @@ module.exports = {
     companyReportTo: required('COMPANY_REPORT_TO', ''),
     hrManagerName: required('HR_MANAGER_NAME', ''),
     logoPath: required('COMPANY_LOGO_PATH', ''),
-    backendUrl: required('BACKEND_URL', 'https://backend.natsoft.io'),
-    frontendUrl: required('FRONTEND_URL', 'http://localhost:3000')
+    backendUrl: required('BACKEND_URL', 'https://d2t478frm973wh.cloudfront.net'),
+    frontendUrl: required('FRONTEND_URL', 'https://d2t478frm973wh.cloudfront.net')
   },
   redis: {
     host: required('REDIS_HOST', '127.0.0.1'),
@@ -79,6 +79,6 @@ module.exports = {
     model:  required('OPENAI_MODEL', 'gpt-4o-mini')
   },
   frontend: {
-    url: required('FRONTEND_URL', 'http://localhost:3000')
+    url: required('FRONTEND_URL', 'https://d2t478frm973wh.cloudfront.net')
   }
 };

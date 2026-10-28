@@ -116,19 +116,21 @@ Return ONLY valid JSON (no markdown):
   return buildFallbackEvaluation(pairs);
 }
 function buildFallbackEvaluation(pairs) {
-  const scores = pairs.map((p, i) => {
-    const words = (p.answer || '').split(/\s+/).filter(Boolean).length;
-    const score = Math.min(10, Math.max(1, Math.round(words / 15)));
-    return { questionId: i + 1, score, feedback: '', keyPoints: [] };
-  });
-  const avg = Math.round(scores.reduce((s, q) => s + q.score, 0) / scores.length * 10);
   return {
-    overallScore: avg,
-    recommendation: avg >= 70 ? 'Hire' : avg >= 50 ? 'Maybe' : 'No Hire',
+    overallScore: null,
+    recommendation: 'FURTHER_EVALUATION',
     summary: '',
     strengths: [],
     improvements: [],
-    questionScores: scores,
+    questionScores: pairs.map((pair, index) => ({
+      questionId: index + 1,
+      skill: pair.skill,
+      score: null,
+      feedback: 'AI evaluation unavailable; recruiter review required.',
+      keyPoints: [],
+    })),
+    evaluationMethod: 'unavailable',
+    evaluationNote: 'AI evaluation was unavailable. No automated competence score was produced; please review the transcript manually.',
   };
 }
 // ── DB operations (raw SQL — no stored procedures) ─────────────────────────
@@ -189,7 +191,10 @@ async function verifyOtp(token, code) {
   if (!session || session.status !== 'pending') return { valid: false, error: 'Interview unavailable' };
   const state = parseState(session.questions_json);
   if (Number(state.otpAttempts || 0) >= 5) return { valid: false, error: 'Too many attempts. Request a new code.' };
-  if (!state.otpExpiresAt || new Date(state.otpExpiresAt) < new Date()) return { valid: false, error: 'Code expired. Request a new code.' };
+  const expiresAt = Date.parse(state.otpExpiresAt);
+  if (!state.otpHash || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+    return { valid: false, error: 'Code expired. Request a new code.' };
+  }
   state.otpAttempts = Number(state.otpAttempts || 0) + 1;
   const valid = crypto.createHash('sha256').update(String(code || '')).digest('hex') === state.otpHash;
   if (valid) state.otpVerifiedAt = new Date().toISOString();
@@ -229,6 +234,7 @@ async function getReport(sessionId) {
   return rows[0] || null;
 }
 function parseState(raw) {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw;
   try {
     const parsed = JSON.parse(raw || '{}');
     return Array.isArray(parsed) ? { profile: {}, transcript: parsed, durationSeconds: 1800 } : parsed;
@@ -245,21 +251,91 @@ function questionTimeLimit(question) {
   if (type === 'SYSTEM_DESIGN' || question?.stage === 'system_design') return question?.timeLimit || 900;
   return question?.timeLimit || 120;
 }
+const RESUME_SKILL_TERMS = [
+  'JavaScript', 'TypeScript', 'React', 'React Native', 'Node.js', 'Express.js',
+  'Angular', 'Vue.js', 'Next.js', 'Python', 'Java', 'Spring Boot', 'C#',
+  '.NET', 'PHP', 'Laravel', 'Ruby', 'Rails', 'Go', 'Rust', 'SQL', 'MySQL',
+  'PostgreSQL', 'SQL Server', 'MongoDB', 'Redis', 'GraphQL', 'REST API',
+  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'Kafka',
+  'CI/CD', 'Linux', 'Flutter', 'Swift', 'Kotlin', 'Power BI', 'Tableau',
+  'Selenium', 'Cypress', 'Playwright',
+];
+function parseSkillList(value) {
+  if (Array.isArray(value)) return value.flatMap(parseSkillList);
+  if (typeof value !== 'string' || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.flatMap(parseSkillList);
+  } catch {}
+  return value.split(/[,;|\n]+/).map((skill) => skill.trim()).filter(Boolean);
+}
+function extractResumeSkills(resume = '') {
+  const text = String(resume);
+  return RESUME_SKILL_TERMS.filter((skill) => {
+    const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, 'i').test(text);
+  });
+}
 function fallbackNextQuestion({ profile, transcript }) {
+  const maxFollowUpsPerSkill = 2;
   const n = transcript.length + 1;
-  if (n === 1) return { id: 1, stage: 'introduction', type: 'experience', difficulty: 'calibrated', question: 'Could you briefly introduce yourself and explain your current role, responsibilities, and the project you work on?' };
-  const skills = String(profile.requiredSkills || '').split(',').map(s => s.trim()).filter(Boolean);
-  const skill = skills[(n - 2) % Math.max(skills.length, 1)] || profile.jobTitle || 'this role';
-  const prior = transcript[transcript.length - 1];
-  const isBrief = (prior?.answer || '').trim().split(/\s+/).length < 35;
+  const requiredSkills = parseSkillList(profile.requiredSkills);
+  const preferredSkills = parseSkillList(profile.preferredSkills);
+  const resumeSkills = [
+    ...parseSkillList(profile.resumeSkills),
+    ...extractResumeSkills(profile.resume),
+  ];
+  const candidateSkills = parseSkillList(profile.candidateSkills);
+  const skills = [...new Map(
+    [...requiredSkills, ...preferredSkills, ...candidateSkills, ...resumeSkills]
+      .map((skill) => [skill.toLowerCase(), skill])
+  ).values()];
+  const assessed = new Set([
+    ...(profile.skillsAssessed || []),
+    ...transcript.map((entry) => entry.question?.skill).filter(Boolean),
+  ].map((skill) => String(skill).toLowerCase()));
+  const unassessed = skills.filter((skill) => !assessed.has(skill.toLowerCase()));
+  const lastEntry = transcript[transcript.length - 1];
+  const previousSkill = lastEntry?.question?.skill;
+  const answerQuality = lastEntry?.answerQuality || _scoreLastAnswer(transcript);
+  let consecutiveSameSkillQuestions = 0;
+  for (let index = transcript.length - 1; index >= 0; index--) {
+    if (String(transcript[index]?.question?.skill || '').toLowerCase() !== String(previousSkill || '').toLowerCase()) break;
+    consecutiveSameSkillQuestions += 1;
+  }
+  const followUp = Boolean(lastEntry && ['C', 'D', 'E'].includes(answerQuality) && consecutiveSameSkillQuestions <= maxFollowUpsPerSkill);
+  const preferredNext = unassessed.find((skill) => skill.toLowerCase() !== String(previousSkill || '').toLowerCase());
+  const alternateSkill = skills.find((item) => item.toLowerCase() !== String(previousSkill || '').toLowerCase());
+  const skill = (followUp ? previousSkill : preferredNext)
+    || (consecutiveSameSkillQuestions > maxFollowUpsPerSkill ? alternateSkill : previousSkill)
+    || skills[(n - 1) % Math.max(skills.length, 1)]
+    || profile.jobTitle
+    || 'this role';
+  const resumeMentionsSkill = resumeSkills.some((item) => item.toLowerCase() === skill.toLowerCase());
+  const role = profile.jobTitle || 'this role';
+  const questionStyle = (n - 1) % 4;
+  const question = n === 1
+    ? `Thinking about your ${Number(profile.relevantExperience || profile.totalExperience || 0)} years of experience, which recent project best prepares you for the ${role} role? Describe your contribution and the result.`
+    : answerQuality === 'D' || answerQuality === 'E'
+      ? `Let's explore ${skill} step by step. What is the first decision or check you would make in a real ${role} task using it, and why?`
+      : answerQuality === 'C'
+        ? `You mentioned ${skill}. How would you verify that your approach worked, and what would you change if the result did not meet expectations?`
+    : questionStyle === 1 && resumeMentionsSkill
+      ? `Your resume lists ${skill}. Which project best demonstrates that experience, and what did you personally build or deliver?`
+      : questionStyle === 1
+        ? `In a ${role} project, how would you decide when ${skill} is the right choice, and what trade-off would you watch for?`
+        : questionStyle === 0
+          ? `What technical trade-offs would you consider when using ${skill} for the ${role} role, and how would you choose between the alternatives?`
+          : questionStyle === 2
+          ? `Describe a difficult problem involving ${skill} that you handled, and explain how you diagnosed it and verified the fix.`
+          : `Suppose a production system using ${skill} starts failing under increased load. What would you investigate first, and how would you make it reliable?`;
   return {
     id: n,
-    stage: n > 4 ? 'scenario' : 'technical',
-    type: isBrief ? 'clarification' : 'practical',
-    difficulty: Number(profile.relevantExperience || 0) >= 5 ? 'advanced' : 'intermediate',
-    question: isBrief
-      ? `Could you give a concrete example from your work involving ${skill}, including the problem, your approach, and the result?`
-      : `Based on your experience, how have you used ${skill} in production, and what trade-offs or issues did you need to handle?`,
+    stage: n === 1 ? 'introduction' : resumeMentionsSkill ? 'resume_validation' : 'technical',
+    type: n === 1 ? 'experience' : followUp ? 'clarification' : questionStyle === 1 && resumeMentionsSkill ? 'resume_probe' : questionStyle === 2 ? 'practical' : 'scenario',
+    skill,
+    difficulty: lastEntry ? _adaptDifficulty(lastEntry.question?.difficulty, answerQuality) : _calibratedDifficulty(profile),
+    question,
   };
 }
 // ── Enterprise Adaptive Question Engine ───────────────────────────────────
@@ -292,6 +368,10 @@ function _buildEnterpriseSystemPrompt(profile) {
 - Difficulty ladder (easiest → hardest): fundamental → intermediate → proficient → advanced → senior
 - A long but generic, incorrect, or evasive answer is NOT a good answer — judge substance, correctness, and depth, never word count
 - Prioritize: required skills > preferred skills > general engineering depth
+- Use the exact job-specific required skills and candidate-specific resume evidence below; do not ask generic questions that could be reused for every role or candidate
+- Cover different required skills before returning to a previously assessed skill; vary question format (resume claim validation, technical decision, practical debugging, and production scenario)
+- When the resume names a technology or project, ask about that actual claim without inventing responsibilities or results; when it does not, assess the job requirement with a role-relevant scenario
+- Avoid repeating the same question pattern or asking the same technology question with only the skill name swapped
 
 ## JOB CONTEXT
 Role: ${profile.jobTitle || 'Not specified'}
@@ -309,14 +389,15 @@ Hints: ${hintsAllowed
     : 'NOT ALLOWED — do not provide hints, partial answers, or leading information.'}
 
 ## CANDIDATE PROFILE
-${profile.resume ? `Resume Summary:\n${String(profile.resume).slice(0, 600)}` : 'Resume: Not provided'}
+Candidate-listed skills: ${parseSkillList(profile.candidateSkills).join(', ') || 'Not provided'}
+Resume skills detected: ${[...new Set([...parseSkillList(profile.resumeSkills), ...extractResumeSkills(profile.resume)])].join(', ') || 'None detected'}
+${profile.resume ? `Resume evidence:\n${String(profile.resume).slice(0, 2500)}` : 'Resume: Not provided'}
 
 ## INTERVIEW STRUCTURE (adapt as needed)
-Q1 → Introduction: candidate background, current role, recent project (always start here)
-Q2-Q3 → Resume Validation: verify claims from resume, project details, technologies used
-Q4-Q6 → Core Technical: required skills, depth of knowledge, architecture decisions
-Q7-Q8 → Real-World Scenario: production problem-solving, debugging, trade-offs
-Q9+ (if maxQ > 8) → Domain/Advanced: domain-specific, leadership, system design
+Q1 → Experience and recent project relevant to this role
+Next → Validate resume claims and assess required skills
+Later → Real-world scenarios, trade-offs, and domain-specific depth
+Use the configured question count as the target; do not end early unless the time limit expires.
 
 ## QUESTION QUALITY RULES
 - Prefer specific, scenario-based questions over generic definitions
@@ -345,6 +426,7 @@ function _adaptDifficulty(current, quality) {
 }
 // Map a content-based 0-10 evaluation score to an A..E quality grade.
 function _qualityFromScore(score) {
+  if (score === null || score === undefined || score === '') return null;
   const s = Number(score);
   if (!Number.isFinite(s)) return null;
   if (s >= 8.5) return 'A';
@@ -359,6 +441,7 @@ function _qualityFromScore(score) {
 function _scoreLastAnswer(transcript) {
   if (!transcript.length) return null;
   const last = transcript[transcript.length - 1];
+  if (['unavailable', 'response_length_fallback'].includes(last.evaluation?.evaluationMethod)) return null;
   const fromEval = _qualityFromScore(last.evaluation?.score);
   if (fromEval) return fromEval;
   const answer = (last.answer || '').trim();
@@ -369,7 +452,7 @@ function _scoreLastAnswer(transcript) {
   if (wordCount < 80) return 'B';
   return 'A';
 }
-async function generateNextQuestion({ profile, transcript, durationSeconds, expiresAt, skillsAssessed = [] }) {
+async function generateNextQuestion({ profile, transcript, durationSeconds, expiresAt, skillsAssessed = [], questionCount = 8 }) {
   const openai = getOpenAI();
   if (!openai) return fallbackNextQuestion({ profile, transcript });
   const qNum = transcript.length + 1;
@@ -396,6 +479,12 @@ async function generateNextQuestion({ profile, transcript, durationSeconds, expi
     question: t.question?.question || '',
     answer: (t.answer || '').slice(0, 1200) + ((t.answer || '').length > 1200 ? '…' : ''),
   }));
+  let consecutiveSameSkillQuestions = 0;
+  const lastSkill = transcript[transcript.length - 1]?.question?.skill;
+  for (let index = transcript.length - 1; index >= 0; index--) {
+    if (String(transcript[index]?.question?.skill || '').toLowerCase() !== String(lastSkill || '').toLowerCase()) break;
+    consecutiveSameSkillQuestions += 1;
+  }
   const contentEval = lastEval
     ? `Score: ${lastEval.score ?? '?'}/10 | Correctness: ${lastEval.correctness ?? '?'} | Depth: ${lastEval.technicalDepth ?? '?'} | ProblemSolving: ${lastEval.problemSolving ?? '?'} | Communication: ${lastEval.communication ?? '?'}
 Weaknesses observed: ${(lastEval.weaknesses || []).join('; ') || 'none noted'}
@@ -403,7 +492,10 @@ Model-recommended next difficulty: ${lastEval.recommendedDifficulty || 'auto'}`
     : 'No content evaluation available for the last answer yet.';
   const userMsg = `## TIME AND COVERAGE
 Duration: ${durationSeconds} seconds. Remaining: ${remainingSeconds} seconds (server-enforced hard limit).
+Target question count: ${questionCount}. This is the target interview length; continue until it is reached unless time expires.
 Skills assessed: ${skillsAssessed.join(', ') || 'None'}
+Same-skill follow-ups used in a row: ${Math.max(0, consecutiveSameSkillQuestions - 1)} of 2. Move to another skill when the limit is reached.
+Required skills not yet assessed: ${parseSkillList(profile.requiredSkills).filter((skill) => !skillsAssessed.some((assessed) => String(assessed).toLowerCase() === skill.toLowerCase())).join(', ') || 'None'}
 
 ## TRANSCRIPT SO FAR (${transcript.length} answered)
 ${JSON.stringify(transcriptSummary, null, 2)}
@@ -447,16 +539,22 @@ Return ONLY valid JSON — no markdown, no explanation:
       response_format: { type: 'json_object' },
     });
     const q = JSON.parse(completion.choices[0]?.message?.content || '{}');
-    if (q?.nextAction === 'END_INTERVIEW') return { nextAction: 'END_INTERVIEW', reason: q.reason || 'Sufficient evidence collected.' };
-    if (q?.question) return { ...q, nextAction: 'ASK_QUESTION', id: qNum, answerQuality };
+    if (q?.nextAction === 'END_INTERVIEW') {
+      return fallbackNextQuestion({ profile, transcript });
+    }
+    if (q?.question) {
+      if (consecutiveSameSkillQuestions > 2 && String(q.skill || '').toLowerCase() === String(lastSkill || '').toLowerCase()) {
+        return fallbackNextQuestion({ profile, transcript });
+      }
+      return { ...q, nextAction: 'ASK_QUESTION', id: qNum, answerQuality };
+    }
   } catch (err) {
     console.warn('[AIInterview] enterprise question generation failed:', err.message);
   }
   return fallbackNextQuestion({ profile, transcript });
 }
 async function evaluateAnswer({ profile, question, answer, transcript }) {
-  const fallbackScore = Math.min(10, Math.max(1, Math.round(String(answer || '').trim().split(/\s+/).filter(Boolean).length / 15)));
-  const fallback = { score: fallbackScore, correctness: fallbackScore, technicalDepth: fallbackScore, practicalKnowledge: fallbackScore, problemSolving: fallbackScore, communication: fallbackScore, confidence: fallbackScore, strengths: [], weaknesses: [], assessment: fallbackScore >= 7 ? 'Strong answer' : 'Answer needs further validation', recommendedDifficulty: fallbackScore >= 7 ? 'advanced' : 'intermediate' };
+  const fallback = { score: null, correctness: null, technicalDepth: null, practicalKnowledge: null, problemSolving: null, communication: null, confidence: null, strengths: [], weaknesses: [], assessment: 'AI evaluation was unavailable; recruiter review is required.', recommendedDifficulty: null, evaluationMethod: 'unavailable' };
   const openai = getOpenAI();
   if (!openai) return fallback;
   const qType = String(question?.type || '').toUpperCase();
@@ -491,16 +589,16 @@ async function evaluateAnswer({ profile, question, answer, transcript }) {
     ? 'Evaluate a single CODING or SYSTEM-DESIGN interview answer fairly, using job-relevant evidence only. In addition to the general scores, assess algorithmic correctness, time and space complexity, edge-case handling, and optimality/scalability. Judge substance and correctness, never answer length. Return JSON only.'
     : 'Evaluate a single interview answer fairly using job-relevant evidence only. Judge substance, correctness and depth — never answer length. Return JSON only.';
   try {
-    const completion = await openai.chat.completions.create({ model: getModel(), temperature: 0.2, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sysContent }, { role: 'user', content: JSON.stringify({ role: profile.jobTitle, requiredSkills: profile.requiredSkills, questionType: question?.type, questionDifficulty: question?.difficulty, question: question?.question || question, answer, previousAnswers: transcript.slice(-3).map(t => ({ question: t.question?.question, answer: t.answer })), schema: { ...baseSchema, ...codingSchema } }) }] });
+    const completion = await openai.chat.completions.create({ model: getModel(), temperature: 0.2, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sysContent }, { role: 'user', content: JSON.stringify({ role: profile.jobTitle, requiredSkills: profile.requiredSkills, totalExperience: profile.totalExperience, relevantExperience: profile.relevantExperience, resumeEvidence: profile.resume ? String(profile.resume).slice(0, 1500) : '', questionType: question?.type, questionDifficulty: question?.difficulty, question: question?.question || question, answer, previousAnswers: transcript.slice(-3).map(t => ({ question: t.question?.question, answer: t.answer })), schema: { ...baseSchema, ...codingSchema } }) }] });
     const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
-    return typeof result.score === 'number' ? result : fallback;
+    return typeof result.score === 'number' ? { ...result, evaluationMethod: 'ai' } : fallback;
   } catch (err) { console.warn('[AIInterview] per-answer evaluation failed:', err.message); return fallback; }
 }
 async function evaluateAdaptiveInterview({ profile, transcript }) {
   const openai = getOpenAI();
   const pairs = transcript.map(t => ({ question: t.question?.question || '', answer: t.answer || '', type: t.question?.type || '', difficulty: t.question?.difficulty || '', skill: t.question?.skill || '', answerQuality: t.answerQuality || '?' }));
   const fallback = buildFallbackEvaluation(pairs);
-  const normFallback = { ...fallback, recommendation: fallback.recommendation === 'Strong Hire' ? 'STRONG_HIRE' : fallback.recommendation === 'Hire' ? 'HIRE' : fallback.recommendation === 'Maybe' ? 'FURTHER_EVALUATION' : 'REJECT' };
+  const normFallback = { ...fallback, recommendation: 'FURTHER_EVALUATION' };
   if (!openai) return normFallback;
   const systemMsg = `You are an Enterprise AI Interview Evaluator. Produce a comprehensive, fair, evidence-based scorecard. Use only job-relevant evidence. Never infer protected characteristics. Be specific — reference actual answers. Calibrate scores relative to the declared experience level and role seniority.`;
   const yrs = Number(profile.relevantExperience || profile.totalExperience || 0);
@@ -571,15 +669,18 @@ Return ONLY valid JSON with this exact structure (no markdown):
       response_format: { type: 'json_object' },
     });
     const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
-    if (result.overallScore !== undefined) return result;
+    if (result.overallScore !== undefined) return { ...result, evaluationMethod: 'ai' };
   } catch (err) {
     console.warn('[AIInterview] enterprise evaluation failed:', err.message);
   }
   return normFallback;
 }
-async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 20, expiresHours = 48 }) {
+async function createAdaptiveSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, profile, durationMinutes = 20, questionCount = 8, quickResponseTimeoutSeconds = 20, interviewMode = 'balanced', expiresHours = 48 }) {
   const durationSeconds = Math.min(Math.max(Number(durationMinutes) || 20, 10), 60) * 60;
-  return createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions: { profile, transcript: [], durationSeconds, skillsAssessed: [], status: 'PENDING' }, expiresHours });
+  const targetQuestionCount = Math.min(Math.max(Number(questionCount) || 8, 3), 20);
+  const quickTimeout = [0, 20, 30, 45, 60, 90, 120].includes(Number(quickResponseTimeoutSeconds)) ? Number(quickResponseTimeoutSeconds) : 20;
+  const interviewProfile = { ...profile, interviewMode };
+  return createSession({ candidateId, jobReqId, recruiterId, candidateName, candidateEmail, jobTitle, questions: { profile: interviewProfile, transcript: [], durationSeconds, questionCount: targetQuestionCount, quickResponseTimeoutSeconds: quickTimeout, skillsAssessed: [], status: 'PENDING' }, expiresHours });
 }
 async function startAdaptiveSession(token) {
   const session = await getSession(token);
@@ -591,34 +692,97 @@ async function startAdaptiveSession(token) {
     state.expiresAt = new Date(Date.now() + (Number(state.durationSeconds) || 1800) * 1000).toISOString();
     state.status = 'IN_PROGRESS';
   }
-  if (getRemainingSeconds(state) <= 0) return null;
+  const pendingAnswerIndex = state.transcript.findIndex((entry) => !entry.evaluation);
+  const generationInterruptedIndex = pendingAnswerIndex < 0 && state.transcript.length
+    && String(state.transcript[state.transcript.length - 1].question?.id) === String(state.currentQuestion?.id)
+    ? state.transcript.length - 1
+    : -1;
+  const recoveryIndex = pendingAnswerIndex >= 0 ? pendingAnswerIndex : generationInterruptedIndex;
+  if (recoveryIndex >= 0) {
+    const recovered = await processAdaptiveAnswer(token, state, recoveryIndex);
+    if (recovered.complete) return { session, state, complete: true };
+  }
+  if (getRemainingSeconds(state) <= 0) {
+    await completeAdaptiveSession(token, 'time_expired', state);
+    return { session, state, complete: true };
+  }
   if (!state.currentQuestion) {
     state.currentQuestion = await generateNextQuestion(state);
+    if (state.currentQuestion?.nextAction === 'END_INTERVIEW') state.currentQuestion = fallbackNextQuestion(state);
     state.currentQuestionStartedAt = new Date().toISOString();
     await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
   }
   return { session, state };
 }
-async function answerAdaptiveSession({ token, answer }) {
+async function processAdaptiveAnswer(token, state, transcriptIndex) {
+  const entry = state.transcript[transcriptIndex];
+  if (!entry.evaluation) {
+    entry.evaluation = await evaluateAnswer({
+      profile: state.profile || {},
+      question: entry.question,
+      answer: entry.answer,
+      transcript: state.transcript.slice(0, transcriptIndex),
+    });
+    entry.answerQuality = entry.evaluation?.evaluationMethod === 'unavailable'
+      ? null
+      : _qualityFromScore(entry.evaluation?.score);
+    entry.status = 'answered';
+    await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
+  }
+  if (entry.question?.skill && !state.skillsAssessed.includes(entry.question.skill)) state.skillsAssessed.push(entry.question.skill);
+  if (state.transcript.length >= (Number(state.questionCount) || 8)) {
+    return completeAdaptiveSession(token, 'question_count_reached', state);
+  }
+  if (getRemainingSeconds(state) <= 0) {
+    return completeAdaptiveSession(token, 'time_expired', state);
+  }
+  state.currentQuestion = await generateNextQuestion(state);
+  state.currentQuestionStartedAt = new Date().toISOString();
+  if (getRemainingSeconds(state) <= 0 || state.currentQuestion?.nextAction === 'END_INTERVIEW') {
+    return completeAdaptiveSession(token, state.currentQuestion?.reason || 'sufficient_evidence', state);
+  }
+  await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
+  return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt };
+}
+async function answerAdaptiveSession({ token, answer, questionId }) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return null;
   const state = parseState(session.questions_json);
   if (!state.currentQuestion) throw new Error('Interview has not been started.');
-  if (getRemainingSeconds(state) <= 0) return completeAdaptiveSession(token, 'time_expired');
+  const existingIndex = questionId
+    ? state.transcript.findIndex((entry) => String(entry.question?.id) === String(questionId))
+    : -1;
+  if (existingIndex >= 0) {
+    const existing = state.transcript[existingIndex];
+    if (existing.status === 'answered' && String(state.currentQuestion?.id) !== String(existing.question?.id)) {
+      return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt, cached: true };
+    }
+    return processAdaptiveAnswer(token, state, existingIndex);
+  }
+  if (questionId && String(state.currentQuestion.id) !== String(questionId)) {
+    return { conflict: true, question: state.currentQuestion, questionNumber: state.transcript.length + 1 };
+  }
+  const interviewExpired = getRemainingSeconds(state) <= 0;
   const questionExpired = state.currentQuestionStartedAt &&
     Date.now() - new Date(state.currentQuestionStartedAt).getTime() >= questionTimeLimit(state.currentQuestion) * 1000;
-  const effectiveAnswer = questionExpired ? '(skipped — question time expired)' : String(answer || '').trim();
-  // Evaluate content first, then derive the A..E quality grade from that
-  // content score (falling back to a length heuristic only if evaluation is unavailable).
-  const evaluation = await evaluateAnswer({ profile: state.profile || {}, question: state.currentQuestion, answer: effectiveAnswer, transcript: state.transcript });
-  const answerQuality = _qualityFromScore(evaluation?.score) || _scoreLastAnswer([...state.transcript, { answer: effectiveAnswer }]);
-  state.transcript.push({ question: state.currentQuestion, answer: effectiveAnswer, answeredAt: new Date().toISOString(), answerQuality, evaluation, timedOut: questionExpired });
-  if (state.currentQuestion.skill && !state.skillsAssessed.includes(state.currentQuestion.skill)) state.skillsAssessed.push(state.currentQuestion.skill);
-  state.currentQuestion = await generateNextQuestion(state);
-  state.currentQuestionStartedAt = new Date().toISOString();
-  if (getRemainingSeconds(state) <= 0 || state.currentQuestion?.nextAction === 'END_INTERVIEW') return completeAdaptiveSession(token, state.currentQuestion?.reason || 'sufficient_evidence', state);
+  const effectiveAnswer = interviewExpired
+    ? '(skipped — interview time expired)'
+    : questionExpired
+      ? '(skipped — question time expired)'
+      : String(answer || '').trim();
+  state.transcript.push({
+    question: state.currentQuestion,
+    answer: effectiveAnswer,
+    answeredAt: new Date().toISOString(),
+    answerQuality: null,
+    evaluation: null,
+    timedOut: interviewExpired || questionExpired,
+    status: 'evaluating',
+  });
+  delete state.currentDraft;
+  const transcriptIndex = state.transcript.length - 1;
   await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ? AND status = \'pending\'', [JSON.stringify(state), token]);
-  return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt };
+  return processAdaptiveAnswer(token, state, transcriptIndex);
 }
 async function completeAdaptiveSession(token, reason = 'candidate_completed', suppliedState = null) {
   const session = await getSession(token);
@@ -649,26 +813,22 @@ async function saveDraft(token, questionId, draft) {
   const session = await getSession(token);
   if (!session || session.status !== 'pending') return;
   const state = parseState(session.questions_json);
+  if (!state.currentQuestion || String(state.currentQuestion.id) !== String(questionId)) return;
   state.currentDraft = { questionId, draft: String(draft || '').slice(0, 5000), savedAt: new Date().toISOString() };
   await query('UPDATE ai_interview_sessions SET questions_json = ? WHERE token = ?', [JSON.stringify(state), token]);
 }
 // ── Idempotency-aware answer ───────────────────────────────────────────────
 async function answerAdaptiveSessionV2({ token, answer, questionId }) {
   const session = await getSession(token);
-  if (!session || session.status !== 'pending') return null;
-  const state = parseState(session.questions_json);
-  if (!state.currentQuestion) throw new Error('Interview has not been started.');
-  // Idempotency: if this question was already answered, return cached state
-  if (questionId && state.transcript.some(t => String(t.question?.id) === String(questionId))) {
-    return { complete: false, question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: getRemainingSeconds(state), expiresAt: state.expiresAt, cached: true };
-  }
-  // Clear draft for this question
-  if (state.currentDraft?.questionId === questionId) delete state.currentDraft;
-  // Delegate to existing handler
-  return answerAdaptiveSession({ token, answer });
+  if (!session) return null;
+  if (session.status === 'completed') return { complete: true, cached: true };
+  if (session.status !== 'pending') return null;
+  return answerAdaptiveSession({ token, answer, questionId });
 }
 module.exports = {
   generateQuestions,
+  generateNextQuestion,
+  evaluateAnswer,
   evaluateAnswers,
   createSession,
   getSession,
@@ -682,6 +842,7 @@ module.exports = {
   answerAdaptiveSession,
   completeAdaptiveSession,
   getRemainingSeconds,
+  parseState,
   logProctoringEvent,
   saveDraft,
   answerAdaptiveSessionV2,

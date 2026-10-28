@@ -2,52 +2,16 @@ import { useEffect, useState } from "react";
 import { Globe, Phone, Mail, MapPin, ExternalLink, Building2 } from "lucide-react";
 const COMPANIES = [
 {
-  name: "NAT IT Services Pvt. Ltd.",
-  website: "https://www.natit.in",
-  phone: "+91 9010877718",
-  email: "hr@natit.in",
-  address: "Plot no. 21, Sruthi Sadan, Gachibowli, Hyderabad, Telangana",
-  about: "NAT IT Services is a one-stop solution provider for all your IT needs — Consulting, Application Implementations, Support and Maintenance.",
-  logo: "https://www.natit.in/assets/images/logo.png",
-  industry: "Information Technology",
-  founded: "2004",
-  size: "51–200 employees"
-},
-{
-  name: "Natsoft Corporation",
-  website: "https://natsoft.us",
-  phone: "+1 (512) 900-0000",
-  email: "contact@natsoft.us",
-  address: "100 Technology Drive, Austin, TX 78701, United States",
-  about: "Natsoft Corporation is a global digital transformation services company. Reach the future faster with fully automated legacy modernization and migration solutions.",
-  logo: "https://natsoft.us/assets/images/logo.png",
-  industry: "Digital Transformation",
-  founded: "2015",
-  size: "201–500 employees"
-},
-{
-  name: "Kognitic",
-  website: "https://natsoft.us",
+  name: "HRMS",
+  website: "",
   phone: "",
-  email: "info@kognitic.com",
-  address: "United States",
-  about: "Kognitic is The Commercial Decision Engine for Life Sciences — delivering intelligent, data-driven commercial insights for faster, smarter decisions.",
-  logo: "https://kognitic.com/_astro/logo-kognitic.NzrletX4_Z12DURN.webp",
-  industry: "Life Sciences / AI",
-  founded: "2020",
-  size: "11–50 employees"
-},
-{
-  name: "UpdraftWorks",
-  website: "https://updraftworks.com",
-  phone: "",
-  email: "info@updraftworks.com",
-  address: "United States",
-  about: "UpdraftWorks delivers cutting-edge technology solutions and consulting services to help businesses transform and grow.",
-  logo: "https://updraftworks.com/images/theme-images/new-logo-1.png",
-  industry: "Technology Consulting",
-  founded: "2021",
-  size: "11–50 employees"
+  email: "",
+  address: "—",
+  about: "HRMS company profile.",
+  logo: "",
+  industry: "Human Resources",
+  founded: "—",
+  size: "—"
 }];
 export default function DetailsScreen() {
   const [selected, setSelected] = useState(0);
@@ -72,19 +36,19 @@ export default function DetailsScreen() {
           <div className="px-5 pb-5">
             <div className="-mt-7 mb-3">
               <div className="w-14 h-14 rounded-xl bg-white border-2 border-white shadow-md flex items-center justify-center overflow-hidden">
-                <img src={co.logo} alt={co.name}
+                {co.logo && <img src={co.logo} alt={co.name}
                 className="w-full h-full object-contain p-1"
-                onError={(e) => {e.target.style.display = "none";e.target.nextSibling.style.display = "flex";}} />
-                <div className="w-full h-full bg-brand text-white text-lg font-bold items-center justify-center hidden">{co.name[0]}</div>
+                onError={(e) => {e.target.style.display = "none";e.target.nextSibling.style.display = "flex";}} />}
+                <div className={`w-full h-full bg-brand text-white text-lg font-bold items-center justify-center ${co.logo ? "hidden" : "flex"}`}>{co.name[0]}</div>
               </div>
             </div>
             <h2 className="font-bold text-gray-900 text-base">{co.name}</h2>
             <p className="text-xs text-gray-500 mt-1">{co.industry}</p>
             <p className="text-xs text-gray-400 mt-3 leading-relaxed">{co.about}</p>
-            <a href={co.website} target="_blank" rel="noopener noreferrer"
+            {co.website && <a href={co.website} target="_blank" rel="noopener noreferrer"
             className="mt-3 inline-flex items-center gap-1 text-xs text-brand hover:underline font-medium">
               <Globe size={11} /> {co.website.replace("https://", "")} <ExternalLink size={10} />
-            </a>
+            </a>}
           </div>
         </div>
         {}
