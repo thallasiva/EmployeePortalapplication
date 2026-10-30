@@ -1,7 +1,23 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import App from "./App";
+
+test("renders HRMS application", async () => {
+  render(
+    <MemoryRouter
+      initialEntries={["/login"]}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
+      <App />
+    </MemoryRouter>
+  );
+
+  expect(
+    await screen.findByText(/loading login/i)
+  ).toBeInTheDocument();
 });
