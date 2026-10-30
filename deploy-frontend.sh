@@ -37,4 +37,4 @@ else
 fi
 echo ""
 echo "✅ Frontend deployed successfully!"
-echo "   URL: https://hrms.natsoft.io"
+echo "   URL: https://d3snrdmpdzb1yf.cloudfront.net"

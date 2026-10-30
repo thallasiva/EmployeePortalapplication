@@ -31,6 +31,7 @@
     "yup": "^1.7.1"
   },
   "scripts": {
+    "dev": "react-scripts start",
     "start": "react-scripts start",
     "build": "set \"CI=\" && react-scripts build",
     "test": "react-scripts test",

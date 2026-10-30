@@ -277,7 +277,7 @@
 }
 /* Create employee wizard */
 .emp-wizard {
-  max-width: 900px;
+  
   margin: 0 auto;
 }
 .emp-wizard__header h1 {
@@ -358,6 +358,54 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: #111827;
+}
+.emp-detail-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin: -0.25rem -0.25rem 1rem;
+  padding: 0.25rem;
+  overflow-x: auto;
+  border: 1px solid #e8ebf0;
+  border-radius: 12px;
+  background: #f8fafc;
+  scrollbar-width: thin;
+}
+.emp-detail-tab {
+  display: inline-flex;
+  min-height: 40px;
+  flex: 1 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.emp-detail-tab:hover {
+  color: #1f2937;
+  background: #fff;
+}
+.emp-detail-tab:focus-visible {
+  outline: 2px solid #f18200;
+  outline-offset: 2px;
+}
+.emp-detail-tab.is-active {
+  border-color: #fed7aa;
+  background: #fff;
+  color: #c76100;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+.emp-detail-panel {
+  min-height: 240px;
+}
+.emp-detail-panel .emp-review-section {
+  padding-top: 0.5rem;
 }
 .emp-wizard__grid {
   display: grid;

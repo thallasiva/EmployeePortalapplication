@@ -174,7 +174,7 @@ class OfferService extends BaseService {
             console.error('[offer] No invitation token available -- email not sent');
             return;
           }
-          const joiningUrl = (process.env.FRONTEND_URL || 'https://d2t478frm973wh.cloudfront.net') +
+          const joiningUrl = (process.env.FRONTEND_URL || 'https://d3snrdmpdzb1yf.cloudfront.net') +
           '/joining/' + invitation.token;
           notify.joiningInvitation({
             candidateName, candidateEmail, jobTitle, joiningUrl,

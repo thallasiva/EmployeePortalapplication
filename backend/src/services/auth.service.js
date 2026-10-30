@@ -129,7 +129,7 @@ async function forgotPassword(email) {
   const affected = (results[0] ?? results)[0]?.affected ?? 0;
   if (!affected) return { message: 'If that email exists, a reset link has been sent' };
   const { email: emailCfg } = require('../config/env');
-  const resetUrl = `${emailCfg.frontendUrl || 'https://d2t478frm973wh.cloudfront.net'}/reset-password?token=${token}`;
+  const resetUrl = `${emailCfg.frontendUrl || 'https://d3snrdmpdzb1yf.cloudfront.net'}/reset-password?token=${token}`;
   notify.forgotPassword({ name: email, email, resetUrl, expiresIn: '1 hour' });
   return { message: 'If that email exists, a reset link has been sent', resetToken: token };
 }

@@ -1,5 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  BriefcaseBusiness,
+  CreditCard,
+  Landmark,
+  MapPin,
+  UserRound,
+  WalletCards,
+} from "lucide-react";
 import { cssClass, joinClasses } from "../../../utils/classStyles";
 import "../../../component/employee/employee.css";
 import { useEmployeeDetail } from "./hooks/useEmployeeDetail";
@@ -13,9 +21,20 @@ import BankSection from "./components/BankSection";
 import ContactSection from "./components/ContactSection";
 import StickyFooter from "./components/StickyFooter";
 import { BRAND } from "./constants";
+
+const DETAIL_SECTIONS = [
+  { id: "personal", label: "Personal", icon: UserRound },
+  { id: "employment", label: "Employment", icon: BriefcaseBusiness },
+  { id: "compensation", label: "Compensation", icon: WalletCards },
+  { id: "statutory", label: "Statutory & ID", icon: Landmark },
+  { id: "bank", label: "Bank details", icon: CreditCard },
+  { id: "contact", label: "Contact", icon: MapPin },
+];
+
 export default function EmployeeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState("personal");
   const {
     employee, loading, saving, editMode,
     form, bankForm, contForm,
@@ -38,19 +57,53 @@ export default function EmployeeDetail() {
   }
   const bd = employee.bankDetails || {};
   const ci = employee.contactInfo || {};
+  const sections = {
+    personal: <PersonalSection employee={employee} editMode={editMode} form={form} set={set} />,
+    employment: <EmploymentSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} departments={departments} managers={managers} />,
+    compensation: <CompensationSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} handleCtcChange={handleCtcChange} compBreakdown={compBreakdown} />,
+    statutory: <StatutorySection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} />,
+    bank: <BankSection bd={bd} editMode={editMode} bankForm={bankForm} setB={setB} />,
+    contact: <ContactSection ci={ci} editMode={editMode} contForm={contForm} setC={setC} />,
+  };
+  const saveAndFocusErrors = async () => {
+    const result = await handleSave();
+    if (!result || typeof result !== "object") return;
+    const invalidFields = Object.keys(result);
+    if (invalidFields.some((field) => ["ctc", "base_salary"].includes(field))) {
+      setActiveSection("compensation");
+    } else if (invalidFields.some((field) => ["department_id", "emp_job_title", "emp_joining_date", "employee_type", "employee_status", "emp_exit_date"].includes(field))) {
+      setActiveSection("employment");
+    } else if (invalidFields.includes("aadhaar_number")) {
+      setActiveSection("statutory");
+    } else {
+      setActiveSection("personal");
+    }
+  };
   return (
-    <div className={joinClasses("emp-wizard", cssClass({ maxWidth: 900, margin: "0 auto", padding: "24px 16px" }))}>
-      <HeaderBar editMode={editMode} saving={saving} onBack={() => navigate(-1)} onEdit={enterEdit} onCancel={cancelEdit} onSave={handleSave} />
+    <div className={joinClasses("emp-wizard", cssClass({ maxWidth: "none", margin: "0 auto", padding: "24px 16px" }))}>
+      <HeaderBar editMode={editMode} saving={saving} onBack={() => navigate(-1)} onEdit={enterEdit} onCancel={cancelEdit} onSave={saveAndFocusErrors} />
       <EmployeeHeroCard employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} />
       <div className="emp-wizard__card">
-        <PersonalSection employee={employee} editMode={editMode} form={form} set={set} />
-        <EmploymentSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} departments={departments} managers={managers} />
-        <CompensationSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} handleCtcChange={handleCtcChange} compBreakdown={compBreakdown} />
-        <StatutorySection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} />
-        <BankSection bd={bd} editMode={editMode} bankForm={bankForm} setB={setB} />
-        <ContactSection ci={ci} editMode={editMode} contForm={contForm} setC={setC} />
+        <div className="emp-detail-tabs" role="group" aria-label="Employee details sections">
+          {DETAIL_SECTIONS.map(({ id: sectionId, label, icon: Icon }) => (
+            <button
+              key={sectionId}
+              type="button"
+              className={`emp-detail-tab${activeSection === sectionId ? " is-active" : ""}`}
+              aria-pressed={activeSection === sectionId}
+              aria-controls="employee-detail-panel"
+              onClick={() => setActiveSection(sectionId)}
+            >
+              <Icon size={16} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+        <div id="employee-detail-panel" className="emp-detail-panel" aria-live="polite">
+          {sections[activeSection]}
+        </div>
       </div>
-      {editMode && <StickyFooter saving={saving} formErrors={formErrors} onCancel={cancelEdit} onSave={handleSave} />}
+      {editMode && <StickyFooter saving={saving} formErrors={formErrors} onCancel={cancelEdit} onSave={saveAndFocusErrors} />}
     </div>
   );
 }

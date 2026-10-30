@@ -11,6 +11,18 @@ Browser → Vercel (React)  →  Railway (Express API)  →  Railway (MySQL)
 
 ---
 
+## Local Development and Production Profiles
+
+- **Local frontend:** From the repository root, run `npm run dev`. This starts React on `http://localhost:3000` and uses `.env.development` to call `http://localhost:5000/api`.
+- **Local backend:** In a second terminal, run `cd backend` then `npm run dev`. This starts the API on port `5000` and reads `backend/.env`; configure that file to use your local MySQL database.
+- **Production frontend build:** From the repository root, run `npm run build`. Create React App reads `.env.production` and writes the deployable files to `build/`.
+- **Production backend:** The hosting provider runs `npm start`. Set `NODE_ENV=production` and the database variables in the provider's environment settings. Production startup requires explicit database host, user, password, and name; it does not fall back to local or embedded credentials.
+- **Production frontend URL:** `https://d3snrdmpdzb1yf.cloudfront.net`. The API remains `https://d2t478frm973wh.cloudfront.net/api`.
+
+Keep `backend/.env` local and do not commit it.
+
+---
+
 ## Step 1 — Push Code to GitHub
 
 1. Create a new GitHub repository (e.g. `hrms-app`)
@@ -79,7 +91,7 @@ SALARY_ENCRYPTION_KEY=<64-char-hex>
 
 # CORS — set AFTER you know your Vercel URL (Step 4)
 # Multiple URLs comma-separated:
-CLIENT_ORIGIN=https://hrms-app.vercel.app
+CLIENT_ORIGIN=https://d3snrdmpdzb1yf.cloudfront.net
 
 # Email (optional — leave blank to disable email features)
 SMTP_HOST=
@@ -146,7 +158,7 @@ REACT_APP_API_URL=https://hrms-api.up.railway.app/api
 > Replace `hrms-api.up.railway.app` with your actual Railway backend URL from Step 3.
 
 7. Click **Deploy**
-8. Vercel gives you a URL like `https://hrms-app.vercel.app`
+8. The deployed frontend is available at `https://d3snrdmpdzb1yf.cloudfront.net`
 
 ---
 
@@ -157,7 +169,7 @@ Now that you have your Vercel URL:
 1. Railway → Backend service → Variables
 2. Update `CLIENT_ORIGIN`:
 ```
-CLIENT_ORIGIN=https://hrms-app.vercel.app
+CLIENT_ORIGIN=https://d3snrdmpdzb1yf.cloudfront.net
 ```
 3. Railway auto-redeploys
 
@@ -165,7 +177,7 @@ CLIENT_ORIGIN=https://hrms-app.vercel.app
 
 ## Step 7 — Verify
 
-1. Open `https://hrms-app.vercel.app`
+1. Open `https://d3snrdmpdzb1yf.cloudfront.net`
 2. Log in with: `admin@yopmail.com` / `Admin@123`
 3. If login fails, check browser DevTools → Network tab for CORS or 401 errors
 

@@ -60,7 +60,7 @@ exports.employeeDeactivated = ({ name, email, reason }) => {
 exports.leaveApplied = (data) => {
   if (!data.managerEmail) return;
   const { leaveRequestId } = data;
-  const feUrl = emailCfg.frontendUrl || 'https://d2t478frm973wh.cloudfront.net';
+  const feUrl = emailCfg.frontendUrl || 'https://d3snrdmpdzb1yf.cloudfront.net';
   fire(async () => {
     const tpl = T.leaveApplied({
       ...data,
@@ -141,7 +141,7 @@ exports.payslipReleased = (data) => {
   fire(async () => {
     const tpl = T.payslipReleased({
       ...data,
-      payslipUrl: `${emailCfg.frontendUrl || 'https://d2t478frm973wh.cloudfront.net'}/payslips`
+      payslipUrl: `${emailCfg.frontendUrl || 'https://d3snrdmpdzb1yf.cloudfront.net'}/payslips`
     });
     await sendMail({ to: data.employeeEmail, ...tpl, template: 'payroll/payslip', priority: 'medium' });
   });
@@ -149,7 +149,7 @@ exports.payslipReleased = (data) => {
 exports.payslipReleasedBulk = (payslips) => {
   fire(async () => {
     const BATCH = 50;
-    const feUrl = emailCfg.frontendUrl || 'https://d2t478frm973wh.cloudfront.net';
+    const feUrl = emailCfg.frontendUrl || 'https://d3snrdmpdzb1yf.cloudfront.net';
     for (let i = 0; i < payslips.length; i += BATCH) {
       const batch = payslips.slice(i, i + BATCH);
       const jobs = batch.

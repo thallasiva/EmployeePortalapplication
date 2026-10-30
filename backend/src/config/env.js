@@ -2,18 +2,29 @@
 require('dotenv').config();
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
+  if (value === undefined) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
   return value;
 }
+const env = required('NODE_ENV', 'development');
+const isProduction = env === 'production';
+const dbPassword = required('DB_PASSWORD', isProduction ? undefined : '');
+
+if (isProduction && !dbPassword) {
+  throw new Error('DB_PASSWORD must be set in production.');
+}
+
 module.exports = {
-  env: required('NODE_ENV', 'development'),
+  env,
   port: Number(required('PORT', 5000)),
   clientOrigin: required('CLIENT_ORIGIN', '*'),
   db: {
-    host: required('DB_HOST', 'hrms.c02gczm2cgx8.us-east-1.rds.amazonaws.com'),
-    port: Number(required('DB_PORT', 4306)),
-    user: required('DB_USER', 'HRMSadmin'),
-    password: required('DB_PASSWORD', 'HwULGJ6gbxQIhzwNeZ9L'),
-    database: required('DB_NAME', 'hrms_db'),
+    host: required('DB_HOST', isProduction ? undefined : '127.0.0.1'),
+    port: Number(required('DB_PORT', 3306)),
+    user: required('DB_USER', isProduction ? undefined : 'root'),
+    password: dbPassword,
+    database: required('DB_NAME', isProduction ? undefined : 'hrms_db'),
     connectionLimit: Number(required('DB_CONNECTION_LIMIT', 10))
   },
   jwt: {
@@ -43,7 +54,7 @@ module.exports = {
     hrManagerName: required('HR_MANAGER_NAME', ''),
     logoPath: required('COMPANY_LOGO_PATH', ''),
     backendUrl: required('BACKEND_URL', 'https://d2t478frm973wh.cloudfront.net'),
-    frontendUrl: required('FRONTEND_URL', 'https://d2t478frm973wh.cloudfront.net')
+    frontendUrl: required('FRONTEND_URL', 'https://d3snrdmpdzb1yf.cloudfront.net')
   },
   redis: {
     host: required('REDIS_HOST', '127.0.0.1'),
@@ -79,6 +90,6 @@ module.exports = {
     model:  required('OPENAI_MODEL', 'gpt-4o-mini')
   },
   frontend: {
-    url: required('FRONTEND_URL', 'https://d2t478frm973wh.cloudfront.net')
+    url: required('FRONTEND_URL', 'https://d3snrdmpdzb1yf.cloudfront.net')
   }
 };

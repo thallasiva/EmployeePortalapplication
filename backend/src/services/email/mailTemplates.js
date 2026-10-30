@@ -11,7 +11,7 @@ const fmtDT = (d) => {
 };
 const fmtINR = (n) => n != null ? `₹${Number(n).toLocaleString('en-IN')}` : '₹0';
 const co = (override) => esc(override || emailCfg.companyName || 'HRMS');
-const feUrl = () => emailCfg.frontendUrl || 'https://d2t478frm973wh.cloudfront.net';
+const feUrl = () => emailCfg.frontendUrl || 'https://d3snrdmpdzb1yf.cloudfront.net';
 const ORANGE = '#f18200';
 const NAVY = '#1e3a5f';
 const CREAM = '#FFF8F0';

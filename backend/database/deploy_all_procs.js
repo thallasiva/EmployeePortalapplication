@@ -15,6 +15,7 @@ const DB_DIR = path.join(BACKEND_DIR, 'database');
 // Order matters - patches must come after the base procedures they patch
 const SQL_FILES = [
   'all_procedures.sql',
+  'create_missing_procs.sql',
   'migration_034_recruitment_procedures.sql',
   'patch_auth_procedures.sql',
   'patch_sp_list_candidates.sql',
@@ -36,7 +37,6 @@ const SQL_FILES = [
   'patch_joining_doc_uploads.sql',
   'patch_joining_verify_token_mobile.sql',
   'patch_joining_token_expiry_fix.sql',
-  'create_missing_procs.sql',
 ];
 function parseProcedures(sql) {
   // Normalize line endings

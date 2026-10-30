@@ -156,7 +156,7 @@ export function useEmployeeDetail(id) {
       setFormErrors(errors);
       setTouched((t) => ({ ...t, ...allTouched }));
       errorToast(`Please fix ${yupErr.inner.length} validation error${yupErr.inner.length > 1 ? "s" : ""} before saving`);
-      return;
+      return errors;
     }
     setSaving(true);
     try {
@@ -170,8 +170,10 @@ export function useEmployeeDetail(id) {
       setFormErrors({});
       setTouched({});
       successToast("Employee updated successfully");
+      return true;
     } catch (err) {
       apiErrorToast(err, "Failed to update employee");
+      return false;
     } finally {
       setSaving(false);
     }

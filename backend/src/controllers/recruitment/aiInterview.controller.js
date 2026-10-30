@@ -59,7 +59,7 @@ async function getCandidateResumeContext(candidateId) {
 }
 // ── send invite email ──────────────────────────────────────────────────────
 async function sendAIInterviewInvite({ candidateEmail, candidateName, jobTitle, token, expiresAt, recruiterName, durationMinutes, questionCount }) {
-  const link = `${process.env.FRONTEND_URL || 'https://d2t478frm973wh.cloudfront.net'}/ai-interview/${token}`;
+  const link = `${process.env.FRONTEND_URL || 'https://d3snrdmpdzb1yf.cloudfront.net'}/ai-interview/${token}`;
   const expiryStr = new Date(expiresAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
   return sendMailNow({
     to: candidateEmail,
