@@ -98,6 +98,49 @@ class AttendanceService extends BaseService {
     const results = await callProcedure('sp_attendance_dashboard(?)', [checkDate]);
     return results[0]?.[0] || null;
   }
+  async analytics(fromDate, toDate) {
+    const [weekly, nineHourByDepartment, earlyLogoutByDepartment] = await Promise.all([
+      query(
+        `SELECT DATE_FORMAT(attendance_date, '%a') AS label,
+                SUM(status = 'present') AS present,
+                SUM(status = 'absent') AS absent
+         FROM attendance
+         WHERE attendance_date BETWEEN ? AND ?
+         GROUP BY attendance_date
+         ORDER BY attendance_date`,
+        [fromDate, toDate]
+      ),
+      query(
+        `SELECT COALESCE(d.department_name, 'Unassigned') AS label,
+                SUM(a.work_hours >= 9) AS value
+         FROM attendance a
+         JOIN employees e ON e.employee_id = a.employee_id
+         LEFT JOIN departments d ON d.department_id = e.department_id
+         WHERE a.attendance_date = ?
+           AND a.status IN ('present', 'late')
+           AND a.check_out IS NOT NULL
+           AND a.work_hours >= 9
+         GROUP BY d.department_id, d.department_name
+         ORDER BY value DESC, label`,
+        [toDate]
+      ),
+      query(
+        `SELECT COALESCE(d.department_name, 'Unassigned') AS label,
+                COUNT(*) AS value
+         FROM attendance a
+         JOIN employees e ON e.employee_id = a.employee_id
+         LEFT JOIN departments d ON d.department_id = e.department_id
+         WHERE a.attendance_date = ?
+           AND a.status IN ('present', 'late')
+           AND a.check_out IS NOT NULL
+           AND a.work_hours < 9
+         GROUP BY d.department_id, d.department_name
+         ORDER BY value DESC, label`,
+        [toDate]
+      ),
+    ]);
+    return { weekly, nineHourByDepartment, earlyLogoutByDepartment };
+  }
   async teamLeaveCalendar(year, month) {
     const results = await callProcedure('sp_team_leave_calendar(?, ?)', [year, month]);
     return results[0] || [];

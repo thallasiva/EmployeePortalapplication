@@ -4,6 +4,11 @@ export const generalSettingsApi = {
   get:  () => client.get(`${BASE}/general`).then(r => r.data?.data || {}),
   save: (data) => client.put(`${BASE}/general`, data).then(r => r.data?.data || {}),
 };
+export const fieldOptionsApi = {
+  list: () => client.get(`${BASE}/field-options`).then(r => r.data?.data || []),
+  create: (data) => client.post(`${BASE}/field-options`, data).then(r => r.data?.data),
+  delete: (id) => client.delete(`${BASE}/field-options/${id}`),
+};
 /* ═══════════════════════════════
    SMTP
 ═══════════════════════════════ */

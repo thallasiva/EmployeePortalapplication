@@ -276,8 +276,33 @@ function extractResumeSkills(resume = '') {
     return new RegExp(`(^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, 'i').test(text);
   });
 }
-function fallbackNextQuestion({ profile, transcript }) {
-  const maxFollowUpsPerSkill = 2;
+function getInterviewStage(questionNumber, questionCount) {
+  if (questionNumber === 1) return 'introduction';
+  if (questionNumber >= questionCount) return 'coding';
+  if (questionNumber === 2) return 'resume_validation';
+  if (questionNumber === 3) return 'technical';
+  if (questionNumber === questionCount - 1) return 'scenario';
+  if (questionNumber === 4) return 'follow_up';
+  return questionNumber % 2 === 0 ? 'technical' : 'scenario';
+}
+function getCodingLanguage(profile) {
+  const skills = [
+    ...parseSkillList(profile.requiredSkills),
+    ...parseSkillList(profile.candidateSkills),
+    ...parseSkillList(profile.resumeSkills),
+    ...extractResumeSkills(profile.resume),
+  ].join(' ').toLowerCase();
+  const language = [
+    ['java', /\bjava\b/],
+    ['python', /\bpython\b/],
+    ['typescript', /\btypescript\b/],
+    ['javascript', /\bjavascript\b|\bnode\.?js\b/],
+    ['csharp', /\bc#\b|\.net\b/],
+    ['go', /\bgolang\b|\bgo\b/],
+  ].find(([, pattern]) => pattern.test(skills));
+  return language?.[0] || 'javascript';
+}
+function fallbackNextQuestion({ profile, transcript, questionCount = 8 }) {
   const n = transcript.length + 1;
   const requiredSkills = parseSkillList(profile.requiredSkills);
   const preferredSkills = parseSkillList(profile.preferredSkills);
@@ -298,41 +323,49 @@ function fallbackNextQuestion({ profile, transcript }) {
   const lastEntry = transcript[transcript.length - 1];
   const previousSkill = lastEntry?.question?.skill;
   const answerQuality = lastEntry?.answerQuality || _scoreLastAnswer(transcript);
-  let consecutiveSameSkillQuestions = 0;
-  for (let index = transcript.length - 1; index >= 0; index--) {
-    if (String(transcript[index]?.question?.skill || '').toLowerCase() !== String(previousSkill || '').toLowerCase()) break;
-    consecutiveSameSkillQuestions += 1;
-  }
-  const followUp = Boolean(lastEntry && ['C', 'D', 'E'].includes(answerQuality) && consecutiveSameSkillQuestions <= maxFollowUpsPerSkill);
   const preferredNext = unassessed.find((skill) => skill.toLowerCase() !== String(previousSkill || '').toLowerCase());
   const alternateSkill = skills.find((item) => item.toLowerCase() !== String(previousSkill || '').toLowerCase());
-  const skill = (followUp ? previousSkill : preferredNext)
-    || (consecutiveSameSkillQuestions > maxFollowUpsPerSkill ? alternateSkill : previousSkill)
+  const skill = preferredNext
+    || alternateSkill
+    || previousSkill
     || skills[(n - 1) % Math.max(skills.length, 1)]
     || profile.jobTitle
     || 'this role';
   const resumeMentionsSkill = resumeSkills.some((item) => item.toLowerCase() === skill.toLowerCase());
   const role = profile.jobTitle || 'this role';
-  const questionStyle = (n - 1) % 4;
-  const question = n === 1
-    ? `Thinking about your ${Number(profile.relevantExperience || profile.totalExperience || 0)} years of experience, which recent project best prepares you for the ${role} role? Describe your contribution and the result.`
-    : answerQuality === 'D' || answerQuality === 'E'
+  const stage = getInterviewStage(n, questionCount);
+  const codingLanguage = getCodingLanguage(profile);
+  let question;
+  let type;
+  if (stage === 'introduction') {
+    question = `Please introduce yourself and describe your current or most recent project that best prepares you for the ${role} role.`;
+    type = 'experience';
+  } else if (stage === 'resume_validation') {
+    question = resumeSkills.length
+      ? `Your resume mentions ${skill}. Which project best demonstrates that experience, and what did you personally build or deliver?`
+      : `Which experience from your background best prepares you for ${role}, and what was your contribution?`;
+    type = 'resume_probe';
+  } else if (stage === 'follow_up') {
+    question = `You mentioned ${skill} in your earlier answer. Could you walk me through one specific decision you made, why you chose it, and what the outcome was?`;
+    type = 'clarification';
+  } else if (stage === 'scenario') {
+    question = `Suppose a production system for a ${role} project using ${skill} becomes unavailable under load. What would you investigate first, and how would you make the system resilient?`;
+    type = 'scenario';
+  } else if (stage === 'coding') {
+    const languageLabel = codingLanguage === 'csharp' ? 'C#' : codingLanguage;
+    question = `Let's move to a coding problem. Using ${languageLabel}, write a program to find the three highest-paid employees in each department from a list of employees. Explain your approach before writing the code.`;
+    type = 'coding';
+  } else {
+    question = answerQuality === 'D' || answerQuality === 'E'
       ? `Let's explore ${skill} step by step. What is the first decision or check you would make in a real ${role} task using it, and why?`
-      : answerQuality === 'C'
-        ? `You mentioned ${skill}. How would you verify that your approach worked, and what would you change if the result did not meet expectations?`
-    : questionStyle === 1 && resumeMentionsSkill
-      ? `Your resume lists ${skill}. Which project best demonstrates that experience, and what did you personally build or deliver?`
-      : questionStyle === 1
-        ? `In a ${role} project, how would you decide when ${skill} is the right choice, and what trade-off would you watch for?`
-        : questionStyle === 0
-          ? `What technical trade-offs would you consider when using ${skill} for the ${role} role, and how would you choose between the alternatives?`
-          : questionStyle === 2
-          ? `Describe a difficult problem involving ${skill} that you handled, and explain how you diagnosed it and verified the fix.`
-          : `Suppose a production system using ${skill} starts failing under increased load. What would you investigate first, and how would you make it reliable?`;
+      : `For the ${role} role, explain how you would use ${skill} to solve a real project problem. What trade-offs would you consider, and how would you verify the result?`;
+    type = 'technical';
+  }
   return {
     id: n,
-    stage: n === 1 ? 'introduction' : resumeMentionsSkill ? 'resume_validation' : 'technical',
-    type: n === 1 ? 'experience' : followUp ? 'clarification' : questionStyle === 1 && resumeMentionsSkill ? 'resume_probe' : questionStyle === 2 ? 'practical' : 'scenario',
+    stage,
+    type,
+    ...(stage === 'coding' ? { language: codingLanguage } : {}),
     skill,
     difficulty: lastEntry ? _adaptDifficulty(lastEntry.question?.difficulty, answerQuality) : _calibratedDifficulty(profile),
     question,
@@ -454,8 +487,10 @@ function _scoreLastAnswer(transcript) {
 }
 async function generateNextQuestion({ profile, transcript, durationSeconds, expiresAt, skillsAssessed = [], questionCount = 8 }) {
   const openai = getOpenAI();
-  if (!openai) return fallbackNextQuestion({ profile, transcript });
+  if (!openai) return fallbackNextQuestion({ profile, transcript, questionCount });
   const qNum = transcript.length + 1;
+  const targetStage = getInterviewStage(qNum, questionCount);
+  const codingLanguage = getCodingLanguage(profile);
   const answerQuality = _scoreLastAnswer(transcript);
   const remainingSeconds = getRemainingSeconds({ durationSeconds, expiresAt });
   const systemPrompt = _buildEnterpriseSystemPrompt(profile);
@@ -513,6 +548,14 @@ Use the content evaluation and this suggestion to set difficulty; step up on a s
 
 ## TASK
 Decide the best next action. Do not end before at least two substantive answers unless time has expired. Do not start a long exercise under five minutes. Prioritize unassessed required skills and avoid substantially repeating prior questions unless it is an intentional follow-up.
+The required stage for question ${qNum} is "${targetStage}". Follow this stage even when adapting to previous answers:
+- introduction: ask the candidate to introduce themselves and describe a relevant current/recent project
+- resume_validation: use a real skill or project found in the candidate resume; do not invent claims
+- technical: test a job requirement with a specific technical question
+- follow_up: ask one focused follow-up grounded in an earlier candidate answer
+- scenario: present one realistic, role-relevant failure or production scenario
+- coding: ask one practical coding exercise using ${codingLanguage}; set type to "coding", stage to "coding", and language to "${codingLanguage}"
+Do not omit the final coding stage. Keep all questions grounded in this job and candidate context.
 
 Return ONLY valid JSON — no markdown, no explanation:
 {
@@ -520,6 +563,7 @@ Return ONLY valid JSON — no markdown, no explanation:
   "id": ${qNum},
   "stage": "introduction|resume_validation|technical|scenario|domain",
   "type": "experience|resume_probe|technical|practical|scenario|system_design|coding|clarification",
+  "language": "coding language when type is coding",
   "problemSize": "small|large|null",
   "timeLimit": "120 for normal, 300 for scenario, 600 for normal coding, 1200 for large coding, 900 for system design",
   "skill": "<primary skill being assessed>",
@@ -540,18 +584,25 @@ Return ONLY valid JSON — no markdown, no explanation:
     });
     const q = JSON.parse(completion.choices[0]?.message?.content || '{}');
     if (q?.nextAction === 'END_INTERVIEW') {
-      return fallbackNextQuestion({ profile, transcript });
+      return fallbackNextQuestion({ profile, transcript, questionCount });
     }
     if (q?.question) {
       if (consecutiveSameSkillQuestions > 2 && String(q.skill || '').toLowerCase() === String(lastSkill || '').toLowerCase()) {
-        return fallbackNextQuestion({ profile, transcript });
+        return fallbackNextQuestion({ profile, transcript, questionCount });
       }
-      return { ...q, nextAction: 'ASK_QUESTION', id: qNum, answerQuality };
+      return {
+        ...q,
+        stage: targetStage,
+        ...(targetStage === 'coding' ? { type: 'coding', language: codingLanguage } : {}),
+        nextAction: 'ASK_QUESTION',
+        id: qNum,
+        answerQuality,
+      };
     }
   } catch (err) {
     console.warn('[AIInterview] enterprise question generation failed:', err.message);
   }
-  return fallbackNextQuestion({ profile, transcript });
+  return fallbackNextQuestion({ profile, transcript, questionCount });
 }
 async function evaluateAnswer({ profile, question, answer, transcript }) {
   const fallback = { score: null, correctness: null, technicalDepth: null, practicalKnowledge: null, problemSolving: null, communication: null, confidence: null, strengths: [], weaknesses: [], assessment: 'AI evaluation was unavailable; recruiter review is required.', recommendedDifficulty: null, evaluationMethod: 'unavailable' };

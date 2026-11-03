@@ -1,5 +1,21 @@
 'use strict';
 const { query } = require('../config/db');
+const ApiError = require('../utils/ApiError');
+const FIELD_OPTION_DEFAULTS = {
+  blood_group: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  marital_status: ['Single', 'Married', 'Divorced', 'Widowed'],
+  employee_type: ['Full-Time', 'Part-Time', 'Contract', 'Intern'],
+  employee_status: ['Active', 'Inactive', 'Notice Period', 'Resigned', 'Terminated'],
+  bgv_status: ['Pending', 'In Progress', 'Completed', 'Failed', 'Waived'],
+};
+const FIELD_OPTION_MAX_LENGTH = {
+  blood_group: 10,
+  marital_status: 20,
+  employee_type: 30,
+  employee_status: 20,
+  bgv_status: 40,
+};
+
 /* ── auto-create tables on first use ── */
 async function ensureTables() {
   await query(`CREATE TABLE IF NOT EXISTS hr_smtp_settings (
@@ -92,6 +108,22 @@ async function ensureTables() {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`);
+  await query(`CREATE TABLE IF NOT EXISTS hr_field_options (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    field_key VARCHAR(40) NOT NULL,
+    option_value VARCHAR(100) NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_hr_field_option (field_key, option_value)
+  )`);
+  const defaultOptions = Object.entries(FIELD_OPTION_DEFAULTS)
+    .flatMap(([fieldKey, options]) => options.map((value) => [fieldKey, value, value]));
+  await query(
+    `INSERT IGNORE INTO hr_field_options (field_key, option_value, label)
+     VALUES ${defaultOptions.map(() => '(?, ?, ?)').join(', ')}`,
+    defaultOptions.flat()
+  );
   await query(`CREATE TABLE IF NOT EXISTS hr_notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT,
@@ -103,6 +135,16 @@ async function ensureTables() {
     is_read TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`);
+}
+
+function isFieldOptionCategory(fieldKey) {
+  return Object.prototype.hasOwnProperty.call(FIELD_OPTION_DEFAULTS, fieldKey);
+}
+
+function validateFieldOptionCategory(fieldKey) {
+  if (!isFieldOptionCategory(fieldKey)) {
+    throw ApiError.badRequest('Unsupported field option category');
+  }
 }
 /* ════════════════════════════════════
    SMTP
@@ -497,6 +539,52 @@ async function saveGeneralSettings(data) {
   }
   return getGeneralSettings();
 }
+
+async function listFieldOptions(fieldKey) {
+  await ensureTables();
+  if (fieldKey) validateFieldOptionCategory(fieldKey);
+  const rows = fieldKey
+    ? await query(
+      'SELECT id, field_key, option_value AS value, label FROM hr_field_options WHERE field_key = ? AND is_active = 1 ORDER BY label, id',
+      [fieldKey]
+    )
+    : await query(
+      'SELECT id, field_key, option_value AS value, label FROM hr_field_options WHERE is_active = 1 ORDER BY field_key, label, id'
+    );
+  return rows;
+}
+
+async function createFieldOption(fieldKey, value) {
+  await ensureTables();
+  validateFieldOptionCategory(fieldKey);
+  if (typeof value !== 'string' || !value.trim() || value.trim().length > FIELD_OPTION_MAX_LENGTH[fieldKey]) {
+    throw ApiError.badRequest(`Option value must be between 1 and ${FIELD_OPTION_MAX_LENGTH[fieldKey]} characters`);
+  }
+  const normalizedValue = value.trim();
+  await query(
+    `INSERT INTO hr_field_options (field_key, option_value, label, is_active)
+     VALUES (?, ?, ?, 1)
+     ON DUPLICATE KEY UPDATE label = VALUES(label), is_active = 1`,
+    [fieldKey, normalizedValue, normalizedValue]
+  );
+  const rows = await query(
+    'SELECT id, field_key, option_value AS value, label FROM hr_field_options WHERE field_key = ? AND option_value = ?',
+    [fieldKey, normalizedValue]
+  );
+  return rows[0];
+}
+
+async function deleteFieldOption(id) {
+  await ensureTables();
+  const result = await query(
+    'UPDATE hr_field_options SET is_active = 0 WHERE id = ? AND is_active = 1',
+    [id]
+  );
+  if (!result.affectedRows) {
+    throw ApiError.notFound('Field option not found');
+  }
+}
+
 module.exports = {
   getSmtp, saveSmtp,
   listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate, cloneTemplate,
@@ -510,4 +598,6 @@ module.exports = {
   listNotifications, markRead, markAllRead, deleteNotification, createNotification,
   getNotificationPreferences, saveNotificationPreferences,
   getGeneralSettings, saveGeneralSettings,
+  listFieldOptions, createFieldOption, deleteFieldOption,
+  isFieldOptionCategory,
 };

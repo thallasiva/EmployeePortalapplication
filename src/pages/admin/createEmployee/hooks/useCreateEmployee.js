@@ -3,14 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { createEmployee } from "../../../../api/employee.api";
 import { listDepartments } from "../../../../api/department.api";
 import { getManagers } from "../../../../api/orgHierarchy.api";
+import { fieldOptionsApi } from "../../../../api/settings.api";
 import "../../../../api/client";
 import { apiErrorToast } from "../../../../utils/ToastControllers";
+import { groupFieldOptions } from "../../../../utils/fieldOptions";
 import { INITIAL_VALUES, STEPS } from "../constants";
 import { validateStep } from "../utils";
 export function useCreateEmployee() {
   const navigate = useNavigate();
   const [departments, setDepartments] = useState([]);
   const [members, setMembers] = useState([]);
+  const [fieldOptions, setFieldOptions] = useState({});
   const [step, setStep] = useState(0);
   const [values, setValues] = useState(INITIAL_VALUES);
   const [errors, setErrors] = useState({});
@@ -23,6 +26,9 @@ export function useCreateEmployee() {
     getManagers()
       .then((data) => setMembers(Array.isArray(data) ? data : []))
       .catch((err) => apiErrorToast(err, "Failed to load managers"));
+    fieldOptionsApi.list()
+      .then((data) => setFieldOptions(groupFieldOptions(data)))
+      .catch((err) => apiErrorToast(err, "Failed to load employee field options"));
   }, []);
   const setField = useCallback((name, value) => {
     setValues((prev) => ({ ...prev, [name]: value }));
@@ -64,6 +70,7 @@ export function useCreateEmployee() {
         date_of_confirmation: values.date_of_confirmation || undefined,
         contract_end_date: values.contract_end_date || undefined,
         employee_type: values.employee_type,
+        employee_status: values.employee_status,
         project_cost_centre: values.project_cost_centre || undefined,
         previous_designation: values.previous_designation || undefined,
         previous_employer: values.previous_employer || undefined,
@@ -76,6 +83,7 @@ export function useCreateEmployee() {
         benefits_plan: values.benefits_plan,
         role_id: Number(values.role) || 2,
         gender: values.gender || undefined,
+        blood_group: values.blood_group || undefined,
         dob: values.dob || undefined,
         actual_dob: values.actual_dob || undefined,
         marital_status: values.marital_status || undefined,
@@ -129,6 +137,7 @@ export function useCreateEmployee() {
     step,
     departments,
     members,
+    fieldOptions,
     values,
     errors,
     showSuccessModal,

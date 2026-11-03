@@ -19,6 +19,7 @@ router.get('/me/today', controller.today);
 router.get('/me/monthly', controller.monthly);
 router.get('/me/swipes', controller.swipes);
 router.get('/', requirePermission('attendance', 'view'), controller.list);
+router.get('/analytics', requirePermission('attendance', 'view'), controller.analytics);
 router.get('/dashboard', requirePermission('attendance', 'view'), controller.dashboard);
 router.get('/team-leave-calendar', requirePermission('attendance', 'view'), controller.teamLeaveCalendar);
 router.get('/employees/:employeeId/today', requirePermission('attendance', 'view'), controller.today);

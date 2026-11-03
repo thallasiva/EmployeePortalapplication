@@ -440,7 +440,7 @@ export const Sidebar = ({ open }) =>
       .join(" ");
   return (
     <aside className={[
-      "relative flex h-screen shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
+      "relative flex h-screen min-h-0 shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
       open ? "w-[248px]" : "w-[68px]"]
       .join(" ")}>
       { }
@@ -457,7 +457,7 @@ export const Sidebar = ({ open }) =>
         {open && <span className="text-sm font-extrabold tracking-tight text-slate-800">{BRAND_NAME}</span>}
       </div>
       { }
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2.5">
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-2 py-2.5">
         {items.map((item, index) =>
         {
           const childActive = item.children?.some((child) =>

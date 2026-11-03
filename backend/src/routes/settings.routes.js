@@ -25,6 +25,9 @@ router.use((req, res, next) => {
 /* SMTP */
 router.get('/general', c.getGeneralSettings);
 router.put('/general', c.saveGeneralSettings);
+router.get('/field-options', c.listFieldOptions);
+router.post('/field-options', c.createFieldOption);
+router.delete('/field-options/:id', c.deleteFieldOption);
 router.get('/smtp',          c.getSmtp);
 router.put('/smtp',          c.saveSmtp);
 router.post('/smtp/test',    c.testSmtp);

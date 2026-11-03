@@ -1,6 +1,9 @@
 import React from "react";
 import Field from "./Field";
-const StepBankStatutory = React.memo(function StepBankStatutory({ values, setField }) {
+import BankNameInput from "../../../../component/BankNameInput";
+import PhoneInput from "../../../../component/PhoneInput";
+import { fieldOptionsFor } from "../../../../utils/fieldOptions";
+const StepBankStatutory = React.memo(function StepBankStatutory({ values, setField, fieldOptions }) {
   return (
     <>
       <h2>Personal &amp; Statutory Details</h2>
@@ -13,6 +16,14 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
             <option value="Other">Other</option>
           </select>
         </Field>
+        <Field label="Blood Group">
+          <select value={values.blood_group} onChange={(e) => setField("blood_group", e.target.value)}>
+            <option value="">Select blood group</option>
+            {fieldOptionsFor(fieldOptions, "blood_group", values.blood_group).map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </Field>
         <Field label="Date of Birth (As Per Records)">
           <input type="date" value={values.dob} onChange={(e) => setField("dob", e.target.value)} />
         </Field>
@@ -22,9 +33,9 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
         <Field label="Marital Status">
           <select value={values.marital_status} onChange={(e) => setField("marital_status", e.target.value)}>
             <option value="">Select status</option>
-            <option value="Single">Single</option>
-            <option value="Married">Married</option>
-            <option value="Other">Other</option>
+            {fieldOptionsFor(fieldOptions, "marital_status", values.marital_status).map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
           </select>
         </Field>
         <Field label="Father's Name">
@@ -77,7 +88,7 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
       <h2>Bank Details</h2>
       <div className="emp-wizard__grid">
         <Field label="Bank Name">
-          <input value={values.bank_name} onChange={(e) => setField("bank_name", e.target.value)} />
+          <BankNameInput value={values.bank_name} onChange={(value) => setField("bank_name", value)} />
         </Field>
         <Field label="Bank Account Number">
           <input value={values.account_number} onChange={(e) => setField("account_number", e.target.value)} />
@@ -119,7 +130,7 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
           <input type="email" value={values.personal_email} onChange={(e) => setField("personal_email", e.target.value)} />
         </Field>
         <Field label="Contact Mobile">
-          <input value={values.alternate_mobile} onChange={(e) => setField("alternate_mobile", e.target.value)} />
+          <PhoneInput value={values.alternate_mobile} onChange={(value) => setField("alternate_mobile", value)} />
         </Field>
         <Field label="Contact City">
           <input value={values.contact_city} onChange={(e) => setField("contact_city", e.target.value)} />
@@ -131,7 +142,7 @@ const StepBankStatutory = React.memo(function StepBankStatutory({ values, setFie
           <input value={values.emergency_contact_name} onChange={(e) => setField("emergency_contact_name", e.target.value)} />
         </Field>
         <Field label="Emergency Contact Mobile">
-          <input value={values.emergency_contact_phone} onChange={(e) => setField("emergency_contact_phone", e.target.value)} />
+          <PhoneInput value={values.emergency_contact_phone} onChange={(value) => setField("emergency_contact_phone", value)} />
         </Field>
         <Field label="Permanent Address Line 1">
           <input value={values.permanent_address_line1} onChange={(e) => setField("permanent_address_line1", e.target.value)} />

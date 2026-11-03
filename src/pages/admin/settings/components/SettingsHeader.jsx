@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { COMPANIES } from "../constants";
 const SettingsHeader = React.memo(function SettingsHeader({
   selectedCompany, selectedCompanyId,
-  companyOpen, setCompanyOpen, selectCompany,
+  companyOpen, setCompanyOpen, selectCompany, onSave, saving,
 }) {
   return (
     <div className="bg-white p-6 rounded-[20px] shadow-sm border border-gray-200">
@@ -45,8 +45,13 @@ const SettingsHeader = React.memo(function SettingsHeader({
               </div>
             )}
           </div>
-          <button className="inline-flex items-center justify-center rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-600 transition">
-            Save Changes
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="inline-flex items-center justify-center rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-600 transition disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
       </div>

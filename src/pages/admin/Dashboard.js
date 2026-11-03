@@ -48,7 +48,7 @@ function MiniList({ title, items, emptyText, onViewAll, renderItem }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const user = getStoredUser();
-  const { metrics, activities, loading } = useAdminDashboard();
+  const { metrics, activities, loading, error } = useAdminDashboard();
   const go = (path) => () => navigate(path);
   const goLeave = (state = {}) => () => navigate("/dashboard/leave", { state });
   return (
@@ -61,6 +61,11 @@ export default function Dashboard() {
         </div>
         {loading && <span className="text-xs text-gray-400">Refreshing dashboard…</span>}
       </div>
+      {error && (
+        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Live dashboard data is unavailable: {error.message || "please try again later."}
+        </p>
+      )}
       <RoleDashboardWidgets data={metrics} />
       <section>
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">

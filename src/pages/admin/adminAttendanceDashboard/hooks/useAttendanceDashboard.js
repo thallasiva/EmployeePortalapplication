@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { getAttendanceDashboard, listAttendance } from "../../../../api/attendance.api";
+import { getAttendanceAnalytics, getAttendanceDashboard, listAttendance } from "../../../../api/attendance.api";
 import { toISODateString } from "../../../../lib/dateUtils";
 import { enrichAdminEmployee } from "../../../../utils/attendanceRegularization";
 import { applyAttendanceRegularization } from "../../../../utils/attendanceRegularization";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { DEFAULT_SUMMARY } from "../constants";
 import { mapAttendanceRow } from "../utils";
 export function useAttendanceDashboard() {
   const [employees, setEmployees] = useState([]);
   const [summary, setSummary] = useState(DEFAULT_SUMMARY);
+  const [analytics, setAnalytics] = useState({
+    weekly: [],
+    nineHourByDepartment: [],
+    earlyLogoutByDepartment: [],
+  });
   const [loading, setLoading] = useState(true);
   const [employeeTab, setEmployeeTab] = useState("all");
   const lateSectionRef = useRef(null);
@@ -16,12 +22,16 @@ export function useAttendanceDashboard() {
     const monthStart = toISODateString(
       new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     );
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+    const weekStartStr = toISODateString(weekStart);
     setLoading(true);
     Promise.all([
-      getAttendanceDashboard(todayStr).catch(() => null),
-      listAttendance({ from_date: todayStr, to_date: todayStr, limit: 100 }).catch(() => ({ data: [] })),
-      listAttendance({ status: "late", from_date: monthStart, to_date: todayStr, limit: 1 }).catch(() => ({ meta: { total: 0 } })),
-    ]).then(([dash, todayList, lateMonthList]) => {
+      getAttendanceDashboard(todayStr),
+      listAttendance({ from_date: todayStr, to_date: todayStr, limit: 100 }),
+      listAttendance({ status: "late", from_date: monthStart, to_date: todayStr, limit: 1 }),
+      getAttendanceAnalytics({ from_date: weekStartStr, to_date: todayStr }),
+    ]).then(([dash, todayList, lateMonthList, analyticsData]) => {
       const presentToday = Number(dash?.present_today || 0);
       const totalEmployees = Number(dash?.total_employees || 0);
       setSummary({
@@ -39,6 +49,13 @@ export function useAttendanceDashboard() {
       setEmployees(
         (todayList?.data || []).map(mapAttendanceRow).map(enrichAdminEmployee)
       );
+      setAnalytics(analyticsData || {
+        weekly: [],
+        nineHourByDepartment: [],
+        earlyLogoutByDepartment: [],
+      });
+    }).catch((error) => {
+      apiErrorToast(error, "Failed to load attendance data");
     }).finally(() => setLoading(false));
   }, []);
   const statusChart = useMemo(
@@ -75,6 +92,7 @@ export function useAttendanceDashboard() {
   }, [employeeTab, employees]);
   return {
     employees, summary, loading,
+    analytics,
     lateSectionRef, statusChart,
     lateEmployees, tabCounts,
     employeeTab, setEmployeeTab, filteredEmployees,

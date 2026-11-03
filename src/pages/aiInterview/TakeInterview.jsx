@@ -18,6 +18,14 @@ const C = {
 };
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const formatTime  = s => `${String(Math.floor(Math.max(s,0)/60)).padStart(2,"0")}:${String(Math.max(s,0)%60).padStart(2,"0")}`;
+const STAGE_LABELS = {
+  introduction: "Step 1: Welcome and introduction",
+  resume_validation: "Step 3: Resume-based questions",
+  technical: "Step 4: Technical questions",
+  follow_up: "Step 5: Follow-up questions",
+  scenario: "Step 5: Real-time scenario",
+  coding: "Step 6: Coding round",
+};
 // Default time limits per question type (seconds). Backend question.timeLimit overrides.
 const TYPE_TIME = { MCQ: 120, TEXT: 120, SCENARIO: 300, SYSTEM_DESIGN: 900, CODING: 600, CODE: 600, DEFAULT: 120 };
 function speak(text, onEnd) {
@@ -429,9 +437,14 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
           <div style={{background:`${C.accent}22`,border:`1px solid ${C.accent}44`,borderRadius:8,padding:"4px 10px",fontSize:12,fontWeight:800,color:C.accent,flexShrink:0,marginTop:2}}>
             {isCode ? <><Code2 size={13} aria-hidden="true" /> CODE</> : isMCQ ? <><ListChecks size={13} aria-hidden="true" /> MCQ</> : <><MessageCircle size={13} aria-hidden="true" /> Q</>}{qNum}
           </div>
-          <p style={{margin:0,fontSize:15,lineHeight:1.55,color:aiSpeaking?C.muted:C.text,fontStyle:aiSpeaking?"italic":"normal",flex:1}}>
-            {aiSpeaking ? "Avya is speaking…" : question?.question}
-          </p>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:11,color:C.accent,fontWeight:700,letterSpacing:.5,marginBottom:4}}>
+              {STAGE_LABELS[question?.stage] || "Interview question"}
+            </div>
+            <p style={{margin:0,fontSize:15,lineHeight:1.55,color:aiSpeaking?C.muted:C.text,fontStyle:aiSpeaking?"italic":"normal"}}>
+              {aiSpeaking ? "Avya is speaking…" : question?.question}
+            </p>
+          </div>
           <div style={{display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end",flexShrink:0}}>
             <ProgressBar current={qNum} total={qTotal}/>
             {offline && <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:C.danger,fontWeight:700}}><WifiOff size={10}/>Offline</div>}
@@ -599,19 +612,35 @@ function OtpScreen({ email, token, devCode, onVerify }) {
   );
 }
 /* ─── Avya intro ─────────────────────────────────────────────────────────── */
-function AiSpeakingIntro({ onSkip }) {
+function AiSpeakingIntro({ session, onSkip, onStart }) {
+  const jobTitle = session?.jobTitle || "the role";
+  const candidateName = session?.candidateName || "there";
   useEffect(()=>{
-    speak("Hi, I am Avya. I will be taking your interview today. Please feel comfortable and share your thoughts freely. You can speak or type your answers.");
-    const t = setTimeout(onSkip,10000);
-    return ()=>{ clearTimeout(t); window.speechSynthesis?.cancel(); };
-  },[onSkip]);
+    speak(`Hello ${candidateName}. Welcome to your AI technical interview for the ${jobTitle} position. We will start with your introduction, followed by questions about your experience, technical concepts, real-time scenarios, and a coding exercise. Are you ready to begin?`);
+    return ()=>{ window.speechSynthesis?.cancel(); };
+  },[candidateName,jobTitle]);
   return (
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif",color:C.text,position:"relative"}}>
-      <p style={{color:C.muted,fontSize:14,marginBottom:50}}>Avya is introducing herself…</p>
+      <p style={{color:C.muted,fontSize:14,marginBottom:50}}>AI Interview Assistant · Technical interviewer · {jobTitle}</p>
       <AiAvatar size={160} speaking={true}/>
       <p style={{color:C.text,fontSize:20,fontWeight:700,marginTop:40}}>Avya</p>
       <p style={{color:C.muted,fontSize:14}}>AI Interviewer · HRMS</p>
-      <button onClick={onSkip} style={{position:"absolute",bottom:44,background:"none",border:`1px solid ${C.border}`,borderRadius:20,color:C.muted,cursor:"pointer",fontSize:14,fontWeight:600,padding:"8px 20px",display:"inline-flex",alignItems:"center",gap:6}}>Skip <ArrowRight size={14} aria-hidden="true" /></button>
+      <div style={{marginTop:24,textAlign:"center",maxWidth:440,padding:"0 20px"}}>
+        <p style={{color:C.text,fontSize:15,lineHeight:1.6,margin:"0 0 8px"}}>
+          Welcome, {candidateName}. Your interview is for the <strong>{jobTitle}</strong> position.
+        </p>
+        <p style={{color:C.muted,fontSize:13,lineHeight:1.6,margin:0}}>
+          {session?.resumeAvailable
+            ? "Your resume has been parsed and will inform role-specific questions."
+            : "No parsed resume is attached; questions will focus on your answers and the role requirements."}
+        </p>
+      </div>
+      <button className="btn-primary" onClick={onStart} style={{marginTop:28}}>
+        I’m ready — start interview <ArrowRight size={16} aria-hidden="true" />
+      </button>
+      <button onClick={onSkip} style={{marginTop:10,background:"none",border:`1px solid ${C.border}`,borderRadius:20,color:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,padding:"6px 16px",display:"inline-flex",alignItems:"center",gap:6}}>
+        Skip introduction <ArrowRight size={13} aria-hidden="true" />
+      </button>
     </div>
   );
 }
@@ -748,7 +777,7 @@ export default function TakeInterview() {
   );
   if(screen==="join")  return <JoinScreen session={session} error={error} onJoin={handleJoin}/>;
   if(screen==="otp")   return <OtpScreen  email={session?.candidateEmail} token={token} devCode={devCode} onVerify={()=>setScreen("join")}/>;
-  if(screen==="intro") return <AiSpeakingIntro onSkip={handleIntroDone}/>;
+  if(screen==="intro") return <AiSpeakingIntro session={session} onSkip={handleIntroDone} onStart={handleIntroDone}/>;
   return (
     <InterviewRoom
       token={token} question={question} sessionInfo={session}

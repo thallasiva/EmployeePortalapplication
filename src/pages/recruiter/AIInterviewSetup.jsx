@@ -329,7 +329,7 @@ export default function AIInterviewSetup() {
                   <option value="">— Select job —</option>
                   {jobs.map(j => (
                     <option key={j.job_req_id} value={j.job_req_id}>
-                      {j.job_title} · {j.department_name || ""}
+                      {j.title}{j.company_dept ? ` · ${j.company_dept}` : ""}
                     </option>
                   ))}
                 </Select>

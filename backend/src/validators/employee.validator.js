@@ -18,6 +18,7 @@ const createEmployeeSchema = Joi.object({
   team_id: Joi.number().integer().allow(null),
   employee_type: Joi.string().max(30).allow('', null),
   employee_status: Joi.string().max(20).allow('', null),
+  bgv_status: Joi.string().max(40).allow('', null),
   shift: Joi.string().max(20).allow('', null),
   location: Joi.string().max(100).allow('', null),
   holiday_calendar: Joi.string().max(100).allow('', null),

@@ -10,6 +10,8 @@ export const checkIn = (payload) => apiClient.post("/attendance/check-in", paylo
 export const checkOut = (payload) => apiClient.post("/attendance/check-out", payload).then(unwrap);
 export const getAttendanceDashboard = (date) =>
 apiClient.get("/attendance/dashboard", { params: { date } }).then(unwrap);
+export const getAttendanceAnalytics = (params) =>
+apiClient.get("/attendance/analytics", { params }).then(unwrap);
 export const getTeamLeaveCalendar = (params) =>
 apiClient.get("/attendance/team-leave-calendar", { params }).then(unwrap);
 export const listRegularizations = (params) =>

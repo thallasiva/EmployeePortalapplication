@@ -8,6 +8,9 @@ const StepCompensation = React.memo(function StepCompensation({ values, errors, 
         <Field label="Annual Salary (USD)" required error={errors.ctc}>
           <input
             type="number"
+            min="0"
+            step="any"
+            className="emp-wizard__salary-input"
             value={values.ctc}
             onChange={(e) => setField("ctc", e.target.value)}
             placeholder="e.g. 75000"

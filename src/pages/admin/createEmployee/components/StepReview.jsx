@@ -23,6 +23,8 @@ const StepReview = React.memo(function StepReview({ values, departments, members
           <div><dt>Name</dt><dd>{values.first_name} {values.last_name}</dd></div>
           <div><dt>Email</dt><dd>{values.email}</dd></div>
           <div><dt>Phone</dt><dd>{values.mobile}</dd></div>
+          <div><dt>Blood Group</dt><dd>{values.blood_group || "—"}</dd></div>
+          <div><dt>Marital Status</dt><dd>{values.marital_status || "—"}</dd></div>
         </dl>
       </div>
       <div className="emp-review-section">
@@ -36,6 +38,7 @@ const StepReview = React.memo(function StepReview({ values, departments, members
           <div><dt>Date of Confirmation</dt><dd>{formatDate(values.date_of_confirmation)}</dd></div>
           <div><dt>Contract End Date</dt><dd>{formatDate(values.contract_end_date)}</dd></div>
           <div><dt>Type</dt><dd><span className="emp-type-badge">{values.employee_type}</span></dd></div>
+          <div><dt>Employee Status</dt><dd>{values.employee_status}</dd></div>
           <div><dt>Project / Cost Centre</dt><dd>{values.project_cost_centre || "—"}</dd></div>
           <div><dt>Previous Employer</dt><dd>{values.previous_employer || "—"}</dd></div>
           <div><dt>Exp Before Joining</dt><dd>{values.total_exp_before_joining ? `${values.total_exp_before_joining} yrs` : "—"}</dd></div>

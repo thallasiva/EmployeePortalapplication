@@ -18,11 +18,16 @@ export default function EmailPermissions() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
-  const showToast = (msg, type = "success") => { setToast({ message: msg, type }); setTimeout(() => setToast(null), 3000); };
+  const [loadError, setLoadError] = useState(false);
+  const showToast = useCallback((msg, type = "success") => {
+    setToast({ message: msg, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await emailPermissionsApi.get();
+      setLoadError(false);
       if (data && Object.keys(data).length > 0) {
         // Rebuild matrix from stored JSON {moduleName: {roleName: {permType: bool}}}
         const matrix = MODULES.map(mod =>
@@ -32,9 +37,12 @@ export default function EmailPermissions() {
         );
         setPerms(matrix);
       }
-    } catch { /* use defaults */ }
+    } catch {
+      setLoadError(true);
+      showToast("Failed to load email permissions", "error");
+    }
     finally { setLoading(false); }
-  }, []);
+  }, [showToast]);
   useEffect(() => { load(); }, [load]);
   const toggle = (mi, ri, pi) => {
     setPerms(prev => {
@@ -127,7 +135,7 @@ export default function EmailPermissions() {
       <div className="flex gap-3 justify-end">
         <Btn variant="outline" icon={<RotateCcw size={13} />} onClick={handleReset}>Reset</Btn>
         <Btn icon={saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-          onClick={handleSave} disabled={saving}>
+          onClick={handleSave} disabled={saving || loadError}>
           {saving ? "Saving…" : "Save Permissions"}
         </Btn>
       </div>

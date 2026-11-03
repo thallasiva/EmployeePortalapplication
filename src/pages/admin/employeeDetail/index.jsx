@@ -40,6 +40,7 @@ export default function EmployeeDetail() {
     form, bankForm, contForm,
     formErrors, touched,
     departments, managers,
+    fieldOptions,
     compBreakdown,
     set, setB, setC, touch,
     handleCtcChange,
@@ -58,8 +59,8 @@ export default function EmployeeDetail() {
   const bd = employee.bankDetails || {};
   const ci = employee.contactInfo || {};
   const sections = {
-    personal: <PersonalSection employee={employee} editMode={editMode} form={form} set={set} />,
-    employment: <EmploymentSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} departments={departments} managers={managers} />,
+    personal: <PersonalSection employee={employee} editMode={editMode} form={form} set={set} fieldOptions={fieldOptions} />,
+    employment: <EmploymentSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} departments={departments} managers={managers} fieldOptions={fieldOptions} />,
     compensation: <CompensationSection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} handleCtcChange={handleCtcChange} compBreakdown={compBreakdown} />,
     statutory: <StatutorySection employee={employee} editMode={editMode} form={form} formErrors={formErrors} touched={touched} set={set} touch={touch} />,
     bank: <BankSection bd={bd} editMode={editMode} bankForm={bankForm} setB={setB} />,

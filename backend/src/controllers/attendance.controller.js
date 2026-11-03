@@ -3,6 +3,7 @@ const regularizationService = require('../services/attendanceRegularization.serv
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPagination, buildMeta } = require('../utils/pagination');
+const ApiError = require('../utils/ApiError');
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, department_id, from_date, to_date, status } = req.query;
@@ -55,6 +56,23 @@ const dashboard = asyncHandler(async (req, res) => {
   const stats = await attendanceService.dashboard(req.query.date);
   new ApiResponse(200, stats, 'Attendance dashboard fetched').send(res);
 });
+const analytics = asyncHandler(async (req, res) => {
+  const { from_date: fromDate, to_date: toDate } = req.query;
+  const isValidDate = (value) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+    const timestamp = Date.parse(`${value}T00:00:00Z`);
+    return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value;
+  };
+  if (!isValidDate(fromDate) || !isValidDate(toDate)) {
+    throw ApiError.badRequest('Valid from_date and to_date values are required');
+  }
+  const dayCount = (Date.parse(`${toDate}T00:00:00Z`) - Date.parse(`${fromDate}T00:00:00Z`)) / 86400000;
+  if (dayCount < 0 || dayCount > 6) {
+    throw ApiError.badRequest('Attendance analytics supports a maximum seven-day range');
+  }
+  const data = await attendanceService.analytics(fromDate, toDate);
+  new ApiResponse(200, data, 'Attendance analytics fetched').send(res);
+});
 const teamLeaveCalendar = asyncHandler(async (req, res) => {
   const now = new Date();
   const month = Number(req.query.month) || now.getMonth() + 1;
@@ -91,6 +109,7 @@ module.exports = {
   checkIn,
   checkOut,
   dashboard,
+  analytics,
   teamLeaveCalendar,
   listRegularizations,
   createRegularization,

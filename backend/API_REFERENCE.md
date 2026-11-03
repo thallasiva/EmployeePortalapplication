@@ -376,6 +376,10 @@ Permission: `attendance:view`. Query: `?page=&limit=&employee_id=&department_id=
 ### GET /attendance/dashboard
 Permission: `attendance:view`. Query: `?date=2026-06-14` (defaults to today). Calls `sp_attendance_dashboard`.
 
+### GET /attendance/analytics
+Permission: `attendance:view`. Query: `?from_date=2026-06-08&to_date=2026-06-14` (maximum seven days).
+Returns daily present/absent counts and department totals for the nine-hour and early-logout charts.
+
 ### GET /attendance/team-leave-calendar
 Permission: `attendance:view`. Query: `?year=2026&month=6`. Calls `sp_team_leave_calendar`.
 
@@ -1015,3 +1019,25 @@ Query: `?month=6` (defaults to current month). Returns employees with birthdays 
 
 ### GET /dashboard/recent-activities
 Query: `?limit=10`. Returns recent `audit_logs` entries.
+
+---
+
+## 25. Employee Field Options — `/api/settings/field-options` (Admin only)
+
+The list endpoint returns the active choices for each configurable employee field.
+The API seeds the standard choices on first use; administrators can add or deactivate
+choices without changing employee records that already use them.
+
+Supported `field_key` values: `blood_group`, `marital_status`, `employee_type`,
+`employee_status`, and `bgv_status`.
+
+### GET /settings/field-options
+Optional query: `?field_key=employee_status`. Without a query, returns all active options.
+
+### POST /settings/field-options
+```json
+{ "field_key": "employee_status", "value": "On Probation" }
+```
+
+### DELETE /settings/field-options/:id
+Deactivates the option with that ID. Existing employee values remain unchanged.

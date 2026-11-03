@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler');
 const svc = require('../services/settings.service');
 const { verifySmtp, clearSmtpCache } = require('../services/email.service');
 const ApiResponse = require('../utils/ApiResponse');
+const ApiError = require('../utils/ApiError');
 /* ── SMTP ── */
 const getSmtp    = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getSmtp(), 'OK').send(res));
 const saveSmtp   = asyncHandler(async (req, res) => {
@@ -16,6 +17,20 @@ const testSmtp   = asyncHandler(async (req, res) => {
 });
 const getGeneralSettings = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getGeneralSettings(), 'OK').send(res));
 const saveGeneralSettings = asyncHandler(async (req, res) => new ApiResponse(200, await svc.saveGeneralSettings(req.body), 'Saved').send(res));
+const listFieldOptions = asyncHandler(async (req, res) =>
+  new ApiResponse(200, await svc.listFieldOptions(req.query.field_key), 'OK').send(res)
+);
+const createFieldOption = asyncHandler(async (req, res) => {
+  const body = req.body || {};
+  const option = await svc.createFieldOption(body.field_key, body.value);
+  new ApiResponse(201, option, 'Created').send(res);
+});
+const deleteFieldOption = asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) throw ApiError.badRequest('Invalid field option id');
+  await svc.deleteFieldOption(id);
+  new ApiResponse(200, null, 'Deleted').send(res);
+});
 /* ── TEMPLATES ── */
 const listTemplates   = asyncHandler(async (req, res) => new ApiResponse(200, await svc.listTemplates(req.query), 'OK').send(res));
 const getTemplate     = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getTemplate(req.params.id), 'OK').send(res));
@@ -66,6 +81,7 @@ const deleteNotification = asyncHandler(async (req, res) => { await svc.deleteNo
 const createNotification = asyncHandler(async (req, res) => new ApiResponse(201, await svc.createNotification(req.body), 'Created').send(res));
 module.exports = {
   getGeneralSettings, saveGeneralSettings,
+  listFieldOptions, createFieldOption, deleteFieldOption,
   getSmtp, saveSmtp, testSmtp,
   listTemplates, getTemplate, createTemplate, updateTemplate, deleteTemplate, cloneTemplate,
   listLogs, retryLog, getLogStats,

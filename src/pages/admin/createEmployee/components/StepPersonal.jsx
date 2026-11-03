@@ -1,5 +1,6 @@
 import React from "react";
 import Field from "./Field";
+import PhoneInput from "../../../../component/PhoneInput";
 const StepPersonal = React.memo(function StepPersonal({ values, errors, setField }) {
   return (
     <>
@@ -42,11 +43,7 @@ const StepPersonal = React.memo(function StepPersonal({ values, errors, setField
           />
         </Field>
         <Field label="Phone" required error={errors.mobile}>
-          <input
-            value={values.mobile}
-            onChange={(e) => setField("mobile", e.target.value)}
-            placeholder="Phone number"
-          />
+          <PhoneInput value={values.mobile} onChange={(value) => setField("mobile", value)} />
         </Field>
       </div>
     </>

@@ -14,6 +14,7 @@ export default function CreateEmployee() {
     step,
     departments,
     members,
+    fieldOptions,
     values,
     errors,
     showSuccessModal,
@@ -42,13 +43,14 @@ export default function CreateEmployee() {
             setField={setField}
             departments={departments}
             members={members}
+            fieldOptions={fieldOptions}
           />
         )}
         {step === 2 && (
           <StepCompensation values={values} errors={errors} setField={setField} />
         )}
         {step === 3 && (
-          <StepBankStatutory values={values} setField={setField} />
+          <StepBankStatutory values={values} setField={setField} fieldOptions={fieldOptions} />
         )}
         {step === 4 && (
           <StepReview values={values} departments={departments} members={members} />

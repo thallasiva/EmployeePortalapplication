@@ -242,6 +242,7 @@ const getSession = asyncHandler(async (req, res) => {
     invitationExpiresAt: session.expires_at,
     durationSeconds: state.durationSeconds,
     totalQuestions: state.questionCount || 8,
+    resumeAvailable: Boolean(state.profile?.resume || state.profile?.resumeSkills?.length),
     quickResponseTimeoutSeconds: state.quickResponseTimeoutSeconds ?? 20,
     remainingSeconds: aiSvc.getRemainingSeconds(state),
     started: Boolean(state.startedAt),

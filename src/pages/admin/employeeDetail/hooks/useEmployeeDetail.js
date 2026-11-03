@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { getEmployee, updateEmployee, updateBankDetails, updateContactInfo } from "../../../../api/employee.api";
 import { getManagers } from "../../../../api/orgHierarchy.api";
 import { listDepartments } from "../../../../api/department.api";
+import { fieldOptionsApi } from "../../../../api/settings.api";
 import { calculatePayslip } from "../../PayRollForm";
 import "../../../../api/client";
 import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
 import { employeeSchema } from "../constants";
 import { toDateInput, cleanForm } from "../utils";
+import { groupFieldOptions } from "../../../../utils/fieldOptions";
 export function useEmployeeDetail(id) {
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ export function useEmployeeDetail(id) {
   const [touched, setTouched] = useState({});
   const [departments, setDepartments] = useState([]);
   const [managers, setManagers] = useState([]);
+  const [fieldOptions, setFieldOptions] = useState({});
   const compBreakdown = useMemo(
     () => calculatePayslip(Number(form.base_salary) || 0),
     [form.base_salary]
@@ -74,7 +77,11 @@ export function useEmployeeDetail(id) {
   }, [id]);
   const loadDropdowns = useCallback(async () => {
     try {
-      const [depts, mgrs] = await Promise.all([listDepartments(), getManagers()]);
+      const [depts, mgrs, options] = await Promise.all([
+        listDepartments(),
+        getManagers(),
+        fieldOptionsApi.list(),
+      ]);
       setDepartments(
         (Array.isArray(depts) ? depts : []).map((d) => ({
           value: String(d.department_id),
@@ -89,7 +96,10 @@ export function useEmployeeDetail(id) {
             label: m.full_name + (m.designation_name ? ` — ${m.designation_name}` : ""),
           }))
       );
-    } catch {}
+      setFieldOptions(groupFieldOptions(options));
+    } catch (error) {
+      apiErrorToast(error, "Failed to load employee form options");
+    }
   }, [id]);
   const enterEdit = useCallback(() => {
     if (!employee) return;
@@ -107,6 +117,7 @@ export function useEmployeeDetail(id) {
       emp_joining_date: toDateInput(e.emp_joining_date),
       employee_type: e.employee_type || "Full-Time",
       employee_status: e.employee_status || "Active",
+      bgv_status: e.bgv_status || "",
       emp_exit_date: toDateInput(e.emp_exit_date), location: e.location || "",
       ctc: e.ctc || "", base_salary: e.base_salary || "",
       benefits_plan: e.benefits_plan || "",
@@ -183,6 +194,7 @@ export function useEmployeeDetail(id) {
     form, bankForm, contForm,
     formErrors, touched,
     departments, managers,
+    fieldOptions,
     compBreakdown,
     set, setB, setC, touch,
     handleCtcChange,

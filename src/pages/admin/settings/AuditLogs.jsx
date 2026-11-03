@@ -8,6 +8,7 @@ export default function AuditLogs() {
   const [rows, setRows]       = useState([]);
   const [total, setTotal]     = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [search, setSearch]   = useState("");
   const [module, setModule]   = useState("All Modules");
   const [result, setResult]   = useState("All Results");
@@ -21,10 +22,11 @@ export default function AuditLogs() {
       });
       setRows(res.data?.data?.rows || []);
       setTotal(res.data?.data?.total || 0);
+      setLoadError(false);
     } catch {
-      // Never show sample entries on an audit page — an empty list is the honest fallback.
       setRows([]);
       setTotal(0);
+      setLoadError(true);
     }
     setLoading(false);
   }, [search, module, result, page]);
@@ -98,7 +100,9 @@ export default function AuditLogs() {
               <Loader2 size={24} className="animate-spin text-[#f18200]" />
             </div>
           ) : rows.length === 0 ? (
-            <div className="text-center py-16 text-[#94a3b8] text-[13px]">No audit logs found</div>
+            <div role={loadError ? "alert" : undefined} className={`text-center py-16 text-[13px] ${loadError ? "text-red-600" : "text-[#94a3b8]"}`}>
+              {loadError ? "Unable to load audit logs. Please refresh and try again." : "No audit logs found"}
+            </div>
           ) : (
             <table className="w-full text-[13px]">
               <thead className="bg-[#f8fafc] border-b border-[#f1f5f9]">

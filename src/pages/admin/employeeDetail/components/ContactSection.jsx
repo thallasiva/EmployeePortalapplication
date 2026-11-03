@@ -1,7 +1,10 @@
 import React from "react";
 import { MapPin } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
+import { baseInp } from "../constants";
+import PhoneInput from "../../../../component/PhoneInput";
 import SectionHead from "./SectionHead";
+import Field from "./Field";
 import FormInput from "./FormInput";
 import Row from "./Row";
 const ContactSection = React.memo(function ContactSection({
@@ -14,11 +17,15 @@ const ContactSection = React.memo(function ContactSection({
         <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" })}>
           <FormInput label="Contact Name" value={contForm.contact_name} onChange={setC("contact_name")} />
           <FormInput label="Personal Email" value={contForm.personal_email} onChange={setC("personal_email")} type="email" />
-          <FormInput label="Alternate Mobile" value={contForm.alternate_mobile} onChange={setC("alternate_mobile")} />
+          <Field label="Alternate Mobile">
+            <PhoneInput value={contForm.alternate_mobile} onChange={setC("alternate_mobile")} style={baseInp(false)} />
+          </Field>
           <FormInput label="Contact City" value={contForm.contact_city} onChange={setC("contact_city")} />
           <FormInput label="Contact Country" value={contForm.contact_country} onChange={setC("contact_country")} />
           <FormInput label="Emergency Contact Name" value={contForm.emergency_contact_name} onChange={setC("emergency_contact_name")} />
-          <FormInput label="Emergency Contact Mobile" value={contForm.emergency_contact_phone} onChange={setC("emergency_contact_phone")} />
+          <Field label="Emergency Contact Mobile">
+            <PhoneInput value={contForm.emergency_contact_phone} onChange={setC("emergency_contact_phone")} style={baseInp(false)} />
+          </Field>
           <FormInput label="Permanent Address Line 1" value={contForm.permanent_address_line1} onChange={setC("permanent_address_line1")} />
           <FormInput label="Permanent Address Line 2" value={contForm.permanent_address_line2} onChange={setC("permanent_address_line2")} />
           <FormInput label="Permanent Address Line 3" value={contForm.permanent_address_line3} onChange={setC("permanent_address_line3")} />

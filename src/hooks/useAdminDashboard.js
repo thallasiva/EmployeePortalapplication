@@ -2,11 +2,29 @@ import { useEffect, useState } from "react";
 import { getDashboardStats, getAttendanceDashboard, getRecentActivities } from "../api/dashboard.api";
 import { listLeaveRequests } from "../api/leaveRequest.api";
 import { listAttendance } from "../api/attendance.api";
-import { getAdminDashboardMetrics } from "../data/adminDashboardData";
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 const EMPTY_LIST = { data: [], meta: { total: 0 } };
+const EMPTY_METRICS = {
+  totalEmployees: 0,
+  companies: 0,
+  pendingLeave: 0,
+  onLeaveToday: 0,
+  onLeaveList: [],
+  pendingList: [],
+  presentToday: 0,
+  absentToday: 0,
+  lateToday: 0,
+  attendanceRate: 0,
+  checkedIn: 0,
+  lateEmployees: [],
+  absentEmployees: [],
+  presentEmployees: [],
+  openTickets: 0,
+  openJobs: 0,
+  salariesCount: 0,
+};
 export function useAdminDashboard() {
   const [metrics, setMetrics] = useState(null);
   const [activities, setActivities] = useState([]);
@@ -33,7 +51,7 @@ export function useAdminDashboard() {
       });
       if (failures.length === results.length) {
         setError(failures[0]?.reason || new Error("Failed to load dashboard data"));
-        setMetrics(getAdminDashboardMetrics());
+        setMetrics(EMPTY_METRICS);
         setLoading(false);
         return;
       }
@@ -113,5 +131,5 @@ export function useAdminDashboard() {
       cancelled = true;
     };
   }, []);
-  return { metrics: metrics ?? getAdminDashboardMetrics(), activities, loading, error };
+  return { metrics: metrics ?? EMPTY_METRICS, activities, loading, error };
 }

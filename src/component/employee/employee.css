@@ -170,11 +170,11 @@
   border: 1px solid transparent;
 }
 .emp-btn--primary {
-  background: var(--brand-primary);
+  background: #16a34a;
   color: #fff;
 }
 .emp-btn--primary:hover {
-  background: var(--brand-primary-dark);
+  background: #15803d;
 } 
 .emp-btn--outline {
   background: #fff;
@@ -487,6 +487,14 @@
 .emp-wizard__btn--next:hover,
 .emp-wizard__btn--create:hover {
   background: #15803d;
+}
+.emp-wizard__salary-input {
+  -moz-appearance: textfield;
+}
+.emp-wizard__salary-input::-webkit-inner-spin-button,
+.emp-wizard__salary-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .emp-review-section {
   padding: 1rem 0;

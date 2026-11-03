@@ -8,7 +8,6 @@ import { downloadEmployeeCsv } from "../../../../utils/employeeCsvExport";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { getEmployeeStatus } from "../../../../utils/employeeStatus";
 import "../../../../utils/employeeDisplay";
-import { STATUS_OPTIONS, TYPE_OPTIONS } from "../constants";
 export function useEmployeeData() {
   const csvInputRef = useRef(null);
   const [employees, setEmployees] = useState([]);
@@ -48,9 +47,19 @@ export function useEmployeeData() {
       const { label } = getEmployeeStatus(e);
       counts[label] = (counts[label] || 0) + 1;
     });
-    return STATUS_OPTIONS.map((o) => ({ ...o, count: counts[o.value] || 0 })).filter(
-      (o) => o.count > 0
-    );
+    return Object.entries(counts)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([value, count]) => ({ value, label: value, count }));
+  }, [employees]);
+  const typeOptions = useMemo(() => {
+    const counts = {};
+    employees.forEach((employee) => {
+      const type = employee.employee_type || "Full-Time";
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([value, count]) => ({ value, label: value, count }));
   }, [employees]);
   const filteredEmployees = useMemo(() => {
     let list = employees;
@@ -162,9 +171,9 @@ export function useEmployeeData() {
     () => [
       { id: "status", label: "Status", options: statusOptions, selected: filterStatus, onChange: setFilterStatus },
       { id: "dept", label: "Department", options: deptOptions, selected: filterDept, onChange: setFilterDept },
-      { id: "type", label: "Employee Type", options: TYPE_OPTIONS, selected: filterType, onChange: setFilterType },
+      { id: "type", label: "Employee Type", options: typeOptions, selected: filterType, onChange: setFilterType },
     ],
-    [statusOptions, deptOptions, filterStatus, filterDept, filterType]
+    [statusOptions, deptOptions, typeOptions, filterStatus, filterDept, filterType]
   );
   return {
     csvInputRef,

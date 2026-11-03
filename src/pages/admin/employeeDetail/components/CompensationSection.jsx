@@ -21,6 +21,8 @@ const CompensationSection = React.memo(function CompensationSection({
                 <input
                   type="number"
                   min={0}
+                  step="any"
+                  className="emp-wizard__salary-input"
                   value={form.ctc ?? ""}
                   onChange={(e) => handleCtcChange(e.target.value)}
                   onBlur={touch("ctc")}
@@ -42,6 +44,8 @@ const CompensationSection = React.memo(function CompensationSection({
                 <input
                   type="number"
                   min={0}
+                  step="any"
+                  className="emp-wizard__salary-input"
                   value={form.base_salary ?? ""}
                   onChange={(e) => set("base_salary")(e.target.value)}
                   onBlur={touch("base_salary")}

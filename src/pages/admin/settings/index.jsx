@@ -5,6 +5,7 @@ import { useEmployeeSchedules } from "./hooks/useEmployeeSchedules";
 import SettingsHeader from "./components/SettingsHeader";
 import CompanyProfile from "./components/CompanyProfile";
 import WorkSchedule from "./components/WorkSchedule";
+import FieldOptionsManager from "./components/FieldOptionsManager";
 export default function Settings() {
   const {
     selectedCompanyId, selectedCompany,
@@ -48,6 +49,8 @@ export default function Settings() {
         companyOpen={companyOpen}
         setCompanyOpen={setCompanyOpen}
         selectCompany={selectCompany}
+        onSave={save}
+        saving={saving}
       />
       <div className="grid ">
         <div className="space-y-6">
@@ -66,6 +69,7 @@ export default function Settings() {
             empScheduleProps={empScheduleProps}
             loadEmpSchedules={empScheduleState.loadEmpSchedules}
           />
+          <FieldOptionsManager />
         </div>
       </div>
     </div>

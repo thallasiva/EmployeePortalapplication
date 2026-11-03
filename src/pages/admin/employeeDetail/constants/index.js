@@ -17,21 +17,6 @@ export const GENDER_OPTIONS = [
   { value: "Female", label: "Female" },
   { value: "Other", label: "Other" },
 ];
-export const MARITAL_OPTIONS = [
-  { value: "Single", label: "Single" },
-  { value: "Married", label: "Married" },
-  { value: "Divorced", label: "Divorced" },
-  { value: "Widowed", label: "Widowed" },
-];
-export const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
-  (v) => ({ value: v, label: v })
-);
-export const EMPLOYEE_TYPE_OPTIONS = ["Full-Time", "Part-Time", "Contract", "Intern"].map(
-  (v) => ({ value: v, label: v })
-);
-export const EMPLOYEE_STATUS_OPTIONS = ["Active", "Inactive", "Resigned", "Terminated"].map(
-  (v) => ({ value: v, label: v })
-);
 export const ACCOUNT_TYPE_OPTIONS = ["Savings", "Current", "Salary"].map(
   (v) => ({ value: v, label: v })
 );
@@ -44,7 +29,7 @@ export const employeeSchema = Yup.object({
   email: Yup.string().trim().email("Enter a valid email").required("Email is required"),
   mobile: Yup.string()
     .trim()
-    .matches(/^[0-9+\s\-()]{7,15}$/, "Enter a valid mobile number")
+    .matches(/^(?:\+[1-9]\d{6,13}|[0-9\s\-()]{7,15})$/, "Enter a valid mobile number")
     .required("Mobile is required"),
   gender: Yup.string().nullable(),
   dob: Yup.string().nullable(),
@@ -55,6 +40,7 @@ export const employeeSchema = Yup.object({
   emp_joining_date: Yup.string().required("Date of joining is required"),
   employee_type: Yup.string().required("Employee type is required"),
   employee_status: Yup.string().required("Employee status is required"),
+  bgv_status: Yup.string().nullable(),
   emp_exit_date: Yup.string()
     .nullable()
     .test("exit-after-join", "Leaving date must be after joining date", function (val) {

@@ -4,7 +4,10 @@ export function validateStep(step, values) {
     if (!values.first_name.trim()) errors.first_name = "First name is required";
     if (!values.last_name.trim()) errors.last_name = "Last name is required";
     if (!values.email.trim()) errors.email = "Email is required";
-    if (!values.mobile.trim()) errors.mobile = "Phone is required";
+    const mobileDigits = (values.mobile || "").replace(/\D/g, "");
+    if (mobileDigits.length < 7 || mobileDigits.length > 15) {
+      errors.mobile = values.mobile ? "Enter a valid phone number" : "Phone is required";
+    }
     if (!values.employee_id.trim()) errors.employee_id = "Employee ID is required";
   }
   if (step === 1) {

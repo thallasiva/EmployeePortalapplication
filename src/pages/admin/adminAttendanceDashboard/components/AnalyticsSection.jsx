@@ -1,15 +1,24 @@
 import React from "react";
 import { BarChart3 } from "lucide-react";
-import {
-  ADMIN_ATTENDANCE_WEEKLY_CHART,
-  ADMIN_ATTENDANCE_WEEKLY_SERIES,
-  ADMIN_EARLY_LOGOUT_DEPT_CHART,
-  ADMIN_NINE_HR_DEPT_CHART,
-} from "../../../../data/adminAttendanceData";
 import AdminGroupedBarChart from "../../../../component/admin/AdminGroupedBarChart";
 import AdminDonutChart from "../../../../component/admin/AdminDonutChart";
 import AdminHorizontalBarChart from "../../../../component/admin/AdminHorizontalBarChart";
-const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, summary }) {
+const SERIES = [
+  { key: "present", name: "Present", color: "#22c55e" },
+  { key: "absent", name: "Absent", color: "#f472b6" },
+];
+const DEPARTMENT_COLORS = ["#22c55e", "#f97316", "#3b82f6", "#8b5cf6", "#14b8a6"];
+const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, summary, analytics }) {
+  const nineHourItems = (analytics?.nineHourByDepartment || []).map((item, index) => ({
+    ...item,
+    value: Number(item.value) || 0,
+    color: DEPARTMENT_COLORS[index % DEPARTMENT_COLORS.length],
+  }));
+  const earlyLogoutItems = (analytics?.earlyLogoutByDepartment || []).map((item, index) => ({
+    ...item,
+    value: Number(item.value) || 0,
+    color: DEPARTMENT_COLORS[index % DEPARTMENT_COLORS.length],
+  }));
   return (
     <section>
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -22,12 +31,11 @@ const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, sum
           </div>
           <AdminGroupedBarChart
             title="This Week's Attendance"
-            subtitle="Present vs absent across all employees (Mon–Fri)"
-            data={ADMIN_ATTENDANCE_WEEKLY_CHART}
-            series={ADMIN_ATTENDANCE_WEEKLY_SERIES}
+            subtitle="Present vs absent by day"
+            data={analytics?.weekly || []}
+            series={SERIES}
             yLabel="Employees"
             height={200}
-            yMax={22}
           />
         </div>
         <div className="admin-dash-card">
@@ -45,14 +53,14 @@ const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, sum
           <AdminHorizontalBarChart
             title="9hr Rule Met by Department"
             subtitle="Employees who completed 9 hours today"
-            items={ADMIN_NINE_HR_DEPT_CHART}
+            items={nineHourItems}
           />
         </div>
         <div className="admin-dash-card">
           <AdminHorizontalBarChart
             title="Early Logout by Department"
             subtitle="Employees who left before 9 hours"
-            items={ADMIN_EARLY_LOGOUT_DEPT_CHART}
+            items={earlyLogoutItems}
           />
         </div>
       </div>

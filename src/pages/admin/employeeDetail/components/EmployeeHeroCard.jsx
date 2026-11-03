@@ -3,6 +3,7 @@ import { Mail, Phone } from "lucide-react";
 import { cssClass, joinClasses } from "../../../../utils/classStyles";
 import { avatarDataUri } from "../../../../lib/placeholders";
 import { EmployeeStatusBadge } from "../../../../utils/employeeStatus";
+import PhoneInput from "../../../../component/PhoneInput";
 import { baseInp, inp } from "../constants";
 import Field from "./Field";
 const EmployeeHeroCard = React.memo(function EmployeeHeroCard({
@@ -77,11 +78,11 @@ const EmployeeHeroCard = React.memo(function EmployeeHeroCard({
             />
           </Field>
           <Field label="Mobile" required error={formErrors.mobile} touched={touched.mobile}>
-            <input
+            <PhoneInput
               value={form.mobile ?? ""}
-              onChange={(e) => set("mobile")(e.target.value)}
+              onChange={set("mobile")}
               onBlur={touch("mobile")}
-              className={cssClass(baseInp(touched.mobile && formErrors.mobile))}
+              style={baseInp(touched.mobile && formErrors.mobile)}
             />
           </Field>
         </div>

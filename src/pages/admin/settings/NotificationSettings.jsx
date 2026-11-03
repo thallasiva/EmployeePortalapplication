@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bell, Mail, MessageSquare, Smartphone, Save, RotateCcw, Loader2 } from "lucide-react";
 import client from "../../../api/client";
+import { apiErrorToast } from "../../../utils/ToastControllers";
 const Toggle = ({ on, onToggle }) => (
   <button onClick={onToggle}
     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${on ? "bg-[#f18200]" : "bg-[#cbd5e1]"}`}>
@@ -45,12 +46,16 @@ export default function NotificationSettings() {
   const [loading, setLoading]  = useState(true);
   const [saving, setSaving]    = useState(false);
   const [toast, setToast]      = useState(null);
+  const [loadError, setLoadError] = useState(false);
   const showToast = (msg, type="success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
   /* Load saved settings */
   useEffect(() => {
     client.get("/settings/notification-preferences")
       .then(r => { if (r.data?.data) setMatrix(r.data.data); })
-      .catch(() => {})
+      .catch(error => {
+        setLoadError(true);
+        apiErrorToast(error, "Failed to load notification settings");
+      })
       .finally(() => setLoading(false));
   }, []);
   const toggle = (gi, ei, channel) => {
@@ -102,7 +107,7 @@ export default function NotificationSettings() {
             <button onClick={handleReset} className="flex items-center gap-2 px-4 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] font-medium text-[#475569] hover:bg-[#f1f5f9]">
               <RotateCcw size={13} /> Reset
             </button>
-            <button onClick={handleSave} disabled={saving}
+            <button onClick={handleSave} disabled={saving || loadError}
               className="flex items-center gap-2 px-4 h-[36px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-semibold disabled:opacity-60">
               {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
               {saving ? "Saving…" : "Save Settings"}
@@ -111,6 +116,11 @@ export default function NotificationSettings() {
         </div>
       </div>
       <div className="p-6">
+        {loadError && (
+          <p role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Notification settings could not be loaded. Refresh the page before making changes.
+          </p>
+        )}
         {/* Channel legend */}
         <div className="flex flex-wrap gap-4 mb-5 bg-white rounded-xl border border-[#f1f5f9] p-4">
           {CHANNELS.map(ch => (

@@ -10,7 +10,7 @@ import AnalyticsSection from "./components/AnalyticsSection";
 import EmployeeSection from "./components/EmployeeSection";
 export default function AdminAttendanceDashboard() {
   const {
-    employees, summary, loading,
+    employees, summary, loading, analytics,
     lateSectionRef, statusChart,
     lateEmployees, tabCounts,
     employeeTab, setEmployeeTab, filteredEmployees,
@@ -38,7 +38,7 @@ export default function AdminAttendanceDashboard() {
       </section>
       <LateBanner summary={summary} onScrollToLate={scrollToLate} />
       <LateArrivalsSection lateEmployees={lateEmployees} lateSectionRef={lateSectionRef} />
-      <AnalyticsSection statusChart={statusChart} summary={summary} />
+      <AnalyticsSection statusChart={statusChart} summary={summary} analytics={analytics} />
       <EmployeeSection
         employees={employees}
         filteredEmployees={filteredEmployees}

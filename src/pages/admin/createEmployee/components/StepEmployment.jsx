@@ -1,11 +1,13 @@
 import React from "react";
 import Field from "./Field";
+import { fieldOptionsFor } from "../../../../utils/fieldOptions";
 const StepEmployment = React.memo(function StepEmployment({
   values,
   errors,
   setField,
   departments,
   members,
+  fieldOptions,
 }) {
   return (
     <>
@@ -94,9 +96,19 @@ const StepEmployment = React.memo(function StepEmployment({
             value={values.employee_type}
             onChange={(e) => setField("employee_type", e.target.value)}
           >
-            <option value="Full-Time">Full-Time</option>
-            <option value="Part-Time">Part-Time</option>
-            <option value="Contract">Contract</option>
+            {fieldOptionsFor(fieldOptions, "employee_type", values.employee_type).map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Employee Status" required>
+          <select
+            value={values.employee_status}
+            onChange={(e) => setField("employee_status", e.target.value)}
+          >
+            {fieldOptionsFor(fieldOptions, "employee_status", values.employee_status).map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
           </select>
         </Field>
         <Field label="Project / Cost Centre">
@@ -129,11 +141,9 @@ const StepEmployment = React.memo(function StepEmployment({
             onChange={(e) => setField("bgv_status", e.target.value)}
           >
             <option value="">Select status</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Failed">Failed</option>
-            <option value="Waived">Waived</option>
+            {fieldOptionsFor(fieldOptions, "bgv_status", values.bgv_status).map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
           </select>
         </Field>
       </div>

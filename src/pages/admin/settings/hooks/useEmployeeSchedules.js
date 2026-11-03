@@ -45,11 +45,8 @@ export function useEmployeeSchedules() {
         const res = await listEmployees({ limit: 500 });
         setEmpSchedules((res?.data || []).map(toRow));
       }
-    } catch {
-      try {
-        const res = await listEmployees({ limit: 500 });
-        setEmpSchedules((res?.data || []).map(toRow));
-      } catch {}
+    } catch (error) {
+      apiErrorToast(error, "Failed to load employee schedules");
     } finally {
       setSchedLoading(false);
     }

@@ -1,8 +1,10 @@
 import React from "react";
 import { CreditCard } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-import { ACCOUNT_TYPE_OPTIONS, PAYMENT_TYPE_OPTIONS } from "../constants";
+import BankNameInput from "../../../../component/BankNameInput";
+import { ACCOUNT_TYPE_OPTIONS, PAYMENT_TYPE_OPTIONS, baseInp } from "../constants";
 import SectionHead from "./SectionHead";
+import Field from "./Field";
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
 import Row from "./Row";
@@ -14,7 +16,9 @@ const BankSection = React.memo(function BankSection({
       <SectionHead icon={CreditCard} title="Bank Details" />
       {editMode ? (
         <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" })}>
-          <FormInput label="Bank Name" value={bankForm.bank_name} onChange={setB("bank_name")} />
+          <Field label="Bank Name">
+            <BankNameInput value={bankForm.bank_name} onChange={setB("bank_name")} style={baseInp(false)} />
+          </Field>
           <FormInput label="Account Number" value={bankForm.account_number} onChange={setB("account_number")} />
           <FormSelect label="Account Type" value={bankForm.account_type} onChange={setB("account_type")} placeholder="Select" options={ACCOUNT_TYPE_OPTIONS} />
           <FormInput label="Bank Branch" value={bankForm.bank_branch} onChange={setB("bank_branch")} />
