@@ -7,7 +7,7 @@ import {
   ReportStatusBadge } from
 "../../../component/reports/ReportsLayout";
 import ReportLineChart from "../../../component/reports/ReportLineChart";
-import { DAILY_STATS, DAILY_LINE, DAILY_LIST } from "../../../data/reportsData";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { DAILY_STATS, DAILY_LINE, DAILY_LIST } from "../../../data/reportsData";import { cssClass } from "../../../utils/classStyles";
 import { ArrowUpDown, Circle } from "lucide-react";
 export default function DailyReport() {
   return (

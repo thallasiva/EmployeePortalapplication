@@ -24,7 +24,7 @@ const RolloutSettingsTab = React.memo(function RolloutSettingsTab({ cycles, onCy
     setSelected([]);
     setEmpSearch("");
     setErr("");
-  }, [selectedCycleId]);
+  }, [selectedCycleId, selectedCycle?.rollout_type]);
   useEffect(() => {
     if (rolloutType !== "selected" || selectedCycle?.status === "active") return;
     setLoadingEmps(true);

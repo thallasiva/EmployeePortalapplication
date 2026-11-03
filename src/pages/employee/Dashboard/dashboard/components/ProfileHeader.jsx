@@ -1,6 +1,6 @@
 import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
-import { greeting, fmtTime } from "../utils/formatters";
+import { greeting } from "../utils/formatters";
 const ProfileHeader = React.memo(function ProfileHeader({
   loading,
   initials,

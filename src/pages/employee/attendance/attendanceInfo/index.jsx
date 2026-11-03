@@ -21,10 +21,6 @@ function parseTime(t) {
   const parts = s.split(":");
   return `${parts[0]}:${parts[1]}`;
 }
-function minsToHM(mins) {
-  if (!mins || mins <= 0) return "—";
-  return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;
-}
 function hoursToHM(hrs) {
   if (!hrs || hrs <= 0) return "—";
   const h = Math.floor(hrs);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { CalendarClock, Plus, Edit2, Trash2, Play, Pause, Loader2, Clock, CheckCircle2, XCircle, Repeat, CalendarDays, CalendarRange, Target, Settings2, X, Mail } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, CheckCircle2, XCircle, Repeat, CalendarDays, CalendarRange, Target, Settings2, X, Mail } from "lucide-react";
 import { emailSchedulesApi, emailTemplatesApi } from "../../../../../api/settings.api";
 import { Btn, Toggle, Toast, ConfirmDialog } from "../components/SharedUI";
 const FREQ_OPTS  = ["Daily","Weekly","Monthly","Yearly","Custom Cron"];

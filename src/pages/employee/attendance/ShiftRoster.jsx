@@ -33,12 +33,12 @@ function buildWeekRoster(weekStart, userShift) {
   });
 }
 export default function ShiftRoster() {
-  const user = getLoggedInUser();
+  const [user] = useState(getLoggedInUser);
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const userShift = useMemo(() => {
     const shiftId = getShiftForUser(user);
     return SHIFTS[shiftId] || SHIFTS.general;
-  }, []);
+  }, [user]);
   const week = useMemo(() => buildWeekRoster(weekStart, userShift), [weekStart, userShift]);
   const weekLabel = `${week[0].dateNum} ${week[0].month} – ${week[6].dateNum} ${week[6].month} ${weekStart.getFullYear()}`;
   const goWeek = (delta) => {

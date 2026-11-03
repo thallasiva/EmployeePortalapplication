@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertTriangle, UserCheck, Check, CircleAlert } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-import { BRAND } from "../constants/tabs";
+import "../constants/tabs";
 import { Btn } from "./SharedUI";
 import ManagerSelect from "./ManagerSelect";
 const UnassignedTab = React.memo(function UnassignedTab({

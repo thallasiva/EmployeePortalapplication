@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, LogIn, LogOut, ClipboardList } from "lucide-react";
+import { LogIn, LogOut, ClipboardList } from "lucide-react";
 const AttendanceHeader = React.memo(function AttendanceHeader({ todayRecord }) {
   const navigate = useNavigate();
   const fmt = (t) => (t ? t.slice(0, 5) : "—");

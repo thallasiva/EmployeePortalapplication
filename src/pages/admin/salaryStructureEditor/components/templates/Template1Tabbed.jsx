@@ -1,9 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft, Plus, Edit2, Trash2, Eye, Save,
-  ToggleLeft, ToggleRight,
-} from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, Eye, Save, ToggleRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY  = "#1e3a5f";

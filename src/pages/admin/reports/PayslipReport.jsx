@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { FileText, Download, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileText, Download, Search } from "lucide-react";
 import { listPayslips } from "../../../api/payroll.api";
 import {
   ReportPageHeader,
@@ -27,10 +27,10 @@ export default function PayslipReport() {
   const [search, setSearch] = useState("");
   useEffect(() => {
     setLoading(true);
-    listPayslips({ month, year, limit: 500 }).
-    then((data) => setPayslips(Array.isArray(data) ? data : [])).
-    catch(() => setPayslips([])).
-    finally(() => setLoading(false));
+    listPayslips({ month, year, limit: 500 })
+    .then((data) => setPayslips(Array.isArray(data) ? data : []))
+    .catch(() => setPayslips([]))
+    .finally(() => setLoading(false));
   }, [month, year]);
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -56,8 +56,8 @@ export default function PayslipReport() {
         { label: "Total Payslips", value: totalPayslips, barWidth: "100%", barColor: "#f18200" },
         { label: "Paid", value: paidCount, barWidth: `${totalPayslips ? paidCount / totalPayslips * 100 : 0}%`, barColor: "#16a34a" },
         { label: "Pending", value: pendingCount, barWidth: `${totalPayslips ? pendingCount / totalPayslips * 100 : 0}%`, barColor: "#f97316" },
-        { label: "Total Gross", value: formatINR(totalGross), barWidth: "100%", barColor: "#8b5cf6" }].
-        map((s) =>
+        { label: "Total Gross", value: formatINR(totalGross), barWidth: "100%", barColor: "#8b5cf6" }]
+        .map((s) =>
         <div key={s.label} className="report-stat-card">
             <p className="report-stat-card__value">{s.value}</p>
             <p className="report-stat-card__label">{s.label}</p>

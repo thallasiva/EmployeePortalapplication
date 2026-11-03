@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { cssClass } from "../../../../utils/classStyles";
 import { generateMyPayslip, getPayslipFull } from "../../../../api/payroll.api";
 import { downloadPayslipPdf } from "../../../../utils/payslipPdfGenerator";
-import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useDashboardData } from "./hooks/useDashboardData";
 import { useAttendance } from "./hooks/useAttendance";
 import ProfileHeader from "./components/ProfileHeader";

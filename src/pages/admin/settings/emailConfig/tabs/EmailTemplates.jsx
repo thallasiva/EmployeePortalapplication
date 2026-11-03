@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Search, Eye, Edit2, Copy, Trash2, X, Send, Mail, Loader2, LayoutTemplate, Save, ChevronLeft, ChevronRight } from "lucide-react";
-import { Btn, Badge, ConfirmDialog, Toast } from "../components/SharedUI";
+import { Plus, Search, Eye, Edit2, Copy, Trash2, X, Mail, Loader2, Save, ChevronLeft, ChevronRight } from "lucide-react";
+import { Btn, ConfirmDialog, Toast } from "../components/SharedUI";
 import { emailTemplatesApi } from "../../../../../api/settings.api";
 const PER = 8;
 const CATEGORIES = ["Onboarding","Leave","Attendance","Payroll","Recruitment","Performance","Helpdesk","Announcements","System"];
@@ -21,7 +21,6 @@ const ACTION_VARS = {
   "{{RejectButton}}":  `<a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Reject</a>`,
   "{{ActionButtons}}": `<div style="margin:20px 0;"><a href="#" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;margin-right:8px;">Approve</a><a href="#" style="display:inline-block;padding:10px 24px;background:#dc2626;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;">Reject</a></div>`,
 };
-const ALL_VARS = [...Object.keys(SAMPLES), ...Object.keys(ACTION_VARS)];
 const renderPreview = (body) => {
   let result = body || "";
   // Replace action button vars first (they produce raw HTML)

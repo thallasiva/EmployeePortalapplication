@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { getHomePath, getStoredUser, isReportingManager } from "../data/auth";
+import { getStoredUser } from "../data/auth";
 import LazyPage from "./LazyPage";
 const ManagerDashboard = lazy(() => import("../pages/manager/ManagerDashboard"));
 const TeamAttendance = lazy(() => import("../pages/manager/TeamAttendance"));

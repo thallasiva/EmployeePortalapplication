@@ -37,7 +37,7 @@ const DetailModal = React.memo(function DetailModal({
             {detail?.photo_url ? (
               <img
                 src={detail.photo_url}
-                alt="photo"
+                alt={detail?.candidate_name || "Candidate profile"}
                 className="w-10 h-10 rounded-full object-cover border-2 border-white/40"
               />
             ) : (

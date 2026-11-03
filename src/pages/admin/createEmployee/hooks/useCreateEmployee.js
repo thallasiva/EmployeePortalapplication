@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createEmployee } from "../../../../api/employee.api";
 import { listDepartments } from "../../../../api/department.api";
 import { getManagers } from "../../../../api/orgHierarchy.api";
-import { getErrorMessage } from "../../../../api/client";
-import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
+import "../../../../api/client";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { INITIAL_VALUES, STEPS } from "../constants";
 import { validateStep } from "../utils";
 export function useCreateEmployee() {

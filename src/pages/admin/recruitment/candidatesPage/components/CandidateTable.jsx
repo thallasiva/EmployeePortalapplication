@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Eye, Loader2, X } from "lucide-react";
 import { Card, Btn, Select, Table, SearchBar } from "../../shared";
 import CandidateStatusBadge from "../../../../../features/recruitment/components/CandidateStatusBadge";
-import { NO_NEXT_STATUSES, STATUS_OPTS } from "../constants";
+import { STATUS_OPTS } from "../constants";
 const CandidateTable = React.memo(function CandidateTable({
   loading, filtered, jobs, search, filterJob, filterStatus,
   isRecruiter, isHRMgr, isTL,
@@ -42,7 +42,7 @@ const CandidateTable = React.memo(function CandidateTable({
         <Btn size="sm" variant="ghost" icon={<Eye size={14} />} onClick={(e) => { e.stopPropagation(); setDetail(row); }}>View</Btn>
       </div>
     }
-  ], [isTL, setDetail, updateStatus]);
+  ], [setDetail]);
   return (
     <div ref={tableRef} className="scroll-mt-4">
       <Card style={{ padding: 0 }}>

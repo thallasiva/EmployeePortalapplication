@@ -30,8 +30,8 @@ const PayrollReports = () => {
         }
       });
       setSalaryMap(map);
-    }).catch(() => {}).
-    finally(() => setLoading(false));
+    }).catch(() => {})
+    .finally(() => setLoading(false));
   }, [canSeeSalary]);
   const departments = useMemo(() => {
     const set = new Set(employees.map((e) => getDepartmentName(e)).filter(Boolean));

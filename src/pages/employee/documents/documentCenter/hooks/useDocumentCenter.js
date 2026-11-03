@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { getMyDocuments, getMyJoiningDocs } from "../../../../../api/document.api";
 import { downloadPayslip, viewPayslip } from "../../../../../utils/payslipDownload";
-import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../../../../utils/ToastControllers";
 import { VIEW, PAYSLIP_ROWS } from "../constants";
 import { toJumpId, scrollElementIntoContainer } from "../utils";
 export function useDocumentCenter() {

@@ -3,7 +3,7 @@ import { getEmployee, updateEmployee, updateBankDetails, updateContactInfo } fro
 import { getManagers } from "../../../../api/orgHierarchy.api";
 import { listDepartments } from "../../../../api/department.api";
 import { calculatePayslip } from "../../PayRollForm";
-import { getErrorMessage } from "../../../../api/client";
+import "../../../../api/client";
 import { apiErrorToast, errorToast, successToast } from "../../../../utils/ToastControllers";
 import { employeeSchema } from "../constants";
 import { toDateInput, cleanForm } from "../utils";

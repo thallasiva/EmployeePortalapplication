@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  ReportPageHeader, ReportIconStatCard, ReportTableToolbar,
-  ReportPriorityBadge, ReportStatusBadge } from
-"../../../component/reports/ReportsLayout";
+import { ReportPageHeader, ReportIconStatCard, ReportTableToolbar, ReportStatusBadge } from "../../../component/reports/ReportsLayout";
 import ReportDonutPanel from "../../../component/reports/ReportDonutPanel";
-import apiClient, { unwrapList } from "../../../api/client";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import apiClient, { unwrapList } from "../../../api/client";import { cssClass } from "../../../utils/classStyles";
 import { CircleDot } from "lucide-react";
 const listAdminTasks = () => apiClient.get("/timesheets/admin/tasks", { params: { limit: 500 } }).then(unwrapList).catch(() => ({ data: [] }));
 export default function TaskReport() {
@@ -12,10 +9,10 @@ export default function TaskReport() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   useEffect(() => {
-    listAdminTasks().
-    then((res) => setTasks(res.data || [])).
-    catch(() => {}).
-    finally(() => setLoading(false));
+    listAdminTasks()
+    .then((res) => setTasks(res.data || []))
+    .catch(() => {})
+    .finally(() => setLoading(false));
   }, []);
   const total = tasks.length;
   const completed = tasks.filter((t) => t.status === "completed").length;

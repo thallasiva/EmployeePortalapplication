@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Shield, Info, Upload, CheckCircle, FileText } from "lucide-react";
+import { Info, Upload, CheckCircle } from "lucide-react";
 import SignatureUpload from "./SignatureUpload";
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] bg-white";
 const inpRO = "w-full border border-amber-100 rounded-lg px-3 py-2 text-[13px] bg-amber-50 text-gray-700 cursor-not-allowed";
@@ -49,7 +49,7 @@ export default function PFDeclarationTab({ form, set, setForm }) {
       updates.pfDoHavePan = "Yes";
     }
     if (Object.keys(updates).length) setForm((p) => ({ ...p, ...updates }));
-  }, [form.accountNumber, form.ifscCode, form.panNo]);
+  }, [form.accountNumber, form.ifscCode, form.panNo, form.pfBankAccNo, form.pfIfscCode, form.pfPan, setForm]);
   const handleFileUpload = (file, nameKey, fileKey) => {
     if (!file) return;
     setForm((p) => ({ ...p, [nameKey]: file.name, [fileKey]: file }));

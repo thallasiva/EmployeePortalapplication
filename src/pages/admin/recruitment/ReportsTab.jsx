@@ -62,24 +62,28 @@ function ReportsTab() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-    getDashboard(),
-    getPipelineReport({ fromDate, toDate }),
-    listRecruiters()]
-    ).
-    then(([d, r, rec]) => {
+      getDashboard(),
+      listRecruiters()
+    ]).then(([d, rec]) => {
       setDash(d);
-      setReport(r);
       setRecruiters(rec || []);
-    }).
-    catch(console.error).
-    finally(() => setLoading(false));
+    })
+    .catch(console.error)
+    .finally(() => setLoading(false));
   }, []);
+  useEffect(() => {
+    setRepLoading(true);
+    getPipelineReport({ fromDate, toDate })
+      .then(setReport)
+      .catch(console.error)
+      .finally(() => setRepLoading(false));
+  }, [fromDate, toDate]);
   const applyFilter = () => {
     setRepLoading(true);
-    getPipelineReport({ fromDate, toDate, recruiterId: recruiterId || undefined }).
-    then(setReport).
-    catch(console.error).
-    finally(() => setRepLoading(false));
+    getPipelineReport({ fromDate, toDate, recruiterId: recruiterId || undefined })
+    .then(setReport)
+    .catch(console.error)
+    .finally(() => setRepLoading(false));
   };
   const pipelineSegments = (dash?.candidatePipeline || []).map((r, i) => ({
     name: r.status,
@@ -96,8 +100,8 @@ function ReportsTab() {
     const accepted = Number(dash?.stats?.offers_accepted || 0);
     return [
     { name: "Pending", value: pending, color: "#f97316" },
-    { name: "Accepted", value: accepted, color: "#22c55e" }].
-    filter((s) => s.value > 0);
+    { name: "Accepted", value: accepted, color: "#22c55e" }]
+    .filter((s) => s.value > 0);
   })();
   const stats = dash?.stats || {};
   const tth = report?.timeToHire || {};

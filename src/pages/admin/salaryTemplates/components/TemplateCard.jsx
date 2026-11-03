@@ -54,8 +54,8 @@ const TemplateCard = React.memo(function TemplateCard({ t, onEdit, onDelete }) {
             ["Statutory Bonus", yn(t.bonus_applicable)],
             ["Insurance (annual)", money(t.insurance_cost)],
             ["Other Allowances", money(t.other_allowances)],
-            ["Professional Tax", money(t.professional_tax)]].
-            map(([k, v]) =>
+            ["Professional Tax", money(t.professional_tax)]]
+            .map(([k, v]) =>
             <tr key={k}>
                   <td className="py-1.5 text-gray-400 w-40">{k}</td>
                   <td className="py-1.5 font-medium text-gray-700 text-right">{v}</td>

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from "react";
-import { Loader2, Zap, MapPin, Briefcase, Building2, Link2, GitBranch, Clock, DollarSign, BookOpen, Award, Globe, ChevronDown, ChevronUp, CheckCircle2, XCircle, User, Star, Sparkles, FileText, FolderOpen } from "lucide-react";
+import { Loader2, Zap, MapPin, Briefcase, Building2, Link2, GitBranch, Clock, DollarSign, BookOpen, Award, Globe, ChevronDown, ChevronUp, User, Star, Sparkles, FileText, FolderOpen } from "lucide-react";
 import { Btn, Select, Field } from "../../shared";
-import { uploadResumeMatch, getErrorMessage } from "../../../../../api/recruitment.api";
+import { uploadResumeMatch } from "../../../../../api/recruitment.api";
 import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
 import ScoreCircle from "./ScoreCircle";
 import RecBadge from "./RecBadge";

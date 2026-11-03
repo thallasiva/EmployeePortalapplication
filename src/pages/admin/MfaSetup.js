@@ -11,9 +11,9 @@ const MfaSetup = () => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("status");
   useEffect(() => {
-    getMfaStatus().
-    then((d) => setStatus(d.mfaEnabled)).
-    catch(() => setStatus(false));
+    getMfaStatus()
+    .then((d) => setStatus(d.mfaEnabled))
+    .catch(() => setStatus(false));
   }, []);
   const handleStartSetup = async () => {
     setLoading(true);setError("");

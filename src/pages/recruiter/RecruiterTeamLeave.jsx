@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Pagination, { usePagination } from "../../components/Pagination";
 import { Check, X } from "lucide-react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
-import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../utils/ToastControllers";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
 const STATUS_BADGE = { Pending: "pending", Approved: "approved", Rejected: "rejected" };

@@ -34,10 +34,11 @@ export function useOrgChart() {
     const chain = [];
     let currentId = manager.reporting_to;
     const visited = new Set([managerId]);
+    const employeesById = new Map(flat.map((employee) => [employee.employee_id, employee]));
     while (currentId) {
       if (visited.has(currentId)) break;
       visited.add(currentId);
-      const emp = flat.find((e) => e.employee_id === currentId);
+      const emp = employeesById.get(currentId);
       if (!emp) break;
       chain.unshift(emp);
       currentId = emp.reporting_to;

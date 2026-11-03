@@ -1,16 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  listInterviews,
-  scheduleInterview,
-  submitFeedback as apiSubmitFeedback,
-  submitRecruiterFeedback as apiSubmitRecruiterFeedback,
-  listCandidates,
-  listJobs,
-  getErrorMessage,
-} from "../../../../../api/recruitment.api";
-import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
-import { BLANK_INT, BLANK_FB, LEVEL_ORDER } from "../constants";
-import { INTERVIEW_LEVELS, INTERVIEW_TYPES } from "../mockData";
+import { listInterviews, scheduleInterview, submitFeedback as apiSubmitFeedback, submitRecruiterFeedback as apiSubmitRecruiterFeedback, listCandidates, listJobs } from "../../../../../api/recruitment.api";
+import { apiErrorToast, successToast } from "../../../../../utils/ToastControllers";
+import { BLANK_INT, BLANK_FB } from "../constants";
+import { INTERVIEW_LEVELS } from "../mockData";
 export function useInterviewsPage(role) {
   const [interviews, setInterviews] = useState([]);
   const [candidates, setCandidates] = useState([]);

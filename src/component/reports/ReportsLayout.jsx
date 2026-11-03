@@ -75,12 +75,12 @@ export function ReportAvatar({ name, size = "md" }) {
     </span>);
 }
 function getInitials(name) {
-  return name.
-  split(" ").
-  map((p) => p[0]).
-  join("").
-  slice(0, 2).
-  toUpperCase();
+  return name
+  .split(" ")
+  .map((p) => p[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase();
 }
 function getAvatarColor(name) {
   const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6"];

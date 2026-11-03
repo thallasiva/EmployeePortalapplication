@@ -60,10 +60,10 @@ function toBoolean(value) {
   return v === "yes" || v === "true" || v === "1" || v === "y";
 }
 export function parseHolidayCsv(text) {
-  const lines = String(text).
-  split(/\r?\n/).
-  map((l) => l.trim()).
-  filter((l) => l.length > 0);
+  const lines = String(text)
+  .split(/\r?\n/)
+  .map((l) => l.trim())
+  .filter((l) => l.length > 0);
   if (lines.length < 2) {
     throw new Error("The file must contain a header row and at least one holiday row.");
   }

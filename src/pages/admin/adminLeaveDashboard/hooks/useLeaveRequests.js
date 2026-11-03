@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { listLeaveRequests, reviewLeaveRequest } from '../../../../api/leaveRequest.api';
-import { apiErrorToast, successToast, errorToast } from '../../../../utils/ToastControllers';
+import { apiErrorToast, successToast } from '../../../../utils/ToastControllers';
 import {
   countApprovedThisMonth,
   getApprovedLeavesToday,

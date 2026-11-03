@@ -125,7 +125,6 @@ export default function AdminPayrollOverview() {
   );
   const futureSel = isFuture(selected.month, selected.year);
   const locked = !!selRun?.is_locked;
-  const hasPayslips = payslips.length > 0;
   const selLabel = `${MONTHS[selected.month - 1]} ${selected.year}`;
   const quickActions = [
     { label: "Calculate Payroll", icon: <Calculator size={15} />, primary: true, onClick: handleProcess, disabled: processing || futureSel || locked },

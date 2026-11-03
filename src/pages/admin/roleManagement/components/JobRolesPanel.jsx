@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Briefcase, ChevronDown, ChevronRight, CheckCircle, ArrowRight } from "lucide-react";
 import apiClient from "../../../../api/client";
-import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../../../utils/ToastControllers";
 import { JOB_ROLES } from "../constants";
 const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignationSaved, onEmployeesRefresh }) {
   const [q, setQ] = useState("");
@@ -11,7 +11,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
   useEffect(() => {
     setPickedDesig(selected?.emp_job_title || selected?.designation_name || null);
     setQ("");
-  }, [selected?.employee_id]);
+  }, [selected?.employee_id, selected?.designation_name, selected?.emp_job_title]);
   const toggle = (cat) => setExpanded((p) => ({ ...p, [cat]: !p[cat] }));
   const filtered = q.trim()
     ? JOB_ROLES

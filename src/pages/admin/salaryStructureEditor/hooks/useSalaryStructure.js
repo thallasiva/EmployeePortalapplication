@@ -1,4 +1,4 @@
-import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { ERR } from "../../../../utils/toastMessages";
 import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -6,7 +6,7 @@ import {
   computeCTC, createStructure, getStructure,
   listComponents, removeStructureLine, updateStructure,
 } from "../../../../api/salaryComponent.api";
-import { getErrorMessage } from "../../../../api/client";
+import "../../../../api/client";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
 import { PREVIEW_CTC } from "../constants";
 import { executePanelSave } from "../utils/panelSave";

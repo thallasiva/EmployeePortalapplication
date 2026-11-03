@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  listJobs, listMatchesByJob, computeResumeMatch, getErrorMessage,
-} from "../../../../../api/recruitment.api";
-import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
+import { listJobs, listMatchesByJob, computeResumeMatch } from "../../../../../api/recruitment.api";
+import { apiErrorToast } from "../../../../../utils/ToastControllers";
 export function useResumeMatch() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState("");

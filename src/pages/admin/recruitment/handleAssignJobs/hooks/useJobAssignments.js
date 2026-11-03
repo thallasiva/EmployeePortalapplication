@@ -4,7 +4,7 @@ export function useJobAssignments() {
   const [selectedJobs, setSelectedJobs] = useState([]);
   const [selectedRecruiters, setSelectedRecruiters] = useState(["Mike W."]);
   const [assignMessage, setAssignMessage] = useState("");
-  const [topJobs, setTopJobs] = useState(["JOB-001"]);
+  const [topJobs] = useState(["JOB-001"]);
   const [jobAssignments, setJobAssignments] = useState({});
   const [openRecruiterDropdown, setOpenRecruiterDropdown] = useState(null);
   const toggleJobSelection = useCallback((jobId) => {

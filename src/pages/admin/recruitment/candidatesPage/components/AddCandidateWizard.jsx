@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 import { Btn, SlideOver } from "../../shared";
 import { parseResume, quickResumeMatch, uploadResumeMatch, createCandidate, getErrorMessage } from "../../../../../api/recruitment.api";

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { listInterviews, submitFeedback, getErrorMessage } from "../../../../../api/recruitment.api";
-import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
-import { LEVEL_ORDER, NO_NEXT_STATUSES } from "../constants";
+import { listInterviews, submitFeedback } from "../../../../../api/recruitment.api";
+import { apiErrorToast, successToast } from "../../../../../utils/ToastControllers";
+import { LEVEL_ORDER } from "../constants";
 import InterviewPipeline from "./InterviewPipeline";
 const TYPE_ICON = { "Video Call": "Video", "Phone": "Phone", "In-Person": "Office", "Teams": "Teams" };
 function dotBgCls(iv) {
@@ -22,7 +22,6 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
   const [loading, setLoading] = useState(false);
   const [cs, setCs] = useState({});
   const canComment = role === 4;
-  const canMoveNext = (role === 1 || role === 3 || role === 5) && !NO_NEXT_STATUSES.includes(candidateStatus);
   useEffect(() => {
     if (!candidateId) return;
     setLoading(true);

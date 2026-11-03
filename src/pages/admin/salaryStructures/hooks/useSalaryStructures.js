@@ -1,4 +1,4 @@
-import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { ERR } from "../../../../utils/toastMessages";
 import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -8,7 +8,7 @@ import {
   listComponents,
 } from "../../../../api/salaryComponent.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
-import { getErrorMessage } from "../../../../api/client";
+import "../../../../api/client";
 export function useSalaryStructures() {
   const [structures, setStructures] = useState([]);
   const [allComponents, setAllComp] = useState([]);

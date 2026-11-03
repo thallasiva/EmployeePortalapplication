@@ -46,7 +46,7 @@ const BalancesTab = memo(() => {
     } catch (e) { showToast(e.message, "error"); }
     finally { setAccruing(false); }
   };
-  const leaveTypes = data?.leaveTypes || [];
+  const leaveTypes = useMemo(() => data?.leaveTypes || [], [data?.leaveTypes]);
   const filtered = useMemo(() => {
     if (!data) return [];
     const q = search.toLowerCase();

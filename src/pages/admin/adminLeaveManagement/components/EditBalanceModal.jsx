@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
 import { cssClass } from "../../../../utils/classStyles";
-import { B } from "../constants/leaveConstants";
+import "../constants/leaveConstants";
 import Btn from "./Btn";
 const Field = ({ k, label, form, setForm }) => (
   <div>

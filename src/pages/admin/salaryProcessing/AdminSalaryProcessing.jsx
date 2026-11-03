@@ -301,7 +301,7 @@ export default function AdminSalaryProcessing() {
     const d = new Date(y, m - 1 + delta, 1);
     return { month: d.getMonth() + 1, year: d.getFullYear() };
   });
-  const rows = data?.employees || [];
+  const rows = useMemo(() => data?.employees || [], [data?.employees]);
   const departments = useMemo(() => [...new Set(rows.map((r) => r.department).filter(Boolean))].sort(), [rows]);
   const visible = rows.filter((r) =>
   (!search || `${r.name} ${r.emp_code}`.toLowerCase().includes(search.toLowerCase())) && (

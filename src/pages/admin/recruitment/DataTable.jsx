@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Badge from "./Badge";
 import { badgeColor } from "./data";
 import Pagination, { usePagination } from "../../../components/Pagination";

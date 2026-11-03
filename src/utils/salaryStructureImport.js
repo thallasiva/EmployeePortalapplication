@@ -72,10 +72,10 @@ function toNumber(value) {
   return Number.isNaN(num) ? undefined : num;
 }
 export function parseSalaryStructureCsv(text) {
-  const lines = String(text).
-  split(/\r?\n/).
-  map((l) => l.trim()).
-  filter((l) => l.length > 0);
+  const lines = String(text)
+  .split(/\r?\n/)
+  .map((l) => l.trim())
+  .filter((l) => l.length > 0);
   if (lines.length < 2) {
     throw new Error("The file must contain a header row and at least one row.");
   }

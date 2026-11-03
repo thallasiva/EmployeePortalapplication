@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogIn, LogOut, Clock, AlertCircle, CheckCircle2, CalendarX, Umbrella, Coffee, ArrowRightLeft, ArrowRight, MapPin } from "lucide-react";
+import { LogIn, LogOut, AlertCircle, CheckCircle2, CalendarX, Umbrella, Coffee, ArrowRightLeft, ArrowRight, MapPin } from "lucide-react";
 const SIX_HOURS_MINUTES = 360;
 const InfoRow = ({ label, value, accent }) => (
   <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">

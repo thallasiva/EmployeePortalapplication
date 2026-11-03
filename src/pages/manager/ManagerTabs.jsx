@@ -24,9 +24,9 @@ const ManagerTabs = () =>
   const [appraisalActive, setAppraisalActive] = useState(false);
   useEffect(() =>
   {
-    getAppraisalCycle().
-    then((c) => setAppraisalActive(c?.status === "active")).
-    catch(() => {});
+    getAppraisalCycle()
+    .then((c) => setAppraisalActive(c?.status === "active"))
+    .catch(() => {});
   }, []);
   return (
     <div className="flex flex-wrap gap-2 mb-4">

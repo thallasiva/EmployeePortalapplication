@@ -85,15 +85,15 @@ export default function HolidayCalendar()
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    listHolidays({ year, limit: 200 }).
-    then(({ data }) => {
+    listHolidays({ year, limit: 200 })
+    .then(({ data }) => {
       if (cancelled) return;
       setHolidays(groupHolidaysByMonth(data));
-    }).
-    catch(() => {
+    })
+    .catch(() => {
       if (!cancelled) setHolidays(emptyMonthMap());
-    }).
-    finally(() => {
+    })
+    .finally(() => {
       if (!cancelled) setLoading(false);
     });
     return () => {
@@ -114,9 +114,9 @@ export default function HolidayCalendar()
       month
     }))
     );
-    const upcoming = allHolidays.
-    filter((holiday) => holiday.dateObj >= today).
-    sort((a, b) => a.dateObj - b.dateObj)[0];
+    const upcoming = allHolidays
+    .filter((holiday) => holiday.dateObj >= today)
+    .sort((a, b) => a.dateObj - b.dateObj)[0];
     if (!upcoming) return null;
     const diffDays = Math.round((upcoming.dateObj - today) / (1000 * 60 * 60 * 24));
     return { ...upcoming, diffDays };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Upload, CheckCircle2, Clock, XCircle, Trash2, Download, AlertCircle, Lock, RefreshCw, AlertTriangle } from "lucide-react";
-import { getMyITDeclaration, getMyProofs, uploadProof, deleteProof, downloadProofUrl } from "../../../api/itDeclaration.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { getMyITDeclaration, getMyProofs, uploadProof, deleteProof, downloadProofUrl } from "../../../api/itDeclaration.api";import { cssClass } from "../../../utils/classStyles";
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
 const STATUS_CFG = {
   verified: { bg: "#dcfce7", color: "#15803d", icon: <CheckCircle2 size={12} />, label: "Verified" },
@@ -123,8 +123,8 @@ export default function ProofInvestment() {
         { label: "Uploaded", value: proofs.length, color: "#f18200" },
         { label: "Pending", value: pendingCount, color: "#a16207" },
         { label: "Verified", value: proofs.filter((p) => p.status === "verified").length, color: "#15803d" },
-        { label: "Rejected", value: rejectedCount, color: "#dc2626" }].
-        map((s) =>
+        { label: "Rejected", value: rejectedCount, color: "#dc2626" }]
+        .map((s) =>
         <div key={s.label} className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10,
           padding: "12px 16px", textAlign: "center" })}>
               <p className={cssClass({ fontSize: 22, fontWeight: 800, color: s.color, margin: 0 })}>{s.value}</p>

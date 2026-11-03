@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { RefreshCw, Eye } from "lucide-react";
 import { computeCTC } from "../../../api/salaryComponent.api";
-import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
+import { apiErrorToast } from "../../../utils/ToastControllers";
 import { fmtINR } from "./salaryHelpers";
 function Section({ title, items, colorClass }) {
   const total = items.reduce((s, c) => s + (c.monthly_amount || 0), 0);
@@ -90,8 +90,8 @@ export default function SalaryPreviewTab({ structureId }) {
               {[
             ["Total Fixed Pay (Annual)", earnings.filter((c) => c.frequency === "Monthly").reduce((s, c) => s + (c.annual_amount || 0), 0)],
             ["Total Variable Pay (Annual)", earnings.filter((c) => c.frequency !== "Monthly").reduce((s, c) => s + (c.annual_amount || 0), 0)],
-            ["Employer Contributions (Annual)", employer.reduce((s, c) => s + (c.annual_amount || 0), 0)]].
-            map(([label, val]) =>
+            ["Employer Contributions (Annual)", employer.reduce((s, c) => s + (c.annual_amount || 0), 0)]]
+            .map(([label, val]) =>
             <div key={label} className="flex justify-between text-sm">
                   <span className="opacity-70">{label}</span>
                   <span className="font-medium">{fmtINR(val)}</span>

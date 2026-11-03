@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 const ScheduleInterview = ({ candidate, onSave }) =>
 {
-  const [form, setForm] = useState({
+  const [, setForm] = useState({
     candidate: candidate?.Name || "",
     requirement: candidate?.["Job ID"] || "",
     interviewer: "",

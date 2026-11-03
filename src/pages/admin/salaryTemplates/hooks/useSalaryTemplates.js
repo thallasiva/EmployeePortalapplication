@@ -1,4 +1,4 @@
-import { getApiError, ERR } from "../../../../utils/toastMessages";
+import { ERR } from "../../../../utils/toastMessages";
 import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -6,7 +6,7 @@ import {
   updateSalaryTemplate, deleteSalaryTemplate
 } from "../../../../api/salaryTemplate.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
-import { getErrorMessage } from "../../../../api/client";
+import "../../../../api/client";
 export function useSalaryTemplates() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);

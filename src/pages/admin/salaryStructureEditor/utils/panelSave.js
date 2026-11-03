@@ -2,8 +2,8 @@ import {
   createComponent,
   updateStructure,
 } from "../../../../api/salaryComponent.api";
-import { getErrorMessage } from "../../../../api/client";
-import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
+import "../../../../api/client";
+import { apiErrorToast, successToast } from "../../../../utils/ToastControllers";
 /**
  * Handles saving a component from the Add/Edit panel.
  * Returns true on success, false on failure.

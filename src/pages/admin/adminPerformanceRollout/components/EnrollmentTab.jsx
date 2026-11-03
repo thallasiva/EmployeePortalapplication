@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { getEnrollments, enrollEmployees, unenrollEmployee } from "../../../../api/appraisal.api";
 import { listEmployees } from "../../../../api/employee.api";

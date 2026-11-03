@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { Search, ChevronRight, Navigation } from "lucide-react";
 import { CATEGORIES } from "../constants/categories";
-import { BRAND, BRAND_BORDER, BRAND_LIGHT } from "../utils/helpdeskUtils";
+import { BRAND, BRAND_BORDER } from "../utils/helpdeskUtils";
 import { cssClass } from "../../../../utils/classStyles";
 /**
  * The landing screen of the Helpdesk — shows the category list and a search bar.

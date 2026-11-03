@@ -1,11 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  listCandidates, listJobs, listRecruiters,
-  updateCandidateStatus as apiUpdateStatus,
-  scheduleInterview, listInterviews, getErrorMessage
-} from "../../../../../api/recruitment.api";
-import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
-import { BLANK_INT, LEVEL_ORDER } from "../constants";
+import { listCandidates, listJobs, listRecruiters, updateCandidateStatus as apiUpdateStatus } from "../../../../../api/recruitment.api";
+import { apiErrorToast, successToast } from "../../../../../utils/ToastControllers";
+import "../constants";
 export function useCandidatesData({ role }) {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);

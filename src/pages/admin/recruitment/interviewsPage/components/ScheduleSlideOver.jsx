@@ -16,7 +16,6 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
   const isTeams = form.interviewType === "Teams";
   const isGoogleMeet = form.interviewType === "GoogleMeet";
   const isZoom = form.interviewType === "Zoom";
-  const isOnline = isTeams || isGoogleMeet || isZoom;
   return (
     <SlideOver
       open={open}

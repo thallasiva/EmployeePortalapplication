@@ -18,7 +18,7 @@ import {
   shiftWeek,
   startOfWeek,
   summarizeWeek } from
-"../../../utils/reportWeekUtils";import { cssClass, joinClasses } from "../../../utils/classStyles";
+"../../../utils/reportWeekUtils";import { cssClass } from "../../../utils/classStyles";
 const STATUS_FILTER_OPTIONS = [
 { value: "", label: "All Status" },
 { value: "Present", label: "Present" },

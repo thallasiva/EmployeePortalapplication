@@ -19,10 +19,10 @@ export default function UserReport() {
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("All");
   useEffect(() => {
-    listEmployees({ limit: 500 }).
-    then((data) => setEmployees(Array.isArray(data) ? data : [])).
-    catch(() => setEmployees([])).
-    finally(() => setLoading(false));
+    listEmployees({ limit: 500 })
+    .then((data) => setEmployees(Array.isArray(data) ? data : []))
+    .catch(() => setEmployees([]))
+    .finally(() => setLoading(false));
   }, []);
   const departments = useMemo(() => {
     const depts = [...new Set(employees.map((e) => getDepartmentName(e)).filter(Boolean))].sort();
@@ -49,8 +49,8 @@ export default function UserReport() {
         { label: "Total Users", value: employees.length, barWidth: "100%", barColor: "#f18200" },
         { label: "Active", value: activeCount, barWidth: `${employees.length ? activeCount / employees.length * 100 : 0}%`, barColor: "#16a34a" },
         { label: "Inactive", value: inactiveCount, barWidth: `${employees.length ? inactiveCount / employees.length * 100 : 0}%`, barColor: "#ef4444" },
-        { label: "Departments", value: deptCount, barWidth: "100%", barColor: "#f97316" }].
-        map((s) =>
+        { label: "Departments", value: deptCount, barWidth: "100%", barColor: "#f97316" }]
+        .map((s) =>
         <div key={s.label} className="report-stat-card">
             <p className="report-stat-card__value">{s.value}</p>
             <p className="report-stat-card__label">{s.label}</p>

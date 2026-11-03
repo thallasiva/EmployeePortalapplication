@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useFinalSettlement } from "../hooks/useFinalSettlement";
-import { fmtINR } from "../utils/formatters";
+import "../utils/formatters";
 import { ORANGE } from "../constants";
 import { cssClass } from "../../../../utils/classStyles";
 import Table from "./Table";

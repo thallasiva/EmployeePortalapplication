@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import {
-  listOffers, createOffer, releaseOffer, respondOffer,
-  listCandidates, listJobs, getErrorMessage, createOnboarding
-} from "../../../../../api/recruitment.api";
+import { listOffers, createOffer, releaseOffer, respondOffer, listCandidates, listJobs, createOnboarding } from "../../../../../api/recruitment.api";
 import { getJoiningByOffer, resendJoiningInvitation } from "../../../../../api/joining.api";
 import { apiErrorToast, successToast, errorToast } from "../../../../../utils/ToastControllers";
 import { BLANK_OFFER } from "../constants";

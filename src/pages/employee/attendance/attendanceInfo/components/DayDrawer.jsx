@@ -33,7 +33,7 @@ const PUNCH_CFG = {
 export default function DayDrawer({ entry, swipesLoading, onClose }) {
   const punches = useMemo(() => entry?.raw?.punches || [], [entry]);
   if (!entry) return null;
-  const { raw, processed, status } = entry;
+  const { raw, status } = entry;
   const code       = status?.code;
   const accentColor = STATUS_COLOR[code] || "#f18200";
   const checkIn    = fmtTime(raw?.check_in);

@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar } from "lucide-react";
+import "lucide-react";
 import { Modal, Btn, Select } from "../../shared";
 import CandidateStatusBadge from "../../../../../features/recruitment/components/CandidateStatusBadge";
 import { DetailRow } from "../../shared";

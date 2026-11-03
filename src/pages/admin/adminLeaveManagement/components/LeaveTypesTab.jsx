@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 import { listLeaveTypes, createLeaveType, updateLeaveType, deleteLeaveType } from "../../../../api/leaveType.api";
 import { cssClass } from "../../../../utils/classStyles";
@@ -11,14 +11,14 @@ const LeaveTypesTab = memo(() => {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [toast, setToast]     = useState(null);
-  const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
-  const load = async () => {
+  const showToast = useCallback((msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); }, []);
+  const load = useCallback(async () => {
     setLoading(true);
     try { const r = await listLeaveTypes(); setTypes(Array.isArray(r) ? r : r.data || []); }
     catch (e) { showToast(e.message, "error"); }
     finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, []);
+  }, [showToast]);
+  useEffect(() => { load(); }, [load]);
   const handleSave = async (form) => {
     form.leave_type_id
       ? await updateLeaveType(form.leave_type_id, form)

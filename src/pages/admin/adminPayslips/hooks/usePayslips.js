@@ -3,7 +3,7 @@ import {
   listPayslips, generateAllPayslips, markPayslipPaid, getPayslipFull,
 } from "../../../../api/payroll.api";
 import { downloadPayslipPdf } from "../../../../utils/payslipPdfGenerator";
-import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../../../utils/ToastControllers";
 export function usePayslips(month, year) {
   const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(true);

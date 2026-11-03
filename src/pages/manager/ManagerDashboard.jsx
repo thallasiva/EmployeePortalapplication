@@ -6,13 +6,13 @@ import { getManagerFullDashboard } from "../../api/timesheet.api";
 import ManagerTabs from "./ManagerTabs";
 import RoleDashboardWidgets from "../../component/RoleDashboardWidgets";
 import "../admin/adminDashboard.css";
-import { cssClass, joinClasses } from "../../utils/classStyles";function getInitials(name) {
-  return (name || "?").
-  split(" ").
-  map((n) => n[0]).
-  join("").
-  slice(0, 2).
-  toUpperCase();
+import { cssClass } from "../../utils/classStyles";function getInitials(name) {
+  return (name || "?")
+  .split(" ")
+  .map((n) => n[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase();
 }
 function fmt(val) {
   if (!val) return "—";
@@ -57,10 +57,10 @@ const ManagerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
-    getManagerFullDashboard().
-    then(setData).
-    catch(() => setError("Failed to load dashboard data.")).
-    finally(() => setLoading(false));
+    getManagerFullDashboard()
+    .then(setData)
+    .catch(() => setError("Failed to load dashboard data."))
+    .finally(() => setLoading(false));
   }, []);
   const s = data?.summary || {};
   const team = data?.team || [];

@@ -6,10 +6,10 @@ import {
 import { listEmployees } from "../../../api/employee.api";
 import { getDepartmentName } from "../../../utils/employeeDisplay";import { cssClass, joinClasses } from "../../../utils/classStyles";
 import { User } from "lucide-react";
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function EmployeeBarChart({ employees }) {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const data = useMemo(() => {
-    const counts = months.map((m, i) => {
+    const counts = MONTHS.map((m, i) => {
       const active = employees.filter((e) => {
         if (!e.emp_joining_date) return false;
         const d = new Date(e.emp_joining_date);
@@ -45,10 +45,10 @@ export default function EmployeeReport() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   useEffect(() => {
-    listEmployees({ limit: 500 }).
-    then(({ data }) => setEmployees(data || [])).
-    catch(() => {}).
-    finally(() => setLoading(false));
+    listEmployees({ limit: 500 })
+    .then(({ data }) => setEmployees(data || []))
+    .catch(() => {})
+    .finally(() => setLoading(false));
   }, []);
   const active = employees.filter((e) => e.employee_status === "Active").length;
   const inactive = employees.filter((e) => e.employee_status !== "Active").length;
@@ -69,8 +69,8 @@ export default function EmployeeReport() {
     const q = search.trim().toLowerCase();
     if (!q) return employees;
     return employees.filter((e) =>
-    [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title].
-    some((v) => (v || "").toLowerCase().includes(q))
+    [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title]
+    .some((v) => (v || "").toLowerCase().includes(q))
     );
   }, [employees, search]);
   if (loading) return <div className="report-page"><p className="text-sm text-gray-400 p-6">Loading…</p></div>;

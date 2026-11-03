@@ -7,8 +7,8 @@ export function useReimbursement() {
   const [loading, setLoading] = useState(true);
   const [entitlements, setEntitlements] = useState([]);
   useEffect(() => {
-    getMySalaryStructure().
-    then((s) => {
+    getMySalaryStructure()
+    .then((s) => {
       if (s?.basic) {
         const b = buildSalaryBreakdown(s);
         setEntitlements([
@@ -17,9 +17,9 @@ export function useReimbursement() {
           { title: "Medical Allowance", annual: b.medicalAllowance * 12, claimed: 0 }
         ]);
       }
-    }).
-    catch(() => {}).
-    finally(() => setLoading(false));
+    })
+    .catch(() => {})
+    .finally(() => setLoading(false));
   }, []);
   const fyLabel = useMemo(() => getFiscalYearRangeLabel(fiscalYearStart), [fiscalYearStart]);
   const totalAnnual = useMemo(() => entitlements.reduce((a, e) => a + e.annual, 0), [entitlements]);

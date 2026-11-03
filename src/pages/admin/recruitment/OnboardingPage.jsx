@@ -6,12 +6,8 @@ import
     Table, Modal, SearchBar, DetailRow, Tabs
   } from
   "./shared";
-import
-  {
-    listOnboarding, getOnboarding, updateOnboardingTask, finalizeOnboarding, getErrorMessage
-  } from
-  "../../../api/recruitment.api";
-import { apiErrorToast, successToast, errorToast } from "../../../utils/ToastControllers";
+import { listOnboarding, getOnboarding, updateOnboardingTask, finalizeOnboarding } from "../../../api/recruitment.api";
+import { apiErrorToast, successToast } from "../../../utils/ToastControllers";
 const FORMALITY_STEPS = [
   { key: "employee_info_submitted", label: "Employee Info Submitted", boolean: true },
   { key: "photo_uploaded", label: "Photo Uploaded", boolean: true },
@@ -165,8 +161,8 @@ export default function OnboardingPage({ role })
         {[
           { label: "Total", count: records.length, colorCls: "text-gray-500", bgCls: "bg-gray-100" },
           { label: "In Progress", count: records.filter((r) => r.current_status === "In Progress").length, colorCls: "text-amber-600", bgCls: "bg-amber-100" },
-          { label: "Completed", count: records.filter((r) => r.current_status === "Completed").length, colorCls: "text-emerald-600", bgCls: "bg-emerald-100" }].
-          map((s) =>
+          { label: "Completed", count: records.filter((r) => r.current_status === "Completed").length, colorCls: "text-emerald-600", bgCls: "bg-emerald-100" }]
+          .map((s) =>
             <div key={s.label} className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full ${s.bgCls}`}>
               <span className={`text-base font-bold ${s.colorCls}`}>{s.count}</span>
               <span className={`text-[12px] font-medium ${s.colorCls}`}>{s.label}</span>

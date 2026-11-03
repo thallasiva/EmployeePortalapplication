@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Globe, Phone, Mail, MapPin, ExternalLink, Building2 } from "lucide-react";
 const COMPANIES = [
 {
@@ -60,8 +60,8 @@ export default function DetailsScreen() {
               { icon: <Mail size={14} />, label: "Email", value: co.email, href: `mailto:${co.email}` },
               { icon: <Phone size={14} />, label: "Phone", value: co.phone || "—", href: co.phone ? `tel:${co.phone}` : null },
               { icon: <Globe size={14} />, label: "Website", value: co.website.replace("https://", ""), href: co.website },
-              { icon: <MapPin size={14} />, label: "Address", value: co.address }].
-              map(({ icon, label, value, href }) =>
+              { icon: <MapPin size={14} />, label: "Address", value: co.address }]
+              .map(({ icon, label, value, href }) =>
               <div key={label} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
                   <div className="w-7 h-7 rounded-lg bg-brand/10 text-brand flex items-center justify-center shrink-0">{icon}</div>
                   <div className="min-w-0">
@@ -82,8 +82,8 @@ export default function DetailsScreen() {
               {[
               { label: "Industry", value: co.industry },
               { label: "Founded", value: co.founded },
-              { label: "Company Size", value: co.size }].
-              map(({ label, value }) =>
+              { label: "Company Size", value: co.size }]
+              .map(({ label, value }) =>
               <div key={label} className="p-3 bg-gray-50 rounded-xl">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">{label}</p>
                   <p className="text-sm font-semibold text-gray-800 mt-0.5">{value}</p>

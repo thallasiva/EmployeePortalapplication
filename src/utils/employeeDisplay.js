@@ -19,13 +19,13 @@ export function getEmployeeDisplayName(emp) {
 }
 export function getEmployeeInitials(emp) {
   const name = getEmployeeDisplayName(emp);
-  return name.
-  split(" ").
-  filter(Boolean).
-  map((p) => p[0]).
-  join("").
-  slice(0, 2).
-  toUpperCase();
+  return name
+  .split(" ")
+  .filter(Boolean)
+  .map((p) => p[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase();
 }
 export function getDeptBadgeClass(departmentName) {
   return DEPT_BADGE[departmentName] || "emp-card__dept--default";

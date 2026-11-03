@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Inbox, CheckCircle2, AlertCircle, Clock, Search, Eye, RefreshCw, Download, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Inbox, CheckCircle2, AlertCircle, Clock, Search, Eye, RefreshCw, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { emailLogsApi } from "../../../../../api/settings.api";
 import { Toast } from "../components/SharedUI";
 const PER = 10;

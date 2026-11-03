@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RM_TEAM_MEMBERS, SHIFT_LABEL } from "../../data/managerData";
+import { SHIFT_LABEL } from "../../data/managerData";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
 const MONTHS = ["January", "February", "March", "April", "May", "June",
@@ -136,8 +136,8 @@ export default function TeamAttendanceAppraisal() {
         { label: "Team Members", value: summary.totalMembers, color: "text-brand" },
         { label: "Avg Attendance Rate", value: `${summary.avgAttendance}%`, color: "text-emerald-600" },
         { label: "Excellent Attendance (≥95%)", value: summary.fullPresent, color: "text-blue-600" },
-        { label: "Needs Attention (<85%)", value: summary.needsAttention, color: "text-red-500" }].
-        map(({ label, value, color }) =>
+        { label: "Needs Attention (<85%)", value: summary.needsAttention, color: "text-red-500" }]
+        .map(({ label, value, color }) =>
         <div key={label} className="admin-dash-card py-4 text-center">
             <p className={`text-2xl font-bold ${color}`}>{value}</p>
             <p className="text-xs text-gray-500 mt-1">{label}</p>

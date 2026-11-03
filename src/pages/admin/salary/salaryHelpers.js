@@ -2,14 +2,14 @@ export const fmtINR = (n) =>
 n > 0 ? `₹ ${Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}` : "—";
 export const fmtPct = (n) => n != null ? `${n}%` : "—";
 export const codeFromName = (name) =>
-name.
-toUpperCase().
-replace(/[^A-Z\s]/g, "").
-trim().
-split(/\s+/).
-map((w) => w.slice(0, 3)).
-join("_").
-slice(0, 10);
+name
+.toUpperCase()
+.replace(/[^A-Z\s]/g, "")
+.trim()
+.split(/\s+/)
+.map((w) => w.slice(0, 3))
+.join("_")
+.slice(0, 10);
 export const CALC_TYPES = ["Percentage", "Fixed Amount", "Formula"];
 export const CATEGORIES = ["Earning", "Deduction", "Employer Contribution"];
 export const FREQUENCIES = ["Monthly", "Annual", "One-Time"];

@@ -1,4 +1,4 @@
-import { cssClass, joinClasses } from "./classStyles";
+import { cssClass } from "./classStyles";
 export function getEmployeeStatus(employee) {
   if (!employee) return { label: "Unknown", bg: "#f1f5f9", color: "#64748b", border: "#e2e8f0" };
   if (employee.serving_notice) {

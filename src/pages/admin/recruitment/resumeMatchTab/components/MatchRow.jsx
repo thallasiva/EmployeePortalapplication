@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, Check, X, RefreshCw } from "lucide-react";
-import { getErrorMessage } from "../../../../../api/recruitment.api";
-import { apiErrorToast, errorToast } from "../../../../../utils/ToastControllers";
+import "../../../../../api/recruitment.api";
+import { apiErrorToast } from "../../../../../utils/ToastControllers";
 import ScoreCircle from "./ScoreCircle";
 import RecBadge from "./RecBadge";
 import SkillBar from "./SkillBar";

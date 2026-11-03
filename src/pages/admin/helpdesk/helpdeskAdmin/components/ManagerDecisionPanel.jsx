@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-import { BRAND, TEAMS, STATUS_COLOR } from "../constants";
+import { TEAMS, STATUS_COLOR } from "../constants";
 import { managerAction } from "../../../../../api/helpdesk.api";
 const ManagerDecisionPanel = React.memo(({ ticket, onUpdated }) => {
   const sc = STATUS_COLOR[ticket.status] || STATUS_COLOR["Open"];

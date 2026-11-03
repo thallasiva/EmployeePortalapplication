@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star } from "lucide-react";import { cssClass, joinClasses } from "../../utils/classStyles";
+import { Star } from "lucide-react";import { cssClass } from "../../utils/classStyles";
 export default function InterviewFeedback() {
   const [ratings, setRatings] = useState({
     technical: 5,

@@ -1,44 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import
-  {
-    Home,
-    Users,
-    Building,
-    Calendar,
-    CalendarRange,
-    LogOut,
-    Wallet,
-    Receipt,
-    Settings,
-    Headphones,
-    FileOutput,
-    UserPen,
-    Proportions,
-    Radio,
-    LayoutGrid,
-    ClipboardList,
-    HandCoins,
-    SquareCheck,
-    UserRoundPlus,
-    BookOpen,
-    UserRound,
-    Info,
-    Layers,
-    GitBranch,
-    Clock,
-    ChevronDown,
-    ChevronRight,
-    FileText,
-    Network,
-    IdCard,
-    Award,
-    UserSearch,
-    ShieldCheck,
-    FileCheck
-  } from
-  "lucide-react";
-import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview, ROLE_ADMIN, logoutUser } from "../data/auth";
+import { Home, Users, Building, Calendar, CalendarRange, LogOut, Wallet, Receipt, Settings, Headphones, FileOutput, UserPen, Proportions, Radio, LayoutGrid, HandCoins, SquareCheck, UserRoundPlus, BookOpen, UserRound, Layers, GitBranch, Clock, ChevronDown, ChevronRight, FileText, Network, IdCard, Award, UserSearch, ShieldCheck } from "lucide-react";
+import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
 import { useMenuPermissions } from "../hooks/useMenuPermissions";
 const BRAND_NAME = "HRMS";
@@ -65,19 +28,18 @@ export const Sidebar = ({ open }) =>
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const [expanded, setExpanded] = useState(null);
-  const user = getStoredUser();
-  const role = user?.role ?? ROLE_ADMIN;
+  const [user] = useState(getStoredUser);
   const { isAllowed, isSuperAdmin } = useMenuPermissions(user);
   const [appraisalActive, setAppraisalActive] = useState(false);
   useEffect(() =>
   {
     if (!isAdmin(user))
     {
-      getAppraisalCycle().
-        then((cycle) => setAppraisalActive(cycle?.status === "active")).
-        catch(() => setAppraisalActive(false));
+      getAppraisalCycle()
+        .then((cycle) => setAppraisalActive(cycle?.status === "active"))
+        .catch(() => setAppraisalActive(false));
     }
-  }, [pathname]);
+  }, [pathname, user]);
   const adminItems = [
     // ── Core ──────────────────────────────────────────────
     {
@@ -440,18 +402,15 @@ export const Sidebar = ({ open }) =>
       isRecruitmentRole(user) ?
         employeeItemsForRecruiters :
         employeeItems;
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
   const toggleAccordion = (index) =>
   {
     setExpanded(expanded === index ? null : index);
   };
-  const handleLogout = () =>
-  {
-    logoutUser();
-    navigate("/login");
-  };
   useEffect(() =>
   {
-    const activeIndex = items.findIndex(
+    const activeIndex = itemsRef.current.findIndex(
       (item) =>
         item.children &&
         item.children.some((child) =>
@@ -462,33 +421,33 @@ export const Sidebar = ({ open }) =>
     {
       setExpanded(activeIndex);
     }
-  }, [pathname, search, role]);
+  }, [pathname, search, user, isAllowed, isSuperAdmin]);
   const menuItemClass = (active, childActive = false) =>
     [
       "sidebar-menu-item",
       active ? "sidebar-menu-item-active" : "",
       childActive && !active ? "sidebar-menu-item-parent-active" : "",
       !open ? "justify-center px-2" : "",
-      "cursor-pointer"].
-      filter(Boolean).
-      join(" ");
+      "cursor-pointer"]
+      .filter(Boolean)
+      .join(" ");
   const childItemClass = (active) =>
     [
       "sidebar-child-item",
       active ? "sidebar-child-item-active" : "",
-      "cursor-pointer"].
-      filter(Boolean).
-      join(" ");
+      "cursor-pointer"]
+      .filter(Boolean)
+      .join(" ");
   return (
     <aside className={[
       "relative flex h-screen shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
-      open ? "w-[248px]" : "w-[68px]"].
-      join(" ")}>
+      open ? "w-[248px]" : "w-[68px]"]
+      .join(" ")}>
       { }
       <div className={[
         "flex min-h-[68px] items-center gap-2.5 border-b border-[#f5f5f5]",
-        open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3"].
-        join(" ")}>
+        open ? "justify-start px-4 py-3" : "justify-center px-3.5 py-3"]
+        .join(" ")}>
         <div
           aria-label={`${BRAND_NAME} logo`}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-xs font-black tracking-tight text-white shadow-sm"
@@ -513,8 +472,8 @@ export const Sidebar = ({ open }) =>
                 title={!open ? item.label : undefined}>
                 <span className={[
                   "flex shrink-0",
-                  active ? "text-white" : "text-gray-400"].
-                  join(" ")}>
+                  active ? "text-white" : "text-gray-400"]
+                  .join(" ")}>
                   {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open &&
@@ -538,8 +497,8 @@ export const Sidebar = ({ open }) =>
                 title={!open ? item.label : undefined}>
                 <span className={[
                   "flex shrink-0",
-                  childActive ? "text-brand-500" : "text-gray-400"].
-                  join(" ")}>
+                  childActive ? "text-brand-500" : "text-gray-400"]
+                  .join(" ")}>
                   {React.cloneElement(item.icon, { size: 18 })}
                 </span>
                 {open &&

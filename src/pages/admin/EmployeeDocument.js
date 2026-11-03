@@ -47,10 +47,10 @@ export function EmployeeDocument() {
   const [err, setErr] = useState("");
   const load = () => {
     setLoading(true);
-    listDocuments({ visibility: "all", limit: 100 }).
-    then(({ data }) => setDocs(data || [])).
-    catch(() => setErr("Failed to load documents")).
-    finally(() => setLoading(false));
+    listDocuments({ visibility: "all", limit: 100 })
+    .then(({ data }) => setDocs(data || []))
+    .catch(() => setErr("Failed to load documents"))
+    .finally(() => setLoading(false));
   };
   useEffect(() => {load();}, []);
   const handleUpload = async (e) => {

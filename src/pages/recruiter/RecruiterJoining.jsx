@@ -1,11 +1,11 @@
 import Pagination, { usePagination } from "../../components/Pagination";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Eye, RefreshCw, Clock, FileCheck, XCircle, Send } from "lucide-react";
 import {
   listJoiningInvitations, getJoiningDetail,
   resendJoiningInvitation } from
 "../../api/joining.api";
-import { apiErrorToast, errorToast, successToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../utils/ToastControllers";
 import RecruiterTabs from "./RecruiterTabs";
 import "../admin/adminDashboard.css";
 function fmt(v) {
@@ -46,14 +46,14 @@ export default function RecruiterJoining() {
   const [filter, setFilter] = useState("pending_verification");
   const [detail, setDetail] = useState(null);
   const [detailId, setDetailId] = useState(null);
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
-    listJoiningInvitations({ status: filter === "all" ? undefined : filter, limit: 200 }).
-    then((r) => setRows(r.data ?? [])).
-    catch(() => setRows([])).
-    finally(() => setLoading(false));
-  };
-  useEffect(() => {load();}, [filter]);
+    listJoiningInvitations({ status: filter === "all" ? undefined : filter, limit: 200 })
+    .then((r) => setRows(r.data ?? []))
+    .catch(() => setRows([]))
+    .finally(() => setLoading(false));
+  }, [filter]);
+  useEffect(() => {load();}, [load]);
   const openDetail = async (id) => {
     setDetailId(id);
     setDetail(null);
@@ -184,7 +184,7 @@ export default function RecruiterJoining() {
           style={{ background: "linear-gradient(to right, #6B5133, #8B7355)" }}>
               <div className="flex items-center gap-3">
                 {detail?.photo_url ?
-              <img src={detail.photo_url} alt="photo" className="w-10 h-10 rounded-full object-cover border-2 border-white/40" /> :
+              <img src={detail.photo_url} alt={detail.candidate_name || "Candidate profile"} className="w-10 h-10 rounded-full object-cover border-2 border-white/40" /> :
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold border-2 border-white/40"
               style={{ backgroundColor: "#d97706", color: "#fff" }}>
                       {(detail?.candidate_name || "…").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}

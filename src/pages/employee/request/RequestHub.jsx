@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, Clock, Home, Shield, FileText, CheckCircle2, XCircle, AlertCircle, Plus, ChevronRight, Filter, X } from "lucide-react";
+import { Calendar, Clock, Home, Shield, FileText, CheckCircle2, XCircle, AlertCircle, Plus, ChevronRight, X } from "lucide-react";
 // ── Static sample data ────────────────────────────────────────────────────────
 const REQUESTS = [
   { id: 1,  type: "leave",          icon: Calendar, label: "Leave Request",          title: "Casual Leave",                  date: "2026-07-28", status: "Approved",  detail: "1 day · Jul 28" },

@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  Briefcase, Calendar, FileText, Settings, Star, User, Wallet,
-  MapPin, Phone, Globe, Mail, Building2 } from
-"lucide-react";
+import { Briefcase, Calendar, FileText, Star, User, Wallet, MapPin, Phone, Globe, Mail, Building2 } from "lucide-react";
 import { getStoredUser } from "../../data/auth";
 import { getCurrentUser } from "../../api/auth.api";
 import { getEmployee } from "../../api/employee.api";
-import { getDepartmentName } from "../../utils/employeeDisplay";
-import { avatarDataUri } from "../../lib/placeholders";
+import "../../utils/employeeDisplay";
+import "../../lib/placeholders";
 import EmployeeProfile from "./EmployeeProfile";
 import DetailsScreen from "./EmployeeDetailsProfile";
 import { EmployeeDocument } from "./EmployeeDocument";
@@ -31,7 +28,7 @@ const HRMS_COMPANY = {
   web: ""
 };
 export default function Profile() {
-  const storedUser = getStoredUser();
+  const [storedUser] = useState(getStoredUser);
   const [active, setActive] = useState("employment");
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +48,7 @@ export default function Profile() {
       }
     }
     load();
-  }, []);
+  }, [storedUser]);
   const me = profile?.me || storedUser || {};
   const emp = profile?.emp || {};
   const displayName = [emp.first_name, emp.last_name].filter(Boolean).join(" ") || me.name || me.email || "Admin User";
@@ -59,7 +56,6 @@ export default function Profile() {
   const jobTitle = emp.emp_job_title || me.role_name || "Administrator";
   const shift = emp.shift || "General";
   const status = emp.employee_status || "Active";
-  const avatarSeed = emp.employee_id || me.user_id || displayName.length || 1;
   const initial = displayName.charAt(0).toUpperCase();
   const renderTab = () => {
     switch (active) {

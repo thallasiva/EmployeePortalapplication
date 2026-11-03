@@ -1,15 +1,4 @@
-import
-{
-  BarChart3,
-  Briefcase,
-  CalendarCheck,
-  FileCheck,
-  LayoutDashboard,
-  Plus,
-  Search,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { BarChart3, Briefcase, CalendarCheck, LayoutDashboard, Users } from "lucide-react";
 export const RECRUITERS = [
   { key: "Mike W.", name: "Mike Williams", email: "recruiter@yopmail.com" },
   { key: "Emily D.", name: "Emily Davis", email: "recruiter2@yopmail.com" },

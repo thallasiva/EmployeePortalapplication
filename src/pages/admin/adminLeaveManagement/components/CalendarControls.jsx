@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { ChevronLeft, ChevronRight, Calendar, LayoutGrid, BarChart2 } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-import { CALENDAR_SHIFTS, LEAVE_COLORS } from "../constants/leaveConstants";
+import { LEAVE_COLORS } from "../constants/leaveConstants";
 import Btn from "./Btn";
 const VIEW_BUTTONS = [
   { key: "month", icon: <Calendar size={14} />,  label: "Month" },

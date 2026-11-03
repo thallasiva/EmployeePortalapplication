@@ -38,8 +38,8 @@ export default function TemplateSummarySidebar({ lines, previewCtc, onCtcChange,
         <div className="space-y-2">
           {[
           ["Total Fixed Pay", totalFixed, "text-gray-800"],
-          ["Variable Pay (Monthly Equiv.)", totalVarMon, "text-gray-800"]].
-          map(([label, val, cls]) =>
+          ["Variable Pay (Monthly Equiv.)", totalVarMon, "text-gray-800"]]
+          .map(([label, val, cls]) =>
           <div key={label} className="flex justify-between text-xs">
               <span className="text-gray-500">{label}</span>
               <span className={`font-medium ${cls}`}>{fmtINR(val)}</span>
@@ -64,8 +64,8 @@ export default function TemplateSummarySidebar({ lines, previewCtc, onCtcChange,
           {[
           ["Total Fixed Pay (Annual)", totalFixed * 12],
           ["Total Variable Pay (Annual)", variableEarnings.reduce((s, c) => s + (c.annual_amount || 0), 0)],
-          ["Employer Contributions (Annual)", employer.reduce((s, c) => s + (c.annual_amount || 0), 0)]].
-          map(([label, val]) =>
+          ["Employer Contributions (Annual)", employer.reduce((s, c) => s + (c.annual_amount || 0), 0)]]
+          .map(([label, val]) =>
           <div key={label} className="flex justify-between text-xs">
               <span className="text-blue-700">{label}</span>
               <span className="font-medium text-blue-900">{fmtINR(val)}</span>
@@ -82,8 +82,8 @@ export default function TemplateSummarySidebar({ lines, previewCtc, onCtcChange,
             {[
           ["Earning components", lines.filter((l) => l.category === "Earning").length],
           ["Deduction components", lines.filter((l) => l.category === "Deduction").length],
-          ["Employer components", lines.filter((l) => l.category === "Employer Contribution").length]].
-          map(([label, count]) =>
+          ["Employer components", lines.filter((l) => l.category === "Employer Contribution").length]]
+          .map(([label, count]) =>
           <div key={label} className="flex justify-between">
                 <span>{label}</span>
                 <span className="font-medium text-gray-600">{count}</span>

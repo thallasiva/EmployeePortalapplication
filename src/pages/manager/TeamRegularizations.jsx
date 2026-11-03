@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import { listRegularizations, reviewRegularization } from "../../api/attendance.api";
-import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../utils/ToastControllers";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
 const STATUS_BADGE = {

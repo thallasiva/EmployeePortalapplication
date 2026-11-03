@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Eye, EyeOff, Download, Loader2, ArrowRight } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import InteractivePieChart, { formatINR as fmtINR } from "../../../../../component/charts/InteractivePieChart";
-import { fmt } from "../utils/formatters";
+import "../utils/formatters";
 const PayslipCard = React.memo(function PayslipCard({
   loading,
   sal,

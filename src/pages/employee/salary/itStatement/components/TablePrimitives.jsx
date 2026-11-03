@@ -1,7 +1,7 @@
 import React from "react";
 import { Minus, Plus } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
-import { TH, TSS, TN } from "../constants";
+import { TH } from "../constants";
 export const ColHead = React.memo(function ColHead({ fiscalMonths }) {
   return (
     <thead>

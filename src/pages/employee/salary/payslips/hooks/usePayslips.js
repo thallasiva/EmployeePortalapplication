@@ -10,7 +10,7 @@ import { downloadPayslipPdf } from "../../../../../utils/payslipPdfGenerator";
 import { errorToast } from "../../../../../utils/ToastControllers";
 import { getCurrentUser } from "../../../../../api/auth.api";
 export function usePayslips() {
-  const now = new Date();
+  const [now] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState("payslip");
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
@@ -65,7 +65,7 @@ export function usePayslips() {
       opts.set(key, { month: Number(p.month), year: Number(p.year) });
     });
     return [...opts.values()].sort((a, b) => b.year - a.year || b.month - a.month);
-  }, [myPayslips]);
+  }, [myPayslips, now]);
   const handleDownload = useCallback(async () => {
     setDownloading(true);
     try {

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Calendar, MapPin, Edit2, Trash2 } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
-import { SHIFTS, B, BL } from "../constants";
+import { B, BL } from "../constants";
 import { fmtDate, dayName, parseLocalDate } from "../utils/dateUtils";
 import Btn from "./Btn";
 const TH = ({ children }) => (

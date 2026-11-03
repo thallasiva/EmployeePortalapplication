@@ -1,16 +1,13 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  LayoutDashboard, Briefcase, Users, CalendarCheck,
-  FileCheck, UserPlus, BarChart3, CheckSquare, Zap, Bot } from
-"lucide-react";
+import { LayoutDashboard, Briefcase, Users, CalendarCheck, FileCheck, BarChart3, Bot } from "lucide-react";
 import { getStoredUser } from "../../data/auth";
-import { roleInfo, getRecruiterKey } from "./recruitment/data";
+import { roleInfo } from "./recruitment/data";
 import JobsPage from "./recruitment/JobsPage";
 import CandidatesPage from "./recruitment/CandidatesPage";
 import InterviewsPage from "./recruitment/InterviewsPage";
 import OffersPage from "./recruitment/OffersPage";
-import OnboardingPage from "./recruitment/OnboardingPage";
+import "./recruitment/OnboardingPage";
 import ResumeMatchTab from "./recruitment/ResumeMatchTab";
 import AdminDashboard from "./recruitment/AdminDashboard";
 import ManagerDashboard from "./recruitment/ManagerDashboard";
@@ -75,7 +72,6 @@ const Recruitment = () =>
   const user = getStoredUser();
   const role = roleInfo(user);
   const roleId = role.id;
-  const recruiterKey = getRecruiterKey(user);
   const tabs = TABS[roleId] || TABS[5];
   const [searchParams, setSearchParams] = useSearchParams();
   const activePage = searchParams.get("page") || searchParams.get("tab") || "dashboard";

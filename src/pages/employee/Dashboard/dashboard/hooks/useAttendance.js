@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   checkIn as apiCheckIn,
   checkOut as apiCheckOut,
   getMyTodayAttendance,
 } from "../../../../../api/attendance.api";
-import { apiErrorToast, errorToast, successToast } from "../../../../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../../../../utils/ToastControllers";
 export function useAttendance({ todayAtt, setTodayAtt }) {
   const checkIn = todayAtt?.check_in || todayAtt?.check_in_time || todayAtt?.checkIn || null;
   const checkOut = todayAtt?.check_out || todayAtt?.check_out_time || todayAtt?.checkOut || null;

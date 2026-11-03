@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { getLeaveSummary } from "../../../../api/leaveRequest.api";
 import { getErrorMessage } from "../../../../api/client";
 import { YEARS, MONTH_LABELS } from "../constants";
-import { ltCode, fmt } from "../utils";
+import { ltCode } from "../utils";
 export function useLeaveSummary() {
   const CURRENT_YEAR = YEARS[0];
   const [year, setYear] = useState(CURRENT_YEAR);
@@ -36,7 +36,7 @@ export function useLeaveSummary() {
       ),
     [data, search]
   );
-  const leaveTypes = data?.leaveTypes || [];
+  const leaveTypes = useMemo(() => data?.leaveTypes || [], [data?.leaveTypes]);
   const handleExportCSV = useCallback(() => {
     if (!employees.length) return;
     const rows = [];

@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Briefcase, CalendarCheck, FileCheck, Users, Loader2 } from "lucide-react";
 import Card from "./Card";
 import Stat from "./Stat";
-import DataTable from "./DataTable";
+import "./DataTable";
 import { statGridClass } from "./data";
 import { useNavigate } from "react-router-dom";
-import { getDashboard, getErrorMessage } from "../../../api/recruitment.api";
-import { apiErrorToast, errorToast } from "../../../utils/ToastControllers";
+import { getDashboard } from "../../../api/recruitment.api";
+import { apiErrorToast } from "../../../utils/ToastControllers";
 import RoleDashboardWidgets from "../../../component/RoleDashboardWidgets";
 function ManagerDashboard() {
   const router = useNavigate();

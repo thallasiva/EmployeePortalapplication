@@ -143,14 +143,14 @@ export const EmployeePicker = ({ multiple = false, value, onChange, teamOnly = f
     let alive = true;
     setLoading(true);
     const t = setTimeout(() => {
-      listKfEmployees({ search: search || undefined, team: teamOnly ? 1 : undefined }).
-      then((rows) => {
+      listKfEmployees({ search: search || undefined, team: teamOnly ? 1 : undefined })
+      .then((rows) => {
         if (!alive) return;
         setPeople(rows || []);
         setKnown((k) => ({ ...k, ...Object.fromEntries((rows || []).map((p) => [p.employee_id, p])) }));
-      }).
-      catch(() => alive && setPeople([])).
-      finally(() => alive && setLoading(false));
+      })
+      .catch(() => alive && setPeople([]))
+      .finally(() => alive && setLoading(false));
     }, 250);
     return () => {alive = false;clearTimeout(t);};
   }, [search, teamOnly]);
@@ -511,10 +511,10 @@ export const FeedbackReport = ({ onGiveKudos }) => {
   useEffect(() => {listDepartments().then(setDepartments).catch(() => {});}, []);
   useEffect(() => {
     setLoading(true);
-    getKfReport({ months, department_id: departmentId || undefined, type: type || undefined }).
-    then(setReport).
-    catch((err) => toast.error(getErrorMessage(err, "Could not load report"))).
-    finally(() => setLoading(false));
+    getKfReport({ months, department_id: departmentId || undefined, type: type || undefined })
+    .then(setReport)
+    .catch((err) => toast.error(getErrorMessage(err, "Could not load report")))
+    .finally(() => setLoading(false));
   }, [months, departmentId, type]);
   const totalByType = useMemo(() => (report?.by_type || []).reduce((s, r) => s + Number(r.total), 0), [report]);
   const maxTrend = useMemo(() => Math.max(1, ...(report?.trend || []).flatMap((t) => [t.kudos, t.feedback])), [report]);

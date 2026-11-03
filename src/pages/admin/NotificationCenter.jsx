@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Bell, CheckCheck, Trash2, Info, CheckCircle2, AlertTriangle, XCircle, Loader2, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { Bell, CheckCheck, Trash2, Info, CheckCircle2, AlertTriangle, XCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { notificationsApi } from "../../api/settings.api";
 import { getStoredUser } from "../../data/auth";
 const TYPE_CFG = {

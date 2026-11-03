@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Btn, Field, Input, Select, TwoColGrid } from "../../shared";
 import { INTERVIEW_LEVELS, INTERVIEW_TYPES } from "../../mockData";
-import { BLANK_INT } from "../constants";
+import "../constants";
 const ScheduleInterviewModal = React.memo(function ScheduleInterviewModal({
   open, detail, intForm, scheduling,
   onClose, onSubmit, onChange

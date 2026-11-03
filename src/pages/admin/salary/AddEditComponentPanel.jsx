@@ -208,8 +208,8 @@ export default function AddEditComponentPanel({
               [esiAppl, setEsi, "ESI Applicable"],
               [showPayslip, setSP, "Show in Payslip"],
               [showOffer, setSO, "Show in Offer Letter"],
-              [showCTC, setSC, "Show in CTC"]].
-              map(([val, setter, label]) =>
+              [showCTC, setSC, "Show in CTC"]]
+              .map(([val, setter, label]) =>
               <label key={label} className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
                     <input type="checkbox" checked={val} onChange={(e) => setter(e.target.checked)} className="rounded" />
                     {label}

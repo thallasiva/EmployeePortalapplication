@@ -2,16 +2,6 @@ import React from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { fmt } from "../utils/formatters";
-const SalRow = React.memo(function SalRow({ label, value, show, color, bold }) {
-  return (
-    <div className={cssClass({ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #f8fafc" })}>
-      <span className={cssClass({ fontSize: 13, color: "#64748b" })}>{label}</span>
-      <span className={cssClass({ fontSize: 13, fontWeight: bold ? 700 : 500, color: color || "#1e293b", letterSpacing: show ? 0 : "0.12em" })}>
-        {show ? `₹${fmt(value)}` : "•••••"}
-      </span>
-    </div>
-  );
-});
 const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, showSal, setShowSal }) {
   const earnings = [
     { label: "Basic", value: sal.basic },

@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Pagination, { usePagination } from "../../components/Pagination";
-import { Search, X, ChevronDown, ChevronUp, Clock, CheckCircle } from "lucide-react";
+import { Search, X, Clock } from "lucide-react";
 import { listSalaryAssignments, assignSalaryStructure, getAssignmentHistory } from "../../api/salaryAssignment.api";
 import { listStructures } from "../../api/salaryComponent.api";
-import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
-import { getErrorMessage } from "../../api/client";
+import { apiErrorToast, successToast } from "../../utils/ToastControllers";
+import "../../api/client";
 const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400";
 const sel = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400 bg-white";
 function fmt(n) {
@@ -73,10 +73,10 @@ function HistoryPanel({ employeeId, onClose }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    getAssignmentHistory(employeeId).
-    then((h) => setHistory(h ?? [])).
-    catch(err => apiErrorToast(err, "load salary history")).
-    finally(() => setLoading(false));
+    getAssignmentHistory(employeeId)
+    .then((h) => setHistory(h ?? []))
+    .catch(err => apiErrorToast(err, "load salary history"))
+    .finally(() => setLoading(false));
   }, [employeeId]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">

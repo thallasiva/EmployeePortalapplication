@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { menuPermissionsApi } from "../api/settings.api";
 const CACHE_KEY = "hrms_menu_permissions";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -52,14 +52,14 @@ export function useMenuPermissions(user) {
    * - Super Admin → always true
    * - Others → check stored permission for their role; default true if no config yet
    */
-  const isAllowed = (menuId) => {
+  const isAllowed = useCallback((menuId) => {
     if (isSuperAdmin(user)) return true;
     const roleName = resolveRoleName(user);
     if (!perms || !perms[roleName]) return true; // no config saved yet = open access
     const rolePerms = perms[roleName];
     if (typeof rolePerms[menuId] === "boolean") return rolePerms[menuId];
     return true; // unset item = allowed
-  };
+  }, [perms, user]);
   return { isAllowed, loading, isSuperAdmin: isSuperAdmin(user) };
 }
 /** Call this after saving MenuPermissionBuilder to force a fresh fetch next time */

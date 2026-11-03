@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { calculatePayslip } from "./PayRollForm";
 import SalaryComponentModal from "./SalaryComponentModal";
 import { X } from "lucide-react";
+import { evaluateArithmeticFormula } from "../../utils/arithmeticFormula";
 const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
   const lockEmployee = Boolean(initial?.employeeId);
   const [showComponentModal, setShowComponentModal] = useState(false);
@@ -11,11 +12,10 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
   const breakdown = useMemo(() => calculatePayslip(basic), [basic]);
   const evaluateFormula = (formula, context) => {
     try {
-      let expression = formula;
-      Object.entries(context).forEach(([key, value]) => {
-        expression = expression.replaceAll(key, value);
-      });
-      return Math.max(0, Math.round(Function(`return ${expression}`)()));
+      return Math.max(
+        0,
+        Math.round(evaluateArithmeticFormula(formula, context))
+      );
     } catch {
       return 0;
     }

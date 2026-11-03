@@ -14,15 +14,6 @@ function stepState(label, ivs, candidateStatus) {
   if (iv.status === "Scheduled") return "active";
   return "pending";
 }
-function stepLabel(label, ivs) {
-  if (label === "Shortlisted") return label;
-  const iv = ivs.find((r) => r.level === label || (label === "HR" && r.level === "HR"));
-  if (!iv) return label;
-  if (iv.feedback_status === "Selected") return label + " (selected)";
-  if (iv.feedback_status === "Not Selected") return label + " (not selected)";
-  if (iv.status === "Scheduled") return label + " (scheduled)";
-  return label;
-}
 const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidateStatus }) {
   return (
     <div className="mb-4 px-4 py-3.5 bg-gray-50 rounded-xl border border-gray-200">
@@ -35,9 +26,6 @@ const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidate
             state === "failed" ? "bg-red-500 border-red-500 text-white" :
             state === "active" ? "bg-[#f18200] border-[#f18200] text-white" :
             "bg-white border-gray-300 text-gray-400";
-          const lineCls =
-            stepState(PIPELINE_STEPS[i + 1], ivs, candidateStatus) === "pending" && state !== "done" && state !== "failed"
-              ? "bg-gray-200" : "bg-green-400";
           const textCls =
             state === "done" ? "text-green-600 font-bold" :
             state === "failed" ? "text-red-500 font-bold" :

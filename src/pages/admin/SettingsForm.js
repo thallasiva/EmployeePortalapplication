@@ -53,8 +53,8 @@ export default function SettingsForm() {
             {
               title: "Visa Dates",
               desc: "Informs and notify the day before Visa dates for each team member."
-            }].
-            map((item, i) =>
+            }]
+            .map((item, i) =>
             <label key={i} className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" className="mt-1 w-4 h-4" />
                 <div>
@@ -102,8 +102,8 @@ export default function SettingsForm() {
           {
             title: "Work From Home Notifications",
             desc: "Never miss a notification that someone will be working from home."
-          }].
-          map((item, i) =>
+          }]
+          .map((item, i) =>
           <label key={i} className="flex items-start gap-3 cursor-pointer">
               <input type="checkbox" className="mt-1 w-4 h-4" />
               <div>

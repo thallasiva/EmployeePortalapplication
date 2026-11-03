@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { listEmployees } from "../../../../api/employee.api";
 import { listDocuments } from "../../../../api/document.api";
-import { apiErrorToast, errorToast } from "../../../../utils/ToastControllers";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { ONBOARDING_DAYS, CHECKLIST_TEMPLATE } from "../constants";
 import {
   daysSince,

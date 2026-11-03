@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { clearAuthSession } from "../api/client";
-import { getHomePath, normalizeRole, resolveRoleForUser, ROLE_ADMIN, ROLE_EMPLOYEE, ROLE_REPORTING_MANAGER, ROLE_RECRUITER, ROLE_RECRUITER_LEAD } from "../data/auth";
+import { getHomePath, resolveRoleForUser, ROLE_ADMIN, ROLE_EMPLOYEE, ROLE_REPORTING_MANAGER, ROLE_RECRUITER, ROLE_RECRUITER_LEAD } from "../data/auth";
 /* ─── helpers ────────────────────────────────────────────────────────────── */
 function readStoredUser() {
   try {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, Wallet, PiggyBank, TrendingDown, CalendarClock, CheckCircle2, Clock, ChevronRight } from "lucide-react";
+import { Plus, X, Wallet, PiggyBank, TrendingDown, CalendarClock, CheckCircle2 } from "lucide-react";
 const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
 const LOAN_TYPES = ["Personal Loan", "Home Loan", "Vehicle Loan", "Emergency Advance", "Medical Advance"];
 const LOANS = [
@@ -145,8 +145,8 @@ function LoanCard({ loan }) {
         { label: "Outstanding", value: fmt(loan.outstanding), color: isActive ? "#ef4444" : "#94a3b8" },
         { label: "Monthly EMI", value: fmt(loan.emi), color: "#f18200" },
         { label: "Total Tenure", value: `${loan.tenure} mo`, color: "#64748b" },
-        { label: "Remaining", value: loan.remaining > 0 ? `${loan.remaining} mo` : "—", color: isActive ? "#6366f1" : "#94a3b8" }].
-        map(({ label, value, color }) =>
+        { label: "Remaining", value: loan.remaining > 0 ? `${loan.remaining} mo` : "—", color: isActive ? "#6366f1" : "#94a3b8" }]
+        .map(({ label, value, color }) =>
         <div key={label} className="px-5 py-3">
             <p className="text-[11px] text-[#94a3b8] font-medium">{label}</p>
             <p className="text-[14px] font-bold mt-0.5" style={{ color }}>{value}</p>

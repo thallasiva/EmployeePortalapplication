@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { captureError } from "../utils/sentry";
 import { getErrorMessage } from "../api/client";
 export const DEFAULT_PAGE_SIZE = 20;
-export function usePaginatedList(fetchFn, deps = [], pageSize = DEFAULT_PAGE_SIZE) {
+export function usePaginatedList(fetchFn, pageSize = DEFAULT_PAGE_SIZE) {
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -30,7 +30,7 @@ export function usePaginatedList(fetchFn, deps = [], pageSize = DEFAULT_PAGE_SIZ
         captureError(err, { hook: "usePaginatedList" });
       }
     }
-  }, [pageSize, ...deps]);
+  }, [fetchFn, pageSize]);
   useEffect(() => {
     setPage(1);
     load(1);

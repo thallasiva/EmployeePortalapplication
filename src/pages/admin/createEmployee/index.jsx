@@ -23,7 +23,6 @@ export default function CreateEmployee() {
     goPrev,
     handleSubmit,
     navigate,
-    setShowSuccessModal,
   } = useCreateEmployee();
   return (
     <div>

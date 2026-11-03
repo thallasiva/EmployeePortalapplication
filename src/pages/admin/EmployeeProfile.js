@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Users, ChevronDown, ChevronRight, Mail, Phone, Briefcase } from "lucide-react";
 import { listEmployees } from "../../api/employee.api";
 import { getDepartmentName } from "../../utils/employeeDisplay";
-import { avatarDataUri } from "../../lib/placeholders";
+import "../../lib/placeholders";
 import { EmployeeStatusBadge } from "../../utils/employeeStatus";import { cssClass, joinClasses } from "../../utils/classStyles";
 const AVATAR_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6", "#22c55e"];
 function initials(name = "") {return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "?";}
@@ -64,17 +64,17 @@ export default function EmployeeProfile() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   useEffect(() => {
-    listEmployees({ limit: 500 }).
-    then(({ data }) => setEmployees(data || [])).
-    catch(() => {}).
-    finally(() => setLoading(false));
+    listEmployees({ limit: 500 })
+    .then(({ data }) => setEmployees(data || []))
+    .catch(() => {})
+    .finally(() => setLoading(false));
   }, []);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return employees;
     return employees.filter((e) =>
-    [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title].
-    some((v) => (v || "").toLowerCase().includes(q))
+    [e.first_name, e.last_name, e.email, getDepartmentName(e), e.emp_job_title]
+    .some((v) => (v || "").toLowerCase().includes(q))
     );
   }, [employees, search]);
   const groups = useMemo(() => {

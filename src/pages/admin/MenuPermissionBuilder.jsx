@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Save, Shield, Check, X, ChevronRight, ChevronDown, Users, Loader2, LayoutDashboard, ClipboardList, UserPlus, User, Clock, TreePalm, FilePen, ChartColumn, Tag, Timer, Wallet, TrendingUp, FileText, Download, CircleCheck, Target, Briefcase, MessagesSquare, Star, FileStack, FolderOpen, Ticket, Rocket, Link2, Building2, BriefcaseBusiness, Forward, ShieldCheck, Settings, Wrench, Mail, Bell, Palette, Lock } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Save, Shield, Check, ChevronRight, ChevronDown, Users, Loader2, LayoutDashboard, ClipboardList, UserPlus, User, Clock, TreePalm, FilePen, ChartColumn, Tag, Timer, Wallet, TrendingUp, FileText, Download, CircleCheck, Target, Briefcase, MessagesSquare, Star, FileStack, FolderOpen, Ticket, Rocket, Link2, Building2, BriefcaseBusiness, Forward, ShieldCheck, Settings, Wrench, Mail, Bell, Palette, Lock } from "lucide-react";
 import { menuPermissionsApi } from "../../api/settings.api";
 import { bustMenuPermissionsCache } from "../../hooks/useMenuPermissions";
 const BRAND = "#f18200";
@@ -231,7 +231,6 @@ export default function MenuPermissionBuilder() {
               const isExp = expanded[menu.id];
               const childIds = (menu.children || []).map(c => c.id);
               const allChildOn = childIds.every(id => perms[activeRole]?.[id]);
-              const someChildOn = childIds.some(id => perms[activeRole]?.[id]);
               const parentOn = perms[activeRole]?.[menu.id];
               return (
                 <div key={menu.id}>

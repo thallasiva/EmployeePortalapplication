@@ -1,13 +1,13 @@
 import React from "react";
-import { TABS, TAB_META, tabFilter } from "../salary/salaryHelpers";
+import { TABS, TAB_META } from "../salary/salaryHelpers";
 import AddEditComponentPanel from "../salary/AddEditComponentPanel";
 import FormulaBuilderTab from "../salary/FormulaBuilderTab";
 import SalaryPreviewTab from "../salary/SalaryPreviewTab";
-import { COMPONENT_TABS, PLACEHOLDER_TABS } from "./constants";
+import "./constants";
 import StructureHeader from "./components/StructureHeader";
 import StructureMetaGrid from "./components/StructureMetaGrid";
-import PlaceholderTab from "./components/PlaceholderTab";
-import ComponentTab from "./components/ComponentTab";
+import "./components/PlaceholderTab";
+import "./components/ComponentTab";
 import HistoryTab from "./components/HistoryTab";
 import useSalaryStructure from "./hooks/useSalaryStructure";
 import TemplateToggle, { useTemplatePreference } from "./components/TemplateToggle";
@@ -45,7 +45,6 @@ export default function SalaryStructureEditor() {
     );
   }
   if (!structure) return null;
-  const tabLines    = tabFilter(structure.lines, activeTab);
   const existingIds = new Set((structure.lines ?? []).map((l) => l.component_id));
   const defaultCat  = (TAB_META[activeTab] ?? {}).category ?? "Earning";
   const strCode     = `SAL-STR-${String(structure.structure_id || "NEW").padStart(3, "0")}`;

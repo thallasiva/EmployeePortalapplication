@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Pagination, { usePagination } from "../../components/Pagination";
 import { Check, X } from "lucide-react";
 import { listLeaveRequests, reviewLeaveRequest } from "../../api/leaveRequest.api";
-import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
+import { apiErrorToast, successToast } from "../../utils/ToastControllers";
 import ManagerTabs from "./ManagerTabs";
 import "../admin/adminDashboard.css";
 const STATUS_BADGE = {
@@ -35,13 +35,13 @@ const TeamLeaveRequests = () => {
   const { paged: pagedReqs, page: reqPage, setPage: setReqPage, totalPages: reqTotalPages, from: reqFrom, to: reqTo, total: reqTotal, pageSize: reqPageSize, setPageSize: setReqPageSize } = usePagination(requests);
   const loadRequests = () => {
     setLoading(true);
-    return listLeaveRequests({}).
-    then((res) => {
+    return listLeaveRequests({})
+    .then((res) => {
       const data = Array.isArray(res) ? res : res?.data ?? [];
       setRequests(data.map(mapRequest));
-    }).
-    catch(() => setRequests([])).
-    finally(() => setLoading(false));
+    })
+    .catch(() => setRequests([]))
+    .finally(() => setLoading(false));
   };
   useEffect(() => {
     loadRequests();
@@ -53,12 +53,12 @@ const TeamLeaveRequests = () => {
     reviewLeaveRequest(id, {
       decision,
       remarks: decision === "Rejected" ? "Rejected by reporting manager" : undefined
-    }).
-    then(() => {
+    })
+    .then(() => {
       successToast(`Leave request ${decision.toLowerCase()}`);
       loadRequests();
-    }).
-    catch((err) => {
+    })
+    .catch((err) => {
       apiErrorToast(err, "Failed to update leave request.");
       loadRequests();
     });

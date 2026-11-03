@@ -6,7 +6,7 @@ import StatusStrips from "./components/StatusStrips";
 import CandidateTable from "./components/CandidateTable";
 import AddCandidateWizard from "./components/AddCandidateWizard";
 import CandidateProfileModal from "./components/CandidateProfileModal";
-import { BLANK_INT } from "./constants";
+import "./constants";
 export default function CandidatesPage({ role }) {
   const {
     candidates, jobs, recruiters, loading, filtered,

@@ -4,17 +4,17 @@ import {
   ReportAvatar, ReportStatusBadge } from
 "../../../component/reports/ReportsLayout";
 import ReportStackedBarChart from "../../../component/reports/ReportStackedBarChart";
-import { listLeaveRequests } from "../../../api/leaveRequest.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
+import { listLeaveRequests } from "../../../api/leaveRequest.api";import { cssClass } from "../../../utils/classStyles";
 import { ClipboardList } from "lucide-react";
 export default function LeaveReport() {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   useEffect(() => {
-    listLeaveRequests({ limit: 500 }).
-    then(({ data }) => setLeaves(data || [])).
-    catch(() => {}).
-    finally(() => setLoading(false));
+    listLeaveRequests({ limit: 500 })
+    .then(({ data }) => setLeaves(data || []))
+    .catch(() => {})
+    .finally(() => setLoading(false));
   }, []);
   const pending = leaves.filter((l) => l.status === "pending").length;
   const approved = leaves.filter((l) => l.status === "approved").length;

@@ -1,7 +1,5 @@
 import React from "react";
-import {
-  User, Landmark, PenLine, FileText, FileCheck, Shield,
-} from "lucide-react";
+import { User, Landmark, PenLine, FileCheck, Shield } from "lucide-react";
 import { Row, Sec, TblHead } from "./SharedUI";
 import { fmt, parse } from "../utils";
 import { API_BASE_URL } from "../../../../api/client";

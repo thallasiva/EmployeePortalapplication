@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Eye, Loader2, X } from "lucide-react";
 import { Card, Btn, Table, SearchBar } from "../../shared";
-import { fmt, fmtM } from "../utils/ctcUtils";
+import { fmtM } from "../utils/ctcUtils";
 import { OFFER_CLS } from "../constants";
 const OffersTableCard = React.memo(function OffersTableCard({
   tableRef, loading, visible, search, onSearch, filterStatus, onFilterChange, onView

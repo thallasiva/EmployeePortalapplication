@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Check, X, RefreshCw } from "lucide-react";
+import { Check, X } from "lucide-react";
 import Pagination, { usePagination } from "../../components/Pagination";
 import { getAllTimesheets, getAdminDashboardCounts, getAnyTimesheetDetail, reviewTimesheet } from "../../api/timesheet.api";
 import "./adminDashboard.css";
@@ -29,10 +29,10 @@ function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    getAnyTimesheetDetail(timesheetId).
-    then(setDetail).
-    catch(() => {}).
-    finally(() => setLoading(false));
+    getAnyTimesheetDetail(timesheetId)
+    .then(setDetail)
+    .catch(() => {})
+    .finally(() => setLoading(false));
   }, [timesheetId]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -56,8 +56,8 @@ function TimesheetDetailModal({ timesheetId, onClose, onApprove, onReject }) {
             ["Submitted", detail.submitted_at ? new Date(detail.submitted_at).toLocaleDateString("en-GB") : "—"],
             ["Reviewed By", detail.reviewer_name || "—"],
             ["Reviewed At", detail.reviewed_at ? new Date(detail.reviewed_at).toLocaleDateString("en-GB") : "—"],
-            ["Comments", detail.comments || "—"]].
-            map(([label, value]) =>
+            ["Comments", detail.comments || "—"]]
+            .map(([label, value]) =>
             <div key={label} className="bg-gray-50 rounded-xl p-3">
                   <p className="text-xs text-gray-400 mb-0.5">{label}</p>
                   <p className="font-semibold text-gray-800 text-sm">{value}</p>
@@ -186,8 +186,8 @@ export default function AdminTimesheets() {
         { label: "Total Managers", value: counts.totalManagers, color: "text-indigo-600" },
         { label: "Pending", value: counts.pendingTimesheets, color: "text-amber-600" },
         { label: "Approved", value: counts.approvedTimesheets, color: "text-emerald-600" },
-        { label: "Rejected", value: counts.rejectedTimesheets, color: "text-red-500" }].
-        map(({ label, value, color }) =>
+        { label: "Rejected", value: counts.rejectedTimesheets, color: "text-red-500" }]
+        .map(({ label, value, color }) =>
         <div key={label} className="admin-dash-card py-4 text-center">
               <p className={`text-2xl font-bold ${color}`}>{value ?? 0}</p>
               <p className="text-xs text-gray-500 mt-1">{label}</p>

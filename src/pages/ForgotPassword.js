@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { forgotPassword, resetPassword } from "../api/auth.api";
-import { getErrorMessage } from "../api/client";
+import "../api/client";
 import { apiErrorToast, successToast, errorToast } from "../utils/ToastControllers";
 import PasswordInput from "../component/PasswordInput";
 const ForgotPassword = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { listPayslips } from "../../api/payroll.api";import { cssClass, joinClasses } from "../../utils/classStyles";
+import { listPayslips } from "../../api/payroll.api";import { cssClass } from "../../utils/classStyles";
 const ORANGE = "#f18200";
 const TABS = [
 { key: "quick", label: "Quick Salary Statement" },
@@ -183,10 +183,10 @@ export default function AdminPayrollStatement() {
   const load = useCallback(() => {
     if (tab === "diff") return;
     setLoading(true);
-    listPayslips({ month, year, limit: 500 }).
-    then((r) => setPayslips(r.data || [])).
-    catch(() => setPayslips([])).
-    finally(() => setLoading(false));
+    listPayslips({ month, year, limit: 500 })
+    .then((r) => setPayslips(r.data || []))
+    .catch(() => setPayslips([]))
+    .finally(() => setLoading(false));
   }, [month, year, tab]);
   useEffect(() => {load();}, [load]);
   return (

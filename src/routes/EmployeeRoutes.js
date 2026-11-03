@@ -1,7 +1,7 @@
 import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { getStoredUser, isEmployee, isReportingManager } from "../data/auth";
-import { PATH_ADMIN_HOME } from "./paths";
+import { getStoredUser } from "../data/auth";
+import "./paths";
 import LazyPage from "./LazyPage";
 const EmployeeDashboard = lazy(() => import("../pages/employee/Dashboard/EmployeeDashboard"));
 const AttendanceInfo = lazy(() => import("../pages/employee/attendance/AttendanceInfo"));

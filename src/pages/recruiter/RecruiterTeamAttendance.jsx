@@ -22,10 +22,10 @@ const RecruiterTeamAttendance = () => {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   useEffect(() => {
     setLoading(true);
-    listAttendance({ from_date: date, to_date: date, limit: 200 }).
-    then(({ data }) => setRecords(data || [])).
-    catch(() => setRecords([])).
-    finally(() => setLoading(false));
+    listAttendance({ from_date: date, to_date: date, limit: 200 })
+    .then(({ data }) => setRecords(data || []))
+    .catch(() => setRecords([]))
+    .finally(() => setLoading(false));
   }, [date]);
   const present = records.filter((r) => (r.status || "").toLowerCase() === "present").length;
   const absent = records.filter((r) => (r.status || "").toLowerCase() === "absent").length;
@@ -51,8 +51,8 @@ const RecruiterTeamAttendance = () => {
         {[
         { label: "Present", count: present, cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
         { label: "Absent", count: absent, cls: "bg-rose-50 text-rose-700 border-rose-200" },
-        { label: "Late", count: late, cls: "bg-amber-50 text-amber-700 border-amber-200" }].
-        map(({ label, count, cls }) =>
+        { label: "Late", count: late, cls: "bg-amber-50 text-amber-700 border-amber-200" }]
+        .map(({ label, count, cls }) =>
         <span key={label} className={`px-4 py-1.5 rounded-full text-sm font-medium border ${cls}`}>
             {label}: {count}
           </span>

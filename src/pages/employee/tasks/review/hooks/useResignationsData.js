@@ -4,7 +4,7 @@ import { getStoredUser, isAdmin, isReportingManager } from "../../../../../data/
 import { toArr } from "../utils";
 /** Fetches resignations (own / team / all depending on role). Returns { rows, loading, isPrivileged }. */
 export function useResignationsData() {
-  const user = getStoredUser();
+  const [user] = useState(getStoredUser);
   const isPrivileged = isAdmin(user) || isReportingManager(user);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +21,6 @@ export function useResignationsData() {
       .catch(() => { if (!dead) setRows([]); })
       .finally(() => { if (!dead) setLoading(false); });
     return () => { dead = true; };
-  }, []);
+  }, [user]);
   return { rows, loading, isPrivileged };
 }

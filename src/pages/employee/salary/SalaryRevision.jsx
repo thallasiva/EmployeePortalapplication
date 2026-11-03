@@ -2,8 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { TrendingUp, Download } from "lucide-react";
 import { getMySalaryStructure, listSalaryStructures } from "../../../api/payroll.api";
 import { buildSalaryBreakdown } from "../../../utils/salaryBreakdown";
-import { getCurrentUser } from "../../../api/auth.api";import { cssClass, joinClasses } from "../../../utils/classStyles";
-const fmt = (n) => `₹${Math.round(Number(n) || 0).toLocaleString("en-IN")}`;
+import { getCurrentUser } from "../../../api/auth.api";import { cssClass } from "../../../utils/classStyles";
 const fmtAmt = (n) => Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 function parseDateStr(d) {
   if (!d) return null;
@@ -87,14 +86,12 @@ export default function SalaryRevision() {
   const [loading, setLoading] = useState(true);
   const [structure, setStructure] = useState(null);
   const [allStructures, setAll] = useState([]);
-  const [user, setUser] = useState(null);
   useEffect(() => {
     Promise.all([
     getMySalaryStructure().catch(() => null),
     getCurrentUser().catch(() => null)]
     ).then(async ([s, u]) => {
       setStructure(s);
-      setUser(u);
       if (u?.employee_id) {
         const all = await listSalaryStructures({ employee_id: u.employee_id, limit: 50 }).catch(() => []);
         setAll(Array.isArray(all) ? all.sort((a, b) => new Date(b.effective_date || b.effective_from) - new Date(a.effective_date || a.effective_from)) : []);
@@ -105,7 +102,6 @@ export default function SalaryRevision() {
     const basic = Number(structure?.basic || 0);
     return basic > 0 ? buildSalaryBreakdown({ basic }) : null;
   }, [structure]);
-  const currentCTC = breakdown ? (breakdown.totalEarnings + breakdown.pf) * 12 : 0;
   const effectiveDate = structure?.effective_from || structure?.effective_date || null;
   const revisionRows = useMemo(() => {
     if (!allStructures.length && structure) {

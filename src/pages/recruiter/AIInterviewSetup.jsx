@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Bot, Send, Loader2, CheckCircle2, AlertCircle,
-  ChevronDown, User, Briefcase, Star, MessageCircle, X
-} from "lucide-react";
+import { Bot, Send, Loader2, CheckCircle2, MessageCircle, X } from "lucide-react";
 import { createAIInterview, listAIInterviews, getAIInterviewReport, listCandidates, listJobs, uploadResumeMatch } from "../../api/recruitment.api";
 import { apiErrorToast, successToast, errorToast } from "../../utils/ToastControllers";
 const PRIMARY = "#0E7C86";
@@ -14,19 +11,6 @@ function Label({ children }) {
 }
 function Field({ label, children }) {
   return <div style={{ marginBottom: 16 }}><Label>{label}</Label>{children}</div>;
-}
-function Input({ ...props }) {
-  return (
-    <input
-      {...props}
-      style={{
-        width: "100%", boxSizing: "border-box", padding: "9px 12px",
-        border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 14,
-        outline: "none", background: "#fff",
-        ...(props.style || {})
-      }}
-    />
-  );
 }
 function Select({ children, ...props }) {
   return (

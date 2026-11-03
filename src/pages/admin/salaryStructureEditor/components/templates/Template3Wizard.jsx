@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp, Check, Eye, Save, Building2, Briefcase, BarChart2, Calendar, Users, Clock, MapPin, Globe, DollarSign, ArrowRight } from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp, Check, Eye, Building2, Briefcase, BarChart2, Calendar, Users, Clock, MapPin, DollarSign, ArrowRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
 const NAVY  = "#1e3a5f";

@@ -1,5 +1,5 @@
 import React from "react";
-import { ClipboardList, User, Heart, FileText, Info, Check, AlertTriangle } from "lucide-react";
+import { User, Heart, FileText, Info, Check, AlertTriangle } from "lucide-react";
 import SignatureUpload from "./SignatureUpload";
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] focus:border-[#d97706] bg-white text-gray-800 placeholder-gray-400";
 const inpRO = "w-full border border-amber-100 rounded-lg px-3 py-2 text-[13px] bg-amber-50 text-gray-700 cursor-not-allowed";

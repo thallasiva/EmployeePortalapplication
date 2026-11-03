@@ -9,7 +9,7 @@ import {
   getFiscalMonthColumns,
 } from "../../../lib/dateUtils";
 import InteractivePieChart, { formatINR } from "../../../component/charts/InteractivePieChart";
-import { cssClass } from "../../../utils/classStyles";
+import "../../../utils/classStyles";
 const tblFmt = (n) => {
   const num = Number(n) || 0;
   return num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

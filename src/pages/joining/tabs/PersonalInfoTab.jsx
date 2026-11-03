@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Heart, User, GraduationCap, Users, Landmark, Camera, Upload, PenLine, Info, X, AlertTriangle, Check } from "lucide-react";
+import { User, GraduationCap, Users, Landmark, Camera, Upload, PenLine, Info, X, AlertTriangle, Check } from "lucide-react";
 const inp = "w-full border border-amber-200 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#d97706] focus:border-[#d97706] bg-white text-gray-800 placeholder-gray-400";
 const tbl_inp = "w-full border border-amber-100 rounded-lg px-2 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-[#d97706] bg-white";
 const tbl_sel = tbl_inp + " font-sans";

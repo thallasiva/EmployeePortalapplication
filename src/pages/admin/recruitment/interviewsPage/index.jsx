@@ -19,7 +19,7 @@ export default function InterviewsPage({ role }) {
     fbRecruiterOpen, setFbRecruiterOpen,
     viewIv, setViewIv,
     form, setForm,
-    fb, setFb,
+    fb,
     fbRecruiter, setFbRecruiter,
     saving,
     isAdmin, isExternal,

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { captureError } from "../utils/sentry";
 import { getErrorMessage } from "../api/client";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-export function useApiQuery(fetchFn, deps = [], { retries = 2, enabled = true } = {}) {
+export function useApiQuery(fetchFn, { retries = 2, enabled = true } = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(Boolean(enabled));
   const [error, setError] = useState(null);
@@ -38,7 +38,7 @@ export function useApiQuery(fetchFn, deps = [], { retries = 2, enabled = true } 
       setLoading(false);
       captureError(lastError, { hook: "useApiQuery" });
     }
-  }, deps);
+  }, [fetchFn, retries]);
   useEffect(() => {
     if (!enabled) {setLoading(false);return;}
     execute();

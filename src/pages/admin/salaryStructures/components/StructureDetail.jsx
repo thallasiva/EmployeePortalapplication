@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, GripVertical, Trash2 } from "lucide-react";
 import {
   getStructure,
   updateStructure,
   removeStructureLine,
 } from "../../../../api/salaryComponent.api";
-import { apiErrorToast, successToast, errorToast } from "../../../../utils/ToastControllers";
-import { getErrorMessage } from "../../../../api/client";
+import { apiErrorToast, successToast } from "../../../../utils/ToastControllers";
+import "../../../../api/client";
 import { CAT_ORDER, CAT_COLOR } from "../constants";
 import { groupLinesByCategory } from "../utils";
 import AddLineModal from "./AddLineModal";
@@ -31,7 +31,7 @@ const StructureDetail = React.memo(function StructureDetail({
   useEffect(() => {
     loadDetail();
   }, [loadDetail]);
-  const lines = detail?.lines ?? [];
+  const lines = useMemo(() => detail?.lines ?? [], [detail?.lines]);
   const existingIds = new Set(lines.map((l) => l.component_id));
   const handleAddLine = useCallback(
     async (payload) => {

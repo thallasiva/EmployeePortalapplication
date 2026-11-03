@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listPayslips } from "../../api/payroll.api";
-import { listEmployees } from "../../api/employee.api";import { cssClass, joinClasses } from "../../utils/classStyles";
+import { listEmployees } from "../../api/employee.api";import { cssClass } from "../../utils/classStyles";
 const ORANGE = "#f18200";
 const TABS = [
 { key: "ytd", label: "YTD Summary" },
@@ -47,8 +47,8 @@ function YTDSummary({ year }) {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    listPayslips({ year, limit: 2000 }).
-    then((r) => {
+    listPayslips({ year, limit: 2000 })
+    .then((r) => {
       const slips = r.data || [];
       const map = {};
       slips.forEach((s) => {
@@ -70,8 +70,8 @@ function YTDSummary({ year }) {
         e.total_lop += Number(s.lop_days || 0);
       });
       setRows(Object.values(map));
-    }).
-    finally(() => setLoading(false));
+    })
+    .finally(() => setLoading(false));
   }, [year]);
   const cols = [
   { key: "emp_code", label: "Emp Code" },
@@ -160,12 +160,12 @@ function ReimbStatement({ month, year }) {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    listPayslips({ month, year, limit: 500 }).
-    then((r) => {
+    listPayslips({ month, year, limit: 500 })
+    .then((r) => {
       const slips = r.data || [];
       setRows(slips.filter((s) => Number(s.allowances || 0) > 0));
-    }).
-    finally(() => setLoading(false));
+    })
+    .finally(() => setLoading(false));
   }, [month, year]);
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const cols = [
