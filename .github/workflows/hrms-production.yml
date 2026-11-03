@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
   id-token: write
+  contents: read
 
 concurrency:
   group: hrms-production
@@ -17,11 +17,15 @@ concurrency:
 
 env:
   AWS_REGION: ap-southeast-2
-  AWS_DEPLOY_ROLE_ARN: arn:aws:iam::388381627905:role/GitHubActions-EmployeePortal-Deploy
   EC2_INSTANCE_ID: i-096a4e0222f41d26b
 
 jobs:
+
+  # --------------------------------
+  # 1. TEST AND BUILD
+  # --------------------------------
   test-and-build:
+    name: Test and Build
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +36,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install frontend dependencies
         run: npm ci
@@ -57,6 +62,7 @@ jobs:
         with:
           name: frontend-build
           path: build/
+          if-no-files-found: error
 
       - name: Package backend
         run: |
@@ -71,75 +77,99 @@ jobs:
         with:
           name: backend-build
           path: backend.tar.gz
+          if-no-files-found: error
 
+  # --------------------------------
+  # 2. DEPLOY FRONTEND
+  # --------------------------------
   deploy-frontend:
+    name: Deploy Frontend
     needs: test-and-build
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: Download frontend
+      - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: build
+          path: build/
 
-      - name: Validate AWS deployment role
+      - name: Validate AWS role ARN
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
         run: |
           if [[ -z "$AWS_DEPLOY_ROLE_ARN" ]]; then
-            echo "::error::Missing AWS_DEPLOY_ROLE_ARN in the workflow environment."
-            exit 1
-          fi
-          if [[ ! "$AWS_DEPLOY_ROLE_ARN" =~ ^arn:aws[^:]*:iam::[0-9]{12}:role/.+ ]]; then
-            echo "::error::AWS_DEPLOY_ROLE_ARN must be a valid IAM role ARN."
+            echo "::error::Missing AWS_DEPLOY_ROLE_ARN in production environment secrets."
             exit 1
           fi
 
-      - name: Configure AWS OIDC
+          if [[ ! "$AWS_DEPLOY_ROLE_ARN" =~ ^arn:aws:iam::[0-9]{12}:role/.+ ]]; then
+            echo "::error::Invalid AWS IAM role ARN."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ap-southeast-2
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: GitHubActionsFrontendDeploy
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload to S3
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Upload frontend to S3
         run: |
-          aws s3 sync build/ "s3://${{ vars.FRONTEND_BUCKET }}/"
+          aws s3 sync build/ "s3://${{ vars.FRONTEND_BUCKET }}/" \
+            --delete
 
-      - name: Invalidate CloudFront
+      - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
             --paths "/*"
 
+  # --------------------------------
+  # 3. DEPLOY BACKEND
+  # --------------------------------
   deploy-backend:
+    name: Deploy Backend
     needs: test-and-build
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: Download backend
+      - name: Download backend artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-build
 
-      - name: Validate AWS deployment role
+      - name: Validate AWS role ARN
+        env:
+          AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
         run: |
           if [[ -z "$AWS_DEPLOY_ROLE_ARN" ]]; then
-            echo "::error::Missing AWS_DEPLOY_ROLE_ARN in the workflow environment."
-            exit 1
-          fi
-          if [[ ! "$AWS_DEPLOY_ROLE_ARN" =~ ^arn:aws[^:]*:iam::[0-9]{12}:role/.+ ]]; then
-            echo "::error::AWS_DEPLOY_ROLE_ARN must be a valid IAM role ARN."
+            echo "::error::Missing AWS_DEPLOY_ROLE_ARN in production environment secrets."
             exit 1
           fi
 
-      - name: Configure AWS OIDC
+          if [[ ! "$AWS_DEPLOY_ROLE_ARN" =~ ^arn:aws:iam::[0-9]{12}:role/.+ ]]; then
+            echo "::error::Invalid AWS IAM role ARN."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ap-southeast-2
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: GitHubActionsBackendDeploy
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload backend artifact
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Upload backend artifact to S3
         run: |
           aws s3 cp backend.tar.gz \
             "s3://${{ vars.DEPLOY_BUCKET }}/deploy-artifacts/${GITHUB_SHA}/backend.tar.gz"
@@ -149,5 +179,5 @@ jobs:
           aws ssm send-command \
             --instance-ids "${EC2_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
-            --parameters commands="echo Backend artifact uploaded for ${GITHUB_SHA}" \
+            --parameters 'commands=["echo Backend artifact uploaded for ${GITHUB_SHA}"]' \
             --comment "HRMS backend release ${GITHUB_SHA}"

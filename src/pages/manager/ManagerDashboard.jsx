@@ -6,13 +6,13 @@ import { getManagerFullDashboard } from "../../api/timesheet.api";
 import ManagerTabs from "./ManagerTabs";
 import RoleDashboardWidgets from "../../component/RoleDashboardWidgets";
 import "../admin/adminDashboard.css";
-import { cssClass } from "../../utils/classStyles";function getInitials(name) {
+import { cssClass } from "../../utils/classStyles"; function getInitials(name) {
   return (name || "?")
-  .split(" ")
-  .map((n) => n[0])
-  .join("")
-  .slice(0, 2)
-  .toUpperCase();
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 function fmt(val) {
   if (!val) return "—";
@@ -40,7 +40,7 @@ const ACTIVITY_ICON = {
 };
 function KpiCard({ icon: Icon, value, label, iconBg, iconColor, to }) {
   const inner =
-  <div className="admin-dash-card flex items-center gap-4 h-full">
+    <div className="admin-dash-card flex items-center gap-4 h-full">
       <div className={`p-3 rounded-xl shrink-0 ${iconBg}`}>
         <Icon size={22} className={iconColor} />
       </div>
@@ -58,9 +58,9 @@ const ManagerDashboard = () => {
   const [error, setError] = useState("");
   useEffect(() => {
     getManagerFullDashboard()
-    .then(setData)
-    .catch(() => setError("Failed to load dashboard data."))
-    .finally(() => setLoading(false));
+      .then(setData)
+      .catch(() => setError("Failed to load dashboard data."))
+      .finally(() => setLoading(false));
   }, []);
   const s = data?.summary || {};
   const team = data?.team || [];
@@ -76,12 +76,12 @@ const ManagerDashboard = () => {
         </p>
       </div>
       {error &&
-      <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       }
       <RoleDashboardWidgets data={s} />
-      {}
+      { }
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         <KpiCard icon={Users} value={v("totalTeam")} label="Team Size" iconBg="bg-blue-50" iconColor="text-blue-600" />
         <KpiCard icon={CheckCircle2} value={v("presentToday")} label="Present Today" iconBg="bg-emerald-50" iconColor="text-emerald-600" />
@@ -91,9 +91,9 @@ const ManagerDashboard = () => {
         <KpiCard icon={FileCheck} value={v("approvedTimesheets")} label="Approved Timesheets" iconBg="bg-teal-50" iconColor="text-teal-600" to="/manager/timesheets" />
         <KpiCard icon={FileX} value={v("rejectedTimesheets")} label="Rejected Timesheets" iconBg="bg-red-50" iconColor="text-red-600" to="/manager/timesheets" />
       </div>
-      {}
+      { }
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {}
+        { }
         <div className="lg:col-span-2 admin-dash-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">
@@ -104,87 +104,89 @@ const ManagerDashboard = () => {
             </Link>
           </div>
           {loading ?
-          <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
-          team.length === 0 ?
-          <p className="text-sm text-gray-400 text-center py-8">
-              No team members found. Ensure employees have{" "}
-              <code className="text-xs bg-gray-100 px-1 rounded">reporting_to</code> set to your employee ID.
-            </p> :
-          <div className="overflow-x-auto">
-              <table className="admin-att-table w-full">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                    <th>Check In</th>
-                    <th>Check Out</th>
-                    <th>Hours</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {team.map((m) => {
-                  const att = ATT_BADGE[m.attendance_status] || ATT_BADGE.absent;
-                  return (
-                    <tr key={m.employee_id}>
-                        <td>
-                          <div className="flex items-center gap-2.5">
-                            <span className="admin-emp-avatar">{getInitials(m.name)}</span>
-                            <div>
-                              <span className="font-medium text-gray-900 block">{m.name}</span>
-                              <span className="text-xs text-gray-400">{m.emp_code}</span>
+            <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
+            team.length === 0 ?
+              <p className="text-sm text-gray-400 text-center py-8">
+                No team members found. Ensure employees have{" "}
+                <code className="text-xs bg-gray-100 px-1 rounded">reporting_to</code> set to your employee ID.
+              </p> :
+              <div className="overflow-x-auto">
+                <table className="admin-att-table w-full">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Department</th>
+                      <th>Status</th>
+                      <th>Check In</th>
+                      <th>Check Out</th>
+                      <th>Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {team.map((m) => {
+                      const att = ATT_BADGE[m.attendance_status] || ATT_BADGE.absent;
+                      return (
+                        <tr key={m.employee_id}>
+                          <td>
+                            <div className="flex items-center gap-2.5">
+                              <span className="admin-emp-avatar">{getInitials(m.name)}</span>
+                              <div>
+                                <span className="font-medium text-gray-900 block">{m.name}</span>
+                                <span className="text-xs text-gray-400">{m.emp_code}</span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="text-sm text-gray-600">{m.department_name || "—"}</td>
-                        <td>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`admin-status-badge ${att.cls}`}>{att.label}</span>
-                            {!!m.serving_notice &&
-                          <span className={cssClass({ fontSize: 10, padding: "2px 8px", borderRadius: 999,
-                            background: "#fff7ed", color: "#ea580c", border: "1px solid #fed7aa",
-                            fontWeight: 700, whiteSpace: "nowrap" })}>
-                                Serving Notice
-                              </span>
-                          }
-                          </div>
-                        </td>
-                        <td className="text-sm text-gray-600">{fmt(m.check_in)}</td>
-                        <td className="text-sm text-gray-600">{fmt(m.check_out)}</td>
-                        <td className="text-sm text-gray-600">
-                          {m.work_hours != null ? `${Number(m.work_hours).toFixed(2)}h` : "—"}
-                        </td>
-                      </tr>);
-                })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="text-sm text-gray-600">{m.department_name || "—"}</td>
+                          <td>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`admin-status-badge ${att.cls}`}>{att.label}</span>
+                              {!!m.serving_notice &&
+                                <span className={cssClass({
+                                  fontSize: 10, padding: "2px 8px", borderRadius: 999,
+                                  background: "#fff7ed", color: "#ea580c", border: "1px solid #fed7aa",
+                                  fontWeight: 700, whiteSpace: "nowrap"
+                                })}>
+                                  Serving Notice
+                                </span>
+                              }
+                            </div>
+                          </td>
+                          <td className="text-sm text-gray-600">{fmt(m.check_in)}</td>
+                          <td className="text-sm text-gray-600">{fmt(m.check_out)}</td>
+                          <td className="text-sm text-gray-600">
+                            {m.work_hours != null ? `${Number(m.work_hours).toFixed(2)}h` : "—"}
+                          </td>
+                        </tr>);
+                    })}
+                  </tbody>
+                </table>
+              </div>
           }
         </div>
-        {}
+        { }
         <div className="admin-dash-card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-800">Recent Team Activities</h2>
             <Activity size={16} className="text-gray-400" />
           </div>
           {loading ?
-          <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
-          activities.length === 0 ?
-          <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p> :
-          <div className="space-y-3">
-              {activities.map((a, i) =>
-            <div key={i} className="flex gap-3 items-start">
-                  <div className="mt-0.5 shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-                    {ACTIVITY_ICON[a.type] || <Activity size={12} className="text-gray-400" />}
+            <p className="text-sm text-gray-400 text-center py-8">Loading…</p> :
+            activities.length === 0 ?
+              <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p> :
+              <div className="space-y-3">
+                {activities.map((a, i) =>
+                  <div key={i} className="flex gap-3 items-start">
+                    <div className="mt-0.5 shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                      {ACTIVITY_ICON[a.type] || <Activity size={12} className="text-gray-400" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{a.actor}</p>
+                      <p className="text-xs text-gray-500 leading-snug">{a.detail}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{timeAgo(a.occurred_at)}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{a.actor}</p>
-                    <p className="text-xs text-gray-500 leading-snug">{a.detail}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{timeAgo(a.occurred_at)}</p>
-                  </div>
-                </div>
-            )}
-            </div>
+                )}
+              </div>
           }
           <div className="mt-4 pt-4 border-t border-gray-100 space-y-1">
             <Link to="/manager/team/leave" className="block text-sm text-brand font-medium">Leave requests <ArrowRight size={12} className="inline -mt-0.5" /></Link>
