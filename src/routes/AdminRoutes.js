@@ -2,6 +2,7 @@ import React, { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { getStoredUser } from "../data/auth";
 import LazyPage from "./LazyPage";
+import MenuPermissionGuard from "./MenuPermissionGuard";
 const Dashboard = lazy(() => import("../pages/admin/Dashboard"));
 const Employee = lazy(() => import("../pages/admin/Employee"));
 const EmployeeDetail = lazy(() => import("../pages/admin/EmployeeDetail"));
@@ -61,6 +62,7 @@ const AdminRoutes = () =>
   const user = getStoredUser();
   if (!user) return <Navigate to="/login" replace />;
   return (
+    <MenuPermissionGuard>
     <Routes>
       <Route index element={<Page><Dashboard /></Page>} />
       <Route path="employee" element={<Page><Employee /></Page>} />
@@ -118,6 +120,7 @@ const AdminRoutes = () =>
       <Route path="notification-center" element={<Page><NotificationCenter /></Page>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </MenuPermissionGuard>
   );
 };
 export default AdminRoutes;

@@ -15,7 +15,7 @@ router.post('/:id/comments', validate(addCommentSchema), controller.addComment);
 router.put('/:id/close', controller.closeTicket);
 router.put('/:id/reopen', validate(reopenTicketSchema), controller.reopenTicket);
 router.get('/team', controller.teamTickets);
-router.put('/:id/manager-action', validate(managerActionSchema), controller.managerAction);
+router.put('/:id/manager-action', requirePermission('helpdesk', 'edit'), validate(managerActionSchema), controller.managerAction);
 router.get('/', requirePermission('helpdesk', 'view'), controller.list);
 router.get('/:id', controller.getOne);
 router.put('/:id/status', requirePermission('helpdesk', 'edit'), validate(updateStatusSchema), controller.updateStatus);

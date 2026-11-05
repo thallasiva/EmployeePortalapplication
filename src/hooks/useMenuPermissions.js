@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { menuPermissionsApi } from "../api/settings.api";
 const CACHE_KEY = "hrms_menu_permissions";
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// Permission revocations must take effect on the next route load. Keeping a
+// five-minute browser cache left former access visible after an admin saved.
+const CACHE_TTL = 0;
 /**
  * Map the stored user's roleName to the key used in MenuPermissionBuilder.
  * The auth service returns `roleName` from the DB (e.g. "Admin", "HR Manager", "Finance", etc.)

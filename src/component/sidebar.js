@@ -23,6 +23,26 @@ const isPathActive = (pathname, link, search = "") =>
   if (linkQuery) return pathMatch && search.includes(linkQuery);
   return pathMatch;
 };
+
+// Child permissions from MenuPermissionBuilder must be applied independently;
+// otherwise disabling a tab only changes its toggle, not the visible sidebar.
+const MENU_ID_BY_LINK = [
+  [/\/dashboard\/employee(?:\/|$)/, "emp-list"],
+  [/\/dashboard\/create-employee(?:\/|$)/, "emp-create"],
+  [/\/dashboard\/leave\?tab=requests/, "leave-req"],
+  [/\/dashboard\/leave\?tab=balances/, "leave-bal"],
+  [/\/dashboard\/leave\?tab=types/, "leave-type"],
+  [/\/dashboard\/payroll\/payslips/, "pay-payslips"],
+  [/\/dashboard\/payroll\/ytd/, "pay-ytd"],
+  [/\/dashboard\/payroll\/inputs/, "pay-inputs"],
+  [/\/dashboard\/payroll\/compliance/, "pay-comply"],
+  [/\/dashboard\/payroll/, "pay-overview"],
+  [/\/dashboard\/recruitment/, "rec-jobs"],
+  [/\/dashboard\/settings\/email-configuration/, "set-email"],
+  [/\/dashboard\/notification-settings/, "set-notif"],
+  [/\/dashboard\/audit-logs/, "set-audit"],
+];
+const menuIdForLink = (link) => MENU_ID_BY_LINK.find(([pattern]) => pattern.test(link || ""))?.[1];
 export const Sidebar = ({ open }) =>
 {
   const navigate = useNavigate();
@@ -394,7 +414,18 @@ export const Sidebar = ({ open }) =>
   // Super Admin sees all items; other admin-role users see filtered items
   const filteredAdminItems = isSuperAdmin
     ? adminItems
-    : adminItems.filter(item => !item.permId || isAllowed(item.permId));
+    : adminItems.reduce((visible, item) => {
+      if (item.permId && !isAllowed(item.permId)) return visible;
+      const children = item.children?.filter((child) => {
+        const menuId = menuIdForLink(child.navigationLink);
+        return !menuId || isAllowed(menuId);
+      });
+      // A section which only contains disabled tabs should not remain as an
+      // empty expandable menu.
+      if (item.children?.length && !children?.length) return visible;
+      visible.push(item.children ? { ...item, children } : item);
+      return visible;
+    }, []);
   const items = isAdmin(user) ?
     filteredAdminItems :
     isReportingManager(user) ?
