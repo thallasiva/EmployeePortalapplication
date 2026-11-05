@@ -10,7 +10,11 @@
     "db:procedures": "node src/database/runSql.js procedures.sql",
     "db:patch:auth": "node src/database/runSql.js patch_auth_procedures.sql",
     "db:migrate:009": "node src/database/runSql.js migration_009_employee_extended_fields.sql",
-    "db:migrate:033": "node src/database/runSql.js migration_033_recruiter_employees.sql"
+    "db:migrate:033": "node src/database/runSql.js migration_033_recruiter_employees.sql",
+    "db:migrate:059": "node src/database/runSql.js migration_059_company_foundation.sql",
+    "db:migrate:060": "node src/database/runSql.js migration_060_appraisal_workflow.sql",
+    "db:migrate:061": "node src/database/runSql.js migration_061_company_salary_configuration.sql",
+    "db:migrate:062": "node src/database/runSql.js migration_062_payroll_configuration_versions.sql"
   },
   "license": "MIT",
   "dependencies": {

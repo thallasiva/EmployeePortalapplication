@@ -1,9 +1,11 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/itDeclaration.controller');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
+const { requireCompanyModule } = require('../middleware/rbac');
 const { requireMenuPermission } = require('../middleware/rbac');
 const { proofUpload } = require('../middleware/upload');
 router.use(authenticate);
+router.use(requireCompanyModule('payroll'));
 router.get('/cycle', ctrl.getLatestCycle);
 router.get('/my', ctrl.getMyDeclaration);
 router.post('/my/save', ctrl.saveMyDeclaration);

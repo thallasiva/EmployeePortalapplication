@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, callProcedureWithOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
 class LeaveRequestService extends BaseService {
@@ -13,20 +13,65 @@ class LeaveRequestService extends BaseService {
     const results = await callProcedure('sp_get_leave_email_pair(?)', [employeeId]);
     return (results[0] ?? [])[0] ?? {};
   }
-  async list({ employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset } = {}) {
-    const results = await callProcedure(
-      'sp_list_leave_requests(?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-      employee_id ?? null,
-      status ?? null,
-      leave_type_id ?? null,
-      department_id ?? null,
-      reporting_to ?? null,
-      limit != null ? Math.min(Number(limit), 10000) : null,
-      limit != null ? Number(offset || 0) : null,
-      team_role_id ?? null]
-    );
-    return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
+  async list({ employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset, companyId } = {}) {
+    const company = Number(companyId);
+    if (!Number.isInteger(company) || company <= 0) {
+      throw ApiError.forbidden('Company context is required');
+    }
+
+    const conditions = ['e.company_id = ?'];
+    const params = [company];
+    if (employee_id != null) {
+      conditions.push('lr.employee_id = ?');
+      params.push(employee_id);
+    }
+    if (status != null) {
+      conditions.push('lr.status = ?');
+      params.push(status);
+    }
+    if (leave_type_id != null) {
+      conditions.push('lr.leave_type_id = ?');
+      params.push(leave_type_id);
+    }
+    if (department_id != null) {
+      conditions.push('e.department_id = ?');
+      params.push(department_id);
+    }
+    if (reporting_to != null) {
+      conditions.push('(e.reporting_to = ? OR (? IS NOT NULL AND u.role_id = ?))');
+      params.push(reporting_to, team_role_id ?? null, team_role_id ?? null);
+    }
+
+    const where = conditions.join(' AND ');
+    const [rows, countRows] = await Promise.all([
+      query(
+        `SELECT lr.*, e.emp_code,
+                CONCAT(e.first_name, ' ', IFNULL(e.last_name, '')) AS employee_name,
+                d.department_name, lt.leave_type_name,
+                CONCAT(rv.first_name, ' ', IFNULL(rv.last_name, '')) AS reviewer_name
+           FROM leave_requests lr
+           JOIN employees e ON e.employee_id = lr.employee_id
+           JOIN leave_types lt ON lt.leave_type_id = lr.leave_type_id
+           JOIN users u ON u.employee_id = e.employee_id
+           LEFT JOIN departments d ON d.department_id = e.department_id
+           LEFT JOIN employees rv ON rv.employee_id = lr.reviewed_by
+          WHERE ${where}
+          ORDER BY lr.applied_on DESC
+          ${limit != null ? 'LIMIT ? OFFSET ?' : ''}`,
+        limit != null
+          ? [...params, Math.min(Number(limit), 10000), Number(offset || 0)]
+          : params
+      ),
+      query(
+        `SELECT COUNT(*) AS total
+           FROM leave_requests lr
+           JOIN employees e ON e.employee_id = lr.employee_id
+           JOIN users u ON u.employee_id = e.employee_id
+          WHERE ${where}`,
+        params
+      )
+    ]);
+    return { rows, total: countRows[0]?.total ?? 0 };
   }
   async getDetails(id) {
     const results = await callProcedure('sp_get_leave_request(?)', [id]);
@@ -110,12 +155,18 @@ class LeaveRequestService extends BaseService {
     const results = await callProcedure('sp_get_leave_balances(?, ?)', [employeeId, targetYear]);
     return results[0] ?? results;
   }
-  async allBalances(year) {
+  async allBalances(year, companyId) {
+    const company = Number(companyId);
+    if (!Number.isInteger(company) || company <= 0) {
+      throw ApiError.forbidden('Company context is required');
+    }
     const targetYear = Number(year) || new Date().getFullYear();
     const results = await callProcedure('sp_all_leave_balances(?)', [targetYear]);
-    const employees = results[0] ?? [];
+    const companyEmployees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
+    const employeeIds = new Set(companyEmployees.map((employee) => Number(employee.employee_id)));
+    const employees = (results[0] ?? []).filter((employee) => employeeIds.has(Number(employee.employee_id)));
     const leaveTypes = results[1] ?? [];
-    const balances = results[2] ?? [];
+    const balances = (results[2] ?? []).filter((balance) => employeeIds.has(Number(balance.employee_id)));
     const balMap = {};
     balances.forEach((b) => {balMap[`${b.employee_id}_${b.leave_type_id}`] = b;});
     const result = employees.map((emp) => ({
@@ -136,13 +187,55 @@ class LeaveRequestService extends BaseService {
     }));
     return { employees: result, leaveTypes, year: targetYear };
   }
-  async accrueEarnedLeave(month, year) {
+  async accrueEarnedLeave(month, year, companyId) {
     const m = Number(month);
     const y = Number(year);
     if (!m || !y) throw ApiError.badRequest('Invalid month or year');
-    const results = await callProcedure('sp_accrue_earned_leave(?, ?)', [m, y]);
-    const out = (results[0] ?? [])[0] ?? {};
-    return { accrued: out.accrued ?? 0, skipped: 0, earnedPerEmployee: null, month: m, year: y, leaveTypeId: out.leave_type_id };
+    const company = Number(companyId);
+    if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
+    const leaveTypes = await query(
+      `SELECT leave_type_id
+         FROM leave_types
+        WHERE leave_type_name LIKE '%Earned%'
+           OR leave_type_name LIKE '%EL%'
+           OR leave_type_name LIKE '%PL%'
+        ORDER BY leave_type_id ASC
+        LIMIT 1`
+    );
+    if (!leaveTypes.length) throw ApiError.badRequest('No Earned Leave type configured');
+    const leaveTypeId = leaveTypes[0].leave_type_id;
+    const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    let workingDays = 0;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const weekday = new Date(Date.UTC(y, m - 1, day)).getUTCDay();
+      if (weekday !== 0 && weekday !== 6) workingDays++;
+    }
+    const result = await query(
+      `INSERT INTO leave_balances
+         (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
+       SELECT e.employee_id, ?, ?, 0,
+              FLOOR(IFNULL(IFNULL(ps.paid_days, ps.working_days), ?) / 14 * 2) / 2,
+              0,
+              FLOOR(IFNULL(IFNULL(ps.paid_days, ps.working_days), ?) / 14 * 2) / 2
+         FROM employees e
+         LEFT JOIN payslips ps
+           ON ps.employee_id = e.employee_id AND ps.month = ? AND ps.year = ?
+        WHERE e.company_id = ?
+          AND e.employee_status = 'Active'
+          AND FLOOR(IFNULL(IFNULL(ps.paid_days, ps.working_days), ?) / 14 * 2) / 2 > 0
+       ON DUPLICATE KEY UPDATE
+         granted = granted + VALUES(granted),
+         balance = GREATEST(0, opening_balance + granted + VALUES(granted) - availed)`,
+      [leaveTypeId, y, workingDays, workingDays, m, y, company, workingDays]
+    );
+    return {
+      accrued: result.affectedRows ?? 0,
+      skipped: 0,
+      earnedPerEmployee: null,
+      month: m,
+      year: y,
+      leaveTypeId
+    };
   }
   async adjustBalance({ employeeId, leaveTypeId, year, opening_balance, granted, availed }) {
     const targetYear = Number(year) || new Date().getFullYear();
@@ -153,10 +246,29 @@ class LeaveRequestService extends BaseService {
     await callProcedure('sp_adjust_leave_balance(?, ?, ?, ?, ?, ?)', [employeeId, leaveTypeId, targetYear, ob, gr, av]);
     return { employeeId, leaveTypeId, year: targetYear, opening_balance: ob, granted: gr, availed: av, balance: bal };
   }
-  async initializeBalancesForYear(year) {
+  async initializeBalancesForYear(year, companyId) {
     const targetYear = Number(year) || new Date().getFullYear();
-    const results = await callProcedure('sp_init_leave_balances_year(?)', [targetYear]);
-    const created = (results[0] ?? [])[0]?.created ?? 0;
+    const company = Number(companyId);
+    if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
+    const result = await query(
+      `INSERT IGNORE INTO leave_balances
+         (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
+       SELECT e.employee_id, lt.leave_type_id, ?,
+              LEAST(IFNULL(prev.balance, 0), IFNULL(lt.carry_forward_limit, 0)),
+              IFNULL(lt.annual_quota, 0),
+              0,
+              LEAST(IFNULL(prev.balance, 0), IFNULL(lt.carry_forward_limit, 0)) + IFNULL(lt.annual_quota, 0)
+         FROM employees e
+         CROSS JOIN leave_types lt
+         LEFT JOIN leave_balances prev
+           ON prev.employee_id = e.employee_id
+          AND prev.leave_type_id = lt.leave_type_id
+          AND prev.year = ? - 1
+        WHERE e.company_id = ?
+          AND e.employee_status = 'Active'`,
+      [targetYear, targetYear, company]
+    );
+    const created = result.affectedRows ?? 0;
     return { year: targetYear, created, skipped: 0 };
   }
   async importBalances(rows, year) {
@@ -179,16 +291,22 @@ class LeaveRequestService extends BaseService {
     }
     return { imported, errors, year: targetYear };
   }
-  async leaveSummary(year, { department_id, status } = {}) {
+  async leaveSummary(year, { department_id, status } = {}, companyId) {
+    const company = Number(companyId);
+    if (!Number.isInteger(company) || company <= 0) {
+      throw ApiError.forbidden('Company context is required');
+    }
     const targetYear = Number(year) || new Date().getFullYear();
     const results = await callProcedure(
       'sp_get_leave_summary(?, ?, ?)',
       [targetYear, department_id ?? null, status ?? null]
     );
-    const employees = results[0] ?? [];
+    const companyEmployees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
+    const employeeIds = new Set(companyEmployees.map((employee) => Number(employee.employee_id)));
+    const employees = (results[0] ?? []).filter((employee) => employeeIds.has(Number(employee.employee_id)));
     const leaveTypes = results[1] ?? [];
-    const balances = results[2] ?? [];
-    const monthlyRows = results[3] ?? [];
+    const balances = (results[2] ?? []).filter((balance) => employeeIds.has(Number(balance.employee_id)));
+    const monthlyRows = (results[3] ?? []).filter((row) => employeeIds.has(Number(row.employee_id)));
     const balMap = {};
     balances.forEach((b) => {balMap[`${b.employee_id}_${b.leave_type_id}`] = b;});
     const monthMap = {};

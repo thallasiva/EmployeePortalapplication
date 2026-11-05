@@ -54,13 +54,14 @@ function ParameterRatingRow({ rating, mgRating, onRatingChange, onCommentChange,
           />
           <textarea
             value={mgRating?.manager_comments || ""}
+            disabled={!canReview}
             onChange={handleTextChange}
             placeholder="Add your feedback…"
             rows={2}
             className={cssClass({
               width: "100%", marginTop: 6, border: "1px solid #e2e8f0", borderRadius: 6,
               padding: "6px 10px", fontSize: 12, outline: "none", resize: "vertical",
-              boxSizing: "border-box", color: "#374151",
+              boxSizing: "border-box", color: "#374151", background: canReview ? "#fff" : "#f8fafc",
             })}
           />
         </div>

@@ -10,10 +10,23 @@ const companySchema = Joi.object({
   address: Joi.string().max(255).optional().allow('', null),
   email: Joi.string().email().optional().allow('', null),
   phone: Joi.string().max(30).optional().allow('', null),
+  country: Joi.string().max(100).optional().allow('', null),
+  timezone: Joi.string().max(64).optional().allow('', null),
+  currency: Joi.string().length(3).uppercase().optional().allow('', null),
+  status: Joi.string().valid('Active', 'Inactive').optional(),
+});
+const moduleKeys = ['employees', 'attendance', 'leave', 'payroll', 'recruitment', 'performance', 'timesheets', 'helpdesk', 'documents', 'reports', 'settings'];
+const modulesSchema = Joi.object({
+  modules: Joi.array().items(Joi.object({
+    module_key: Joi.string().valid(...moduleKeys).required(),
+    enabled: Joi.boolean().required(),
+  }).required()).min(1).required(),
 });
 router.use(authenticate);
-router.get('/', controller.list);
-router.get('/:id', controller.getOne);
+router.get('/', requirePermission('settings', 'view'), controller.list);
+router.get('/:id/modules', requirePermission('settings', 'view'), controller.getModules);
+router.put('/:id/modules', requirePermission('settings', 'edit'), validate(modulesSchema), controller.updateModules);
+router.get('/:id', requirePermission('settings', 'view'), controller.getOne);
 router.post('/', requirePermission('settings', 'add'), validate(companySchema), controller.create);
 router.put('/:id', requirePermission('settings', 'edit'), validate(companySchema.fork(['company_name'], (s) => s.optional())), controller.update);
 router.delete('/:id', requirePermission('settings', 'delete'), controller.remove);

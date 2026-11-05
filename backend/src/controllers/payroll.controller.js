@@ -1,4 +1,3 @@
-const salaryStructureService = require('../services/salaryStructure.service');
 const salaryComponentService = require('../services/salaryComponent.service');
 const payslipService = require('../services/payslip.service');
 const payrollRunService = require('../services/payrollRun.service');
@@ -8,20 +7,21 @@ const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { callProcedure } = require('../config/db');
 const { getPagination, buildMeta } = require('../utils/pagination');
-const { hasPermission } = require('../middleware/rbac');
+const { hasPermission, assertCompanyEmployee } = require('../middleware/rbac');
 const listSalaryStructures = asyncHandler(async (req, res) =>
 {
-  const structures = await salaryComponentService.listStructures();
+  const structures = await salaryComponentService.listStructures(req.user.companyId);
   new ApiResponse(200, structures, 'Salary structures fetched', { total: structures.length }).send(res);
 });
 const getSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const record = await salaryComponentService.getStructure(req.params.id);
+  const record = await salaryComponentService.getStructure(req.params.id, req.user.companyId);
   new ApiResponse(200, record, 'Salary structure fetched').send(res);
 });
 const getLatestSalaryStructure = asyncHandler(async (req, res) =>
 {
   const employeeId = req.params.employeeId || req.user.employeeId;
+  await assertCompanyEmployee(req.user, employeeId);
   const results = await callProcedure('sp_get_employee_salary_assignment(?)', [employeeId]);
   const assignment = (results[0] ?? [])[0] ?? null;
   if (!assignment) throw ApiError.notFound('No salary structure assigned to this employee');
@@ -30,20 +30,18 @@ const getLatestSalaryStructure = asyncHandler(async (req, res) =>
 });
 const createSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const record = await salaryComponentService.upsertStructure(null, req.body);
+  const record = await salaryComponentService.upsertStructure(null, req.body, req.user.companyId);
   new ApiResponse(201, record, 'Salary structure created').send(res);
 });
 const updateSalaryStructure = asyncHandler(async (req, res) =>
 {
-  const record = await salaryComponentService.upsertStructure(req.params.id, req.body);
+  const record = await salaryComponentService.upsertStructure(req.params.id, req.body, req.user.companyId);
   new ApiResponse(200, record, 'Salary structure updated').send(res);
 });
 const removeSalaryStructure = asyncHandler(async (req, res) =>
 {
-  await callProcedure('sp_upsert_salary_structure(?,?,?,?)', [
-  req.params.id, null, null, null]
-  ).catch(() => null);
-  new ApiResponse(200, null, 'Salary structure deleted').send(res);
+  await salaryComponentService.deactivateStructure(req.params.id, req.user.companyId);
+  new ApiResponse(200, null, 'Salary structure deactivated').send(res);
 });
 const importSalaryStructures = asyncHandler(async (req, res) =>
 {
@@ -57,7 +55,7 @@ const listPayslips = asyncHandler(async (req, res) =>
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, month, year, status, department_id, payroll_run_id } = req.query;
   const { rows, total } = await payslipService.list({
-    employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser: req.user
+    employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser: req.user, companyId: req.user.companyId
   });
   new ApiResponse(200, rows, 'Payslips fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -66,7 +64,7 @@ const myPayslips = asyncHandler(async (req, res) =>
   const { page, limit, offset } = getPagination(req.query);
   const { month, year, status } = req.query;
   const { rows, total } = await payslipService.list({
-    employee_id: req.user.employeeId, month, year, status, limit, offset, reqUser: req.user
+    employee_id: req.user.employeeId, month, year, status, limit, offset, reqUser: req.user, companyId: req.user.companyId
   });
   new ApiResponse(200, rows, 'Payslips fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -74,6 +72,7 @@ const getPayslip = asyncHandler(async (req, res) =>
 {
   const record = await payslipService.getDetails(req.params.id);
   if (!record) throw ApiError.notFound('Payslip not found');
+  if (record.employee_id) await assertCompanyEmployee(req.user, record.employee_id);
   new ApiResponse(200, record, 'Payslip fetched').send(res);
 });
 const getPayslipFull = asyncHandler(async (req, res) =>
@@ -81,6 +80,7 @@ const getPayslipFull = asyncHandler(async (req, res) =>
   const record = await payslipService.getFullDetails(req.params.id);
   if (!record) throw ApiError.notFound('Payslip not found');
   const isOwner = record.employee.employee_id === req.user.employeeId;
+  await assertCompanyEmployee(req.user, record.employee.employee_id);
   if (!isOwner)
   {
     const allowed = await hasPermission(req.user, 'payroll', 'view');
@@ -90,6 +90,7 @@ const getPayslipFull = asyncHandler(async (req, res) =>
 });
 const generatePayslip = asyncHandler(async (req, res) =>
 {
+  await assertCompanyEmployee(req.user, req.body.employee_id);
   const record = await payslipService.generate(req.body);
   new ApiResponse(200, record, 'Payslip generated').send(res);
 });
@@ -116,18 +117,21 @@ const generateAllPayslips = asyncHandler(async (req, res) =>
 });
 const markPayslipPaid = asyncHandler(async (req, res) =>
 {
+  const existing = await payslipService.getDetails(req.params.id);
+  if (!existing) throw ApiError.notFound('Payslip not found');
+  await assertCompanyEmployee(req.user, existing.employee_id);
   const record = await payslipService.markPaid(req.params.id);
   new ApiResponse(200, record, 'Payslip marked as paid').send(res);
 });
 const listPayrollRuns = asyncHandler(async (req, res) =>
 {
   const { page, limit, offset } = getPagination(req.query);
-  const { rows, total } = await payrollRunService.list({ year: req.query.year, status: req.query.status, limit, offset });
+  const { rows, total } = await payrollRunService.list({ year: req.query.year, status: req.query.status, limit, offset, companyId: req.user.companyId });
   new ApiResponse(200, rows, 'Payroll runs fetched', buildMeta({ page, limit, total })).send(res);
 });
 const getPayrollRun = asyncHandler(async (req, res) =>
 {
-  const record = await payrollRunService.getDetails(req.params.id);
+  const record = await payrollRunService.getDetails(req.params.id, req.user.companyId);
   if (!record) throw ApiError.notFound('Payroll run not found');
   new ApiResponse(200, record, 'Payroll run fetched').send(res);
 });
@@ -135,8 +139,8 @@ const getPayrollRun = asyncHandler(async (req, res) =>
 const runPayroll = asyncHandler(async (req, res) =>
 {
   const { month, year } = req.body;
-  const result = await payrollAttendanceService.processPayroll({ month: Number(month), year: Number(year), processedBy: req.user.employeeId });
-  const record = await payrollRunService.getDetails(result.payroll_run_id);
+  const result = await payrollAttendanceService.processPayroll({ month: Number(month), year: Number(year), processedBy: req.user.employeeId, companyId: req.user.companyId });
+  const record = await payrollRunService.getDetails(result.payroll_run_id, req.user.companyId);
   new ApiResponse(200, { ...record, processing: result },
     `Payroll processed for ${result.processed} employee(s)${result.on_hold ? `, ${result.on_hold} on hold` : ''}${result.skipped.length ? `, ${result.skipped.length} skipped (no salary)` : ''}`).send(res);
 });
@@ -144,31 +148,38 @@ const attendanceSummary = asyncHandler(async (req, res) => {
   const data = await payrollAttendanceService.getMonthSummary({
     month: req.query.month, year: req.query.year,
     includeDays: req.query.days !== '0',
+    companyId: req.user.companyId,
   });
   new ApiResponse(200, data, 'Attendance and salary summary fetched').send(res);
 });
 const saveAttendanceAdjustment = asyncHandler(async (req, res) => {
   const { month, year, lop_adjustment, hold_salary, reason } = req.body;
+  await assertCompanyEmployee(req.user, req.params.employeeId);
   const record = await payrollAttendanceService.saveAdjustment({
     employeeId: Number(req.params.employeeId), month: Number(month), year: Number(year),
-    lopAdjustment: lop_adjustment, holdSalary: hold_salary, reason, userId: req.user.employeeId,
+    lopAdjustment: lop_adjustment, holdSalary: hold_salary, reason, userId: req.user.employeeId, companyId: req.user.companyId,
   });
-  const [row] = (await payrollAttendanceService.getMonthSummary({ month, year, employeeIds: [Number(req.params.employeeId)] })).employees;
+  const [row] = (await payrollAttendanceService.getMonthSummary({
+    month,
+    year,
+    employeeIds: [Number(req.params.employeeId)],
+    companyId: req.user.companyId,
+  })).employees;
   new ApiResponse(200, { adjustment: record, employee: row || null }, 'Adjustment saved').send(res);
 });
 const submitPayrollReview = asyncHandler(async (req, res) =>
-  new ApiResponse(200, await payrollRunService.submitForReview(req.params.id, req.user.employeeId), 'Payroll submitted for review').send(res));
+  new ApiResponse(200, await payrollRunService.submitForReview(req.params.id, req.user.employeeId, req.user.companyId), 'Payroll submitted for review').send(res));
 const reviewPayroll = asyncHandler(async (req, res) =>
-  new ApiResponse(200, await payrollRunService.review(req.params.id, req.user.employeeId, req.body), 'Payroll review recorded').send(res));
+  new ApiResponse(200, await payrollRunService.review(req.params.id, req.user.employeeId, req.body, req.user.companyId), 'Payroll review recorded').send(res));
 const exportBankFile = asyncHandler(async (req, res) => {
-  const rows = await payrollRunService.exportBankFile(req.params.id);
+  const rows = await payrollRunService.exportBankFile(req.params.id, req.user.companyId);
   const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const csv = ['EMP_CODE,EMPLOYEE_NAME,ACCOUNT_NUMBER,IFSC_CODE,AMOUNT', ...rows.map(r => [r.emp_code, r.employee_name, r.account_number, r.ifsc_code, Number(r.net_pay).toFixed(2)].map(esc).join(','))].join('\n');
   res.attachment(`payroll-${req.params.id}-neft.csv`).type('text/csv').send(csv);
 });
-const listPayrollInputs = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.listInputs(req.query), 'Payroll inputs fetched').send(res));
-const createPayrollInput = asyncHandler(async (req, res) => new ApiResponse(201, await payrollRunService.createInput({ ...req.body, createdBy: req.user.employeeId }), 'Payroll input submitted for review').send(res));
-const reviewPayrollInput = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.reviewInput(req.params.id, req.user.employeeId, req.body), 'Payroll input reviewed').send(res));
+const listPayrollInputs = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.listInputs({ ...req.query, companyId: req.user.companyId }), 'Payroll inputs fetched').send(res));
+const createPayrollInput = asyncHandler(async (req, res) => new ApiResponse(201, await payrollRunService.createInput({ ...req.body, createdBy: req.user.employeeId, companyId: req.user.companyId }), 'Payroll input submitted for review').send(res));
+const reviewPayrollInput = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.reviewInput(req.params.id, req.user.employeeId, req.body, req.user.companyId), 'Payroll input reviewed').send(res));
 module.exports = {
   attendanceSummary,
   saveAttendanceAdjustment,
@@ -195,11 +206,11 @@ module.exports = {
 // (Node caches module.exports; we patch the exported object directly)
 const _payrollRunSvc = require('../services/payrollRun.service');
 const _lockRun   = asyncHandler(async (req, res) => {
-  const run = await _payrollRunSvc.lockRun(req.params.id, req.user.userId, req.body.note);
+  const run = await _payrollRunSvc.lockRun(req.params.id, req.user.userId, req.body.note, req.user.companyId);
   new ApiResponse(200, run, 'Payroll run locked').send(res);
 });
 const _unlockRun = asyncHandler(async (req, res) => {
-  const run = await _payrollRunSvc.unlockRun(req.params.id, req.user.userId);
+  const run = await _payrollRunSvc.unlockRun(req.params.id, req.user.userId, req.user.companyId);
   new ApiResponse(200, run, 'Payroll run unlocked').send(res);
 });
 module.exports.lockPayrollRun   = _lockRun;

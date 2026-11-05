@@ -6,10 +6,13 @@ const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
 const router = express.Router();
 const schema = Joi.object({
+  company_id: Joi.number().integer().positive().allow(null),
   office_name: Joi.string().max(100).required(),
   location: Joi.string().max(100).allow('', null),
   address: Joi.string().max(255).allow('', null),
   holiday_calendar: Joi.string().max(100).allow('', null),
+  timezone: Joi.string().max(64).allow('', null),
+  status: Joi.string().valid('Active', 'Inactive'),
 });
 router.use(authenticate);
 router.get('/', controller.list);

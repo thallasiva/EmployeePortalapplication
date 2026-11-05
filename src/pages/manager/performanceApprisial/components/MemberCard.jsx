@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { ChevronDown, ChevronUp, Save } from "lucide-react";
+import { ChevronDown, ChevronUp, Save, Send } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
 import { saveManagerRating } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
@@ -9,6 +9,8 @@ import ParameterRatingRow from "./ParameterRatingRow";
 function MemberCard({ member, appraisalId, onSaved }) {
   const [open, setOpen] = useState(false);
   const [mgRatings, setMgRatings] = useState({});
+  const [goalFeedback, setGoalFeedback] = useState({});
+  const [managerFeedback, setManagerFeedback] = useState("");
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
   useEffect(() => {
@@ -20,16 +22,18 @@ function MemberCard({ member, appraisalId, onSaved }) {
       };
     });
     setMgRatings(map);
-  }, [member.ratings]);
-  const hasSubmission = member.appraisal_status === "submitted" || member.appraisal_status === "approved";
+    setGoalFeedback(Object.fromEntries((member.goals || []).map((goal) => [goal.goal_id, goal.manager_feedback || ""])));
+    setManagerFeedback(member.manager_feedback || "");
+  }, [member.ratings, member.goals, member.manager_feedback]);
+  const hasSubmission = member.appraisal_status === "submitted" || member.appraisal_status === "manager_review";
   const hasDraft = member.appraisal_status === "draft";
   const canReview = hasSubmission;
-  const canExpand = hasSubmission || hasDraft;
+  const canExpand = Boolean(appraisalId);
   const notify = useCallback((msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 2500);
   }, []);
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (submit = false) => {
     setSaving(true);
     try {
       const ratingsArr = (member.ratings || []).map((r) => ({
@@ -37,14 +41,18 @@ function MemberCard({ member, appraisalId, onSaved }) {
         manager_rating: mgRatings[r.parameter_key]?.manager_rating || null,
         manager_comments: mgRatings[r.parameter_key]?.manager_comments || null,
       }));
-      await saveManagerRating(appraisalId, { ratings: ratingsArr });
-      notify("Ratings saved!");
+      const goals = (member.goals || []).map((goal) => ({
+        goal_id: goal.goal_id,
+        manager_feedback: goalFeedback[goal.goal_id] || "",
+      }));
+      await saveManagerRating(appraisalId, { ratings: ratingsArr, goals, manager_feedback: managerFeedback, submit });
+      notify(submit ? "Review submitted to HR." : "Ratings saved.");
       onSaved && onSaved();
     } catch (e) {
       notify(e?.response?.data?.message || "Failed.", "error");
     }
     setSaving(false);
-  }, [member.ratings, mgRatings, appraisalId, onSaved, notify]);
+  }, [member.ratings, member.goals, mgRatings, goalFeedback, managerFeedback, appraisalId, onSaved, notify]);
   const handleRatingChange = useCallback((key, v) => {
     setMgRatings((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), manager_rating: v } }));
   }, []);
@@ -108,10 +116,10 @@ function MemberCard({ member, appraisalId, onSaved }) {
           </div>
         )}
       </button>
-      {!canReview && (
+      {!canExpand && (
         <div className={cssClass({ padding: "0 18px 12px" })}>
           <p className={cssClass({ fontSize: 12, color: "#94a3b8", margin: 0, fontStyle: "italic" })}>
-            {member.appraisal_status === "draft"
+            {hasDraft
               ? "Employee has saved a draft but not submitted yet."
               : "Employee hasn't started their appraisal yet."}
           </p>
@@ -140,14 +148,45 @@ function MemberCard({ member, appraisalId, onSaved }) {
               <p className={cssClass({ fontSize: 13, color: "#78350f", margin: 0 })}>{member.overall_comments}</p>
             </div>
           )}
+          {member.goals?.length > 0 && (
+            <div className={cssClass({ marginTop: 16 })}>
+              <p className={cssClass({ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", margin: "0 0 8px" })}>Employee goals and evidence</p>
+              <div className={cssClass({ display: "grid", gap: 8 })}>
+                {member.goals.map((goal) => (
+                  <div key={goal.goal_id} className={cssClass({ border: "1px solid #e2e8f0", borderRadius: 8, padding: 10 })}>
+                    <p className={cssClass({ margin: "0 0 4px", fontWeight: 700, fontSize: 13, color: "#1e293b" })}>{goal.title}</p>
+                    {goal.description && <p className={cssClass({ margin: "0 0 4px", fontSize: 12, color: "#475569" })}>{goal.description}</p>}
+                    {goal.success_metrics && <p className={cssClass({ margin: "0 0 4px", fontSize: 12, color: "#475569" })}>Success measures: {goal.success_metrics}</p>}
+                    {goal.self_progress && <p className={cssClass({ margin: "0 0 4px", fontSize: 12, color: "#475569" })}>Progress: {goal.self_progress}</p>}
+                    {goal.evidence_url && <a href={goal.evidence_url} target="_blank" rel="noreferrer" className={cssClass({ fontSize: 12, color: BRAND })}>Open evidence</a>}
+                    {canReview && <textarea value={goalFeedback[goal.goal_id] || ""} onChange={(event) => setGoalFeedback((current) => ({ ...current, [goal.goal_id]: event.target.value }))} rows={2} placeholder="Feedback on this goal"
+                      className={cssClass({ display: "block", width: "100%", boxSizing: "border-box", marginTop: 7, border: "1px solid #e2e8f0", borderRadius: 6, padding: "6px 9px", fontSize: 12 })} />}
+                    {!canReview && goal.manager_feedback && <p className={cssClass({ fontSize: 12, color: "#6366f1", margin: "5px 0 0" })}>Manager: {goal.manager_feedback}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {canReview && (
-            <div className={cssClass({ display: "flex", justifyContent: "flex-end", marginTop: 14 })}>
-              <button onClick={handleSave} disabled={saving}
+            <div className={cssClass({ marginTop: 14 })}>
+              <label className={cssClass({ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 5 })}>Overall manager feedback</label>
+              <textarea value={managerFeedback} onChange={(event) => setManagerFeedback(event.target.value)} rows={3}
+                placeholder="Summarize strengths, opportunities, and next steps"
+                className={cssClass({ width: "100%", boxSizing: "border-box", border: "1px solid #e2e8f0", borderRadius: 7, padding: "8px 10px", fontSize: 13 })} />
+              <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 10 })}>
+              <button onClick={() => handleSave(false)} disabled={saving}
+                className={cssClass({ padding: "9px 22px", borderRadius: 8, border: "none",
+                  background: "#eef2ff", color: "#4338ca", fontWeight: 600, fontSize: 13,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 6 })}>
+                <Save size={14} />{saving ? "Saving…" : "Save Draft"}
+              </button>
+              <button onClick={() => handleSave(true)} disabled={saving || !managerFeedback.trim() || (member.ratings || []).some((rating) => !mgRatings[rating.parameter_key]?.manager_rating)}
                 className={cssClass({ padding: "9px 22px", borderRadius: 8, border: "none",
                   background: BRAND, color: "#fff", fontWeight: 600, fontSize: 13,
                   cursor: "pointer", display: "flex", alignItems: "center", gap: 6 })}>
-                <Save size={14} />{saving ? "Saving…" : "Save My Ratings"}
+                <Send size={14} />{saving ? "Submitting…" : "Submit to HR"}
               </button>
+              </div>
             </div>
           )}
           {hasDraft && !canReview && (

@@ -11,9 +11,10 @@ const {
   submitReviewSchema
 } = require('../validators/review.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('performance'));
 router.get('/types', reviewTypeController.list);
 router.get('/types/:id', reviewTypeController.getOne);
 router.post('/types', requirePermission('reviews', 'add'), validate(createReviewTypeSchema), reviewTypeController.create);

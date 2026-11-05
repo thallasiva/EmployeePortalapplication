@@ -2,6 +2,17 @@ const path = require('path');
 const fs = require('fs');
 const { query, callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+async function assertEmployeeCompany(employeeId, companyId) {
+  const company = Number(companyId);
+  if (!Number.isInteger(company) || company <= 0) {
+    throw ApiError.forbidden('Company context is required');
+  }
+  const rows = await query(
+    'SELECT 1 FROM employees WHERE employee_id = ? AND company_id = ? LIMIT 1',
+    [employeeId, company]
+  );
+  if (!rows.length) throw ApiError.forbidden('You can only access employee records in your company');
+}
 async function getLatestCycle() {
   const results = await callProcedure('sp_get_latest_it_cycle()');
   return (results[0] ?? [])[0] ?? null;
@@ -35,14 +46,16 @@ async function getOrCreateDeclaration(employeeId, cycleId) {
   );
   return (results[0] ?? [])[0] ?? null;
 }
-async function getMyDeclaration(employeeId) {
+async function getMyDeclaration(employeeId, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   const results = await callProcedure('sp_get_my_it_declaration(?)', [employeeId]);
   const cycle = (results[0] ?? [])[0] ?? null;
   const declaration = (results[1] ?? [])[0] ?? null;
   const items = results[2] ?? [];
   return { cycle, declaration, items };
 }
-async function saveMyDeclaration(employeeId, { items, submit }) {
+async function saveMyDeclaration(employeeId, { items, submit }, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   const cycle = await getLatestCycle();
   if (!cycle) throw ApiError.notFound('No IT declaration cycle found');
   if (cycle.status !== 'active') throw ApiError.badRequest('IT Declaration cycle is not active');
@@ -71,13 +84,15 @@ async function saveMyDeclaration(employeeId, { items, submit }) {
   await callProcedure('sp_update_it_declaration_status(?, ?, ?, ?)', [
   decl.declaration_id, newStatus, total, submittedAt]
   );
-  return getMyDeclaration(employeeId);
+  return getMyDeclaration(employeeId, companyId);
 }
-async function getMyProofs(employeeId) {
+async function getMyProofs(employeeId, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   const results = await callProcedure('sp_get_my_it_proofs(?)', [employeeId]);
   return results[0] ?? [];
 }
-async function uploadProof(employeeId, { investment_type, section_key, declared_amount, actual_amount }, file) {
+async function uploadProof(employeeId, { investment_type, section_key, declared_amount, actual_amount }, file, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   if (!file) throw ApiError.badRequest('A PDF, JPG, or PNG proof document is required');
   if (!investment_type) throw ApiError.badRequest('Investment type is required');
   const cycle = await getLatestCycle();
@@ -94,7 +109,8 @@ async function uploadProof(employeeId, { investment_type, section_key, declared_
   );
   return (results[0] ?? [])[0] ?? null;
 }
-async function deleteMyProof(employeeId, proofId) {
+async function deleteMyProof(employeeId, proofId, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   const proofResults = await callProcedure('sp_get_it_proof(?, ?, ?)', [proofId, employeeId, 0]);
   const proof = (proofResults[0] ?? [])[0] ?? null;
   if (!proof) throw ApiError.notFound('Proof not found');
@@ -107,7 +123,13 @@ async function deleteMyProof(employeeId, proofId) {
   await callProcedure('sp_delete_it_proof(?)', [proofId]);
   return { deleted: true };
 }
-async function getAllDeclarations({ cycleId, status, search } = {}) {
+async function getAllDeclarations({ cycleId, status, search, companyId } = {}) {
+  const company = Number(companyId);
+  if (!Number.isInteger(company) || company <= 0) {
+    throw ApiError.forbidden('Company context is required');
+  }
+  const companyEmployees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
+  const employeeIds = new Set(companyEmployees.map((employee) => Number(employee.employee_id)));
   let cycle;
   if (cycleId) {
     const results = await callProcedure('sp_get_it_declaration_by_id(?)', [cycleId]);
@@ -118,14 +140,15 @@ async function getAllDeclarations({ cycleId, status, search } = {}) {
   }
   if (!cycle) {
     const empResults = await callProcedure('sp_get_all_it_declarations(NULL)');
-    const employees = empResults[0] ?? [];
+    const employees = (empResults[0] ?? []).filter((employee) => employeeIds.has(Number(employee.employee_id)));
     return { cycle: null, declarations: employees.map((e) => ({ ...e, declaration: null, items: [], proofs: [] })) };
   }
   const results = await callProcedure('sp_get_all_it_declarations(?)', [cycle.cycle_id]);
-  const employees = results[0] ?? [];
-  const decls = results[1] ?? [];
-  const allItems = results[2] ?? [];
-  const allProofs = results[3] ?? [];
+  const employees = (results[0] ?? []).filter((employee) => employeeIds.has(Number(employee.employee_id)));
+  const decls = (results[1] ?? []).filter((declaration) => employeeIds.has(Number(declaration.employee_id)));
+  const declarationIds = new Set(decls.map((declaration) => Number(declaration.declaration_id)));
+  const allItems = (results[2] ?? []).filter((item) => declarationIds.has(Number(item.declaration_id)));
+  const allProofs = (results[3] ?? []).filter((proof) => declarationIds.has(Number(proof.declaration_id)));
   const declMap = {};
   decls.forEach((d) => {declMap[d.employee_id] = d;});
   const itemMap = {};
@@ -160,24 +183,33 @@ async function getAllDeclarations({ cycleId, status, search } = {}) {
   }
   return { cycle, declarations: list };
 }
-async function reviewDeclaration(adminEmployeeId, declarationId, { status, admin_remarks }) {
+async function reviewDeclaration(adminEmployeeId, declarationId, { status, admin_remarks }, companyId) {
   if (!['approved', 'rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
+  await assertEmployeeCompany(adminEmployeeId, companyId);
+  const rows = await query('SELECT employee_id FROM it_declarations WHERE declaration_id = ? LIMIT 1', [declarationId]);
+  if (!rows.length) throw ApiError.notFound('Declaration not found');
+  await assertEmployeeCompany(rows[0].employee_id, companyId);
   const results = await callProcedure('sp_review_it_declaration(?, ?, ?, ?)', [
   adminEmployeeId, declarationId, status, admin_remarks || null]
   );
   return (results[0] ?? [])[0] ?? null;
 }
-async function reviewProof(adminEmployeeId, proofId, { status, admin_remarks }) {
+async function reviewProof(adminEmployeeId, proofId, { status, admin_remarks }, companyId) {
   if (!['verified', 'rejected'].includes(status)) throw ApiError.badRequest('Invalid status');
+  await assertEmployeeCompany(adminEmployeeId, companyId);
+  const rows = await query('SELECT employee_id FROM it_proof_documents WHERE proof_id = ? LIMIT 1', [proofId]);
+  if (!rows.length) throw ApiError.notFound('Proof not found');
+  await assertEmployeeCompany(rows[0].employee_id, companyId);
   const results = await callProcedure('sp_review_it_proof(?, ?, ?, ?)', [
   adminEmployeeId, proofId, status, admin_remarks || null]
   );
   return (results[0] ?? [])[0] ?? null;
 }
-async function getProofFile(proofId, employeeId, isAdmin) {
+async function getProofFile(proofId, employeeId, isAdmin, companyId) {
   const results = await callProcedure('sp_get_it_proof(?, ?, ?)', [proofId, employeeId ?? null, isAdmin ? 1 : 0]);
   const proof = (results[0] ?? [])[0] ?? null;
   if (!proof || !proof.file_path) throw ApiError.notFound('File not found');
+  await assertEmployeeCompany(proof.employee_id, companyId);
   const { upload: uploadConfig } = require('../config/env');
   const filePath = path.resolve(process.cwd(), uploadConfig.dir, proof.file_path);
   if (!fs.existsSync(filePath)) throw ApiError.notFound('File not found on disk');

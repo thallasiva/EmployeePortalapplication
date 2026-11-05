@@ -10,9 +10,10 @@ const {
   updateReferralStatusSchema
 } = require('../validators/hiring.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('recruitment'));
 router.get('/jobs', controller.listJobs);
 router.get('/jobs/:id', controller.getJob);
 router.post('/jobs', requirePermission('hiring', 'add'), validate(createJobSchema), controller.createJob);

@@ -9,12 +9,15 @@ async function ensureTable() {
   await query(`CREATE TABLE IF NOT EXISTS audit_logs (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id    INT DEFAULT NULL,
+    company_id INT DEFAULT NULL,
     action     VARCHAR(60) NOT NULL,
     entity     VARCHAR(60) NOT NULL,
     entity_id  VARCHAR(40) DEFAULT NULL,
     details    JSON DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   ) ENGINE=InnoDB`);
+  const companyColumn = await query("SHOW COLUMNS FROM audit_logs LIKE 'company_id'");
+  if (!companyColumn.length) await query('ALTER TABLE audit_logs ADD COLUMN company_id INT DEFAULT NULL');
 }
 router.get(
   '/',
@@ -39,6 +42,16 @@ router.get(
         FROM salary_audit_log sal`;
     let where = 'WHERE 1=1';
     const params = [];
+    if (req.user.companyId) {
+      where += ` AND EXISTS (
+        SELECT 1 FROM users scoped_user
+        JOIN employees scoped_employee ON scoped_employee.employee_id = scoped_user.employee_id
+        LEFT JOIN departments scoped_department ON scoped_department.department_id = scoped_employee.department_id
+        WHERE scoped_user.user_id = x.user_id
+          AND COALESCE(scoped_employee.company_id, scoped_department.company_id) = ?
+      )`;
+      params.push(req.user.companyId);
+    }
     if (search) {
       where += ' AND (x.action LIKE ? OR x.module LIKE ? OR u.email LIKE ?)';
       const s = `%${search}%`;

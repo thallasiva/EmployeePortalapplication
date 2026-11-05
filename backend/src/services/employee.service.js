@@ -3,7 +3,7 @@ const { callProcedure, callProcedureWithOuts } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify   = require('./mailNotify.service');
 const FILLABLE = [
-  'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'dob',
+  'company_id', 'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'dob',
   'marital_status', 'blood_group', 'profile_photo', 'reporting_to', 'emp_job_title',
   'department_id', 'designation_id', 'leadership_role_id', 'office_id', 'team_id',
   'employee_type', 'employee_status', 'shift', 'location', 'holiday_calendar',
@@ -35,7 +35,8 @@ class EmployeeService extends BaseService {
     const results = await callProcedure('sp_get_org_chart()');
     return results[0] ?? results;
   }
-  async list({ department, status, search, reporting_to, limit, offset } = {}) {
+  async list({ department, status, search, reporting_to, limit, offset, companyId } = {}) {
+    const scoped = companyId != null;
     const results = await callProcedure(
       'sp_list_employees(?, ?, ?, ?, ?, ?)',
       [
@@ -43,13 +44,19 @@ class EmployeeService extends BaseService {
         status       ?? null,
         search       ?? null,
         reporting_to ?? null,
-        limit != null ? Number(limit)       : null,
-        limit != null ? Number(offset || 0) : null,
+        scoped ? null : (limit != null ? Number(limit) : null),
+        scoped ? null : (limit != null ? Number(offset || 0) : null),
       ]
     );
-    const rows  = results[0] ?? [];
-    const count = results[1] ?? [];
-    return { rows, total: count[0]?.total ?? 0 };
+    let rows = results[0] ?? [];
+    let total = results[1]?.[0]?.total ?? rows.length;
+    if (scoped) {
+      rows = rows.filter((employee) => Number(employee.company_id) === Number(companyId));
+      total = rows.length;
+      const start = Math.max(0, Number(offset) || 0);
+      rows = limit != null ? rows.slice(start, start + Number(limit)) : rows;
+    }
+    return { rows, total };
   }
   async getProfile(employeeId) {
     const results = await callProcedure('sp_get_employee_profile(?)', [employeeId]);

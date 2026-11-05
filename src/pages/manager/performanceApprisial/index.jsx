@@ -7,7 +7,7 @@ import { fmtDate } from "./utils";
 import { usePerformanceAppraisal } from "./hooks/usePerformanceAppraisal";
 import MemberCard from "./components/MemberCard";
 function PerformanceApprisial() {
-  const { loading, cycle, team, submitted, pending, isActive, load } = usePerformanceAppraisal();
+  const { loading, cycle, team, submitted, pending, reviewed, isActive, error, load } = usePerformanceAppraisal();
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f5f7fb", padding: 24 })}>
       <ManagerTabs />
@@ -19,7 +19,7 @@ function PerformanceApprisial() {
           {cycle ? `${cycle.fy_label} · Deadline: ${fmtDate(cycle.deadline)}` : "Loading cycle…"}
         </p>
       </div>
-      {!loading && (!cycle || !isActive) && (
+      {!loading && (!cycle || (!isActive && team.length === 0)) && (
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 40, textAlign: "center" })}>
           <Lock size={48} className={cssClass({ color: "#cbd5e1", marginBottom: 12 })} />
           <h2 className={cssClass({ fontSize: 16, fontWeight: 700, color: "#1e293b", margin: "0 0 8px" })}>
@@ -31,17 +31,19 @@ function PerformanceApprisial() {
           </p>
         </div>
       )}
+      {error && <div role="alert" className={cssClass({ margin: "12px 0", padding: 12, borderRadius: 8, color: "#b91c1c", background: "#fef2f2" })}>{error}</div>}
       {loading ? (
         <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8" })}>
           Loading team appraisals…
         </div>
-      ) : isActive && (
+      ) : (isActive || team.length > 0) && (
         <>
           <div className={cssClass({ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" })}>
             {[
               { label: "Team Size", value: team.length, color: BRAND },
               { label: "Submitted", value: submitted.length, color: "#22c55e" },
               { label: "Pending", value: pending.length, color: "#f59e0b" },
+              { label: "In HR workflow", value: reviewed.length, color: "#6366f1" },
             ].map((s) => (
               <div key={s.label} className={cssClass({ background: "#fff", border: "1px solid #e2e8f0",
                 borderRadius: 10, padding: "12px 20px", textAlign: "center", minWidth: 110,
@@ -78,6 +80,19 @@ function PerformanceApprisial() {
                 </p>
               </div>
               {pending.map((m) => (
+                <MemberCard key={m.employee_id} member={m} appraisalId={m.appraisal_id} onSaved={load} />
+              ))}
+            </>
+          )}
+          {reviewed.length > 0 && (
+            <>
+              <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, margin: "20px 0 10px" })}>
+                <CheckCircle2 size={16} className={cssClass({ color: "#6366f1" })} />
+                <p className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: 0 })}>
+                  Manager review complete ({reviewed.length})
+                </p>
+              </div>
+              {reviewed.map((m) => (
                 <MemberCard key={m.employee_id} member={m} appraisalId={m.appraisal_id} onSaved={load} />
               ))}
             </>

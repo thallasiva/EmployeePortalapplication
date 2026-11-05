@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { getMyAppraisal, saveMyAppraisal } from "../../../../../api/appraisal.api";
+import { acknowledgeMyAppraisal, getMyAppraisal, saveMyAppraisal } from "../../../../../api/appraisal.api";
 export function useSelfAppraisal() {
   const [loading, setLoading]     = useState(true);
   const [saving, setSaving]       = useState(false);
@@ -11,8 +11,11 @@ export function useSelfAppraisal() {
   const [overall, setOverall]     = useState("");
   const [toast, setToast]         = useState(null);
   const [enrolled, setEnrolled]   = useState(true);
+  const [goals, setGoals] = useState([]);
+  const [error, setError] = useState("");
   const load = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
       const d = await getMyAppraisal();
       setCycle(d.cycle);
@@ -20,6 +23,13 @@ export function useSelfAppraisal() {
       setEnrolled(d.enrolled !== false);
       setParams(d.parameters || []);
       setRawRatings(d.ratings || []);
+      setGoals((d.goals || []).map((goal) => ({
+        title: goal.title || "",
+        description: goal.description || "",
+        success_metrics: goal.success_metrics || "",
+        self_progress: goal.self_progress || "",
+        evidence_url: goal.evidence_url || "",
+      })));
       const map = {};
       (d.parameters || []).forEach((p) => {
         map[p.key] = { self_rating: 0, self_comments: "" };
@@ -32,7 +42,9 @@ export function useSelfAppraisal() {
       });
       setRatings(map);
       setOverall(d.appraisal?.overall_comments || "");
-    } catch {}
+    } catch (e) {
+      setError(e?.response?.data?.message || "Unable to load your appraisal.");
+    }
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -51,23 +63,52 @@ export function useSelfAppraisal() {
         }));
         const d = await saveMyAppraisal({
           ratings: ratingsArr,
+          goals,
           overall_comments: overall,
           submit,
         });
         setAppraisal(d.appraisal);
         setRawRatings(d.ratings || []);
+        setGoals((d.goals || []).map((goal) => ({
+          title: goal.title || "",
+          description: goal.description || "",
+          success_metrics: goal.success_metrics || "",
+          self_progress: goal.self_progress || "",
+          evidence_url: goal.evidence_url || "",
+        })));
+        setError("");
         notify(submit ? "Appraisal submitted!" : "Draft saved.");
       } catch (e) {
-        notify(e?.response?.data?.message || "Failed to save.", "error");
+        const message = e?.response?.data?.message || "Failed to save.";
+        setError(message);
+        notify(message, "error");
       }
       setSaving(false);
     },
-    [params, ratings, overall, notify]
+    [params, ratings, goals, overall, notify]
   );
+  const handleAcknowledge = useCallback(async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const d = await acknowledgeMyAppraisal(appraisal?.appraisal_id);
+      setAppraisal(d.appraisal);
+      notify("Review acknowledged.");
+    } catch (e) {
+      const message = e?.response?.data?.message || "Unable to acknowledge the review.";
+      setError(message);
+      notify(message, "error");
+    } finally {
+      setSaving(false);
+    }
+  }, [appraisal?.appraisal_id, notify]);
   const updateRating = useCallback((key, rating) => {
     setRatings((prev) => ({ ...prev, [key]: rating }));
   }, []);
-  const isSubmitted = appraisal?.status === "submitted";
+  const isEditable = cycle?.status === "active" && (!appraisal || ["draft", "changes_requested"].includes(appraisal.status));
+  const isSubmitted = !isEditable;
+  const isShared = appraisal?.status === "shared";
+  const isClosed = appraisal?.status === "closed";
   const isActive    = cycle?.status === "active";
   const rated       = params.filter((p) => (ratings[p.key]?.self_rating || 0) > 0).length;
   const allRated    = rated === params.length && params.length > 0;
@@ -82,9 +123,9 @@ export function useSelfAppraisal() {
     [params, ratings]
   );
   return {
-    loading, saving, cycle, appraisal, params, ratings, rawRatings,
-    overall, setOverall, toast, enrolled,
-    isSubmitted, isActive, rated, allRated, avgRating,
-    handleSave, updateRating,
+    loading, saving, cycle, appraisal, params, ratings, rawRatings, goals, setGoals,
+    overall, setOverall, toast, enrolled, error, setError,
+    isEditable, isSubmitted, isShared, isClosed, isActive, rated, allRated, avgRating,
+    handleSave, handleAcknowledge, updateRating,
   };
 }

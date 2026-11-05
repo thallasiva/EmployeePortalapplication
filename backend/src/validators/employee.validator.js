@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const createEmployeeSchema = Joi.object({
+  company_id: Joi.number().integer().positive().allow(null),
   emp_code: Joi.string().max(30).allow('', null),
   first_name: Joi.string().max(80).required(),
   last_name: Joi.string().max(80).allow('', null),

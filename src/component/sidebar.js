@@ -205,9 +205,10 @@ export const Sidebar = ({ open }) =>
     {
       label: "Company", permId: "company",
       icon: <Building size={20} />,
-      navigationLink: "/dashboard/company",
-      badge: "New",
-      badgeColor: "#f18200"
+      children: [
+        { label: "Company Profiles", navigationLink: "/dashboard/company" },
+        { label: "Branches & Locations", navigationLink: "/dashboard/offices" }
+      ]
     },
     {
       label: "Workflow & Hierarchy", permId: "workflow",

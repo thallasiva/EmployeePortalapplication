@@ -8,6 +8,7 @@ const Employee = lazy(() => import("../pages/admin/Employee"));
 const EmployeeDetail = lazy(() => import("../pages/admin/EmployeeDetail"));
 const CreateEmployee = lazy(() => import("../pages/admin/CreateEmployee"));
 const Company = lazy(() => import("../pages/admin/Company"));
+const Offices = lazy(() => import("../pages/admin/Offices"));
 const CreateCompany = lazy(() => import("../pages/admin/CreateCompany"));
 const CalendarForm = lazy(() => import("../pages/admin/CalendarForm"));
 const AdminCalendar = lazy(() => import("../pages/admin/Calendar"));
@@ -69,6 +70,7 @@ const AdminRoutes = () =>
       <Route path="employee/:id" element={<Page><EmployeeDetail /></Page>} />
       <Route path="create-employee" element={<Page><CreateEmployee /></Page>} />
       <Route path="company" element={<Page><Company /></Page>} />
+      <Route path="offices" element={<Page><Offices /></Page>} />
       <Route path="create-company" element={<Page><CreateCompany /></Page>} />
       <Route path="calendar" element={<Page><AdminCalendar /></Page>} />
       <Route path="calendar/form" element={<Page><CalendarForm /></Page>} />

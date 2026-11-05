@@ -1,8 +1,10 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/resignation.controller');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
+const { requireCompanyModule } = require('../middleware/rbac');
 const upload = require('../middleware/upload');
 router.use(authenticate);
+router.use(requireCompanyModule('employees'));
 router.get('/my', ctrl.getMyResignations);
 router.post('/my', upload.single('file'), ctrl.submitResignation);
 router.put('/my/:id/withdraw', ctrl.withdrawResignation);

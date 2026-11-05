@@ -4,8 +4,10 @@ import { createAppraisalCycle } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
 import Modal from "./Modal";
 import CycleTypePicker from "./CycleTypePicker";
+import ReviewTemplateEditor from "./ReviewTemplateEditor";
+import { DEFAULT_APPRAISAL_CRITERIA } from "../../../../data/appraisalTemplate";
 const CreateCycleModal = React.memo(function CreateCycleModal({ onClose, onCreated }) {
-  const [form, setForm] = useState({ fy_label: "", deadline: "", cycle_type: "yearly" });
+  const [form, setForm] = useState({ fy_label: "", deadline: "", cycle_type: "yearly", parameters: DEFAULT_APPRAISAL_CRITERIA });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const submit = async () => {
@@ -36,6 +38,7 @@ const CreateCycleModal = React.memo(function CreateCycleModal({ onClose, onCreat
           <label className={cssClass({ fontSize: 12, fontWeight: 600, color: "#475569", display: "block", marginBottom: 10 })}>Appraisal Frequency *</label>
           <CycleTypePicker value={form.cycle_type} onChange={(v) => setForm((p) => ({ ...p, cycle_type: v }))} />
         </div>
+        <ReviewTemplateEditor value={form.parameters} onChange={(parameters) => setForm((current) => ({ ...current, parameters }))} />
         {err && <p className={cssClass({ color: "#dc2626", fontSize: 13, margin: 0 })}>{err}</p>}
         <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 })}>
           <button onClick={onClose} className={cssClass({ padding: "9px 20px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: "pointer" })}>Cancel</button>

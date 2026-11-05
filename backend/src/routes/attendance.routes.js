@@ -8,9 +8,10 @@ const {
   reviewRegularizationSchema
 } = require('../validators/attendance.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('attendance'));
 router.post('/check-in', validate(checkInSchema), controller.checkIn);
 router.post('/check-out', validate(checkOutSchema), controller.checkOut);
 router.post('/break-start', controller.breakStart);

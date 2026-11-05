@@ -107,13 +107,22 @@ async function submitTimesheet(employee_id, timesheet_id) {
   if (!out.ok) throw ApiError.badRequest(out.msg || 'Cannot submit timesheet');
   return getTimesheetById(timesheet_id);
 }
-async function listManagerTimesheets(manager_employee_id, { status } = {}) {
-  const results = await callProcedure('sp_list_manager_timesheets(?, ?)', [manager_employee_id, status ?? null]);
-  return results[0] ?? [];
+async function filterRowsByCompany(rows, companyId) {
+  const company = Number(companyId);
+  if (!Number.isInteger(company) || company <= 0) {
+    throw ApiError.forbidden('Company context is required');
+  }
+  const employees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
+  const employeeIds = new Set(employees.map((employee) => Number(employee.employee_id)));
+  return rows.filter((row) => employeeIds.has(Number(row.employee_id)));
 }
-async function listAllTimesheets({ status, employee_id } = {}) {
+async function listManagerTimesheets(manager_employee_id, { status, companyId } = {}) {
+  const results = await callProcedure('sp_list_manager_timesheets(?, ?)', [manager_employee_id, status ?? null]);
+  return filterRowsByCompany(results[0] ?? [], companyId);
+}
+async function listAllTimesheets({ status, employee_id, companyId } = {}) {
   const results = await callProcedure('sp_list_all_timesheets(?, ?)', [status ?? null, employee_id ?? null]);
-  return results[0] ?? [];
+  return filterRowsByCompany(results[0] ?? [], companyId);
 }
 async function reviewTimesheet(timesheet_id, { decision, reviewed_by, comments = '' }) {
   const { outs: out } = await callProcedureWithOuts('sp_review_timesheet(?, ?, ?, ?, @ok, @msg)', [
@@ -136,9 +145,9 @@ async function listExtraWorkRequests(employee_id) {
   const results = await callProcedure('sp_list_extra_work_requests(?)', [employee_id]);
   return results[0] ?? [];
 }
-async function listManagerExtraWork(manager_employee_id) {
+async function listManagerExtraWork(manager_employee_id, companyId) {
   const results = await callProcedure('sp_list_manager_extra_work(?)', [manager_employee_id]);
-  return results[0] ?? [];
+  return filterRowsByCompany(results[0] ?? [], companyId);
 }
 async function reviewExtraWork(extra_work_id, { decision, reviewed_by, manager_notes = '' }) {
   const { results, outs: out } = await callProcedureWithOuts('sp_review_extra_work(?, ?, ?, ?, @ok, @msg)', [

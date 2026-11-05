@@ -52,8 +52,8 @@ const deleteSchedule   = asyncHandler(async (req, res) => { await svc.deleteSche
 const getEmailPerms  = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getEmailPermissions(), 'OK').send(res));
 const saveEmailPerms = asyncHandler(async (req, res) => new ApiResponse(200, await svc.saveEmailPermissions(req.body), 'Saved').send(res));
 /* ── MENU PERMISSIONS ── */
-const getMenuPerms  = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getMenuPermissions(), 'OK').send(res));
-const saveMenuPerms = asyncHandler(async (req, res) => new ApiResponse(200, await svc.saveMenuPermissions(req.body), 'Saved').send(res));
+const getMenuPerms  = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getMenuPermissions(req.user.companyId), 'OK').send(res));
+const saveMenuPerms = asyncHandler(async (req, res) => new ApiResponse(200, await svc.saveMenuPermissions(req.body, req.user.companyId, req.user.employeeId), 'Saved').send(res));
 /* ── FORMS ── */
 const listForms   = asyncHandler(async (req, res) => new ApiResponse(200, await svc.listForms(), 'OK').send(res));
 const getForm     = asyncHandler(async (req, res) => new ApiResponse(200, await svc.getForm(req.params.id), 'OK').send(res));

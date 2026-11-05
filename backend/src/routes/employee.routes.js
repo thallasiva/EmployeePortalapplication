@@ -2,7 +2,7 @@ const express = require('express');
 const controller = require('../controllers/employee.controller');
 const validate = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const {
   createEmployeeSchema,
   updateEmployeeSchema,
@@ -11,6 +11,7 @@ const {
 } = require('../validators/employee.validator');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('employees'));
 router.get('/me', controller.getMe);
 router.get('/org-chart', controller.orgChart);
 router.get('/directory', controller.directory);

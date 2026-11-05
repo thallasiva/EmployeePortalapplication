@@ -3,7 +3,9 @@ const router  = express.Router();
 const ctrl    = require('../controllers/salaryAssignment.controller');
 const { authenticate } = require('../middleware/auth');
 const { requirePermission } = require('../middleware/rbac');
+const { requireCompanyModule } = require('../middleware/rbac');
 router.use(authenticate);
+router.use(requireCompanyModule('payroll'));
 const VIEW = requirePermission('salary_components', 'view');
 const EDIT = requirePermission('salary_components', 'edit');
 router.get ('/me/history',                          ctrl.myHistory);   // own history; before /:employeeId
