@@ -79,7 +79,7 @@ const CreateCompany = ({ createModal, setCreateModal }) =>
                         <button type="button" class="bg-brand text-white px-6 py-2 rounded" onClick={handleSave}>
                             Add
                         </button>
-                        <button class="bg-red-500 text-white px-6 py-2 rounded" onClick={handleClose}>
+                        <button data-cancel-button class="bg-red-500 text-white px-6 py-2 rounded" onClick={handleClose}>
                             Cancel
                         </button>
                     </div>

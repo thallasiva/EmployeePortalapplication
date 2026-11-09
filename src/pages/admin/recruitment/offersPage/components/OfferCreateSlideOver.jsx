@@ -102,7 +102,7 @@ const OfferCreateSlideOver = React.memo(function OfferCreateSlideOver({
         )}
         {computed.ctc > 0 && (
           <div className="mt-4 border border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-[#1e3a5f] px-4 py-2.5 grid grid-cols-3">
+            <div className="bg-[#f18200] px-4 py-2.5 grid grid-cols-3">
               <span className="text-white text-[12px] font-semibold">Component</span>
               <span className="text-white text-[12px] font-semibold text-right pr-4">Monthly</span>
               <span className="text-white text-[12px] font-semibold text-right">Annual</span>

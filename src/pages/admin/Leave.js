@@ -32,7 +32,7 @@ export default function Leave()
                 <div className="flex justify-start gap-2 mt-3">
                   <div className="flex gap-4">
                     <button className="bg-orange-500 text-white px-6  rounded-lg shadow">Update</button>
-                    <button className="bg-red-500 text-white px-6  rounded-lg shadow" onClick={() => setOpen(false)}>Cancel</button>
+                    <button data-cancel-button className="bg-red-500 text-white px-6  rounded-lg shadow" onClick={() => setOpen(false)}>Cancel</button>
                   </div>
                 </div>
               </div>
@@ -91,7 +91,7 @@ export default function Leave()
         </div>
         <div className="flex gap-3 mt-4">
           <button className="bg-brand text-white px-5 py-2 rounded">Apply</button>
-          <button className="bg-red-500 text-white px-5 py-2 rounded">Cancel</button>
+          <button data-cancel-button className="bg-red-500 text-white px-5 py-2 rounded">Cancel</button>
         </div>
       </div>
       {}

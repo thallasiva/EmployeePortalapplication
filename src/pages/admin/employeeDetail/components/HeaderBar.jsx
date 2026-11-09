@@ -37,7 +37,7 @@ const HeaderBar = React.memo(function HeaderBar({
           </button>
         ) : (
           <>
-            <button
+            <button data-cancel-button
               onClick={onCancel}
               className={cssClass({
                 display: "flex", alignItems: "center", gap: 6,

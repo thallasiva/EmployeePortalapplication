@@ -76,7 +76,7 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
               <button onClick={() => canProceed && setStep(2)} disabled={!canProceed} className={cssClass({ flex: 1, padding: "11px 0", borderRadius: 8, fontWeight: 700, fontSize: 13, border: "none", cursor: canProceed ? "pointer" : "not-allowed", background: canProceed ? "#dc2626" : "#f1f5f9", color: canProceed ? "#fff" : "#94a3b8" })}>
                 Next: Review <ArrowRight size={13} className="inline -mt-0.5" />
               </button>
-              <button onClick={onClose} className={cssClass({ padding: "11px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
+              <button data-cancel-button onClick={onClose} className={cssClass({ padding: "11px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
                 Cancel
               </button>
             </div>

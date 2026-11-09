@@ -222,12 +222,12 @@ export default function AddEditComponentPanel({
       </div>
       {}
       <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
-        <button onClick={onClose}
+        <button data-cancel-button onClick={onClose}
         className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">
           Cancel
         </button>
         <button onClick={handleSave} disabled={saving}
-        className="flex-1 bg-[#1e3a5f] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
+        className="flex-1 bg-[#f18200] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
           {saving ? "Saving…" : isEdit ? "Update" : "Save & Add"}
         </button>
       </div>

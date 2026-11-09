@@ -99,7 +99,7 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
                       className="text-[11px] font-bold px-3.5 py-1 bg-[#f18200] text-white border-0 rounded-md cursor-pointer">
                       {cState.saving ? "Saving..." : "Save"}
                     </button>
-                    <button onClick={() => cancelEdit(iv.interview_id)}
+                    <button data-cancel-button onClick={() => cancelEdit(iv.interview_id)}
                       className="text-[11px] px-3 py-1 bg-gray-100 text-gray-500 border border-gray-200 rounded-md cursor-pointer">
                       Cancel
                     </button>

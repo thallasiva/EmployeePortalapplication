@@ -159,7 +159,7 @@ export default function MenuPermissionBuilder() {
   };
   const countEnabled = (role) => Object.values(perms[role] || {}).filter(Boolean).length;
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {saved && (
         <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2">
           <Check size={15} /> Permissions saved successfully
@@ -172,7 +172,7 @@ export default function MenuPermissionBuilder() {
             <Shield size={18} color={BRAND} />
           </div>
           <div>
-            <h1 className="text-[20px] font-bold text-[#1e293b]">Menu Permission Builder</h1>
+            <h1 className="text-[20px] font-bold text-[#f18200]">Menu Permission Builder</h1>
             <p className="text-[13px] text-[#94a3b8]">Control which menu items each role can access</p>
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function MenuPermissionBuilder() {
                 style={{ background: ROLE_COLORS[ROLES.indexOf(activeRole)] }}>
                 {activeRole[0]}
               </div>
-              <span className="text-[15px] font-bold text-[#1e293b]">{activeRole} — Menu Access</span>
+              <span className="text-[15px] font-bold text-[#f18200]">{activeRole} — Menu Access</span>
             </div>
             <div className="flex gap-2">
               <button onClick={() => toggleAll(true)}
@@ -256,7 +256,7 @@ export default function MenuPermissionBuilder() {
                   {hasChildren && isExp && (
                     <div className="bg-[#f8fafc] border-t border-[#f1f5f9]">
                       {menu.children.map(child => (
-                        <div key={child.id} className={`flex items-center gap-4 pl-14 pr-5 py-3 hover:bg-[#f0f4f8] transition-colors ${perms[activeRole]?.[child.id] ? "" : "opacity-50"}`}>
+                        <div key={child.id} className={`flex items-center gap-4 pl-14 pr-5 py-3 hover:  transition-colors ${perms[activeRole]?.[child.id] ? "" : "opacity-50"}`}>
                           <span className="text-slate-400 flex">{child.icon}</span>
                           <span className="text-[12px] font-medium text-[#374151] flex-1">{child.label}</span>
                           <button onClick={() => toggle(child.id)}

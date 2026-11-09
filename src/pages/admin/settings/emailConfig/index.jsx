@@ -16,14 +16,14 @@ export default function EmailConfigIndex() {
   const [active, setActive] = useState("smtp");
   const current = TABS.find(t => t.id === active);
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {/* Page header */}
       <div className="px-6 py-5 flex items-start gap-4">
         <div className="w-11 h-11 rounded-xl bg-[#fff8f0] border border-[#fed7aa] flex items-center justify-center shrink-0">
           <Mail size={20} color="#f18200"/>
         </div>
         <div>
-          <h1 className="text-[20px] font-bold text-[#1e293b]">Email Configuration</h1>
+          <h1 className="text-[20px] font-bold text-[#f18200]">Email Configuration</h1>
           <p className="text-[13px] text-[#94a3b8] mt-0.5">
             Configure SMTP, manage templates, set permissions and track email activity
           </p>
@@ -56,7 +56,7 @@ export default function EmailConfigIndex() {
             {current.icon}
           </div>
           <div>
-            <h2 className="text-[14px] font-bold text-[#1e293b]">{current.label}</h2>
+            <h2 className="text-[14px] font-bold text-[#f18200]">{current.label}</h2>
             <p className="text-[12px] text-[#94a3b8]">{current.desc}</p>
           </div>
         </div>

@@ -54,7 +54,7 @@ const CreateReviewer = () =>
             {}
             <div className="flex gap-4">
                 <button className="bg-brand text-white px-6 py-2 rounded">Save</button>
-                <button className="bg-red-500 text-white px-6 py-2 rounded">Cancel</button>
+                <button data-cancel-button className="bg-red-500 text-white px-6 py-2 rounded">Cancel</button>
             </div>
         </div>);
 };

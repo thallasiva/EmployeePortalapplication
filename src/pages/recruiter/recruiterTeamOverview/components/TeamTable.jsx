@@ -77,7 +77,7 @@ const TeamTable = React.memo(function TeamTable({
                     <tr key={empId}>
                       <td>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-[#f18200] flex items-center justify-center text-xs font-bold flex-shrink-0">
                             {getInitials(m.name || m.employee_name)}
                           </div>
                           <div>

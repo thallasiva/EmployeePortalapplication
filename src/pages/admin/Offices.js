@@ -75,17 +75,20 @@ export default function Offices() {
   const companyName = (id) => companies.find((company) => Number(company.company_id) === Number(id))?.company_name || 'Unassigned';
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 ">
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div><p className="text-xs text-slate-500">Admin / Branches</p><h1 className="mt-1 text-2xl font-semibold text-slate-900">Branch & Location Management</h1><p className="mt-1 text-sm text-slate-600">Set company-specific office locations, timezones, and holiday calendars.</p></div>
+          <div>
+            {/* <p className="text-xs text-slate-500">Admin / Branches</p> */}
+            <h1 className="mt-1 text-2xl font-semibold  text-[#f18200]">Branch & Location Management</h1>
+            <p className="mt-1 text-sm text-slate-600">Set company-specific office locations, timezones, and holiday calendars.</p></div>
           <div className="flex gap-2">
             <button type="button" onClick={load} className="inline-flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm"><RefreshCw size={15} /> Refresh</button>
             <button type="button" onClick={beginCreate} disabled={!companies.length} className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"><Plus size={16} /> Add branch</button>
           </div>
         </header>
         {showForm && <form onSubmit={save} className="mb-5 rounded-xl border bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-900">{editingId ? 'Edit branch' : 'Create branch'}</h2>
+          <h2 className="mb-4 font-semibold  text-[#f18200]">{editingId ? 'Edit branch' : 'Create branch'}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <label className="text-sm font-medium text-slate-700">Company *
               <select required name="company_id" value={form.company_id} onChange={set} className={inputClass}><option value="">Choose company</option>{companies.map((company) => <option key={company.company_id} value={company.company_id}>{company.company_name}</option>)}</select>
@@ -110,13 +113,13 @@ export default function Offices() {
             </label>
           </div>
           <div className="mt-4 flex justify-end gap-2 border-t pt-4">
-            <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border px-4 py-2 text-sm">Cancel</button>
+            <button data-cancel-button type="button" onClick={() => setShowForm(false)} className="rounded-lg border px-4 py-2 text-sm">Cancel</button>
             <button disabled={saving} type="submit" className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"><Save size={15} />{saving ? 'Saving…' : 'Save branch'}</button>
           </div>
         </form>}
         <div className="overflow-hidden rounded-xl border bg-white">
           {loading ? <p className="p-6 text-sm text-slate-500">Loading branch locations…</p> : offices.length === 0 ? <div className="p-10 text-center"><MapPin className="mx-auto mb-2 text-slate-400" /><p className="font-medium text-slate-800">No branches configured</p><p className="mt-1 text-sm text-slate-500">Create a branch and assign its timezone and holiday calendar.</p></div> : (
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Branch</th><th className="px-4 py-3">Company</th><th className="px-4 py-3">Timezone</th><th className="px-4 py-3">Holiday calendar</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th></tr></thead><tbody className="divide-y">{offices.map((office) => <tr key={office.office_id}><td className="px-4 py-3"><span className="font-medium text-slate-900">{office.office_name}</span><span className="block text-xs text-slate-500">{office.location || office.address || '—'}</span></td><td className="px-4 py-3">{companyName(office.company_id)}</td><td className="px-4 py-3">{office.timezone || 'Company default'}</td><td className="px-4 py-3">{office.holiday_calendar || '—'}</td><td className="px-4 py-3">{office.status || 'Active'}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => beginEdit(office)} className="rounded-md border px-3 py-1.5 text-xs font-medium">Edit</button></td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Branch</th><th className="px-4 py-3">Company</th><th className="px-4 py-3">Timezone</th><th className="px-4 py-3">Holiday calendar</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th></tr></thead><tbody className="divide-y">{offices.map((office) => <tr key={office.office_id}><td className="px-4 py-3"><span className="font-medium  text-[#f18200]">{office.office_name}</span><span className="block text-xs text-slate-500">{office.location || office.address || '—'}</span></td><td className="px-4 py-3">{companyName(office.company_id)}</td><td className="px-4 py-3">{office.timezone || 'Company default'}</td><td className="px-4 py-3">{office.holiday_calendar || '—'}</td><td className="px-4 py-3">{office.status || 'Active'}</td><td className="px-4 py-3 text-right"><button type="button" onClick={() => beginEdit(office)} className="rounded-md border px-3 py-1.5 text-xs font-medium">Edit</button></td></tr>)}</tbody></table></div>
           )}
         </div>
       </div>

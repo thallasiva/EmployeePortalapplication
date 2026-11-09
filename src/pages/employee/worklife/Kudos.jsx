@@ -158,7 +158,7 @@ const Kudos = () => {
       }
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Kudos &amp; Recognition</h1>
+          <h1 className="text-2xl font-bold  text-[#f18200]">Kudos &amp; Recognition</h1>
           <p className="text-slate-500 mt-1 text-sm">
             {isManager ? "Recognise your team and see who has not been appreciated lately." :
             isHr ? "Celebrate great work across the organisation." :
@@ -237,7 +237,7 @@ const Kudos = () => {
         </section>
         <aside className="space-y-5">
           <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <h2 className="text-base font-bold text-slate-900 mb-3">You were recognised for</h2>
+            <h2 className="text-base font-bold  text-[#f18200] mb-3">You were recognised for</h2>
             {!summary?.by_category?.length ?
             <p className="text-sm text-slate-500">No kudos received yet.</p> :
             <ul className="space-y-3">
@@ -253,7 +253,7 @@ const Kudos = () => {
             }
           </section>
           <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <h2 className="text-base font-bold text-slate-900 mb-3">Most recognised · 3 months</h2>
+            <h2 className="text-base font-bold  text-[#f18200] mb-3">Most recognised · 3 months</h2>
             {top.length === 0 ?
             <p className="text-sm text-slate-500">No kudos in the last 3 months.</p> :
             <ol className="space-y-3">

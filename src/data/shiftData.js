@@ -7,8 +7,8 @@ export const SHIFT_DASHBOARD_DATA = {
     theme: {
       bg: "bg-white",
       border: "border-blue-200",
-      text: "text-blue-700",
-      pill: "bg-blue-600"
+      text: "text-[#f18200]",
+      pill: "bg-[#f18200]"
     },
     attendance: {
       status: "Checked In",

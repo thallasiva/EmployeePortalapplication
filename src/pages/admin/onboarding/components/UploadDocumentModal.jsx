@@ -38,7 +38,7 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Upload Document</h3>
+            <h3 className="text-lg font-semibold  text-[#f18200]">Upload Document</h3>
             <p className="text-sm text-slate-500 mt-0.5">
               For {employee.first_name} {employee.last_name || ""}
             </p>
@@ -96,7 +96,7 @@ const UploadDocumentModal = React.memo(function UploadDocumentModal({
             )}
           </div>
           <div className="flex gap-3 pt-2">
-            <button
+            <button data-cancel-button
               type="button"
               onClick={onClose}
               className="flex-1 border border-slate-300 text-slate-700 py-2 rounded-lg text-sm hover:bg-slate-50"

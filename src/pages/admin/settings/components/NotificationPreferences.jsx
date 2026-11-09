@@ -7,13 +7,13 @@ const NOTIFICATION_ITEMS = [
 const NotificationPreferences = React.memo(function NotificationPreferences({ notifications, toggleNotif }) {
   return (
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
-      <h2 className="text-xl font-semibold text-slate-900">Notification Preferences</h2>
+      <h2 className="text-xl font-semibold  text-[#f18200]">Notification Preferences</h2>
       <p className="mt-1 text-sm text-gray-500">Choose how you want to be notified</p>
       <div className="mt-6 space-y-6">
         {NOTIFICATION_ITEMS.map((item) => (
           <div key={item.key} className="grid gap-3 md:grid-cols-[1.6fr_1fr_1fr_1fr] items-center rounded-3xl border border-gray-200 bg-gray-50 p-4">
             <div>
-              <p className="font-semibold text-slate-900">{item.label}</p>
+              <p className="font-semibold  text-[#f18200]">{item.label}</p>
               <p className="text-sm text-gray-500">{item.description}</p>
             </div>
             {['email', 'push', 'inApp'].map((channel) => (

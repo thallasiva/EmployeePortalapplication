@@ -30,7 +30,7 @@ const DisableConfirmModal = React.memo(function DisableConfirmModal({ cycle, onC
         </div>
         {err && <p className={cssClass({ color: "#dc2626", fontSize: 13, margin: 0 })}>{err}</p>}
         <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 10 })}>
-          <button onClick={onClose} className={cssClass({ padding: "9px 20px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: "pointer" })}>Cancel</button>
+          <button data-cancel-button onClick={onClose} className={cssClass({ padding: "9px 20px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: "pointer" })}>Cancel</button>
           <button onClick={confirm} disabled={saving}
             className={cssClass({ padding: "9px 22px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 })}>
             <Square size={14} /> {saving ? "Stopping…" : "Stop Rollout"}

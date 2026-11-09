@@ -19,7 +19,7 @@ const CompletedOnboardings = React.memo(function CompletedOnboardings({
             <CheckCircle2 size={18} className="text-emerald-600" />
           </div>
           <div>
-            <h2 className="text-[15px] font-bold text-slate-900">
+            <h2 className="text-[15px] font-bold  text-[#f18200]">
               Completed Onboardings
               {!loading && (
                 <span className="ml-2 text-[12px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">

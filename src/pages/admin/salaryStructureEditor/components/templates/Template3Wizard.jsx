@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp, Check, Eye, Building2, Briefcase, BarChart2, Calendar, Users, Clock, MapPin, DollarSign, ArrowRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
-const NAVY  = "#1e3a5f";
+const NAVY  = "#f18200";
 const AMBER = "#d97706";
 // ─── Wizard steps ─────────────────────────────────────────────────────────────
 const WIZARD_STEPS = [

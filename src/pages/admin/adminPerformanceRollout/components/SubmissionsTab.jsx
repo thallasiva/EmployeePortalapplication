@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Users, Clock, CheckCircle2, Search, Check, ClipboardCheck } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
+import PageTabs from "../../../../components/PageTabs";
 import { getAllAppraisals } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
@@ -64,23 +65,23 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
           </button>
         ))}
       </div>
-      <div className={cssClass({ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" })}>
-        {[
-          { key: "all", label: "Total", icon: <Users size={13} /> },
-          { key: "draft", label: "Draft / New", icon: <Clock size={13} /> },
-          { key: "submitted", label: "Submitted", icon: <CheckCircle2 size={13} /> },
-          { key: "manager_review", label: "Manager review", icon: <Clock size={13} /> },
-          { key: "hr_review", label: "HR review", icon: <CheckCircle2 size={13} className={cssClass({ color: BRAND })} /> },
-          { key: "changes_requested", label: "Changes requested", icon: <Clock size={13} /> },
-          { key: "shared", label: "Shared", icon: <CheckCircle2 size={13} /> },
-          { key: "acknowledged", label: "Acknowledged", icon: <CheckCircle2 size={13} /> },
-          { key: "closed", label: "Closed", icon: <CheckCircle2 size={13} /> }
-        ].map((s) => (
-          <button key={s.key} onClick={() => setStatusFilter(s.key)}
-            className={cssClass({ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", border: `1.5px solid ${statusFilter === s.key ? BRAND : "#e2e8f0"}`, borderRadius: 999, background: statusFilter === s.key ? "#fff7ed" : "#fff", color: statusFilter === s.key ? BRAND : "#475569", cursor: "pointer", fontSize: 13, fontWeight: 600 })}>
-            {s.icon} {s.label} <span className={cssClass({ fontWeight: 800 })}>{counts[s.key]}</span>
-          </button>
-        ))}
+      <div className={cssClass({ marginBottom: 16 })}>
+        <PageTabs
+          tabs={[
+            { id: "all", label: "All", icon: Users, count: counts.all },
+            { id: "draft", label: "Not Submitted", icon: Clock, count: counts.draft },
+            { id: "submitted", label: "Submitted", icon: CheckCircle2, count: counts.submitted },
+            { id: "manager_review", label: "Manager Review", icon: Clock, count: counts.manager_review },
+            { id: "hr_review", label: "HR Review", icon: CheckCircle2, count: counts.hr_review },
+            { id: "changes_requested", label: "Changes Requested", icon: Clock, count: counts.changes_requested },
+            { id: "shared", label: "Shared", icon: CheckCircle2, count: counts.shared },
+            { id: "acknowledged", label: "Acknowledged", icon: CheckCircle2, count: counts.acknowledged },
+            { id: "closed", label: "Closed", icon: CheckCircle2, count: counts.closed },
+          ]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          label="Appraisal submission statuses"
+        />
       </div>
       <div className={cssClass({ position: "relative", marginBottom: 14 })}>
         <Search size={14} className={cssClass({ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" })} />

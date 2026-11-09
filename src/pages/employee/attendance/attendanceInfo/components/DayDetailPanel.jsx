@@ -18,7 +18,7 @@ const STATUS_META = {
   P:    { label: "Full Day Present",   color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   "P:A":{ label: "Partial Attendance", color: "bg-amber-50 text-amber-700 border-amber-200" },
   A:    { label: "Absent",             color: "bg-red-50 text-red-700 border-red-200" },
-  H:    { label: "Holiday",            color: "bg-blue-50 text-blue-700 border-blue-200" },
+  H:    { label: "Holiday",            color: "bg-blue-50 text-[#f18200] border-blue-200" },
   L:    { label: "On Leave",           color: "bg-purple-50 text-purple-700 border-purple-200" },
 };
 function fmtMins(mins) {
@@ -86,7 +86,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           </div>
           <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-center">
             <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Sessions</p>
-            <p className="text-base font-extrabold text-blue-700">{breakSessions > 0 ? breakSessions : (workedMinutes > 0 ? 1 : 0)}</p>
+            <p className="text-base font-extrabold text-[#f18200]">{breakSessions > 0 ? breakSessions : (workedMinutes > 0 ? 1 : 0)}</p>
           </div>
         </div>
       )}

@@ -94,7 +94,7 @@ export default function CreateTeamModal({ open, onClose, onCreate }) {
             />
           </div>
           <div className="teams-modal__footer">
-            <button
+            <button data-cancel-button
               type="button"
               className="teams-modal__btn teams-modal__btn--cancel"
               onClick={handleClose}

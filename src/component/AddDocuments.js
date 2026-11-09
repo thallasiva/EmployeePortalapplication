@@ -69,7 +69,7 @@ const AddDocuments = ({ setShowModal, showModal }) =>
                 className="flex-1 border border-orange-400 text-orange-500 py-2 rounded-lg hover:bg-orange-50">
                                     Changes
                                 </button>
-                                <button
+                                <button data-cancel-button
                 onClick={() => setShowModal(false)}
                 className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">
                                     Cancel

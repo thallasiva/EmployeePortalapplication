@@ -17,7 +17,7 @@ const TemplateCard = React.memo(function TemplateCard({ t, onEdit, onDelete }) {
           </div>
           {t.description && <p className="text-xs text-gray-400 mt-0.5 truncate">{t.description}</p>}
           <div className="flex flex-wrap gap-2 mt-2">
-            <span className="text-[11px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">Basic {pct(t.basic_pct)}</span>
+            <span className="text-[11px] bg-blue-50 text-[#f18200] border border-blue-100 px-2 py-0.5 rounded-full">Basic {pct(t.basic_pct)}</span>
             <span className="text-[11px] bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded-full">HRA {pct(t.hra_pct)}</span>
             {Number(t.variable_pct) > 0 &&
             <span className="text-[11px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full">Variable {pct(t.variable_pct)}</span>

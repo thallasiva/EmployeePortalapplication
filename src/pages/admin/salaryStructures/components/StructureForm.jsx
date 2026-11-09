@@ -51,7 +51,7 @@ const StructureForm = React.memo(function StructureForm({ initial, onSave, onClo
             Set as default structure
           </label>
           <div className="flex gap-3 pt-1">
-            <button
+            <button data-cancel-button
               type="button"
               onClick={onClose}
               className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50"
@@ -61,7 +61,7 @@ const StructureForm = React.memo(function StructureForm({ initial, onSave, onClo
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-[#1e3a5f] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60"
+              className="flex-1 bg-[#f18200] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60"
             >
               {saving ? "Saving…" : initial ? "Update" : "Create"}
             </button>

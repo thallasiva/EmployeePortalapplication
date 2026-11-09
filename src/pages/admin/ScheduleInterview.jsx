@@ -166,10 +166,10 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                         </div>
                         {}
                         <div className="flex justify-end gap-4 mt-8">
-                            <button className="px-8 h-12 rounded-lg border font-semibold hover:bg-gray-100">
+                            <button data-cancel-button className="px-8 h-12 rounded-lg border font-semibold hover:bg-gray-100">
                                 Cancel
                             </button>
-                            <button className="px-8 h-12 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                            <button className="px-8 h-12 rounded-lg bg-[#f18200] text-white font-semibold hover:bg-blue-700">
                                 Schedule Interview
                             </button>
                         </div>

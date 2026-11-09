@@ -103,7 +103,7 @@ function UploadDocumentModal({ open, onClose, onUpload }) {
             />
           </div>
           <div className="admin-docs-modal__footer">
-            <button type="button" className="admin-docs-modal__btn admin-docs-modal__btn--cancel" onClick={onClose}>
+            <button data-cancel-button type="button" className="admin-docs-modal__btn admin-docs-modal__btn--cancel" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="admin-docs-modal__btn admin-docs-modal__btn--submit">

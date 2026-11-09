@@ -58,7 +58,7 @@ const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = []
             placeholder="Why was extra work required?" />
         </label>
         <div className="flex gap-2 justify-end pt-4">
-          <button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
+          <button data-cancel-button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
           <button type="button" onClick={handle} disabled={saving}
             className={cssClass({
               display: "inline-flex", alignItems: "items-center", gap: 6,

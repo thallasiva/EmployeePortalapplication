@@ -111,8 +111,8 @@ const ComponentForm = React.memo(function ComponentForm({ initial, onSave, onClo
             </Field>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 bg-[#1e3a5f] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
+            <button data-cancel-button type="button" onClick={onClose} className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button type="submit" disabled={saving} className="flex-1 bg-[#f18200] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
               {saving ? "Saving…" : initial ? "Update" : "Add Component"}
             </button>
           </div>

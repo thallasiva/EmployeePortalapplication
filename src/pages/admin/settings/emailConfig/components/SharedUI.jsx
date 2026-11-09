@@ -8,7 +8,7 @@ export function Badge({ children, color = "green" }) {
     green:  "bg-emerald-50 text-emerald-700 border-emerald-200",
     red:    "bg-red-50 text-red-600 border-red-200",
     amber:  "bg-amber-50 text-amber-700 border-amber-200",
-    blue:   "bg-blue-50 text-blue-700 border-blue-200",
+    blue:   "bg-blue-50 text-[#f18200] border-blue-200",
     gray:   "bg-slate-100 text-slate-500 border-slate-200",
     purple: "bg-purple-50 text-purple-700 border-purple-200",
     indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
@@ -92,7 +92,7 @@ export function SectionCard({ title, subtitle, children, action, noPad }) {
       {(title || action) && (
         <div className="px-5 py-4 border-b border-[#e8eef5] flex items-center justify-between">
           <div>
-            <p className="text-[14px] font-bold text-[#1e293b]">{title}</p>
+            <p className="text-[14px] font-bold text-[#f18200]">{title}</p>
             {subtitle && <p className="text-[12px] text-[#94a3b8] mt-0.5">{subtitle}</p>}
           </div>
           {action}
@@ -109,7 +109,7 @@ export function ConfirmDialog({ open = true, title, message, onConfirm, onCancel
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl w-[400px] shadow-2xl overflow-hidden">
         <div className="px-6 py-5 border-b border-[#f1f5f9]">
-          <p className="text-[16px] font-bold text-[#1e293b]">{title}</p>
+          <p className="text-[16px] font-bold text-[#f18200]">{title}</p>
         </div>
         <div className="px-6 py-5">
           <p className="text-[13px] text-[#64748b]">{message}</p>
@@ -134,29 +134,6 @@ export function Toast({ message, type = "success", onClose }) {
     <div className={`fixed top-5 right-5 z-[999] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg text-[13px] font-semibold ${cfg[type]}`}>
       {message}
       <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100"><X size={14} /></button>
-    </div>
-  );
-}
-/* ── Pagination ── */
-export function Pagination({ page, totalPages, onPage }) {
-  if (totalPages <= 1) return null;
-  return (
-    <div className="flex items-center gap-1">
-      <button onClick={() => onPage(Math.max(1,page-1))} disabled={page===1}
-        className="w-7 h-7 rounded flex items-center justify-center border border-[#e2e8f0] text-[#94a3b8] hover:bg-[#f8fafc] disabled:opacity-40">
-        <ChevronDown size={12} className="rotate-90" />
-      </button>
-      {Array.from({length:Math.min(totalPages,5)},(_,i)=>i+1).map(p=>(
-        <button key={p} onClick={()=>onPage(p)}
-          className={`w-7 h-7 rounded text-[12px] font-medium border transition-all ${p===page?"bg-[#f18200] text-white border-[#f18200]":"border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc]"}`}>
-          {p}
-        </button>
-      ))}
-      {totalPages > 5 && <span className="text-[#94a3b8] px-1 text-[12px]">…{totalPages}</span>}
-      <button onClick={() => onPage(Math.min(totalPages,page+1))} disabled={page===totalPages}
-        className="w-7 h-7 rounded flex items-center justify-center border border-[#e2e8f0] text-[#94a3b8] hover:bg-[#f8fafc] disabled:opacity-40">
-        <ChevronDown size={12} className="-rotate-90" />
-      </button>
     </div>
   );
 }

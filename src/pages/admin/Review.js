@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReviewType from './ReviewType';
+import PageTabs from '../../components/PageTabs';
 export default function Review()
 {
   const tabsMenu = [
@@ -19,18 +20,12 @@ export default function Review()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div className="flex bg-white rounded-xl shadow overflow-hidden">
-          {
-          tabsMenu.map((item) =>
-          <button className={`${selectedTab === item.tabName ?
-          "selected px-6 py-2" :
-          "notSelected px-6 py-2"}`
-          } key={item.id}
-          onClick={() => setSelectedTabData(item.tabName)}>
-             {item.tabName}</button>
-          )
-          }
-        </div>
+        <PageTabs
+          tabs={tabsMenu.map((item) => ({ id: item.tabName, label: item.tabName }))}
+          value={selectedTab}
+          onChange={setSelectedTabData}
+          label="Review sections"
+        />
         <button className="bg-brand text-white px-4 py-2 rounded-lg" onClick={() => navigate('/dashboard/create-review')}>Create Review</button>
       </div>
       {}

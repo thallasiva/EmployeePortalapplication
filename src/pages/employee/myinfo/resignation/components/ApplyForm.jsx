@@ -152,7 +152,7 @@ const ApplyForm = React.memo(function ApplyForm({ profile, onSubmit, saving, onC
             <button onClick={handleSubmit} disabled={saving} className={cssClass({ padding: "10px 28px", borderRadius: 8, fontWeight: 700, fontSize: 14, border: "none", cursor: saving ? "not-allowed" : "pointer", background: BRAND, color: "#fff", boxShadow: "0 2px 8px rgba(241,130,0,0.35)", opacity: saving ? 0.7 : 1 })}>
               {saving ? "Submitting…" : "Submit Resignation"}
             </button>
-            <button onClick={onCancel} disabled={saving} className={cssClass({ padding: "10px 20px", borderRadius: 8, fontWeight: 600, fontSize: 14, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
+            <button data-cancel-button onClick={onCancel} disabled={saving} className={cssClass({ padding: "10px 20px", borderRadius: 8, fontWeight: 600, fontSize: 14, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
               Cancel
             </button>
           </div>

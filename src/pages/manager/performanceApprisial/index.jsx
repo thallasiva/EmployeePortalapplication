@@ -45,16 +45,20 @@ function PerformanceApprisial() {
               { label: "Pending", value: pending.length, color: "#f59e0b" },
               { label: "In HR workflow", value: reviewed.length, color: "#6366f1" },
             ].map((s) => (
-              <div key={s.label} className={cssClass({ background: "#fff", border: "1px solid #e2e8f0",
+              <div key={s.label} className={cssClass({
+                background: "#fff", border: "1px solid #e2e8f0",
                 borderRadius: 10, padding: "12px 20px", textAlign: "center", minWidth: 110,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.05)" })}>
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+              })}>
                 <p className={cssClass({ fontSize: 22, fontWeight: 800, color: s.color, margin: 0 })}>{s.value}</p>
                 <p className={cssClass({ fontSize: 11, color: "#94a3b8", margin: 0 })}>{s.label}</p>
               </div>
             ))}
-            <button onClick={load} className={cssClass({ marginLeft: "auto", height: 48, padding: "0 16px",
+            <button onClick={load} className={cssClass({
+              marginLeft: "auto", height: 48, padding: "0 16px",
               background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, fontSize: 13,
-              color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 })}>
+              color: "#64748b", cursor: "pointer", display: "flex", alignItems: "center", gap: 6
+            })}>
               <RefreshCw size={13} />Refresh
             </button>
           </div>
@@ -98,8 +102,10 @@ function PerformanceApprisial() {
             </>
           )}
           {team.length === 0 && (
-            <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
-              padding: 48, textAlign: "center" })}>
+            <div className={cssClass({
+              background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
+              padding: 48, textAlign: "center"
+            })}>
               <Users size={48} className={cssClass({ color: "#cbd5e1", marginBottom: 12 })} />
               <p className={cssClass({ fontSize: 14, color: "#94a3b8" })}>
                 No team members found. Ensure employees have you set as their reporting manager.

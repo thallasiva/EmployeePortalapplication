@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { Award, Check, Download, Loader2, MessageSquare, Search, Send, X, ArrowRight } from "lucide-react";
 import { getUserInitials } from "../../../lib/dateUtils";
 import { getErrorMessage } from "../../../api/client";
+import PageTabs from "../../../components/PageTabs";
 import { listDepartments } from "../../../api/department.api";
 import {
   getKfReport,
@@ -17,7 +18,7 @@ export const FEEDBACK_TYPES = ["Positive", "Constructive", "Developmental"];
 export const TYPE_STYLE = {
   Positive: { badge: "bg-emerald-50 text-emerald-700", bar: "#16a34a" },
   Constructive: { badge: "bg-orange-50 text-orange-700", bar: "#f18200" },
-  Developmental: { badge: "bg-blue-50 text-blue-700", bar: "#1d4ed8" }
+  Developmental: { badge: "bg-blue-50 text-[#f18200]", bar: "#1d4ed8" }
 };
 export function timeAgo(value) {
   if (!value) return "";
@@ -36,7 +37,7 @@ export const Avatar = ({ name, size = 40, tone = "orange" }) => {
   const tones = {
     orange: "bg-[#fff4e6] text-[#b45309]",
     slate: "bg-slate-100 text-slate-600",
-    blue: "bg-blue-50 text-blue-700"
+    blue: "bg-blue-50 text-[#f18200]"
   };
   return (
     <div
@@ -51,28 +52,12 @@ export const StatCard = ({ icon, label, value, hint, accent = "bg-orange-50" }) 
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent}`}>{icon}</div>
     <div className="min-w-0">
       <p className="text-sm font-medium text-slate-600">{label}</p>
-      <p className="text-3xl font-black text-slate-900 mt-0.5">{value ?? "–"}</p>
+      <p className="text-3xl font-black  text-[#f18200] mt-0.5">{value ?? "–"}</p>
       {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
     </div>
   </div>;
 export const Tabs = ({ tabs, active, onChange, label }) =>
-<div role="tablist" aria-label={label} className="flex gap-1 border-b border-slate-200 overflow-x-auto">
-    {tabs.map((t) =>
-  <button
-    key={t.key}
-    role="tab"
-    aria-selected={active === t.key}
-    onClick={() => onChange(t.key)}
-    className={`h-11 px-4 text-sm whitespace-nowrap border-b-[3px] -mb-px transition-colors ${
-    active === t.key ? "border-[#f18200] text-[#b45309] font-bold" : "border-transparent text-slate-500 font-semibold hover:text-slate-800"}`
-    }>
-        {t.label}
-        {t.count != null && t.count > 0 &&
-    <span className="ml-2 text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-[#f18200] text-white">{t.count}</span>
-    }
-      </button>
-  )}
-  </div>;
+  <PageTabs tabs={tabs.map((tab) => ({ ...tab, id: tab.key }))} value={active} onChange={onChange} label={label} />;
 export const EmptyState = ({ icon, title, text, action }) =>
 <div className="flex flex-col items-center text-center py-12 px-4">
     <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mb-3">{icon}</div>
@@ -121,7 +106,7 @@ const Modal = ({ title, icon, onClose, children, width = "max-w-lg" }) => {
         className={`bg-white rounded-2xl shadow-2xl w-full ${width} max-h-[90vh] flex flex-col`}
         onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">{icon}{title}</h2>
+          <h2 className="text-lg font-bold  text-[#f18200] flex items-center gap-2">{icon}{title}</h2>
           <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500">
             <X size={18} />
           </button>
@@ -470,13 +455,13 @@ export const KudosItem = ({ k, perspective = "wall" }) => {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           {perspective === "received" &&
-          <><span className="text-sm font-bold text-slate-900">{k.from_name}</span><span className="text-xs text-slate-500">recognised you</span></>
+          <><span className="text-sm font-bold  text-[#f18200]">{k.from_name}</span><span className="text-xs text-slate-500">recognised you</span></>
           }
           {perspective === "sent" &&
-          <><span className="text-xs text-slate-500">You recognised</span><span className="text-sm font-bold text-slate-900">{k.to_name}</span></>
+          <><span className="text-xs text-slate-500">You recognised</span><span className="text-sm font-bold  text-[#f18200]">{k.to_name}</span></>
           }
           {perspective === "wall" &&
-          <><span className="text-sm font-bold text-slate-900">{k.from_name}</span><ArrowRight size={13} className="text-slate-400" /><span className="text-sm font-bold text-slate-900">{k.to_name}</span></>
+          <><span className="text-sm font-bold  text-[#f18200]">{k.from_name}</span><ArrowRight size={13} className="text-slate-400" /><span className="text-sm font-bold  text-[#f18200]">{k.to_name}</span></>
           }
           <CategoryBadge name={k.category_name} color={k.category_color} />
           {!k.is_public && <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Private</span>}
@@ -572,7 +557,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <h2 className="text-base font-bold text-slate-900">Monthly trend</h2>
+                <h2 className="text-base font-bold  text-[#f18200]">Monthly trend</h2>
                 <div className="flex gap-4 text-xs font-semibold text-slate-600">
                   <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#f18200]" />Kudos</span>
                   <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1d4ed8]" />Feedback</span>
@@ -593,7 +578,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
               </div>
             </section>
             <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-              <h2 className="text-base font-bold text-slate-900 mb-4">Feedback by type</h2>
+              <h2 className="text-base font-bold  text-[#f18200] mb-4">Feedback by type</h2>
               <div className="flex items-center gap-5 flex-wrap">
                 <div
                 className="w-32 h-32 rounded-full flex items-center justify-center"
@@ -601,7 +586,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
                 role="img"
                 aria-label={report.by_type.map((r) => `${r.feedback_type} ${r.total}`).join(", ")}>
                   <div className="w-20 h-20 rounded-full bg-white flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-slate-900">{totalByType}</span>
+                    <span className="text-xl font-black  text-[#f18200]">{totalByType}</span>
                     <span className="text-[11px] text-slate-500">total</span>
                   </div>
                 </div>
@@ -619,7 +604,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto">
-              <h2 className="text-base font-bold text-slate-900 px-5 pt-5 pb-3">Feedback received per employee</h2>
+              <h2 className="text-base font-bold  text-[#f18200] px-5 pt-5 pb-3">Feedback received per employee</h2>
               {report.by_employee.length === 0 ?
             <EmptyState icon={<MessageSquare className="text-[#f18200]" />} title="No feedback in this period" /> :
             <table className="w-full min-w-[620px] text-sm">
@@ -656,7 +641,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
             </section>
             <div className="space-y-4">
               <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="text-base font-bold text-slate-900 mb-3">Kudos by department</h2>
+                <h2 className="text-base font-bold  text-[#f18200] mb-3">Kudos by department</h2>
                 {report.by_department.filter((d) => Number(d.kudos) > 0).length === 0 ?
               <p className="text-sm text-slate-500">No kudos in this period.</p> :
               <ul className="space-y-3">
@@ -672,7 +657,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
               }
               </section>
               <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="text-base font-bold text-slate-900">Low recognition</h2>
+                <h2 className="text-base font-bold  text-[#f18200]">Low recognition</h2>
                 <p className="text-xs text-slate-500 mb-3">No kudos in the last 60 days</p>
                 {report.low_recognition.length === 0 ?
               <p className="text-sm text-slate-500">Everyone has been recognised recently.</p> :

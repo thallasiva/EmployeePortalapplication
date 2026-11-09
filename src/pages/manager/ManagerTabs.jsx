@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { getAppraisalCycle } from "../../api/appraisal.api";
+import PageTabs from "../../components/PageTabs";
 const BASE_TABS = [
   { label: "Team Overview", to: "/manager" },
   { label: "Team Attendance", to: "/manager/team/attendance" },
@@ -25,27 +26,26 @@ const ManagerTabs = () => {
       .then((c) => setAppraisalActive(c?.status === "active"))
       .catch(() => { });
   }, []);
+  const activeTab = BASE_TABS.find((tab) =>
+    !(tab.appraisalGated && !appraisalActive) && isTabActive(pathname, tab.to)
+  );
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
-      {BASE_TABS.map((tab) => {
-        const locked = tab.appraisalGated && !appraisalActive;
-        const active = !locked && isTabActive(pathname, tab.to);
-        return (
-          <button
-            key={tab.to}
-            type="button"
-            onClick={() => !locked && navigate(tab.to)}
-            title={locked ? "Admin must roll out the appraisal cycle first" : undefined}
-            className={`inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${locked ?
-              "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed" :
-              active ?
-                "bg-brand text-white border-brand" :
-                "bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand"}`
-            }>
-            {locked && <Lock size={12} className="shrink-0" />}
-            {tab.label}
-          </button>);
-      })}
-    </div>);
+    <div className="mb-4">
+      <PageTabs
+        tabs={BASE_TABS.map((tab) => {
+          const locked = tab.appraisalGated && !appraisalActive;
+          return {
+            id: tab.to,
+            label: tab.label,
+            disabled: locked,
+            icon: locked ? Lock : undefined,
+          };
+        })}
+        value={activeTab?.to}
+        onChange={navigate}
+        label="Manager sections"
+      />
+    </div>
+  );
 };
 export default ManagerTabs;

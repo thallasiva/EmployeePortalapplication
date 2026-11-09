@@ -210,7 +210,7 @@ export default function CalendarForm() {
                 className="w-32 h-11 bg-brand hover:bg-brand-600 text-white rounded font-semibold">
                   Apply
                 </button>
-                <button
+                <button data-cancel-button
                 onClick={() => setShowModal(false)}
                 className="w-32 h-11 bg-red-500 hover:bg-red-600 text-white rounded font-semibold">
                   Cancel

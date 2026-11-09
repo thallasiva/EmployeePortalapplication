@@ -186,7 +186,7 @@ function BuilderView({ form, onBack, onSave })
         <div className="flex-1 overflow-y-auto bg-[#f8fafc] p-6">
           <div className="max-w-xl mx-auto bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 space-y-4">
             <div className="border-b border-[#f1f5f9] pb-4">
-              <h3 className="text-[16px] font-bold text-[#1e293b]">{meta.name || "Untitled Form"}</h3>
+              <h3 className="text-[16px] font-bold text-[#f18200]">{meta.name || "Untitled Form"}</h3>
               <p className="text-[12px] text-[#94a3b8] mt-0.5">{meta.category} · {fields.length} fields</p>
             </div>
             {fields.length === 0 && (
@@ -302,14 +302,14 @@ export default function FormBuilder()
   if (editing !== null)
   {
     return (
-      <div className="min-h-screen bg-[#f0f4f8] flex flex-col">
+      <div className="min-h-screen   flex flex-col">
         {toast && <div role="status" className="fixed top-4 right-4 z-50 rounded-xl bg-red-600 px-4 py-3 text-[13px] font-semibold text-white shadow-lg">{toast}</div>}
         <BuilderView form={editing} onBack={() => setEditing(null)} onSave={handleSave} />
       </div>
     );
   }
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {toast && (
         <div role="status" className={`fixed top-4 right-4 z-50 text-white px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}>
           <Check size={14} className="inline -mt-0.5" /> {toast}
@@ -318,7 +318,7 @@ export default function FormBuilder()
       {/* Header */}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-[20px] font-bold text-[#1e293b]">Form Builder</h1>
+          <h1 className="text-[20px] font-bold text-[#f18200]">Form Builder</h1>
           <p className="text-[13px] text-[#94a3b8] mt-0.5">Create and manage custom HR forms with drag-and-drop fields</p>
         </div>
         <button onClick={() => setEditing({ name: "", category: "HR", status: "Draft", fields: [] })}

@@ -8,7 +8,7 @@ const PageHeader = React.memo(function PageHeader() {
           <ShieldCheck size={20} color="#f18200" />
         </div>
         <div>
-          <h1 className="m-0 text-[20px] font-bold text-gray-900">Role Management</h1>
+          <h1 className="m-0 text-[20px] font-bold text-[#f18200]">Role Management</h1>
           <p className="m-0 text-[12px] text-gray-400">
             Assign system roles and job designations to employees
           </p>

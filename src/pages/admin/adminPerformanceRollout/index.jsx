@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { cssClass } from "../../../utils/classStyles";
+import PageTabs from "../../../components/PageTabs";
 import { useCycles } from "./hooks/useCycles";
 import { BRAND, TABS } from "./constants";
 import ActiveRolloutBanner from "./components/ActiveRolloutBanner";
@@ -31,14 +32,14 @@ export default function AdminPerformanceRollout() {
     setDisableData(null);
   }, [updateInList]);
   return (
-    <div className={cssClass({ padding: "28px 32px", maxWidth: 1080, margin: "0 auto" })}>
+    <div className={cssClass({ margin: "0 auto" })}>
       <div className={cssClass({ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 })}>
         <div>
           <h1 className={cssClass({ margin: 0, fontSize: 22, fontWeight: 800, color: "#1e293b" })}>Performance Appraisal</h1>
           <p className={cssClass({ margin: "4px 0 0", color: "#64748b", fontSize: 14 })}>Manage appraisal cycles, configure rollout, and view submissions.</p>
         </div>
         <button onClick={() => setShowCreate(true)}
-          className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "10px 18px", background: BRAND, color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 14 })}>
+          className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "10px 18px", background: BRAND, color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 14, marginBottom: 24 })}>
           <Plus size={15} /> New Cycle
         </button>
       </div>
@@ -46,14 +47,13 @@ export default function AdminPerformanceRollout() {
         activeCycle={activeCycle}
         onStopRollout={() => setDisableData(activeCycle)}
         onStartRollout={() => setTab("rollout")}
+        style={{ marginBottom: 24 }}
       />
-      <div className={cssClass({ display: "flex", gap: 2, borderBottom: "2px solid #e2e8f0", marginBottom: 24 })}>
-        {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={cssClass({ padding: "10px 18px", border: "none", background: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, color: tab === t.id ? BRAND : "#64748b", borderBottom: tab === t.id ? `2.5px solid ${BRAND}` : "2.5px solid transparent", marginBottom: -2 })}>
-            {t.label}
-          </button>
-        ))}
+
+
+
+      <div className="mb-6">
+        <PageTabs tabs={TABS} value={tab} onChange={setTab} label="Performance appraisal sections" style={{ marginBottom: 24 }} />
       </div>
       {loading && (tab === "cycles" || tab === "rollout")
         ? <div className={cssClass({ textAlign: "center", padding: 60, color: "#94a3b8" })}>Loading…</div>

@@ -21,7 +21,7 @@ const EntitlementCard = React.memo(function EntitlementCard({ item, color }) {
       </div>
       {}
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-bold text-[#1e293b]">{item.title}</p>
+        <p className="text-[14px] font-bold text-[#f18200]">{item.title}</p>
         <div className="flex items-center gap-4 mt-2 text-[12px] text-[#64748b]">
           <span>Annual: <strong className="text-[#1e293b]">{fmt(item.annual)}</strong></span>
           <span className="text-[#e2e8f0]">|</span>

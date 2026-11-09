@@ -41,7 +41,7 @@ const CreateCycleModal = React.memo(function CreateCycleModal({ onClose, onCreat
         <ReviewTemplateEditor value={form.parameters} onChange={(parameters) => setForm((current) => ({ ...current, parameters }))} />
         {err && <p className={cssClass({ color: "#dc2626", fontSize: 13, margin: 0 })}>{err}</p>}
         <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 })}>
-          <button onClick={onClose} className={cssClass({ padding: "9px 20px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: "pointer" })}>Cancel</button>
+          <button data-cancel-button onClick={onClose} className={cssClass({ padding: "9px 20px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: "pointer" })}>Cancel</button>
           <button onClick={submit} disabled={saving}
             className={cssClass({ padding: "9px 22px", background: BRAND, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 })}>
             {saving ? "Creating…" : "Create Cycle"}

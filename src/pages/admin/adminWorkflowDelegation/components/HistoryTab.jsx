@@ -14,7 +14,7 @@ const HistoryTab = React.memo(function HistoryTab({ history }) {
       <SectionHead>Reporting Change Audit History</SectionHead>
       {history.length === 0 ? (
         <div className={cssClass({
-          textAlign: "center", padding: 32, color: "#9ca3af",
+          textAlign: "center", padding: 32, color: "#ff6a00",
           background: "#f9fafb", borderRadius: 12,
         })}>
           No history yet. Changes will appear here as they happen.

@@ -10,7 +10,7 @@ const StatCards = memo(function StatCards({ counts, onStatClick }) {
     {
       label: "Total Weeks",
       value: counts?.submittedWeeks ?? "—",
-      bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", num: "text-blue-700",
+      bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-600", num: "text-[#f18200]",
       onClick: () => onStatClick("timesheets", null),
     },
     {

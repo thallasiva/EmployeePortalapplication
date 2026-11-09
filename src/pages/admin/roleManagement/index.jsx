@@ -23,7 +23,7 @@ export default function RoleManagement() {
     getRoleStyle
   } = useRoleManagement();
   return (
-    <div className="px-7 py-6" style={{ maxWidth: 1400, margin: "0 auto" }}>
+    <div  style={{ maxWidth: 1400, margin: "0 auto" }}>
       <PageHeader />
       <div className="grid gap-5 items-start" style={{ gridTemplateColumns: "1fr 340px 280px" }}>
         <EmployeeList

@@ -28,7 +28,7 @@ const STEP_STATUS_CLS = {
   Pending: "bg-red-100 text-red-600",
   "In Progress": "bg-amber-100 text-amber-600",
   Completed: "bg-emerald-100 text-emerald-600",
-  Nominated: "bg-blue-100 text-blue-700",
+  Nominated: "bg-blue-100 text-[#f18200]",
   Confirmed: "bg-emerald-100 text-emerald-600",
   Submitted: "bg-violet-100 text-violet-600",
   Approved: "bg-emerald-100 text-emerald-600"

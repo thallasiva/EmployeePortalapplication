@@ -18,7 +18,7 @@ const DepartmentBreakdown = React.memo(function DepartmentBreakdown({
             onClick={() => setDeptFilter(deptFilter === dept ? "All" : dept)}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
               deptFilter === dept
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-[#f18200] text-white border-blue-600"
                 : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
             }`}
           >

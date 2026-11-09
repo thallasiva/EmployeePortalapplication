@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, Sun, Moon, Sunset } from "lucide-react";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
 import { getShiftForUser } from "../../../data/auth";
+import { getMyWorkSchedule } from "../../../api/workSchedule.api";
 const SHIFTS = {
   general: { id: "general", name: "General Shift", time: "09:00 AM – 06:00 PM", break: "1h lunch", icon: Sun,  color: "text-amber-500",  bg: "bg-amber-50",  ring: "ring-amber-300",  badge: "bg-amber-100 text-amber-800" },
   mid:     { id: "mid",     name: "Mid Shift",     time: "01:00 PM – 10:00 PM", break: "1h dinner",  icon: Sunset, color: "text-indigo-500", bg: "bg-indigo-50", ring: "ring-indigo-300", badge: "bg-indigo-100 text-indigo-800" },
@@ -15,11 +16,12 @@ function getWeekStart(date) {
   d.setHours(12, 0, 0, 0);
   return d;
 }
-function buildWeekRoster(weekStart, userShift) {
+function buildWeekRoster(weekStart, userShift, workDays) {
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(weekStart);
     date.setDate(weekStart.getDate() + i);
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    const weekday = date.toLocaleDateString("en-GB", { weekday: "short" }).toLowerCase().slice(0, 3);
+    const isWeekend = !workDays.includes(weekday);
     return {
       iso: toISODateString(date),
       weekday: date.toLocaleDateString("en-GB", { weekday: "long" }),
@@ -35,11 +37,30 @@ function buildWeekRoster(weekStart, userShift) {
 export default function ShiftRoster() {
   const [user] = useState(getLoggedInUser);
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
+  const [schedule, setSchedule] = useState(null);
+  const [scheduleError, setScheduleError] = useState("");
+  useEffect(() => {
+    getMyWorkSchedule()
+      .then(setSchedule)
+      .catch(() => setScheduleError("Your latest schedule could not be loaded. Showing your profile shift instead."));
+  }, []);
   const userShift = useMemo(() => {
     const shiftId = getShiftForUser(user);
-    return SHIFTS[shiftId] || SHIFTS.general;
-  }, [user]);
-  const week = useMemo(() => buildWeekRoster(weekStart, userShift), [weekStart, userShift]);
+    const base = SHIFTS[shiftId] || SHIFTS.general;
+    if (!schedule?.start_time && !schedule?.end_time) return base;
+    const format = (time) => {
+      if (!time) return "";
+      const [hour, minute] = time.slice(0, 5).split(":").map(Number);
+      return `${String(hour % 12 || 12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
+    };
+    return {
+      ...base,
+      name: schedule.schedule_type === "rotational" ? "Rotational Shift" : "Assigned Schedule",
+      time: `${format(schedule.start_time)} – ${format(schedule.end_time)}`,
+    };
+  }, [user, schedule]);
+  const workDays = schedule?.work_days?.length ? schedule.work_days : ["mon", "tue", "wed", "thu", "fri"];
+  const week = useMemo(() => buildWeekRoster(weekStart, userShift, workDays), [weekStart, userShift, workDays]);
   const weekLabel = `${week[0].dateNum} ${week[0].month} – ${week[6].dateNum} ${week[6].month} ${weekStart.getFullYear()}`;
   const goWeek = (delta) => {
     const next = new Date(weekStart);
@@ -54,9 +75,10 @@ export default function ShiftRoster() {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Shift Roster</h1>
+          <h1 className="text-2xl font-bold  text-[#f18200] tracking-tight">Shift Roster</h1>
           <p className="text-sm text-slate-500 mt-1">{user?.name || "Employee"} · Weekly schedule</p>
         </div>
+        {scheduleError && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{scheduleError}</p>}
         <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
           <button type="button" onClick={() => goWeek(-1)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" aria-label="Prev week">
             <ChevronLeft size={20} />
@@ -77,7 +99,7 @@ export default function ShiftRoster() {
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-0.5">Your Assigned Shift</p>
-          <p className="text-xl font-bold text-slate-900">{userShift.name}</p>
+          <p className="text-xl font-bold  text-[#f18200]">{userShift.name}</p>
           <p className="text-sm text-slate-600 mt-0.5">{userShift.time} &nbsp;·&nbsp; Break: {userShift.break}</p>
         </div>
         <span className={`ml-auto px-3 py-1.5 rounded-full text-sm font-bold ${userShift.badge}`}>
@@ -103,7 +125,7 @@ export default function ShiftRoster() {
               }`}
             >
               <p className="text-xs font-medium text-slate-500">{day.shortDay}</p>
-              <p className="text-xl font-bold text-slate-900 mt-0.5">{day.dateNum}</p>
+              <p className="text-xl font-bold  text-[#f18200] mt-0.5">{day.dateNum}</p>
               <p className="text-[11px] text-slate-400">{day.month}</p>
               <p className={`mt-2 text-xs font-semibold ${day.isWeekend ? "text-slate-400" : userShift.color}`}>
                 {day.shift.name}
@@ -125,7 +147,7 @@ export default function ShiftRoster() {
           <div className={`rounded-xl ${currentShift.bg} p-5`}>
             <div className="flex items-center gap-3 mb-3">
               <ShiftIcon size={22} className={currentShift.color} />
-              <p className="text-lg font-bold text-slate-900">{currentShift.name}</p>
+              <p className="text-lg font-bold  text-[#f18200]">{currentShift.name}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

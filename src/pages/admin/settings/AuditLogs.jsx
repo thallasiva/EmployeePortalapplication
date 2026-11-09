@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Shield, Search, Eye, ChevronLeft, ChevronRight, RefreshCw, Loader2, X } from "lucide-react";
+import { Shield, Search, Eye, RefreshCw, Loader2, X } from "lucide-react";
 import client from "../../../api/client";
+import Pagination from "../../../components/Pagination";
 const MODULES_F = ["All Modules","Email Config","Email Templates","Email Permissions","Email Logs","Scheduled Emails","Notification Settings","Menu Permissions","Form Builder","Dashboard Builder","Report Builder","System","Employees","Leave","Payroll","Attendance","Recruitment"];
 const RESULTS_F = ["All Results","Success","Failed","Denied"];
 const PER_PAGE  = 15;
@@ -34,12 +35,12 @@ export default function AuditLogs() {
   useEffect(() => { setPage(1); }, [search, module, result]);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {viewRow && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-              <span className="text-[15px] font-bold text-[#1e293b]">Audit Log Details</span>
+              <span className="text-[15px] font-bold text-[#f18200]">Audit Log Details</span>
               <button onClick={() => setViewRow(null)} className="text-[#94a3b8]" aria-label="Close"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-3">
@@ -65,7 +66,7 @@ export default function AuditLogs() {
               <Shield size={18} color="#f18200" />
             </div>
             <div>
-              <h1 className="text-[18px] font-bold text-[#1e293b]">Audit Logs</h1>
+              <h1 className="text-[18px] font-bold text-[#f18200]">Audit Logs</h1>
               <p className="text-[12px] text-[#94a3b8]">Track all admin actions and system events</p>
             </div>
           </div>
@@ -135,20 +136,10 @@ export default function AuditLogs() {
               </tbody>
             </table>
           )}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-[#f1f5f9]">
-              <span className="text-[12px] text-[#94a3b8]">Total {total} records</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
-                  className="p-1.5 rounded hover:bg-[#f1f5f9] disabled:opacity-40"><ChevronLeft size={14} /></button>
-                {Array.from({ length: Math.min(5, totalPages) }, (_,i) => i+1).map(n => (
-                  <button key={n} onClick={() => setPage(n)}
-                    className={`w-7 h-7 rounded text-[12px] ${n===page?"bg-[#f18200] text-white":"hover:bg-[#f1f5f9] text-[#64748b]"}`}>{n}</button>
-                ))}
-                <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
-                  className="p-1.5 rounded hover:bg-[#f1f5f9] disabled:opacity-40"><ChevronRight size={14} /></button>
-              </div>
-            </div>
+          {total > 0 && (
+            <Pagination page={page} setPage={setPage} totalPages={totalPages}
+              from={Math.min((page - 1) * PER_PAGE + 1, total)} to={Math.min(page * PER_PAGE, total)}
+              total={total} pageSize={PER_PAGE} />
           )}
         </div>
       </div>

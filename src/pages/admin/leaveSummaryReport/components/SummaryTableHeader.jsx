@@ -23,7 +23,7 @@ const SummaryTableHeader = React.memo(function SummaryTableHeader({ leaveTypes, 
       </tr>
       <tr>
         {[
-          { bg: "bg-blue-600 border-blue-500" },
+          { bg: "bg-[#f18200] border-blue-500" },
           { bg: "bg-emerald-600 border-emerald-500" },
           { bg: "bg-amber-600 border-amber-500" },
           ...MONTH_LABELS.map(() => ({ bg: "bg-purple-600 border-purple-500" })),

@@ -32,7 +32,7 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
   return (
     <div className="space-y-3 pb-2">
       {/* Offer Summary */}
-      <div className="bg-[#1e3a5f] rounded-xl px-4 py-3.5">
+      <div className="bg-[#f18200] rounded-xl px-4 py-3.5">
         <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-2.5">Offer Summary</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
           {[
@@ -121,7 +121,7 @@ const OfferReleaseReview = React.memo(function OfferReleaseReview({ form, comput
         </div>
       </div>
       {/* CTC Summary */}
-      <div className="bg-[#1e3a5f] rounded-xl px-4 py-3">
+      <div className="bg-[#f18200] rounded-xl px-4 py-3">
         <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-2">CTC Summary</p>
         <div className="space-y-1">
           <div className="flex justify-between text-[12px] text-blue-200">

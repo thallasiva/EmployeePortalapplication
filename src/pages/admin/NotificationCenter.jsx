@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Bell, CheckCheck, Trash2, Info, CheckCircle2, AlertTriangle, XCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bell, CheckCheck, Trash2, Info, CheckCircle2, AlertTriangle, XCircle, Loader2 } from "lucide-react";
 import { notificationsApi } from "../../api/settings.api";
 import { getStoredUser } from "../../data/auth";
+import Pagination from "../../components/Pagination";
 const TYPE_CFG = {
   info:    { icon: <Info size={15} />,          color: "#3b82f6", bg: "#eff6ff" },
   success: { icon: <CheckCircle2 size={15} />,  color: "#16a34a", bg: "#dcfce7" },
@@ -69,7 +70,7 @@ export default function NotificationCenter() {
   };
   const totalPages = Math.max(1, Math.ceil(total / PER));
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {toast && (
         <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-xl text-[13px] font-semibold text-white ${toast.type==="error"?"bg-red-500":"bg-green-500"}`}>
           {toast.msg}
@@ -83,7 +84,7 @@ export default function NotificationCenter() {
               <Bell size={18} color="#f18200" />
             </div>
             <div>
-              <h1 className="text-[18px] font-bold text-[#1e293b]">Notification Center</h1>
+              <h1 className="text-[18px] font-bold text-[#f18200]">Notification Center</h1>
               <p className="text-[12px] text-[#94a3b8]">
                 {unread > 0 ? <span className="text-[#f18200] font-semibold">{unread} unread</span> : "All caught up"} · {total} total
               </p>
@@ -177,20 +178,10 @@ export default function NotificationCenter() {
             </div>
           )}
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-[#f1f5f9]">
-              <span className="text-[12px] text-[#94a3b8]">{total} notifications</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1,p-1))} disabled={page===1}
-                  className="p-1.5 rounded hover:bg-[#f1f5f9] disabled:opacity-40"><ChevronLeft size={14} /></button>
-                {Array.from({length:Math.min(5,totalPages)},(_,i)=>i+1).map(n=>(
-                  <button key={n} onClick={() => setPage(n)}
-                    className={`w-7 h-7 rounded text-[12px] ${n===page?"bg-[#f18200] text-white":"hover:bg-[#f1f5f9] text-[#64748b]"}`}>{n}</button>
-                ))}
-                <button onClick={() => setPage(p => Math.min(totalPages,p+1))} disabled={page===totalPages}
-                  className="p-1.5 rounded hover:bg-[#f1f5f9] disabled:opacity-40"><ChevronRight size={14} /></button>
-              </div>
-            </div>
+          {total > 0 && (
+            <Pagination page={page} setPage={setPage} totalPages={totalPages}
+              from={Math.min((page - 1) * PER + 1, total)} to={Math.min(page * PER, total)}
+              total={total} pageSize={PER} />
           )}
         </div>
       </div>

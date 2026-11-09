@@ -179,7 +179,7 @@ const RequestModal = memo(function RequestModal({ category, topic, onClose, onSu
             className={cssClass({ background: BRAND, color: "#fff", border: "none", borderRadius: 6, padding: "9px 32px", fontSize: 14, fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1 })}>
             {submitting ? "Sending…" : "Send"}
           </button>
-          <button type="button" onClick={onClose} className={cssClass({ background: "none", color: "#6b7280", border: "none", padding: "9px 4px", fontSize: 14, cursor: "pointer" })}>
+          <button data-cancel-button type="button" onClick={onClose} className={cssClass({ background: "none", color: "#6b7280", border: "none", padding: "9px 4px", fontSize: 14, cursor: "pointer" })}>
             Cancel
           </button>
         </div>

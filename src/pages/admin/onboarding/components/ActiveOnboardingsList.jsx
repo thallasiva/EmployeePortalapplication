@@ -9,7 +9,7 @@ const ActiveOnboardingsList = React.memo(function ActiveOnboardingsList({
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Active Onboardings</h2>
+        <h2 className="text-xl font-semibold  text-[#f18200]">Active Onboardings</h2>
         <p className="text-sm text-slate-500">New hires within the first 90 days.</p>
       </div>
       {loading ? (

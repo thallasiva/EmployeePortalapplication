@@ -28,7 +28,7 @@ export default function AdminWorkflowDelegation() {
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
   const data = useWorkflowData(activeTab);
   return (
-    <div className={cssClass({ padding: "24px", maxWidth: 1200, margin: "0 auto", fontFamily: "inherit" })}>
+    <div className={cssClass({  maxWidth: 1200, margin: "0 auto", fontFamily: "inherit" })}>
       {/* Page header */}
       <div className={cssClass({
         display: "flex", alignItems: "center", justifyContent: "space-between",

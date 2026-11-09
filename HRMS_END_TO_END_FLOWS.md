@@ -114,3 +114,14 @@ Reports should reconcile to source records and finalized payroll snapshots. Do n
 8. Reports, dashboards, notification reliability, and reconciliation.
 
 For every module, deliver the employee, manager/approver, and admin journeys together, including correction, rejection, cancellation, and overdue cases.
+
+## Training, shift, assets, and central approvals
+
+- Admin/HR creates company training courses, assigns them to active employees, and tracks completion. Employees see only their own assignments and can update progress or self-record completion.
+- Admin/HR assigns fixed or rotational work days and hours from Shift Management. Schedule reads and writes are scoped through the employee's authenticated company; employees see their schedule in the Shift Roster.
+- Admin/HR maintains company asset inventory, assigns available assets to active company employees, records returns, and marks unassigned inventory for maintenance or retirement. Employees see only assets currently assigned to themselves.
+- Admin/HR and reporting managers have a central pending-approvals inbox. It aggregates leave, attendance regularization, resignation, timesheet, and appraisal requests and links into each module's existing review workflow; it does not duplicate or bypass those approval actions. Reporting managers see only their direct reports.
+
+Fresh database initialization (`npm run db:init` from the backend directory) also applies migrations 063 and 064 so the training and asset tables are created. For an existing database, apply migration 063 with `npm run db:migrate:063`, followed by migration 064 with `npm run db:migrate:064`. Training and assets use new company-owned tables; employee schedules remain attached to employees and are filtered by the authenticated company.
+
+Asset Management also includes company-scoped inventory, categories, allocation, employee asset requests and review/fulfillment, return history, maintenance tracking, employee transfers, and CSV reports. Apply migration 064 after migration 063 with `npm run db:migrate:064` from the backend directory. Migration 064 also fills missing asset tags on existing inventory records using `LEGACY-<asset_id>`. Keep the existing application sidebar and use its Asset Management section to navigate between these screens.

@@ -19,7 +19,7 @@ export const BLANK_INT = {
 export const BLANK_FB = { feedbackStatus: "", feedbackComments: "", shortlisted: false };
 export const LEVEL_ORDER = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
 export const STATUS_CLS = {
-  Scheduled: "bg-blue-100 text-blue-700",
+  Scheduled: "bg-blue-100 text-[#f18200]",
   Completed: "bg-[#fff7ed] text-[#f18200]",
   Cancelled: "bg-red-100 text-red-600",
 };
