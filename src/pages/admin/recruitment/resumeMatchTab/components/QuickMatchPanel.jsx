@@ -27,7 +27,7 @@ function Section({ title, children, defaultOpen = true }) {
   return (
     <div className="border border-[#e2e8f0] rounded-xl overflow-hidden mb-3">
       <button onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#f8fafc] hover:bg-[#f0f4f8] transition-colors">
+        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#f8fafc] hover:  transition-colors">
         <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">{title}</span>
         {open ? <ChevronUp size={13} className="text-[#94a3b8]"/> : <ChevronDown size={13} className="text-[#94a3b8]"/>}
       </button>
@@ -146,7 +146,7 @@ function ParsedDetail({ parsed, result }) {
           <div className="space-y-3 pt-1">
             {parsed.work_experience.map((w, i) => (
               <div key={i} className="border-l-2 border-[#f18200] pl-3">
-                <p className="text-[12px] font-bold text-[#1e293b]">{w.designation || "Role"}</p>
+                <p className="text-[12px] font-bold text-[#f18200]">{w.designation || "Role"}</p>
                 <p className="text-[11px] text-[#64748b]">{w.company_name}</p>
                 <p className="text-[10px] text-[#94a3b8]">
                   {[w.start_month && w.start_year ? `${w.start_month}/${w.start_year}` : w.start_year, "–",

@@ -34,6 +34,8 @@ const WorkflowDelegates = lazy(() => import("../pages/employee/workflow/Workflow
 const MyInfo = lazy(() => import("../pages/employee/myinfo/MyInfo"));
 const Resignation = lazy(() => import("../pages/employee/myinfo/Resignation"));
 const SelfAppraisal = lazy(() => import("../pages/employee/appraisal/SelfAppraisal"));
+const TrainingAndAssets = lazy(() => import("../pages/employee/TrainingAndAssets"));
+const EmployeeAssetRequest = lazy(() => import("../pages/employee/EmployeeAssetRequest"));
 const Page = LazyPage;
 const EmployeeRoutes = () =>
 {
@@ -79,6 +81,8 @@ const EmployeeRoutes = () =>
       <Route path="my-info" element={<Page><MyInfo /></Page>} />
       <Route path="resignation" element={<Page><Resignation /></Page>} />
       <Route path="appraisal" element={<Page><SelfAppraisal /></Page>} />
+      <Route path="training-assets" element={<Page><TrainingAndAssets /></Page>} />
+      <Route path="assets/request" element={<Page><EmployeeAssetRequest /></Page>} />
       <Route path="*" element={<Navigate to="/employee/home" replace />} />
     </Routes>);
 };

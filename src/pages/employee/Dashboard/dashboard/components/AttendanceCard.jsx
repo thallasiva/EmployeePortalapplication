@@ -104,7 +104,7 @@ const AttendanceCard = React.memo(function AttendanceCard({
             checkIn && !onBreak
               ? "bg-slate-100 text-slate-400 cursor-not-allowed"
               : onBreak
-              ? "bg-blue-600 text-white cursor-pointer hover:bg-blue-700"
+              ? "bg-[#f18200] text-white cursor-pointer hover:bg-blue-700"
               : "bg-green-600 text-white cursor-pointer hover:bg-green-700"
           }`}
         >

@@ -187,7 +187,7 @@ const MfaSetup = () => {
               <button type="submit" className="bg-red-600 text-white px-5 py-2 rounded-lg text-sm disabled:opacity-60" disabled={loading}>
                 {loading ? "Disabling..." : "Disable MFA"}
               </button>
-              <button type="button" className="text-sm text-slate-500 underline" onClick={() => {setStep("status");setError("");}}>
+              <button data-cancel-button type="button" className="text-sm text-slate-500 underline" onClick={() => {setStep("status");setError("");}}>
                 Cancel
               </button>
             </div>

@@ -317,22 +317,35 @@ async function saveEmailPermissions(data) {
 /* ════════════════════════════════════
    MENU PERMISSIONS
 ════════════════════════════════════ */
-async function getMenuPermissions() {
+async function getMenuPermissions(companyId = null) {
   await ensureTables();
-  const rows = await query('SELECT role_name, permissions FROM hr_menu_permissions');
+  const globalRows = await query('SELECT role_name, permissions FROM hr_menu_permissions');
+  const companyRows = companyId
+    ? await query('SELECT role_name, permissions FROM company_menu_permissions WHERE company_id = ?', [companyId])
+    : [];
   const out = {};
-  rows.forEach(r => { try { out[r.role_name] = JSON.parse(r.permissions); } catch { out[r.role_name] = r.permissions; } });
+  globalRows.forEach(r => { try { out[r.role_name] = JSON.parse(r.permissions); } catch { out[r.role_name] = r.permissions; } });
+  companyRows.forEach(r => { try { out[r.role_name] = JSON.parse(r.permissions); } catch { out[r.role_name] = r.permissions; } });
   return out;
 }
-async function saveMenuPermissions(data) {
+async function saveMenuPermissions(data, companyId = null, userId = null) {
   await ensureTables();
   for (const [role, perms] of Object.entries(data)) {
-    await query(
-      'INSERT INTO hr_menu_permissions (role_name, permissions) VALUES (?,?) ON DUPLICATE KEY UPDATE permissions=?, updated_at=NOW()',
-      [role, JSON.stringify(perms), JSON.stringify(perms)]
-    );
+    if (companyId) {
+      await query(
+        `INSERT INTO company_menu_permissions (company_id, role_name, permissions, updated_by)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE permissions = VALUES(permissions), updated_by = VALUES(updated_by), updated_at = NOW()`,
+        [companyId, role, JSON.stringify(perms), userId || null]
+      );
+    } else {
+      await query(
+        'INSERT INTO hr_menu_permissions (role_name, permissions) VALUES (?,?) ON DUPLICATE KEY UPDATE permissions=?, updated_at=NOW()',
+        [role, JSON.stringify(perms), JSON.stringify(perms)]
+      );
+    }
   }
-  return getMenuPermissions();
+  return getMenuPermissions(companyId);
 }
 /* ════════════════════════════════════
    FORM BUILDER

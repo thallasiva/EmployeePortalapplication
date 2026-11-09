@@ -13,7 +13,7 @@ const fmtINR = (n) => n != null ? `â‚¹${Number(n).toLocaleString('en-IN')}` : 'â
 const co = (override) => esc(override || emailCfg.companyName || 'HRMS');
 const feUrl = () => emailCfg.frontendUrl || 'https://d3snrdmpdzb1yf.cloudfront.net';
 const ORANGE = '#f18200';
-const NAVY = '#1e3a5f';
+const NAVY = '#f18200';
 const CREAM = '#FFF8F0';
 const CREAM_B = '#FFD9A8';
 const DEFAULT_LOGO_PATH = path.resolve(__dirname, '../../../../src/assets/logo.png');

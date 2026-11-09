@@ -9,9 +9,10 @@ const {
   updateDocumentSchema
 } = require('../validators/document.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('documents'));
 router.get('/categories', categoryController.list);
 router.get('/categories/:id', categoryController.getOne);
 router.post('/categories', requirePermission('documents', 'add'), validate(createDocumentCategorySchema), categoryController.create);

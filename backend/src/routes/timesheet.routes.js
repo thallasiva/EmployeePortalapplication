@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate, authorizeRoles } = require('../middleware/auth');
-const { requireMenuPermission } = require('../middleware/rbac');
+const { requireMenuPermission, requireCompanyModule } = require('../middleware/rbac');
 const c = require('../controllers/timesheet.controller');
 router.use(authenticate);
+router.use(requireCompanyModule('timesheets'));
 router.get('/my-tasks', c.listMyTasks);
 router.post('/my-tasks', c.createTask);
 router.put('/my-tasks/:taskId', c.updateTask);

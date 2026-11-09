@@ -173,7 +173,7 @@ const TaskModal = memo(function TaskModal({ task, existingTasks = [], onClose, o
           />
         </div>
         <div className="flex gap-2 justify-end px-6 pb-5">
-          <button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
+          <button data-cancel-button type="button" onClick={onClose} className="ts-btn-ghost">Cancel</button>
           <button type="button" onClick={handle} disabled={saving || isBlocked}
             title={isBlocked ? "Fix the hour limit error above before saving" : undefined}
             className={`ts-btn-primary ${isBlocked ? "opacity-40 cursor-not-allowed" : ""}`}>

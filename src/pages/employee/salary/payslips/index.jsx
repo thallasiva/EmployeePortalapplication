@@ -28,7 +28,7 @@ export default function Payslips() {
   const monthLabel = `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
+      <div className="min-h-screen   flex items-center justify-center">
         <div className="flex items-center gap-3 text-[#94a3b8]">
           <Loader2 size={20} className="animate-spin" />
           <span className="text-[14px]">Loading payslips…</span>
@@ -37,7 +37,7 @@ export default function Payslips() {
     );
   }
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {/* ── Page Header ── */}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div>

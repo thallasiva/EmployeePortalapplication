@@ -1,9 +1,10 @@
 const express = require('express');
 const controller = require('../controllers/report.controller');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('reports'));
 router.use(requirePermission('reports', 'view'));
 router.get('/employees', controller.employeeSummary);
 router.get('/attendance', controller.attendanceReport);

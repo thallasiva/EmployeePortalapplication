@@ -46,7 +46,7 @@ const OverviewStats = React.memo(function OverviewStats({
             <Icon size={22} style={{ color }} />
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">{value}</p>
+            <p className="text-2xl font-bold  text-[#f18200]">{value}</p>
             <p className="text-[13px] font-medium text-slate-700">{label}</p>
             <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>
           </div>

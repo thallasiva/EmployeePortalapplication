@@ -19,7 +19,7 @@ const WorkSchedule = React.memo(function WorkSchedule({
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Work Schedule</h2>
+          <h2 className="text-xl font-semibold  text-[#f18200]">Work Schedule</h2>
           <p className="mt-1 text-sm text-gray-500">Configure work hours and days</p>
         </div>
         <div className={cssClass({ display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 3 })}>

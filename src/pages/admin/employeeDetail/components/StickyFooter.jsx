@@ -20,7 +20,7 @@ const StickyFooter = React.memo(function StickyFooter({
           <AlertTriangle size={13} className="inline -mt-0.5" /> {errorCount} field{errorCount > 1 ? "s" : ""} need attention
         </div>
       )}
-      <button
+      <button data-cancel-button
         onClick={onCancel}
         className={cssClass({
           background: "#fff", border: "1px solid #d1d5db", borderRadius: 8,

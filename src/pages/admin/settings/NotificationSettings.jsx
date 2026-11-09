@@ -79,12 +79,12 @@ export default function NotificationSettings() {
   };
   const handleReset = () => { setMatrix(buildDefault()); showToast("Reset to defaults", "info"); };
   if (loading) return (
-    <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
+    <div className="min-h-screen   flex items-center justify-center">
       <Loader2 size={28} className="animate-spin text-[#f18200]" />
     </div>
   );
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {/* Toast */}
       {toast && (
         <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-xl text-[13px] font-semibold text-white ${toast.type==="error"?"bg-red-500":toast.type==="info"?"bg-blue-500":"bg-green-500"}`}>
@@ -99,7 +99,7 @@ export default function NotificationSettings() {
               <Bell size={18} color="#f18200" />
             </div>
             <div>
-              <h1 className="text-[18px] font-bold text-[#1e293b]">Notification Settings</h1>
+              <h1 className="text-[18px] font-bold text-[#f18200]">Notification Settings</h1>
               <p className="text-[12px] text-[#94a3b8]">Configure which events trigger notifications on each channel</p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function NotificationSettings() {
           {matrix.map((group, gi) => (
             <div key={group.group} className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
               <div className="px-5 py-3 border-b border-[#f8fafc] bg-[#fafafa]">
-                <span className="text-[13px] font-bold text-[#1e293b]">{group.group}</span>
+                <span className="text-[13px] font-bold text-[#f18200]">{group.group}</span>
               </div>
               <table className="w-full text-[13px]">
                 <thead>

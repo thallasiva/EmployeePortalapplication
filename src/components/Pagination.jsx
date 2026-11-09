@@ -21,7 +21,7 @@ export default function Pagination({ page, setPage, totalPages, from, to, total,
   const canPrev = page > 1;
   const canNext = page < totalPages;
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 bg-white text-[13px] text-gray-600 select-none">
+    <div className="flex flex-wrap items-center justify-end gap-x-4 px-4 py-2 border-t border-gray-200 bg-white text-[13px] text-gray-600 select-none">
       { }
       <div className="flex items-center gap-2">
         <span className="text-[12px]">Items per page:</span>

@@ -6,11 +6,17 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "db:init": "node src/database/runSql.js schema.sql procedures.sql seed.sql",
+    "db:init": "node src/database/runSql.js schema.sql procedures.sql seed.sql migration_063_training_assets.sql migration_064_asset_management_workflows.sql",
     "db:procedures": "node src/database/runSql.js procedures.sql",
     "db:patch:auth": "node src/database/runSql.js patch_auth_procedures.sql",
     "db:migrate:009": "node src/database/runSql.js migration_009_employee_extended_fields.sql",
-    "db:migrate:033": "node src/database/runSql.js migration_033_recruiter_employees.sql"
+    "db:migrate:033": "node src/database/runSql.js migration_033_recruiter_employees.sql",
+    "db:migrate:059": "node src/database/runSql.js migration_059_company_foundation.sql",
+    "db:migrate:060": "node src/database/runSql.js migration_060_appraisal_workflow.sql",
+    "db:migrate:061": "node src/database/runSql.js migration_061_company_salary_configuration.sql",
+    "db:migrate:062": "node src/database/runSql.js migration_062_payroll_configuration_versions.sql",
+    "db:migrate:063": "node src/database/runSql.js migration_063_training_assets.sql",
+    "db:migrate:064": "node src/database/runSql.js migration_064_asset_management_workflows.sql"
   },
   "license": "MIT",
   "dependencies": {

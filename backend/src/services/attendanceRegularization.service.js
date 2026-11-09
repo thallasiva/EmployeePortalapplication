@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure } = require('../config/db');
+const { callProcedure, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 class AttendanceRegularizationService extends BaseService {
   constructor() {
@@ -7,18 +7,28 @@ class AttendanceRegularizationService extends BaseService {
       'employee_id', 'attendance_date', 'requested_check_in', 'requested_check_out', 'reason', 'status',
     ]);
   }
-  async list({ employee_id, status, reporting_to, limit, offset } = {}) {
+  async list({ employee_id, status, reporting_to, limit, offset, companyId = null } = {}) {
+    const scoped = companyId != null;
     const results = await callProcedure(
       'sp_list_attendance_regularization(?, ?, ?, ?, ?)',
       [
         employee_id   ?? null,
         status        ?? null,
         reporting_to  ?? null,
-        limit != null ? Number(limit)       : null,
-        limit != null ? Number(offset || 0) : null,
+        scoped ? null : (limit != null ? Number(limit) : null),
+        scoped ? null : (limit != null ? Number(offset || 0) : null),
       ]
     );
-    return { rows: results[0] ?? [], total: (results[1] ?? [])[0]?.total ?? 0 };
+    let rows = results[0] ?? [];
+    let total = (results[1] ?? [])[0]?.total ?? rows.length;
+    if (scoped) {
+      const employees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [companyId]);
+      const ids = new Set(employees.map((employee) => Number(employee.employee_id)));
+      rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+      total = rows.length;
+      if (limit != null) rows = rows.slice(Number(offset || 0), Number(offset || 0) + Number(limit));
+    }
+    return { rows, total };
   }
   async getDetails(id) {
     const results = await callProcedure('sp_get_attendance_regularization(?)', [id]);

@@ -2,6 +2,7 @@ const express = require('express');
 const controller = require('../controllers/kudosFeedback.controller');
 const validate = require('../middleware/validate');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
+const { requireCompanyModule } = require('../middleware/rbac');
 const {
   giveKudosSchema,
   giveFeedbackSchema,
@@ -11,6 +12,7 @@ const {
 } = require('../validators/kudosFeedback.validator');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('performance'));
 router.get('/categories', controller.listCategories);
 router.post('/categories', authorizeRoles('Admin'), validate(createCategorySchema), controller.createCategory);
 router.put('/categories/:id', authorizeRoles('Admin'), validate(updateCategorySchema), controller.updateCategory);

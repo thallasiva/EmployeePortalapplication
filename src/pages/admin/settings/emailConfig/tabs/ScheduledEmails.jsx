@@ -23,7 +23,7 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-          <span className="text-[15px] font-bold text-[#1e293b]">{initial?.id ? "Edit Schedule" : "New Schedule"}</span>
+          <span className="text-[15px] font-bold text-[#f18200]">{initial?.id ? "Edit Schedule" : "New Schedule"}</span>
           <button onClick={onClose} aria-label="Close" className="text-[#94a3b8] hover:text-[#64748b]"><X size={16} /></button>
         </div>
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
@@ -195,7 +195,7 @@ export default function ScheduledEmails() {
                 <div className="flex items-center gap-2">
                   <span className="text-[#f18200] flex">{FREQ_EMOJI[s.freq] || <Mail size={20} />}</span>
                   <div>
-                    <div className="text-[14px] font-bold text-[#1e293b]">{s.name}</div>
+                    <div className="text-[14px] font-bold text-[#f18200]">{s.name}</div>
                     <div className="text-[11px] text-[#94a3b8]">{s.freq} · {s.send_time}</div>
                   </div>
                 </div>

@@ -121,7 +121,7 @@ export const Navbar = ({ toggleSidebar, user }) => {
             </div>
 
             <div className="flex gap-2.5">
-              <button
+              <button data-cancel-button
                 onClick={() => setShowLogout(false)}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold cursor-pointer hover:bg-gray-50 transition-colors"
               >

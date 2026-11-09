@@ -1,8 +1,38 @@
 const ExcelJS = require('exceljs');
-const { callProcedure } = require('../config/db');
-async function getCompany() {
-  const results = await callProcedure('sp_get_company()').catch(() => []);
-  return (results[0] ?? [])[0] || { company_name: 'Company Name', address: '' };
+const { callProcedure, query } = require('../config/db');
+const ApiError = require('../utils/ApiError');
+
+function requireCompanyId(companyId) {
+  const id = Number(companyId);
+  if (!Number.isInteger(id) || id <= 0) {
+    throw ApiError.forbidden('Company context is required');
+  }
+  return id;
+}
+
+async function getCompany(companyId) {
+  const rows = await query(
+    'SELECT company_name, address FROM companies WHERE company_id = ? LIMIT 1',
+    [requireCompanyId(companyId)]
+  );
+  if (!rows.length) throw ApiError.notFound('Company not found');
+  return rows[0];
+}
+
+async function getCompanyEmployeeDirectory(companyId) {
+  return query(
+    'SELECT employee_id, emp_code FROM employees WHERE company_id = ?',
+    [requireCompanyId(companyId)]
+  );
+}
+
+function filterEmployeeRows(rows, employees) {
+  const employeeIds = new Set(employees.map((employee) => Number(employee.employee_id)));
+  const employeeCodes = new Set(employees.filter((employee) => employee.emp_code).map((employee) => employee.emp_code));
+  return rows.filter((row) =>
+    (row.employee_id != null && employeeIds.has(Number(row.employee_id))) ||
+    (row.emp_code != null && employeeCodes.has(row.emp_code))
+  );
 }
 function fmtDate(val) {
   if (!val) return '';
@@ -36,9 +66,9 @@ function dataStyle() {
     alignment: { vertical: 'middle' }
   };
 }
-async function generateEmpData() {
+async function generateEmpData(companyId) {
   const _empResults = await callProcedure('sp_report_emp_data()');
-  const employees = _empResults[0] ?? [];
+  const employees = filterEmployeeRows(_empResults[0] ?? [], await getCompanyEmployeeDirectory(companyId));
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('EMP Data');
   const cols = [
@@ -112,12 +142,15 @@ async function generateEmpData() {
   widths.forEach((w, i) => {ws.getColumn(i + 1).width = w;});
   return wb;
 }
-async function generateLeaveBalance(asOnDate) {
-  const co = await getCompany();
+async function generateLeaveBalance(asOnDate, companyId) {
+  const [co, companyEmployees] = await Promise.all([
+    getCompany(companyId),
+    getCompanyEmployeeDirectory(companyId)
+  ]);
   const date = asOnDate ? new Date(asOnDate) : new Date();
   const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ');
   const _lbResults = await callProcedure('sp_report_leave_balance()');
-  const rows = _lbResults[0] ?? [];
+  const rows = filterEmployeeRows(_lbResults[0] ?? [], companyEmployees);
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Leave Balance');
   const titleStyle = { font: { bold: true, size: 11, name: 'Calibri' } };
@@ -146,17 +179,20 @@ async function generateLeaveBalance(asOnDate) {
   ws.getColumn(4).width = 12;ws.getColumn(5).width = 22;ws.getColumn(6).width = 18;
   return wb;
 }
-async function generateLeaveSummary(fromDate, toDate) {
-  const co = await getCompany();
+async function generateLeaveSummary(fromDate, toDate, companyId) {
+  const [co, companyEmployees] = await Promise.all([
+    getCompany(companyId),
+    getCompanyEmployeeDirectory(companyId)
+  ]);
   const from = fromDate || `${new Date().getFullYear()}-01-01`;
   const to = toDate || `${new Date().getFullYear()}-12-31`;
   const fromLabel = new Date(from).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const toLabel = new Date(to).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const _lsResults = await callProcedure('sp_report_leave_summary_data(?, ?)', [from, to]);
-  const empRows = _lsResults[0] ?? [];
+  const empRows = filterEmployeeRows(_lsResults[0] ?? [], companyEmployees);
   const leaveTypes = _lsResults[1] ?? [];
-  const availed = _lsResults[2] ?? [];
-  const balances = _lsResults[3] ?? [];
+  const availed = filterEmployeeRows(_lsResults[2] ?? [], companyEmployees);
+  const balances = filterEmployeeRows(_lsResults[3] ?? [], companyEmployees);
   const availedMap = {};
   availed.forEach((r) => {
     const k = `${r.employee_id}_${r.leave_type_id}`;
@@ -198,13 +234,16 @@ async function generateLeaveSummary(fromDate, toDate) {
   for (let i = 8; i <= 8 + leaveTypes.length * 2; i++) ws.getColumn(i).width = 10;
   return wb;
 }
-async function generatePfStatement(month, year) {
-  const co = await getCompany();
+async function generatePfStatement(month, year, companyId) {
+  const [co, companyEmployees] = await Promise.all([
+    getCompany(companyId),
+    getCompanyEmployeeDirectory(companyId)
+  ]);
   const m = Number(month) || new Date().getMonth() + 1;
   const y = Number(year) || new Date().getFullYear();
   const mLabel = `${monthName(m)} ${y}`;
   const _pfResults = await callProcedure('sp_report_pf_statement(?, ?)', [m, y]);
-  const rows = _pfResults[0] ?? [];
+  const rows = filterEmployeeRows(_pfResults[0] ?? [], companyEmployees);
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('PF Statement');
   const ts = { font: { bold: true, size: 11 } };
@@ -279,8 +318,11 @@ async function generatePfStatement(month, year) {
   for (let i = 9; i <= 24; i++) ws.getColumn(i).width = 10;
   return wb;
 }
-async function generateProfessionTax(month, year, state) {
-  const co = await getCompany();
+async function generateProfessionTax(month, year, state, companyId) {
+  const [co, companyEmployees] = await Promise.all([
+    getCompany(companyId),
+    getCompanyEmployeeDirectory(companyId)
+  ]);
   const m = Number(month) || new Date().getMonth() + 1;
   const y = Number(year) || new Date().getFullYear();
   const st = state || 'Telangana';
@@ -294,7 +336,7 @@ async function generateProfessionTax(month, year, state) {
     return slab ? slab.rate : 200;
   }
   const _ptResults = await callProcedure('sp_report_payslips_for_month(?, ?)', [m, y]);
-  const rows = _ptResults[0] ?? [];
+  const rows = filterEmployeeRows(_ptResults[0] ?? [], companyEmployees);
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Profession Tax');
   const ts = { font: { bold: true, size: 11 } };
@@ -332,12 +374,13 @@ async function generateProfessionTax(month, year, state) {
   ws.getColumn(4).width = 16;ws.getColumn(5).width = 12;
   return wb;
 }
-async function generateEcrFile(month, year, estbCode) {
+async function generateEcrFile(month, year, estbCode, companyId) {
+  const companyEmployees = await getCompanyEmployeeDirectory(companyId);
   const m = Number(month) || new Date().getMonth() + 1;
   const y = Number(year) || new Date().getFullYear();
   const code = estbCode || 'ESTBCODE';
   const _ecrResults = await callProcedure('sp_report_payslips_for_month(?, ?)', [m, y]);
-  const rows = _ecrResults[0] ?? [];
+  const rows = filterEmployeeRows(_ecrResults[0] ?? [], companyEmployees);
   const lines = rows.map((r) => {
     const gross = Math.round(Number(r.gross_earnings) || 0);
     const basic = Math.round(Number(r.basic) || 0);

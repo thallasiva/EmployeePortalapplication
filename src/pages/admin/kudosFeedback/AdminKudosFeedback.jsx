@@ -52,7 +52,7 @@ const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
   };
   return (
     <form onSubmit={submit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
-      <h2 className="text-base font-bold text-slate-900">{editing ? "Edit category" : "Add category"}</h2>
+      <h2 className="text-base font-bold  text-[#f18200]">{editing ? "Edit category" : "Add category"}</h2>
       <div>
         <label htmlFor="cat-name" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</label>
         <input id="cat-name" value={form.category_name} onChange={set("category_name")} maxLength={60} placeholder="e.g. Going the extra mile" className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#f18200]" />
@@ -215,7 +215,7 @@ const AdminKudosFeedback = () => {
     <div className="space-y-6">
       {kudosFor && <GiveKudosModal preset={[kudosFor]} onClose={() => setKudosFor(null)} />}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Kudos &amp; Feedback</h1>
+        <h1 className="text-2xl font-bold  text-[#f18200]">Kudos &amp; Feedback</h1>
         <p className="text-slate-500 mt-1 text-sm">Organisation-wide recognition, feedback trends and category setup.</p>
       </div>
       <Tabs

@@ -7,7 +7,7 @@ const TABS = [
 export default function LeaveCalendarHub() {
   const [activeTab, setActiveTab] = useState("leave");
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
             {}
             <div className="px-6 py-4">
                 <h1 className="text-[20px] font-bold text-[#1f2937]">Calendar</h1>

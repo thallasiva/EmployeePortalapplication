@@ -47,7 +47,7 @@ const ReviewModal = React.memo(function ReviewModal({ title, onSubmit, onClose }
               border: "none", cursor: "pointer", background: BRAND, color: "#fff" })}>
             {saving ? "Saving…" : "Confirm"}
           </button>
-          <button onClick={onClose}
+          <button data-cancel-button onClick={onClose}
             className={cssClass({ padding: "10px 18px", borderRadius: 8, fontSize: 13,
               border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
             Cancel

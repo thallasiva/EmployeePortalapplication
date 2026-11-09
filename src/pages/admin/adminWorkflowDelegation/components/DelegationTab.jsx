@@ -152,7 +152,7 @@ const DelegationTab = React.memo(function DelegationTab({
                     </td>
                     <td className={cssClass({ padding: "10px 14px" })}>
                       {d.status === "Active" && (
-                        <button
+                        <button data-cancel-button
                           onClick={() => handleCancelDelegation(d.id)}
                           className={cssClass({
                             background: "none", border: "1px solid #d1d5db", borderRadius: 6,

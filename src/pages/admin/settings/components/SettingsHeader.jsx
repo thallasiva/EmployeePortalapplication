@@ -9,8 +9,8 @@ const SettingsHeader = React.memo(function SettingsHeader({
     <div className="bg-white p-6 rounded-[20px] shadow-sm border border-gray-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-sm text-gray-500 mb-1">Home / Settings</p>
-          <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
+          {/* <p className="text-sm text-gray-500 mb-1">Home / Settings</p> */}
+          <h1 className="text-2xl font-semibold  text-[#f18200]">Settings</h1>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">

@@ -159,7 +159,7 @@ function BuilderView({ report, onBack, onSave })
   };
   const visibleRows = rows.map((row) => selCols.map((column) => columnValue(row, column)));
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-[#e2e8f0] flex-wrap">
         <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold inline-flex items-center gap-1"><ArrowLeft size={12} /> Reports</button>
@@ -234,7 +234,7 @@ function BuilderView({ report, onBack, onSave })
         <div className="col-span-8">
           <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e2e8f0] bg-[#f8fafc]">
-              <p className="text-[13px] font-bold text-[#1e293b]">{name} — Preview</p>
+              <p className="text-[13px] font-bold text-[#f18200]">{name} — Preview</p>
               {ran && (
                 <div className="flex gap-2">
                   {["CSV", "Excel", "PDF"].map(fmt => (
@@ -315,7 +315,7 @@ export default function ReportBuilder()
     </div>
   );
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -323,7 +323,7 @@ export default function ReportBuilder()
             <BarChart2 size={18} color={BRAND} />
           </div>
           <div>
-            <h1 className="text-[20px] font-bold text-[#1e293b]">Report Builder</h1>
+            <h1 className="text-[20px] font-bold text-[#f18200]">Report Builder</h1>
             <p className="text-[13px] text-[#94a3b8]">Build custom reports with filters, columns and chart formats</p>
           </div>
         </div>

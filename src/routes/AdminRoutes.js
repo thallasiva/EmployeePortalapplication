@@ -8,6 +8,7 @@ const Employee = lazy(() => import("../pages/admin/Employee"));
 const EmployeeDetail = lazy(() => import("../pages/admin/EmployeeDetail"));
 const CreateEmployee = lazy(() => import("../pages/admin/CreateEmployee"));
 const Company = lazy(() => import("../pages/admin/Company"));
+const Offices = lazy(() => import("../pages/admin/Offices"));
 const CreateCompany = lazy(() => import("../pages/admin/CreateCompany"));
 const CalendarForm = lazy(() => import("../pages/admin/CalendarForm"));
 const AdminCalendar = lazy(() => import("../pages/admin/Calendar"));
@@ -56,6 +57,19 @@ const SalaryComponents    = lazy(() => import("../pages/admin/SalaryComponents")
 const SalaryStructures    = lazy(() => import("../pages/admin/SalaryStructures"));
 const SalaryAssignments      = lazy(() => import("../pages/admin/SalaryAssignments"));
 const SalaryStructureEditor  = lazy(() => import("../pages/admin/SalaryStructureEditor"));
+const TrainingManagement = lazy(() => import("../pages/admin/TrainingManagement"));
+const ShiftManagement = lazy(() => import("../pages/admin/ShiftManagement"));
+const AssetManagement = lazy(() => import("../pages/admin/AssetManagement"));
+const ApprovalsInbox = lazy(() => import("../pages/admin/ApprovalsInbox"));
+const AssetModuleLayout = lazy(() => import("../pages/admin/assetManagement/AssetModuleLayout"));
+const AssetInventory = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetInventory })));
+const AssetCategories = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetCategories })));
+const AssetAllocation = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetAllocation })));
+const AssetRequests = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetRequests })));
+const AssetReturns = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetReturns })));
+const AssetMaintenance = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetMaintenance })));
+const AssetTransfers = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetTransfers })));
+const AssetReports = lazy(() => import("../pages/admin/assetManagement/AssetWorkflowScreens").then((module) => ({ default: module.AssetReports })));
 const Page = LazyPage;
 const AdminRoutes = () =>
 {
@@ -69,6 +83,7 @@ const AdminRoutes = () =>
       <Route path="employee/:id" element={<Page><EmployeeDetail /></Page>} />
       <Route path="create-employee" element={<Page><CreateEmployee /></Page>} />
       <Route path="company" element={<Page><Company /></Page>} />
+      <Route path="offices" element={<Page><Offices /></Page>} />
       <Route path="create-company" element={<Page><CreateCompany /></Page>} />
       <Route path="calendar" element={<Page><AdminCalendar /></Page>} />
       <Route path="calendar/form" element={<Page><CalendarForm /></Page>} />
@@ -85,6 +100,21 @@ const AdminRoutes = () =>
       <Route path="it-declaration" element={<Page><AdminITDeclaration /></Page>} />
       <Route path="resignations" element={<Page><AdminResignations /></Page>} />
       <Route path="timesheets" element={<Page><AdminTimesheets /></Page>} />
+      <Route path="training" element={<Page><TrainingManagement /></Page>} />
+      <Route path="shifts" element={<Page><ShiftManagement /></Page>} />
+      <Route path="assets" element={<Page><AssetModuleLayout /></Page>}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Page><AssetManagement /></Page>} />
+        <Route path="inventory" element={<Page><AssetInventory /></Page>} />
+        <Route path="categories" element={<Page><AssetCategories /></Page>} />
+        <Route path="allocation" element={<Page><AssetAllocation /></Page>} />
+        <Route path="requests" element={<Page><AssetRequests /></Page>} />
+        <Route path="returns" element={<Page><AssetReturns /></Page>} />
+        <Route path="maintenance" element={<Page><AssetMaintenance /></Page>} />
+        <Route path="transfers" element={<Page><AssetTransfers /></Page>} />
+        <Route path="reports" element={<Page><AssetReports /></Page>} />
+      </Route>
+      <Route path="approvals" element={<Page><ApprovalsInbox /></Page>} />
       <Route path="report/*" element={<Page><Reports /></Page>} />
       <Route path="onboarding" element={<Page><Onboarding /></Page>} />
       <Route path="manage" element={<Page><Manage /></Page>} />

@@ -139,7 +139,7 @@ const EnrollmentTab = React.memo(function EnrollmentTab({ cycles }) {
               {filteredPicker.length === 0 && <div className={cssClass({ padding: 20, textAlign: "center", color: "#94a3b8", fontSize: 13 })}>No employees to add.</div>}
             </div>
             <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 10 })}>
-              <button onClick={() => setShowPicker(false)}
+              <button data-cancel-button onClick={() => setShowPicker(false)}
                 className={cssClass({ padding: "8px 18px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: "pointer", fontSize: 13 })}>Cancel</button>
               <button onClick={handleAdd} disabled={!pickerSel.length || adding}
                 className={cssClass({ padding: "8px 18px", background: BRAND, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13 })}>

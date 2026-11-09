@@ -1,19 +1,9 @@
 import React from "react";
-import { ChevronDown } from "lucide-react";
-const PAGE_SIZES = [20, 50, 100, 200, 500];
+import Pagination, { usePagination } from "../../../../../components/Pagination";
 export const Table = React.memo(function Table({
   columns, data, onRowClick, emptyMessage = "No records found.", pageSize: initialPageSize = 20,
 }) {
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(initialPageSize);
-  React.useEffect(() => { setPage(1); }, [data]);
-  React.useEffect(() => { setPage(1); }, [pageSize]);
-  const total = data?.length ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const safePage = Math.min(page, totalPages);
-  const paged = (data ?? []).slice((safePage - 1) * pageSize, safePage * pageSize);
-  const from = total === 0 ? 0 : (safePage - 1) * pageSize + 1;
-  const to = Math.min(safePage * pageSize, total);
+  const { paged, page, setPage, totalPages, from, to, total, pageSize, setPageSize } = usePagination(data, initialPageSize);
   return (
     <div>
       <div className="overflow-x-auto">
@@ -52,30 +42,7 @@ export const Table = React.memo(function Table({
           </tbody>
         </table>
       </div>
-      {/* Pagination bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 bg-white text-[13px] text-gray-600 select-none">
-        <div className="flex items-center gap-2">
-          <span className="text-[12px]">Items per page:</span>
-          <div className="relative">
-            <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}
-              className="appearance-none border border-gray-300 rounded px-2 py-0.5 pr-6 text-[13px] bg-white focus:outline-none focus:border-[#d97706] cursor-pointer">
-              {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400"><ChevronDown size={12} /></span>
-          </div>
-        </div>
-        <span className="text-[12px]">{total === 0 ? "0 of 0" : `${from} – ${to} of ${total}`}</span>
-        <div className="flex items-center gap-0.5">
-          <button onClick={() => setPage(1)} disabled={safePage === 1} title="First page"
-            className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">{"|<"}</button>
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} title="Previous"
-            className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">{"<"}</button>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} title="Next"
-            className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">{">"}</button>
-          <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} title="Last page"
-            className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">{">|"}</button>
-        </div>
-      </div>
+      <Pagination page={page} setPage={setPage} totalPages={totalPages} from={from} to={to} total={total} pageSize={pageSize} setPageSize={setPageSize} />
     </div>
   );
 });

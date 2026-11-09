@@ -13,7 +13,7 @@ const ClaimModal = React.memo(function ClaimModal({ onClose }) {
             <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center">
               <Receipt size={16} color="#f18200" />
             </div>
-            <span className="text-[16px] font-bold text-[#1e293b]">New Claim</span>
+            <span className="text-[16px] font-bold text-[#f18200]">New Claim</span>
           </div>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b] transition-colors">
             <X size={20} />
@@ -63,7 +63,7 @@ const ClaimModal = React.memo(function ClaimModal({ onClose }) {
           </div>
           {}
           <div className="flex gap-3 pt-1">
-            <button onClick={onClose} className="flex-1 h-[42px] border border-[#e2e8f0] rounded-lg text-[13px] font-semibold text-[#64748b] hover:bg-[#f8fafc] transition-colors">
+            <button data-cancel-button onClick={onClose} className="flex-1 h-[42px] border border-[#e2e8f0] rounded-lg text-[13px] font-semibold text-[#64748b] hover:bg-[#f8fafc] transition-colors">
               Cancel
             </button>
             <button onClick={onClose} className="flex-1 h-[42px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">

@@ -38,10 +38,12 @@ const Button = memo(function Button({
 })
 {
   const isDisabled = disabled || loading;
+  const isCancel = typeof children === "string" && children.trim().toLowerCase() === "cancel";
   return (
     <button
       type={type}
       disabled={isDisabled}
+      data-cancel-button={isCancel || undefined}
       className={[
         "inline-flex items-center justify-center gap-1.5 rounded-lg font-semibold transition-colors",
         "disabled:cursor-not-allowed disabled:opacity-60",

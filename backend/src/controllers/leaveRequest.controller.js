@@ -17,7 +17,8 @@ const list = asyncHandler(async (req, res) => {
   const reporting_to = isTeamManager ? req.user.employeeId : undefined;
   const team_role_id = isHRManager ? 5 : undefined;
   const { rows, total } = await leaveRequestService.list({
-    employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset
+    employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset,
+    companyId: req.user.companyId
   });
   new ApiResponse(200, rows, 'Leave requests fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -25,7 +26,7 @@ const myRequests = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { status, leave_type_id } = req.query;
   const { rows, total } = await leaveRequestService.list({
-    employee_id: req.user.employeeId, status, leave_type_id, limit, offset
+    employee_id: req.user.employeeId, status, leave_type_id, limit, offset, companyId: req.user.companyId
   });
   new ApiResponse(200, rows, 'Leave requests fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -61,21 +62,22 @@ const balances = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Leave balances fetched').send(res);
 });
 const allBalances = asyncHandler(async (req, res) => {
-  const data = await leaveRequestService.allBalances(req.query.year);
+  const data = await leaveRequestService.allBalances(req.query.year, req.user.companyId);
   new ApiResponse(200, data, 'All leave balances fetched').send(res);
 });
 const adjustBalance = asyncHandler(async (req, res) => {
+  await assertManagesEmployee(req.user, req.body.employeeId);
   const result = await leaveRequestService.adjustBalance(req.body);
   new ApiResponse(200, result, 'Leave balance updated').send(res);
 });
 const initializeYear = asyncHandler(async (req, res) => {
   const year = Number(req.body.year) || new Date().getFullYear();
-  const result = await leaveRequestService.initializeBalancesForYear(year);
+  const result = await leaveRequestService.initializeBalancesForYear(year, req.user.companyId);
   new ApiResponse(200, result, `Leave balances initialized for ${year}`).send(res);
 });
 const leaveSummary = asyncHandler(async (req, res) => {
   const { year, department_id, status } = req.query;
-  const data = await leaveRequestService.leaveSummary(year, { department_id, status });
+  const data = await leaveRequestService.leaveSummary(year, { department_id, status }, req.user.companyId);
   new ApiResponse(200, data, 'Leave summary fetched').send(res);
 });
 const accrueEarnedLeave = asyncHandler(async (req, res) => {
@@ -84,7 +86,7 @@ const accrueEarnedLeave = asyncHandler(async (req, res) => {
   const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
   const month = Number(req.body.month) || prevMonth;
   const year = Number(req.body.year) || prevYear;
-  const result = await leaveRequestService.accrueEarnedLeave(month, year);
+  const result = await leaveRequestService.accrueEarnedLeave(month, year, req.user.companyId);
   new ApiResponse(200, result, `Earned leave accrued for ${month}/${year}: ${result.accrued} employees`).send(res);
 });
 module.exports = {

@@ -53,7 +53,7 @@ function downloadCsv(filename, rows) {
   URL.revokeObjectURL(url);
 }
 /* ---------- small pieces ---------- */
-const Kpi = ({ icon, label, value, sub, tone = "text-slate-900" }) =>
+const Kpi = ({ icon, label, value, sub, tone = " text-[#f18200]" }) =>
 <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-start gap-3">
     <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 shrink-0">{icon}</div>
     <div className="min-w-0">
@@ -133,7 +133,7 @@ function AdjustDialog({ row, month, year, onClose, onSaved }) {
       className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Adjust attendance</h2>
+            <h2 className="text-lg font-bold  text-[#f18200]">Adjust attendance</h2>
             <p className="text-sm text-slate-500">{row.name} · {MONTHS[month - 1]} {year}</p>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500"><X size={18} /></button>
@@ -162,7 +162,7 @@ function AdjustDialog({ row, month, year, onClose, onSaved }) {
           className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#f18200] resize-none" />
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700">Cancel</button>
+          <button data-cancel-button type="button" onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700">Cancel</button>
           <button type="submit" disabled={saving} className="flex-1 h-10 rounded-xl bg-[#f18200] hover:bg-[#e07000] text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
             {saving && <Loader2 size={15} className="animate-spin" />} Save
           </button>
@@ -182,7 +182,7 @@ function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
           <button onClick={onToggle} aria-expanded={open} className="flex items-center gap-2 text-left">
             <ChevronDown size={16} className={`text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
             <span>
-              <span className="block text-sm font-bold text-slate-900">{row.name}</span>
+              <span className="block text-sm font-bold  text-[#f18200]">{row.name}</span>
               <span className="block text-xs text-slate-500">{[row.emp_code, row.department].filter(Boolean).join(" · ")}</span>
             </span>
           </button>
@@ -196,7 +196,7 @@ function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
         </td>
         <td className="px-3 py-3 text-sm tabular-nums font-semibold">{num(a.paidDays)}</td>
         <td className="px-3 py-3 text-sm tabular-nums text-slate-500">{p ? inr(p.monthlyGross) : "—"}</td>
-        <td className="px-3 py-3 text-sm tabular-nums font-bold text-slate-900">{p ? inr(p.net) : <span className="text-rose-700 font-semibold">No salary</span>}</td>
+        <td className="px-3 py-3 text-sm tabular-nums font-bold  text-[#f18200]">{p ? inr(p.net) : <span className="text-rose-700 font-semibold">No salary</span>}</td>
         <td className="px-3 py-3">
           <div className="flex flex-wrap gap-1">
             {row.on_hold && <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-300">On hold</span>}
@@ -218,7 +218,7 @@ function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
               <section className="xl:col-span-2 bg-white border border-slate-200 rounded-xl p-4 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-slate-900">Day-by-day attendance</h3>
+                  <h3 className="text-sm font-bold  text-[#f18200]">Day-by-day attendance</h3>
                   <span className="text-xs text-slate-500">Works {row.work_days.map((d) => d.slice(0, 1).toUpperCase() + d.slice(1)).join(", ")}</span>
                 </div>
                 {row.days ? <DayStrip days={row.days} /> : null}
@@ -247,7 +247,7 @@ function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
               }
               </section>
               <section className="bg-white border border-slate-200 rounded-xl p-4">
-                <h3 className="text-sm font-bold text-slate-900 mb-2">Salary for {num(a.paidDays)} of {a.monthWorkingDays} days</h3>
+                <h3 className="text-sm font-bold  text-[#f18200] mb-2">Salary for {num(a.paidDays)} of {a.monthWorkingDays} days</h3>
                 {!p ? <p className="text-sm text-rose-700">Assign a salary structure before processing this employee.</p> :
               <>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-2">Earnings</p>
@@ -256,7 +256,7 @@ function EmployeeRow({ row, open, onToggle, onAdjust, locked }) {
                 <span>{e.monthly && e.amount !== e.monthly ? <s className="text-slate-300 font-normal mr-1.5">{inr(e.monthly)}</s> : null}{inr(e.amount)}</span>
                 } />
                 )}
-                    <div className="border-t border-slate-100 mt-1"><Stat label="Gross" value={inr(p.gross)} tone="text-slate-900" /></div>
+                    <div className="border-t border-slate-100 mt-1"><Stat label="Gross" value={inr(p.gross)} tone=" text-[#f18200]" /></div>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-2">Deductions</p>
                     {p.deductions.map((d) => <Stat key={d.code + d.label} label={d.label} value={`− ${inr(d.amount)}`} tone="text-rose-700" />)}
                     {p.lopDeduction > 0 && <Stat label="Loss of pay (already in gross)" value={inr(p.lopDeduction)} tone="text-slate-400" />}
@@ -360,12 +360,12 @@ export default function AdminSalaryProcessing() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#b45309]">Payroll · Step 1 of 3</p>
-          <h1 className="text-2xl font-black text-slate-900 mt-1">Attendance &amp; Salary</h1>
+          <h1 className="text-2xl font-black  text-[#f18200] mt-1">Attendance &amp; Salary</h1>
           <p className="text-sm text-slate-500 mt-1">Check each employee's attendance and the salary it produces, fix anything flagged, then process payroll.</p>
         </div>
         <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1">
           <button onClick={() => shiftMonth(-1)} aria-label="Previous month" className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"><ChevronLeft size={18} /></button>
-          <span className="min-w-[150px] text-center font-bold text-slate-900 flex items-center justify-center gap-2"><CalendarDays size={16} className="text-[#f18200]" />{MONTHS[month - 1]} {year}</span>
+          <span className="min-w-[150px] text-center font-bold  text-[#f18200] flex items-center justify-center gap-2"><CalendarDays size={16} className="text-[#f18200]" />{MONTHS[month - 1]} {year}</span>
           <button onClick={() => shiftMonth(1)} aria-label="Next month" className="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"><ChevronRight size={18} /></button>
         </div>
       </div>
@@ -386,8 +386,8 @@ export default function AdminSalaryProcessing() {
       <>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             <Kpi icon={<Users size={18} />} label="Employees" value={t.employees} sub={`${t.payable} payable${t.onHold ? ` · ${t.onHold} on hold` : ""}`} />
-            <Kpi icon={<AlertTriangle size={18} />} label="Need attention" value={t.withIssues} sub={t.withoutSalary ? `${t.withoutSalary} without salary` : "flags to review"} tone={t.withIssues ? "text-orange-700" : "text-slate-900"} />
-            <Kpi icon={<CalendarDays size={18} />} label="LOP days" value={num(t.lopDays)} sub={`${inr(t.lopAmount)} not paid`} tone={t.lopDays ? "text-rose-700" : "text-slate-900"} />
+            <Kpi icon={<AlertTriangle size={18} />} label="Need attention" value={t.withIssues} sub={t.withoutSalary ? `${t.withoutSalary} without salary` : "flags to review"} tone={t.withIssues ? "text-orange-700" : " text-[#f18200]"} />
+            <Kpi icon={<CalendarDays size={18} />} label="LOP days" value={num(t.lopDays)} sub={`${inr(t.lopAmount)} not paid`} tone={t.lopDays ? "text-rose-700" : " text-[#f18200]"} />
             <Kpi icon={<Wallet size={18} />} label="Gross payable" value={inr(t.gross)} sub={`− ${inr(t.deductions)} deductions`} />
             <Kpi icon={<Wallet size={18} />} label="Net payout" value={inr(t.net)} tone="text-[#b45309]" />
           </div>
@@ -453,7 +453,7 @@ export default function AdminSalaryProcessing() {
       {confirming && t &&
       <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-4" onMouseDown={() => !processing && setConfirming(false)}>
           <div role="dialog" aria-modal="true" aria-label="Process payroll" onMouseDown={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
-            <h2 className="text-lg font-bold text-slate-900">Process payroll for {MONTHS[month - 1]} {year}?</h2>
+            <h2 className="text-lg font-bold  text-[#f18200]">Process payroll for {MONTHS[month - 1]} {year}?</h2>
             <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
               <Stat label="Payslips to generate" value={t.payable} />
               {t.onHold > 0 && <Stat label="On hold (payslip marked On Hold)" value={t.onHold} />}
@@ -464,7 +464,7 @@ export default function AdminSalaryProcessing() {
             {blocking > 0 && <p className="text-sm text-orange-700 flex gap-2"><PauseCircle size={16} className="shrink-0 mt-0.5" />{blocking} employee(s) still have pending approvals counted as LOP.</p>}
             <p className="text-xs text-slate-500">Next you can review, approve and lock the run, then export the bank file from the Payroll page. Re-processing before approval replaces these payslips.</p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirming(false)} disabled={processing} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700">Cancel</button>
+              <button data-cancel-button onClick={() => setConfirming(false)} disabled={processing} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700">Cancel</button>
               <button onClick={process} disabled={processing} className="flex-1 h-10 rounded-xl bg-[#f18200] hover:bg-[#e07000] text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
                 {processing ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />} Process
               </button>

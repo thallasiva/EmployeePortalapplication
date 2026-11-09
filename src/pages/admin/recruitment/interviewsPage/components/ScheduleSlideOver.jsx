@@ -167,7 +167,7 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
           </div>
         )}
         {isTeams && isExternal && (
-          <div className="mt-2 px-3 py-2 bg-[#eff6ff] rounded-lg border border-blue-200 text-[12px] text-blue-700">
+          <div className="mt-2 px-3 py-2 bg-[#eff6ff] rounded-lg border border-blue-200 text-[12px] text-[#f18200]">
             <Video size={13} className="inline -mt-0.5" /> A Microsoft Teams meeting link will be automatically created and emailed to the candidate after scheduling.
           </div>
         )}

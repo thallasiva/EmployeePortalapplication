@@ -271,13 +271,13 @@ export default function DashboardBuilder()
     }
   };
   if (editing !== null) return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
       <Builder dash={editing} onBack={() => setEditing(null)} onSave={handleSave} />
     </div>
   );
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {toast && <div role="status" className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-[13px] font-semibold flex items-center gap-2 text-white ${toast.startsWith("Unable") ? "bg-red-600" : "bg-emerald-600"}`}><Check size={15} />{toast}</div>}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -285,7 +285,7 @@ export default function DashboardBuilder()
             <LayoutDashboard size={18} color={BRAND} />
           </div>
           <div>
-            <h1 className="text-[20px] font-bold text-[#1e293b]">Dashboard Builder</h1>
+            <h1 className="text-[20px] font-bold text-[#f18200]">Dashboard Builder</h1>
             <p className="text-[13px] text-[#94a3b8]">Create custom dashboards with drag-and-drop widgets</p>
           </div>
         </div>
@@ -308,7 +308,7 @@ export default function DashboardBuilder()
             <div className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[14px] font-bold text-[#1e293b]">{d.name}</p>
+                  <p className="text-[14px] font-bold text-[#f18200]">{d.name}</p>
                   <p className="text-[11px] text-[#94a3b8] mt-0.5">{d.widgets} widgets · {d.roleName} · Updated {d.updated}</p>
                 </div>
                 {d.active && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-bold">Active</span>}

@@ -9,6 +9,7 @@ const ROUTE_RULES = [
   [/^\/dashboard\/create-employee(?:\/|$)/, "emp-create"],
   [/^\/dashboard\/employee(?:\/|$)/, "employees"],
   [/^\/dashboard\/company(?:\/|$)/, "employees"],
+  [/^\/dashboard\/offices(?:\/|$)/, "employees"],
   [/^\/dashboard\/attendance(?:\/|$)/, "attendance"],
   [/^\/dashboard\/leave\?tab=requests(?:&|$)/, "leave-req"],
   [/^\/dashboard\/leave\?tab=balances(?:&|$)/, "leave-bal"],

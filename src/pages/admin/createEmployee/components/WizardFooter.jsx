@@ -24,7 +24,7 @@ const WizardFooter = React.memo(function WizardFooter({
         <span />
       )}
       <div className="emp-wizard__footer-right">
-        <button
+        <button data-cancel-button
           type="button"
           className="emp-wizard__btn emp-wizard__btn--cancel"
           onClick={onCancel}

@@ -57,7 +57,7 @@ const ChangeAssignmentModal = ({
             >
               Add
             </button>
-            <button
+            <button data-cancel-button
               type="button"
               onClick={onClose}
               className="min-w-40 rounded-xl bg-rose-600 px-12 py-3 text-[18px] font-medium text-white shadow-lg shadow-rose-200 transition hover:bg-rose-700"

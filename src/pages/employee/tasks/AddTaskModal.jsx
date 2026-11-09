@@ -145,7 +145,7 @@ export default function AddTaskModal({ open, onClose, onSave }) {
           </div>
         </div>
         <div className="tasks-modal__footer">
-          <button type="button" className="tasks-btn-text" onClick={onClose}>
+          <button data-cancel-button type="button" className="tasks-btn-text" onClick={onClose}>
             Cancel
           </button>
           <button

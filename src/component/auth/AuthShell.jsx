@@ -10,7 +10,7 @@ function BrandPanel() {
       <span aria-hidden="true" className="pointer-events-none absolute left-10 top-[60px] h-[30px] w-[30px] rounded-full bg-orange-500/25" />
       <div className="relative z-10 flex h-[120px] w-[120px] items-center justify-center rounded-[20px] bg-white px-6 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.05)]">
         <span aria-hidden="true" className="absolute bottom-0 left-1/5 right-1/5 h-[3px] rounded bg-orange-500" />
-        <span className="text-3xl font-black tracking-tight text-slate-900">HRMS</span>
+        <span className="text-3xl font-black tracking-tight  text-[#f18200]">HRMS</span>
       </div>
       <div className="relative z-10 mt-7 text-center">
         <h1 className="m-0 text-[1.65rem] font-bold tracking-[-0.01em] text-white">People, in one place.</h1>

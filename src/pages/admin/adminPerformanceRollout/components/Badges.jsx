@@ -23,7 +23,12 @@ export const AppraisalBadge = React.memo(function AppraisalBadge({ status }) {
   const map = {
     draft: { bg: "#fef9c3", color: "#92400e", label: "Draft" },
     submitted: { bg: "#dcfce7", color: "#166534", label: "Submitted" },
-    reviewed: { bg: "#dbeafe", color: "#1e40af", label: "Reviewed" }
+    manager_review: { bg: "#e0e7ff", color: "#3730a3", label: "Manager review" },
+    hr_review: { bg: "#dbeafe", color: "#1e40af", label: "HR review" },
+    changes_requested: { bg: "#ffedd5", color: "#9a3412", label: "Changes requested" },
+    shared: { bg: "#f3e8ff", color: "#6b21a8", label: "Shared" },
+    acknowledged: { bg: "#dcfce7", color: "#166534", label: "Acknowledged" },
+    closed: { bg: "#f1f5f9", color: "#475569", label: "Closed" }
   };
   const s = map[status] || { bg: "#f1f5f9", color: "#64748b", label: "New" };
   return (

@@ -81,7 +81,7 @@ const Login = () => {
       <AuthShell>
         <div className="mb-7 text-center">
           <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-[14px] bg-gradient-to-br from-orange-500 to-orange-700 text-[1.1rem] font-bold text-white shadow-[0_8px_24px_rgba(241,130,0,0.25)]">2FA</div>
-          <h2 className="mb-1.5 text-[1.3rem] font-bold text-slate-900">Two-Factor Auth</h2>
+          <h2 className="mb-1.5 text-[1.3rem] font-bold  text-[#f18200]">Two-Factor Auth</h2>
           <p className="text-[0.85rem] text-slate-500">Enter the code from your authenticator app or a backup code.</p>
         </div>
         <form onSubmit={handleMfaSubmit}>
@@ -101,7 +101,7 @@ const Login = () => {
   return (
     <AuthShell>
       <div className="mb-8">
-        <h2 className="mb-1.5 text-[1.6rem] font-extrabold tracking-[-0.02em] text-slate-900">Welcome back</h2>
+        <h2 className="mb-1.5 text-[1.6rem] font-extrabold tracking-[-0.02em]  text-[#f18200]">Welcome back</h2>
         <p className="text-[0.88rem] text-slate-500">Sign in to your HRMS account</p>
       </div>
       {idleSignOut && <div className="mb-5 flex items-center gap-2 rounded-[10px] border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[0.82rem] text-amber-900"><span>⏱</span>You were signed out due to inactivity. Please sign in again.</div>}

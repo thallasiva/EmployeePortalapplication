@@ -35,7 +35,7 @@ const EmployeeBasicInformation = ({basicInfo}) =>
                         <button className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold">
                             Add
                         </button>
-                        <button
+                        <button data-cancel-button
                             className="flex-1 bg-rose-600 text-white py-3 rounded-lg font-semibold"
                             onClick={basicInfo}
                         >

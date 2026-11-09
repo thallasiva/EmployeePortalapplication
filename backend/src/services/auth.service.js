@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { callProcedure, callProcedureWithOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
@@ -13,12 +13,20 @@ function bustProfileCache(id) {_profileCache.delete(id);}
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 function toAuthPayload(u) {
-  return { userId: u.user_id, employeeId: u.employee_id, email: u.email, roleId: u.role_id, roleName: u.role_name };
+  return {
+    userId: u.user_id,
+    employeeId: u.employee_id,
+    companyId: u.company_id ?? null,
+    email: u.email,
+    roleId: u.role_id,
+    roleName: u.role_name
+  };
 }
 function toProfile(u) {
   return {
     userId: u.user_id, email: u.email, role: u.role_id, roleName: u.role_name,
     employeeId: u.employee_id,
+    companyId: u.company_id ?? null,
     name: [u.first_name, u.last_name].filter(Boolean).join(' ') || null,
     empCode: u.emp_code || null,
     jobTitle: u.emp_job_title || null,
@@ -26,16 +34,28 @@ function toProfile(u) {
     profilePhoto: u.profile_photo || null
   };
 }
+async function withCompanyContext(userRow) {
+  if (!userRow || !userRow.employee_id || userRow.company_id != null) return userRow;
+  const rows = await query(
+    `SELECT COALESCE(e.company_id, d.company_id) AS company_id
+       FROM employees e
+       LEFT JOIN departments d ON d.department_id = e.department_id
+      WHERE e.employee_id = ? LIMIT 1`,
+    [userRow.employee_id]
+  );
+  return { ...userRow, company_id: rows[0]?.company_id ?? null };
+}
 async function _getUserById(userId) {
   const results = await callProcedure('sp_get_user_by_id(?)', [userId]);
   return (results[0] ?? results)[0] ?? null;
 }
 async function issueTokens(userRow) {
-  const payload = toAuthPayload(userRow);
+  const scopedUser = await withCompanyContext(userRow);
+  const payload = toAuthPayload(scopedUser);
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken({ userId: payload.userId });
   await callProcedure('sp_login_success(?)', [userRow.user_id]);
-  return { accessToken, refreshToken, user: toProfile(userRow) };
+  return { accessToken, refreshToken, user: toProfile(scopedUser) };
 }
 async function issueTokensForUser(userId) {
   const userRow = await _getUserById(userId);
@@ -101,7 +121,7 @@ async function getProfile(userId) {
   if (cached) return cached;
   const userRow = await _getUserById(userId);
   if (!userRow) throw ApiError.notFound('User not found');
-  const profile = toProfile(userRow);
+  const profile = toProfile(await withCompanyContext(userRow));
   cacheProfile(userId, profile);
   return profile;
 }

@@ -1,26 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { Users, Clock, CheckCircle2, Search, Check } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Users, Clock, CheckCircle2, Search, Check, ClipboardCheck } from "lucide-react";
 import { cssClass } from "../../../../utils/classStyles";
+import PageTabs from "../../../../components/PageTabs";
 import { getAllAppraisals } from "../../../../api/appraisal.api";
 import { BRAND } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 import { AppraisalBadge } from "./Badges";
+import WorkflowModal from "./WorkflowModal";
 const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
   const [cycleId, setCycleId] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedAppraisal, setSelectedAppraisal] = useState(null);
+  const [error, setError] = useState("");
   useEffect(() => {
     if (!cycles.length) return;
     const active = cycles.find((c) => c.status === "active");
     setCycleId((active || cycles[0]).cycle_id);
   }, [cycles]);
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     if (!cycleId) return;
     setLoading(true);
-    getAllAppraisals({ cycle_id: cycleId }).then(setData).catch(() => setData(null)).finally(() => setLoading(false));
+    setError("");
+    try {
+      setData(await getAllAppraisals({ cycle_id: cycleId }));
+    } catch (e) {
+      setData(null);
+      setError(e?.response?.data?.message || "Unable to load appraisal submissions.");
+    } finally {
+      setLoading(false);
+    }
   }, [cycleId]);
+  useEffect(() => { refresh(); }, [refresh]);
   const appraisals = data?.appraisals || [];
   const notSub = data?.notSubmitted || [];
   const all = [...appraisals, ...notSub.map((e) => ({ ...e, appraisal_status: "draft" }))];
@@ -33,7 +46,12 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
     all: all.length,
     draft: all.filter((r) => !r.appraisal_status || r.appraisal_status === "draft").length,
     submitted: all.filter((r) => r.appraisal_status === "submitted").length,
-    reviewed: all.filter((r) => r.appraisal_status === "reviewed").length
+    manager_review: all.filter((r) => r.appraisal_status === "manager_review").length,
+    hr_review: all.filter((r) => r.appraisal_status === "hr_review").length,
+    changes_requested: all.filter((r) => r.appraisal_status === "changes_requested").length,
+    shared: all.filter((r) => r.appraisal_status === "shared").length,
+    acknowledged: all.filter((r) => r.appraisal_status === "acknowledged").length,
+    closed: all.filter((r) => r.appraisal_status === "closed").length
   };
   return (
     <div>
@@ -47,24 +65,30 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
           </button>
         ))}
       </div>
-      <div className={cssClass({ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" })}>
-        {[
-          { key: "all", label: "Total", icon: <Users size={13} /> },
-          { key: "draft", label: "Draft / New", icon: <Clock size={13} /> },
-          { key: "submitted", label: "Submitted", icon: <CheckCircle2 size={13} /> },
-          { key: "reviewed", label: "Reviewed", icon: <CheckCircle2 size={13} className={cssClass({ color: BRAND })} /> }
-        ].map((s) => (
-          <button key={s.key} onClick={() => setStatusFilter(s.key)}
-            className={cssClass({ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", border: `1.5px solid ${statusFilter === s.key ? BRAND : "#e2e8f0"}`, borderRadius: 999, background: statusFilter === s.key ? "#fff7ed" : "#fff", color: statusFilter === s.key ? BRAND : "#475569", cursor: "pointer", fontSize: 13, fontWeight: 600 })}>
-            {s.icon} {s.label} <span className={cssClass({ fontWeight: 800 })}>{counts[s.key]}</span>
-          </button>
-        ))}
+      <div className={cssClass({ marginBottom: 16 })}>
+        <PageTabs
+          tabs={[
+            { id: "all", label: "All", icon: Users, count: counts.all },
+            { id: "draft", label: "Not Submitted", icon: Clock, count: counts.draft },
+            { id: "submitted", label: "Submitted", icon: CheckCircle2, count: counts.submitted },
+            { id: "manager_review", label: "Manager Review", icon: Clock, count: counts.manager_review },
+            { id: "hr_review", label: "HR Review", icon: CheckCircle2, count: counts.hr_review },
+            { id: "changes_requested", label: "Changes Requested", icon: Clock, count: counts.changes_requested },
+            { id: "shared", label: "Shared", icon: CheckCircle2, count: counts.shared },
+            { id: "acknowledged", label: "Acknowledged", icon: CheckCircle2, count: counts.acknowledged },
+            { id: "closed", label: "Closed", icon: CheckCircle2, count: counts.closed },
+          ]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          label="Appraisal submission statuses"
+        />
       </div>
       <div className={cssClass({ position: "relative", marginBottom: 14 })}>
         <Search size={14} className={cssClass({ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" })} />
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name…"
           className={cssClass({ width: "100%", padding: "9px 12px 9px 34px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, boxSizing: "border-box" })} />
       </div>
+      {error && <p role="alert" className={cssClass({ color: "#b91c1c", fontSize: 13, margin: "0 0 12px" })}>{error}</p>}
       {loading
         ? <div className={cssClass({ textAlign: "center", padding: 40, color: "#94a3b8" })}>Loading…</div>
         : filtered.length === 0
@@ -74,7 +98,7 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
               <table className={cssClass({ width: "100%", borderCollapse: "collapse", fontSize: 13 })}>
                 <thead>
                   <tr className={cssClass({ background: "#f8fafc" })}>
-                    {["Employee", "Designation", "Department", "Status", "Submitted", "Manager", "Mgr Rated"].map((h) => (
+                    {["Employee", "Designation", "Department", "Status", "Submitted", "Manager", "Mgr Rated", "Workflow"].map((h) => (
                       <th key={h} className={cssClass({ padding: "10px 12px", textAlign: "left", fontWeight: 600, color: "#475569", fontSize: 11, textTransform: "uppercase", borderBottom: "1px solid #e2e8f0" })}>{h}</th>
                     ))}
                   </tr>
@@ -96,6 +120,14 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
                           ? <span className={cssClass({ color: "#16a34a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 3 })}><Check size={12} /> {fmtDate(row.manager_rated_at)}</span>
                           : <span className={cssClass({ color: "#94a3b8" })}>—</span>}
                       </td>
+                      <td className={cssClass({ padding: "9px 12px" })}>
+                        {row.appraisal_id && ["hr_review", "shared", "acknowledged", "closed"].includes(row.appraisal_status) ? (
+                          <button type="button" onClick={() => setSelectedAppraisal(row)}
+                            className={cssClass({ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 9px", border: `1px solid ${BRAND}`, borderRadius: 7, color: BRAND, background: "#fff", cursor: "pointer", whiteSpace: "nowrap" })}>
+                            <ClipboardCheck size={13} /> Review
+                          </button>
+                        ) : <span className={cssClass({ color: "#94a3b8" })}>—</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -103,6 +135,13 @@ const SubmissionsTab = React.memo(function SubmissionsTab({ cycles }) {
             </div>
           )
       }
+      {selectedAppraisal && (
+        <WorkflowModal
+          appraisal={selectedAppraisal}
+          onClose={() => setSelectedAppraisal(null)}
+          onUpdated={refresh}
+        />
+      )}
     </div>
   );
 });

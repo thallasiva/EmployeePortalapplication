@@ -67,7 +67,7 @@ export default function TemplateSummarySidebar({ lines, previewCtc, onCtcChange,
           ["Employer Contributions (Annual)", employer.reduce((s, c) => s + (c.annual_amount || 0), 0)]]
           .map(([label, val]) =>
           <div key={label} className="flex justify-between text-xs">
-              <span className="text-blue-700">{label}</span>
+              <span className="text-[#f18200]">{label}</span>
               <span className="font-medium text-blue-900">{fmtINR(val)}</span>
             </div>
           )}

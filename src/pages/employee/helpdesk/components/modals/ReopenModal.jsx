@@ -55,7 +55,7 @@ const ReopenModal = memo(function ReopenModal({ ticket, onClose, onReopened }) {
         </div>
         {/* Footer */}
         <div className={cssClass({ padding: "12px 22px", borderTop: "1px solid #e5e7eb", display: "flex", gap: 10, justifyContent: "flex-end", background: "#fafafa" })}>
-          <button onClick={onClose} className={cssClass({ padding: "8px 20px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", color: "#6b7280", fontSize: 13, cursor: "pointer" })}>
+          <button data-cancel-button onClick={onClose} className={cssClass({ padding: "8px 20px", border: "1px solid #e5e7eb", borderRadius: 6, background: "#fff", color: "#6b7280", fontSize: 13, cursor: "pointer" })}>
             Cancel
           </button>
           <button onClick={handleReopen} disabled={loading} className={cssClass({ padding: "8px 20px", borderRadius: 6, border: "none", background: "#be123c", color: "#fff", fontSize: 13, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 })}>

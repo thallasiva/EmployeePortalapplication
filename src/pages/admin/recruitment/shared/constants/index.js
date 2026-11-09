@@ -1,6 +1,6 @@
 export const BRAND = "#f18200";
 export const STATUS_CLS = {
-  "Work in Progress":   "bg-blue-100 text-blue-700",
+  "Work in Progress":   "bg-blue-100 text-[#f18200]",
   "Schedule Interview": "bg-violet-100 text-violet-600",
   "Shortlisted":        "bg-sky-100 text-sky-700",
   "Offer Released":     "bg-amber-100 text-amber-600",
@@ -12,7 +12,7 @@ export const STATUS_CLS = {
   "In Active":          "bg-gray-100 text-gray-500",
   "Open":               "bg-emerald-100 text-emerald-600",
   "Closed":             "bg-red-100 text-red-600",
-  "Completed":          "bg-blue-100 text-blue-700",
+  "Completed":          "bg-blue-100 text-[#f18200]",
   "Hold":               "bg-amber-100 text-amber-600",
   "Scheduled":          "bg-violet-100 text-violet-600",
   "Selected":           "bg-emerald-100 text-emerald-600",

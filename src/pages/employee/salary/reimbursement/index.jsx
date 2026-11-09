@@ -21,13 +21,13 @@ const Reimbursement = React.memo(function Reimbursement() {
   const handleTabChange = useCallback((k) => setActiveTab(k), []);
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
+      <div className="min-h-screen   flex items-center justify-center">
         <p className="text-[#94a3b8] text-[14px]">Loading…</p>
       </div>
     );
   }
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {showModal && <ClaimModal onClose={handleCloseModal} />}
       {}
       <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-3">

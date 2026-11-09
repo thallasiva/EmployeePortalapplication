@@ -1,6 +1,7 @@
 import React from "react";
-import { Headphones, ArrowLeft, ArrowRight } from "lucide-react";
+import { Headphones } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
+import Pagination from "../../../../../components/Pagination";
 import { BRAND, STATUS_COLOR, TEAM_COLOR } from "../constants";
 import { fmtDate } from "../utils/dateUtils";
 const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUser, onSelect, onPageChange }) => (
@@ -71,23 +72,15 @@ const TicketList = React.memo(({ tickets, total, page, limit, loading, isAdminUs
       })}
     </div>
     {/* pagination */}
-    {total > limit && (
-      <div className={cssClass({ padding: "10px 16px", borderTop: "1px solid #e2e8f0",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        fontSize: 12, color: "#64748b", flexShrink: 0 })}>
-        <span>Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}</span>
-        <div className={cssClass({ display: "flex", gap: 4 })}>
-          <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}
-            className={cssClass({ padding: "4px 10px", border: "1px solid #e2e8f0", borderRadius: 6,
-              background: "#fff", cursor: page === 1 ? "not-allowed" : "pointer",
-              opacity: page === 1 ? 0.5 : 1, fontSize: 12 })}><ArrowLeft size={12} className="inline -mt-0.5" /> Prev</button>
-          <button onClick={() => onPageChange(page + 1)} disabled={page * limit >= total}
-            className={cssClass({ padding: "4px 10px", border: "1px solid #e2e8f0", borderRadius: 6,
-              background: "#fff", cursor: page * limit >= total ? "not-allowed" : "pointer",
-              opacity: page * limit >= total ? 0.5 : 1, fontSize: 12 })}>Next <ArrowRight size={12} className="inline -mt-0.5" /></button>
-        </div>
-      </div>
-    )}
+    <Pagination
+      page={page}
+      setPage={(nextPage) => onPageChange(typeof nextPage === "function" ? nextPage(page) : nextPage)}
+      totalPages={Math.max(1, Math.ceil(total / limit))}
+      from={total === 0 ? 0 : (page - 1) * limit + 1}
+      to={Math.min(page * limit, total)}
+      total={total}
+      pageSize={limit}
+    />
   </div>
 ));
 TicketList.displayName = "TicketList";

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit2, Trash2, Eye, Save, ToggleRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
-const NAVY  = "#1e3a5f";
+const NAVY  = "#f18200";
 const AMBER = "#d97706";
 const AMBER_TEXT = "#92400e";
 // ─── Inline SVG donut chart ───────────────────────────────────────────────────

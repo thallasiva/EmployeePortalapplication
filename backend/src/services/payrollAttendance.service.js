@@ -14,8 +14,6 @@ const salaryAssignmentSvc = require('./salaryAssignment.service');
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 // No schedule on file: Monday–Friday (attendance data shows Saturday is not worked).
 const DEFAULT_WORK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri'];
-const PF_WAGE_CAP = 15000;
-const ESI_GROSS_LIMIT = 21000;
 const pad = (n) => String(n).padStart(2, '0');
 const ymd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
@@ -36,21 +34,46 @@ function leaveDayValue(leave, date) {
   return 1;
 }
 /** Monthly earnings/deductions split for one employee, before attendance proration. */
-async function salaryBasis(emp) {
-  try {
-    const assignment = await salaryAssignmentSvc.getAssignment(emp.employee_id);
-    if (assignment?.lines?.length && Number(assignment.ctc_annual) > 0) {
-      const { components } = computeStructure(assignment.lines, Number(assignment.ctc_annual), {});
-      const earnings = components.filter((c) => c.category === 'Earning' && !c._deferred && c.monthly_amount > 0)
-        .map((c) => ({ code: c.component_code, label: c.component_name || c.component_code, monthly: c.monthly_amount }));
-      const fixedDeductions = components.filter((c) => c.category === 'Deduction' && !c._deferred && c.monthly_amount > 0)
-        .filter((c) => !/(^|_)(PF|EPF|ESI|PT|PROF)/i.test(c.component_code || '') && !/provident|esi|professional/i.test(c.component_name || ''))
-        .map((c) => ({ code: c.component_code, label: c.component_name || c.component_code, monthly: c.monthly_amount }));
-      if (earnings.length) {
-        return { source: 'structure', ctcAnnual: Number(assignment.ctc_annual), structureName: assignment.structure_name || null, earnings, fixedDeductions };
-      }
+async function salaryBasis(emp, companyId) {
+  const assignment = await salaryAssignmentSvc.getAssignment(emp.employee_id, companyId);
+  if (assignment?.lines?.length && Number(assignment.ctc_annual) > 0) {
+    const { components } = computeStructure(assignment.lines, Number(assignment.ctc_annual), {});
+    const earnings = components.filter((c) => c.category === 'Earning' && !c._deferred && c.monthly_amount > 0)
+      .map((c) => ({ code: c.component_code, label: c.component_name || c.component_code, monthly: c.monthly_amount }));
+    const deductions = components.filter((c) => c.category === 'Deduction' && !c._deferred && c.monthly_amount > 0)
+      .map((c) => ({ code: c.component_code, label: c.component_name || c.component_code, monthly: c.monthly_amount }));
+    const employerContributions = components
+      .filter((c) => c.category === 'Employer Contribution' && !c._deferred && c.monthly_amount > 0)
+      .map((c) => ({ code: c.component_code, label: c.component_name || c.component_code, monthly: c.monthly_amount }));
+    if (earnings.length) {
+      return {
+        source: 'structure',
+        ctcAnnual: Number(assignment.ctc_annual),
+        structureId: assignment.structure_id,
+        structureName: assignment.structure_name || null,
+        earnings,
+        deductions,
+        employerContributions,
+        configurationSnapshot: {
+          structure_id: assignment.structure_id,
+          structure_name: assignment.structure_name || null,
+          ctc_annual: Number(assignment.ctc_annual),
+          lines: assignment.lines.map((line) => ({
+            component_id: line.component_id,
+            component_code: line.component_code,
+            category: line.category,
+            calculation_type: line.effective_calc_type,
+            formula: line.effective_formula || null,
+            percentage: line.effective_pct ?? null,
+            percentage_of: line.effective_pct_of || null,
+            fixed_amount: line.fixed_amount ?? null,
+            frequency: line.frequency,
+            sort_order: line.sort_order,
+          })),
+        },
+      };
     }
-  } catch { /* fall through to base salary */ }
+  }
   const monthly = Number(emp.base_salary) || 0;
   if (monthly <= 0) return null;
   // No salary structure: split the monthly base salary 50 / 20 / 30.
@@ -63,17 +86,19 @@ async function salaryBasis(emp) {
       { code: 'HRA', label: 'HRA', monthly: round2(monthly * 0.2) },
       { code: 'SPECIAL', label: 'Special Allowance', monthly: round2(monthly * 0.3) },
     ],
-    fixedDeductions: [],
+    deductions: [],
+    employerContributions: [],
+    configurationSnapshot: { source: 'base_salary', monthly_salary: monthly, formula_version: 'legacy-fallback' },
   };
 }
-async function loadMonth(month, year, employeeIds) {
+async function loadMonth(month, year, employeeIds, companyId = null) {
   const start = ymd(year, month, 1);
   const lastDay = new Date(year, month, 0).getDate();
   const end = ymd(year, month, lastDay);
   const idFilter = employeeIds?.length ? 'AND e.employee_id IN (?)' : '';
   const idParams = employeeIds?.length ? [employeeIds] : [];
   const employees = await query(
-    `SELECT e.employee_id, e.emp_code, TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS name,
+    `    SELECT e.employee_id, e.company_id, e.emp_code, TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS name,
             e.employee_status, e.emp_joining_date, e.emp_exit_date, e.holiday_calendar, e.shift, e.base_salary,
             d.department_name, COALESCE(ds.designation_name, e.emp_job_title) AS designation,
             ws.work_days,
@@ -85,15 +110,17 @@ async function loadMonth(month, year, employeeIds) {
        LEFT JOIN employee_bank_details b ON b.employee_id = e.employee_id
       WHERE (e.employee_status = 'Active' OR (e.emp_exit_date BETWEEN ? AND ?))
         AND (e.emp_joining_date IS NULL OR e.emp_joining_date <= ?)
+        AND (? IS NULL OR e.company_id = ?)
         ${idFilter}
       ORDER BY name`,
-    [start, end, end, ...idParams]
+    [start, end, end, companyId, companyId, ...idParams]
   );
   const ids = employees.map((e) => e.employee_id);
   if (!ids.length) return { start, end, lastDay, employees, holidays: [], attendance: [], leaves: [], pendingRegs: [], inputs: [], adjustments: [] };
   const [holidays, attendance, leaves, pendingRegs, inputs, adjustments] = await Promise.all([
     query(`SELECT holiday_date, holiday_calendar, holiday_name, shift FROM holidays
-            WHERE holiday_date BETWEEN ? AND ? AND COALESCE(is_restricted, 0) = 0`, [start, end]),
+            WHERE holiday_date BETWEEN ? AND ? AND COALESCE(is_restricted, 0) = 0
+              AND (? IS NULL OR company_id = ?)`, [start, end, companyId, companyId]),
     query(`SELECT employee_id, attendance_date, status, late_by_minutes, work_hours
              FROM attendance WHERE attendance_date BETWEEN ? AND ? AND employee_id IN (?)`, [start, end, ids]),
     query(`SELECT lr.employee_id, lr.from_date, lr.to_date, lr.from_session, lr.to_session, lr.days, lr.status,
@@ -200,7 +227,7 @@ async function buildEmployeeRow(emp, ctx, month, year) {
   const lopDays = Math.min(t.employedWorkingDays, Math.max(0, round2(computedLop + lopAdjustment)));
   const paidDays = round2(t.employedWorkingDays - lopDays);
   const payFactor = t.monthWorkingDays > 0 ? paidDays / t.monthWorkingDays : 0;
-  const basis = await salaryBasis(emp);
+  const basis = await salaryBasis(emp, emp.company_id);
   const flags = [];
   if (!basis) flags.push({ code: 'NO_SALARY', label: 'No salary structure or base salary' });
   if (!emp.account_number || !emp.ifsc_code) flags.push({ code: 'NO_BANK', label: 'Bank account / IFSC missing' });
@@ -219,23 +246,29 @@ async function buildEmployeeRow(emp, ctx, month, year) {
     const gross = earnings.reduce((s, e) => s + e.amount, 0);
     const basic = earnings.find((e) => /^BASIC/i.test(e.code || '') || /^basic/i.test(e.label))?.amount || 0;
     const hra = earnings.find((e) => /HRA/i.test(e.code || '') || /house rent|hra/i.test(e.label))?.amount || 0;
-    const deductions = [];
-    const pf = Math.round(Math.min(basic, PF_WAGE_CAP) * 0.12);
-    if (pf > 0) deductions.push({ code: 'PF', label: 'Provident Fund (12%)', amount: pf });
+    const deductions = basis.deductions.map((deduction) => ({
+      code: deduction.code,
+      label: deduction.label,
+      amount: Math.round(deduction.monthly * payFactor),
+    }));
     const fixedGross = basis.earnings.reduce((s, e) => s + e.monthly, 0);
-    if (fixedGross <= ESI_GROSS_LIMIT && gross > 0) deductions.push({ code: 'ESI', label: 'ESI (0.75%)', amount: Math.round(gross * 0.0075) });
-    const pt = gross <= 15000 ? 0 : gross <= 20000 ? 150 : 200;
-    if (pt) deductions.push({ code: 'PT', label: 'Professional Tax', amount: pt });
-    basis.fixedDeductions.forEach((d) => deductions.push({ code: d.code, label: d.label, amount: Math.round(d.monthly) }));
+    const employerContributions = basis.employerContributions.map((contribution) => ({
+      code: contribution.code,
+      label: contribution.label,
+      amount: Math.round(contribution.monthly * payFactor),
+    }));
     const totalDeductions = deductions.reduce((s, d) => s + d.amount, 0);
     pay = {
       source: basis.source,
       structureName: basis.structureName,
       ctcAnnual: basis.ctcAnnual,
+      structureId: basis.structureId || null,
+      configurationSnapshot: basis.configurationSnapshot,
       monthlyGross: Math.round(fixedGross),
       perDayRate: t.monthWorkingDays ? round2(fixedGross / t.monthWorkingDays) : 0,
       lopDeduction: Math.max(0, Math.round(fixedGross) - (gross - (inputs.OVERTIME || 0) - (inputs.ARREARS || 0))),
       earnings, deductions,
+      employerContributions,
       basic, hra, allowances: gross - basic - hra,
       gross, totalDeductions, net: Math.max(0, gross - totalDeductions),
       overtime: inputs.OVERTIME || 0, arrears: inputs.ARREARS || 0,
@@ -258,14 +291,16 @@ async function buildEmployeeRow(emp, ctx, month, year) {
     days,
   };
 }
-async function runStatus(month, year) {
-  const rows = await query('SELECT payroll_run_id, status, review_status, is_locked, total_amount, processed_on FROM payroll_runs WHERE month = ? AND year = ?', [month, year]);
+async function runStatus(month, year, companyId = null) {
+  const rows = await query(`SELECT payroll_run_id, company_id, status, review_status, is_locked, total_amount, processed_on
+    FROM payroll_runs WHERE month = ? AND year = ? AND (? IS NULL OR company_id = ?) ORDER BY payroll_run_id DESC LIMIT 1`,
+    [month, year, companyId, companyId]);
   return rows[0] || null;
 }
-async function getMonthSummary({ month, year, employeeIds = null, includeDays = true }) {
+async function getMonthSummary({ month, year, employeeIds = null, includeDays = true, companyId = null }) {
   const m = Number(month), y = Number(year);
   if (!(m >= 1 && m <= 12) || !(y >= 2000 && y <= 2100)) throw ApiError.badRequest('Valid month and year are required');
-  const ctx = await loadMonth(m, y, employeeIds);
+  const ctx = await loadMonth(m, y, employeeIds, companyId);
   const rows = [];
   for (const emp of ctx.employees) {
     const row = await buildEmployeeRow(emp, ctx, m, y);
@@ -285,10 +320,10 @@ async function getMonthSummary({ month, year, employeeIds = null, includeDays = 
     net: payable.reduce((s, r) => s + r.pay.net, 0),
     lopAmount: payable.reduce((s, r) => s + r.pay.lopDeduction, 0),
   };
-  return { month: m, year: y, period: { start: ctx.start, end: ctx.end }, run: await runStatus(m, y), totals, employees: rows };
+  return { month: m, year: y, period: { start: ctx.start, end: ctx.end }, run: await runStatus(m, y, companyId), totals, employees: rows };
 }
-async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSalary, reason, userId }) {
-  const run = await runStatus(month, year);
+async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSalary, reason, userId, companyId = null }) {
+  const run = await runStatus(month, year, companyId);
   if (run?.is_locked) throw ApiError.forbidden('Payroll for this month is locked. Unlock it before changing attendance adjustments.');
   if (!Number(lopAdjustment) && !holdSalary) {
     await query('DELETE FROM payroll_attendance_adjustments WHERE employee_id = ? AND month = ? AND year = ?', [employeeId, month, year]);
@@ -307,29 +342,76 @@ async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSala
  * Process payroll for the month from attendance: one payslip per payable employee.
  * Held employees get an "On Hold" payslip; employees without salary are skipped.
  */
-async function processPayroll({ month, year, processedBy }) {
-  const run = await runStatus(month, year);
+async function processPayroll({ month, year, processedBy, companyId }) {
+  if (!companyId) throw ApiError.badRequest('Payroll processing requires a company-scoped administrator account');
+  const run = await runStatus(month, year, companyId);
   if (run?.is_locked) throw ApiError.forbidden('Payroll for this month is locked. Unlock it to re-process.');
   if (run?.review_status === 'APPROVED') throw ApiError.conflict('Payroll for this month is already approved.');
-  const summary = await getMonthSummary({ month, year });
+  if (run?.review_status === 'PENDING_REVIEW') throw ApiError.conflict('Payroll is awaiting review and cannot be reprocessed.');
+  const summary = await getMonthSummary({ month, year, companyId });
   const toPay = summary.employees.filter((r) => r.pay);
   const skipped = summary.employees.filter((r) => !r.pay).map((r) => ({ employee_id: r.employee_id, name: r.name, reason: 'No salary structure or base salary' }));
   const runId = await withTransaction(async (conn) => {
     await conn.query(
-      `INSERT INTO payroll_runs (month, year, status, processed_by, processed_on, review_status)
-       VALUES (?, ?, 'Processing', ?, NOW(), 'DRAFT')
+      `INSERT INTO payroll_runs (company_id, month, year, status, processed_by, processed_on, review_status)
+       VALUES (?, ?, ?, 'Processing', ?, NOW(), 'DRAFT')
        ON DUPLICATE KEY UPDATE status = 'Processing', processed_by = VALUES(processed_by), processed_on = NOW(),
          review_status = IF(review_status = 'REJECTED', 'DRAFT', review_status)`,
-      [month, year, processedBy || null]
+      [companyId, month, year, processedBy || null]
     );
-    const [[runRow]] = await conn.query('SELECT payroll_run_id FROM payroll_runs WHERE month = ? AND year = ?', [month, year]);
+    const [[runRow]] = await conn.query('SELECT payroll_run_id FROM payroll_runs WHERE company_id = ? AND month = ? AND year = ?', [companyId, month, year]);
     const id = runRow.payroll_run_id;
+    await conn.query('SELECT company_id FROM companies WHERE company_id = ? FOR UPDATE', [companyId]);
+    const [[lockedRun]] = await conn.query(
+      'SELECT is_locked, review_status FROM payroll_runs WHERE payroll_run_id = ? AND company_id = ? FOR UPDATE',
+      [id, companyId]
+    );
+    if (lockedRun?.is_locked) {
+      throw ApiError.forbidden('Payroll for this month is locked. Unlock it to re-process.');
+    }
+    if (lockedRun?.review_status === 'APPROVED') {
+      throw ApiError.conflict('Payroll for this month is already approved.');
+    }
+    if (lockedRun?.review_status === 'PENDING_REVIEW') {
+      throw ApiError.conflict('Payroll is awaiting review and cannot be reprocessed.');
+    }
+    const structureSnapshots = new Map();
+    for (const employee of toPay) {
+      const snapshot = employee.pay.configurationSnapshot;
+      const key = snapshot.structure_id == null ? `fallback:${employee.employee_id}` : String(snapshot.structure_id);
+      if (!structureSnapshots.has(key)) structureSnapshots.set(key, snapshot);
+    }
+    const [[versionRow]] = await conn.query(
+      'SELECT COALESCE(MAX(version_number), 0) + 1 AS next_version FROM payroll_rule_versions WHERE company_id = ?',
+      [companyId]
+    );
+    const ruleSnapshot = {
+      engine: 'company-config-v2',
+      company_id: Number(companyId),
+      month: Number(month),
+      year: Number(year),
+      structures: [...structureSnapshots.values()],
+    };
+    const [versionResult] = await conn.query(
+      `INSERT INTO payroll_rule_versions (company_id, version_number, effective_from, snapshot_json, created_by)
+       VALUES (?, ?, ?, ?, ?)`,
+      [companyId, versionRow.next_version, `${year}-${pad(month)}-01`, JSON.stringify(ruleSnapshot), processedBy || null]
+    );
+    const ruleVersionId = versionResult.insertId;
+    await conn.query(
+      'UPDATE payroll_runs SET rule_version_id = ? WHERE payroll_run_id = ? AND company_id = ?',
+      [ruleVersionId, id, companyId]
+    );
     for (const r of toPay) {
       const a = r.attendance;
       const breakdown = {
-        engine: 'attendance-v1',
+        engine: 'company-config-v2',
+        rule_version_id: ruleVersionId,
+        company_id: Number(companyId),
+        salary_configuration: r.pay.configurationSnapshot,
         earnings: r.pay.earnings.map(({ code, label, amount, monthly }) => ({ code, label, amount, full_month: monthly })),
         deductions: r.pay.deductions,
+        employer_contributions: r.pay.employerContributions,
         attendance: {
           month_working_days: a.monthWorkingDays, employed_working_days: a.employedWorkingDays, present: a.present,
           late: a.late, half_days: a.halfDays, paid_leave: a.paidLeave, unpaid_leave: a.unpaidLeave, absent: a.absent,

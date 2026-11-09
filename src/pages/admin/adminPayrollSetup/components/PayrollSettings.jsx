@@ -199,18 +199,7 @@ const PayrollSettings = React.memo(function PayrollSettings() {
           onToggle={handleToggle}
         />
       </div>
-      <button
-        className={cssClass({
-          padding: "10px 24px",
-          background: ORANGE,
-          color: "#fff",
-          border: "none",
-          borderRadius: 6,
-          cursor: "pointer",
-          fontSize: 14,
-          fontWeight: 600,
-        })}
-      >
+      <button type="button" className="btn btn-primary">
         Save Settings
       </button>
     </div>

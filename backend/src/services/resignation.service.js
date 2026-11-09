@@ -1,9 +1,29 @@
 const path = require('path');
 const fs = require('fs');
-const { callProcedure, callProcedureWithOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify = require('./mailNotify.service');
 const NOTICE_DAYS = 90;
+async function assertEmployeeCompany(employeeId, companyId) {
+  const company = Number(companyId);
+  if (!Number.isInteger(company) || company <= 0) {
+    throw ApiError.forbidden('Company context is required');
+  }
+  const rows = await query(
+    'SELECT 1 FROM employees WHERE employee_id = ? AND company_id = ? LIMIT 1',
+    [employeeId, company]
+  );
+  if (!rows.length) throw ApiError.forbidden('You can only access employee records in your company');
+}
+async function filterResignationsByCompany(rows, companyId) {
+  const company = Number(companyId);
+  if (!Number.isInteger(company) || company <= 0) {
+    throw ApiError.forbidden('Company context is required');
+  }
+  const employees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
+  const employeeIds = new Set(employees.map((employee) => Number(employee.employee_id)));
+  return rows.filter((row) => employeeIds.has(Number(row.employee_id)));
+}
 function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
@@ -12,11 +32,13 @@ function addDays(date, days) {
 function daysBetween(a, b) {
   return Math.max(0, Math.round((new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24)));
 }
-async function getMyResignations(employeeId) {
+async function getMyResignations(employeeId, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   const results = await callProcedure('sp_get_my_resignations(?)', [employeeId]);
   return results[0] ?? [];
 }
-async function submitResignation(employeeId, body, file) {
+async function submitResignation(employeeId, body, file, companyId) {
+  await assertEmployeeCompany(employeeId, companyId);
   const { reason, alternate_email, alternate_mobile, start_date, end_date, remarks } = body;
   if (!reason?.trim()) throw ApiError.badRequest('Reason is required');
   if (!end_date) throw ApiError.badRequest('End date is required');
@@ -49,29 +71,40 @@ async function submitResignation(employeeId, body, file) {
   }
   return row;
 }
-async function withdrawResignation(employeeId, resignationId) {
+async function withdrawResignation(employeeId, resignationId, companyId) {
+  const existing = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
+  const row = (existing[0] ?? [])[0];
+  if (!row) throw ApiError.notFound('Resignation not found');
+  await assertEmployeeCompany(row.employee_id, companyId);
   const { outs: out } = await callProcedureWithOuts('sp_withdraw_resignation(?, ?, @ok)', [employeeId, resignationId]);
   if (!out.ok) throw ApiError.notFound('No pending resignation found');
   const results = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
   return (results[0] ?? [])[0] ?? null;
 }
-async function getAttachmentFile(resignationId, employeeId, isAdmin) {
+async function getAttachmentFile(resignationId, employeeId, isAdmin, companyId) {
   const results = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
   const row = (results[0] ?? [])[0] ?? null;
   if (!row || !row.attachment_path) throw ApiError.notFound('File not found');
+  await assertEmployeeCompany(row.employee_id, companyId);
   if (!isAdmin && row.employee_id !== employeeId) throw ApiError.forbidden('Access denied');
   const { upload: uploadConfig } = require('../config/env');
   const filePath = path.resolve(process.cwd(), uploadConfig.dir, row.attachment_path);
   if (!fs.existsSync(filePath)) throw ApiError.notFound('File not found on disk');
   return { filePath, fileName: row.attachment_name || row.attachment_path };
 }
-async function getTeamResignations(managerId, { status } = {}) {
+async function getTeamResignations(managerId, { status, companyId } = {}) {
+  await assertEmployeeCompany(managerId, companyId);
   const results = await callProcedure('sp_get_team_resignations(?, ?)', [
   managerId, status && status !== 'all' ? status : null]
   );
-  return results[0] ?? [];
+  return filterResignationsByCompany(results[0] ?? [], companyId);
 }
-async function reviewByManager(managerId, resignationId, { status, manager_remarks }) {
+async function reviewByManager(managerId, resignationId, { status, manager_remarks }, companyId) {
+  await assertEmployeeCompany(managerId, companyId);
+  const existing = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
+  const row = (existing[0] ?? [])[0];
+  if (!row) throw ApiError.notFound('Resignation not found');
+  await assertEmployeeCompany(row.employee_id, companyId);
   if (!['rm_approved', 'rm_rejected'].includes(status))
   throw ApiError.badRequest('Invalid manager status. Use rm_approved or rm_rejected');
   const { outs: out } = await callProcedureWithOuts('sp_manager_review_resignation(?, ?, ?, ?, @ok)', [
@@ -81,14 +114,19 @@ async function reviewByManager(managerId, resignationId, { status, manager_remar
   const results = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
   return (results[0] ?? [])[0] ?? null;
 }
-async function getAllResignations({ status, search } = {}) {
+async function getAllResignations({ status, search, companyId } = {}) {
   const results = await callProcedure('sp_get_all_resignations(?, ?)', [
   status && status !== 'all' ? status : null,
   search || null]
   );
-  return results[0] ?? [];
+  return filterResignationsByCompany(results[0] ?? [], companyId);
 }
-async function reviewResignation(adminEmployeeId, resignationId, { status, admin_remarks }) {
+async function reviewResignation(adminEmployeeId, resignationId, { status, admin_remarks }, companyId) {
+  await assertEmployeeCompany(adminEmployeeId, companyId);
+  const existing = await callProcedure('sp_get_resignation_by_id(?)', [resignationId]);
+  const existingRow = (existing[0] ?? [])[0];
+  if (!existingRow) throw ApiError.notFound('Resignation not found');
+  await assertEmployeeCompany(existingRow.employee_id, companyId);
   if (!['accepted', 'rejected'].includes(status))
   throw ApiError.badRequest('Invalid status. Use accepted or rejected');
   await callProcedure('sp_admin_review_resignation(?, ?, ?, ?)', [

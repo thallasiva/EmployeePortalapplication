@@ -12,7 +12,7 @@ const {
   importSalaryStructuresSchema
 } = require('../validators/payroll.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const auditLog = require('../middleware/auditLog');
 const Joi = require('joi');
 const attendanceAdjustmentSchema = Joi.object({
@@ -24,6 +24,7 @@ const attendanceAdjustmentSchema = Joi.object({
 });
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('payroll'));
 // ── Employee self-service ─────────────────────────────────────────────────
 router.get('/payslips/me', auditLog('READ_OWN_PAYSLIP'), controller.myPayslips);
 router.post('/payslips/me/generate', auditLog('GENERATE_OWN_PAYSLIP'), validate(generateMyPayslipSchema), controller.generateMyPayslip);

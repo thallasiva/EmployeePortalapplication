@@ -73,7 +73,7 @@ const SummaryCards = React.memo(function SummaryCards({ loading, summary, record
         label="Avg. Hours"
         value={loading ? "—" : summary.avgWork}
         sub="Per working day"
-        accent="text-blue-700"
+        accent="text-[#f18200]"
       />
       <Stat
         icon={<Clock size={20} className="text-[#f18200]" />}

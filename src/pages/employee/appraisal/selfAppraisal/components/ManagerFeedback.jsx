@@ -3,12 +3,12 @@ import { UserCheck } from "lucide-react";
 import { cssClass } from "../../../../../utils/classStyles";
 import { BRAND } from "../constants";
 import StarDisplay from "./StarDisplay";
-const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params }) {
+const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params, appraisal }) {
   const reviewed = ratings.filter((r) => r.manager_rating);
-  if (!reviewed.length) return null;
-  const avgMgr = (
+  if (!reviewed.length && !appraisal?.manager_feedback && !appraisal?.hr_feedback) return null;
+  const avgMgr = reviewed.length ? (
     reviewed.reduce((s, r) => s + r.manager_rating, 0) / reviewed.length
-  ).toFixed(1);
+  ).toFixed(1) : null;
   return (
     <div className={cssClass({
       background: "#fff", border: "1px solid #e2e8f0",
@@ -30,16 +30,28 @@ const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params })
             </p>
           </div>
         </div>
-        <div className={cssClass({ textAlign: "right" })}>
+        {avgMgr && <div className={cssClass({ textAlign: "right" })}>
           <p className={cssClass({ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 })}>
             {avgMgr}
           </p>
           <p className={cssClass({ fontSize: 10, color: "rgba(255,255,255,0.7)", margin: 0 })}>
             Overall Avg / 5
           </p>
-        </div>
+        </div>}
       </div>
       <div className={cssClass({ padding: "16px 18px" })}>
+        {appraisal?.manager_feedback && (
+          <div className={cssClass({ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", marginBottom: 10 })}>
+            <p className={cssClass({ fontSize: 11, fontWeight: 700, color: "#475569", margin: "0 0 4px" })}>Manager feedback</p>
+            <p className={cssClass({ fontSize: 13, color: "#334155", margin: 0, whiteSpace: "pre-wrap" })}>{appraisal.manager_feedback}</p>
+          </div>
+        )}
+        {appraisal?.hr_feedback && (
+          <div className={cssClass({ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 12px", marginBottom: 10 })}>
+            <p className={cssClass({ fontSize: 11, fontWeight: 700, color: "#92400e", margin: "0 0 4px" })}>HR feedback</p>
+            <p className={cssClass({ fontSize: 13, color: "#78350f", margin: 0, whiteSpace: "pre-wrap" })}>{appraisal.hr_feedback}</p>
+          </div>
+        )}
         <div className={cssClass({ display: "grid", gap: 10 })}>
           {params.map((p) => {
             const r = ratings.find((x) => x.parameter_key === p.key);

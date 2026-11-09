@@ -63,7 +63,7 @@ const ForgotPassword = () => {
         <div className="w-14 h-14 rounded-2xl bg-brand text-white flex items-center justify-center text-xl font-bold shadow-lg mb-4">
           N
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">HRMS</h1>
+        <h1 className="text-3xl font-bold  text-[#f18200] tracking-tight">HRMS</h1>
         <p className="text-sm text-slate-500 font-medium mt-1">Human Resources Portal</p>
       </div>
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 w-full max-w-md p-8 md:p-10">

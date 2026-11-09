@@ -46,7 +46,7 @@ const ConfirmDialog = memo(function ConfirmDialog({
         )}
       </div>
       <div className="flex gap-2 mt-5 justify-center">
-        <Button variant="secondary" onClick={onClose} disabled={loading}>
+        <Button variant="secondary" onClick={onClose} disabled={loading} data-cancel-button>
           {cancelLabel}
         </Button>
         <Button variant={btnVariant} onClick={onConfirm} disabled={loading}>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, Search, Eye, Edit2, Copy, Trash2, X, Mail, Loader2, Save, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Eye, Edit2, Copy, Trash2, X, Mail, Loader2, Save } from "lucide-react";
 import { Btn, ConfirmDialog, Toast } from "../components/SharedUI";
 import { emailTemplatesApi } from "../../../../../api/settings.api";
+import Pagination from "../../../../../components/Pagination";
 const PER = 8;
 const CATEGORIES = ["Onboarding","Leave","Attendance","Payroll","Recruitment","Performance","Helpdesk","Announcements","System"];
 const CAT_COLORS  = { Onboarding:"#6366f1",Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#3b82f6",Recruitment:"#8b5cf6",Performance:"#ec4899",Helpdesk:"#14b8a6",Announcements:"#f97316",System:"#64748b" };
@@ -62,7 +63,7 @@ function TemplateModal({ tpl, onClose, onSave }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9] shrink-0">
-          <span className="text-[15px] font-bold text-[#1e293b]">{isNew ? "New Template" : "Edit Template"}</span>
+          <span className="text-[15px] font-bold text-[#f18200]">{isNew ? "New Template" : "Edit Template"}</span>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b]"><X size={18} /></button>
         </div>
         {/* Tab switcher */}
@@ -167,7 +168,7 @@ function PreviewModal({ tpl, onClose }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden" style={{ maxHeight:"90vh" }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-          <span className="text-[15px] font-bold text-[#1e293b]">Template Preview</span>
+          <span className="text-[15px] font-bold text-[#f18200]">Template Preview</span>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b]"><X size={18} /></button>
         </div>
         <div className="p-6 overflow-y-auto" style={{ maxHeight:"70vh" }}>
@@ -278,7 +279,7 @@ export default function EmailTemplates() {
             <div key={t.id} className="bg-white rounded-xl border border-[#f1f5f9] p-4 hover:shadow-sm transition-shadow flex flex-col gap-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-[#1e293b] truncate">{t.name}</div>
+                  <div className="text-[13px] font-bold text-[#f18200] truncate">{t.name}</div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ background: `${CAT_COLORS[t.category] || "#64748b"}18`, color: CAT_COLORS[t.category] || "#64748b" }}>
@@ -302,22 +303,10 @@ export default function EmailTemplates() {
         </div>
       )}
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-[12px] text-[#94a3b8]">
-            {total} template{total !== 1 ? "s" : ""}
-          </span>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1}
-              className="p-1.5 rounded hover:bg-[#f1f5f9] disabled:opacity-40"><ChevronLeft size={14} /></button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i+1).map(n => (
-              <button key={n} onClick={() => setPage(n)}
-                className={`w-7 h-7 rounded text-[12px] ${n===page ? "bg-[#f18200] text-white" : "hover:bg-[#f1f5f9] text-[#64748b]"}`}>{n}</button>
-            ))}
-            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page===totalPages}
-              className="p-1.5 rounded hover:bg-[#f1f5f9] disabled:opacity-40"><ChevronRight size={14} /></button>
-          </div>
-        </div>
+      {total > 0 && (
+        <Pagination page={page} setPage={setPage} totalPages={totalPages}
+          from={Math.min((page - 1) * PER + 1, total)} to={Math.min(page * PER, total)}
+          total={total} pageSize={PER} />
       )}
     </div>
   );

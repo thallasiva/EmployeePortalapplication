@@ -108,7 +108,7 @@ const ReviewModal = React.memo(function ReviewModal({ row, onClose, onDone }) {
               justifyContent: "center", gap: 6, opacity: saving ? 0.7 : 1 })}>
             <XCircle size={16} /> {saving ? "Saving…" : "Reject"}
           </button>
-          <button onClick={onClose} disabled={saving} className={cssClass(
+          <button data-cancel-button onClick={onClose} disabled={saving} className={cssClass(
             { padding: "11px 18px", borderRadius: 9, fontWeight: 600, fontSize: 14,
               border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer" })}>
             Cancel

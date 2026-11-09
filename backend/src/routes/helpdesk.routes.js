@@ -6,9 +6,10 @@ const {
   managerActionSchema, assignTicketSchema, addCommentSchema
 } = require('../validators/helpdesk.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
 const router = express.Router();
 router.use(authenticate);
+router.use(requireCompanyModule('helpdesk'));
 router.get('/me', controller.myTickets);
 router.post('/', validate(createTicketSchema), controller.create);
 router.post('/:id/comments', validate(addCommentSchema), controller.addComment);

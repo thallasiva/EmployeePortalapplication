@@ -1,7 +1,8 @@
 import { memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { cssClass } from "../../../utils/classStyles";
-import { TABS, B } from "./constants/leaveConstants";
+import PageTabs from "../../../components/PageTabs";
+import { TABS } from "./constants/leaveConstants";
 import CalendarTab    from "./components/CalendarTab";
 import RequestsTab    from "./components/RequestsTab";
 import BalancesTab    from "./components/BalancesTab";
@@ -11,7 +12,7 @@ const AdminLeaveManagement = memo(() => {
   const tab    = searchParams.get("tab") || "calendar";
   const setTab = (t) => setSearchParams({ tab: t }, { replace: true });
   return (
-    <div className={cssClass({ minHeight: "100vh", background: "#f8f9fb", padding: "24px 28px",
+    <div className={cssClass({ minHeight: "100vh", background: "#f8f9fb",
       fontFamily: "'Inter','Plus Jakarta Sans',system-ui,sans-serif" })}>
       <div className={cssClass({ maxWidth: 1280, margin: "0 auto" })}>
         {/* Page header */}
@@ -25,20 +26,13 @@ const AdminLeaveManagement = memo(() => {
           </p>
         </div>
         {/* Tab bar */}
-        <div className={cssClass({ display: "flex", gap: 0, borderBottom: "2px solid #e9eaec", marginBottom: 24 })}>
-          {TABS.map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)} className={cssClass({
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 700 : 500,
-              color: tab === t.key ? B : "#6b7280",
-              background: "none", border: "none", cursor: "pointer",
-              borderBottom: tab === t.key ? `2px solid ${B}` : "2px solid transparent",
-              marginBottom: -2, transition: "color .15s",
-            })}>
-              <span className={cssClass({ color: tab === t.key ? B : "#9ca3af" })}>{t.icon}</span>
-              {t.label}
-            </button>
-          ))}
+        <div className={cssClass({ marginBottom: 24 })}>
+          <PageTabs
+            tabs={TABS.map((item) => ({ id: item.key, label: item.label }))}
+            value={tab}
+            onChange={setTab}
+            label="Leave management sections"
+          />
         </div>
         {/* Active tab content */}
         <div>

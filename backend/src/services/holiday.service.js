@@ -1,4 +1,4 @@
-const { callProcedure, callProcedureWithOuts } = require('../config/db');
+const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 function toDateStr(val) {
   if (!val) return null;
@@ -6,78 +6,56 @@ function toDateStr(val) {
   return new Date(val).toISOString().slice(0, 10);
 }
 class HolidayService {
-  async list({ year, holiday_calendar, shift, location, limit, offset } = {}) {
-    const results = await callProcedure(
-      'sp_list_holidays(?, ?, ?, ?, ?, ?)',
-      [
-        year             ? Number(year) : null,
-        shift            || null,
-        location         || null,
-        holiday_calendar || null,
-        limit !== undefined ? Number(limit)  : 0,
-        offset !== undefined ? Number(offset) : 0,
-      ]
-    );
-    const rowsSet  = Array.isArray(results[0]) ? results[0] : [];
-    const countSet = Array.isArray(results[1]) ? results[1] : [];
-    return { rows: rowsSet, total: countSet[0]?.total ?? rowsSet.length };
+  async list({ year, holiday_calendar, shift, location, limit, offset, companyId = null } = {}) {
+    const where = `WHERE (? IS NULL OR company_id = ?) AND (? IS NULL OR YEAR(holiday_date) = ?)
+      AND (? IS NULL OR shift = ?) AND (? IS NULL OR location = ?) AND (? IS NULL OR holiday_calendar = ?)`;
+    const params = [companyId, companyId, year || null, year || null, shift || null, shift || null,
+      location || null, location || null, holiday_calendar || null, holiday_calendar || null];
+    const totals = await query(`SELECT COUNT(*) AS total FROM holidays ${where}`, params);
+    let sql = `SELECT * FROM holidays ${where} ORDER BY holiday_date, holiday_name`;
+    const rowParams = [...params];
+    if (limit !== undefined) { sql += ' LIMIT ? OFFSET ?'; rowParams.push(Number(limit), Number(offset || 0)); }
+    return { rows: await query(sql, rowParams), total: Number(totals[0]?.total || 0) };
   }
-  async listLocations() {
-    const results = await callProcedure('sp_list_holiday_locations()', []);
-    return (Array.isArray(results[0]) ? results[0] : []).map((r) => r.location);
+  async listLocations(companyId = null) {
+    const rows = await query(`SELECT DISTINCT location FROM holidays
+      WHERE location IS NOT NULL AND location <> '' AND (? IS NULL OR company_id = ?) ORDER BY location`, [companyId, companyId]);
+    return rows.map((r) => r.location);
   }
-  async getById(id) {
-    const results = await callProcedure('sp_get_holiday_by_id(?)', [id]);
-    return (results[0] ?? [])[0] || null;
+  async getById(id, companyId = null) {
+    const rows = await query('SELECT * FROM holidays WHERE holiday_id = ? AND (? IS NULL OR company_id = ?) LIMIT 1', [id, companyId, companyId]);
+    return rows[0] || null;
   }
-  async create(data) {
-    const { outs: out } = await callProcedureWithOuts(
-      'sp_create_holiday(?, ?, ?, ?, ?, ?, @p_holiday_id)',
-      [
-        data.holiday_name     || null,
-        toDateStr(data.holiday_date),
-        data.holiday_calendar || 'India - Default',
-        data.shift            || 'general',
-        data.location         || null,
-        data.is_restricted    ? 1 : 0,
-      ]
-    );
-    return { holiday_id: out.p_holiday_id };
+  async create(data, companyId = null) {
+    const result = await query(`INSERT INTO holidays
+      (company_id, holiday_name, holiday_date, holiday_calendar, shift, location, is_restricted)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`, [companyId, data.holiday_name, toDateStr(data.holiday_date),
+      data.holiday_calendar || 'India - Default', data.shift || 'general', data.location || null, data.is_restricted ? 1 : 0]);
+    return this.getById(result.insertId, companyId);
   }
-  async update(id, data) {
-    await callProcedure(
-      'sp_update_holiday(?, ?, ?, ?, ?, ?, ?)',
-      [
-        Number(id),
-        data.holiday_name     ?? null,
-        data.holiday_date ? toDateStr(data.holiday_date) : null,
-        data.holiday_calendar ?? null,
-        data.shift            ?? null,
-        data.location         ?? null,
-        data.is_restricted !== undefined ? (data.is_restricted ? 1 : 0) : null,
-      ]
-    );
-    return { updated: true };
+  async update(id, data, companyId = null) {
+    const existing = await this.getById(id, companyId);
+    if (!existing) throw ApiError.notFound('Holiday not found');
+    await query(`UPDATE holidays SET holiday_name = ?, holiday_date = ?, holiday_calendar = ?, shift = ?,
+      location = ?, is_restricted = ? WHERE holiday_id = ? AND (? IS NULL OR company_id = ?)`,
+    [data.holiday_name ?? existing.holiday_name, data.holiday_date ? toDateStr(data.holiday_date) : existing.holiday_date,
+      data.holiday_calendar ?? existing.holiday_calendar, data.shift ?? existing.shift, data.location ?? existing.location,
+      data.is_restricted !== undefined ? (data.is_restricted ? 1 : 0) : existing.is_restricted, id, companyId, companyId]);
+    return this.getById(id, companyId);
   }
-  async delete(id) {
-    await callProcedure('sp_delete_holiday(?)', [Number(id)]);
+  async delete(id, companyId = null) {
+    const result = await query('DELETE FROM holidays WHERE holiday_id = ? AND (? IS NULL OR company_id = ?)', [Number(id), companyId, companyId]);
+    if (!result.affectedRows) throw ApiError.notFound('Holiday not found');
     return { deleted: true };
   }
-  async bulkCreate(holidays) {
+  async bulkCreate(holidays, companyId = null) {
     const entries = (holidays || []).filter((h) => h.holiday_name && h.holiday_date);
     if (entries.length === 0) throw ApiError.badRequest('No valid holiday rows to import');
     const VALID_SHIFTS = ['general', 'mid', 'night'];
     let imported = 0;
     for (const h of entries) {
       const shift = VALID_SHIFTS.includes((h.shift || '').toLowerCase()) ? h.shift.toLowerCase() : 'general';
-      await callProcedure('sp_import_holiday(?, ?, ?, ?, ?, ?)', [
-        h.holiday_name,
-        toDateStr(h.holiday_date),
-        h.holiday_calendar || 'India - Default',
-        shift,
-        h.location || null,
-        h.is_restricted ? 1 : 0,
-      ]);
+      await this.create({ ...h, shift }, companyId);
       imported++;
     }
     return { imported };

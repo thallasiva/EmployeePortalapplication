@@ -187,7 +187,7 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
                   e.stopPropagation();
                   onScheduleNext && onScheduleNext(rounds[0]);
                 }}
-                className="text-[12px] font-semibold text-blue-700 bg-blue-100 border-0 rounded-lg px-3.5 py-1.5 cursor-pointer whitespace-nowrap"
+                className="text-[12px] font-semibold text-[#f18200] bg-blue-100 border-0 rounded-lg px-3.5 py-1.5 cursor-pointer whitespace-nowrap"
               >
                 + Schedule Next Round
               </button>

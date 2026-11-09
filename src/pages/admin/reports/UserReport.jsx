@@ -9,7 +9,7 @@ import {
 "../../../component/reports/ReportsLayout";import { cssClass, joinClasses } from "../../../utils/classStyles";
 const ROLE_COLORS = {
   Admin: "bg-purple-100 text-purple-700",
-  HR: "bg-blue-100 text-blue-700",
+  HR: "bg-blue-100 text-[#f18200]",
   Manager: "bg-amber-100 text-amber-700",
   Employee: "bg-gray-100 text-gray-600"
 };

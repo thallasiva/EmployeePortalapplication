@@ -18,7 +18,7 @@ function isGratuityEligible(joiningDate, month, year) {
 }
 function buildFromStructure(components, ctx, gratuityEligible = true) {
   const earnings = components.
-  filter((c) => c.category === 'Earning' && c.show_on_payslip !== 0 && !c._deferred).
+  filter((c) => c.category === 'Earning' && c.show_payslip !== 0 && !c._deferred).
   map((c) => {
     const isGratuity = /gratuity/i.test(c.component_name || '') || c.component_code === 'GRATUITY';
     const amount = !gratuityEligible && isGratuity ? 0 : c.monthly_amount || 0;
@@ -26,36 +26,29 @@ function buildFromStructure(components, ctx, gratuityEligible = true) {
   }).
   filter((c) => c.amount > 0);
   const structDeductions = components.
-  filter((c) => c.category === 'Deduction' && c.show_on_payslip !== 0 && !c._deferred).
+  filter((c) => c.category === 'Deduction' && c.show_payslip !== 0 && !c._deferred).
   map((c) => ({ label: (c.component_name || c.component_code).toUpperCase(), amount: c.monthly_amount || 0 })).
   filter((c) => c.amount > 0);
-  const basicMonthly = ctx.BASIC || 0;
   const totalEarnings = earnings.reduce((s, e) => s + e.amount, 0);
-  const pfWage = Math.min(basicMonthly, 15000);
-  const pf = Math.round(pfWage * 0.12);
-  const eps = Math.round(pfWage * 0.0833);
-  const epf = Math.round(pfWage * 0.0367);
-  const employerPf = eps + epf;
-  const edli = Math.min(Math.round(pfWage * 0.005), 75);
-  const esiApplicable = totalEarnings <= 21000;
-  const esiEmployee = esiApplicable ? Math.round(totalEarnings * 0.0075) : 0;
-  const esiEmployer = esiApplicable ? Math.round(totalEarnings * 0.0325) : 0;
-  const professionalTax = totalEarnings <= 15000 ? 0 : totalEarnings <= 20000 ? 150 : 200;
   const deductions = [...structDeductions];
-  const hasLabel = (lbl) => deductions.some((d) => d.label === lbl || d.label.replace(/\s+/g, '') === lbl.replace(/\s+/g, ''));
-  if (!hasLabel('PF') && !hasLabel('EMP PF') && !hasLabel('EMPPF')) {
-    deductions.push({ label: 'PF', amount: pf });
-  }
-  if (!hasLabel('ESI') && esiEmployee > 0) {
-    deductions.push({ label: 'ESI', amount: esiEmployee });
-  }
-  if (!hasLabel('PROF TAX') && !hasLabel('PROFTAX') && !hasLabel('PROFESSIONAL TAX')) {
-    deductions.push({ label: 'PROF TAX', amount: professionalTax });
-  }
-  if (!hasLabel('INCOME TAX') && !hasLabel('INCOMETAX') && !hasLabel('TDS')) {
-    deductions.push({ label: 'INCOME TAX', amount: 0 });
-  }
-  return { earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax, pf };
+  const employerContributions = components
+    .filter((c) => c.category === 'Employer Contribution' && !c._deferred)
+    .map((c) => ({ label: (c.component_name || c.component_code).toUpperCase(), amount: c.monthly_amount || 0 }));
+  const byCode = new Map(components.map((component) => [component.component_code, component.monthly_amount || 0]));
+  const pf = byCode.get('EMP_PF') || byCode.get('PF') || 0;
+  const esiEmployee = byCode.get('EMP_ESI') || byCode.get('ESI') || 0;
+  const professionalTax = byCode.get('PROF_TAX') || byCode.get('PT') || 0;
+  const employerPf = byCode.get('EMP_ER_PF') || byCode.get('ER_PF') || 0;
+  const eps = 0;
+  const epf = employerPf;
+  const edli = 0;
+  const esiEmployer = byCode.get('EMP_ER_ESI') || byCode.get('ER_ESI') || 0;
+  const hasTds = deductions.some((d) => /income.?tax|tds/i.test(d.label));
+  if (!hasTds) deductions.push({ label: 'INCOME TAX', amount: 0 });
+  return {
+    earnings, deductions, employerContributions, totalEarnings, eps, epf,
+    employerPf, edli, esiEmployee, esiEmployer, professionalTax, pf
+  };
 }
 const MONTH_NAMES = [
 'January', 'February', 'March', 'April', 'May', 'June',
@@ -68,7 +61,12 @@ class PayslipService extends BaseService {
     'gross_earnings', 'ctc', 'deductions', 'net_pay', 'working_days', 'paid_days', 'lop_days', 'status']
     );
   }
-  async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser } = {}) {
+  async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser, companyId = null } = {}) {
+    const scoped = companyId != null;
+    if (scoped && employee_id) {
+      const [owner] = await query('SELECT company_id FROM employees WHERE employee_id = ? LIMIT 1', [employee_id]);
+      if (!owner || Number(owner.company_id) !== Number(companyId)) throw ApiError.notFound('Payslip not found');
+    }
     const results = await callProcedure(
       'sp_list_payslips(?, ?, ?, ?, ?, ?, ?, ?)',
       [
@@ -78,11 +76,18 @@ class PayslipService extends BaseService {
       status ?? null,
       department_id ?? null,
       payroll_run_id ?? null,
-      limit != null ? Number(limit) : null,
-      limit != null ? Number(offset || 0) : null]
+      scoped ? null : (limit != null ? Number(limit) : null),
+      scoped ? null : (limit != null ? Number(offset || 0) : null)]
     );
-    const rows = results[0] ?? [];
-    const total = (results[1] ?? [])[0]?.total ?? 0;
+    let rows = results[0] ?? [];
+    let total = (results[1] ?? [])[0]?.total ?? 0;
+    if (scoped) {
+      const employeeRows = await query('SELECT employee_id FROM employees WHERE company_id = ?', [companyId]);
+      const ids = new Set(employeeRows.map((employee) => Number(employee.employee_id)));
+      rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+      total = rows.length;
+      if (limit != null) rows = rows.slice(Number(offset || 0), Number(offset || 0) + Number(limit));
+    }
     const normalised = rows.map((r) => {
       const ctc = Number(r.ctc) > 0 ? Number(r.ctc) : Number(r.ctc_computed) || 0;
       const { ctc_computed, ...rest } = r;
@@ -106,27 +111,56 @@ class PayslipService extends BaseService {
     let earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax;
     const gratuityEligible = isGratuityEligible(row.emp_joining_date, row.month, row.year);
     // Payslips processed from attendance carry their exact (LOP-prorated) breakdown.
-    const stored = await query('SELECT breakdown_json FROM payslips WHERE payslip_id = ?', [id]).catch(() => []);
+    const stored = await query('SELECT breakdown_json FROM payslips WHERE payslip_id = ?', [id]);
     let storedBreakdown = stored[0]?.breakdown_json || null;
-    if (typeof storedBreakdown === 'string') { try { storedBreakdown = JSON.parse(storedBreakdown); } catch { storedBreakdown = null; } }
+    if (typeof storedBreakdown === 'string') {
+      try {
+        storedBreakdown = JSON.parse(storedBreakdown);
+      } catch {
+        throw ApiError.internal('Stored payslip calculation snapshot is invalid');
+      }
+    }
     if (storedBreakdown?.earnings?.length) {
       earnings = storedBreakdown.earnings.filter((e) => e.amount > 0).map((e) => ({ label: String(e.label).toUpperCase(), amount: e.amount }));
       deductions = (storedBreakdown.deductions || []).map((d) => ({ label: d.code === 'PF' ? 'PF' : String(d.label).toUpperCase(), amount: d.amount }));
       totalEarnings = earnings.reduce((s, e) => s + e.amount, 0);
-      const pfWage = Math.min(storedBreakdown.earnings.find((e) => /^BASIC/i.test(e.code || ''))?.amount || 0, 15000);
-      eps = Math.round(pfWage * 0.0833); epf = Math.round(pfWage * 0.0367); employerPf = eps + epf;
-      edli = Math.min(Math.round(pfWage * 0.005), 75);
+      if (storedBreakdown.engine === 'company-config-v2') {
+        const contributions = storedBreakdown.employer_contributions || [];
+        employerPf = contributions
+          .filter((item) => /PF/i.test(item.code || item.label || ''))
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        esiEmployer = contributions
+          .filter((item) => /ESI/i.test(item.code || item.label || ''))
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        eps = 0;
+        epf = employerPf;
+        edli = 0;
+      } else {
+        const pfWage = Math.min(storedBreakdown.earnings.find((e) => /^BASIC/i.test(e.code || ''))?.amount || 0, 15000);
+        eps = Math.round(pfWage * 0.0833); epf = Math.round(pfWage * 0.0367); employerPf = eps + epf;
+        edli = Math.min(Math.round(pfWage * 0.005), 75);
+      }
       esiEmployee = deductions.find((d) => /ESI/i.test(d.label))?.amount || 0;
-      esiEmployer = esiEmployee ? Math.round(totalEarnings * 0.0325) : 0;
+      if (storedBreakdown.engine !== 'company-config-v2') {
+        esiEmployer = esiEmployee ? Math.round(totalEarnings * 0.0325) : 0;
+      }
       professionalTax = deductions.find((d) => /PROF/i.test(d.label))?.amount || 0;
     }
-    if (!earnings) try {
-      const structured = await salaryAssignmentSvc.computePayslipBreakdown(row.emp_id);
+    if (!earnings) {
+      const employeeScope = await query(
+        'SELECT company_id FROM employees WHERE employee_id = ? LIMIT 1',
+        [row.emp_id]
+      );
+      if (!employeeScope[0]) throw ApiError.notFound('Employee not found');
+      const structured = await salaryAssignmentSvc.computePayslipBreakdown(
+        row.emp_id,
+        employeeScope[0].company_id
+      );
       if (structured && structured.components?.length) {
         ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
         buildFromStructure(structured.components, structured.ctx, gratuityEligible));
       }
-    } catch {}
+    }
     if (!earnings) {
       const basic = Number(row.basic) || 0;
       ({ earnings, deductions, totalEarnings, eps, epf, employerPf, edli, esiEmployee, esiEmployer, professionalTax } =
@@ -147,7 +181,9 @@ class PayslipService extends BaseService {
       taxRegime: regimeRows[0]?.tax_regime || 'old', month: row.month, year: row.year
     });
     const incomeTaxDeduction = deductions.find((d) => /income.?tax|tds/i.test(d.label));
-    if (incomeTaxDeduction) incomeTaxDeduction.amount = tds.incomeTax.monthlyProjectedTax;
+    if (incomeTaxDeduction && storedBreakdown?.engine !== 'company-config-v2') {
+      incomeTaxDeduction.amount = tds.incomeTax.monthlyProjectedTax;
+    }
     const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0);
     const netSalary = Math.max(0, totalEarnings - totalDeductions);
     return {

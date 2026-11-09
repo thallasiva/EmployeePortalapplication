@@ -187,7 +187,7 @@ export default function NewRequestModal({ open, onClose, onSubmit }) {
             >
               Submit
             </button>
-            <button
+            <button data-cancel-button
               type="button"
               onClick={handleClose}
               className="min-w-[120px] py-2.5 text-sm font-medium rounded-md bg-sky-500 text-white hover:bg-sky-600"

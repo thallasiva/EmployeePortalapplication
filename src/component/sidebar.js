@@ -1,10 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, Building, Calendar, CalendarRange, LogOut, Wallet, Receipt, Settings, Headphones, FileOutput, UserPen, Proportions, Radio, LayoutGrid, HandCoins, SquareCheck, UserRoundPlus, BookOpen, UserRound, Layers, GitBranch, Clock, ChevronDown, ChevronRight, FileText, Network, IdCard, Award, UserSearch, ShieldCheck } from "lucide-react";
+import { Home, Users, Building, Calendar, CalendarRange, LogOut, Wallet, Receipt, Settings, Headphones, FileOutput, UserPen, Proportions, Radio, LayoutGrid, HandCoins, SquareCheck, UserRoundPlus, BookOpen, UserRound, Layers, GitBranch, Clock, ChevronDown, ChevronRight, FileText, Network, IdCard, Award, UserSearch, ShieldCheck, Laptop } from "lucide-react";
 import { getStoredUser, isAdmin, isReportingManager, isRecruitmentRole, isRecruiterLead, canViewTeamOverview } from "../data/auth";
 import { getAppraisalCycle } from "../api/appraisal.api";
 import { useMenuPermissions } from "../hooks/useMenuPermissions";
 const BRAND_NAME = "HRMS";
+const SECTION_NUMBERS = {
+  PEOPLE: 1,
+  "TIME & ATTENDANCE": 2,
+  "PAYROLL & COMPENSATION": 3,
+  "EMPLOYEE SERVICES": 4,
+  ANALYTICS: 5,
+  ADMINISTRATION: 6,
+};
 const isPathActive = (pathname, link, search = "") =>
 {
   if (!link) return false;
@@ -61,23 +69,78 @@ export const Sidebar = ({ open }) =>
     }
   }, [pathname, user]);
   const adminItems = [
-    // ── Core ──────────────────────────────────────────────
     {
       label: "Dashboard", permId: "dashboard",
       icon: <Home size={20} />,
       navigationLink: "/dashboard"
     },
     {
+      section: "PEOPLE",
       label: "Employees", permId: "employees",
       icon: <Users size={20} />,
       navigationLink: "/dashboard/employee"
     },
     {
+      section: "PEOPLE",
+      label: "Organization Management", permId: "workflow",
+      icon: <Network size={20} />,
+      children: [
+        { label: "Org Hierarchy", navigationLink: "/dashboard/workflow-delegation?tab=org" },
+        { label: "Reporting Managers", navigationLink: "/dashboard/workflow-delegation?tab=managers" },
+        { label: "Manager Transfer", navigationLink: "/dashboard/workflow-delegation?tab=transfer" },
+        { label: "Delegation", navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
+        { label: "Audit History", navigationLink: "/dashboard/workflow-delegation?tab=audit" }]
+    },
+    {
+      section: "PEOPLE",
+      label: "Onboarding", permId: "onboarding",
+      icon: <UserRoundPlus size={20} />,
+      navigationLink: "/dashboard/onboarding"
+    },
+    {
+      section: "PEOPLE",
+      label: "Recruitment", permId: "recruitment",
+      icon: <UserSearch size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/recruitment",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
+    {
+      section: "PEOPLE",
+      label: "Appraisal", permId: "performance",
+      icon: <Award size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/performance",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
+    {
+      section: "PEOPLE",
+      label: "Training & Development", permId: "employees",
+      icon: <BookOpen size={20} />,
+      navigationLink: "/dashboard/training"
+    },
+    {
+      section: "PEOPLE",
+      label: "Resignation", permId: "resignation",
+      icon: <LogOut size={20} strokeWidth={1.75} />,
+      navigationLink: "/dashboard/resignations",
+      badge: "New",
+      badgeColor: "#f18200"
+    },
+    {
+      section: "TIME & ATTENDANCE",
       label: "Attendance", permId: "attendance",
       icon: <Clock size={20} />,
       navigationLink: "/dashboard/attendance"
     },
     {
+      section: "TIME & ATTENDANCE",
+      label: "Shift Management", permId: "attendance",
+      icon: <Clock size={20} />,
+      navigationLink: "/dashboard/shifts"
+    },
+    {
+      section: "TIME & ATTENDANCE",
       label: "Leave", permId: "leave",
       icon: <FileOutput size={20} />,
       children: [
@@ -86,28 +149,29 @@ export const Sidebar = ({ open }) =>
         { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" }]
     },
     {
+      section: "TIME & ATTENDANCE",
       label: "Timesheets", permId: "timesheets",
       icon: <Clock size={20} />,
       navigationLink: "/dashboard/timesheets"
     },
     {
+      section: "TIME & ATTENDANCE",
       label: "Calendar", permId: "calendar",
       icon: <Calendar size={20} />,
       navigationLink: "/dashboard/calendar"
     },
     {
+      section: "PAYROLL & COMPENSATION",
       label: "Payroll", permId: "payroll",
       icon: <FileText size={20} />,
       navigationLink: "/dashboard/payroll"
     },
     {
+      section: "PAYROLL & COMPENSATION",
       label: "Payroll Inputs", permId: "payroll",
       icon: <HandCoins size={20} />,
       children: [
-        { label: "Salary Structures", navigationLink: "/dashboard/payroll/salary" },
-        { label: "Salary Revisions", navigationLink: "/dashboard/payroll/setup?tab=revision" },
         { label: "Income Tax", navigationLink: "/dashboard/it-declaration" },
-        { label: "Reimbursement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
         { label: "Loan & Advances", navigationLink: "/employee/payroll/loans" },
         { label: "Employee LOP Days", navigationLink: "/dashboard/payroll/inputs?tab=lop" },
         { label: "Overtime Register", navigationLink: "/dashboard/payroll/inputs?tab=overtime" },
@@ -116,100 +180,105 @@ export const Sidebar = ({ open }) =>
         { label: "Stop Salary Processing", navigationLink: "/dashboard/payroll/inputs?tab=stop" }]
     },
     {
-      label: "Verify", permId: "payroll",
-      icon: <BookOpen size={20} />,
-      children: [
-        { label: "Quick Salary Statement", navigationLink: "/dashboard/payroll/statement?tab=quick" },
-        { label: "Payroll Statement", navigationLink: "/dashboard/payroll/statement?tab=statement" },
-        { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
-        { label: "Payroll Differences", navigationLink: "/dashboard/payroll/statement?tab=diff" }]
-    },
-    {
-      label: "Published Info", permId: "payroll",
-      icon: <BookOpen size={20} />,
-      children: [
-        { label: "Payslip", navigationLink: "/dashboard/payroll/payslips" },
-        { label: "CTC Payslip", navigationLink: "/dashboard/payroll/statement?tab=ctc" },
-        { label: "YTD Summary", navigationLink: "/dashboard/payroll/ytd?tab=ytd" },
-        { label: "PF YTD Statement", navigationLink: "/dashboard/payroll/ytd?tab=pf-ytd" },
-        { label: "Reimbursement Statement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
-        { label: "Loan Statement", navigationLink: "/employee/payroll/loans" },
-        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
-        { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" }]
-    },
-    {
+      section: "PAYROLL & COMPENSATION",
       label: "Payroll Admin", permId: "payroll",
-      icon: <Layers size={20} />,
+      icon: <ShieldCheck size={20} />,
       children: [
+        { label: "Payroll Processing", navigationLink: "/dashboard/payroll/process" },
+        { label: "Payroll Verification", navigationLink: "/dashboard/payroll/statement?tab=statement" },
+        { label: "Payroll Approval & Lock", navigationLink: "/dashboard/payroll" },
+        { label: "Payslip Register", navigationLink: "/dashboard/payroll/payslips" },
+        { label: "Payroll Compliance", navigationLink: "/dashboard/payroll/compliance?tab=pan" },
         { label: "Form 16", navigationLink: "/dashboard/payroll/tax-forms?tab=form16" },
         { label: "Form 24Q", navigationLink: "/dashboard/payroll/tax-forms?tab=form24q" },
-        { label: "Employee IT Declaration", navigationLink: "/dashboard/it-declaration" },
-        { label: "PAN Status", navigationLink: "/dashboard/payroll/compliance?tab=pan" },
-        { label: "Revision Planner", navigationLink: "/dashboard/payroll/setup?tab=revision" },
         { label: "Remittances", navigationLink: "/dashboard/payroll/compliance?tab=remittances" },
-        { label: "Payroll Release", navigationLink: "/dashboard/payroll/compliance?tab=release" },
-        { label: "POI Overview", navigationLink: "/dashboard/payroll/tax-forms?tab=poi" },
-        { label: "PF KYC Mapping", navigationLink: "/dashboard/payroll/compliance?tab=pf-kyc" }]
+        { label: "Payroll Release", navigationLink: "/dashboard/payroll/compliance?tab=release" }]
     },
     {
+      section: "PAYROLL & COMPENSATION",
       label: "Payroll Setup", permId: "payroll",
       icon: <Layers size={20} />,
+      navigationLink: "/dashboard/payroll/setup?tab=settings"
+    },
+    {
+      section: "PAYROLL & COMPENSATION",
+      label: "Compensation Management", permId: "payroll",
+      icon: <Wallet size={20} />,
       children: [
         { label: "Salary Components", navigationLink: "/dashboard/salary-components" },
         { label: "Salary Structures", navigationLink: "/dashboard/salary-structures" },
         { label: "Salary Assignment", navigationLink: "/dashboard/salary-assignment" },
         { label: "Salary Templates", navigationLink: "/dashboard/salary-templates" },
-        { label: "Payroll Settings", navigationLink: "/dashboard/payroll/setup?tab=settings" }]
+        { label: "Salary Revisions", navigationLink: "/dashboard/payroll/setup?tab=revision" },
+        { label: "Salary Structure Editor", navigationLink: "/dashboard/payroll/salary" }]
     },
     {
-      label: "Onboarding", permId: "onboarding",
-      icon: <UserRoundPlus size={20} />,
-      navigationLink: "/dashboard/onboarding"
+      section: "PAYROLL & COMPENSATION",
+      label: "Expenses & Reimbursements", permId: "payroll",
+      icon: <HandCoins size={20} />,
+      navigationLink: "/dashboard/payroll/ytd?tab=reimb"
     },
     {
-      label: "Recruitment", permId: "recruitment",
-      icon: <UserSearch size={20} strokeWidth={1.75} />,
-      navigationLink: "/dashboard/recruitment",
-      badge: "New",
-      badgeColor: "#f18200"
+      section: "EMPLOYEE SERVICES",
+      label: "Published Info", permId: "payroll",
+      icon: <BookOpen size={20} />,
+      children: [
+        { label: "Payslip Register", navigationLink: "/dashboard/payroll/payslips" },
+        { label: "YTD Summary", navigationLink: "/dashboard/payroll/ytd?tab=ytd" },
+        { label: "PF YTD Statement", navigationLink: "/dashboard/payroll/ytd?tab=pf-ytd" },
+        { label: "Reimbursement Statement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
+        { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
+        { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" }]
     },
     {
-      label: "Appraisal", permId: "performance",
-      icon: <Award size={20} strokeWidth={1.75} />,
-      navigationLink: "/dashboard/performance",
-      badge: "New",
-      badgeColor: "#f18200"
-    },
-    {
-      label: "Resignation", permId: "resignation",
-      icon: <LogOut size={20} strokeWidth={1.75} />,
-      navigationLink: "/dashboard/resignations",
-      badge: "New",
-      badgeColor: "#f18200"
-    },
-    {
-      label: "Reports", permId: "reports",
-      icon: <Proportions size={20} />,
-      navigationLink: "/dashboard/report"
-    },
-    {
+      section: "EMPLOYEE SERVICES",
       label: "Documents", permId: "documents",
       icon: <BookOpen size={20} />,
       navigationLink: "/dashboard/documents"
     },
     {
+      section: "EMPLOYEE SERVICES",
       label: "Helpdesk", permId: "helpdesk",
       icon: <Headphones size={20} />,
       navigationLink: "/dashboard/helpdesk"
     },
     {
-      label: "Company", permId: "company",
-      icon: <Building size={20} />,
-      navigationLink: "/dashboard/company",
-      badge: "New",
-      badgeColor: "#f18200"
+      section: "EMPLOYEE SERVICES",
+      label: "Asset Management", permId: "employees",
+      icon: <Layers size={20} />,
+      children: [
+        { label: "Dashboard", navigationLink: "/dashboard/assets/dashboard" },
+        { label: "Inventory", navigationLink: "/dashboard/assets/inventory" },
+        { label: "Categories", navigationLink: "/dashboard/assets/categories" },
+        { label: "Allocation", navigationLink: "/dashboard/assets/allocation" },
+        { label: "Asset Requests", navigationLink: "/dashboard/assets/requests" },
+        { label: "Returns", navigationLink: "/dashboard/assets/returns" },
+        { label: "Maintenance", navigationLink: "/dashboard/assets/maintenance" },
+        { label: "Transfers", navigationLink: "/dashboard/assets/transfers" },
+        { label: "Reports", navigationLink: "/dashboard/assets/reports" }]
     },
     {
+      section: "EMPLOYEE SERVICES",
+      label: "Approvals", permId: "employees",
+      icon: <SquareCheck size={20} />,
+      navigationLink: "/dashboard/approvals"
+    },
+    {
+      section: "ANALYTICS",
+      label: "Reports", permId: "reports",
+      icon: <Proportions size={20} />,
+      navigationLink: "/dashboard/report"
+    },
+    {
+      section: "ADMINISTRATION",
+      label: "Company", permId: "company",
+      icon: <Building size={20} />,
+      children: [
+        { label: "Company Profiles", navigationLink: "/dashboard/company" },
+        { label: "Branches & Locations", navigationLink: "/dashboard/offices" }]
+    },
+    {
+      section: "ADMINISTRATION",
       label: "Workflow & Hierarchy", permId: "workflow",
       icon: <Network size={20} />,
       children: [
@@ -220,11 +289,13 @@ export const Sidebar = ({ open }) =>
         { label: "Audit History", navigationLink: "/dashboard/workflow-delegation?tab=audit" }]
     },
     {
+      section: "ADMINISTRATION",
       label: "Role Management", permId: "role-mgmt",
       icon: <ShieldCheck size={20} />,
       navigationLink: "/dashboard/role-management"
     },
     {
+      section: "ADMINISTRATION",
       label: "Settings", permId: "settings",
       icon: <Settings size={20} />,
       children: [
@@ -238,6 +309,7 @@ export const Sidebar = ({ open }) =>
         { label: "Menu Permissions", permId: "menu-perm", navigationLink: "/dashboard/menu-perm" }]
     },
     {
+      section: "ADMINISTRATION",
       label: "Profile", permId: "profile",
       icon: <UserPen size={20} />,
       navigationLink: "/dashboard/profile"
@@ -252,7 +324,7 @@ export const Sidebar = ({ open }) =>
         { label: "Attendance", navigationLink: "/manager/team/attendance" },
         { label: "Regularizations", navigationLink: "/manager/team/regularizations" },
         { label: "Resignations", navigationLink: "/manager/team/resignations" },
-        { label: "Appraisal", navigationLink: "/manager/team/appraisal" }]
+        { label: "Appraisal", navigationLink: "/manager/team/performance" }]
     } :
     {
       label: "Team Overview",
@@ -292,6 +364,11 @@ export const Sidebar = ({ open }) =>
       label: "My Info",
       icon: <IdCard size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/my-info"
+    },
+    {
+      label: "Training & Assets",
+      icon: <Layers size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/training-assets"
     },
     {
       label: "Attendance",
@@ -382,6 +459,11 @@ export const Sidebar = ({ open }) =>
       navigationLink: "/employee/helpdesk"
     },
     {
+      label: "Asset Request",
+      icon: <Laptop size={20} strokeWidth={1.75} />,
+      navigationLink: "/employee/assets/request"
+    },
+    {
       label: "Request Hub",
       icon: <Layers size={20} strokeWidth={1.75} />,
       navigationLink: "/employee/request-hub"
@@ -429,7 +511,7 @@ export const Sidebar = ({ open }) =>
   const items = isAdmin(user) ?
     filteredAdminItems :
     isReportingManager(user) ?
-      [teamOverviewItem, ...employeeItems] :
+      [teamOverviewItem, { label: "Approvals", icon: <SquareCheck size={20} />, navigationLink: "/manager/approvals" }, ...employeeItems] :
       isRecruitmentRole(user) ?
         employeeItemsForRecruiters :
         employeeItems;
@@ -491,6 +573,13 @@ export const Sidebar = ({ open }) =>
       <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-2 py-2.5">
         {items.map((item, index) =>
         {
+          const sectionHeading = open && item.section && item.section !== items[index - 1]?.section
+            ? (
+              <div className="px-3 pb-1 pt-4 text-[10px] font-bold tracking-wider text-gray-400">
+                 {item.section}
+              </div>
+            )
+            : null;
           const childActive = item.children?.some((child) =>
             isPathActive(pathname, child.navigationLink, search)
           );
@@ -498,74 +587,80 @@ export const Sidebar = ({ open }) =>
           {
             const active = isPathActive(pathname, item.navigationLink, search);
             return (
-              <div key={index} className={menuItemClass(active)}
-                onClick={() => navigate(item.navigationLink)}
-                title={!open ? item.label : undefined}>
-                <span className={[
-                  "flex shrink-0",
-                  active ? "text-white" : "text-gray-400"]
-                  .join(" ")}>
-                  {React.cloneElement(item.icon, { size: 18 })}
-                </span>
-                {open &&
-                  <>
-                    <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                      {item.label}
-                    </span>
-                    {item.badge &&
-                      <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
-                        {item.badge}
+              <React.Fragment key={index}>
+                {sectionHeading}
+                <div className={menuItemClass(active)}
+                  onClick={() => navigate(item.navigationLink)}
+                  title={!open ? item.label : undefined}>
+                  <span className={[
+                    "flex shrink-0",
+                    active ? "text-white" : "text-gray-400"]
+                    .join(" ")}>
+                    {React.cloneElement(item.icon, { size: 18 })}
+                  </span>
+                  {open &&
+                    <>
+                      <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {item.label}
                       </span>
-                    }
-                  </>
-                }
-              </div>);
+                      {item.badge &&
+                        <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
+                          {item.badge}
+                        </span>
+                      }
+                    </>
+                  }
+                </div>
+              </React.Fragment>);
           }
           return (
-            <div key={index}>
-              <div className={menuItemClass(false, childActive)}
-                onClick={() => toggleAccordion(index)}
-                title={!open ? item.label : undefined}>
-                <span className={[
-                  "flex shrink-0",
-                  childActive ? "text-brand-500" : "text-gray-400"]
-                  .join(" ")}>
-                  {React.cloneElement(item.icon, { size: 18 })}
-                </span>
-                {open &&
-                  <>
-                    <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                      {item.label}
-                    </span>
-                    {item.badge &&
-                      <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
-                        {item.badge}
+            <React.Fragment key={index}>
+              {sectionHeading}
+              <div>
+                <div className={menuItemClass(false, childActive)}
+                  onClick={() => toggleAccordion(index)}
+                  title={!open ? item.label : undefined}>
+                  <span className={[
+                    "flex shrink-0",
+                    childActive ? "text-brand-500" : "text-gray-400"]
+                    .join(" ")}>
+                    {React.cloneElement(item.icon, { size: 18 })}
+                  </span>
+                  {open &&
+                    <>
+                      <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {item.label}
                       </span>
-                    }
-                    {expanded === index ?
-                      <ChevronDown size={14} className="shrink-0 text-gray-400" /> :
-                      <ChevronRight size={14} className="shrink-0 text-gray-400" />}
-                  </>
+                      {item.badge &&
+                        <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
+                          {item.badge}
+                        </span>
+                      }
+                      {expanded === index ?
+                        <ChevronDown size={14} className="shrink-0 text-gray-400" /> :
+                        <ChevronRight size={14} className="shrink-0 text-gray-400" />}
+                    </>
+                  }
+                </div>
+                {expanded === index && open &&
+                  <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
+                    {item.children.map((child, childIndex) =>
+                    {
+                      const isChildActive = isPathActive(pathname, child.navigationLink, search);
+                      return (
+                        <div key={childIndex} className={childItemClass(isChildActive)}
+                          onClick={() =>
+                          {
+                            const [p, q] = child.navigationLink.split("?");
+                            navigate(q ? `${p}?${q}` : p);
+                          }}>
+                          {child.label}
+                        </div>);
+                    })}
+                  </div>
                 }
               </div>
-              {expanded === index && open &&
-                <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
-                  {item.children.map((child, childIndex) =>
-                  {
-                    const isChildActive = isPathActive(pathname, child.navigationLink, search);
-                    return (
-                      <div key={childIndex} className={childItemClass(isChildActive)}
-                        onClick={() =>
-                        {
-                          const [p, q] = child.navigationLink.split("?");
-                          navigate(q ? `${p}?${q}` : p);
-                        }}>
-                        {child.label}
-                      </div>);
-                  })}
-                </div>
-              }
-            </div>);
+            </React.Fragment>);
         })}
       </nav>
     </aside>);

@@ -51,7 +51,7 @@ export default function LeaveApply() {
   } = useLeaveApply();
   const tabs = TABS(pendingRequests.length);
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen  ">
       {/* Page header */}
       <div className="px-6 py-4 flex items-center justify-between">
         <div>

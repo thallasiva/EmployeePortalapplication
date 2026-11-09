@@ -27,6 +27,14 @@ const getMyTimesheets = asyncHandler(async (req, res) => {
 const getTimesheetDetail = asyncHandler(async (req, res) => {
   const header = await ts.getTimesheetById(req.params.timesheetId);
   if (!header) throw ApiError.notFound('Timesheet not found');
+  if (req.path.startsWith('/my/')) {
+    if (Number(header.employee_id) !== Number(req.user.employeeId)) {
+      throw ApiError.forbidden('You can only access your own timesheets');
+    }
+    await assertManagesEmployee(req.user, header.employee_id);
+  } else {
+    await assertManagesEmployee(req.user, header.employee_id);
+  }
   const entries = await ts.getTimesheetEntries(req.params.timesheetId);
   new ApiResponse(200, { ...header, entries }, 'Timesheet detail fetched').send(res);
 });
@@ -54,7 +62,7 @@ const myExtraWork = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Extra work requests fetched').send(res);
 });
 const managerTimesheets = asyncHandler(async (req, res) => {
-  const rows = await ts.listManagerTimesheets(req.user.employeeId, req.query);
+  const rows = await ts.listManagerTimesheets(req.user.employeeId, { ...req.query, companyId: req.user.companyId });
   new ApiResponse(200, rows, 'Team timesheets fetched').send(res);
 });
 const reviewTimesheet = asyncHandler(async (req, res) => {
@@ -69,7 +77,7 @@ const reviewTimesheet = asyncHandler(async (req, res) => {
   new ApiResponse(200, result, `Timesheet ${req.body.decision}`).send(res);
 });
 const managerExtraWork = asyncHandler(async (req, res) => {
-  const rows = await ts.listManagerExtraWork(req.user.employeeId);
+  const rows = await ts.listManagerExtraWork(req.user.employeeId, req.user.companyId);
   new ApiResponse(200, rows, 'Extra work requests fetched').send(res);
 });
 const reviewExtraWork = asyncHandler(async (req, res) => {
@@ -96,7 +104,7 @@ const adminTasks = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'All tasks fetched').send(res);
 });
 const adminTimesheets = asyncHandler(async (req, res) => {
-  const rows = await ts.listAllTimesheets(req.query);
+  const rows = await ts.listAllTimesheets({ ...req.query, companyId: req.user.companyId });
   new ApiResponse(200, rows, 'All timesheets fetched').send(res);
 });
 const adminDashboardCounts = asyncHandler(async (req, res) => {
