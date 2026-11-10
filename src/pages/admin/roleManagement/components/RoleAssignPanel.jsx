@@ -90,7 +90,7 @@ const RoleAssignPanel = React.memo(function RoleAssignPanel({
             disabled={saving || !pickedRole || pickedRole === selected.role_id}
             className="w-full py-[11px] text-sm font-bold text-white rounded-lg transition-colors"
             style={{
-              background: saving || pickedRole === selected.role_id ? "#d1d5db" : "#f18200",
+              background: saving || pickedRole === selected.role_id ? "#d1d5db" : "#e87500",
               cursor: saving || pickedRole === selected.role_id ? "not-allowed" : "pointer"
             }}
           >

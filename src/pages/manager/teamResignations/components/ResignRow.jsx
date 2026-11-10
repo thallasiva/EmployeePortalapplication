@@ -91,7 +91,7 @@ const ResignRow = React.memo(function ResignRow({ row, onReview }) {
               <button onClick={() => onReview(row)} className={cssClass(
                 { padding: "9px 24px", borderRadius: 8, fontWeight: 700, fontSize: 13,
                   border: "none", cursor: "pointer", background: BRAND, color: "#fff",
-                  boxShadow: "0 2px 8px rgba(241,130,0,0.3)" })}>
+                  boxShadow: "0 2px 8px rgba(232,117,0,0.3)" })}>
                 Review & Decide
               </button>
             ) : (

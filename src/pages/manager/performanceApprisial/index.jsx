@@ -43,7 +43,7 @@ function PerformanceApprisial() {
               { label: "Team Size", value: team.length, color: BRAND },
               { label: "Submitted", value: submitted.length, color: "#22c55e" },
               { label: "Pending", value: pending.length, color: "#f59e0b" },
-              { label: "In HR workflow", value: reviewed.length, color: "#6366f1" },
+              { label: "In HR workflow", value: reviewed.length, color: "#e87500" },
             ].map((s) => (
               <div key={s.label} className={cssClass({
                 background: "#fff", border: "1px solid #e2e8f0",
@@ -91,7 +91,7 @@ function PerformanceApprisial() {
           {reviewed.length > 0 && (
             <>
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, margin: "20px 0 10px" })}>
-                <CheckCircle2 size={16} className={cssClass({ color: "#6366f1" })} />
+                <CheckCircle2 size={16} className={cssClass({ color: "#e87500" })} />
                 <p className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: 0 })}>
                   Manager review complete ({reviewed.length})
                 </p>

@@ -49,7 +49,7 @@ const Engage = () => {
             <div className={cssClass({
               width: 48, height: 48, borderRadius: "50%", background: "#E6F1FB",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 700, fontSize: 18, color: "#185FA5",
+              fontWeight: 700, fontSize: 18, color: "#cf6900",
             })}>
               {initials(myName)}
             </div>
@@ -74,7 +74,7 @@ const Engage = () => {
               onClick={() => navigate("/employee/leave/apply")}
               className="flex flex-col items-center gap-2 px-4 py-3 border-2 border-purple-300 rounded-lg hover:bg-purple-50 transition-colors"
             >
-              <FilePen size={24} className="text-[#f18200]" />
+              <FilePen size={24} className="text-[#e87500]" />
               <span className="text-xs font-medium text-gray-700">Apply Leave</span>
             </button>
           </div>

@@ -63,7 +63,7 @@ const ExtraWorkModal = memo(function ExtraWorkModal({ timesheetId, overDays = []
             className={cssClass({
               display: "inline-flex", alignItems: "items-center", gap: 6,
               padding: "10px 24px", borderRadius: 8,
-              background: saving ? "#fbd38d" : "#f18200",
+              background: saving ? "#fbd38d" : "#e87500",
               color: "#fff", fontSize: 14, fontWeight: 700,
               border: "none", cursor: saving ? "not-allowed" : "pointer",
               transition: "background 0.15s",

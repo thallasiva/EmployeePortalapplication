@@ -29,7 +29,7 @@ const FilterPill = React.memo(function FilterPill({ label, onRemove }) {
           display: "flex",
         })}
       >
-        <X size={11} color="#f18200" />
+        <X size={11} color="#e87500" />
       </button>
     </span>
   );

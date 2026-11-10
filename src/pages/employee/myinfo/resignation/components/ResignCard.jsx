@@ -39,7 +39,7 @@ const ResignCard = React.memo(function ResignCard({ data, profile, onWithdraw, w
         <div className={cssClass({ padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, borderBottom: "1px solid #f1f5f9" })}>
           <Chip label="Start Date"      value={fmtDate(data.start_date)}    color="#64748b" />
           <Chip label="End Date (LWD)"  value={fmtDate(data.end_date)}      color={BRAND} />
-          <Chip label="Tentative LWD"   value={fmtDate(data.tentative_lwd)} color="#3b82f6" />
+          <Chip label="Tentative LWD"   value={fmtDate(data.tentative_lwd)} color="#e87500" />
           <Chip
             label="Shortfall"
             value={(data.shortfall_days ?? 0) === 0 ? "None" : `${data.shortfall_days} days`}

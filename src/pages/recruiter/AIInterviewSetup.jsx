@@ -50,7 +50,7 @@ function ReportModal({ sessionId, onClose }) {
       .finally(() => setLoading(false));
   }, [sessionId]);
   const REC_COLOR = {
-    "Strong Hire": "#059669", Hire: "#2563eb",
+    "Strong Hire": "#059669", Hire: "#e87500",
     Maybe: "#d97706", "No Hire": "#dc2626",
   };
   return (
@@ -112,7 +112,7 @@ function ReportModal({ sessionId, onClose }) {
             )}
             {/* Recommendation reason */}
             {report.recommendationReason && (
-              <div style={{ background:"#eff6ff", border:"1px solid #bfdbfe", borderRadius:10, padding:14, marginBottom:16, fontSize:13, color:"#1e40af" }}>
+              <div style={{ background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:10, padding:14, marginBottom:16, fontSize:13, color:"#9b4c00" }}>
                 <strong>Why this recommendation:</strong> {report.recommendationReason}
               </div>
             )}
@@ -255,7 +255,7 @@ export default function AIInterviewSetup() {
     }
   }
   const STATUS_COLOR = { pending: "#d97706", completed: "#059669", expired: "#dc2626" };
-  const REC_COLOR    = { "Strong Hire": "#059669", Hire: "#2563eb", Maybe: "#d97706", "No Hire": "#dc2626" };
+  const REC_COLOR    = { "Strong Hire": "#059669", Hire: "#e87500", Maybe: "#d97706", "No Hire": "#dc2626" };
   return (
     <div style={{ padding: "24px 28px", fontFamily: "Inter, sans-serif" }}>
       {/* Header */}

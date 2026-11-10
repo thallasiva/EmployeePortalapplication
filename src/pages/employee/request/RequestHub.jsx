@@ -26,13 +26,13 @@ const STATUS_CONFIG = {
 };
 const TYPE_COLORS = {
   leave:          "bg-blue-50 text-blue-600",
-  regularization: "bg-orange-50 text-[#f18200]",
+  regularization: "bg-orange-50 text-[#e87500]",
   wfh:            "bg-purple-50 text-purple-600",
   permission:     "bg-teal-50 text-teal-600",
   other:          "bg-slate-50 text-slate-600",
 };
 const SUMMARY_STATS = [
-  { label: "Total Requests", value: REQUESTS.length,                                     color: " text-[#f18200]", bg: "bg-white" },
+  { label: "Total Requests", value: REQUESTS.length,                                     color: " text-[#e87500]", bg: "bg-white" },
   { label: "Approved",       value: REQUESTS.filter(r => r.status === "Approved").length, color: "text-emerald-600", bg: "bg-emerald-50" },
   { label: "Pending",        value: REQUESTS.filter(r => r.status === "Pending").length,  color: "text-amber-600",  bg: "bg-amber-50" },
   { label: "Rejected",       value: REQUESTS.filter(r => r.status === "Rejected").length, color: "text-red-500",    bg: "bg-red-50" },
@@ -50,7 +50,7 @@ function NewRequestModal({ onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold  text-[#f18200]">New Request</h2>
+          <h2 className="text-lg font-bold  text-[#e87500]">New Request</h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500" aria-label="Close"><X size={18} /></button>
         </div>
         <div className="space-y-4">
@@ -58,8 +58,8 @@ function NewRequestModal({ onClose }) {
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Request Type</label>
             <div className="grid grid-cols-1 gap-2">
               {types.map((t) => (
-                <label key={t.key} className={`flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer transition-all ${type === t.key ? "border-[#f18200] bg-orange-50" : "border-slate-200 hover:bg-slate-50"}`}>
-                  <input type="radio" name="rtype" value={t.key} checked={type === t.key} onChange={() => setType(t.key)} className="accent-[#f18200]" />
+                <label key={t.key} className={`flex items-center gap-3 border rounded-xl px-4 py-3 cursor-pointer transition-all ${type === t.key ? "border-[#e87500] bg-orange-50" : "border-slate-200 hover:bg-slate-50"}`}>
+                  <input type="radio" name="rtype" value={t.key} checked={type === t.key} onChange={() => setType(t.key)} className="accent-[#e87500]" />
                   <span className="text-sm font-medium text-slate-800">{t.label}</span>
                 </label>
               ))}
@@ -67,15 +67,15 @@ function NewRequestModal({ onClose }) {
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Date / Period</label>
-            <input type="date" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#f18200] transition-colors" />
+            <input type="date" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#e87500] transition-colors" />
           </div>
           <div>
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Reason</label>
-            <textarea rows={3} placeholder="Briefly describe your reason…" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#f18200] transition-colors resize-none" />
+            <textarea rows={3} placeholder="Briefly describe your reason…" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#e87500] transition-colors resize-none" />
           </div>
           <div className="flex gap-2 pt-1">
             <button data-cancel-button onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors">Cancel</button>
-            <button className="flex-1 h-10 rounded-xl bg-[#f18200] hover:bg-[#e07000] text-white text-sm font-bold transition-colors">Submit Request</button>
+            <button className="flex-1 h-10 rounded-xl bg-[#e87500] hover:bg-[#e07000] text-white text-sm font-bold transition-colors">Submit Request</button>
           </div>
         </div>
       </div>
@@ -92,12 +92,12 @@ const RequestHub = () => {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold  text-[#f18200]">Request Hub</h1>
+          <h1 className="text-2xl font-bold  text-[#e87500]">Request Hub</h1>
           <p className="text-slate-500 mt-1 text-sm">Submit and track all your HR requests in one place.</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#f18200] hover:bg-[#e07000] text-white text-sm font-bold rounded-xl shadow-sm transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#e87500] hover:bg-[#e07000] text-white text-sm font-bold rounded-xl shadow-sm transition-colors"
         >
           <Plus size={16} /> New Request
         </button>
@@ -118,7 +118,7 @@ const RequestHub = () => {
             key={t.key}
             onClick={() => setActiveTab(t.key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-              activeTab === t.key ? "bg-[#f18200] text-white shadow-sm" : "text-slate-500 hover: text-[#f18200] hover:bg-slate-50"
+              activeTab === t.key ? "bg-[#e87500] text-white shadow-sm" : "text-slate-500 hover: text-[#e87500] hover:bg-slate-50"
             }`}
           >
             {t.label}
@@ -155,7 +155,7 @@ const RequestHub = () => {
                       <Icon size={16} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold  text-[#f18200]">{req.title}</p>
+                      <p className="text-sm font-semibold  text-[#e87500]">{req.title}</p>
                       <p className="text-[11px] text-slate-400 mt-0.5">{req.label}</p>
                     </div>
                   </div>

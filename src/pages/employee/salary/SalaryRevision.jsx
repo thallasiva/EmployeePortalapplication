@@ -163,7 +163,7 @@ export default function SalaryRevision() {
       <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px", marginBottom: 20 })}>
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 })}>
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>CTC Revision Timeline</span>
-          <button className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#f18200", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" })}>
+          <button className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#e87500", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" })}>
             <Download size={13} /> Download
           </button>
         </div>

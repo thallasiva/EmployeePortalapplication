@@ -51,7 +51,7 @@ const ViewDetailsModal = React.memo(function ViewDetailsModal({ onClose, totals 
           ))}
         </div>
         <div className={cssClass({ padding: "12px 20px", borderTop: "1px solid #e2e8f0", textAlign: "right" })}>
-          <button type="button" onClick={onClose} className={cssClass({ padding: "8px 20px", background: "#f18200", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" })}>Close</button>
+          <button type="button" onClick={onClose} className={cssClass({ padding: "8px 20px", background: "#e87500", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" })}>Close</button>
         </div>
       </div>
     </div>

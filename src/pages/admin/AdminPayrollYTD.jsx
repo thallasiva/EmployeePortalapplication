@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listPayslips } from "../../api/payroll.api";
 import { listEmployees } from "../../api/employee.api";import { cssClass } from "../../utils/classStyles";
-const ORANGE = "#f18200";
+const ORANGE = "#e87500";
 const TABS = [
 { key: "ytd", label: "YTD Summary" },
 { key: "pf-ytd", label: "PF YTD Statement" },

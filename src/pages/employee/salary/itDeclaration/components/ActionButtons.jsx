@@ -11,7 +11,7 @@ function ActionButtons({ saving, totalDeclared, onSaveDraft, onSubmit }) {
       </button>
       <button onClick={onSubmit} disabled={saving || totalDeclared === 0} className={cssClass(
         { display: "flex", alignItems: "center", gap: 6, padding: "10px 22px", borderRadius: 8,
-          border: "none", background: totalDeclared > 0 ? "#f18200" : "#e2e8f0",
+          border: "none", background: totalDeclared > 0 ? "#e87500" : "#e2e8f0",
           color: totalDeclared > 0 ? "#fff" : "#94a3b8",
           fontSize: 13, fontWeight: 600, cursor: totalDeclared > 0 ? "pointer" : "not-allowed" })}>
         <Send size={15} /> {saving ? "Submitting…" : "Submit Declaration"}

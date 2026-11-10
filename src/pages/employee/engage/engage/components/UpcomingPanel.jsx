@@ -36,7 +36,7 @@ const UpcomingPanel = React.memo(function UpcomingPanel({ employees, holidays })
         <div className={cssClass({ display: "flex", flexDirection: "column", gap: 10 })}>
           {upcoming.map((it, i) => (
             <div key={i} className={cssClass({ display: "flex", alignItems: "center", gap: 9 })}>
-              <span className={cssClass({ flexShrink: 0, display: "flex", color: "#f18200" })}>{it.emoji}</span>
+              <span className={cssClass({ flexShrink: 0, display: "flex", color: "#e87500" })}>{it.emoji}</span>
               <div className={cssClass({ minWidth: 0 })}>
                 <p className={cssClass({
                   fontSize: 12, fontWeight: 600, color: "#1a2233", margin: 0,

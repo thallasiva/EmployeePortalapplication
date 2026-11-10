@@ -27,13 +27,13 @@ const SuccessModal = ({
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-semibold  text-[#f18200]">{title}</h2>
+            <h2 className="text-2xl font-semibold  text-[#e87500]">{title}</h2>
             <p className="mt-2 text-sm text-slate-600">{message}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-500 hover: text-[#f18200]"
+            className="text-slate-500 hover: text-[#e87500]"
             aria-label="Close"
           >
             <X size={16} aria-hidden="true" />

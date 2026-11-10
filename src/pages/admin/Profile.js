@@ -117,7 +117,7 @@ export default function Profile() {
             {loading ?
             <div className={joinClasses("admin-profile__avatar", cssClass({ background: "#f3f4f6" }))} /> :
             <div className={joinClasses("admin-profile__avatar", cssClass({
-              background: "linear-gradient(135deg,#f18200,#fb923c)",
+              background: "linear-gradient(135deg,#e87500,#fb923c)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 28, fontWeight: 900, color: "#fff",
               fontFamily: "'Plus Jakarta Sans','Inter',sans-serif"
@@ -144,7 +144,7 @@ export default function Profile() {
             <span className={cssClass({
               display: "inline-flex", alignItems: "center", gap: 5,
               padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700,
-              background: "#fff8f0", color: "#f18200", border: "1px solid #fed7aa"
+              background: "#fff8f0", color: "#e87500", border: "1px solid #fed7aa"
             })}>
               {shift.charAt(0).toUpperCase() + shift.slice(1)} Shift
             </span>
@@ -158,22 +158,22 @@ export default function Profile() {
             background: "linear-gradient(135deg,#fff8f0 0%,#fff 100%)",
             border: "1.5px solid #fed7aa", borderRadius: 14,
             padding: "18px 22px",
-            boxShadow: "0 2px 12px rgba(241,130,0,.08)"
+            boxShadow: "0 2px 12px rgba(232,117,0,.08)"
           })}>
             {}
             <div className={cssClass({ display: "flex", gap: 16, alignItems: "flex-start" })}>
               {}
               <div className={cssClass({
                 width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-                background: "linear-gradient(135deg,#f18200,#fb923c)",
+                background: "linear-gradient(135deg,#e87500,#fb923c)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(241,130,0,.3)"
+                boxShadow: "0 4px 12px rgba(232,117,0,.3)"
               })}>
                 <Building2 size={22} color="#fff" />
               </div>
               <div>
                 {}
-                <div className={cssClass({ fontSize: 10, fontWeight: 800, color: "#f18200",
+                <div className={cssClass({ fontSize: 10, fontWeight: 800, color: "#e87500",
                   textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 3 })}>
                   Head Office
                 </div>
@@ -187,7 +187,7 @@ export default function Profile() {
                 </div>
                 {}
                 <div className={cssClass({ display: "flex", alignItems: "flex-start", gap: 5, marginTop: 8 })}>
-                  <MapPin size={13} color="#f18200" className={cssClass({ marginTop: 2, flexShrink: 0 })} />
+                  <MapPin size={13} color="#e87500" className={cssClass({ marginTop: 2, flexShrink: 0 })} />
                   <div>
                     <div className={cssClass({ fontSize: 12, color: "#374151", fontWeight: 500, lineHeight: 1.5 })}>
                       {HRMS_COMPANY.address}
@@ -209,7 +209,7 @@ export default function Profile() {
                 <div className={cssClass({ width: 28, height: 28, borderRadius: 7, background: "#fff8f0",
                   border: "1px solid #fed7aa", display: "flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0 })}>
-                  <Phone size={12} color="#f18200" />
+                  <Phone size={12} color="#e87500" />
                 </div>
                 <span className={cssClass({ fontSize: 12, color: "#374151", fontWeight: 500 })}>
                   {HRMS_COMPANY.phone}
@@ -219,7 +219,7 @@ export default function Profile() {
                 <div className={cssClass({ width: 28, height: 28, borderRadius: 7, background: "#fff8f0",
                   border: "1px solid #fed7aa", display: "flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0 })}>
-                  <Mail size={12} color="#f18200" />
+                  <Mail size={12} color="#e87500" />
                 </div>
                 <span className={cssClass({ fontSize: 12, color: "#374151", fontWeight: 500 })}>
                   {HRMS_COMPANY.email || "—"}
@@ -229,9 +229,9 @@ export default function Profile() {
                 <div className={cssClass({ width: 28, height: 28, borderRadius: 7, background: "#fff8f0",
                   border: "1px solid #fed7aa", display: "flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0 })}>
-                  <Globe size={12} color="#f18200" />
+                  <Globe size={12} color="#e87500" />
                 </div>
-                <span className={cssClass({ fontSize: 12, color: "#f18200", fontWeight: 600 })}>
+                <span className={cssClass({ fontSize: 12, color: "#e87500", fontWeight: 600 })}>
                   {HRMS_COMPANY.web || "—"}
                 </span>
               </div>

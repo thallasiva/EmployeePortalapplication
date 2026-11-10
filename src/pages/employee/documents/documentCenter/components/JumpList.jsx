@@ -9,7 +9,7 @@ const JumpList = React.memo(function JumpList({ title = "JUMP TO", items, onJump
             key={item}
             type="button"
             onClick={() => onJump?.(item)}
-            className="block text-[13px] text-[#5b6778] hover:text-[#1890ff] text-left">
+            className="block text-[13px] text-[#5b6778] hover:text-[#e87500] text-left">
             {item}
           </button>
         ))}

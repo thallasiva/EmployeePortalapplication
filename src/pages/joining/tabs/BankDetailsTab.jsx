@@ -11,7 +11,7 @@ export default function BankDetailsTab({ form }) {
   );
   return (
     <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-[#f18200] to-[#f18200]">
+      <div className="flex items-center gap-2.5 px-5 py-3.5 bg-gradient-to-r from-[#e87500] to-[#e87500]">
         <div className="p-1.5 rounded-lg bg-white/20"><Landmark size={15} className="text-white" /></div>
         <h3 className="text-[13px] font-bold text-white tracking-wide">Bank Account Details — Summary</h3>
       </div>

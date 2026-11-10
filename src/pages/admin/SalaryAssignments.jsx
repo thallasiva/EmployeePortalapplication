@@ -61,7 +61,7 @@ function AssignModal({ employee, structures, onSave, onClose, saving }) {
           }
           <div className="flex gap-3 pt-1">
             <button data-cancel-button type="button" onClick={onClose} className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-            <button type="submit" disabled={saving} className="flex-1 bg-[#f18200] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
+            <button type="submit" disabled={saving} className="flex-1 bg-[#e87500] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#7c3d00] disabled:opacity-60">
               {saving ? "Saving…" : "Assign Structure"}
             </button>
           </div>
@@ -152,7 +152,7 @@ function EmployeeRow({ emp, structures, onAssigned }) {
         <td className="px-4 py-3">
           <div className="flex items-center gap-1">
             <button onClick={() => setOpen(true)}
-            className="text-[11px] bg-[#f18200] text-white px-2.5 py-1 rounded-lg hover:bg-[#16304f]">
+            className="text-[11px] bg-[#e87500] text-white px-2.5 py-1 rounded-lg hover:bg-[#7c3d00]">
               {emp.structure_id ? "Revise" : "Assign"}
             </button>
             {emp.structure_id &&
@@ -222,7 +222,7 @@ export default function SalaryAssignmentsPage() {
         <button key={v} onClick={() => setFilter(v)}
         className={`px-3.5 py-2 rounded-xl text-sm font-medium border transition-all ${
         filterStatus === v ?
-        "bg-[#f18200] text-white border-[#f18200]" :
+        "bg-[#e87500] text-white border-[#e87500]" :
         "border-gray-200 text-gray-500 hover:bg-gray-50"}`
         }>
             {v === "all" ? `All (${employees.length})` : v === "assigned" ? `Assigned (${assignedCount})` : `Unassigned (${unassignedCount})`}

@@ -19,7 +19,7 @@ export default function LockControlCard({ title, locked = true, lastUpdated, cou
         <span className={cssClass({ fontSize: 13, fontWeight: 800, color: "#111827" })}>{count ?? "—"}</span>
       </div>
       <div className={cssClass({ display: "flex", gap: 8 })}>
-        <button onClick={onView} className={cssClass({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#2563eb", background: "#eff6ff", border: "1px solid #dbeafe", borderRadius: 8, padding: "7px 0", cursor: "pointer" })}>
+        <button onClick={onView} className={cssClass({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#e87500", background: "#fff7ed", border: "1px solid #ffedd5", borderRadius: 8, padding: "7px 0", cursor: "pointer" })}>
           <Eye size={13} /> View {title.split(" ")[0]}
         </button>
         <button onClick={onReopen} className={cssClass({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#dc2626", background: "#fff", border: "1px solid #fecaca", borderRadius: 8, padding: "7px 0", cursor: "pointer" })}>

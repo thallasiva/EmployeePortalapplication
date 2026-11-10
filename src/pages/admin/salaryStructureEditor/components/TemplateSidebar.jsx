@@ -122,19 +122,19 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
           style={{
             marginTop: 10,
             padding: "10px 12px",
-            background: "#eff6ff",
+            background: "#fff7ed",
             borderRadius: 8,
-            border: "0.5px solid #bfdbfe",
+            border: "0.5px solid #fed7aa",
           }}
         >
-          <p style={{ fontSize: 11, color: "#1d4ed8", marginBottom: 2 }}>
+          <p style={{ fontSize: 11, color: "#cf6900", marginBottom: 2 }}>
             Total CTC (Annual)
           </p>
           <p
             style={{
               fontSize: 16,
               fontWeight: 500,
-              color: "#1d4ed8",
+              color: "#cf6900",
               fontVariantNumeric: "tabular-nums",
             }}
           >
@@ -144,9 +144,9 @@ const TemplateSidebar = React.memo(function TemplateSidebar({
         {components.length > 0 && (
           <div style={{ marginTop: 14, display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[
-              ["Earnings", earnings.length, "#e0e7ff", "#3730a3"],
+              ["Earnings", earnings.length, "#ffedd5", "#3730a3"],
               ["Deductions", deductions.length, "#fee2e2", "#991b1b"],
-              ["Employer", employer.length, "#dbeafe", "#1e40af"],
+              ["Employer", employer.length, "#ffedd5", "#9b4c00"],
             ].map(([label, count, bg, fg]) => (
               <span
                 key={label}

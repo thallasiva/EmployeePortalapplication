@@ -59,8 +59,8 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
             >
               <div className={cssClass({
                 width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-                border: `1.5px solid ${checkedEmps.size > 0 && checkedEmps.size === filteredEmpScheds.length ? "#f18200" : "#d1d5db"}`,
-                background: checkedEmps.size > 0 && checkedEmps.size === filteredEmpScheds.length ? "#f18200" : "#fff",
+                border: `1.5px solid ${checkedEmps.size > 0 && checkedEmps.size === filteredEmpScheds.length ? "#e87500" : "#d1d5db"}`,
+                background: checkedEmps.size > 0 && checkedEmps.size === filteredEmpScheds.length ? "#e87500" : "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
               })}>
                 {checkedEmps.size > 0 && checkedEmps.size === filteredEmpScheds.length && <Check size={9} color="#fff" />}
@@ -91,8 +91,8 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
                   >
                     <div className={cssClass({
                       width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-                      border: `1.5px solid ${checked ? "#f18200" : "#d1d5db"}`,
-                      background: checked ? "#f18200" : "#fff",
+                      border: `1.5px solid ${checked ? "#e87500" : "#d1d5db"}`,
+                      background: checked ? "#e87500" : "#fff",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     })}>
                       {checked && <Check size={9} color="#fff" />}
@@ -119,7 +119,7 @@ const EmployeeDropdown = React.memo(function EmployeeDropdown({
               <span className={cssClass({ fontSize: 11, color: "#94a3b8" })}>{checkedEmps.size} selected</span>
               <button
                 onClick={() => setEmpDropOpen(false)}
-                className={cssClass({ fontSize: 12, fontWeight: 600, color: "#f18200", background: "none", border: "none", cursor: "pointer" })}
+                className={cssClass({ fontSize: 12, fontWeight: 600, color: "#e87500", background: "none", border: "none", cursor: "pointer" })}
               >
                 Done
               </button>

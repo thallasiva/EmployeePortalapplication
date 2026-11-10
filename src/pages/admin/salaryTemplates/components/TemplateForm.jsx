@@ -78,7 +78,7 @@ const TemplateForm = React.memo(function TemplateForm({ initial, onSave, onClose
               Cancel
             </button>
             <button type="submit" disabled={saving}
-            className="flex-1 bg-[#f18200] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60">
+            className="flex-1 bg-[#e87500] text-white rounded-xl py-2.5 text-sm font-medium hover:bg-[#7c3d00] disabled:opacity-60">
               {saving ? "Saving…" : initial ? "Update Template" : "Create Template"}
             </button>
           </div>

@@ -16,7 +16,7 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
         <div>
           <div className="onboarding-avatar">{initials(emp.first_name, emp.last_name)}</div>
           <div className="mt-3">
-            <p className="text-lg font-semibold  text-[#f18200]">
+            <p className="text-lg font-semibold  text-[#e87500]">
               {emp.first_name} {emp.last_name || ""}
             </p>
             <p className="text-sm text-slate-500">
@@ -38,19 +38,19 @@ const ActiveOnboardingCard = React.memo(function ActiveOnboardingCard({
       </div>
       <div className="grid grid-cols-2 gap-4 border-t border-slate-200 pt-5 text-sm text-slate-500">
         <div>
-          <p className="font-medium  text-[#f18200]">Start Date</p>
+          <p className="font-medium  text-[#e87500]">Start Date</p>
           <p className="mt-1">{formatDate(emp.date_of_joining)}</p>
         </div>
         <div>
-          <p className="font-medium  text-[#f18200]">Department</p>
+          <p className="font-medium  text-[#e87500]">Department</p>
           <p className="mt-1">{emp.department_name || "—"}</p>
         </div>
         <div>
-          <p className="font-medium  text-[#f18200]">Days Onboarding</p>
+          <p className="font-medium  text-[#e87500]">Days Onboarding</p>
           <p className="mt-1">{days} days</p>
         </div>
         <div>
-          <p className="font-medium  text-[#f18200]">Progress</p>
+          <p className="font-medium  text-[#e87500]">Progress</p>
           <p className="mt-1">{progress}%</p>
         </div>
       </div>

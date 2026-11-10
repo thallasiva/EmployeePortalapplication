@@ -74,7 +74,7 @@ function generateOfferLetterPdf(opts) {
   const FTR_H = 50;
   const CONTENT_TOP = MARGIN + LOGO_H + 8;
   const CONTENT_BOTTOM = PH - MARGIN - FTR_H - 8;
-  const COL_NAVY = '#1a3c6e';
+  const COL_NAVY = '#7c3d00';
   const COL_DARK = '#1a1a1a';
   const COL_MID = '#333333';
   const COL_GREY = '#666666';
@@ -536,7 +536,7 @@ function generateOfferLetterPdf(opts) {
     doc.y = ttY + T_RH + 2;
     ensureSpace(T_RH + 4);
     const thY = doc.y;
-    doc.rect(T_X, thY, T_W, T_RH).fillColor('#2c5282').fill();
+    doc.rect(T_X, thY, T_W, T_RH).fillColor('#cf6900').fill();
     doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COL_WHITE).
     text('COMPONENTS', T_X + 8, thY + 7, { width: T_W0, lineBreak: false });
     doc.font('Helvetica-Bold').fontSize(9.5).fillColor(COL_WHITE).
@@ -549,7 +549,7 @@ function generateOfferLetterPdf(opts) {
       const monthly = mo(yearly);
       ensureSpace(T_RH + 4);
       const ry = doc.y;
-      const bgColor = isBold ? '#dbeafe' : isSub ? '#f0f4ff' : COL_WHITE;
+      const bgColor = isBold ? '#ffedd5' : isSub ? '#fff7ed' : COL_WHITE;
       doc.rect(T_X, ry, T_W, T_RH).fillColor(bgColor).fill();
       doc.rect(T_X, ry, T_W, T_RH).strokeColor('#c8d4e8').lineWidth(0.5).stroke();
       const fn = isBold ? 'Helvetica-Bold' : 'Helvetica';

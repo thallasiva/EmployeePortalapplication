@@ -1,5 +1,5 @@
 // ─── Brand palette (matches tailwind.config.js brand token) ───
-export const BRAND = "#f18200";
+export const BRAND = "#e87500";
 export const BRAND_SOFT = "#fff8f0";
 export const BRAND_HOVER = "#e07000";
 // ─── Dynamic variable tokens ───

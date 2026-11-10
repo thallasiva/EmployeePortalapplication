@@ -83,9 +83,9 @@ export default function SalaryPreviewTab({ structureId }) {
           </div>
           {}
           <div className="space-y-6">
-            <Section title="Employer Contributions" items={employer} colorClass="text-[#f18200]" />
+            <Section title="Employer Contributions" items={employer} colorClass="text-[#e87500]" />
             {}
-            <div className="bg-[#f18200] text-white rounded-2xl p-5 space-y-3">
+            <div className="bg-[#e87500] text-white rounded-2xl p-5 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider opacity-70 mb-4">CTC Summary (Annual)</p>
               {[
             ["Total Fixed Pay (Annual)", earnings.filter((c) => c.frequency === "Monthly").reduce((s, c) => s + (c.annual_amount || 0), 0)],

@@ -68,7 +68,7 @@ export default function SmtpSettings() {
   const failed    = testState === "fail";
   if (loading) return (
     <div className="flex items-center justify-center h-40">
-      <Loader2 size={26} className="animate-spin text-[#f18200]" />
+      <Loader2 size={26} className="animate-spin text-[#e87500]" />
     </div>
   );
   return (
@@ -83,7 +83,7 @@ export default function SmtpSettings() {
         {connected ? <CheckCircle2 size={16} /> : failed ? <XCircle size={16} /> : <Server size={16} />}
         {connected ? `Connected · Last tested ${lastTested}` : failed ? "Connection failed" : lastTested ? `Last tested ${lastTested}` : "Not yet tested"}
       </div>
-      <SectionCard icon={<Server size={16} color="#f18200" />} label="Server Configuration">
+      <SectionCard icon={<Server size={16} color="#e87500" />} label="Server Configuration">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input label="SMTP Host" placeholder="smtp.gmail.com" value={form.host}
             onChange={e => set("host", e.target.value)} error={errors.host} />
@@ -93,7 +93,7 @@ export default function SmtpSettings() {
             options={["TLS","SSL","STARTTLS","None"]} />
         </div>
       </SectionCard>
-      <SectionCard icon={<Mail size={16} color="#f18200" />} label="Sender Details">
+      <SectionCard icon={<Mail size={16} color="#e87500" />} label="Sender Details">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input label="Sender Name" placeholder="HR Portal" value={form.senderName}
             onChange={e => set("senderName", e.target.value)} />
@@ -103,7 +103,7 @@ export default function SmtpSettings() {
             onChange={e => set("replyTo", e.target.value)} />
         </div>
       </SectionCard>
-      <SectionCard icon={<Server size={16} color="#f18200" />} label="Authentication">
+      <SectionCard icon={<Server size={16} color="#e87500" />} label="Authentication">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Username" placeholder="username@company.com" value={form.username}
             onChange={e => set("username", e.target.value)} error={errors.username} />
@@ -117,7 +117,7 @@ export default function SmtpSettings() {
           </div>
         </div>
       </SectionCard>
-      <SectionCard icon={<RefreshCw size={16} color="#f18200" />} label="Delivery Settings">
+      <SectionCard icon={<RefreshCw size={16} color="#e87500" />} label="Delivery Settings">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Input label="Daily Email Limit" value={form.dailyLimit}
             onChange={e => set("dailyLimit", e.target.value)} />

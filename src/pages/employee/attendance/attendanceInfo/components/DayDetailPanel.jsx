@@ -18,7 +18,7 @@ const STATUS_META = {
   P:    { label: "Full Day Present",   color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   "P:A":{ label: "Partial Attendance", color: "bg-amber-50 text-amber-700 border-amber-200" },
   A:    { label: "Absent",             color: "bg-red-50 text-red-700 border-red-200" },
-  H:    { label: "Holiday",            color: "bg-blue-50 text-[#f18200] border-blue-200" },
+  H:    { label: "Holiday",            color: "bg-blue-50 text-[#e87500] border-blue-200" },
   L:    { label: "On Leave",           color: "bg-purple-50 text-purple-700 border-purple-200" },
 };
 function fmtMins(mins) {
@@ -70,7 +70,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Punch Times</p>
         <div className="flex gap-3">
           <TimeBlock icon={<LogIn size={12} className="text-emerald-500" />} label="Check In"  time={selected.processed?.firstIn}  color="bg-emerald-50 border-emerald-200" />
-          <TimeBlock icon={<LogOut size={12} className="text-[#f18200]" />}  label="Check Out" time={selected.processed?.lastOut} color="bg-orange-50 border-orange-200" />
+          <TimeBlock icon={<LogOut size={12} className="text-[#e87500]" />}  label="Check Out" time={selected.processed?.lastOut} color="bg-orange-50 border-orange-200" />
         </div>
       </div>
       {/* Break summary strip */}
@@ -86,7 +86,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
           </div>
           <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-center">
             <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Sessions</p>
-            <p className="text-base font-extrabold text-[#f18200]">{breakSessions > 0 ? breakSessions : (workedMinutes > 0 ? 1 : 0)}</p>
+            <p className="text-base font-extrabold text-[#e87500]">{breakSessions > 0 ? breakSessions : (workedMinutes > 0 ? 1 : 0)}</p>
           </div>
         </div>
       )}
@@ -98,7 +98,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
             <p className="text-xs font-bold text-amber-800">Only {selected.processed?.totalWorkHrs} worked</p>
             <p className="text-[11px] text-amber-600 mt-0.5">Less than 6 hours — eligible for regularization.</p>
           </div>
-          <button onClick={() => navigate("/employee/attendance/regularizations", { state: { prefillDate: selected.iso } })} className="shrink-0 text-xs font-extrabold text-[#f18200] hover:underline inline-flex items-center gap-1">Apply <ArrowRight size={12} /></button>
+          <button onClick={() => navigate("/employee/attendance/new-request", { state: { prefillDate: selected.iso } })} className="shrink-0 text-xs font-extrabold text-[#e87500] hover:underline inline-flex items-center gap-1">Request correction <ArrowRight size={12} /></button>
         </div>
       )}
       {isWorkday && workedMinutes >= SIX_HOURS_MINUTES && (
@@ -133,7 +133,7 @@ const DayDetailPanel = React.memo(function DayDetailPanel({ selected, user }) {
                   return (
                     <div key={i} className="flex items-center gap-3 relative">
                       <span className={`absolute -left-5 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center shadow-sm
-                        ${isIn ? "bg-emerald-500" : "bg-[#f18200]"}`}>
+                        ${isIn ? "bg-emerald-500" : "bg-[#e87500]"}`}>
                         {isIn ? <LogIn size={8} className="text-white" /> : <LogOut size={8} className="text-white" />}
                       </span>
                       <div className={`flex-1 flex items-center justify-between rounded-xl px-3 py-2 border

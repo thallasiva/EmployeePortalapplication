@@ -9,14 +9,14 @@ function JobsPeriodTabs({ period, setPeriod, periodCounts }) {
           onClick={() => setPeriod(p.key)}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors cursor-pointer bg-transparent ${
             period === p.key
-              ? "border-[#f18200] text-[#f18200]"
+              ? "border-[#e87500] text-[#e87500]"
               : "border-transparent text-gray-400 hover:text-gray-700"
           }`}
         >
           {p.label}
           <span
             className={`text-[10px] font-bold px-1.5 py-px rounded-full ${
-              period === p.key ? "bg-[#f18200] text-white" : "bg-gray-100 text-gray-500"
+              period === p.key ? "bg-[#e87500] text-white" : "bg-gray-100 text-gray-500"
             }`}
           >
             {periodCounts[p.key]}

@@ -12,7 +12,7 @@ const OverviewStats = React.memo(function OverviewStats({
       label: "Active Onboardings",
       sub: "Within first 90 days",
       icon: Users,
-      color: "#f18200",
+      color: "#e87500",
       bg: "#fff7ed",
     },
     {
@@ -20,8 +20,8 @@ const OverviewStats = React.memo(function OverviewStats({
       label: "Avg Days Onboarding",
       sub: activeCount > 0 ? `Avg across ${activeCount} active hire${activeCount !== 1 ? "s" : ""}` : "No active onboardings",
       icon: Clock3,
-      color: "#0ea5e9",
-      bg: "#f0f9ff",
+      color: "#e87500",
+      bg: "#fff7ed",
     },
     {
       value: loading ? "…" : pendingFormalities,
@@ -46,7 +46,7 @@ const OverviewStats = React.memo(function OverviewStats({
             <Icon size={22} style={{ color }} />
           </div>
           <div>
-            <p className="text-2xl font-bold  text-[#f18200]">{value}</p>
+            <p className="text-2xl font-bold  text-[#e87500]">{value}</p>
             <p className="text-[13px] font-medium text-slate-700">{label}</p>
             <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>
           </div>

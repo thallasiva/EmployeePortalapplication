@@ -21,11 +21,11 @@ export default function TaskReport() {
   const stats = [
   { label: "Total Tasks", value: total, color: "#f97316" },
   { label: "Completed", value: completed, color: "#22c55e" },
-  { label: "Pending", value: pending, color: "#3b82f6" },
+  { label: "Pending", value: pending, color: "#e87500" },
   { label: "In Progress", value: inProg, color: "#eab308" }];
   const donut = [
   { name: "Completed", value: completed || 0, color: "#22c55e" },
-  { name: "Pending", value: pending || 0, color: "#3b82f6" },
+  { name: "Pending", value: pending || 0, color: "#e87500" },
   { name: "In Progress", value: inProg || 0, color: "#eab308" }];
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

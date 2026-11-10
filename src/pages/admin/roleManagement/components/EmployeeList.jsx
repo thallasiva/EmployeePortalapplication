@@ -67,7 +67,7 @@ const EmployeeList = React.memo(function EmployeeList({
                 >
                   {ROLE_ICONS[emp.role_id] ? <span className="flex [&>svg]:w-3 [&>svg]:h-3">{ROLE_ICONS[emp.role_id]}</span> : null} {getRoleLabel(emp.role_id)}
                 </span>
-                {isActive && <CheckCircle size={14} color="#f18200" className="shrink-0" />}
+                {isActive && <CheckCircle size={14} color="#e87500" className="shrink-0" />}
               </div>
             );
           })}

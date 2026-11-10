@@ -3,7 +3,7 @@ import { cssClass } from "../../../../../utils/classStyles";
 import { buildSalaryBreakdown } from "../../../../../utils/salaryBreakdown";
 import { fmtAmt } from "../utils";
 const tableSt = { width: "100%", borderCollapse: "collapse", fontSize: 13 };
-const thSt = { background: "#fff8f0", padding: "6px 10px", textAlign: "right", fontSize: 11, color: "#5a7a8a", fontWeight: 600 };
+const thSt = { background: "#fff8f0", padding: "6px 10px", textAlign: "right", fontSize: 11, color: "#9b4c00", fontWeight: 600 };
 const thLSt = { ...thSt, textAlign: "left" };
 const tdSt = { padding: "7px 10px", borderBottom: "1px solid #f0f0f0", color: "#333" };
 const tdRSt = { ...tdSt, textAlign: "right", fontFamily: "monospace", color: "#222" };

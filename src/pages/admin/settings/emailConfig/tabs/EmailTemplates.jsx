@@ -5,7 +5,7 @@ import { emailTemplatesApi } from "../../../../../api/settings.api";
 import Pagination from "../../../../../components/Pagination";
 const PER = 8;
 const CATEGORIES = ["Onboarding","Leave","Attendance","Payroll","Recruitment","Performance","Helpdesk","Announcements","System"];
-const CAT_COLORS  = { Onboarding:"#6366f1",Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#3b82f6",Recruitment:"#8b5cf6",Performance:"#ec4899",Helpdesk:"#14b8a6",Announcements:"#f97316",System:"#64748b" };
+const CAT_COLORS  = { Onboarding:"#e87500",Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#e87500",Recruitment:"#8b5cf6",Performance:"#ec4899",Helpdesk:"#14b8a6",Announcements:"#f97316",System:"#64748b" };
 const SAMPLES = {
   "{{EmployeeName}}":"Rajan Kumar","{{EmployeeId}}":"EMP1042","{{Department}}":"Engineering",
   "{{Designation}}":"Senior Developer","{{ManagerName}}":"Priya Sharma","{{LeaveType}}":"Casual Leave",
@@ -28,7 +28,7 @@ const renderPreview = (body) => {
   Object.entries(ACTION_VARS).forEach(([k, v]) => { result = result.replaceAll(k, v); });
   // Replace data vars with highlighted values
   Object.entries(SAMPLES).forEach(([k, v]) => {
-    result = result.replaceAll(k, `<strong style="color:#f18200">${v}</strong>`);
+    result = result.replaceAll(k, `<strong style="color:#e87500">${v}</strong>`);
   });
   return result;
 };
@@ -63,7 +63,7 @@ function TemplateModal({ tpl, onClose, onSave }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col" style={{ maxHeight: "90vh" }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9] shrink-0">
-          <span className="text-[15px] font-bold text-[#f18200]">{isNew ? "New Template" : "Edit Template"}</span>
+          <span className="text-[15px] font-bold text-[#e87500]">{isNew ? "New Template" : "Edit Template"}</span>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b]"><X size={18} /></button>
         </div>
         {/* Tab switcher */}
@@ -71,7 +71,7 @@ function TemplateModal({ tpl, onClose, onSave }) {
           {["edit","preview"].map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-1.5 rounded-lg text-[12px] font-semibold capitalize transition-colors ${
-                tab===t ? "bg-[#f18200] text-white" : "text-[#64748b] hover:bg-[#f1f5f9]"
+                tab===t ? "bg-[#e87500] text-white" : "text-[#64748b] hover:bg-[#f1f5f9]"
               }`}>{t}</button>
           ))}
         </div>
@@ -82,12 +82,12 @@ function TemplateModal({ tpl, onClose, onSave }) {
                 <div>
                   <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Template Name *</label>
                   <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Leave Approved"
-                    className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+                    className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
                 </div>
                 <div>
                   <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Category</label>
                   <select value={form.category} onChange={e => set("category", e.target.value)}
-                    className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+                    className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
                     {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
@@ -96,7 +96,7 @@ function TemplateModal({ tpl, onClose, onSave }) {
                 <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Subject</label>
                 <input value={form.subject} onChange={e => set("subject", e.target.value)}
                   placeholder="Your {{LeaveType}} request has been {{Status}}"
-                  className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+                  className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
               </div>
               {/* Variable pills */}
               <div>
@@ -104,7 +104,7 @@ function TemplateModal({ tpl, onClose, onSave }) {
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {Object.keys(SAMPLES).map(v => (
                     <button key={v} onClick={() => insertVar(v)} type="button"
-                      className="text-[10px] font-mono px-2 py-0.5 rounded border border-[#e2e8f0] bg-[#f8fafc] hover:bg-[#fff8f0] hover:border-[#f18200] hover:text-[#f18200] text-[#64748b] transition-all">
+                      className="text-[10px] font-mono px-2 py-0.5 rounded border border-[#e2e8f0] bg-[#f8fafc] hover:bg-[#fff8f0] hover:border-[#e87500] hover:text-[#e87500] text-[#64748b] transition-all">
                       {v}
                     </button>
                   ))}
@@ -125,12 +125,12 @@ function TemplateModal({ tpl, onClose, onSave }) {
                 <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Body (HTML supported)</label>
                 <textarea ref={bodyRef} value={form.body} onChange={e => set("body", e.target.value)} rows={12}
                   placeholder="<p>Dear {{EmployeeName}},</p><p>Your leave has been approved.</p>"
-                  className="w-full px-3 py-2 border border-[#e2e8f0] rounded-lg text-[12px] font-mono focus:outline-none focus:ring-1 focus:ring-[#f18200] resize-none" />
+                  className="w-full px-3 py-2 border border-[#e2e8f0] rounded-lg text-[12px] font-mono focus:outline-none focus:ring-1 focus:ring-[#e87500] resize-none" />
               </div>
               <div>
                 <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Status</label>
                 <select value={form.status} onChange={e => set("status", e.target.value)}
-                  className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+                  className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
                   {["Active","Inactive"].map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
@@ -168,13 +168,13 @@ function PreviewModal({ tpl, onClose }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden" style={{ maxHeight:"90vh" }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-          <span className="text-[15px] font-bold text-[#f18200]">Template Preview</span>
+          <span className="text-[15px] font-bold text-[#e87500]">Template Preview</span>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b]"><X size={18} /></button>
         </div>
         <div className="p-6 overflow-y-auto" style={{ maxHeight:"70vh" }}>
           <div className="bg-[#f8fafc] rounded-xl p-5 mb-4">
             <div className="flex items-center gap-3 mb-2">
-              <Mail size={16} className="text-[#f18200]" />
+              <Mail size={16} className="text-[#e87500]" />
               <span className="text-[11px] text-[#94a3b8] uppercase tracking-wide font-semibold">{tpl.category}</span>
             </div>
             <div className="text-[12px] text-[#94a3b8]">Subject</div>
@@ -185,7 +185,7 @@ function PreviewModal({ tpl, onClose }) {
             dangerouslySetInnerHTML={{ __html: renderPreview(tpl.body) || "<em>No body content</em>" }} />
         </div>
         <div className="px-6 pb-5 border-t border-[#f1f5f9] pt-4">
-          <button onClick={onClose} className="w-full h-[38px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">Close</button>
+          <button onClick={onClose} className="w-full h-[38px] bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">Close</button>
         </div>
       </div>
     </div>
@@ -250,15 +250,15 @@ export default function EmailTemplates() {
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search templates…"
-            className="w-full pl-8 pr-3 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+            className="w-full pl-8 pr-3 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
         </div>
         <select value={category} onChange={e => setCategory(e.target.value)}
-          className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+          className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
           <option value="">All Categories</option>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
         <select value={status} onChange={e => setStatus(e.target.value)}
-          className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+          className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
           <option value="">All Status</option>
           <option>Active</option><option>Inactive</option>
         </select>
@@ -267,11 +267,11 @@ export default function EmailTemplates() {
       {/* Grid */}
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <Loader2 size={24} className="animate-spin text-[#f18200]" />
+          <Loader2 size={24} className="animate-spin text-[#e87500]" />
         </div>
       ) : templates.length === 0 ? (
         <div className="bg-white rounded-xl border border-[#f1f5f9] py-16 text-center text-[#94a3b8] text-[13px]">
-          No templates found. <button onClick={() => setModal({ mode:"edit", item: null })} className="text-[#f18200] font-semibold ml-1">Create one</button>
+          No templates found. <button onClick={() => setModal({ mode:"edit", item: null })} className="text-[#e87500] font-semibold ml-1">Create one</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -279,7 +279,7 @@ export default function EmailTemplates() {
             <div key={t.id} className="bg-white rounded-xl border border-[#f1f5f9] p-4 hover:shadow-sm transition-shadow flex flex-col gap-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-[#f18200] truncate">{t.name}</div>
+                  <div className="text-[13px] font-bold text-[#e87500] truncate">{t.name}</div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ background: `${CAT_COLORS[t.category] || "#64748b"}18`, color: CAT_COLORS[t.category] || "#64748b" }}>

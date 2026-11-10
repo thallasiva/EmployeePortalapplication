@@ -1,6 +1,6 @@
-export const BRAND = "#f18200";
+export const BRAND = "#e87500";
 export const STATUS_CLS = {
-  "Work in Progress":   "bg-blue-100 text-[#f18200]",
+  "Work in Progress":   "bg-blue-100 text-[#e87500]",
   "Schedule Interview": "bg-violet-100 text-violet-600",
   "Shortlisted":        "bg-sky-100 text-sky-700",
   "Offer Released":     "bg-amber-100 text-amber-600",
@@ -12,7 +12,7 @@ export const STATUS_CLS = {
   "In Active":          "bg-gray-100 text-gray-500",
   "Open":               "bg-emerald-100 text-emerald-600",
   "Closed":             "bg-red-100 text-red-600",
-  "Completed":          "bg-blue-100 text-[#f18200]",
+  "Completed":          "bg-blue-100 text-[#e87500]",
   "Hold":               "bg-amber-100 text-amber-600",
   "Scheduled":          "bg-violet-100 text-violet-600",
   "Selected":           "bg-emerald-100 text-emerald-600",
@@ -22,7 +22,7 @@ export const STATUS_CLS = {
   "Rejected":           "bg-red-100 text-red-600",
 };
 export const BTN_VARIANT = {
-  primary:   "bg-[#f18200] text-white border border-[#f18200]",
+  primary:   "bg-[#e87500] text-white border border-[#e87500]",
   secondary: "bg-white text-gray-700 border border-gray-300",
   danger:    "bg-white text-red-600 border border-red-300",
   ghost:     "bg-transparent text-gray-500 border-0",

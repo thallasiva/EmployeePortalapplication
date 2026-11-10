@@ -8,9 +8,14 @@ const AttendanceInfo = lazy(() => import("../pages/employee/attendance/Attendanc
 const MyRegularizations = lazy(() => import("../pages/employee/attendance/MyRegularizations"));
 const AttendanceMuster = lazy(() => import("../pages/employee/attendance/AttendanceMuster"));
 const ShiftRoster = lazy(() => import("../pages/employee/attendance/ShiftRoster"));
+const NewAttendanceRequest = lazy(() => import("../pages/employee/attendance/NewAttendanceRequest"));
+const AttendanceHistory = lazy(() => import("../pages/employee/attendance/AttendanceHistory"));
+const WorkHoursOvertime = lazy(() => import("../pages/employee/attendance/WorkHoursOvertime"));
+const EmployeeAttendanceReports = lazy(() => import("../pages/employee/attendance/AttendanceReports"));
 const LeaveBalances = lazy(() => import("../pages/employee/leave/LeaveBalance"));
 const LeaveApply = lazy(() => import("../pages/employee/leave/LeaveApply"));
 const LeaveCalendarHub = lazy(() => import("../pages/employee/leave/LeaveCalendarHub"));
+const EmployeeLeaveHoliday = lazy(() => import("../pages/employee/attendance/EmployeeLeaveHoliday"));
 const Payslips = lazy(() => import("../pages/employee/salary/Payslips"));
 const ITDeclaration = lazy(() => import("../pages/employee/salary/ITDeclaration"));
 const ITStatement = lazy(() => import("../pages/employee/salary/ITStatement"));
@@ -56,12 +61,16 @@ const EmployeeRoutes = () =>
       <Route path="worklife/feedback" element={<Page><Feedback /></Page>} />
       <Route path="attendance/daily" element={<Page><AttendanceInfo /></Page>} />
       <Route path="attendance/regularizations" element={<Page><MyRegularizations /></Page>} />
+      <Route path="attendance/new-request" element={<Page><NewAttendanceRequest /></Page>} />
+      <Route path="attendance/history" element={<Page><AttendanceHistory /></Page>} />
       <Route path="attendance/monthly" element={<Page><AttendanceMuster /></Page>} />
       <Route path="attendance/shifts" element={<Page><ShiftRoster /></Page>} />
+      <Route path="attendance/work-hours" element={<Page><WorkHoursOvertime /></Page>} />
+      <Route path="attendance/reports" element={<Page><EmployeeAttendanceReports /></Page>} />
       <Route path="leave/balance" element={<Page><LeaveBalances /></Page>} />
       <Route path="leave/apply" element={<Page><LeaveApply /></Page>} />
       <Route path="leave/calendar" element={<Page><LeaveCalendarHub /></Page>} />
-      <Route path="leave/holiday-calendar" element={<Page><LeaveCalendarHub /></Page>} />
+      <Route path="leave/holiday-calendar" element={<Page><EmployeeLeaveHoliday /></Page>} />
       <Route path="payroll/payslips" element={<Page><Payslips /></Page>} />
       <Route path="payroll/it-declaration" element={<Page><ITDeclaration /></Page>} />
       <Route path="payroll/it-statement" element={<Page><ITStatement /></Page>} />

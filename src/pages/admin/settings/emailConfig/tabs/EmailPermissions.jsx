@@ -71,7 +71,7 @@ export default function EmailPermissions() {
   const handleReset = () => { setPerms(buildDefault()); showToast("Reset to defaults", "info"); };
   if (loading) return (
     <div className="flex items-center justify-center h-40">
-      <Loader2 size={24} className="animate-spin text-[#f18200]" />
+      <Loader2 size={24} className="animate-spin text-[#e87500]" />
     </div>
   );
   return (
@@ -105,8 +105,8 @@ export default function EmailPermissions() {
                         <button key={pi} onClick={() => toggle(mi, ri, pi)}
                           className={`w-5 h-5 rounded border-2 transition-colors ${
                             perms[mi][ri][pi]
-                              ? "bg-[#f18200] border-[#f18200]"
-                              : "bg-white border-[#cbd5e1] hover:border-[#f18200]"
+                              ? "bg-[#e87500] border-[#e87500]"
+                              : "bg-white border-[#cbd5e1] hover:border-[#e87500]"
                           }`}>
                           {perms[mi][ri][pi] && (
                             <svg viewBox="0 0 10 8" fill="none" className="w-3 h-3 mx-auto">
@@ -128,7 +128,7 @@ export default function EmailPermissions() {
         <Lock size={13} className="text-[#94a3b8]" />
         {PERM_TYPES.map((pt, i) => (
           <span key={i} className="flex items-center gap-1.5">
-            <span className="font-bold text-[#f18200]">Col {i+1}:</span>{pt}
+            <span className="font-bold text-[#e87500]">Col {i+1}:</span>{pt}
           </span>
         ))}
       </div>

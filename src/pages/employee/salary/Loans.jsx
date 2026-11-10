@@ -6,10 +6,10 @@ const LOANS = [
 { id: "LN001", type: "Personal Loan", amount: 120000, outstanding: 70000, emi: 10000, tenure: 12, remaining: 7, status: "Active", date: "01 Apr 2025" },
 { id: "LN002", type: "Emergency Advance", amount: 50000, outstanding: 0, emi: 5000, tenure: 10, remaining: 0, status: "Closed", date: "01 Jan 2024" }];
 const TYPE_COLORS = {
-  "Personal Loan": { bg: "#eff6ff", color: "#3b82f6" },
+  "Personal Loan": { bg: "#fff7ed", color: "#e87500" },
   "Home Loan": { bg: "#f0fdf4", color: "#10b981" },
   "Vehicle Loan": { bg: "#faf5ff", color: "#a855f7" },
-  "Emergency Advance": { bg: "#fff7ed", color: "#f18200" },
+  "Emergency Advance": { bg: "#fff7ed", color: "#e87500" },
   "Medical Advance": { bg: "#fef2f2", color: "#ef4444" }
 };
 function StatCard({ icon, label, value, color, bgColor, sub }) {
@@ -36,9 +36,9 @@ function ApplyModal({ onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center">
-              <Wallet size={16} color="#f18200" />
+              <Wallet size={16} color="#e87500" />
             </div>
-            <span className="text-[16px] font-bold text-[#f18200]">Apply for Loan</span>
+            <span className="text-[16px] font-bold text-[#e87500]">Apply for Loan</span>
           </div>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#64748b] transition-colors">
             <X size={20} />
@@ -51,7 +51,7 @@ function ApplyModal({ onClose }) {
             <select
               value={form.type}
               onChange={(e) => set("type", e.target.value)}
-              className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10">
+              className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10">
               {LOAN_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
@@ -64,7 +64,7 @@ function ApplyModal({ onClose }) {
                 value={form.amount}
                 onChange={(e) => set("amount", e.target.value)}
                 placeholder="e.g. 100000"
-                className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10" />
+                className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10" />
             </div>
             <div>
               <label className="block text-[12px] font-medium text-[#64748b] mb-1.5">Tenure (months)</label>
@@ -73,16 +73,16 @@ function ApplyModal({ onClose }) {
                 value={form.tenure}
                 onChange={(e) => set("tenure", e.target.value)}
                 placeholder="e.g. 12"
-                className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10" />
+                className="w-full h-[42px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] outline-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10" />
             </div>
           </div>
           {}
           {emi > 0 &&
           <div className="flex items-center gap-3 p-4 bg-[#fff8f0] border border-[#fed7aa] rounded-xl">
-              <CalendarClock size={18} color="#f18200" className="shrink-0" />
+              <CalendarClock size={18} color="#e87500" className="shrink-0" />
               <div>
                 <p className="text-[11px] text-[#92400e] font-semibold uppercase tracking-wide">Estimated Monthly EMI</p>
-                <p className="text-[18px] font-extrabold text-[#f18200]">{fmt(emi)}</p>
+                <p className="text-[18px] font-extrabold text-[#e87500]">{fmt(emi)}</p>
               </div>
             </div>
           }
@@ -94,14 +94,14 @@ function ApplyModal({ onClose }) {
               value={form.reason}
               onChange={(e) => set("reason", e.target.value)}
               placeholder="Brief reason for loan request…"
-              className="w-full border border-[#e2e8f0] rounded-lg p-3 text-[13px] outline-none resize-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10" />
+              className="w-full border border-[#e2e8f0] rounded-lg p-3 text-[13px] outline-none resize-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10" />
           </div>
           {}
           <div className="flex gap-3 pt-1">
             <button data-cancel-button onClick={onClose} className="flex-1 h-[42px] border border-[#e2e8f0] rounded-lg text-[13px] font-semibold text-[#64748b] hover:bg-[#f8fafc] transition-colors">
               Cancel
             </button>
-            <button onClick={onClose} className="flex-1 h-[42px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
+            <button onClick={onClose} className="flex-1 h-[42px] bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
               Submit Application
             </button>
           </div>
@@ -143,9 +143,9 @@ function LoanCard({ loan }) {
       <div className="grid grid-cols-4 divide-x divide-[#f1f5f9] px-0">
         {[
         { label: "Outstanding", value: fmt(loan.outstanding), color: isActive ? "#ef4444" : "#94a3b8" },
-        { label: "Monthly EMI", value: fmt(loan.emi), color: "#f18200" },
+        { label: "Monthly EMI", value: fmt(loan.emi), color: "#e87500" },
         { label: "Total Tenure", value: `${loan.tenure} mo`, color: "#64748b" },
-        { label: "Remaining", value: loan.remaining > 0 ? `${loan.remaining} mo` : "—", color: isActive ? "#6366f1" : "#94a3b8" }]
+        { label: "Remaining", value: loan.remaining > 0 ? `${loan.remaining} mo` : "—", color: isActive ? "#e87500" : "#94a3b8" }]
         .map(({ label, value, color }) =>
         <div key={label} className="px-5 py-3">
             <p className="text-[11px] text-[#94a3b8] font-medium">{label}</p>
@@ -194,15 +194,15 @@ export default function Loans() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
+          className="flex items-center gap-2 h-[38px] px-5 bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
           <Plus size={15} /> Apply for Loan
         </button>
       </div>
       {}
       <div className="px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<Wallet size={20} />} label="Total Borrowed" value={fmt(totalBorrowed)} color="#f18200" bgColor="#fff8f0" />
+        <StatCard icon={<Wallet size={20} />} label="Total Borrowed" value={fmt(totalBorrowed)} color="#e87500" bgColor="#fff8f0" />
         <StatCard icon={<TrendingDown size={20} />} label="Outstanding" value={fmt(totalOutstanding)} color="#ef4444" bgColor="#fef2f2" />
-        <StatCard icon={<CalendarClock size={20} />} label="Monthly EMI" value={fmt(totalEMI)} color="#6366f1" bgColor="#f5f3ff" sub="Due this month" />
+        <StatCard icon={<CalendarClock size={20} />} label="Monthly EMI" value={fmt(totalEMI)} color="#e87500" bgColor="#f5f3ff" sub="Due this month" />
         <StatCard icon={<PiggyBank size={20} />} label="Active Loans" value={active.length} color="#10b981" bgColor="#ecfdf5" sub={`${closed.length} closed`} />
       </div>
       {}
@@ -213,7 +213,7 @@ export default function Loans() {
             key={k}
             onClick={() => setTab(k)}
             className={`px-5 h-[36px] rounded-lg text-[13px] font-medium transition-all ${
-            tab === k ? "bg-[#f18200] text-white shadow-sm" : "text-[#64748b] hover:text-[#1f2937]"}`
+            tab === k ? "bg-[#e87500] text-white shadow-sm" : "text-[#64748b] hover:text-[#1f2937]"}`
             }>
               {l}
             </button>

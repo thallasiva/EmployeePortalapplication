@@ -8,26 +8,26 @@ import Card from "./Card";
 import Stat from "./Stat";
 import { getDashboard, getPipelineReport, listRecruiters } from "../../../api/recruitment.api";
 const STATUS_COLORS = {
-  "new": "#2563eb",
-  "applied": "#2563eb",
+  "new": "#e87500",
+  "applied": "#e87500",
   "screening": "#f59e0b",
   "schedule interview": "#f59e0b",
   "shortlisted": "#8b5cf6",
   "offer released": "#22c55e",
   "offer released and accepted": "#22c55e",
   "accepted": "#22c55e",
-  "onboarded": "#0ea5e9",
-  "joined": "#0ea5e9",
+  "onboarded": "#e87500",
+  "joined": "#e87500",
   "rejected": "#ef4444",
   "not selected": "#ef4444",
   "work in progress": "#64748b",
   "in progress": "#64748b"
 };
-const FALLBACK_COLORS = ["#2563eb", "#f59e0b", "#8b5cf6", "#22c55e", "#0ea5e9", "#ef4444", "#64748b", "#f97316"];
+const FALLBACK_COLORS = ["#e87500", "#f59e0b", "#8b5cf6", "#22c55e", "#e87500", "#ef4444", "#64748b", "#f97316"];
 function statusColor(status, idx) {
   return STATUS_COLORS[(status || "").toLowerCase()] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
 }
-const SRC_COLORS = ["#3b82f6", "#a855f7", "#14b8a6", "#f59e0b", "#ef4444", "#22c55e", "#64748b", "#f97316"];
+const SRC_COLORS = ["#e87500", "#a855f7", "#14b8a6", "#f59e0b", "#ef4444", "#22c55e", "#64748b", "#f97316"];
 function fmt(n) {return n == null ? "—" : Number(n).toLocaleString();}
 function fmtDays(n) {return n == null ? "—" : `${Math.round(n)} days`;}
 function LoadingRow() {
@@ -154,7 +154,7 @@ function ReportsTab() {
           </div>
         }
         <button onClick={applyFilter} disabled={repLoading}
-        className="flex items-center gap-1.5 rounded-lg bg-[#f18200] px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        className="flex items-center gap-1.5 rounded-lg bg-[#e87500] px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
           {repLoading ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           Apply
         </button>

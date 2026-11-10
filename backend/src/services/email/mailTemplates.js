@@ -56,7 +56,7 @@ function badge(text, color, bg) {
 }
 const badgeGreen = (t) => badge(t, '#15803D', '#DCFCE7');
 const badgeRed = (t) => badge(t, '#B91C1C', '#FEE2E2');
-const badgeBlue = (t) => badge(t, '#1E40AF', '#DBEAFE');
+const badgeBlue = (t) => badge(t, '#9b4c00', '#ffedd5');
 const badgeAmber = (t) => badge(t, '#92400E', '#FEF3C7');
 function btn(text, url, bg = ORANGE) {
   return `<div style="text-align:center;margin:24px 0 8px">

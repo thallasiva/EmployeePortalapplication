@@ -4,7 +4,7 @@ import { BRAND } from "../constants";
 const SalaryBreakdown = React.memo(function SalaryBreakdown({ bk }) {
   const net = bk.netSalary ?? bk.totalEarnings - bk.totalDeductions;
   const summaryCards = [
-    { label: "Monthly Basic", value: bk.basic, bg: "#f0f9ff", color: "#0369a1" },
+    { label: "Monthly Basic", value: bk.basic, bg: "#fff7ed", color: "#c45f00" },
     { label: "Gross Earnings", value: bk.totalEarnings, bg: "#f0fdf4", color: "#16a34a" },
     { label: "Total Deductions", value: bk.totalDeductions, bg: "#fef2f2", color: "#dc2626" },
     { label: "Net Pay", value: net, bg: "#f0fdf4", color: "#16a34a" },

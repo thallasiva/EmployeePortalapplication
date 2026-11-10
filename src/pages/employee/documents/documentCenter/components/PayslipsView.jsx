@@ -51,11 +51,11 @@ const PayslipsView = React.memo(function PayslipsView({
                               <span>{row.file}</span>
                               <span className="inline-flex gap-2 text-[#8d9aad]">
                                 <button type="button" onClick={() => handleViewPayslip(row)}
-                                  className="hover:text-[#1890ff] p-0.5" aria-label={`View ${row.file}`} title="View payslip">
+                                  className="hover:text-[#e87500] p-0.5" aria-label={`View ${row.file}`} title="View payslip">
                                   <Search size={12} />
                                 </button>
                                 <button type="button" onClick={() => handleDownloadPayslip(row)}
-                                  className="hover:text-[#1890ff] p-0.5" aria-label={`Download ${row.file}`} title="Download payslip">
+                                  className="hover:text-[#e87500] p-0.5" aria-label={`Download ${row.file}`} title="Download payslip">
                                   <Download size={12} />
                                 </button>
                               </span>

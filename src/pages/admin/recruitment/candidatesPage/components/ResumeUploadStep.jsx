@@ -9,7 +9,7 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
   const fileRef = useRef(null);
   return (
     <div>
-      <div className="mb-4 px-3.5 py-2.5 bg-amber-50 rounded-lg border-l-[3px] border-l-[#f18200] text-sm text-amber-800">
+      <div className="mb-4 px-3.5 py-2.5 bg-amber-50 rounded-lg border-l-[3px] border-l-[#e87500] text-sm text-amber-800">
         Select the job position, then upload a resume to auto-extract candidate details.
       </div>
       <Field label="Job / Position" required>
@@ -29,11 +29,11 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
       <div className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-2.5">Upload Resume</div>
       <div
         onClick={() => fileRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl px-6 py-7 text-center cursor-pointer transition-all ${file ? "border-[#f18200] bg-amber-50" : "border-gray-300 bg-gray-50"}`}>
+        className={`border-2 border-dashed rounded-xl px-6 py-7 text-center cursor-pointer transition-all ${file ? "border-[#e87500] bg-amber-50" : "border-gray-300 bg-gray-50"}`}>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" onChange={onFileChange} className="hidden" />
         {file ? (
           <>
-            <div className="flex justify-center mb-2"><CheckCircle size={28} color="#f18200" /></div>
+            <div className="flex justify-center mb-2"><CheckCircle size={28} color="#e87500" /></div>
             <div className="text-sm font-bold text-gray-900 mb-0.5">{file.name}</div>
             <div className="text-[11px] text-gray-500">{(file.size / 1024).toFixed(1)} KB — click to change</div>
           </>
@@ -49,7 +49,7 @@ const ResumeUploadStep = React.memo(function ResumeUploadStep({
         <div className="mt-3.5">
           {preScoring &&
             <div className="flex items-center gap-2.5 px-4 py-3.5 bg-gray-50 rounded-xl border border-gray-200">
-              <Loader2 size={18} color="#f18200" className="animate-spin flex-shrink-0" />
+              <Loader2 size={18} color="#e87500" className="animate-spin flex-shrink-0" />
               <div>
                 <div className="text-sm font-semibold text-gray-700">Analysing resume…</div>
                 <div className="text-[11px] text-gray-400 mt-0.5">Computing match score against the selected job</div>

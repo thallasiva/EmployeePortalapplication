@@ -161,7 +161,7 @@ function MemberCard({ member, appraisalId, onSaved }) {
                     {goal.evidence_url && <a href={goal.evidence_url} target="_blank" rel="noreferrer" className={cssClass({ fontSize: 12, color: BRAND })}>Open evidence</a>}
                     {canReview && <textarea value={goalFeedback[goal.goal_id] || ""} onChange={(event) => setGoalFeedback((current) => ({ ...current, [goal.goal_id]: event.target.value }))} rows={2} placeholder="Feedback on this goal"
                       className={cssClass({ display: "block", width: "100%", boxSizing: "border-box", marginTop: 7, border: "1px solid #e2e8f0", borderRadius: 6, padding: "6px 9px", fontSize: 12 })} />}
-                    {!canReview && goal.manager_feedback && <p className={cssClass({ fontSize: 12, color: "#6366f1", margin: "5px 0 0" })}>Manager: {goal.manager_feedback}</p>}
+                    {!canReview && goal.manager_feedback && <p className={cssClass({ fontSize: 12, color: "#e87500", margin: "5px 0 0" })}>Manager: {goal.manager_feedback}</p>}
                   </div>
                 ))}
               </div>
@@ -176,7 +176,7 @@ function MemberCard({ member, appraisalId, onSaved }) {
               <div className={cssClass({ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 10 })}>
               <button onClick={() => handleSave(false)} disabled={saving}
                 className={cssClass({ padding: "9px 22px", borderRadius: 8, border: "none",
-                  background: "#eef2ff", color: "#4338ca", fontWeight: 600, fontSize: 13,
+                  background: "#fff7ed", color: "#9b4c00", fontWeight: 600, fontSize: 13,
                   cursor: "pointer", display: "flex", alignItems: "center", gap: 6 })}>
                 <Save size={14} />{saving ? "Saving…" : "Save Draft"}
               </button>

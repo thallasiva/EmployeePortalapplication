@@ -24,12 +24,12 @@ const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidate
           const dotCls =
             state === "done" ? "bg-green-500 border-green-500 text-white" :
             state === "failed" ? "bg-red-500 border-red-500 text-white" :
-            state === "active" ? "bg-[#f18200] border-[#f18200] text-white" :
+            state === "active" ? "bg-[#e87500] border-[#e87500] text-white" :
             "bg-white border-gray-300 text-gray-400";
           const textCls =
             state === "done" ? "text-green-600 font-bold" :
             state === "failed" ? "text-red-500 font-bold" :
-            state === "active" ? "text-[#f18200] font-bold" :
+            state === "active" ? "text-[#e87500] font-bold" :
             "text-gray-400";
           return (
             <React.Fragment key={label}>
@@ -41,7 +41,7 @@ const InterviewPipeline = React.memo(function InterviewPipeline({ ivs, candidate
                   {label === "HR" ? "HR Round" : label}
                 </span>
                 {state === "active" &&
-                  <span className="text-[9px] text-[#f18200] font-semibold mt-0.5">Scheduled</span>
+                  <span className="text-[9px] text-[#e87500] font-semibold mt-0.5">Scheduled</span>
                 }
               </div>
               {i < PIPELINE_STEPS.length - 1 &&

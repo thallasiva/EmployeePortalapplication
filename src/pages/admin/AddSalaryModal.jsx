@@ -127,11 +127,11 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
             </div>
             <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
               <p className="text-xs text-gray-500">CTC (Monthly)</p>
-              <p className="text-lg font-bold text-[#f18200] mt-0.5">₹ {breakdown.ctc.toLocaleString("en-IN")}</p>
+              <p className="text-lg font-bold text-[#e87500] mt-0.5">₹ {breakdown.ctc.toLocaleString("en-IN")}</p>
             </div>
             <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
               <p className="text-xs text-gray-500">CTC (Annual)</p>
-              <p className="text-lg font-bold text-[#f18200] mt-0.5">₹ {(breakdown.ctc * 12).toLocaleString("en-IN")}</p>
+              <p className="text-lg font-bold text-[#e87500] mt-0.5">₹ {(breakdown.ctc * 12).toLocaleString("en-IN")}</p>
             </div>
           </div>
           {}
@@ -213,14 +213,14 @@ const AddSalaryModal = ({ employees, initial, onClose, onSave, saving }) => {
                   </tr>
                   {}
                   <tr className="bg-blue-50">
-                    <td colSpan={2} className="px-3 py-1.5 text-xs font-semibold text-[#f18200] uppercase tracking-wide">
+                    <td colSpan={2} className="px-3 py-1.5 text-xs font-semibold text-[#e87500] uppercase tracking-wide">
                       Employer Contributions (added to CTC, not deducted from employee)
                     </td>
                   </tr>
                   {deductionRows.filter((r) => r.section === "cmp").map(({ label, value }) =>
                   <tr key={label}>
                       <td className="px-3 py-2 text-gray-600">{label}</td>
-                      <td className="px-3 py-2 text-right font-medium text-[#f18200]">{value.toLocaleString("en-IN")}</td>
+                      <td className="px-3 py-2 text-right font-medium text-[#e87500]">{value.toLocaleString("en-IN")}</td>
                     </tr>
                   )}
                   <tr className="bg-blue-50/40 font-semibold">

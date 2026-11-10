@@ -38,7 +38,7 @@ const LeaveBalances = React.memo(function LeaveBalances() {
             onClick={() => navigate("/employee/leave/apply")}
             className={cssClass({
               height: 38, padding: "0 18px", borderRadius: 8,
-              border: "1.5px solid #2ea7ff", color: "#2ea7ff",
+              border: "1.5px solid #e87500", color: "#e87500",
               background: "#fff", fontSize: 13, fontWeight: 500, cursor: "pointer",
             })}
           >
@@ -54,7 +54,7 @@ const LeaveBalances = React.memo(function LeaveBalances() {
           <YearPicker
             value={year}
             onChange={setYear}
-            selectClassName="h-[38px] w-[100px] border border-[#dbe2ea] rounded-lg bg-white px-3 text-[13px] outline-none focus:ring-2 focus:ring-[#2ea7ff]/30"
+            selectClassName="h-[38px] w-[100px] border border-[#dbe2ea] rounded-lg bg-white px-3 text-[13px] outline-none focus:ring-2 focus:ring-[#e87500]/30"
           />
         </div>
       </div>

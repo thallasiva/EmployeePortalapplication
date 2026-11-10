@@ -120,7 +120,7 @@ export default function ProofInvestment() {
       {proofs.length > 0 &&
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 })}>
           {[
-        { label: "Uploaded", value: proofs.length, color: "#f18200" },
+        { label: "Uploaded", value: proofs.length, color: "#e87500" },
         { label: "Pending", value: pendingCount, color: "#a16207" },
         { label: "Verified", value: proofs.filter((p) => p.status === "verified").length, color: "#15803d" },
         { label: "Rejected", value: rejectedCount, color: "#dc2626" }]
@@ -138,7 +138,7 @@ export default function ProofInvestment() {
         <div className={cssClass({ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" })}>
           <div className={cssClass({ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#fafbfc",
             display: "flex", alignItems: "center", gap: 8 })}>
-            <Upload size={15} className={cssClass({ color: "#f18200" })} />
+            <Upload size={15} className={cssClass({ color: "#e87500" })} />
             <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>Upload Proof</span>
             {isLocked && <Lock size={13} className={cssClass({ color: "#94a3b8", marginLeft: "auto" })} />}
           </div>
@@ -187,7 +187,7 @@ export default function ProofInvestment() {
             </div>
             <button onClick={handleUpload} disabled={!file || isLocked || uploading} className={cssClass(
               { width: "100%", padding: 11, borderRadius: 8, fontSize: 13, fontWeight: 700,
-                background: file && !isLocked ? "#f18200" : "#e2e8f0",
+                background: file && !isLocked ? "#e87500" : "#e2e8f0",
                 color: file && !isLocked ? "#fff" : "#94a3b8",
                 border: "none", cursor: file && !isLocked ? "pointer" : "not-allowed" })}>
               {uploading ? "Uploading…" : "Upload Proof"}
@@ -234,8 +234,8 @@ export default function ProofInvestment() {
                       <div className={cssClass({ display: "flex", gap: 6 })}>
                         {p.file_path &&
                     <a href={downloadProofUrl(p.proof_id)} target="_blank" rel="noreferrer" className={cssClass(
-                      { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#f18200",
-                        textDecoration: "none", padding: "3px 8px", border: "1px solid #f18200", borderRadius: 5 })}>
+                      { display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#e87500",
+                        textDecoration: "none", padding: "3px 8px", border: "1px solid #e87500", borderRadius: 5 })}>
                             <Download size={11} /> View
                           </a>
                     }

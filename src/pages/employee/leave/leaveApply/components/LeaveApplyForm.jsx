@@ -30,7 +30,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
         <div className="lg:col-span-2 bg-white rounded-xl border border-[#e8eef5] overflow-hidden">
           <div className="px-6 py-4 border-b border-[#f1f5f9] flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center">
-              <CalendarDays size={16} color="#f18200" />
+              <CalendarDays size={16} color="#e87500" />
             </div>
             <div>
               <p className="text-[15px] font-semibold text-[#1f2937]">Apply for Leave</p>
@@ -49,7 +49,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                 <select
                   value={leaveTypeId}
                   onChange={(e) => setLeaveTypeId(e.target.value)}
-                  className="w-full h-[44px] border border-[#e2e8f0] rounded-lg px-4 text-[14px] text-[#374151] appearance-none outline-none bg-white focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10 transition-all"
+                  className="w-full h-[44px] border border-[#e2e8f0] rounded-lg px-4 text-[14px] text-[#374151] appearance-none outline-none bg-white focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10 transition-all"
                 >
                   <option value="">Select leave type</option>
                   {leaveTypes.map((lt) => (
@@ -75,7 +75,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                   type="date"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="w-full h-[44px] border border-[#e2e8f0] rounded-lg px-4 text-[14px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10 transition-all"
+                  className="w-full h-[44px] border border-[#e2e8f0] rounded-lg px-4 text-[14px] outline-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10 transition-all"
                 />
                 <div className="mt-2">
                   <label className="block text-[12px] text-[#94a3b8] mb-1">Session</label>
@@ -83,7 +83,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                     <select
                       value={fromSession}
                       onChange={(e) => setFromSession(e.target.value)}
-                      className="w-full h-[38px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] appearance-none outline-none bg-white focus:border-[#f18200] transition-all"
+                      className="w-full h-[38px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] appearance-none outline-none bg-white focus:border-[#e87500] transition-all"
                     >
                       {SESSION_OPTIONS.map((s) => (
                         <option key={s}>{s}</option>
@@ -106,7 +106,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                   value={toDate}
                   min={fromDate || undefined}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="w-full h-[44px] border border-[#e2e8f0] rounded-lg px-4 text-[14px] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10 transition-all"
+                  className="w-full h-[44px] border border-[#e2e8f0] rounded-lg px-4 text-[14px] outline-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10 transition-all"
                 />
                 <div className="mt-2">
                   <label className="block text-[12px] text-[#94a3b8] mb-1">Session</label>
@@ -114,7 +114,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                     <select
                       value={toSession}
                       onChange={(e) => setToSession(e.target.value)}
-                      className="w-full h-[38px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] appearance-none outline-none bg-white focus:border-[#f18200] transition-all"
+                      className="w-full h-[38px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] appearance-none outline-none bg-white focus:border-[#e87500] transition-all"
                     >
                       {SESSION_OPTIONS.map((s) => (
                         <option key={s}>{s}</option>
@@ -138,7 +138,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
                 placeholder="Enter your reason for leave…"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full border border-[#e2e8f0] rounded-lg p-4 text-[14px] outline-none resize-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10 transition-all"
+                className="w-full border border-[#e2e8f0] rounded-lg p-4 text-[14px] outline-none resize-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10 transition-all"
               />
             </div>
             {/* Actions */}
@@ -146,7 +146,7 @@ const LeaveApplyForm = React.memo(function LeaveApplyForm({
               <button
                 type="submit"
                 disabled={submitting}
-                className="h-[42px] px-8 bg-[#f18200] hover:bg-[#e07000] rounded-lg text-white text-[14px] font-semibold disabled:opacity-60 transition-colors"
+                className="h-[42px] px-8 bg-[#e87500] hover:bg-[#cf6900] rounded-lg text-white text-[14px] font-semibold disabled:opacity-60 transition-colors"
               >
                 {submitting ? "Submitting…" : "Submit Request"}
               </button>

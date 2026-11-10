@@ -60,7 +60,7 @@ export const SECTION_MAP = {
   ],
 };
 export const GROUPS = [
-  { key: "exemption", label: "EXEMPTION", color: "#1565c0", bg: "#e8f0fe" },
+  { key: "exemption", label: "EXEMPTION", color: "#cf6900", bg: "#e8f0fe" },
   { key: "deduction", label: "DEDUCTION", color: "#6a1b9a", bg: "#f3e5f5" },
   { key: "regime", label: "REGIME / REBATE", color: "#2e7d32", bg: "#e8f5e9" },
   { key: "tds", label: "TDS", color: "#e65100", bg: "#fff3e0" },

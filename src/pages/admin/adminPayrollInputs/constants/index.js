@@ -1,4 +1,4 @@
-export const ORANGE = "#f18200";
+export const ORANGE = "#e87500";
 export const TABS = [
   { key: "lop", label: "Employee LOP Days" },
   { key: "arrears", label: "Arrears" },

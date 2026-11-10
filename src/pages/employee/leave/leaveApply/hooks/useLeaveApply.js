@@ -74,7 +74,7 @@ export default function useLeaveApply() {
   const selectedTypeIdx = leaveTypes.findIndex(
     (lt) => String(lt.leave_type_id) === String(leaveTypeId)
   );
-  const selectedColor = selectedTypeIdx >= 0 ? getLeaveColor(selectedTypeIdx) : "#2ea7ff";
+  const selectedColor = selectedTypeIdx >= 0 ? getLeaveColor(selectedTypeIdx) : "#e87500";
   const resetForm = useCallback(() => {
     setLeaveTypeId("");
     setFromDate("");

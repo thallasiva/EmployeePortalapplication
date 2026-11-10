@@ -1,5 +1,6 @@
 const BaseService = require('./base.service');
 const { callProcedure, query } = require('../config/db');
+const ApiError = require('../utils/ApiError');
 function zonedDateTime(timeZone) {
   const now = new Date();
   const date = new Intl.DateTimeFormat('en-CA', { timeZone }).format(now);
@@ -91,6 +92,20 @@ class AttendanceService extends BaseService {
     const checkDate = date || now.date;
     const checkTime = time || now.time;
     const scheduledStart = await this.getShiftStart(employeeId, checkDate);
+    const offices = await query(`SELECT o.office_name, o.geo_latitude, o.geo_longitude, o.geo_radius_meters
+      FROM employees e JOIN offices o ON o.office_id = e.office_id
+      WHERE e.employee_id = ? AND o.geo_fence_enabled = 1 AND o.status = 'Active' LIMIT 1`, [employeeId]);
+    if (offices.length) {
+      const office = offices[0];
+      if (lat == null || lng == null) throw ApiError.forbidden('Location access is required to check in at this office');
+      if (office.geo_latitude == null || office.geo_longitude == null) throw ApiError.conflict('This office geofence is enabled but its coordinates are not configured');
+      const rad = (value) => Number(value) * Math.PI / 180;
+      const dLat = rad(Number(lat) - Number(office.geo_latitude));
+      const dLng = rad(Number(lng) - Number(office.geo_longitude));
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(Number(office.geo_latitude))) * Math.cos(rad(Number(lat))) * Math.sin(dLng / 2) ** 2;
+      const distance = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      if (distance > Number(office.geo_radius_meters || 300)) throw ApiError.forbidden('You are outside the allowed check-in area for ' + office.office_name);
+    }
     // Always use 7-param version (lat/lng/location default to NULL if not provided)
     await callProcedure('sp_employee_checkin(?, ?, ?, ?, ?, ?, ?)', [
       employeeId, checkDate, checkTime, scheduledStart || shift_start || '09:30:00',

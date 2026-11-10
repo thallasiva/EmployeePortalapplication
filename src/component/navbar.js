@@ -53,7 +53,7 @@ export const Navbar = ({ toggleSidebar, user }) => {
             aria-label="Toggle sidebar"
           >
             <Menu size={22} />
-          </button>
+            </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export const Navbar = ({ toggleSidebar, user }) => {
             className={`w-9 h-9 rounded-full bg-orange-50 border-2 border-orange-200 ${photoUrl ? "hidden" : "flex"
               } items-center justify-center flex-shrink-0`}
           >
-            <User size={19} strokeWidth={1.8} className="text-[#f18200]" />
+            <User size={19} strokeWidth={1.8} className="text-[#e87500]" />
           </div>
 
           <div className="w-px h-7 bg-gray-200 mx-1" />

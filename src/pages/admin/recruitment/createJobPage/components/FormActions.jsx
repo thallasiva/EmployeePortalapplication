@@ -13,7 +13,7 @@ const FormActions = React.memo(function FormActions({ isValid, submitting, onRes
         type="submit"
         disabled={!isValid || submitting}
         className={`rounded-md px-8 py-[9px] text-sm font-semibold text-white ${
-          isValid && !submitting ? "cursor-pointer bg-[#f18200]" : "cursor-not-allowed bg-gray-300"
+          isValid && !submitting ? "cursor-pointer bg-[#e87500]" : "cursor-not-allowed bg-gray-300"
         }`}
       >
         {submitting ? "Submitting…" : "Submit Job Requirement"}

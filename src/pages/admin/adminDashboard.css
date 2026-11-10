@@ -1,8 +1,8 @@
 .admin-dash {
   --adm-green: #16a34a;
   --adm-green-bg: #f0fdf4;
-  --adm-blue: #2563eb;
-  --adm-blue-bg: #eff6ff;
+  --adm-blue: #e87500;
+  --adm-blue-bg: #fff7ed;
   --adm-orange: #ea580c;
   --adm-orange-bg: #fff7ed;
   --adm-purple: #7c3aed;
@@ -129,7 +129,7 @@
 .admin-att-cal-cell.present { background: #dcfce7; color: #166534; }
 .admin-att-cal-cell.late { background: #ffedd5; color: #c2410c; }
 .admin-att-cal-cell.absent { background: #fce7f3; color: #be185d; }
-.admin-att-cal-cell.leave { background: #dbeafe; color: #1d4ed8; }
+.admin-att-cal-cell.leave { background: #ffedd5; color: #cf6900; }
 .admin-att-cal-cell.weekend { background: #f3f4f6; color: #9ca3af; }
 .admin-tab-btn {
   padding: 8px 16px;
@@ -146,8 +146,8 @@
   color: var(--adm-muted);
 }
 .admin-status-badge.leave {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #fff7ed;
+  color: #cf6900;
 }
 .admin-emp-avatar {
   width: 32px;

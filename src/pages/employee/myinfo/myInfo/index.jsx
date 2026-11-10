@@ -47,7 +47,7 @@ export default function MyInfo() {
   if (loading) {
     return (
       <div className={cssClass({ display: "flex", justifyContent: "center", alignItems: "center", height: 300 })}>
-        <div className={cssClass({ color: "#f18200", fontSize: 14 })}>Loading…</div>
+        <div className={cssClass({ color: "#e87500", fontSize: 14 })}>Loading…</div>
       </div>
     );
   }
@@ -74,7 +74,7 @@ export default function MyInfo() {
             <button key={lbl} onClick={() => {
               const el = document.getElementById("card-" + lbl.toLowerCase().replace(/ /g, "-"));
               el?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#f18200", fontWeight: 600, fontSize: 12 })}>
+            }} className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#e87500", fontWeight: 600, fontSize: 12 })}>
               {lbl}
             </button>
           ))}

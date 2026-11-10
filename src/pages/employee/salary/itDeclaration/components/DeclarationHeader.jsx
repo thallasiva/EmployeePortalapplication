@@ -12,7 +12,7 @@ function DeclarationHeader({ cycle, totalDeclared, annualGross }) {
                 : "—"}`
             : "No active cycle"}
           &nbsp;|&nbsp; Total Declared:{" "}
-          <strong className={cssClass({ color: "#f18200" })}>
+          <strong className={cssClass({ color: "#e87500" })}>
             ₹{Math.round(totalDeclared).toLocaleString("en-IN")}
           </strong>
           &nbsp;|&nbsp; Annual Gross: ₹{Math.round(annualGross).toLocaleString("en-IN")}

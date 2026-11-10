@@ -1,4 +1,4 @@
-const AVATAR_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6"];
+const AVATAR_COLORS = ["#e87500", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#e87500"];
 export function getInitials(name) {
   return name
     .split(" ")

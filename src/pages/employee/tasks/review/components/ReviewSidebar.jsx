@@ -44,16 +44,16 @@ const ReviewSidebar = React.memo(function ReviewSidebar({ activeItemId, onNavCli
                     padding: "9px 14px 9px 24px",
                     fontSize: 13,
                     fontWeight: active ? 600 : 400,
-                    color: active ? "#1890ff" : "#475569",
+                    color: active ? "#e87500" : "#475569",
                     background: active ? "#eef6ff" : "transparent",
                     border: "none",
-                    borderLeft: active ? "3px solid #1890ff" : "3px solid transparent",
+                    borderLeft: active ? "3px solid #e87500" : "3px solid transparent",
                     cursor: "pointer", transition: "all 0.12s",
                   }))}
                   onClick={() => onNavClick(item.id)}
                 >
                   {item.label}
-                  {active && <ChevronRight size={13} className={cssClass({ color: "#1890ff" })} />}
+                  {active && <ChevronRight size={13} className={cssClass({ color: "#e87500" })} />}
                 </button>
               );
             })}

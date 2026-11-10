@@ -14,7 +14,7 @@ const Timeline = React.memo(function Timeline({ resignation, profile }) {
     ...(resignation.manager_reviewed_at ? [{
       name: resignation.manager_reviewed_by_name || "Reporting Manager",
       initials: mkInitials(resignation.manager_reviewed_by_name || "Reporting Manager"),
-      color: resignation.status === "rm_rejected" ? "#dc2626" : "#3b82f6",
+      color: resignation.status === "rm_rejected" ? "#dc2626" : "#e87500",
       time: resignation.manager_reviewed_at,
       action: resignation.status === "rm_rejected" ? "Manager Rejected" : "Manager Approved — Sent to HR",
       remarks: resignation.manager_remarks,

@@ -37,7 +37,7 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
             External recruiters can update interview schedule details only.
           </div>
         ) : (
-          <div className="mb-4 px-3.5 py-2 bg-[#fff7ed] border-l-[3px] border-[#f18200] rounded-lg text-[13px] text-[#92400e]">
+          <div className="mb-4 px-3.5 py-2 bg-[#fff7ed] border-l-[3px] border-[#e87500] rounded-lg text-[13px] text-[#92400e]">
             Schedule a new interview round. A meeting link will be automatically generated and sent to the candidate when type is Teams, Google Meet, or Zoom.
           </div>
         )}
@@ -140,7 +140,7 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
           </div>
         </Field>
         {isTeams && !isExternal && (
-          <div className="px-3.5 py-3 bg-[#eff6ff] border border-blue-200 rounded-lg mt-2">
+          <div className="px-3.5 py-3 bg-[#fff7ed] border border-blue-200 rounded-lg mt-2">
             <div className="text-[12px] font-bold text-blue-800 mb-2.5">
               Microsoft Teams Meeting
             </div>
@@ -167,7 +167,7 @@ const ScheduleSlideOver = React.memo(function ScheduleSlideOver({
           </div>
         )}
         {isTeams && isExternal && (
-          <div className="mt-2 px-3 py-2 bg-[#eff6ff] rounded-lg border border-blue-200 text-[12px] text-[#f18200]">
+          <div className="mt-2 px-3 py-2 bg-[#fff7ed] rounded-lg border border-blue-200 text-[12px] text-[#e87500]">
             <Video size={13} className="inline -mt-0.5" /> A Microsoft Teams meeting link will be automatically created and emailed to the candidate after scheduling.
           </div>
         )}

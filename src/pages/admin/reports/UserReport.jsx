@@ -9,7 +9,7 @@ import {
 "../../../component/reports/ReportsLayout";import { cssClass, joinClasses } from "../../../utils/classStyles";
 const ROLE_COLORS = {
   Admin: "bg-purple-100 text-purple-700",
-  HR: "bg-blue-100 text-[#f18200]",
+  HR: "bg-blue-100 text-[#e87500]",
   Manager: "bg-amber-100 text-amber-700",
   Employee: "bg-gray-100 text-gray-600"
 };
@@ -46,7 +46,7 @@ export default function UserReport() {
       {}
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
-        { label: "Total Users", value: employees.length, barWidth: "100%", barColor: "#f18200" },
+        { label: "Total Users", value: employees.length, barWidth: "100%", barColor: "#e87500" },
         { label: "Active", value: activeCount, barWidth: `${employees.length ? activeCount / employees.length * 100 : 0}%`, barColor: "#16a34a" },
         { label: "Inactive", value: inactiveCount, barWidth: `${employees.length ? inactiveCount / employees.length * 100 : 0}%`, barColor: "#ef4444" },
         { label: "Departments", value: deptCount, barWidth: "100%", barColor: "#f97316" }]

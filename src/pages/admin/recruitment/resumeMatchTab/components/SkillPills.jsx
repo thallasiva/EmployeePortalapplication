@@ -8,7 +8,7 @@ const SkillPills = React.memo(function SkillPills({ skills, matched }) {
         <span
           key={s}
           className={`text-[11px] font-semibold px-2 py-[3px] rounded-full ${
-            matched ? "bg-[#fff7ed] text-[#f18200]" : "bg-red-100 text-red-800"
+            matched ? "bg-[#fff7ed] text-[#e87500]" : "bg-red-100 text-red-800"
           }`}
         >
           {matched ? <Check size={11} className="inline -mt-0.5" /> : <X size={11} className="inline -mt-0.5" />} {s}

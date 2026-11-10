@@ -32,7 +32,7 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
         <td className="px-3.5 py-3 text-center"><ScoreCircle score={row.match_score} size={52} /></td>
         <td className="px-3.5 py-3"><RecBadge label={row.recommendation} /></td>
         <td className="px-3.5 py-3">
-          <span className="text-[12px] text-[#f18200] font-semibold inline-flex items-center gap-0.5"><Check size={12} /> {matched.length}</span>
+          <span className="text-[12px] text-[#e87500] font-semibold inline-flex items-center gap-0.5"><Check size={12} /> {matched.length}</span>
           <span className="text-[12px] text-gray-400 mx-1">·</span>
           <span className="text-[12px] text-red-600 font-semibold inline-flex items-center gap-0.5"><X size={12} /> {missing.length}</span>
         </td>
@@ -58,14 +58,14 @@ const MatchRow = React.memo(function MatchRow({ row, onRecompute, rank }) {
               <div className="bg-white rounded-[10px] border border-gray-200 p-3.5">
                 <div className="text-[11px] font-bold text-gray-500 mb-2.5 uppercase">Score Breakdown</div>
                 <SkillBar label="Skills (60%)" score={row.skill_score} color="#7c3aed" />
-                <SkillBar label="Experience (40%)" score={row.exp_score} color="#0369a1" />
-                <SkillBar label="Overall" score={row.match_score} color="#f18200" />
+                <SkillBar label="Experience (40%)" score={row.exp_score} color="#c45f00" />
+                <SkillBar label="Overall" score={row.match_score} color="#e87500" />
               </div>
               <div className="bg-white rounded-[10px] border border-gray-200 p-3.5">
                 <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase">Skills</div>
                 {matched.length > 0 && (
                   <div className="mb-2">
-                    <div className="text-[11px] text-[#f18200] font-semibold mb-1">Matched</div>
+                    <div className="text-[11px] text-[#e87500] font-semibold mb-1">Matched</div>
                     <SkillPills skills={matched} matched />
                   </div>
                 )}

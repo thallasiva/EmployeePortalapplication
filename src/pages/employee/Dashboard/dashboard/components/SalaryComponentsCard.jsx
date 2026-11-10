@@ -22,13 +22,13 @@ const SalaryComponentsCard = React.memo(function SalaryComponentsCard({ sal, sho
         <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>Salary Components</span>
         <button
           onClick={() => setShowSal((v) => !v)}
-          className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#f18200", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 })}
+          className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#e87500", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 })}
         >
           {showSal ? <EyeOff size={12} /> : <Eye size={12} />}
           {showSal ? "Hide" : "Reveal"}
         </button>
       </div>
-      <div className={cssClass({ fontSize: 10, color: "#f18200", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 })}>Earnings</div>
+      <div className={cssClass({ fontSize: 10, color: "#e87500", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 })}>Earnings</div>
       {earnings.map((r) => (
         <div key={r.label} className={cssClass({ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f8fafc", fontSize: 13 })}>
           <span className={cssClass({ color: "#475569" })}>{r.label}</span>

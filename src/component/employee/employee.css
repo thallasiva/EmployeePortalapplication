@@ -59,8 +59,8 @@
   color: #6d28d9;
 }
 .emp-card__dept--finance {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #ffedd5;
+  color: #cf6900;
 }
 .emp-card__dept--design {
   background: #fce7f3;
@@ -260,8 +260,8 @@
 .emp-table__manager {
   padding: 0.125rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid #93c5fd;
-  color: #2563eb;
+  border: 1px solid #fdba74;
+  color: #e87500;
   font-size: 0.75rem;
 }
 .emp-table__manager.is-none {
@@ -392,7 +392,7 @@
   background: #fff;
 }
 .emp-detail-tab:focus-visible {
-  outline: 2px solid #f18200;
+  outline: 2px solid #e87500;
   outline-offset: 2px;
 }
 .emp-detail-tab.is-active {

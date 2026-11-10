@@ -30,7 +30,7 @@ const HomeView = memo(function HomeView({ onSelectCategory }) {
             placeholder="Search for information"
             className={cssClass({
               width: "100%", height: 42, paddingLeft: 36, paddingRight: 12,
-              border: "2px solid #93c5fd", borderRadius: 4, fontSize: 14,
+              border: "2px solid #fdba74", borderRadius: 4, fontSize: 14,
               outline: "none", background: "#fff", boxSizing: "border-box",
             })}
           />
@@ -50,7 +50,7 @@ const HomeView = memo(function HomeView({ onSelectCategory }) {
             <div
               key={cat.id}
               onClick={() => onSelectCategory(cat)}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = BRAND_BORDER; e.currentTarget.style.boxShadow = "0 2px 8px rgba(241,130,0,0.10)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = BRAND_BORDER; e.currentTarget.style.boxShadow = "0 2px 8px rgba(232,117,0,0.10)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
               className={cssClass({
                 display: "flex", alignItems: "center", justifyContent: "space-between",

@@ -31,8 +31,8 @@ export function formatMinutesDisplay(minutes) {
 export const CELL_STYLES = {
   P: "bg-[#d8f3dc] text-[#1b4332]",
   "P:A": "bg-[#ffddd2] text-[#9c4221]",
-  H: "bg-[#d7e3fc] text-[#1d3557]",
+  H: "bg-[#d7e3fc] text-[#9b4c00]",
   O: "bg-white text-[#64748b]",
   A: "bg-[#fee2e2] text-[#991b1b]",
-  L: "bg-[#e0e7ff] text-[#3730a3]"
+  L: "bg-[#ffedd5] text-[#3730a3]"
 };

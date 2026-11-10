@@ -22,10 +22,10 @@ const UnassignedTab = React.memo(function UnassignedTab({
     <div>
       {unassigned.length > 0 && (
         <div className={cssClass({
-          background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12,
+          background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12,
           padding: 18, marginBottom: 20,
         })}>
-          <div className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1d4ed8", marginBottom: 12 })}>
+          <div className={cssClass({ fontSize: 14, fontWeight: 700, color: "#cf6900", marginBottom: 12 })}>
             Bulk Assignment
           </div>
           <div className={cssClass({ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" })}>
@@ -55,8 +55,8 @@ const UnassignedTab = React.memo(function UnassignedTab({
           background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12,
           padding: 32, textAlign: "center",
         })}>
-          <Check size={32} color="#f18200" className={cssClass({ margin: "0 auto 10px" })} />
-          <div className={cssClass({ fontSize: 15, fontWeight: 600, color: "#f18200" })}>
+          <Check size={32} color="#e87500" className={cssClass({ margin: "0 auto 10px" })} />
+          <div className={cssClass({ fontSize: 15, fontWeight: 600, color: "#e87500" })}>
             All employees have reporting managers
           </div>
         </div>

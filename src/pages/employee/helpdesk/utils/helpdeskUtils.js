@@ -1,8 +1,8 @@
-export const BRAND        = "#f18200";
+export const BRAND        = "#e87500";
 export const BRAND_LIGHT  = "#fff7ed";
 export const BRAND_BORDER = "#fed7aa";
 export const STATUS_STYLE = {
-  "Open":       { bg: "#eff6ff", color: "#2563eb" },
+  "Open":       { bg: "#fff7ed", color: "#e87500" },
   "Forwarded":  { bg: "#f5f3ff", color: "#7c3aed" },
   "In Progress":{ bg: "#fff7ed", color: "#c2410c" },
   "Reopened":   { bg: "#fff1f2", color: "#be123c" },
@@ -32,7 +32,7 @@ export function getCommentStyle(name, comment) {
   if (lc.startsWith("[reopened]")) return { bg: "#fff1f2",  color: "#be123c", label: name };
   if (lc.startsWith("[rejected]")) return { bg: "#fef2f2",  color: "#dc2626", label: name };
   if (lc.startsWith("[approved"))  return { bg: "#f5f3ff",  color: "#7c3aed", label: name };
-  return { bg: "#eff6ff", color: "#2563eb", label: name };
+  return { bg: "#fff7ed", color: "#e87500", label: name };
 }
 /** Build the plain-text description from dynamic form values */
 export function buildDescription(fieldDefs, afterDefs, vals) {

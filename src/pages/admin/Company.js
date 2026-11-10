@@ -117,7 +117,7 @@ export default function Company() {
         <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             {/* <p className="text-xs text-slate-500">Admin / Company</p> */}
-            <h1 className="mt-1 text-2xl font-semibold  text-[#f18200]">Company Profiles</h1>
+            <h1 className="mt-1 text-2xl font-semibold  text-[#e87500]">Company Profiles</h1>
             <p className="mt-1 text-sm text-slate-600">Manage company records and their regional defaults.</p>
           </div>
           <div className="flex gap-2">
@@ -155,7 +155,7 @@ export default function Company() {
                   <div className="flex items-center gap-3">
                     <span className="rounded-xl bg-orange-50 p-3 text-orange-700"><Building2 size={22} /></span>
                     <div>
-                      <h2 className="text-lg font-semibold  text-[#f18200]">{selected.company_name}</h2>
+                      <h2 className="text-lg font-semibold  text-[#e87500]">{selected.company_name}</h2>
                       <p className="text-sm text-slate-500">Company ID: {selected.company_id}</p>
                     </div>
                   </div>
@@ -174,7 +174,7 @@ export default function Company() {
                 </dl>
                 <section className="mt-6 border-t pt-5">
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <div><h3 className="font-semibold  text-[#f18200]">Enabled modules</h3><p className="text-xs text-slate-500">Disabled modules are blocked by the Express API for company users.</p></div>
+                    <div><h3 className="font-semibold  text-[#e87500]">Enabled modules</h3><p className="text-xs text-slate-500">Disabled modules are blocked by the Express API for company users.</p></div>
                     <button type="button" onClick={saveModules} disabled={savingModules || !moduleRows.length} className="rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50">{savingModules ? 'Saving…' : 'Save modules'}</button>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -185,7 +185,7 @@ export default function Company() {
             ) : (
               <form onSubmit={save} className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold  text-[#f18200]">{selectedId ? 'Edit company' : 'Create company'}</h2>
+                  <h2 className="text-lg font-semibold  text-[#e87500]">{selectedId ? 'Edit company' : 'Create company'}</h2>
                   <p className="text-sm text-slate-500">Timezone and currency are defaults for dates and payroll configuration.</p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">

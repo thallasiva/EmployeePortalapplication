@@ -16,7 +16,7 @@
   background: #fff;
   transition: border-color 0.15s;
 }
-.ts-input:focus { border-color: #3b82f6; }
+.ts-input:focus { border-color: #e87500; }
 .ts-input:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
 .ts-hour-input {
   width: 52px;
@@ -28,7 +28,7 @@
   color: #1f2937;
   outline: none;
 }
-.ts-hour-input:focus { border-color: #3b82f6; }
+.ts-hour-input:focus { border-color: #e87500; }
 .ts-hour-input:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
 .ts-btn-primary {
   display: inline-flex;
@@ -36,7 +36,7 @@
   gap: 6px;
   padding: 8px 18px;
   border-radius: 8px;
-  background: #f18200;
+  background: #e87500;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -60,7 +60,7 @@
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
-.ts-btn-extra:hover { background: #ffedd5; border-color: #f18200; }
+.ts-btn-extra:hover { background: #ffedd5; border-color: #e87500; }
 .ts-btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -139,14 +139,14 @@
   white-space: nowrap;
 }
 .ts-chip--blue {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background: #fff7ed;
+  color: #cf6900;
+  border-color: #fed7aa;
 }
 .ts-chip--indigo {
-  background: #eef2ff;
-  color: #4338ca;
-  border-color: #c7d2fe;
+  background: #fff7ed;
+  color: #9b4c00;
+  border-color: #fed7aa;
 }
 .ts-chip--green {
   background: #f0fdf4;
@@ -175,13 +175,13 @@
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: #1890ff;
+  background: #e87500;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 .tasks-btn-add:hover {
-  background: #40a9ff;
+  background: #e87500;
 }
 /* Modal */
 .tasks-modal-backdrop {
@@ -261,7 +261,7 @@
 }
 .tasks-form-input:focus,
 .tasks-form-textarea:focus {
-  border-color: #40a9ff;
+  border-color: #e87500;
 }
 .tasks-form-textarea {
   resize: vertical;
@@ -285,7 +285,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: #1890ff;
+  color: #e87500;
   font-size: 14px;
   cursor: pointer;
 }
@@ -321,7 +321,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: #1890ff;
+  color: #e87500;
   font-size: 14px;
   cursor: pointer;
 }
@@ -335,7 +335,7 @@
 .tasks-btn-text {
   padding: 8px 16px;
   font-size: 14px;
-  color: #1890ff;
+  color: #e87500;
   background: none;
   border: none;
   cursor: pointer;
@@ -351,11 +351,11 @@
   cursor: not-allowed;
 }
 .tasks-btn-save--enabled {
-  background: #1890ff;
+  background: #e87500;
   cursor: pointer;
 }
 .tasks-btn-save--enabled:hover {
-  background: #40a9ff;
+  background: #e87500;
 }
 .tasks-list {
   padding: 16px;

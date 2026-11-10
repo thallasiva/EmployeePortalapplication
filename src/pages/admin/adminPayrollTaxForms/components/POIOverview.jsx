@@ -14,7 +14,7 @@ const POIOverview = React.memo(function POIOverview({ year }) {
   const stats = useMemo(
     () => [
       { label: "Total Employees", value: rows.length, color: ORANGE },
-      { label: "Declarations Submitted", value: submitted, color: "#2563eb" },
+      { label: "Declarations Submitted", value: submitted, color: "#e87500" },
       { label: "POI Uploaded", value: withPOI, color: "#16a34a" },
       { label: "Pending POI", value: submitted - withPOI, color: "#dc2626" },
     ],

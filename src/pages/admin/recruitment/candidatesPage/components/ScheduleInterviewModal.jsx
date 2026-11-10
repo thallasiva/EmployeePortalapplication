@@ -18,18 +18,18 @@ const ScheduleInterviewModal = React.memo(function ScheduleInterviewModal({
       footer={
         <>
           <Btn variant="secondary" onClick={handleClose}>Cancel</Btn>
-          <Btn onClick={onSubmit} disabled={scheduling} style={{ background: "#f18200", color: "#fff", border: "none" }}>
+          <Btn onClick={onSubmit} disabled={scheduling} style={{ background: "#e87500", color: "#fff", border: "none" }}>
             {scheduling ? "Scheduling..." : "Confirm & Schedule"}
           </Btn>
         </>
       }>
       {detail &&
         <form onSubmit={onSubmit}>
-          <div className="px-3.5 py-2.5 bg-amber-50 rounded-lg mb-4 border-l-[3px] border-l-[#f18200]">
+          <div className="px-3.5 py-2.5 bg-amber-50 rounded-lg mb-4 border-l-[3px] border-l-[#e87500]">
             <div className="text-[11px] font-bold text-amber-800 mb-0.5">CANDIDATE</div>
             <div className="text-sm font-bold text-gray-900">{detail.name}</div>
             <div className="text-xs text-gray-500">{detail.email}</div>
-            {detail.job_title && <div className="text-xs text-[#f18200] mt-1">Position: {detail.job_title} @ {detail.job_client}</div>}
+            {detail.job_title && <div className="text-xs text-[#e87500] mt-1">Position: {detail.job_title} @ {detail.job_client}</div>}
           </div>
           <TwoColGrid>
             <Field label="Interview Level" required>

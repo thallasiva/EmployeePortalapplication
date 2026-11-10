@@ -23,7 +23,7 @@ function ModalTcsTds({ values, setValues, onClose }) {
         padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" })}>
         <div>
           <div className={cssClass({ fontSize: 11, color: "#92400e", fontWeight: 600, marginBottom: 2 })}>Total Declared</div>
-          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#f18200" })}>{fmt(total)}</div>
+          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#e87500" })}>{fmt(total)}</div>
         </div>
         <div className={cssClass({ display: "flex", gap: 16, fontSize: 12 })}>
           <div className={cssClass({ textAlign: "center" })}>
@@ -50,7 +50,7 @@ function ModalTcsTds({ values, setValues, onClose }) {
               <div>
                 <div className={cssClass({ fontSize: 11, color: "#64748b", marginBottom: 5, fontWeight: 600 })}>Declared Amount (₹)</div>
                 <div className={cssClass({ display: "flex", border: "1px solid #e2e8f0", borderRadius: 7, overflow: "hidden",
-                  background: "#fff", boxShadow: filled ? "0 0 0 2px rgba(241,130,0,0.15)" : "none" })}>
+                  background: "#fff", boxShadow: filled ? "0 0 0 2px rgba(232,117,0,0.15)" : "none" })}>
                   <span className={cssClass({ padding: "9px 12px", background: "#f8fafc", borderRight: "1px solid #e2e8f0",
                     fontSize: 13, color: "#64748b", fontWeight: 600 })}>₹</span>
                   <input type="number" value={values[key] || ""}

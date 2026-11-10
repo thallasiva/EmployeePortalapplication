@@ -56,7 +56,7 @@ const RoundRow = React.memo(function RoundRow({
             </span>
           )}
           {iv.shortlisted === 1 && (
-            <span className="text-[10px] font-bold bg-[#fff7ed] text-[#f18200] px-1.5 py-px rounded-full inline-flex">
+            <span className="text-[10px] font-bold bg-[#fff7ed] text-[#e87500] px-1.5 py-px rounded-full inline-flex">
               <Star size={10} fill="currentColor" />
             </span>
           )}
@@ -85,7 +85,7 @@ const RoundRow = React.memo(function RoundRow({
         {iv.status === "Scheduled" && canFeedback && (
           <button
             onClick={() => onFeedback(iv)}
-            className="text-[11px] font-semibold text-white bg-[#f18200] border-0 rounded-md px-2.5 py-[4px] cursor-pointer"
+            className="text-[11px] font-semibold text-white bg-[#e87500] border-0 rounded-md px-2.5 py-[4px] cursor-pointer"
           >
             HR Feedback
           </button>

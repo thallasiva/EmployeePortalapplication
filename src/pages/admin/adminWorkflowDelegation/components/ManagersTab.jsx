@@ -62,7 +62,7 @@ const ManagersTab = React.memo(function ManagersTab({
               <div
                 key={m.employee_id}
                 onClick={() => setSelectedNode({ id: m.employee_id, name: m.full_name })}
-                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 20px rgba(241,130,0,0.15)"; e.currentTarget.style.borderColor = BRAND; }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 20px rgba(232,117,0,0.15)"; e.currentTarget.style.borderColor = BRAND; }}
                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 1px 4px #0001"; e.currentTarget.style.borderColor = "#e5e7eb"; }}
                 className={cssClass({
                   background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,

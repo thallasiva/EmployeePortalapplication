@@ -2,7 +2,7 @@ import {
   BarChart2, GitBranch, UserCheck, AlertTriangle,
   ArrowRightLeft, Shield, History,
 } from "lucide-react";
-export const BRAND = "#f18200";
+export const BRAND = "#e87500";
 export const BL = "#fff8f0";
 export const TABS = [
   { key: "overview", label: "Overview", icon: BarChart2 },

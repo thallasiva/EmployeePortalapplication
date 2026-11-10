@@ -9,7 +9,7 @@ const PageHeader = React.memo(function PageHeader({ inv }) {
       ? "Changes Requested"
       : "In Progress";
   return (
-    <div className="bg-[#f18200] px-6 py-5">
+    <div className="bg-[#e87500] px-6 py-5">
       <div className="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-lg font-bold text-white">Joining Formalities</h1>

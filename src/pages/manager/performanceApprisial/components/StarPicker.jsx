@@ -14,8 +14,8 @@ function StarPicker({ value, onChange, disabled }) {
           onMouseLeave={() => setHover(0)}
           className={cssClass({
             cursor: disabled ? "default" : "pointer",
-            color: (hover || value) >= n ? "#6366f1" : "#e2e8f0",
-            fill: (hover || value) >= n ? "#6366f1" : "#e2e8f0",
+            color: (hover || value) >= n ? "#e87500" : "#e2e8f0",
+            fill: (hover || value) >= n ? "#e87500" : "#e2e8f0",
           })}
         />
       ))}

@@ -18,7 +18,7 @@ const PageHeader = React.memo(function PageHeader({ activeDelegates }) {
             alignItems: "center", justifyContent: "center",
           })}
         >
-          <GitBranch size={22} className={cssClass({ color: "#f18200" })} />
+          <GitBranch size={22} className={cssClass({ color: "#e87500" })} />
         </div>
         <div>
           <h1 className={cssClass({ fontSize: 20, fontWeight: 700, color: "#1e293b", margin: 0 })}>

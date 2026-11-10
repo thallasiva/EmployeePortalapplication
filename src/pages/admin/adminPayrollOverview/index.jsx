@@ -157,8 +157,8 @@ export default function AdminPayrollOverview() {
       </div>
       {/* KPI row */}
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, marginBottom: 16 })}>
-        <StatCard icon={<Users size={17} />} label="Total Employees" value={loading ? "—" : employees.length} sub="Active Employees" accent="#2563eb" tint="#eff6ff" />
-        <StatCard icon={<IndianRupee size={17} />} label="Gross Payroll" value={loading ? "—" : fmtINR(gross, true)} sub="Total Gross Salary" accent="#f18200" tint="#fff7ed" />
+        <StatCard icon={<Users size={17} />} label="Total Employees" value={loading ? "—" : employees.length} sub="Active Employees" accent="#e87500" tint="#fff7ed" />
+        <StatCard icon={<IndianRupee size={17} />} label="Gross Payroll" value={loading ? "—" : fmtINR(gross, true)} sub="Total Gross Salary" accent="#e87500" tint="#fff7ed" />
         <StatCard icon={<TrendingDown size={17} />} label="Deductions" value={loading ? "—" : fmtINR(deductions, true)} sub="PF, TDS, PT, etc." accent="#e11d48" tint="#fff1f2" />
         <StatCard icon={<Wallet size={17} />} label="Net Payroll" value={loading ? "—" : fmtINR(net, true)} sub="Total Take Home" accent="#16a34a" tint="#f0fdf4" />
         <StatCard icon={<AlertTriangle size={17} />} label="Exceptions" value={loading ? "—" : attentionCount} sub="Employees to review" alert accent="#dc2626" tint="#fef2f2" />

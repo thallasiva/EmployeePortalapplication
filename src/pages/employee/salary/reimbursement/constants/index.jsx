@@ -11,4 +11,4 @@ export const HISTORY = [
   { date: "15 May 2026", type: "Fuel", amount: 2500, status: "Pending" },
   { date: "10 Apr 2026", type: "LTA", amount: 5000, status: "Approved" }
 ];
-export const ENTITLEMENT_COLORS = ["#f18200", "#6366f1", "#10b981", "#3b82f6", "#a855f7"];
+export const ENTITLEMENT_COLORS = ["#e87500", "#e87500", "#10b981", "#e87500", "#a855f7"];

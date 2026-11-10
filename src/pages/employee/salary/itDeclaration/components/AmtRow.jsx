@@ -14,7 +14,7 @@ function AmtRow({ section, label, maxLimit, value, onChange }) {
       <div className={cssClass({ flex: 1 })}>
         {section &&
           <span className={cssClass({
-            fontSize: 9, fontWeight: 700, color: "#f18200",
+            fontSize: 9, fontWeight: 700, color: "#e87500",
             background: "#fff7ed", border: "1px solid #fed7aa",
             borderRadius: 4, padding: "1px 5px", marginRight: 6,
             display: "inline-block", verticalAlign: "middle"
@@ -30,7 +30,7 @@ function AmtRow({ section, label, maxLimit, value, onChange }) {
       <div className={cssClass({ flexShrink: 0 })}>
         <div className={cssClass({ display: "flex", alignItems: "center", border: "1px solid #e2e8f0",
           borderRadius: 6, overflow: "hidden", background: "#fff",
-          boxShadow: filled ? "0 0 0 2px rgba(241,130,0,0.15)" : "none" })}>
+          boxShadow: filled ? "0 0 0 2px rgba(232,117,0,0.15)" : "none" })}>
           <span className={cssClass({ padding: "6px 8px", background: "#f8fafc", borderRight: "1px solid #e2e8f0",
             fontSize: 12, color: "#64748b", userSelect: "none" })}>₹</span>
           <input

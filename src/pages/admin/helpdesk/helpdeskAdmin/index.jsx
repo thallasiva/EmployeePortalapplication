@@ -20,7 +20,7 @@ export default function HelpdeskAdmin() {
   } = useTickets({ isAdminUser, defaultTeam: isAdminUser ? "Admin Team" : "" });
   const counts = tickets.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
   const summaryCards = [
-    { label: "Open",        value: counts["Open"]        || 0, color: "#2563eb", bg: "#eff6ff" },
+    { label: "Open",        value: counts["Open"]        || 0, color: "#e87500", bg: "#fff7ed" },
     { label: "Forwarded",   value: counts["Forwarded"]   || 0, color: "#7c3aed", bg: "#f5f3ff" },
     { label: "In Progress", value: counts["In Progress"] || 0, color: "#c2410c", bg: "#fff7ed" },
     { label: "Reopened",    value: counts["Reopened"]    || 0, color: "#be123c", bg: "#fff1f2" },

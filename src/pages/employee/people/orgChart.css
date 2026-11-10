@@ -84,8 +84,8 @@
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 .org-card--highlight {
-  border-color: #f18200;
-  box-shadow: 0 0 0 3px rgba(241, 130, 0, 0.15);
+  border-color: #e87500;
+  box-shadow: 0 0 0 3px rgba(232, 117, 0, 0.15);
 }
 .org-card--dim {
   opacity: 0.35;

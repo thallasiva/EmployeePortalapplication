@@ -4,14 +4,14 @@ import { notificationsApi } from "../../api/settings.api";
 import { getStoredUser } from "../../data/auth";
 import Pagination from "../../components/Pagination";
 const TYPE_CFG = {
-  info:    { icon: <Info size={15} />,          color: "#3b82f6", bg: "#eff6ff" },
+  info:    { icon: <Info size={15} />,          color: "#e87500", bg: "#fff7ed" },
   success: { icon: <CheckCircle2 size={15} />,  color: "#16a34a", bg: "#dcfce7" },
   warning: { icon: <AlertTriangle size={15} />, color: "#d97706", bg: "#fef3c7" },
   error:   { icon: <XCircle size={15} />,       color: "#dc2626", bg: "#fee2e2" },
 };
 const MODULE_TAGS = {
-  Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#3b82f6",Recruitment:"#8b5cf6",
-  Performance:"#ec4899",Helpdesk:"#14b8a6",System:"#64748b",Onboarding:"#f18200",
+  Leave:"#10b981",Attendance:"#f59e0b",Payroll:"#e87500",Recruitment:"#8b5cf6",
+  Performance:"#ec4899",Helpdesk:"#14b8a6",System:"#64748b",Onboarding:"#e87500",
 };
 const FILTER_OPTS = ["All","Unread","Leave","Attendance","Payroll","Recruitment","System"];
 const PER = 15;
@@ -81,18 +81,18 @@ export default function NotificationCenter() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#fff8f0] flex items-center justify-center">
-              <Bell size={18} color="#f18200" />
+              <Bell size={18} color="#e87500" />
             </div>
             <div>
-              <h1 className="text-[18px] font-bold text-[#f18200]">Notification Center</h1>
+              <h1 className="text-[18px] font-bold text-[#e87500]">Notification Center</h1>
               <p className="text-[12px] text-[#94a3b8]">
-                {unread > 0 ? <span className="text-[#f18200] font-semibold">{unread} unread</span> : "All caught up"} · {total} total
+                {unread > 0 ? <span className="text-[#e87500] font-semibold">{unread} unread</span> : "All caught up"} · {total} total
               </p>
             </div>
           </div>
           {unread > 0 && (
             <button onClick={handleMarkAllRead}
-              className="flex items-center gap-2 px-4 h-[36px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-semibold">
+              className="flex items-center gap-2 px-4 h-[36px] bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-semibold">
               <CheckCheck size={14} /> Mark All Read
             </button>
           )}
@@ -104,11 +104,11 @@ export default function NotificationCenter() {
           {FILTER_OPTS.map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-4 h-[32px] rounded-full text-[12px] font-semibold transition-colors ${
-                filter===f ? "bg-[#f18200] text-white shadow-sm" : "bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc]"
+                filter===f ? "bg-[#e87500] text-white shadow-sm" : "bg-white border border-[#e2e8f0] text-[#64748b] hover:bg-[#f8fafc]"
               }`}>
               {f}
               {f === "Unread" && unread > 0 && (
-                <span className="ml-1.5 bg-white text-[#f18200] rounded-full px-1.5 py-px text-[10px] font-bold">{unread}</span>
+                <span className="ml-1.5 bg-white text-[#e87500] rounded-full px-1.5 py-px text-[10px] font-bold">{unread}</span>
               )}
             </button>
           ))}
@@ -117,12 +117,12 @@ export default function NotificationCenter() {
         <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-40">
-              <Loader2 size={24} className="animate-spin text-[#f18200]" />
+              <Loader2 size={24} className="animate-spin text-[#e87500]" />
             </div>
           ) : rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <div className="w-14 h-14 rounded-full bg-[#fff8f0] flex items-center justify-center">
-                <Bell size={24} color="#f18200" />
+                <Bell size={24} color="#e87500" />
               </div>
               <p className="text-[14px] font-semibold text-[#1e293b]">No notifications</p>
               <p className="text-[12px] text-[#94a3b8]">You're all caught up!</p>
@@ -146,7 +146,7 @@ export default function NotificationCenter() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-[13px] font-${unreadDot?"bold":"semibold"} text-[#1e293b] truncate`}>{n.title}</span>
-                            {unreadDot && <span className="w-2 h-2 rounded-full bg-[#f18200] shrink-0" />}
+                            {unreadDot && <span className="w-2 h-2 rounded-full bg-[#e87500] shrink-0" />}
                             {n.module && (
                               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                                 style={{ background: `${MODULE_TAGS[n.module]||"#64748b"}18`, color: MODULE_TAGS[n.module]||"#64748b" }}>
@@ -163,7 +163,7 @@ export default function NotificationCenter() {
                     <div className="flex items-center gap-1 shrink-0">
                       {unreadDot && (
                         <button onClick={() => handleMarkRead(n.id)}
-                          className="p-1.5 rounded-lg hover:bg-[#f1f5f9] text-[#f18200]" title="Mark read">
+                          className="p-1.5 rounded-lg hover:bg-[#f1f5f9] text-[#e87500]" title="Mark read">
                           <CheckCheck size={13} />
                         </button>
                       )}

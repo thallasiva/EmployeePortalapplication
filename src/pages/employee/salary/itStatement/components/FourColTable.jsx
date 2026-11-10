@@ -21,7 +21,7 @@ export const FourColTable = React.memo(function FourColTable({ rows }) {
             <td className={cssClass({ padding: "7px 12px", textAlign: "right", fontSize: 12, fontWeight: r.bold ? 700 : 400, color: "#334155" })}>{tbl(r.raw)}</td>
             <td className={cssClass({ padding: "7px 12px", textAlign: "right", fontSize: 12, fontWeight: r.bold ? 700 : 400, color: "#334155" })}>{tbl(r.surcharge)}</td>
             <td className={cssClass({ padding: "7px 12px", textAlign: "right", fontSize: 12, fontWeight: r.bold ? 700 : 400, color: "#334155" })}>{tbl(r.cess)}</td>
-            <td className={cssClass({ padding: "7px 12px", textAlign: "right", fontSize: 12, fontWeight: r.bold ? 700 : 400, color: r.bold ? "#f18200" : "#334155" })}>{tbl(r.total)}</td>
+            <td className={cssClass({ padding: "7px 12px", textAlign: "right", fontSize: 12, fontWeight: r.bold ? 700 : 400, color: r.bold ? "#e87500" : "#334155" })}>{tbl(r.total)}</td>
           </tr>
         ))}
       </tbody>
@@ -63,7 +63,7 @@ export const SlabInfoPanel = React.memo(function SlabInfoPanel({ regime, taxable
             <tr key={range} className={cssClass({ background: active ? "#fffbeb" : "#fff", borderBottom: "1px solid #f1f5f9" })}>
               <td className={cssClass({ padding: "7px 12px", color: active ? "#1e293b" : "#94a3b8", fontWeight: active ? 600 : 400 })}>{range}</td>
               <td className={cssClass({ padding: "7px 12px", textAlign: "center" })}>
-                <span className={cssClass({ fontSize: 11, fontWeight: 700, color: active ? "#f18200" : "#94a3b8", background: active ? "#fff7ed" : "#f8fafc", padding: "2px 8px", borderRadius: 10 })}>{rate}</span>
+                <span className={cssClass({ fontSize: 11, fontWeight: 700, color: active ? "#e87500" : "#94a3b8", background: active ? "#fff7ed" : "#f8fafc", padding: "2px 8px", borderRadius: 10 })}>{rate}</span>
               </td>
               <td className={cssClass({ padding: "7px 12px", textAlign: "right", color: active ? "#334155" : "#94a3b8" })}>{active ? tbl(taxable) : "—"}</td>
               <td className={cssClass({ padding: "7px 12px", textAlign: "right", color: active ? "#1e293b" : "#94a3b8", fontWeight: active ? 700 : 400 })}>{active ? tbl(tax) : "—"}</td>

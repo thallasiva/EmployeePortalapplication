@@ -40,7 +40,7 @@ const ReviewMain = React.memo(function ReviewMain({
                       padding: "6px 14px",
                       fontSize: 12, fontWeight: active ? 700 : 500,
                       color: active ? "#fff" : "#64748b",
-                      background: active ? "#1890ff" : "transparent",
+                      background: active ? "#e87500" : "transparent",
                       border: "none", borderRadius: 7,
                       cursor: "pointer", transition: "all 0.15s",
                     })}

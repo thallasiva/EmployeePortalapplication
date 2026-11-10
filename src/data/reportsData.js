@@ -19,7 +19,7 @@ export const PROJECT_STATS = [
   { label: "New Projects", value: 30, trend: "+15.74% from last month", positive: true, barColor: "#8b5cf6", barWidth: 10 },
 ];
 export const PROJECT_CHART = [
-  { name: "Pending", value: 30, color: "#06b6d4" },
+  { name: "Pending", value: 30, color: "#e87500" },
   { name: "Inprogress", value: 20, color: "#eab308" },
   { name: "On Hold", value: 10, color: "#8b5cf6" },
   { name: "Completed", value: 40, color: "#22c55e" },
@@ -39,7 +39,7 @@ export const TASK_STATS = [
 ];
 export const TASK_CHART = [
   { name: "Completed", value: 40, color: "#22c55e" },
-  { name: "Pending", value: 30, color: "#3b82f6" },
+  { name: "Pending", value: 30, color: "#e87500" },
   { name: "Inprogress", value: 20, color: "#eab308" },
   { name: "On Hold", value: 10, color: "#8b5cf6" },
 ];
@@ -53,7 +53,7 @@ export const TASK_LIST = [
 export const EMPLOYEE_STATS = [
   { label: "Total Employee", value: 600, icon: "users", color: "#f97316", trend: "+20.01% from last week" },
   { label: "Active Employee", value: 600, icon: "check", color: "#22c55e", trend: "+20.01% from last week" },
-  { label: "New Employee", value: 600, icon: "user-plus", color: "#3b82f6", trend: "+20.01% from last week" },
+  { label: "New Employee", value: 600, icon: "user-plus", color: "#e87500", trend: "+20.01% from last week" },
   { label: "Inactive Employee", value: 600, icon: "user-x", color: "#ef4444", trend: "+20.01% from last week" },
 ];
 export const EMPLOYEE_CHART = [
@@ -76,7 +76,7 @@ export const EMPLOYEE_LIST = [
 ];
 export const ATTENDANCE_STATS = [
   { label: "Total Working Days", value: 25, icon: "calendar", color: "#f97316", trend: "+20.01% from last month", barWidth: 80 },
-  { label: "Total Leave Taken", value: 12, icon: "leave", color: "#3b82f6", trend: "+20.01% from last month", barWidth: 48 },
+  { label: "Total Leave Taken", value: 12, icon: "leave", color: "#e87500", trend: "+20.01% from last month", barWidth: 48 },
   { label: "Total Holidays", value: 6, icon: "holiday", color: "#ec4899", trend: "+20.01% from last month", barWidth: 24 },
   { label: "Total Halfdays", value: 5, icon: "halfday", color: "#eab308", trend: "+20.01% from last month", barWidth: 20 },
 ];
@@ -93,7 +93,7 @@ export const ATTENDANCE_LIST = [
   { id: 5, name: "Doglas Martini", role: "Manager", date: "18/01/2024", checkIn: "09:20 AM", status: "Present", checkOut: "06:25 PM", break: "40 Min", late: "20 Min", overtime: "5 Min", production: "7.80 Hrs", productionGood: false },
 ];
 export const LEAVE_STATS = [
-  { label: "Total Leaves", value: 15, trend: "+17.02%", icon: "total", color: "#3b82f6" },
+  { label: "Total Leaves", value: 15, trend: "+17.02%", icon: "total", color: "#e87500" },
   { label: "Approved Leaves", value: 5, trend: "+17.02%", icon: "approved", color: "#22c55e" },
   { label: "Pending Requests", value: 5, trend: "+17.02%", icon: "pending", color: "#eab308" },
   { label: "Rejected Leaves", value: 5, trend: "+17.02%", icon: "rejected", color: "#ef4444" },
@@ -123,7 +123,7 @@ export const DAILY_STATS = [
   { label: "Total Present", value: 300, icon: "present", color: "#f97316" },
   { label: "Completed Tasks", value: 100, icon: "completed", color: "#22c55e" },
   { label: "Total Absent", value: 15, icon: "absent", color: "#ef4444" },
-  { label: "Pending Tasks", value: 125, icon: "pending", color: "#3b82f6" },
+  { label: "Pending Tasks", value: 125, icon: "pending", color: "#e87500" },
 ];
 export const DAILY_LINE = {
   present: [60, 55, 70, 65, 70],
@@ -157,7 +157,7 @@ export const GENERIC_REPORTS = {
   invoice: {
     title: "Invoice Report",
     stats: [
-      { label: "Total Invoices", value: 120, trend: "+5.4% from last month", positive: true, barColor: "#3b82f6", barWidth: 70 },
+      { label: "Total Invoices", value: 120, trend: "+5.4% from last month", positive: true, barColor: "#e87500", barWidth: 70 },
       { label: "Paid", value: 95, trend: "+8.1% from last month", positive: true, barColor: "#22c55e", barWidth: 79 },
       { label: "Unpaid", value: 18, trend: "-2.3% from last month", positive: false, barColor: "#ef4444", barWidth: 15 },
       { label: "Overdue", value: 7, trend: "-4.1% from last month", positive: false, barColor: "#eab308", barWidth: 6 },
@@ -175,7 +175,7 @@ export const GENERIC_REPORTS = {
     stats: [
       { label: "Total Payments", value: "$128,400", trend: "+11.2% from last month", positive: true, barColor: "#8b5cf6", barWidth: 78 },
       { label: "Completed", value: "$115,200", trend: "+9.8% from last month", positive: true, barColor: "#22c55e", barWidth: 90 },
-      { label: "Processing", value: "$8,500", trend: "+2.1% from last month", positive: true, barColor: "#3b82f6", barWidth: 12 },
+      { label: "Processing", value: "$8,500", trend: "+2.1% from last month", positive: true, barColor: "#e87500", barWidth: 12 },
       { label: "Failed", value: "$4,700", trend: "-5.6% from last month", positive: false, barColor: "#ef4444", barWidth: 6 },
     ],
     tableTitle: "Payment List",
@@ -189,7 +189,7 @@ export const GENERIC_REPORTS = {
   user: {
     title: "User Report",
     stats: [
-      { label: "Total Users", value: 850, trend: "+6.3% from last month", positive: true, barColor: "#3b82f6", barWidth: 75 },
+      { label: "Total Users", value: 850, trend: "+6.3% from last month", positive: true, barColor: "#e87500", barWidth: 75 },
       { label: "Active Users", value: 720, trend: "+4.8% from last month", positive: true, barColor: "#22c55e", barWidth: 85 },
       { label: "New Users", value: 45, trend: "+15.2% from last month", positive: true, barColor: "#8b5cf6", barWidth: 12 },
       { label: "Inactive Users", value: 85, trend: "-2.1% from last month", positive: false, barColor: "#ef4444", barWidth: 10 },

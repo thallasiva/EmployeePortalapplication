@@ -10,8 +10,8 @@ export default function LeaveCalendarHub() {
     <div className="min-h-screen  ">
             {}
             <div className="px-6 py-4">
-                <h1 className="text-[20px] font-bold text-[#1f2937]">Calendar</h1>
-                <p className="text-[13px] text-[#94a3b8] mt-0.5">View leave and holiday calendars</p>
+                <h1 className="text-[20px] font-bold text-[#1f2937]">Leave &amp; Holiday</h1>
+                <p className="text-[13px] text-[#94a3b8] mt-0.5">Review your leave calendar and upcoming company holidays.</p>
             </div>
             {}
             <div className="px-6 mb-0">
@@ -22,7 +22,7 @@ export default function LeaveCalendarHub() {
             onClick={() => setActiveTab(key)}
             className={`px-6 h-[38px] rounded-lg text-[13px] font-medium transition-all ${
             activeTab === key ?
-            "bg-[#f18200] text-white shadow-sm" :
+            "bg-[#e87500] text-white shadow-sm" :
             "text-[#64748b] hover:text-[#1f2937]"}`
             }>
                             {label}

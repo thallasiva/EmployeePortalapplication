@@ -40,7 +40,7 @@ function BarChart({ data }) {
     <svg viewBox={`0 0 ${W} ${H + 40}`} width="100%" style={{ overflow: "visible" }}>
       <defs>
         <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f18200" />
+          <stop offset="0%" stopColor="#e87500" />
           <stop offset="100%" stopColor="#f97316" />
         </linearGradient>
       </defs>
@@ -67,7 +67,7 @@ function BarChart({ data }) {
 function SectionHeader({ label, expanded, onToggle, colCount }) {
   return (
     <tr onClick={onToggle} className="cursor-pointer select-none bg-[#f8fafc] hover:bg-[#f1f5f9] transition-colors">
-      <td colSpan={colCount} className="px-4 py-2.5 font-bold text-[#f18200] border-b border-[#e2e8f0] text-[12px]">
+      <td colSpan={colCount} className="px-4 py-2.5 font-bold text-[#e87500] border-b border-[#e2e8f0] text-[12px]">
         <span className="flex items-center gap-2">
           {expanded ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
           {label}
@@ -141,7 +141,7 @@ export default function YTDReports() {
   }, [monthData]);
   const totalDeductions = totals.pf + totals.profTax + totals.incomeTax;
   const pieData = [
-    { label: "Basic", value: totals.basic, color: "#f18200" },
+    { label: "Basic", value: totals.basic, color: "#e87500" },
     { label: "HRA", value: totals.hra, color: "#fb923c" },
     { label: "Special", value: totals.special, color: "#8b5cf6" },
     { label: "LTA", value: totals.lta, color: "#f59e0b" },
@@ -165,7 +165,7 @@ export default function YTDReports() {
     >
       <td
         className={`px-4 py-2 text-[12px] sticky left-0 border-r border-[#e2e8f0] whitespace-nowrap ${
-          bold ? "font-bold text-[#f18200]" : "font-normal text-[#475569]"
+          bold ? "font-bold text-[#e87500]" : "font-normal text-[#475569]"
         } ${highlight ? "bg-[#e8f4fa]" : bold ? "bg-[#f1f5f9]" : "bg-white"}`}
         style={{ paddingLeft: 24 }}
       >
@@ -173,7 +173,7 @@ export default function YTDReports() {
       </td>
       <td
         className={`px-4 py-2 text-right text-[12px] sticky border-r border-[#e2e8f0] whitespace-nowrap ${
-          bold ? "font-bold text-[#f18200]" : "font-medium text-[#334155]"
+          bold ? "font-bold text-[#e87500]" : "font-medium text-[#334155]"
         } ${highlight ? "bg-[#e8f4fa]" : bold ? "bg-[#f1f5f9]" : "bg-white"}`}
         style={{ left: 150 }}
       >
@@ -183,7 +183,7 @@ export default function YTDReports() {
         <td
           key={i}
           className="px-3 py-2 text-right text-[12px] whitespace-nowrap"
-          style={{ color: (m[dataKey] || 0) > 0 ? (highlight ? "#1565c0" : "#334155") : "#94a3b8" }}
+          style={{ color: (m[dataKey] || 0) > 0 ? (highlight ? "#cf6900" : "#334155") : "#94a3b8" }}
         >
           {tblFmt(m[dataKey] || 0)}
         </td>
@@ -201,7 +201,7 @@ export default function YTDReports() {
         <div className="flex items-center gap-3">
           <FiscalYearPicker value={fiscalYearStart} onChange={setFiscalYearStart}
             selectClassName="h-[38px] px-3 border border-[#d5dbe3] bg-white rounded-lg text-[13px] outline-none" />
-          <button className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
+          <button className="flex items-center gap-2 h-[38px] px-5 bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
             <Download size={14} /> Download
           </button>
         </div>
@@ -212,7 +212,7 @@ export default function YTDReports() {
           icon={<TrendingUp size={20} />}
           label="YTD Gross"
           value={fmt(totals.gross)}
-          color="#f18200"
+          color="#e87500"
           bgColor="#fff8f0"
           sub="Total earnings this FY"
         />
@@ -236,7 +236,7 @@ export default function YTDReports() {
           icon={<DollarSign size={20} />}
           label="Months Processed"
           value={monthData.filter((m) => m.hasData).length}
-          color="#6366f1"
+          color="#e87500"
           bgColor="#f5f3ff"
           sub={`of 12 in ${fyLabel}`}
         />
@@ -246,7 +246,7 @@ export default function YTDReports() {
         <div className="bg-white border border-[#e8eef5] rounded-xl overflow-hidden shadow-sm">
           {/* Table header bar */}
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#e8eef5] bg-white">
-            <span className="text-[14px] font-bold text-[#f18200]">Monthly Breakdown</span>
+            <span className="text-[14px] font-bold text-[#e87500]">Monthly Breakdown</span>
             <span className="text-[12px] text-[#94a3b8]">{fyLabel}</span>
           </div>
           <div className="overflow-x-auto">
@@ -325,7 +325,7 @@ export default function YTDReports() {
         {/* Earnings Breakdown */}
         <div className="bg-white border border-[#e8eef5] rounded-xl shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[#e8eef5]">
-            <p className="text-[13px] font-bold text-[#f18200]">Earnings Breakdown</p>
+            <p className="text-[13px] font-bold text-[#e87500]">Earnings Breakdown</p>
             <p className="text-[11px] text-[#94a3b8] mt-0.5">YTD component distribution</p>
           </div>
           <div className="p-5 flex items-center gap-6">
@@ -337,7 +337,7 @@ export default function YTDReports() {
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} />
                     <span className="text-[12px] text-[#64748b]">{d.label}</span>
                   </div>
-                  <span className="text-[12px] font-bold text-[#f18200]">{fmt(d.value)}</span>
+                  <span className="text-[12px] font-bold text-[#e87500]">{fmt(d.value)}</span>
                 </div>
               ))}
             </div>
@@ -346,7 +346,7 @@ export default function YTDReports() {
         {/* Monthly Net Pay Trend */}
         <div className="bg-white border border-[#e8eef5] rounded-xl shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[#e8eef5]">
-            <p className="text-[13px] font-bold text-[#f18200]">Monthly Net Pay Trend</p>
+            <p className="text-[13px] font-bold text-[#e87500]">Monthly Net Pay Trend</p>
             <p className="text-[11px] text-[#94a3b8] mt-0.5">Take-home pay each month</p>
           </div>
           <div className="p-5">

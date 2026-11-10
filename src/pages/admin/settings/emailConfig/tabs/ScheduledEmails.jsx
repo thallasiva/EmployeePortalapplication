@@ -23,7 +23,7 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-          <span className="text-[15px] font-bold text-[#f18200]">{initial?.id ? "Edit Schedule" : "New Schedule"}</span>
+          <span className="text-[15px] font-bold text-[#e87500]">{initial?.id ? "Edit Schedule" : "New Schedule"}</span>
           <button onClick={onClose} aria-label="Close" className="text-[#94a3b8] hover:text-[#64748b]"><X size={16} /></button>
         </div>
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
@@ -33,13 +33,13 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
             <div key={key}>
               <label className="text-[12px] font-semibold text-[#475569] mb-1 block">{label}</label>
               <input value={form[key]} onChange={e => set(key, e.target.value)} placeholder={placeholder}
-                className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+                className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
             </div>
           ))}
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Frequency</label>
             <select value={form.freq} onChange={e => set("freq", e.target.value)}
-              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
               {FREQ_OPTS.map(o => <option key={o}>{o}</option>)}
             </select>
           </div>
@@ -49,7 +49,7 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               <div className="flex gap-2 flex-wrap">
                 {DAYS_SHORT.map(d => (
                   <button key={d} onClick={() => toggleDay(d)} type="button"
-                    className={`w-10 h-8 rounded-lg text-[12px] font-semibold transition-colors ${days.includes(d) ? "bg-[#f18200] text-white" : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"}`}>
+                    className={`w-10 h-8 rounded-lg text-[12px] font-semibold transition-colors ${days.includes(d) ? "bg-[#e87500] text-white" : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]"}`}>
                     {d}
                   </button>
                 ))}
@@ -62,7 +62,7 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               <input type={form.freq === "Yearly" ? "text" : "number"} min="1" max="31"
                 placeholder={form.freq === "Yearly" ? "01-15" : "1"}
                 value={form.day || ""} onChange={e => set("day", e.target.value)}
-                className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+                className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
             </div>
           )}
           {form.freq === "Custom Cron" && (
@@ -70,19 +70,19 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
               <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Cron Expression</label>
               <input value={form.cron_expr || ""} onChange={e => set("cron_expr", e.target.value)}
                 placeholder="0 8 * * 1"
-                className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] font-mono focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+                className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] font-mono focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
               <p className="text-[11px] text-[#94a3b8] mt-1">min hour day month weekday</p>
             </div>
           )}
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Send Time</label>
             <input type="time" value={form.send_time} onChange={e => set("send_time", e.target.value)}
-              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
           </div>
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Template</label>
             <select value={form.template_name} onChange={e => set("template_name", e.target.value)}
-              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
               <option value="">Select template…</option>
               {templates.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
             </select>
@@ -91,12 +91,12 @@ function ScheduleModal({ open, onClose, onSave, initial, templates }) {
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Recipient</label>
             <input value={form.recipient} onChange={e => set("recipient", e.target.value)}
               placeholder="all-employees, finance@company.com"
-              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
           </div>
           <div>
             <label className="text-[12px] font-semibold text-[#475569] mb-1 block">Status</label>
             <select value={form.status} onChange={e => set("status", e.target.value)}
-              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+              className="w-full h-[38px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
               {["Active","Paused"].map(o => <option key={o}>{o}</option>)}
             </select>
           </div>
@@ -163,7 +163,7 @@ export default function ScheduledEmails() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label:"Total",  value:schedules.length, color:"#f18200", bg:"#fff8f0" },
+          { label:"Total",  value:schedules.length, color:"#e87500", bg:"#fff8f0" },
           { label:"Active", value:active,            color:"#16a34a", bg:"#dcfce7" },
           { label:"Paused", value:paused,            color:"#ca8a04", bg:"#fef9c3" },
         ].map(({ label, value, color, bg }) => (
@@ -181,7 +181,7 @@ export default function ScheduledEmails() {
       {/* Schedule cards */}
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <Loader2 size={24} className="animate-spin text-[#f18200]" />
+          <Loader2 size={24} className="animate-spin text-[#e87500]" />
         </div>
       ) : schedules.length === 0 ? (
         <div className="bg-white rounded-xl border border-[#f1f5f9] py-16 text-center text-[#94a3b8] text-[13px]">
@@ -193,9 +193,9 @@ export default function ScheduledEmails() {
             <div key={s.id} className="bg-white rounded-xl border border-[#f1f5f9] p-4 hover:shadow-sm transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-[#f18200] flex">{FREQ_EMOJI[s.freq] || <Mail size={20} />}</span>
+                  <span className="text-[#e87500] flex">{FREQ_EMOJI[s.freq] || <Mail size={20} />}</span>
                   <div>
-                    <div className="text-[14px] font-bold text-[#f18200]">{s.name}</div>
+                    <div className="text-[14px] font-bold text-[#e87500]">{s.name}</div>
                     <div className="text-[11px] text-[#94a3b8]">{s.freq} · {s.send_time}</div>
                   </div>
                 </div>

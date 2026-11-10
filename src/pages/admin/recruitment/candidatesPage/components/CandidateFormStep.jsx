@@ -10,11 +10,11 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
 }) {
   function AutoHint({ field }) {
     if (!autoFilled.includes(field)) return null;
-    return <div className="text-[10px] text-[#f18200] mt-0.5 font-semibold inline-flex items-center gap-1"><Sparkles size={10} /> extracted from resume</div>;
+    return <div className="text-[10px] text-[#e87500] mt-0.5 font-semibold inline-flex items-center gap-1"><Sparkles size={10} /> extracted from resume</div>;
   }
   function afWrap(field, children) {
     return autoFilled.includes(field)
-      ? <div className="rounded-lg outline outline-2 outline-[#f18200] outline-offset-1">{children}</div>
+      ? <div className="rounded-lg outline outline-2 outline-[#e87500] outline-offset-1">{children}</div>
       : <>{children}</>;
   }
   return (
@@ -30,7 +30,7 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
           Resume parsed ({parsed.parsedBy === "openai" ? "AI-powered" : "keyword match"}) — fields highlighted in orange were auto-extracted. Review and fill any missing fields.
         </div>
       ) : !parseErr ? (
-        <div className="mb-3.5 px-3.5 py-2.5 bg-amber-50 rounded-lg border-l-[3px] border-l-[#f18200] text-sm text-amber-800">
+        <div className="mb-3.5 px-3.5 py-2.5 bg-amber-50 rounded-lg border-l-[3px] border-l-[#e87500] text-sm text-amber-800">
           Fields marked <strong>*</strong> are mandatory.
         </div>
       ) : null}
@@ -94,7 +94,7 @@ const CandidateFormStep = React.memo(function CandidateFormStep({
       <TwoColGrid>
         <Field label="Serving Notice Period?">
           <label className="flex items-center gap-2 cursor-pointer mt-1">
-            <input type="checkbox" name="noticePeriodServing" checked={!!form.noticePeriodServing} onChange={onFormChange} className="w-4 h-4 accent-[#f18200]" />
+            <input type="checkbox" name="noticePeriodServing" checked={!!form.noticePeriodServing} onChange={onFormChange} className="w-4 h-4 accent-[#e87500]" />
             <span className="text-sm text-gray-700">Yes, currently serving</span>
           </label>
         </Field>

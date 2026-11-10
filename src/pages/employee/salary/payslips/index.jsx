@@ -53,7 +53,7 @@ export default function Payslips() {
             <select
               value={`${selectedYear}-${selectedMonth}`}
               onChange={(e) => handleMonthYearChange(e.target.value)}
-              className="h-[38px] pl-3 pr-8 border border-[#d5dbe3] bg-white rounded-lg text-[13px] text-[#374151] outline-none focus:border-[#f18200] focus:ring-2 focus:ring-[#f18200]/10 appearance-none cursor-pointer"
+              className="h-[38px] pl-3 pr-8 border border-[#d5dbe3] bg-white rounded-lg text-[13px] text-[#374151] outline-none focus:border-[#e87500] focus:ring-2 focus:ring-[#e87500]/10 appearance-none cursor-pointer"
             >
               {monthOptions.map(({ month, year }) => (
                 <option key={`${year}-${month}`} value={`${year}-${month}`}>
@@ -68,7 +68,7 @@ export default function Payslips() {
             type="button"
             onClick={handleDownload}
             disabled={downloading}
-            className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] disabled:opacity-60 text-white rounded-lg text-[13px] font-bold transition-colors"
+            className="flex items-center gap-2 h-[38px] px-5 bg-[#e87500] hover:bg-[#e07000] disabled:opacity-60 text-white rounded-lg text-[13px] font-bold transition-colors"
           >
             {downloading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -89,7 +89,7 @@ export default function Payslips() {
               onClick={() => setActiveTab(t.key)}
               className={`px-5 h-[36px] rounded-lg text-[13px] font-medium transition-all ${
                 activeTab === t.key
-                  ? "bg-[#f18200] text-white shadow-sm"
+                  ? "bg-[#e87500] text-white shadow-sm"
                   : "text-[#64748b] hover:text-[#1f2937]"
               }`}
             >
@@ -105,8 +105,8 @@ export default function Payslips() {
           <div className="flex-1 bg-white border border-[#ffe0b2] rounded-xl overflow-hidden shadow-sm">
             {/* Panel header strip */}
             <div className="px-5 py-3 bg-[#fff8f0] border-b border-[#ffe0b2] flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#f18200]/10 flex items-center justify-center shrink-0">
-                <FileText size={15} color="#f18200" />
+              <div className="w-8 h-8 rounded-lg bg-[#e87500]/10 flex items-center justify-center shrink-0">
+                <FileText size={15} color="#e87500" />
               </div>
               <div>
                 <p className="text-[13px] font-bold text-[#1f2937]">

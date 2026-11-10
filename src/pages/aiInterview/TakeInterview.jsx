@@ -13,7 +13,7 @@ import {
 /* ─── Theme ──────────────────────────────────────────────────────────────── */
 const C = {
   bg:"#0d0f1a", card:"#161929", panel:"#111422", border:"#252840",
-  accent:"#6c63ff", teal:"#0E7C86", danger:"#ef4444",
+  accent:"#e87500", teal:"#0E7C86", danger:"#ef4444",
   warn:"#f59e0b", success:"#22c55e", text:"#f1f5f9", muted:"#8892a4",
 };
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -57,11 +57,11 @@ const STYLE = `
 .slide-down{animation:slideDown .25s ease;}
 .shake    {animation:shake .4s ease;}
 .time-urgent{animation:timePulse .7s ease-in-out infinite;}
-.btn-primary{background:linear-gradient(135deg,#6c63ff,#5b52d4);color:#fff;border:none;border-radius:30px;padding:13px 28px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .15s;}
+.btn-primary{background:linear-gradient(135deg,#e87500,#cf6900);color:#fff;border:none;border-radius:30px;padding:13px 28px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .15s;}
 .btn-primary:hover{transform:scale(1.03);}
 .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;}
 .btn-ghost{background:none;border:1px solid #252840;border-radius:10px;color:#8892a4;cursor:pointer;padding:8px 14px;font-size:13px;display:flex;align-items:center;gap:6px;transition:border-color .2s,color .2s;}
-.btn-ghost:hover{border-color:#6c63ff;color:#6c63ff;}
+.btn-ghost:hover{border-color:#e87500;color:#e87500;}
 `;
 /* ─── AI Avatar ──────────────────────────────────────────────────────────── */
 function AiAvatar({ size=80, speaking=false }) {
@@ -551,7 +551,7 @@ function InterviewRoom({ token, question, sessionInfo, remaining, stream,
 function JoinScreen({ session, error, onJoin }) {
   const mins = Math.round((session?.durationSeconds||0)/60);
   return (
-    <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#1a1060 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#7c3d00 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
       <div className="fade-in" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:22,padding:"44px 38px",width:350,textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,.55)"}}>
         <div style={{fontSize:11,color:C.muted,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>AI Interview</div>
         <h1 style={{fontSize:26,fontWeight:800,color:C.text,margin:"0 0 10px"}}>{session?.jobTitle||"Interview"}</h1>
@@ -590,9 +590,9 @@ function OtpScreen({ email, token, devCode, onVerify }) {
     finally { setBusy(false); }
   }
   return (
-    <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#1a1060 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:`radial-gradient(ellipse at 30% 20%,#7c3d00 0%,${C.bg} 65%)`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
       <div className="fade-in" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:22,padding:"40px 36px",width:340,textAlign:"center",boxShadow:"0 32px 80px rgba(0,0,0,.55)"}}>
-        <div style={{width:56,height:56,borderRadius:16,background:`linear-gradient(135deg,${C.accent},#5b52d4)`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><Bot size={28} color="#fff" aria-hidden="true" /></div>
+        <div style={{width:56,height:56,borderRadius:16,background:`linear-gradient(135deg,${C.accent},#cf6900)`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><Bot size={28} color="#fff" aria-hidden="true" /></div>
         <h2 style={{color:C.text,fontSize:22,fontWeight:800,margin:"0 0 8px"}}>Verify your identity</h2>
         <p style={{color:C.muted,fontSize:13,margin:"0 0 24px"}}>6-digit OTP sent to<br/><strong style={{color:C.text}}>{email||"your email"}</strong></p>
         <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:18}}>

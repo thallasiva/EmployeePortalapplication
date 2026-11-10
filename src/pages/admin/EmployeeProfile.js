@@ -4,7 +4,7 @@ import { listEmployees } from "../../api/employee.api";
 import { getDepartmentName } from "../../utils/employeeDisplay";
 import "../../lib/placeholders";
 import { EmployeeStatusBadge } from "../../utils/employeeStatus";import { cssClass, joinClasses } from "../../utils/classStyles";
-const AVATAR_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6", "#22c55e"];
+const AVATAR_COLORS = ["#e87500", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#e87500", "#22c55e"];
 function initials(name = "") {return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "?";}
 function avatarColor(name = "") {let h = 0;for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];}
 function TeamCard({ team, members }) {

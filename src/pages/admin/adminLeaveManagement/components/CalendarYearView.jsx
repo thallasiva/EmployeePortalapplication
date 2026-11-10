@@ -99,7 +99,7 @@ const CalendarYearView = memo(({ cursor, filtered, shiftHolidays, currentShiftDe
                       {totalDays > 0 ? (
                         <div title={mReqs.map((r) => r.leave_type_name).join(", ")} className={cssClass({
                           width: 36, height: 28, borderRadius: 6, margin: "0 auto",
-                          background: `rgba(241,130,0,${0.15 + intensity * 0.75})`,
+                          background: `rgba(232,117,0,${0.15 + intensity * 0.75})`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 10, fontWeight: 700, color: intensity > 0.5 ? "#fff" : "#92400e",
                         })}>

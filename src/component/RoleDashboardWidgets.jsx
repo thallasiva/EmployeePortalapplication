@@ -75,7 +75,7 @@ export default function RoleDashboardWidgets({ data = {} }) {
             <article
               key={widget.id || `${widget.type}-${index}`}
               className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-              style={{ borderTop: `3px solid ${widget.color || "#f18200"}` }}
+              style={{ borderTop: `3px solid ${widget.color || "#e87500"}` }}
             >
               <p className="truncate text-xs font-medium text-slate-500">{widget.label || widget.source}</p>
               {widget.type === "table" ? (
@@ -97,7 +97,7 @@ export default function RoleDashboardWidgets({ data = {} }) {
                           <span>{entry.label}</span><span>{entry.value}</span>
                         </div>
                         <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                          <div className="h-full rounded-full" style={{ width: `${Math.max(3, Math.abs(entry.value) / maxValue * 100)}%`, background: widget.color || "#f18200" }} />
+                          <div className="h-full rounded-full" style={{ width: `${Math.max(3, Math.abs(entry.value) / maxValue * 100)}%`, background: widget.color || "#e87500" }} />
                         </div>
                       </div>
                     ))}
@@ -112,7 +112,7 @@ export default function RoleDashboardWidgets({ data = {} }) {
                         const y = 55 - Math.abs(entry.value) / maxValue * 50;
                         return `${x},${y}`;
                       }).join(" ")}
-                      fill="none" stroke={widget.color || "#f18200"} strokeWidth="3"
+                      fill="none" stroke={widget.color || "#e87500"} strokeWidth="3"
                     />
                   </svg>
                 ) : <p className="mt-3 text-sm text-slate-400">More {source.toLowerCase()} data is needed for a trend.</p>
@@ -121,7 +121,7 @@ export default function RoleDashboardWidgets({ data = {} }) {
                   <div className="mt-3 flex items-center gap-3">
                     <div className="h-14 w-14 shrink-0 rounded-full" style={{
                       background: `conic-gradient(${entries.map((entry, segmentIndex) => {
-                        const palette = [widget.color || "#f18200", "#6366f1", "#10b981", "#f59e0b"];
+                        const palette = [widget.color || "#e87500", "#e87500", "#10b981", "#f59e0b"];
                         const total = entries.reduce((sum, item) => sum + Math.abs(item.value), 0) || 1;
                         const start = entries.slice(0, segmentIndex).reduce((sum, item) => sum + Math.abs(item.value), 0) / total * 100;
                         const end = start + Math.abs(entry.value) / total * 100;
@@ -145,7 +145,7 @@ export default function RoleDashboardWidgets({ data = {} }) {
                   </ul>
                 ) : <p className="mt-3 text-sm text-slate-400">No upcoming calendar events available.</p>
               ) : (
-                <p className="mt-2 text-2xl font-bold" style={{ color: widget.color || "#f18200" }}>
+                <p className="mt-2 text-2xl font-bold" style={{ color: widget.color || "#e87500" }}>
                   {typeof value === "number" && widget.source === "Attendance" && widget.label?.toLowerCase().includes("rate")
                     ? `${value}%`
                     : value}

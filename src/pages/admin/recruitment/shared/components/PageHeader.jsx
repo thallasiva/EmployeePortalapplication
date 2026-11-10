@@ -8,7 +8,7 @@ export const PageHeader = React.memo(function PageHeader({ breadcrumbs = [], tit
           {breadcrumbs.map((b, i) => (
             <React.Fragment key={i}>
               {i > 0 && <ChevronRight size={12} />}
-              <span className={i === breadcrumbs.length - 1 ? "text-[#f18200] font-medium" : "text-gray-400"}>
+              <span className={i === breadcrumbs.length - 1 ? "text-[#e87500] font-medium" : "text-gray-400"}>
                 {b}
               </span>
             </React.Fragment>

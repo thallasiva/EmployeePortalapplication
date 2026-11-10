@@ -66,7 +66,7 @@
   flex-shrink: 0;
 }
 .leave-grouped-chart__bar--balance {
-  background-color: #a7d2e8;
+  background-color: #fed7aa;
 }
 .leave-grouped-chart__bar--consumed {
   background-color: #e8a7a7;
@@ -109,7 +109,7 @@
   height: 10px;
 }
 .leave-grouped-chart__legend-swatch--balance {
-  background-color: #a7d2e8;
+  background-color: #fed7aa;
 }
 .leave-grouped-chart__legend-swatch--consumed {
   background-color: #e8a7a7;

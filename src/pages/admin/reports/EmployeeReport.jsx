@@ -63,7 +63,7 @@ export default function EmployeeReport() {
   const stats = [
   { label: "Total Employees", value: employees.length, color: "#f97316", trend: "All time" },
   { label: "Active", value: active, color: "#22c55e", trend: "Currently active" },
-  { label: "New This Month", value: thisMonth, color: "#3b82f6", trend: "Joined this month" },
+  { label: "New This Month", value: thisMonth, color: "#e87500", trend: "Joined this month" },
   { label: "Inactive", value: inactive, color: "#ef4444", trend: "Not active" }];
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit2, Trash2, Eye, Save } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
-const NAVY  = "#f18200";
+const NAVY  = "#e87500";
 const AMBER = "#d97706";
 // ─── Donut chart ──────────────────────────────────────────────────────────────
 function DonutChart({ slices }) {
@@ -103,7 +103,7 @@ function CompactSummary({ structure }) {
     { label: "Fixed",   pct: Math.round((totalFixed/safe)*100), color: NAVY },
     { label: "Var",     pct: Math.round((totalVar/safe)*100),   color: AMBER },
     { label: "Ben",     pct: Math.round((totalBen/safe)*100),   color: "#10b981" },
-    { label: "Emp",     pct: Math.round((totalEmp/safe)*100),   color: "#6366f1" },
+    { label: "Emp",     pct: Math.round((totalEmp/safe)*100),   color: "#e87500" },
     { label: "Ded",     pct: Math.round((totalDed/safe)*100),   color: "#ef4444" },
   ].filter(s => s.pct > 0);
   const sum = slices.reduce((s, sl) => s + sl.pct, 0);
@@ -112,7 +112,7 @@ function CompactSummary({ structure }) {
     { label: "Fixed Earnings",    value: fmtINR(totalFixed), color: NAVY },
     { label: "Variable Pay",      value: fmtINR(totalVar),   color: AMBER },
     { label: "Benefits",          value: fmtINR(totalBen),   color: "#10b981" },
-    { label: "Employer Contrib.", value: fmtINR(totalEmp),   color: "#6366f1" },
+    { label: "Employer Contrib.", value: fmtINR(totalEmp),   color: "#e87500" },
     { label: "Deductions",        value: fmtINR(totalDed),   color: "#ef4444" },
   ];
   return (
@@ -175,7 +175,7 @@ const Template2Grid = React.memo(function Template2Grid({
     { title: "VARIABLE PAY",     lines: variableLines, color: AMBER,     cols: ["Component","Amount",""] },
     { title: "BENEFITS",         lines: benefitLines,  color: "#10b981", cols: ["Component","Amount",""] },
     { title: "DEDUCTIONS",       lines: deductLines,   color: "#ef4444", cols: ["Component","Amount",""] },
-    { title: "EMPLOYER CONTRIB.",lines: employerLines, color: "#6366f1", cols: ["Component","Amount",""] },
+    { title: "EMPLOYER CONTRIB.",lines: employerLines, color: "#e87500", cols: ["Component","Amount",""] },
   ];
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: "#f8f9fb" }}>

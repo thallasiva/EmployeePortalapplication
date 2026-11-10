@@ -59,7 +59,7 @@ export default function ShiftManagement() {
   };
   return (
     <main className="space-y-6 ">
-      <header><p className="text-sm font-semibold text-amber-700">TIME &amp; ATTENDANCE</p><h1 className="mt-1 text-2xl font-bold  text-[#f18200]">Shift Management</h1><p className="mt-1 text-sm text-slate-500">Set employee-specific work days and hours. Employees can view their roster in Attendance.</p></header>
+      <header><p className="text-sm font-semibold text-amber-700">TIME &amp; ATTENDANCE</p><h1 className="mt-1 text-2xl font-bold  text-[#e87500]">Shift Management</h1><p className="mt-1 text-sm text-slate-500">Set employee-specific work days and hours. Employees can view their roster in Attendance.</p></header>
       {notice && <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-slate-700">{notice}</div>}
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Clock size={18} /> Assign a schedule</h2>

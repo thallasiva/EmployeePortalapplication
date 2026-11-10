@@ -3,7 +3,7 @@ import { Building2, UserCheck, Users } from "lucide-react";
 import { BRAND } from "../constants";
 const TeamStats = React.memo(function TeamStats({ self, directReports, peers }) {
   const stats = [
-    { label: "Department", value: self?.departmentName || "—", icon: Building2, color: "#6366f1", bg: "#eef2ff" },
+    { label: "Department", value: self?.departmentName || "—", icon: Building2, color: "#e87500", bg: "#fff7ed" },
     { label: "Direct Reports", value: directReports.length, icon: UserCheck, color: "#10b981", bg: "#ecfdf5" },
     { label: "Team Size", value: peers.length + directReports.length + 1, icon: Users, color: BRAND, bg: "#fff8f0" },
   ];

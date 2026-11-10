@@ -3,7 +3,7 @@ import { INPUT_CLS } from "../constants";
 const CompanyProfile = React.memo(function CompanyProfile({ selectedCompany, profile, setProfile }) {
   return (
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
-      <h2 className="text-xl font-semibold  text-[#f18200]">Company Profile</h2>
+      <h2 className="text-xl font-semibold  text-[#e87500]">Company Profile</h2>
       <p className="mt-1 text-sm text-gray-500">
         Settings for <strong>{selectedCompany.name}</strong>
       </p>

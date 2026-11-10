@@ -139,7 +139,7 @@ const DelegationTab = React.memo(function DelegationTab({
                     </td>
                     <td className={cssClass({ padding: "10px 14px", color: "#374151" })}>{d.delegate_name}</td>
                     <td className={cssClass({ padding: "10px 14px" })}>
-                      <span className={cssClass({ background: "#eff6ff", color: "#2563eb", borderRadius: 5, padding: "2px 8px", fontSize: 11 })}>
+                      <span className={cssClass({ background: "#fff7ed", color: "#e87500", borderRadius: 5, padding: "2px 8px", fontSize: 11 })}>
                         {d.module}
                       </span>
                     </td>

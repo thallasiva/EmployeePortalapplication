@@ -9,7 +9,7 @@ const RecruiterSelector = React.memo(function RecruiterSelector({
   return (
     <div className="mt-2 mb-5 overflow-hidden rounded-lg border border-gray-200">
       <div className="flex items-center gap-2 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
-        <User size={14} color="#f18200" />
+        <User size={14} color="#e87500" />
         <span className="text-[13px] font-bold text-gray-700">Assign Recruiters</span>
         {assignedRecruiters.length > 0 && (
           <span className="rounded-full border border-orange-200 bg-orange-50 px-2 py-px text-[11px] font-semibold text-orange-600">

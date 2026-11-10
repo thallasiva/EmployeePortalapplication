@@ -53,7 +53,7 @@ const CandidateTable = React.memo(function CandidateTable({
           <div className="ml-auto flex items-center gap-2">
             {filterStatus &&
               <button type="button" onClick={() => setFilterStatus("")}
-                className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-[#f18200] border border-orange-200 cursor-pointer inline-flex items-center gap-1">
+                className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-[#e87500] border border-orange-200 cursor-pointer inline-flex items-center gap-1">
                 {filterStatus} <X size={12} aria-hidden="true" />
               </button>
             }

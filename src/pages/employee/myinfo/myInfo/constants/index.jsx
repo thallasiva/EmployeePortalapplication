@@ -6,7 +6,7 @@ export const RESIGN_REASONS = [
   "Work Environment", "Other",
 ];
 export const STATUS_CFG = {
-  pending:   { bg: "#fff7ed", border: "#f18200", color: "#c2410c", icon: <Clock size={16} />,        label: "Resignation Pending Review" },
+  pending:   { bg: "#fff7ed", border: "#e87500", color: "#c2410c", icon: <Clock size={16} />,        label: "Resignation Pending Review" },
   accepted:  { bg: "#f0fdf4", border: "#22c55e", color: "#15803d", icon: <CheckCircle2 size={16} />, label: "Resignation Accepted" },
   rejected:  { bg: "#fef2f2", border: "#ef4444", color: "#dc2626", icon: <XCircle size={16} />,      label: "Resignation Rejected" },
   withdrawn: { bg: "#f8fafc", border: "#94a3b8", color: "#64748b", icon: <XCircle size={16} />,      label: "Resignation Withdrawn" },

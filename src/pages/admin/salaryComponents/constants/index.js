@@ -4,7 +4,7 @@ export const FREQUENCIES = ["Monthly", "Quarterly", "Half-Yearly", "Annual", "On
 export const CAT_COLOR = {
   Earning: "bg-green-50 text-green-700 border-green-200",
   Deduction: "bg-red-50 text-red-700 border-red-200",
-  "Employer Contribution": "bg-blue-50 text-[#f18200] border-blue-200",
+  "Employer Contribution": "bg-blue-50 text-[#e87500] border-blue-200",
 };
 export const BLANK = {
   component_name: "",

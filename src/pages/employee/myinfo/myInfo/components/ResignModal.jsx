@@ -59,7 +59,7 @@ const ResignModal = React.memo(function ResignModal({ onClose, onSubmit, saving 
             </div>
             {lwd && (
               <div className={cssClass({ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "10px 14px", marginBottom: 16, display: "flex", gap: 10, alignItems: "flex-start" })}>
-                <Clock size={15} color="#f18200" className={cssClass({ marginTop: 1, flexShrink: 0 })} />
+                <Clock size={15} color="#e87500" className={cssClass({ marginTop: 1, flexShrink: 0 })} />
                 <div>
                   <p className={cssClass({ margin: 0, fontSize: 12, fontWeight: 700, color: "#c2410c" })}>Notice Period: {notice} day{notice !== 1 ? "s" : ""}</p>
                   <p className={cssClass({ margin: "2px 0 0", fontSize: 11, color: "#92400e" })}>Serving from today until {fmtDate(lwd)}</p>

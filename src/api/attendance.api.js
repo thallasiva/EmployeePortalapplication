@@ -12,6 +12,7 @@ export const getAttendanceDashboard = (date) =>
 apiClient.get("/attendance/dashboard", { params: { date } }).then(unwrap);
 export const getAttendanceAnalytics = (params) =>
 apiClient.get("/attendance/analytics", { params }).then(unwrap);
+export const getAttendanceLocationPolicy = () => apiClient.get('/attendance/location-policy').then(unwrap);
 export const getTeamLeaveCalendar = (params) =>
 apiClient.get("/attendance/team-leave-calendar", { params }).then(unwrap);
 export const listRegularizations = (params) =>

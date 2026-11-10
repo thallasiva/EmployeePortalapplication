@@ -3,7 +3,7 @@ import { cssClass } from "../../../../utils/classStyles";
 import { BRAND } from "../constants";
 const STAT_ITEMS = (stats) => [
   { label: "Total",       value: stats.total,       color: BRAND },
-  { label: "Submitted",   value: stats.submitted,   color: "#1d4ed8" },
+  { label: "Submitted",   value: stats.submitted,   color: "#cf6900" },
   { label: "Approved",    value: stats.approved,    color: "#15803d" },
   { label: "Rejected",    value: stats.rejected,    color: "#dc2626" },
   { label: "Not Started", value: stats.not_started, color: "#94a3b8" },

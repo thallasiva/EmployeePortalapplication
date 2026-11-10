@@ -20,7 +20,7 @@ export default function LeaveReport() {
   const approved = leaves.filter((l) => l.status === "approved").length;
   const rejected = leaves.filter((l) => l.status === "rejected").length;
   const stats = [
-  { label: "Total Requests", value: leaves.length, color: "#3b82f6", trend: "All time" },
+  { label: "Total Requests", value: leaves.length, color: "#e87500", trend: "All time" },
   { label: "Approved", value: approved, color: "#22c55e", trend: "Approved leaves" },
   { label: "Pending", value: pending, color: "#f97316", trend: "Awaiting review" },
   { label: "Rejected", value: rejected, color: "#ef4444", trend: "Rejected" }];

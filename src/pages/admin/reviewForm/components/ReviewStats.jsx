@@ -2,7 +2,7 @@ import React from "react";
 import { joinClasses, cssClass } from "../../../../utils/classStyles";
 const ReviewStats = React.memo(function ReviewStats({ stats }) {
   const items = [
-    { label: "Total Reviews", value: stats.total, color: "#f18200" },
+    { label: "Total Reviews", value: stats.total, color: "#e87500" },
     { label: "Completed", value: stats.completed, color: "#16a34a" },
     { label: "In Progress", value: stats.inProgress, color: "#f97316" },
     { label: "Pending", value: stats.pending, color: "#6b7280" },

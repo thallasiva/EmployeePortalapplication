@@ -19,7 +19,7 @@ const WorkSchedule = React.memo(function WorkSchedule({
     <section className="bg-white rounded-[20px] border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-semibold  text-[#f18200]">Work Schedule</h2>
+          <h2 className="text-xl font-semibold  text-[#e87500]">Work Schedule</h2>
           <p className="mt-1 text-sm text-gray-500">Configure work hours and days</p>
         </div>
         <div className={cssClass({ display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 3 })}>
@@ -31,7 +31,7 @@ const WorkSchedule = React.memo(function WorkSchedule({
               className={cssClass({
                 padding: "5px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
                 background: scheduleTab === t.id ? "#fff" : "transparent",
-                color: scheduleTab === t.id ? "#f18200" : "#64748b",
+                color: scheduleTab === t.id ? "#e87500" : "#64748b",
                 boxShadow: scheduleTab === t.id ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
               })}
             >

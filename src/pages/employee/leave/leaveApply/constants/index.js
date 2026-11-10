@@ -1,7 +1,7 @@
 export const SESSION_OPTIONS = ["Full Day", "First Half", "Second Half"];
 export const LEAVE_COLORS = [
-  "#f18200", "#6366f1", "#10b981", "#ef4444",
-  "#3b82f6", "#a855f7", "#f59e0b", "#06b6d4",
+  "#e87500", "#e87500", "#10b981", "#ef4444",
+  "#e87500", "#a855f7", "#f59e0b", "#e87500",
 ];
 export const STATUS_STYLES = {
   Approved: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500" },

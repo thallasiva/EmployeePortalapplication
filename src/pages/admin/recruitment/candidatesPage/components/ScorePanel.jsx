@@ -59,7 +59,7 @@ const ScorePanel = React.memo(function ScorePanel({ score, showHint = false }) {
         }
         {showHint &&
           <div className="mt-2 pt-2.5 border-t border-dashed border-gray-200 text-xs text-gray-500">
-            Click <strong className="text-[#f18200]">Parse Resume</strong> to auto-fill candidate details <ArrowRight size={12} className="inline" />
+            Click <strong className="text-[#e87500]">Parse Resume</strong> to auto-fill candidate details <ArrowRight size={12} className="inline" />
           </div>
         }
       </div>

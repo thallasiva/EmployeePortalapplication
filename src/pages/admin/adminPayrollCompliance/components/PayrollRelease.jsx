@@ -33,7 +33,7 @@ function PayrollRelease({ month, year }) {
       key: "status",
       label: "Status",
       render: (r) => {
-        const map = { paid: "#16a34a", generated: "#2563eb", draft: "#888" };
+        const map = { paid: "#16a34a", generated: "#e87500", draft: "#888" };
         const clr = map[r.status] || "#888";
         return (
           <span className={cssClass({ background: clr + "22", color: clr, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 })}>
@@ -72,7 +72,7 @@ function PayrollRelease({ month, year }) {
   const paid = rows.filter((r) => r.status === "paid").length;
   const summaryStats = [
     { label: "Total", value: rows.length, color: "#555" },
-    { label: "Generated", value: generated, color: "#2563eb" },
+    { label: "Generated", value: generated, color: "#e87500" },
     { label: "Released / Paid", value: paid, color: "#16a34a" },
     { label: "Pending", value: rows.length - generated - paid, color: "#888" },
   ];

@@ -22,7 +22,7 @@ export default function Review() {
           0%   { background-position: -200% 0; }
           100% { background-position:  200% 0; }
         }
-        .rv-nav-btn:hover { background: #eef6ff !important; color: #1890ff !important; }
+        .rv-nav-btn:hover { background: #eef6ff !important; color: #e87500 !important; }
       `}</style>
       <div className="review-hub">
         <div className="review-hub__layout">

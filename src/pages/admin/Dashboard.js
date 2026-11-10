@@ -83,7 +83,7 @@ export default function Dashboard() {
             value={metrics.onLeaveToday}
             sub="approved today"
             icon={CalendarDays}
-            className="bg-[#f18200] text-white"
+            className="bg-[#e87500] text-white"
             onClick={go("/dashboard/leave")} />
           <KpiCard
             label="Pending Leave"

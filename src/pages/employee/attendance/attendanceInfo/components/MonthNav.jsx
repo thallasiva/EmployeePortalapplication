@@ -93,11 +93,11 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
   const now = new Date();
   const timeNow = fmt(`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`);
   return (
-    <div style={{ background: "#fff", borderBottom: "2px solid #f18200", position: "sticky", top: 0, zIndex: 30, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
+    <div style={{ background: "#fff", borderBottom: "2px solid #e87500", position: "sticky", top: 0, zIndex: 30, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         {/* ── Brand + month nav ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: "#f18200", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "#e87500", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <span style={{ color: "#fff", fontSize: 12, fontWeight: 900 }}>AT</span>
           </div>
           <div>
@@ -147,9 +147,9 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
                 <>
                   <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
                   <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#fff7ed" }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#f18200" }} />
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#e87500" }} />
                     <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>OUT</span>
-                    <span style={{ fontWeight: 800, color: "#f18200" }}>{checkOutTime}</span>
+                    <span style={{ fontWeight: 800, color: "#e87500" }}>{checkOutTime}</span>
                   </div>
                 </>
               )}
@@ -177,7 +177,7 @@ export default function MonthNav({ month, year, today, onPrevMonth, onNextMonth,
               <button
                 onClick={() => punch(checkOut, "check out", `Checked out at ${timeNow} — great work today!`)}
                 disabled={loading}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: "#f18200", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: loading ? 0.6 : 1, boxShadow: "0 2px 8px #f1820044" }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "none", background: "#e87500", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", opacity: loading ? 0.6 : 1, boxShadow: "0 2px 8px #e8750044" }}
               >
                 <LogOut size={14} /> {loading ? "Please wait…" : "Check Out"}
               </button>

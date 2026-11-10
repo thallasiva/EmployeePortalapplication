@@ -17,7 +17,7 @@ export default function ReviewForm() {
             onClick={() => handleFilterChange(s)}
             className={`px-3 h-8 rounded-full text-[12px] font-medium border transition-colors ${
               filterStatus === s
-                ? "bg-[#f18200] text-white border-[#f18200]"
+                ? "bg-[#e87500] text-white border-[#e87500]"
                 : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
             }`}
           >

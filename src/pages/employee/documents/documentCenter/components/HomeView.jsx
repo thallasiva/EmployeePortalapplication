@@ -5,7 +5,7 @@ import {
   Sparkles, ChevronRight
 } from "lucide-react";
 import { VIEW } from "../constants";
-const BRAND = "#f18200";
+const BRAND = "#e87500";
 const DOC_CARDS = [
   {
     view: VIEW.DOCUMENTS,
@@ -46,9 +46,9 @@ const DOC_CARDS = [
   {
     view: VIEW.FORMS,
     icon: FileText,
-    color: "#0284c7",
-    bg: "#f0f9ff",
-    border: "#bae6fd",
+    color: "#e87500",
+    bg: "#fff7ed",
+    border: "#fed7aa",
     title: "Forms",
     desc: "Tax, statutory & declaration forms",
   },
@@ -59,7 +59,7 @@ const HomeView = React.memo(function HomeView({ setView }) {
       {/* ── Hero Banner ─────────────────────────────────────────── */}
       <div
         className="relative overflow-hidden rounded-2xl p-6 flex items-center justify-between gap-4"
-        style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #2d1b69 60%, #f18200 100%)" }}
+        style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #2d1b69 60%, #e87500 100%)" }}
       >
         <div className="z-10">
           <div className="flex items-center gap-2 mb-2">

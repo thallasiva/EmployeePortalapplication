@@ -16,7 +16,8 @@
     "db:migrate:061": "node src/database/runSql.js migration_061_company_salary_configuration.sql",
     "db:migrate:062": "node src/database/runSql.js migration_062_payroll_configuration_versions.sql",
     "db:migrate:063": "node src/database/runSql.js migration_063_training_assets.sql",
-    "db:migrate:064": "node src/database/runSql.js migration_064_asset_management_workflows.sql"
+    "db:migrate:064": "node src/database/runSql.js migration_064_asset_management_workflows.sql",
+    "db:migrate:065": "node src/database/runSql.js migration_065_attendance_extras.sql"
   },
   "license": "MIT",
   "dependencies": {

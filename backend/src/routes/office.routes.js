@@ -13,6 +13,10 @@ const schema = Joi.object({
   holiday_calendar: Joi.string().max(100).allow('', null),
   timezone: Joi.string().max(64).allow('', null),
   status: Joi.string().valid('Active', 'Inactive'),
+  geo_latitude: Joi.number().min(-90).max(90).allow(null),
+  geo_longitude: Joi.number().min(-180).max(180).allow(null),
+  geo_radius_meters: Joi.number().integer().min(50).max(50000).allow(null),
+  geo_fence_enabled: Joi.boolean(),
 });
 router.use(authenticate);
 router.get('/', controller.list);

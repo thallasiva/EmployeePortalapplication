@@ -19,7 +19,7 @@ export const STEPS = [
   { id: 3, label: "Submit" }
 ];
 export const REC_CLASS = {
-  "Highly Suitable": "bg-amber-50 text-[#f18200]",
+  "Highly Suitable": "bg-amber-50 text-[#e87500]",
   "Suitable": "bg-blue-100 text-blue-800",
   "Partially Suitable": "bg-yellow-100 text-amber-800",
   "Not Suitable": "bg-red-100 text-red-800"
@@ -33,8 +33,8 @@ export const REQUIRED_FIELDS = [
 ];
 export const STATUS_STRIPS_CONFIG = [
   { label: "Total", val: "", cls: "text-gray-500 bg-gray-100", activeBorder: "border-gray-500", defaultBorder: "border-gray-200" },
-  { label: "Shortlisted", val: "Shortlisted", cls: "text-[#f18200] bg-blue-50", activeBorder: "border-blue-700", defaultBorder: "border-blue-200" },
+  { label: "Shortlisted", val: "Shortlisted", cls: "text-[#e87500] bg-blue-50", activeBorder: "border-blue-700", defaultBorder: "border-blue-200" },
   { label: "Offer Released", val: "Offer Released", cls: "text-amber-700 bg-amber-50", activeBorder: "border-amber-700", defaultBorder: "border-amber-200" },
-  { label: "Offer Accepted", val: "Offer Accepted", cls: "text-[#f18200] bg-orange-50", activeBorder: "border-[#f18200]", defaultBorder: "border-orange-200" },
+  { label: "Offer Accepted", val: "Offer Accepted", cls: "text-[#e87500] bg-orange-50", activeBorder: "border-[#e87500]", defaultBorder: "border-orange-200" },
   { label: "Onboarded", val: "Onboarded", cls: "text-green-800 bg-green-100", activeBorder: "border-green-800", defaultBorder: "border-green-300" }
 ];

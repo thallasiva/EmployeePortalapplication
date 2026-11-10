@@ -4,15 +4,15 @@ import client from "../../../api/client";
 import { apiErrorToast } from "../../../utils/ToastControllers";
 const Toggle = ({ on, onToggle }) => (
   <button onClick={onToggle}
-    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${on ? "bg-[#f18200]" : "bg-[#cbd5e1]"}`}>
+    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${on ? "bg-[#e87500]" : "bg-[#cbd5e1]"}`}>
     <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-4" : "translate-x-1"}`} />
   </button>
 );
 const CHANNELS = [
-  { key:"email",  label:"Email",            icon:<Mail size={16}/>,           color:"#f18200" },
-  { key:"inapp",  label:"In-App",           icon:<Bell size={16}/>,           color:"#6366f1" },
+  { key:"email",  label:"Email",            icon:<Mail size={16}/>,           color:"#e87500" },
+  { key:"inapp",  label:"In-App",           icon:<Bell size={16}/>,           color:"#e87500" },
   { key:"sms",    label:"SMS",              icon:<Smartphone size={16}/>,     color:"#10b981" },
-  { key:"push",   label:"Push",             icon:<MessageSquare size={16}/>,  color:"#3b82f6" },
+  { key:"push",   label:"Push",             icon:<MessageSquare size={16}/>,  color:"#e87500" },
 ];
 const NOTIF_EVENTS = [
   { group:"Leave", events:[
@@ -80,7 +80,7 @@ export default function NotificationSettings() {
   const handleReset = () => { setMatrix(buildDefault()); showToast("Reset to defaults", "info"); };
   if (loading) return (
     <div className="min-h-screen   flex items-center justify-center">
-      <Loader2 size={28} className="animate-spin text-[#f18200]" />
+      <Loader2 size={28} className="animate-spin text-[#e87500]" />
     </div>
   );
   return (
@@ -96,10 +96,10 @@ export default function NotificationSettings() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#fff8f0] flex items-center justify-center">
-              <Bell size={18} color="#f18200" />
+              <Bell size={18} color="#e87500" />
             </div>
             <div>
-              <h1 className="text-[18px] font-bold text-[#f18200]">Notification Settings</h1>
+              <h1 className="text-[18px] font-bold text-[#e87500]">Notification Settings</h1>
               <p className="text-[12px] text-[#94a3b8]">Configure which events trigger notifications on each channel</p>
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function NotificationSettings() {
               <RotateCcw size={13} /> Reset
             </button>
             <button onClick={handleSave} disabled={saving || loadError}
-              className="flex items-center gap-2 px-4 h-[36px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-semibold disabled:opacity-60">
+              className="flex items-center gap-2 px-4 h-[36px] bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-semibold disabled:opacity-60">
               {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
               {saving ? "Saving…" : "Save Settings"}
             </button>
@@ -137,7 +137,7 @@ export default function NotificationSettings() {
           {matrix.map((group, gi) => (
             <div key={group.group} className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
               <div className="px-5 py-3 border-b border-[#f8fafc] bg-[#fafafa]">
-                <span className="text-[13px] font-bold text-[#f18200]">{group.group}</span>
+                <span className="text-[13px] font-bold text-[#e87500]">{group.group}</span>
               </div>
               <table className="w-full text-[13px]">
                 <thead>

@@ -1,5 +1,5 @@
 export const DEPT_COLORS = [
-  "bg-blue-100 text-[#f18200]",
+  "bg-blue-100 text-[#e87500]",
   "bg-purple-100 text-purple-700",
   "bg-emerald-100 text-emerald-700",
   "bg-amber-100 text-amber-700",

@@ -10,7 +10,7 @@ const AttendanceHeader = React.memo(function AttendanceHeader({ todayRecord }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Monthly Attendance</h1>
+        <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">My Attendance</h1>
         <p className="text-sm text-slate-400 mt-0.5">{today}</p>
       </div>
       <div className="flex items-center gap-3 flex-wrap">
@@ -22,17 +22,17 @@ const AttendanceHeader = React.memo(function AttendanceHeader({ todayRecord }) {
             <span className="text-sm font-bold text-slate-800">{fmt(checkIn)}</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2.5">
-            <LogOut size={14} className="text-[#f18200]" />
+            <LogOut size={14} className="text-[#e87500]" />
             <span className="text-xs text-slate-500">Out</span>
             <span className="text-sm font-bold text-slate-800">{fmt(checkOut)}</span>
           </div>
         </div>
         <button
-          onClick={() => navigate("/employee/attendance/regularizations")}
-          className="flex items-center gap-2 h-10 px-5 rounded-xl bg-[#f18200] hover:bg-[#d97706] text-white text-sm font-bold shadow-sm transition-all hover:shadow-md active:scale-95"
+          onClick={() => navigate("/employee/attendance/new-request")}
+          className="flex items-center gap-2 h-10 px-5 rounded-xl bg-[#e87500] hover:bg-[#d97706] text-white text-sm font-bold shadow-sm transition-all hover:shadow-md active:scale-95"
         >
           <ClipboardList size={15} />
-          My Regularizations
+          New Request
         </button>
       </div>
     </div>

@@ -50,7 +50,7 @@ export default function PayrollEmployeeTable({ employees, attendanceRows, paysli
     <section className={cssClass({ gridColumn: "1 / -1", background: "#fff", border: "1px solid #e9eaec", borderRadius: 14, padding: "22px 24px", boxShadow: "0 2px 8px #0000000d" })}>
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 16 })}>
         <div>
-          <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, fontSize: 16, fontWeight: 800, color: "#111827" })}><Users size={18} color="#f18200" />Employee Payroll</div>
+          <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, fontSize: 16, fontWeight: 800, color: "#111827" })}><Users size={18} color="#e87500" />Employee Payroll</div>
           <div className={cssClass({ marginTop: 3, fontSize: 12, color: "#9ca3af" })}>Attendance, LOP, and salary impact for this month</div>
         </div>
         <div className={cssClass({ display: "flex", gap: 14, fontSize: 12, fontWeight: 700 })}>

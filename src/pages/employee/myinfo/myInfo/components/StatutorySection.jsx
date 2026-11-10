@@ -24,15 +24,15 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
         <Grid cols={3}>
           <Field label="PF Number" value={bd.pf_number || e.pf_number} />
           <div className={cssClass({ marginBottom: 16 })}>
-            <div className={cssClass({ fontSize: 11, color: "#f18200", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 })}>Eligibility</div>
+            <div className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 })}>Eligibility</div>
             <Badge color="#16a34a">ELIGIBLE</Badge>
           </div>
           <Field label="UAN"         value={bd.uan_number} />
           <Field label="PF Join Date" value={fmtDate(e.pf_join_date)} />
           <div className={cssClass({ marginBottom: 16 })}>
-            <div className={cssClass({ fontSize: 11, color: "#f18200", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 })}>KYC Status</div>
+            <div className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 })}>KYC Status</div>
             <div className={cssClass({ display: "flex", alignItems: "center", gap: 8 })}>
-              <input type="checkbox" readOnly checked={false} className={cssClass({ accentColor: "#f18200" })} />
+              <input type="checkbox" readOnly checked={false} className={cssClass({ accentColor: "#e87500" })} />
               <span className={cssClass({ fontSize: 13, color: "#64748b" })}>Not Done</span>
             </div>
           </div>
@@ -41,9 +41,9 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
       </InfoCard>
       <InfoCard id="card-passport-and-visa" title="Passport and Visa">
         <SectionLabel label="Passport" />
-        <p className={cssClass({ color: "#f18200", fontSize: 13, margin: "0 0 12px" })}>No data Found.</p>
+        <p className={cssClass({ color: "#e87500", fontSize: 13, margin: "0 0 12px" })}>No data Found.</p>
         <SectionLabel label="Visa" />
-        <p className={cssClass({ color: "#f18200", fontSize: 13, margin: 0 })}>No data Found.</p>
+        <p className={cssClass({ color: "#e87500", fontSize: 13, margin: 0 })}>No data Found.</p>
       </InfoCard>
       <InfoCard id="card-other-ids" title="Other IDs">
         {[
@@ -53,7 +53,7 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
         ].map((row) => (
           <div key={row.label} className={cssClass({ display: "flex", alignItems: "center", padding: "12px 0", borderBottom: "1px solid #f1f5f9", gap: 8 })}>
             <div className={cssClass({ flex: 1 })}>
-              <div className={cssClass({ fontSize: 11, color: "#f18200", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 })}>{row.label}</div>
+              <div className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 })}>{row.label}</div>
               <div className={cssClass({ fontSize: 13, color: "#1e293b", display: "flex", alignItems: "center", gap: 6 })}>
                 {mask(row.value, revealed[row.key])}
                 {row.value && (
@@ -63,8 +63,8 @@ const StatutorySection = React.memo(function StatutorySection({ e, bd, revealed,
                 )}
               </div>
             </div>
-            <Badge color={row.verified ? "#16a34a" : "#f18200"}>{row.verified ? "Verified" : "Unverified"}</Badge>
-            <button className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#f18200", fontWeight: 600, fontSize: 12 })}>More</button>
+            <Badge color={row.verified ? "#16a34a" : "#e87500"}>{row.verified ? "Verified" : "Unverified"}</Badge>
+            <button className={cssClass({ background: "none", border: "none", cursor: "pointer", color: "#e87500", fontWeight: 600, fontSize: 12 })}>More</button>
           </div>
         ))}
       </InfoCard>

@@ -64,7 +64,7 @@ const TreeNode = React.memo(function TreeNode({ node, depth = 0, onSelect }) {
           <div className={cssClass({ fontSize: 11, color: "#6b7280", marginTop: 1 })}>
             {node.designation} {node.department ? `· ${node.department}` : ""}
             {node.direct_count > 0 && (
-              <span className={cssClass({ marginLeft: 6, color: "#f18200", fontWeight: 600 })}>
+              <span className={cssClass({ marginLeft: 6, color: "#e87500", fontWeight: 600 })}>
                 ({node.direct_count} reports)
               </span>
             )}

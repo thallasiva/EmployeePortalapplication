@@ -13,8 +13,8 @@ const MyInfoSidebar = React.memo(function MyInfoSidebar({ activeSection, onSelec
             padding: "9px 20px", border: "none", background: "none", cursor: "pointer",
             fontSize: 13,
             fontWeight: activeSection === s.id ? 700 : 400,
-            color: activeSection === s.id ? "#f18200" : "#475569",
-            borderLeft: activeSection === s.id ? "3px solid #f18200" : "3px solid transparent",
+            color: activeSection === s.id ? "#e87500" : "#475569",
+            borderLeft: activeSection === s.id ? "3px solid #e87500" : "3px solid transparent",
           })}
         >
           {s.label}

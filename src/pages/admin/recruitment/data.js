@@ -206,11 +206,11 @@ export const ADMIN_REPORTS_DONUTS = [
   {
     title: "Candidate Funnel",
     segments: [
-      { name: "Applied", value: 120, color: "#2563eb" },
+      { name: "Applied", value: 120, color: "#e87500" },
       { name: "Screening", value: 75, color: "#f59e0b" },
       { name: "Manager Round", value: 40, color: "#8b5cf6" },
       { name: "Offer", value: 22, color: "#22c55e" },
-      { name: "Joined", value: 14, color: "#0ea5e9" },
+      { name: "Joined", value: 14, color: "#e87500" },
     ],
   },
   {
@@ -224,7 +224,7 @@ export const ADMIN_REPORTS_DONUTS = [
   {
     title: "Recruiter Activity",
     segments: [
-      { name: "Sourcing", value: 38, color: "#3b82f6" },
+      { name: "Sourcing", value: 38, color: "#e87500" },
       { name: "Screening", value: 30, color: "#a855f7" },
       { name: "Interviews", value: 22, color: "#14b8a6" },
       { name: "Offers", value: 10, color: "#f59e0b" },

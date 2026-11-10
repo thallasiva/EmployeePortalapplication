@@ -75,7 +75,7 @@ const ImportSalaryStructureModal = React.memo(function ImportSalaryStructureModa
               className={cssClass({
                 display: "inline-flex", alignItems: "center", gap: 5,
                 padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700,
-                background: "#f18200", color: "#fff", border: "none", cursor: "pointer",
+                background: "#e87500", color: "#fff", border: "none", cursor: "pointer",
                 whiteSpace: "nowrap",
               })}
             >

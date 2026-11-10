@@ -29,7 +29,7 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
           </div>
         </div>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 12, color: "#374151" })}>
-          <span className={cssClass({ color: "#3b82f6", fontSize: 15, lineHeight: 1 })}>ⓘ</span>
+          <span className={cssClass({ color: "#e87500", fontSize: 15, lineHeight: 1 })}>ⓘ</span>
           Amount declared under 153(2)(a)/153(2)(b) would be auto considered under Other Income
         </div>
       </div>
@@ -74,7 +74,7 @@ function ModalOtherIncome({ incomes, setIncomes, onClose }) {
       {}
       <div className={cssClass({ padding: "8px 16px 4px" })}>
         <button type="button" onClick={addIncome} className={cssClass(
-          { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#f18200",
+          { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#e87500",
             background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 600 })}>
           <Plus size={13} /> Add Income
         </button>

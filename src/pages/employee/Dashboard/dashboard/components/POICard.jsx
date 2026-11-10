@@ -14,8 +14,8 @@ const POICard = React.memo(function POICard() {
         <Link
           to="/employee/payroll/proof-investment"
           className={cssClass({
-            padding: "8px 24px", border: "1px solid #f18200", borderRadius: 8,
-            color: "#f18200", fontWeight: 600, fontSize: 13, textDecoration: "none",
+            padding: "8px 24px", border: "1px solid #e87500", borderRadius: 8,
+            color: "#e87500", fontWeight: 600, fontSize: 13, textDecoration: "none",
           })}
         >
           Track

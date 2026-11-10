@@ -86,7 +86,7 @@ export default function FieldOptionsManager() {
 
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold  text-[#f18200]">Employee field options</h2>
+      <h2 className="text-xl font-semibold  text-[#e87500]">Employee field options</h2>
       <p className="mt-1 text-sm text-gray-500">
         Manage the choices available in employee profiles and onboarding forms, including departments.
       </p>

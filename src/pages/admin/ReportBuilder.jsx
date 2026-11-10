@@ -4,7 +4,7 @@ import { reportsApi } from "../../api/settings.api";
 import apiClient from "../../api/client";
 import { listEmployees } from "../../api/employee.api";
 import { jsPDF } from "jspdf";
-const BRAND = "#f18200";
+const BRAND = "#e87500";
 const MODULES = {
   Employees: ["Name", "Employee ID", "Department", "Designation", "Email", "Phone", "Join Date", "Status", "Gender", "Location"],
   Attendance: ["Employee", "Date", "Check In", "Check Out", "Hours Worked", "Status", "Late By", "OT Hours"],
@@ -162,18 +162,18 @@ function BuilderView({ report, onBack, onSave })
     <div className="min-h-screen  ">
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-white border-b border-[#e2e8f0] flex-wrap">
-        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#f18200] text-[12px] font-semibold inline-flex items-center gap-1"><ArrowLeft size={12} /> Reports</button>
+        <button onClick={onBack} className="text-[#94a3b8] hover:text-[#e87500] text-[12px] font-semibold inline-flex items-center gap-1"><ArrowLeft size={12} /> Reports</button>
         <div className="w-px h-5 bg-[#e2e8f0]" />
         <input value={name} onChange={e => setName(e.target.value)}
-          className="h-[34px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] font-bold outline-none focus:border-[#f18200] w-52" />
+          className="h-[34px] border border-[#e2e8f0] rounded-lg px-3 text-[13px] font-bold outline-none focus:border-[#e87500] w-52" />
         <div className="ml-auto flex gap-2">
           <button onClick={runReport} disabled={running}
-            className="flex items-center gap-1.5 h-[34px] px-4 border border-[#f18200] text-[#f18200] rounded-lg text-[12px] font-bold hover:bg-[#fff8f0] disabled:opacity-50">
-            {running ? <div className="w-3 h-3 border-2 border-[#f18200] border-t-transparent rounded-full animate-spin" /> : <Play size={12} />}
+            className="flex items-center gap-1.5 h-[34px] px-4 border border-[#e87500] text-[#e87500] rounded-lg text-[12px] font-bold hover:bg-[#fff8f0] disabled:opacity-50">
+            {running ? <div className="w-3 h-3 border-2 border-[#e87500] border-t-transparent rounded-full animate-spin" /> : <Play size={12} />}
             {running ? "Running…" : "Run Report"}
           </button>
           <button onClick={() => onSave({ ...report, name, module, format, columns: selCols, filters: selFilts, updated: "Now" })}
-            className="flex items-center gap-1.5 h-[34px] px-4 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[12px] font-bold">
+            className="flex items-center gap-1.5 h-[34px] px-4 bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[12px] font-bold">
             <Save size={12} /> Save
           </button>
         </div>
@@ -187,7 +187,7 @@ function BuilderView({ report, onBack, onSave })
             <div className="grid grid-cols-2 gap-2">
               {Object.keys(MODULES).map(m => (
                 <button key={m} onClick={() => { setModule(m); setSelCols(MODULES[m].slice(0, 4)); setSelFilts([]); setRan(false); setRows([]); setRunError(""); }}
-                  className={`h-[32px] px-2 rounded-lg text-[11px] font-semibold border transition-all ${module === m ? "bg-[#f18200] text-white border-[#f18200]" : "border-[#e2e8f0] text-[#64748b] hover:border-[#f18200]/40"}`}>
+                  className={`h-[32px] px-2 rounded-lg text-[11px] font-semibold border transition-all ${module === m ? "bg-[#e87500] text-white border-[#e87500]" : "border-[#e2e8f0] text-[#64748b] hover:border-[#e87500]/40"}`}>
                   {m}
                 </button>
               ))}
@@ -199,7 +199,7 @@ function BuilderView({ report, onBack, onSave })
             <div className="space-y-1 max-h-44 overflow-y-auto">
               {cols.map(c => (
                 <label key={c} className="flex items-center gap-2.5 cursor-pointer py-1">
-                  <input type="checkbox" checked={selCols.includes(c)} onChange={() => toggleCol(c)} className="accent-[#f18200]" />
+                  <input type="checkbox" checked={selCols.includes(c)} onChange={() => toggleCol(c)} className="accent-[#e87500]" />
                   <span className="text-[12px] text-[#374151]">{c}</span>
                 </label>
               ))}
@@ -211,7 +211,7 @@ function BuilderView({ report, onBack, onSave })
             <div className="space-y-1">
               {filts.map(f => (
                 <label key={f} className="flex items-center gap-2.5 cursor-pointer py-1">
-                  <input type="checkbox" checked={selFilts.includes(f)} onChange={() => toggleFilt(f)} className="accent-[#f18200]" />
+                  <input type="checkbox" checked={selFilts.includes(f)} onChange={() => toggleFilt(f)} className="accent-[#e87500]" />
                   <span className="text-[12px] text-[#374151]">{f}</span>
                 </label>
               ))}
@@ -223,7 +223,7 @@ function BuilderView({ report, onBack, onSave })
             <div className="flex gap-2">
               {FORMATS.map(f => (
                 <button key={f.id} onClick={() => setFormat(f.id)}
-                  className={`flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-xl border-2 text-[11px] font-semibold transition-all ${format === f.id ? "border-[#f18200] bg-[#fff8f0] text-[#f18200]" : "border-[#e2e8f0] text-[#64748b]"}`}>
+                  className={`flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-xl border-2 text-[11px] font-semibold transition-all ${format === f.id ? "border-[#e87500] bg-[#fff8f0] text-[#e87500]" : "border-[#e2e8f0] text-[#64748b]"}`}>
                   {f.icon}{f.label}
                 </button>
               ))}
@@ -234,11 +234,11 @@ function BuilderView({ report, onBack, onSave })
         <div className="col-span-8">
           <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e2e8f0] bg-[#f8fafc]">
-              <p className="text-[13px] font-bold text-[#f18200]">{name} — Preview</p>
+              <p className="text-[13px] font-bold text-[#e87500]">{name} — Preview</p>
               {ran && (
                 <div className="flex gap-2">
                   {["CSV", "Excel", "PDF"].map(fmt => (
-                    <button key={fmt} onClick={() => exportReport(fmt)} className="flex items-center gap-1 h-[28px] px-3 border border-[#e2e8f0] rounded-lg text-[11px] font-semibold text-[#64748b] hover:border-[#f18200] hover:text-[#f18200]">
+                    <button key={fmt} onClick={() => exportReport(fmt)} className="flex items-center gap-1 h-[28px] px-3 border border-[#e2e8f0] rounded-lg text-[11px] font-semibold text-[#64748b] hover:border-[#e87500] hover:text-[#e87500]">
                       <Download size={10} />{fmt}
                     </button>
                   ))}
@@ -323,12 +323,12 @@ export default function ReportBuilder()
             <BarChart2 size={18} color={BRAND} />
           </div>
           <div>
-            <h1 className="text-[20px] font-bold text-[#f18200]">Report Builder</h1>
+            <h1 className="text-[20px] font-bold text-[#e87500]">Report Builder</h1>
             <p className="text-[13px] text-[#94a3b8]">Build custom reports with filters, columns and chart formats</p>
           </div>
         </div>
         <button onClick={() => setEditing({ name: "New Report" })}
-          className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">
+          className="flex items-center gap-2 h-[38px] px-5 bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">
           <Plus size={15} /> New Report
         </button>
       </div>
@@ -351,7 +351,7 @@ export default function ReportBuilder()
               </span>
               <span className="col-span-2 text-[12px] text-[#94a3b8]">{r.updated}</span>
               <div className="col-span-1 flex justify-end gap-1">
-                <button onClick={() => setEditing(r)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#fff8f0] text-[#94a3b8] hover:text-[#f18200]"><Edit2 size={12} /></button>
+                <button onClick={() => setEditing(r)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#fff8f0] text-[#94a3b8] hover:text-[#e87500]"><Edit2 size={12} /></button>
                 <button onClick={async () => { try { await reportsApi.delete(r.id); setReports(p => p.filter(x => x.id !== r.id)); } catch { setToast("Unable to delete report."); setTimeout(() => setToast(""), 3000); } }} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-50 text-[#94a3b8] hover:text-red-500"><Trash2 size={12} /></button>
               </div>
             </div>

@@ -32,12 +32,12 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
     totalTDS += tds;
   });
   const earnSegs = [
-    { label: "Basic",      value: totalBasic,       color: "#f18200" },
+    { label: "Basic",      value: totalBasic,       color: "#e87500" },
     { label: "HRA",        value: totalHRA,         color: "#fb923c" },
     { label: "Allowances", value: totalAllowances,  color: "#fbbf24" },
   ];
   const dedSegs = [
-    { label: "PF (12%)",         value: totalPF,   color: "#6366f1" },
+    { label: "PF (12%)",         value: totalPF,   color: "#e87500" },
     { label: "ESI (0.75%)",      value: totalESI,  color: "#8b5cf6" },
     { label: "Prof. Tax",        value: totalPT,   color: "#a78bfa" },
     { label: "TDS / Income Tax", value: totalTDS,  color: "#c4b5fd" },
@@ -45,7 +45,7 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
   const netRatio = pct(totalNet, totalGross);
   const dedRatio = pct(totalDeductions, totalGross);
   const count = payslips.length;
-  const ringSegs = [...earnSegs, { label: "Deductions", value: totalDeductions, color: "#e0e7ff" }];
+  const ringSegs = [...earnSegs, { label: "Deductions", value: totalDeductions, color: "#ffedd5" }];
   return (
     <div className={cssClass({
       background: "#fff", border: "1px solid #e9eaec", borderRadius: 14,
@@ -98,12 +98,12 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
               Gross split — Net vs Deductions
             </div>
             <div className={cssClass({ height: 10, background: "#f1f5f9", borderRadius: 6, overflow: "hidden", display: "flex" })}>
-              <div className={cssClass({ width: `${netRatio}%`, background: "linear-gradient(90deg,#f18200,#fb923c)", transition: "width .5s", borderRadius: "6px 0 0 6px" })} />
-              <div className={cssClass({ width: `${dedRatio}%`, background: "linear-gradient(90deg,#6366f1,#a78bfa)", transition: "width .5s" })} />
+              <div className={cssClass({ width: `${netRatio}%`, background: "linear-gradient(90deg,#e87500,#fb923c)", transition: "width .5s", borderRadius: "6px 0 0 6px" })} />
+              <div className={cssClass({ width: `${dedRatio}%`, background: "linear-gradient(90deg,#e87500,#a78bfa)", transition: "width .5s" })} />
             </div>
             <div className={cssClass({ display: "flex", justifyContent: "space-between", marginTop: 4 })}>
               <span className={cssClass({ fontSize: 10, color: BRAND, fontWeight: 700 })}>Net {netRatio}%</span>
-              <span className={cssClass({ fontSize: 10, color: "#6366f1", fontWeight: 700 })}>Ded {dedRatio}%</span>
+              <span className={cssClass({ fontSize: 10, color: "#e87500", fontWeight: 700 })}>Ded {dedRatio}%</span>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
       {/* Deductions Breakdown */}
       <div>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 })}>
-          <div className={cssClass({ width: 3, height: 14, background: "#6366f1", borderRadius: 2 })} />
+          <div className={cssClass({ width: 3, height: 14, background: "#e87500", borderRadius: 2 })} />
           <span className={cssClass({ fontSize: 12, fontWeight: 800, color: "#374151", textTransform: "uppercase", letterSpacing: .5 })}>
             Deductions Breakdown
           </span>
@@ -149,7 +149,7 @@ const PayoutDetailsPanel = React.memo(function PayoutDetailsPanel({ payslips }) 
             {[
               { label: "Avg Gross", value: fmtINR(Math.round(totalGross / count), true), color: BRAND },
               { label: "Avg Net",   value: fmtINR(Math.round(totalNet / count), true),   color: "#16a34a" },
-              { label: "Avg Ded",   value: fmtINR(Math.round(totalDeductions / count), true), color: "#6366f1" },
+              { label: "Avg Ded",   value: fmtINR(Math.round(totalDeductions / count), true), color: "#e87500" },
             ].map((a) => (
               <div key={a.label} className={cssClass({
                 background: "#fafafa", borderRadius: 8, padding: "10px 12px",

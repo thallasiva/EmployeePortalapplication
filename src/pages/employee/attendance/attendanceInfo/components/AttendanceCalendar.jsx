@@ -6,7 +6,7 @@ const STATUS_STYLES = {
   P:   { bg: "bg-emerald-50",  border: "border-emerald-200", dot: "bg-emerald-500",  text: "text-emerald-700",  badge: "bg-emerald-100 text-emerald-700" },
   "P:A": { bg: "bg-amber-50", border: "border-amber-200",   dot: "bg-amber-400",    text: "text-amber-700",    badge: "bg-amber-100 text-amber-700" },
   A:   { bg: "bg-red-50",     border: "border-red-200",     dot: "bg-red-500",      text: "text-red-700",      badge: "bg-red-100 text-red-700" },
-  H:   { bg: "bg-blue-50",    border: "border-blue-200",    dot: "bg-blue-400",     text: "text-[#f18200]",     badge: "bg-blue-100 text-[#f18200]" },
+  H:   { bg: "bg-blue-50",    border: "border-blue-200",    dot: "bg-blue-400",     text: "text-[#e87500]",     badge: "bg-blue-100 text-[#e87500]" },
   L:   { bg: "bg-purple-50",  border: "border-purple-200",  dot: "bg-purple-400",   text: "text-purple-700",   badge: "bg-purple-100 text-purple-700" },
   WO:  { bg: "bg-slate-50",   border: "border-slate-150",   dot: "bg-slate-300",    text: "text-slate-400",    badge: "bg-slate-100 text-slate-500" },
 };
@@ -24,7 +24,7 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
         <button
           onClick={onPrevMonth}
-          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 hover:text-[#f18200] transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 hover:text-[#e87500] transition-colors"
         >
           <ChevronLeft size={18} />
         </button>
@@ -33,7 +33,7 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
         </div>
         <button
           onClick={onNextMonth}
-          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 hover:text-[#f18200] transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-500 hover:text-[#e87500] transition-colors"
         >
           <ChevronRight size={18} />
         </button>
@@ -68,7 +68,7 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
                 className={`relative rounded-xl border transition-all text-left p-2 min-h-[70px] flex flex-col
                   ${isWeekendOrHoliday ? "bg-slate-50 border-slate-100" : (style.bg || "bg-white") + " " + (style.border || "border-slate-200")}
                   ${isSelected
-                    ? "ring-2 ring-[#f18200] border-[#f18200] shadow-md shadow-orange-100 z-10"
+                    ? "ring-2 ring-[#e87500] border-[#e87500] shadow-md shadow-orange-100 z-10"
                     : "hover:shadow-sm hover:border-slate-300"
                   }
                 `}
@@ -76,9 +76,9 @@ const AttendanceCalendar = React.memo(function AttendanceCalendar({
                 {/* Date number */}
                 <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold shrink-0
                   ${isToday
-                    ? "bg-[#f18200] text-white shadow-sm"
+                    ? "bg-[#e87500] text-white shadow-sm"
                     : isSelected
-                    ? "bg-orange-100 text-[#f18200]"
+                    ? "bg-orange-100 text-[#e87500]"
                     : isWeekendOrHoliday ? "text-slate-400" : (style.text || "text-slate-700")
                   }`}
                 >

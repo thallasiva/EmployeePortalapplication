@@ -4,7 +4,7 @@ import { buildSalaryBreakdown } from "../../../../../utils/salaryBreakdown";
 import { fmtAmt } from "../utils";
 import EmployeePanel from "./EmployeePanel";
 const tableSt = { width: "100%", borderCollapse: "collapse", fontSize: 13 };
-const thSt = { background: "#fff8f0", padding: "6px 10px", fontSize: 11, color: "#5a7a8a", fontWeight: 600, textAlign: "right" };
+const thSt = { background: "#fff8f0", padding: "6px 10px", fontSize: 11, color: "#9b4c00", fontWeight: 600, textAlign: "right" };
 const thLSt = { ...thSt, textAlign: "left" };
 const tdSt = { padding: "7px 10px", borderBottom: "1px solid #f0f0f0" };
 const tdRSt = { ...tdSt, textAlign: "right", fontFamily: "monospace" };
@@ -21,8 +21,8 @@ const CtcPayslipTab = React.memo(function CtcPayslipTab({ payslip, structure }) 
         { label: "FULL CONVEYANCE ALLOWANCE", value: b.conveyance },
         { label: "FULL MEDICAL ALLOWANCE", value: b.medical },
         { label: "FULL EMPLOYER PF", value: b.empPf, highlight: "#c8380a" },
-        { label: "MONTHLY GROSS", value: b.gross, highlight: "#f18200", bold: true },
-        { label: "MONTHLY CTC", value: b.ctc, highlight: "#f18200", bold: true }
+        { label: "MONTHLY GROSS", value: b.gross, highlight: "#e87500", bold: true },
+        { label: "MONTHLY CTC", value: b.ctc, highlight: "#e87500", bold: true }
       ].filter((r) => r.value > 0)
     : [];
   return (

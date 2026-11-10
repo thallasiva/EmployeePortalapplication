@@ -20,8 +20,8 @@ const LeaveCard = React.memo(function LeaveCard({ r, isPrivileged }) {
       <div className={cssClass({ flex: 1, minWidth: 0 })}>
         {isPrivileged && (
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 })}>
-            <div className={cssClass({ width: 26, height: 26, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center" })}>
-              <User size={13} className={cssClass({ color: "#0369a1" })} />
+            <div className={cssClass({ width: 26, height: 26, borderRadius: "50%", background: "#ffedd5", display: "flex", alignItems: "center", justifyContent: "center" })}>
+              <User size={13} className={cssClass({ color: "#c45f00" })} />
             </div>
             <span className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1e293b" })}>{empName(r)}</span>
             {r.emp_code && (
@@ -31,7 +31,7 @@ const LeaveCard = React.memo(function LeaveCard({ r, isPrivileged }) {
         )}
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" })}>
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>{r.leave_type_name || "Leave"}</span>
-          <span className={cssClass({ fontSize: 11, background: "#f0f9ff", color: "#0369a1", padding: "1px 8px", borderRadius: 4, fontWeight: 600 })}>
+          <span className={cssClass({ fontSize: 11, background: "#fff7ed", color: "#c45f00", padding: "1px 8px", borderRadius: 4, fontWeight: 600 })}>
             {days} day{days !== 1 ? "s" : ""}
           </span>
         </div>

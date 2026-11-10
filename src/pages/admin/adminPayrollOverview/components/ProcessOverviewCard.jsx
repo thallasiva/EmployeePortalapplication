@@ -8,9 +8,9 @@ export default function ProcessOverviewCard({ steps = [] }) {
   const total = steps.length || 1;
   const percent = Math.round((done / total) * 100);
   return (
-    <Card title="Payroll Process Overview" icon={<PieChart size={16} color="#2563eb" />}>
+    <Card title="Payroll Process Overview" icon={<PieChart size={16} color="#e87500" />}>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <Donut percent={percent} color="#2563eb" center={`${done}/${total}`} sub="Completed" />
+        <Donut percent={percent} color="#e87500" center={`${done}/${total}`} sub="Completed" />
         <div style={{ flex: 1 }}>
           {steps.map((s) => (
             <ChecklistRow key={s.label} label={s.label} ok={s.status === "done"} note={s.status === "done" ? "Completed" : s.status === "current" ? "Pending" : "Pending"} />

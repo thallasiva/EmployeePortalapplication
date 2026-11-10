@@ -37,7 +37,7 @@
   border-radius: 4px;
 }
 .hiring-header__tab--active {
-  background: #5dade2;
+  background: #fb923c;
   color: #1a252f;
   font-weight: 600;
 }
@@ -109,8 +109,8 @@
   margin-bottom: -1px;
 }
 .hiring-subnav__tab--active {
-  color: #1890ff;
-  border-bottom-color: #1890ff;
+  color: #e87500;
+  border-bottom-color: #e87500;
 }
 .hiring-subnav__tab:hover:not(.hiring-subnav__tab--active) {
   color: #555;
@@ -173,7 +173,7 @@
 }
 .hiring-filter-option input {
   margin: 0;
-  accent-color: #1890ff;
+  accent-color: #e87500;
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -183,7 +183,7 @@
   padding: 0;
   background: none;
   border: none;
-  color: #1890ff;
+  color: #e87500;
   font-size: 13px;
   cursor: pointer;
 }
@@ -216,7 +216,7 @@
   color: #aaa;
 }
 .hiring-search:focus {
-  border-color: #40a9ff;
+  border-color: #e87500;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
 }
 .hiring-search__icon {
@@ -260,7 +260,7 @@
 .hiring-job-row__title {
   font-size: 15px;
   font-weight: 600;
-  color: #1890ff;
+  color: #e87500;
   margin-bottom: 4px;
   cursor: pointer;
 }
@@ -349,7 +349,7 @@
   cursor: pointer;
 }
 .hiring-select:focus {
-  border-color: #40a9ff;
+  border-color: #e87500;
 }
 .hiring-select__chevron {
   position: absolute;

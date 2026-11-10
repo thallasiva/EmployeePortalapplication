@@ -30,7 +30,7 @@ const ChartPanel = React.memo(function ChartPanel({
         </div>
         <div className={cssClass({ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" })}>
           <div className={cssClass({ display: "flex", gap: 10 })}>
-            {[["#0369a1", "Top Level"], ["#0284c7", "Manager"], ["#38bdf8", "Employee"], ["#d97706", "Delegated"], ["#9ca3af", "Inactive"]].map(([c, l]) => (
+            {[["#c45f00", "Top Level"], ["#e87500", "Manager"], ["#fb923c", "Employee"], ["#d97706", "Delegated"], ["#9ca3af", "Inactive"]].map(([c, l]) => (
               <div key={l} className={cssClass({ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6b7280" })}>
                 <div className={cssClass({ width: 10, height: 10, borderRadius: 2, background: c })} />{l}
               </div>

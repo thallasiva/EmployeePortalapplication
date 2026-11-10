@@ -120,7 +120,7 @@ export default function DownloadReports() {
       <div className={cssClass({ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 18 })}>
         {}
         <ReportCard
-          icon={Users} iconBg="#eff6ff" iconColor="#2563eb"
+          icon={Users} iconBg="#fff7ed" iconColor="#e87500"
           title="Employee Master Data"
           description="Full employee directory with all HR fields (55 columns)"
           loading={loading.emp}
@@ -184,7 +184,7 @@ export default function DownloadReports() {
         </ReportCard>
         {}
         <ReportCard
-          icon={FileText} iconBg="#f0f9ff" iconColor="#0284c7"
+          icon={FileText} iconBg="#fff7ed" iconColor="#e87500"
           title="ECR File (EPFO)"
           description="Electronic Challan-cum-Return text file for EPFO portal upload"
           loading={loading.ecr}

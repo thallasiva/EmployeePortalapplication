@@ -42,7 +42,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 shrink-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Briefcase size={14} color="#f18200" />
+            <Briefcase size={14} color="#e87500" />
             <span className="text-[13px] font-bold text-gray-700">Job Designation</span>
           </div>
           <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">
@@ -115,7 +115,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
                         <span
                           className="w-1.5 h-1.5 rounded-full shrink-0"
                           style={{
-                            background: isPicked ? "#f18200" : group.color,
+                            background: isPicked ? "#e87500" : group.color,
                             opacity: isPicked ? 1 : 0.5
                           }}
                         />
@@ -131,7 +131,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
                             current
                           </span>
                         )}
-                        {isPicked && <CheckCircle size={12} color="#f18200" className="shrink-0" />}
+                        {isPicked && <CheckCircle size={12} color="#e87500" className="shrink-0" />}
                       </div>
                     );
                   })}
@@ -153,7 +153,7 @@ const JobRolesPanel = React.memo(function JobRolesPanel({ selected, onDesignatio
             disabled={savingDesig || !changed}
             className="w-full py-2 text-[12px] font-bold text-white rounded-lg transition-colors"
             style={{
-              background: savingDesig || !changed ? "#d1d5db" : "#f18200",
+              background: savingDesig || !changed ? "#d1d5db" : "#e87500",
               cursor: savingDesig || !changed ? "not-allowed" : "pointer"
             }}
           >

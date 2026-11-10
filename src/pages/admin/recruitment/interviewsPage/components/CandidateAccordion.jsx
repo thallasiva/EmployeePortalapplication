@@ -41,11 +41,11 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
       (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level)
     )[0].level;
     pipelineLabel = nextLvl + " Scheduled";
-    pipelineColor = "#1d4ed8";
-    pipelineBg = "#dbeafe";
+    pipelineColor = "#cf6900";
+    pipelineBg = "#ffedd5";
   } else if (offerReady) {
     pipelineLabel = "Offer Ready";
-    pipelineColor = "#f18200";
+    pipelineColor = "#e87500";
     pipelineBg = "#fff7ed";
   } else if (completedRounds.length > 0) {
     pipelineLabel = "In Progress";
@@ -91,9 +91,9 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
               return <div key={lvl} title={lvl} className="w-2.5 h-2.5 rounded-full bg-gray-200" />;
             const dc =
               round.status === "Scheduled"
-                ? "#1d4ed8"
+                ? "#cf6900"
                 : round.feedback_status === "Selected"
-                ? "#f18200"
+                ? "#e87500"
                 : round.feedback_status === "Not Selected"
                 ? "#dc2626"
                 : round.feedback_status === "Hold"
@@ -173,7 +173,7 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
           {nextRoundReady && scheduledRounds.length === 0 && !rejectedRound && canRaiseOffer && (
             <div className="flex items-center gap-3 px-[18px] py-3 bg-[#fff7ed] border-t border-dashed border-[#fed7aa]">
               <div className="flex-1">
-                <div className="text-[12px] font-bold text-[#f18200]">
+                <div className="text-[12px] font-bold text-[#e87500]">
                   {lastCompleted?.level} — Selected
                   {isExternal ? " (Both feedbacks received)" : ""}
                 </div>
@@ -187,7 +187,7 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
                   e.stopPropagation();
                   onScheduleNext && onScheduleNext(rounds[0]);
                 }}
-                className="text-[12px] font-semibold text-[#f18200] bg-blue-100 border-0 rounded-lg px-3.5 py-1.5 cursor-pointer whitespace-nowrap"
+                className="text-[12px] font-semibold text-[#e87500] bg-blue-100 border-0 rounded-lg px-3.5 py-1.5 cursor-pointer whitespace-nowrap"
               >
                 + Schedule Next Round
               </button>
@@ -197,7 +197,7 @@ const CandidateAccordion = React.memo(function CandidateAccordion({
                   window.location.href =
                     window.location.pathname.replace(/\?.*$/, "") + "?page=offers";
                 }}
-                className="text-[12px] font-semibold text-white bg-[#f18200] border-0 rounded-lg px-3.5 py-1.5 cursor-pointer whitespace-nowrap"
+                className="text-[12px] font-semibold text-white bg-[#e87500] border-0 rounded-lg px-3.5 py-1.5 cursor-pointer whitespace-nowrap"
               >
                 Raise Offer
               </button>

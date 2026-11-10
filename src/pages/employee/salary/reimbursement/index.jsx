@@ -42,17 +42,17 @@ const Reimbursement = React.memo(function Reimbursement() {
             selectClassName="h-[38px] px-3 border border-[#d5dbe3] bg-white rounded-lg text-[13px] outline-none" />
           <button
             onClick={handleOpenModal}
-            className="flex items-center gap-2 h-[38px] px-5 bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
+            className="flex items-center gap-2 h-[38px] px-5 bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold transition-colors">
             <Plus size={15} /> Add Claim
           </button>
         </div>
       </div>
       {}
       <div className="px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<Wallet size={20} />} label="Total Entitlement" value={fmt(totalAnnual)} color="#f18200" bgColor="#fff8f0" />
-        <StatCard icon={<TrendingUp size={20} />} label="Total Claimed" value={fmt(totalClaimed)} color="#6366f1" bgColor="#f5f3ff" />
+        <StatCard icon={<Wallet size={20} />} label="Total Entitlement" value={fmt(totalAnnual)} color="#e87500" bgColor="#fff8f0" />
+        <StatCard icon={<TrendingUp size={20} />} label="Total Claimed" value={fmt(totalClaimed)} color="#e87500" bgColor="#f5f3ff" />
         <StatCard icon={<CheckCircle2 size={20} />} label="Approved" value={fmt(histApproved)} color="#10b981" bgColor="#ecfdf5" />
-        <StatCard icon={<FileText size={20} />} label="Balance Left" value={fmt(totalBalance)} color="#3b82f6" bgColor="#eff6ff" />
+        <StatCard icon={<FileText size={20} />} label="Balance Left" value={fmt(totalBalance)} color="#e87500" bgColor="#fff7ed" />
       </div>
       {}
       <div className="px-6 pb-4">
@@ -62,7 +62,7 @@ const Reimbursement = React.memo(function Reimbursement() {
             key={k}
             onClick={() => handleTabChange(k)}
             className={`px-5 h-[36px] rounded-lg text-[13px] font-medium transition-all ${
-            activeTab === k ? "bg-[#f18200] text-white shadow-sm" : "text-[#64748b] hover:text-[#1f2937]"}`
+            activeTab === k ? "bg-[#e87500] text-white shadow-sm" : "text-[#64748b] hover:text-[#1f2937]"}`
             }>
               {l}
             </button>
@@ -105,7 +105,7 @@ const Reimbursement = React.memo(function Reimbursement() {
             <div key={i} className="grid grid-cols-4 px-5 py-4 border-b border-[#f8fafc] items-center hover:bg-[#fafbff] transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center shrink-0">
-                        <Receipt size={14} color="#f18200" />
+                        <Receipt size={14} color="#e87500" />
                       </div>
                       <span className="text-[13px] font-semibold text-[#1f2937]">{c.type}</span>
                     </div>

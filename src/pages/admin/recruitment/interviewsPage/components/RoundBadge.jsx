@@ -1,7 +1,7 @@
 import React from "react";
 import { LEVEL_ORDER } from "../constants";
-const COLORS = ["#6d28d9", "#0369a1", "#f18200", "#d97706", "#dc2626"];
-const BGS = ["#ede9fe", "#e0f2fe", "#fff7ed", "#fef3c7", "#fee2e2"];
+const COLORS = ["#6d28d9", "#c45f00", "#e87500", "#d97706", "#dc2626"];
+const BGS = ["#ede9fe", "#ffedd5", "#fff7ed", "#fef3c7", "#fee2e2"];
 const RoundBadge = React.memo(function RoundBadge({ level }) {
   const idx = LEVEL_ORDER.indexOf(level);
   const num = idx >= 0 ? idx + 1 : "?";

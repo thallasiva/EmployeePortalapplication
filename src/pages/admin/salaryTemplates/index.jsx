@@ -28,7 +28,7 @@ const SalaryTemplates = React.memo(function SalaryTemplates() {
           </p>
         </div>
         <button onClick={openCreate}
-        className="flex items-center gap-2 bg-[#f18200] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#16304f] transition-colors">
+        className="flex items-center gap-2 bg-[#e87500] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#7c3d00] transition-colors">
           <Plus size={15} /> New Template
         </button>
       </div>

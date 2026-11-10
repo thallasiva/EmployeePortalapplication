@@ -18,13 +18,13 @@ function hoursToHM(hrs) {
   return `${h}h ${String(m).padStart(2, "0")}m`;
 }
 const STATUS_COLOR = {
-  P: "#16a34a", L: "#ea580c", "P:A": "#0284c7",
-  A: "#dc2626", H: "#3b82f6", LV: "#9333ea", WO: "#94a3b8",
+  P: "#16a34a", L: "#ea580c", "P:A": "#e87500",
+  A: "#dc2626", H: "#e87500", LV: "#9333ea", WO: "#94a3b8",
 };
 const PUNCH_CFG = {
   CHECK_IN:    { icon: LogIn,   color: "#16a34a", bg: "#f0fdf4", label: "Check In"    },
   BREAK_START: { icon: Coffee,  color: "#d97706", bg: "#fffbeb", label: "Break Start" },
-  BREAK_END:   { icon: Coffee,  color: "#f18200", bg: "#fff7ed", label: "Break End"   },
+  BREAK_END:   { icon: Coffee,  color: "#e87500", bg: "#fff7ed", label: "Break End"   },
   CHECK_OUT:   { icon: LogOut,  color: "#dc2626", bg: "#fef2f2", label: "Check Out"   },
   // legacy punch types
   IN:  { icon: LogIn,  color: "#16a34a", bg: "#f0fdf4", label: "Check In"  },
@@ -35,7 +35,7 @@ export default function DayDrawer({ entry, swipesLoading, onClose }) {
   if (!entry) return null;
   const { raw, status } = entry;
   const code       = status?.code;
-  const accentColor = STATUS_COLOR[code] || "#f18200";
+  const accentColor = STATUS_COLOR[code] || "#e87500";
   const checkIn    = fmtTime(raw?.check_in);
   const checkOut   = fmtTime(raw?.check_out);
   const worked     = hoursToHM(raw?.work_hours);

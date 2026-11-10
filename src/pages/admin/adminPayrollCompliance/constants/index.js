@@ -1,4 +1,4 @@
-export const ORANGE = "#f18200";
+export const ORANGE = "#e87500";
 export const TABS = [
   { key: "pan", label: "PAN Status" },
   { key: "pf-kyc", label: "PF KYC Mapping" },

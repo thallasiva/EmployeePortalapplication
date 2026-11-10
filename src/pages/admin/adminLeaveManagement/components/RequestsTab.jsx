@@ -46,7 +46,7 @@ const RequestsTab = memo(() => {
   const approved = rows.filter((r) => r.status === "Approved").length;
   const rejected = rows.filter((r) => r.status === "Rejected").length;
   const cards = [
-    { label: "Total requests", value: rows.length, icon: FileText, color: "#f18200", bg: "#fff7ed" },
+    { label: "Total requests", value: rows.length, icon: FileText, color: "#e87500", bg: "#fff7ed" },
     { label: "Awaiting review", value: pending.length, icon: Clock, color: "#d97706", bg: "#fffbeb" },
     { label: "Approved", value: approved, icon: CheckCircle2, color: "#16a34a", bg: "#f0fdf4" },
     { label: "Rejected", value: rejected, icon: XCircle, color: "#dc2626", bg: "#fef2f2" },
@@ -80,7 +80,7 @@ const RequestsTab = memo(() => {
       </div>
       <div className={cssClass({ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" })}>
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, color: "#64748b", fontSize: 13, fontWeight: 600 })}>
-          <span className={cssClass({ width: 7, height: 7, borderRadius: "50%", background: "#f18200" })} />
+          <span className={cssClass({ width: 7, height: 7, borderRadius: "50%", background: "#e87500" })} />
           Filter request history
         </div>
         <select aria-label="Filter leave requests by status" value={status} onChange={(e) => setStatus(e.target.value)} className={cssClass(
@@ -180,7 +180,7 @@ const RequestsTab = memo(() => {
       )}
       {!loading && rows.length === 0 && (
         <div className={cssClass({ textAlign: "center", padding: "56px 20px", border: "1px dashed #dbe1ea", borderRadius: 14, background: "#fff" })}>
-          <div className={cssClass({ width: 44, height: 44, margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 13, background: "#fff7ed", color: "#f18200" })}>
+          <div className={cssClass({ width: 44, height: 44, margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 13, background: "#fff7ed", color: "#e87500" })}>
             <FileText size={20} />
           </div>
           <div className={cssClass({ color: "#334155", fontSize: 14, fontWeight: 700 })}>No leave requests found</div>

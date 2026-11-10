@@ -40,7 +40,7 @@ const OrgChartWithSidebar = React.memo(function OrgChartWithSidebar({
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#111827" })}>Organisation Chart</span>
         </div>
         <div className={cssClass({ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" })}>
-          {[["#0369a1", "Top Level"], ["#0284c7", "Manager"], ["#38bdf8", "Employee"], ["#d97706", "Delegated"], ["#9ca3af", "Inactive"]].map(([c, l]) => (
+          {[["#c45f00", "Top Level"], ["#e87500", "Manager"], ["#fb923c", "Employee"], ["#d97706", "Delegated"], ["#9ca3af", "Inactive"]].map(([c, l]) => (
             <div key={l} className={cssClass({ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6b7280" })}>
               <div className={cssClass({ width: 10, height: 10, borderRadius: 2, background: c })} />{l}
             </div>
@@ -185,13 +185,13 @@ function FocusedPathView({ focusedPath, setFocusedPath }) {
     focusedPath.main &&
     focusedPath.main.id !== focusedPath.manager?.id &&
     focusedPath.main.id !== focusedPath.employee?.id
-      ? { ...focusedPath.main, role: "Main", color: "#1e40af" }
+      ? { ...focusedPath.main, role: "Main", color: "#9b4c00" }
       : null,
     focusedPath.manager && focusedPath.manager.id !== focusedPath.employee?.id
-      ? { ...focusedPath.manager, role: "Reporting Manager", color: "#0284c7" }
+      ? { ...focusedPath.manager, role: "Reporting Manager", color: "#e87500" }
       : null,
     focusedPath.employee
-      ? { ...focusedPath.employee, role: "Selected Employee", color: "#f18200" }
+      ? { ...focusedPath.employee, role: "Selected Employee", color: "#e87500" }
       : null,
   ].filter(Boolean);
   const svgW = nodes3.length * (NW + GAP) - GAP + 20;
@@ -216,20 +216,20 @@ function FocusedPathView({ focusedPath, setFocusedPath }) {
           const y = NH / 2 + 10;
           return (
             <g key={i}>
-              <line x1={x1} y1={y} x2={x2} y2={y} stroke="#93c5fd" strokeWidth={2} />
-              <polygon points={`${x2},${y} ${x2 - 8},${y - 5} ${x2 - 8},${y + 5}`} fill="#93c5fd" />
+              <line x1={x1} y1={y} x2={x2} y2={y} stroke="#fdba74" strokeWidth={2} />
+              <polygon points={`${x2},${y} ${x2 - 8},${y - 5} ${x2 - 8},${y + 5}`} fill="#fdba74" />
             </g>
           );
         })}
         {nodes3.map((node, i) => {
           const x = 10 + i * (NW + GAP);
           const y = 10;
-          const isEmployee = node.color === "#f18200";
+          const isEmployee = node.color === "#e87500";
           return (
             <g key={node.id}>
               {isEmployee && (
                 <rect x={x - 4} y={y - 4} width={NW + 8} height={NH + 8}
-                  rx={11} fill="none" stroke="#f18200" strokeWidth={2.5} />
+                  rx={11} fill="none" stroke="#e87500" strokeWidth={2.5} />
               )}
               <rect x={x + 2} y={y + 2} width={NW} height={NH} rx={8} fill="#00000012" />
               <rect x={x} y={y} width={NW} height={NH} rx={8} fill={node.color} />

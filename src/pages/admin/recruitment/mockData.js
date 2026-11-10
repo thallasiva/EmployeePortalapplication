@@ -7,15 +7,15 @@ export const INTERVIEW_TYPES = ['Video Call', 'Phone', 'In-Person', 'Teams', 'Go
 export const FEEDBACK_STATUSES = ['Shortlist', 'Move to Next Round', 'Reject / Drop'];
 export const GENDERS = ['Male', 'Female', 'Other'];
 export const CANDIDATE_STATUSES = {
-  'Work in Progress': { color: '#1d4ed8', bg: '#dbeafe', label: 'Work in Progress' },
+  'Work in Progress': { color: '#cf6900', bg: '#ffedd5', label: 'Work in Progress' },
   'Schedule Interview': { color: '#7c3aed', bg: '#ede9fe', label: 'Schedule Interview' },
-  'Shortlisted': { color: '#0369a1', bg: '#e0f2fe', label: 'Shortlisted' },
+  'Shortlisted': { color: '#c45f00', bg: '#ffedd5', label: 'Shortlisted' },
   'Offer Released': { color: '#d97706', bg: '#fef3c7', label: 'Offer Released' },
   'Offer Accepted': { color: '#059669', bg: '#d1fae5', label: 'Offer Accepted' },
   'Offer Rejected': { color: '#dc2626', bg: '#fee2e2', label: 'Offer Rejected' },
   'Interview Scheduled': { color: '#6d28d9', bg: '#ede9fe', label: 'Interview Scheduled' },
   'Rejected': { color: '#dc2626', bg: '#fee2e2', label: 'Rejected' },
-  'Joining Formalities': { color: '#0891b2', bg: '#cffafe', label: 'Joining Formalities' },
+  'Joining Formalities': { color: '#e87500', bg: '#fff7ed', label: 'Joining Formalities' },
   'Onboarded': { color: '#166534', bg: '#dcfce7', label: 'Onboarded' }
 };
 export const MOCK_RECRUITERS = [

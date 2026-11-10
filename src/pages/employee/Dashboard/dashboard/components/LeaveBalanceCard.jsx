@@ -2,8 +2,8 @@ import React from "react";
 import { cssClass } from "../../../../../utils/classStyles";
 const LeaveBalanceCard = React.memo(function LeaveBalanceCard({ loading, leaveBalance }) {
   return (
-    <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20 })}>
-      <div className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b", marginBottom: 14 })}>Leave Balance</div>
+    <div className={cssClass({ background: "#fff", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 12, border: "1px solid #e2e8f0" })}>
+      <div className={cssClass({ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 10 })}>Leave Balance</div>
       {loading ? (
         <div className={cssClass({ color: "#94a3b8", fontSize: 13 })}>Loading…</div>
       ) : leaveBalance.length === 0 ? (
@@ -11,7 +11,7 @@ const LeaveBalanceCard = React.memo(function LeaveBalanceCard({ loading, leaveBa
           No leave balance data.
         </div>
       ) : (
-        <div className={cssClass({ display: "flex", flexDirection: "column", gap: 10 })}>
+        <div className={cssClass({ display: "flex", flexDirection: "column", gap: 8 })}>
           {leaveBalance.map((lb) => {
             const used = Number(lb.used_days ?? lb.used ?? 0);
             const total = Number(lb.total_days ?? lb.total ?? lb.annual_quota ?? 0);
@@ -28,7 +28,7 @@ const LeaveBalanceCard = React.memo(function LeaveBalanceCard({ loading, leaveBa
                 <div className={cssClass({ height: 6, background: "#f1f5f9", borderRadius: 3 })}>
                   <div className={cssClass({
                     height: "100%", borderRadius: 3, width: `${pct}%`,
-                    background: pct > 70 ? "#ef4444" : pct > 40 ? "#f59e0b" : "#f18200",
+                    background: pct > 70 ? "#ef4444" : pct > 40 ? "#f59e0b" : "#e87500",
                     transition: "width 0.4s",
                   })} />
                 </div>

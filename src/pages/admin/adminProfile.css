@@ -18,7 +18,7 @@
 /* ── Cover banner ──────────────────────── */
 .admin-profile__cover {
   height: 148px;
-  background: linear-gradient(135deg, #f18200 0%, #fb923c 55%, #fbbf24 100%);
+  background: linear-gradient(135deg, #e87500 0%, #fb923c 55%, #fbbf24 100%);
   position: relative;
   overflow: hidden;
 }
@@ -62,8 +62,8 @@
   border-radius: 999px;
   border: 4px solid #fff;
   object-fit: cover;
-  background: linear-gradient(135deg,#f18200,#fb923c);
-  box-shadow: 0 4px 16px rgba(241,130,0,.25);
+  background: linear-gradient(135deg,#e87500,#fb923c);
+  box-shadow: 0 4px 16px rgba(232,117,0,.25);
   flex-shrink: 0;
 }
 .admin-profile__name {
@@ -83,7 +83,7 @@
 .admin-profile__email {
   margin: 0.25rem 0 0;
   font-size: 0.8125rem;
-  color: #f18200;
+  color: #e87500;
   font-weight: 500;
 }
 .admin-profile__badges {
@@ -121,11 +121,11 @@
 }
 .admin-profile__tab:hover {
   background: #fff8f0;
-  color: #f18200;
+  color: #e87500;
 }
 .admin-profile__tab.active {
   background: #fff8f0;
-  color: #f18200;
+  color: #e87500;
   font-weight: 700;
 }
 /* ── Content area ─────────────────────── */

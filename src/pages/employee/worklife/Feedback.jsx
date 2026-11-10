@@ -33,8 +33,8 @@ const FeedbackItem = ({ f, perspective }) => {
           <p className="text-sm">
             {perspective === "sent" && <span className="text-slate-500">To </span>}
             {perspective === "team" ?
-            <><strong className=" text-[#f18200]">{f.from_name}</strong><ArrowRight size={13} className="inline mx-1 text-slate-400" /><strong className=" text-[#f18200]">{f.to_name}</strong></> :
-            <strong className=" text-[#f18200]">{person}</strong>
+            <><strong className=" text-[#e87500]">{f.from_name}</strong><ArrowRight size={13} className="inline mx-1 text-slate-400" /><strong className=" text-[#e87500]">{f.to_name}</strong></> :
+            <strong className=" text-[#e87500]">{person}</strong>
             }
             {perspective !== "team" && role && <span className="text-slate-500"> · {role}</span>}
           </p>
@@ -91,7 +91,7 @@ const FeedbackList = ({ scope, perspective, emptyAction }) => {
       {loading && rows.length === 0 ? <Loading /> :
       rows.length === 0 ?
       <EmptyState
-        icon={<MessageSquare className="text-[#f18200]" />}
+        icon={<MessageSquare className="text-[#e87500]" />}
         title={type ? `No ${type.toLowerCase()} feedback` : "Nothing here yet"}
         text={perspective === "received" ? "Ask your teammates for feedback to grow faster." : undefined}
         action={emptyAction} /> :
@@ -134,7 +134,7 @@ const RequestsPanel = ({ refreshKey, onRespond, onChanged }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-sm font-bold  text-[#f18200] mb-2">Waiting for your feedback</h3>
+        <h3 className="text-sm font-bold  text-[#e87500] mb-2">Waiting for your feedback</h3>
         {incoming === null ? <Loading /> :
         pending.length === 0 ?
         <p className="text-sm text-slate-500 py-3">No pending requests.</p> :
@@ -157,7 +157,7 @@ const RequestsPanel = ({ refreshKey, onRespond, onChanged }) => {
         }
       </div>
       <div>
-        <h3 className="text-sm font-bold  text-[#f18200] mb-2">Requests you sent</h3>
+        <h3 className="text-sm font-bold  text-[#e87500] mb-2">Requests you sent</h3>
         {outgoing === null ? <Loading /> :
         outgoing.length === 0 ?
         <p className="text-sm text-slate-500 py-3">You haven't requested feedback yet.</p> :
@@ -203,7 +203,7 @@ const Feedback = () => {
       {modal?.kudos && <GiveKudosModal preset={[modal.kudos]} onClose={() => setModal(null)} onSent={refresh} />}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold  text-[#f18200]">Feedback</h1>
+          <h1 className="text-2xl font-bold  text-[#e87500]">Feedback</h1>
           <p className="text-slate-500 mt-1 text-sm">
             {isHr ? "Give feedback and track engagement across teams." :
             isManager ? "Guide your team with timely, specific feedback." :
@@ -218,7 +218,7 @@ const Feedback = () => {
       {tab !== "report" &&
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard icon={<Star size={22} className="text-amber-500" />} label="Received" value={summary?.feedback_received} accent="bg-amber-50" />
-          <StatCard icon={<MessageSquare size={22} className="text-[#f18200]" />} label="Given" value={summary?.feedback_given} />
+          <StatCard icon={<MessageSquare size={22} className="text-[#e87500]" />} label="Given" value={summary?.feedback_given} />
           <StatCard
           icon={<Inbox size={22} className="text-blue-600" />}
           label="Pending requests"

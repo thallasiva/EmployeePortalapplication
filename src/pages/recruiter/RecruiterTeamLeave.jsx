@@ -65,7 +65,7 @@ const RecruiterTeamLeave = () => {
               key={s}
               onClick={() => setFilter(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                filter === s ? "bg-[#f18200] text-white border-blue-600" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                filter === s ? "bg-[#e87500] text-white border-blue-600" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
               }`}
             >
               {s}

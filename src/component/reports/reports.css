@@ -30,12 +30,12 @@
   transition: color 0.15s, border-color 0.15s;
 }
 .reports-header-tabs__link:hover {
-  color: #f18200;
+  color: #e87500;
 }
 .reports-header-tabs__link.active {
-  color: #f18200;
+  color: #e87500;
   font-weight: 600;
-  border-bottom-color: #f18200;
+  border-bottom-color: #e87500;
 }
 .reports-content {
   flex: 1;
@@ -513,8 +513,8 @@
   color: #15803d;
 }
 .report-status--pending {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #ffedd5;
+  color: #cf6900;
 }
 .report-status--inprogress {
   background: #ede9fe;
@@ -643,7 +643,7 @@
 }
 .report-week-nav__btn:hover {
   background: #f1f5f9;
-  color: #f18200;
+  color: #e87500;
 }
 .report-week-nav__range {
   font-size: 0.8125rem;

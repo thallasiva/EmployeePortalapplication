@@ -99,7 +99,7 @@ export default function Resignation() {
                 <p className={cssClass({ fontSize: 13, color: "#94a3b8", margin: 0, textAlign: "center", maxWidth: 340 })}>
                   If you've made up your mind, you can proceed with your resignation below.
                 </p>
-                <button onClick={() => setShowForm(true)} className={cssClass({ marginTop: 8, padding: "12px 36px", borderRadius: 10, background: BRAND, color: "#fff", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 14px rgba(241,130,0,0.4)" })}>
+                <button onClick={() => setShowForm(true)} className={cssClass({ marginTop: 8, padding: "12px 36px", borderRadius: 10, background: BRAND, color: "#fff", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 14px rgba(232,117,0,0.4)" })}>
                   Apply for Resignation
                 </button>
               </div>

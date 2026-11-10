@@ -103,7 +103,7 @@ export const Sidebar = ({ open }) =>
       icon: <UserSearch size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/recruitment",
       badge: "New",
-      badgeColor: "#f18200"
+      badgeColor: "#e87500"
     },
     {
       section: "PEOPLE",
@@ -111,7 +111,7 @@ export const Sidebar = ({ open }) =>
       icon: <Award size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/performance",
       badge: "New",
-      badgeColor: "#f18200"
+      badgeColor: "#e87500"
     },
     {
       section: "PEOPLE",
@@ -125,19 +125,21 @@ export const Sidebar = ({ open }) =>
       icon: <LogOut size={20} strokeWidth={1.75} />,
       navigationLink: "/dashboard/resignations",
       badge: "New",
-      badgeColor: "#f18200"
+      badgeColor: "#e87500"
     },
     {
       section: "TIME & ATTENDANCE",
       label: "Attendance", permId: "attendance",
       icon: <Clock size={20} />,
-      navigationLink: "/dashboard/attendance"
-    },
-    {
-      section: "TIME & ATTENDANCE",
-      label: "Shift Management", permId: "attendance",
-      icon: <Clock size={20} />,
-      navigationLink: "/dashboard/shifts"
+      children: [
+        { label: "Attendance Dashboard", navigationLink: "/dashboard/attendance" },
+        { label: "Attendance Records", navigationLink: "/dashboard/attendance/records" },
+        { label: "Shift Management", navigationLink: "/dashboard/attendance/shifts" },
+        { label: "Attendance Correction", navigationLink: "/dashboard/attendance/corrections" },
+        { label: "Geo-Fence & Location", navigationLink: "/dashboard/attendance/locations" },
+        { label: "Overtime Management", navigationLink: "/dashboard/attendance/overtime" },
+        { label: "Attendance Reports", navigationLink: "/dashboard/attendance/reports" },
+      ]
     },
     {
       section: "TIME & ATTENDANCE",
@@ -374,10 +376,15 @@ export const Sidebar = ({ open }) =>
       label: "Attendance",
       icon: <SquareCheck size={20} strokeWidth={1.75} />,
       children: [
-        { label: "Attendance Info", navigationLink: "/employee/attendance/daily" },
-        { label: "My Regularizations", navigationLink: "/employee/attendance/regularizations" },
+        { label: "My Attendance", navigationLink: "/employee/attendance/daily" },
         { label: "Monthly Attendance", navigationLink: "/employee/attendance/monthly" },
-        { label: "Shift Roster", navigationLink: "/employee/attendance/shifts" }]
+        { label: "Regularization", navigationLink: "/employee/attendance/regularizations" },
+        { label: "Attendance History", navigationLink: "/employee/attendance/history" },
+        { label: "Shift & Schedule", navigationLink: "/employee/attendance/shifts" },
+        { label: "Leave & Holiday", navigationLink: "/employee/leave/holiday-calendar" },
+        { label: "Apply Leave", navigationLink: "/employee/leave/apply" },
+        { label: "Overtime", navigationLink: "/employee/attendance/work-hours" },
+        { label: "Reports", navigationLink: "/employee/attendance/reports" }]
     },
     {
       label: "Leave",
@@ -535,11 +542,10 @@ export const Sidebar = ({ open }) =>
       setExpanded(activeIndex);
     }
   }, [pathname, search, user, isAllowed, isSuperAdmin]);
-  const menuItemClass = (active, childActive = false) =>
+  const menuItemClass = (active) =>
     [
       "sidebar-menu-item",
       active ? "sidebar-menu-item-active" : "",
-      childActive && !active ? "sidebar-menu-item-parent-active" : "",
       !open ? "justify-center px-2" : "",
       "cursor-pointer"]
       .filter(Boolean)
@@ -580,9 +586,6 @@ export const Sidebar = ({ open }) =>
               </div>
             )
             : null;
-          const childActive = item.children?.some((child) =>
-            isPathActive(pathname, child.navigationLink, search)
-          );
           if (!item.children)
           {
             const active = isPathActive(pathname, item.navigationLink, search);
@@ -604,7 +607,7 @@ export const Sidebar = ({ open }) =>
                         {item.label}
                       </span>
                       {item.badge &&
-                        <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
+                        <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold tracking-wide text-white ${item.badgeColor === "#e87500" ? "bg-[#e87500]" : "bg-red-500"}`}>
                           {item.badge}
                         </span>
                       }
@@ -617,12 +620,12 @@ export const Sidebar = ({ open }) =>
             <React.Fragment key={index}>
               {sectionHeading}
               <div>
-                <div className={menuItemClass(false, childActive)}
+                <div className={menuItemClass(false)}
                   onClick={() => toggleAccordion(index)}
                   title={!open ? item.label : undefined}>
                   <span className={[
                     "flex shrink-0",
-                    childActive ? "text-brand-500" : "text-gray-400"]
+                    "text-gray-400"]
                     .join(" ")}>
                     {React.cloneElement(item.icon, { size: 18 })}
                   </span>
@@ -632,7 +635,7 @@ export const Sidebar = ({ open }) =>
                         {item.label}
                       </span>
                       {item.badge &&
-                        <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#f18200" ? "bg-[#f18200]" : "bg-red-500"}`}>
+                        <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] font-bold text-white ${item.badgeColor === "#e87500" ? "bg-[#e87500]" : "bg-red-500"}`}>
                           {item.badge}
                         </span>
                       }

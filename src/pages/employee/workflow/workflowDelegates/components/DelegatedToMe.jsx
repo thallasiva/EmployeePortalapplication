@@ -11,7 +11,7 @@ const DelegatedToMe = React.memo(function DelegatedToMe({ myId, employees, deleg
           padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
         })}
       >
-        <Info size={16} className={cssClass({ color: "#f18200", flexShrink: 0 })} />
+        <Info size={16} className={cssClass({ color: "#e87500", flexShrink: 0 })} />
         <p className={cssClass({ fontSize: 13, color: "#92400e", margin: 0 })}>
           When a colleague sets you as their delegate, their pending approval requests will appear here.
           You'll also receive a notification.

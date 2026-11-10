@@ -26,7 +26,7 @@ const cols = [
     label: "UAN Number",
     render: (r) =>
       r.uan_number ? (
-        <code className={cssClass({ padding: "2px 6px", borderRadius: 3, background: "#eff6ff", color: "#1e40af" })}>
+        <code className={cssClass({ padding: "2px 6px", borderRadius: 3, background: "#fff7ed", color: "#9b4c00" })}>
           {r.uan_number}
         </code>
       ) : (

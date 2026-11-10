@@ -32,7 +32,7 @@ const listActiveAssetCategories = () => listAssetCategories(false);
 const listAllocations = () => listAssetAllocations();
 
 function PageTitle({ title, description, action }) {
-  return <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-bold  text-[#f18200]">{title}</h2><p className="mt-1 text-sm text-slate-500">{description}</p></div>{action}</div>;
+  return <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-bold  text-[#e87500]">{title}</h2><p className="mt-1 text-sm text-slate-500">{description}</p></div>{action}</div>;
 }
 function Notice({ children, error = false }) {
   return children ? <div role={error ? "alert" : "status"} className={`rounded-lg border px-4 py-3 text-sm ${error ? "border-red-200 bg-red-50 text-red-700" : "border-blue-100 bg-blue-50 text-blue-800"}`}>{children}</div> : null;
@@ -41,7 +41,7 @@ function Empty({ children }) {
   return <div className="px-5 py-10 text-center text-sm text-slate-500">{children}</div>;
 }
 function Status({ children }) {
-  const tone = { Available: "bg-blue-50 text-[#f18200]", Assigned: "bg-emerald-50 text-emerald-700", Maintenance: "bg-amber-50 text-amber-700", Retired: "bg-slate-100 text-slate-600", Active: "bg-emerald-50 text-emerald-700", Inactive: "bg-slate-100 text-slate-600", Pending: "bg-amber-50 text-amber-700", Approved: "bg-blue-50 text-[#f18200]", Rejected: "bg-red-50 text-red-700", Fulfilled: "bg-emerald-50 text-emerald-700", Open: "bg-amber-50 text-amber-700", "In Progress": "bg-blue-50 text-[#f18200]", Resolved: "bg-emerald-50 text-emerald-700", Cancelled: "bg-slate-100 text-slate-600" };
+  const tone = { Available: "bg-blue-50 text-[#e87500]", Assigned: "bg-emerald-50 text-emerald-700", Maintenance: "bg-amber-50 text-amber-700", Retired: "bg-slate-100 text-slate-600", Active: "bg-emerald-50 text-emerald-700", Inactive: "bg-slate-100 text-slate-600", Pending: "bg-amber-50 text-amber-700", Approved: "bg-blue-50 text-[#e87500]", Rejected: "bg-red-50 text-red-700", Fulfilled: "bg-emerald-50 text-emerald-700", Open: "bg-amber-50 text-amber-700", "In Progress": "bg-blue-50 text-[#e87500]", Resolved: "bg-emerald-50 text-emerald-700", Cancelled: "bg-slate-100 text-slate-600" };
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone[children] || "bg-slate-100 text-slate-600"}`}>{children || "—"}</span>;
 }
 function FilterSearch({ value, onChange, placeholder = "Search..." }) {
@@ -140,7 +140,7 @@ export function AssetInventory() {
       {loading ? <Empty>Loading inventory…</Empty> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>{["#", "Asset Tag", "Asset Name", "Category", "Employee", "Location", "Status", "Actions"].map((column) => <th key={column} className="px-4 py-3">{column}</th>)}</tr></thead>
         <tbody className="divide-y divide-slate-100">{filtered.map((asset, index) => <tr key={asset.asset_id}>
-          <td className="px-4 py-3 text-slate-400">{index + 1}</td><td className="px-4 py-3 font-medium text-[#f18200]">{asset.asset_tag}</td><td className="px-4 py-3 font-medium text-slate-800">{asset.asset_name}<p className="text-xs font-normal text-slate-500">{asset.serial_number || "No serial number"}</p></td><td className="px-4 py-3">{asset.category || "—"}</td><td className="px-4 py-3">{asset.employee_name || "—"}</td><td className="px-4 py-3">{asset.location || "—"}</td><td className="px-4 py-3"><Status>{asset.status}</Status></td><td className="px-4 py-3">{asset.status !== "Assigned" && asset.status !== "Retired" && <select aria-label={`Set status for ${asset.asset_tag}`} disabled={saving} value={asset.status} onChange={(e) => changeStatus(asset, e.target.value)} className="rounded border border-slate-300 px-2 py-1 text-xs"><option>Available</option><option>Retired</option></select>}</td>
+          <td className="px-4 py-3 text-slate-400">{index + 1}</td><td className="px-4 py-3 font-medium text-[#e87500]">{asset.asset_tag}</td><td className="px-4 py-3 font-medium text-slate-800">{asset.asset_name}<p className="text-xs font-normal text-slate-500">{asset.serial_number || "No serial number"}</p></td><td className="px-4 py-3">{asset.category || "—"}</td><td className="px-4 py-3">{asset.employee_name || "—"}</td><td className="px-4 py-3">{asset.location || "—"}</td><td className="px-4 py-3"><Status>{asset.status}</Status></td><td className="px-4 py-3">{asset.status !== "Assigned" && asset.status !== "Retired" && <select aria-label={`Set status for ${asset.asset_tag}`} disabled={saving} value={asset.status} onChange={(e) => changeStatus(asset, e.target.value)} className="rounded border border-slate-300 px-2 py-1 text-xs"><option>Available</option><option>Retired</option></select>}</td>
         </tr>)}{!filtered.length && <tr><td colSpan={8}><Empty>No inventory matches the filters.</Empty></td></tr>}</tbody>
       </table></div>}
     </section>

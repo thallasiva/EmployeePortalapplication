@@ -53,7 +53,7 @@ function AssignRecruiterModal({
                   <label
                     key={empId}
                     className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-2 cursor-pointer border transition-colors ${
-                      isChecked ? "border-[#f18200] bg-amber-50" : "border-gray-200 bg-white"
+                      isChecked ? "border-[#e87500] bg-amber-50" : "border-gray-200 bg-white"
                     }`}
                   >
                     <input
@@ -64,7 +64,7 @@ function AssignRecruiterModal({
                           e.target.checked ? [...ids, empId] : ids.filter((i) => i !== empId)
                         )
                       }
-                      className="accent-[#f18200]"
+                      className="accent-[#e87500]"
                     />
                     <div className="flex-1">
                       <div className="font-semibold text-sm text-gray-900">{name}</div>

@@ -108,7 +108,7 @@ export default function TrainingManagement() {
     <main className="space-y-6">
       <header>
         <p className="text-sm font-semibold text-amber-700">PEOPLE MANAGEMENT</p>
-        <h1 className="mt-1 text-2xl font-bold  text-[#f18200]">Training &amp; Development</h1>
+        <h1 className="mt-1 text-2xl font-bold  text-[#e87500]">Training &amp; Development</h1>
         <p className="mt-1 text-sm text-slate-500">Create company training courses, assign employees, and track completion.</p>
       </header>
       {notice && <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-slate-700">{notice}</div>}

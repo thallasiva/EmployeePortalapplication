@@ -24,10 +24,10 @@ export default function ApprovalsInbox() {
   const counts = items.reduce((all, item) => ({ ...all, [item.type]: (all[item.type] || 0) + 1 }), {});
   return (
     <main className="space-y-6 p-5 md:p-8">
-      <header><p className="text-sm font-semibold text-amber-700">EMPLOYEE SERVICES</p><h1 className="mt-1 text-2xl font-bold  text-[#f18200]">Approvals</h1><p className="mt-1 text-sm text-slate-500">A single view of requests awaiting your review. Use each module to approve or reject with its existing workflow.</p></header>
+      <header><p className="text-sm font-semibold text-amber-700">EMPLOYEE SERVICES</p><h1 className="mt-1 text-2xl font-bold  text-[#e87500]">Approvals</h1><p className="mt-1 text-sm text-slate-500">A single view of requests awaiting your review. Use each module to approve or reject with its existing workflow.</p></header>
       {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {["Leave", "Attendance", "Resignation", "Timesheet", "Appraisal"].map((type) => <article key={type} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-sm text-slate-500">{type}</p><p className="mt-1 text-2xl font-bold  text-[#f18200]">{counts[type] || 0}</p></article>)}
+        {["Leave", "Attendance", "Resignation", "Timesheet", "Appraisal"].map((type) => <article key={type} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-sm text-slate-500">{type}</p><p className="mt-1 text-2xl font-bold  text-[#e87500]">{counts[type] || 0}</p></article>)}
       </section>
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center gap-2 border-b border-slate-100 p-5"><ClipboardList size={19} className="text-amber-600" /><div><h2 className="font-semibold text-slate-800">Pending requests</h2><p className="mt-1 text-sm text-slate-500">{items.length} requests require attention</p></div></div>

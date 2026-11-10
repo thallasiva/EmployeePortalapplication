@@ -64,11 +64,11 @@ const PoliciesView = React.memo(function PoliciesView({
                           <span>{policy.file}</span>
                           <span className="inline-flex gap-2 text-[#8d9aad]">
                             <button type="button" onClick={() => handleViewPayslip(fileRow)}
-                              className="hover:text-[#1890ff] p-0.5" aria-label={`View ${policy.file}`} title="View policy">
+                              className="hover:text-[#e87500] p-0.5" aria-label={`View ${policy.file}`} title="View policy">
                               <Search size={12} />
                             </button>
                             <button type="button" onClick={() => handleDownloadPayslip(fileRow)}
-                              className="hover:text-[#1890ff] p-0.5" aria-label={`Download ${policy.file}`} title="Download policy">
+                              className="hover:text-[#e87500] p-0.5" aria-label={`Download ${policy.file}`} title="Download policy">
                               <Download size={12} />
                             </button>
                           </span>

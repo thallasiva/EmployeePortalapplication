@@ -86,9 +86,9 @@ const ShiftHolidayTable = React.memo(({ shift, year, locationFilter, allHolidays
                     </td>
                     <td className={cssClass({ padding: "11px 14px" })}>
                       <span className={cssClass({ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999,
-                        background: h.is_restricted ? "#eff6ff" : "#f0fdf4",
-                        color: h.is_restricted ? "#1d4ed8" : "#15803d",
-                        border: `1px solid ${h.is_restricted ? "#bfdbfe" : "#bbf7d0"}` })}>
+                        background: h.is_restricted ? "#fff7ed" : "#f0fdf4",
+                        color: h.is_restricted ? "#cf6900" : "#15803d",
+                        border: `1px solid ${h.is_restricted ? "#fed7aa" : "#bbf7d0"}` })}>
                         {h.is_restricted ? "Restricted" : "Public"}
                       </span>
                     </td>

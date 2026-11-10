@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
-const NAVY        = "#f18200";
+const NAVY        = "#e87500";
 const AMBER       = "#d97706";
 const AMBER_INACT = "#fbcd97";
 const STORAGE_KEY = "salaryStructureTemplate";

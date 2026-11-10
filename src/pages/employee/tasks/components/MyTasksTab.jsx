@@ -64,7 +64,7 @@ const MyTasksTab = memo(function MyTasksTab() {
                 <div className="flex items-start gap-2.5 w-full">
                   <span className={joinClasses(
                     "w-2 h-2 rounded-full mt-1.5 shrink-0 inline-block",
-                    cssClass({ background: t.status === "completed" ? "#16a34a" : t.status === "in_timesheet" ? "#7c3aed" : "#f18200" })
+                    cssClass({ background: t.status === "completed" ? "#16a34a" : t.status === "in_timesheet" ? "#7c3aed" : "#e87500" })
                   )} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm">{t.task_name}</p>

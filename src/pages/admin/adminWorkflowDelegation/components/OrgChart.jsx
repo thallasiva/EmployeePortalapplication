@@ -61,10 +61,10 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
   const ny = (item) => item.y + 14;
   const boxColor = (item) => {
     if (item.status === "Inactive") return "#9ca3af";
-    if (item.depth === 0) return "#1e40af";
-    if (item.direct_count > 0) return "#0284c7";
+    if (item.depth === 0) return "#9b4c00";
+    if (item.direct_count > 0) return "#e87500";
     if (item.delegate_name) return "#d97706";
-    return "#38bdf8";
+    return "#fb923c";
   };
   return (
     <div className={cssClass({ overflowX: "auto", overflowY: "visible" })}>
@@ -79,7 +79,7 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
           const mx = (x1 + x2) / 2;
           return (
             <path key={i} d={`M${x1},${y1} H${mx} V${y2} H${x2}`}
-              fill="none" stroke="#93c5fd" strokeWidth={1.5} strokeLinecap="round" />
+              fill="none" stroke="#fdba74" strokeWidth={1.5} strokeLinecap="round" />
           );
         })}
         {flat.map((item) => {
@@ -95,11 +95,11 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
             <g key={item.id}>
               {isHighlighted && (
                 <rect x={x - 4} y={y - 4} width={CHART.NW + 8} height={CHART.NH + 8}
-                  rx={11} fill="none" stroke="#f18200" strokeWidth={3} opacity={0.9} />
+                  rx={11} fill="none" stroke="#e87500" strokeWidth={3} opacity={0.9} />
               )}
               <g onClick={() => onSelect && onSelect(item)} className={cssClass({ cursor: "pointer" })}>
                 <rect x={x + 2} y={y + 2} width={CHART.NW} height={CHART.NH} rx={8} fill="#00000015" />
-                <rect x={x} y={y} width={CHART.NW} height={CHART.NH} rx={8} fill={isHighlighted ? "#f18200" : bg} />
+                <rect x={x} y={y} width={CHART.NW} height={CHART.NH} rx={8} fill={isHighlighted ? "#e87500" : bg} />
                 <text x={x + CHART.NW / 2} y={y + 24} textAnchor="middle" fill="white"
                   fontSize={12} fontWeight="700"
                   className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>

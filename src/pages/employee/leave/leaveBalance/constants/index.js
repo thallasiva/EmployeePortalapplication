@@ -5,8 +5,8 @@ export const TYPE_CONFIG = [
   {
     match: ["earned", "el", "annual"],
     icon: CalendarHeart,
-    bg: "#E6F1FB", iconColor: "#185FA5", barColor: "#378ADD",
-    badgeBg: "#E6F1FB", badgeColor: "#185FA5", detailColor: "#185FA5",
+    bg: "#E6F1FB", iconColor: "#cf6900", barColor: "#e87500",
+    badgeBg: "#E6F1FB", badgeColor: "#cf6900", detailColor: "#cf6900",
   },
   {
     match: ["sick", "sl", "medical"],
@@ -17,8 +17,8 @@ export const TYPE_CONFIG = [
   {
     match: ["compensatory", "comp", "co"],
     icon: Clock3,
-    bg: "#EEEDFE", iconColor: "#534AB7", barColor: "#7F77DD",
-    badgeBg: "#EEEDFE", badgeColor: "#534AB7", detailColor: "#534AB7",
+    bg: "#EEEDFE", iconColor: "#cf6900", barColor: "#7F77DD",
+    badgeBg: "#EEEDFE", badgeColor: "#cf6900", detailColor: "#cf6900",
   },
   {
     match: ["work from home", "wfh", "remote"],
@@ -41,7 +41,7 @@ export const TYPE_CONFIG = [
   {
     match: [],
     icon: CalendarHeart,
-    bg: "#F0F4FF", iconColor: "#3B5FC0", barColor: "#5579DB",
-    badgeBg: "#F0F4FF", badgeColor: "#3B5FC0", detailColor: "#3B5FC0",
+    bg: "#fff7ed", iconColor: "#e87500", barColor: "#e87500",
+    badgeBg: "#fff7ed", badgeColor: "#e87500", detailColor: "#e87500",
   },
 ];

@@ -91,7 +91,7 @@ const TeamsSearchBar = React.memo(function TeamsSearchBar({
           gap: 6,
           height: 34,
           padding: "0 14px",
-          border: activeFilterCount > 0 ? "1.5px solid #f18200" : "1px solid #e2e8f0",
+          border: activeFilterCount > 0 ? "1.5px solid #e87500" : "1px solid #e2e8f0",
           borderRadius: 8,
           background: activeFilterCount > 0 ? "#fff7ed" : "#fff",
           fontSize: 13,
@@ -105,7 +105,7 @@ const TeamsSearchBar = React.memo(function TeamsSearchBar({
         {activeFilterCount > 0 && (
           <span
             className={cssClass({
-              background: "#f18200",
+              background: "#e87500",
               color: "#fff",
               borderRadius: 999,
               fontSize: 10,

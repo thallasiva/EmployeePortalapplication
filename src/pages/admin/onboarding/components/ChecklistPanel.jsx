@@ -18,7 +18,7 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
           <p className="text-sm text-slate-500">
             {selectedEmployee.designation_name || "—"} · {selectedEmployee.department_name || "—"}
           </p>
-          <h2 className="text-2xl font-semibold  text-[#f18200]">
+          <h2 className="text-2xl font-semibold  text-[#e87500]">
             {selectedEmployee.first_name} {selectedEmployee.last_name || ""}
           </h2>
           <div className="flex flex-wrap gap-3 items-center text-sm text-slate-500 mt-3">
@@ -44,7 +44,7 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
           <div key={group.section} className="onboarding-group-card">
             <div className="onboarding-group-header">
               <div>
-                <p className="font-semibold  text-[#f18200]">{group.section}</p>
+                <p className="font-semibold  text-[#e87500]">{group.section}</p>
                 <p className="text-sm text-slate-500">
                   {group.completed}/{group.total} completed
                 </p>
@@ -61,7 +61,7 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold  text-[#f18200]">{task.title}</p>
+                    <p className="font-semibold  text-[#e87500]">{task.title}</p>
                     <p className="text-sm text-slate-500 mt-1">{task.description}</p>
                     <div className="flex flex-wrap gap-2 items-center mt-2 text-xs text-slate-400">
                       <span>Due: Day {task.dueDays}</span>
@@ -83,7 +83,7 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
         <div className="onboarding-group-card">
           <div className="onboarding-group-header">
             <div>
-              <p className="font-semibold  text-[#f18200]">Uploaded Documents</p>
+              <p className="font-semibold  text-[#e87500]">Uploaded Documents</p>
               <p className="text-sm text-slate-500">
                 {docsLoading
                   ? "Loading…"
@@ -122,7 +122,7 @@ const ChecklistPanel = React.memo(function ChecklistPanel({
                   <div className="flex items-center gap-3 min-w-0">
                     <FileText size={16} className="text-brand shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium  text-[#f18200] truncate">{doc.title}</p>
+                      <p className="text-sm font-medium  text-[#e87500] truncate">{doc.title}</p>
                       {doc.description && (
                         <p className="text-xs text-slate-500 truncate">{doc.description}</p>
                       )}

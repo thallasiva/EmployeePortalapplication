@@ -4,7 +4,7 @@ const STATS_CONFIG = [
   { label: "Total Jobs", colorClass: "text-[#1a2535]", key: "totalCount" },
   { label: "Open", colorClass: "text-green-600", key: "totalOpen" },
   { label: "Completed", colorClass: "text-purple-600", key: "totalCompleted" },
-  { label: "Total Openings", colorClass: "text-[#f18200]", key: "totalCount" },
+  { label: "Total Openings", colorClass: "text-[#e87500]", key: "totalCount" },
 ];
 function JobsStatCards({ totalCount, totalOpen, totalCompleted }) {
   const values = { totalCount, totalOpen, totalCompleted };

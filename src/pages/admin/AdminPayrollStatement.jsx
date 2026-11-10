@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { listPayslips } from "../../api/payroll.api";import { cssClass } from "../../utils/classStyles";
-const ORANGE = "#f18200";
+const ORANGE = "#e87500";
 const TABS = [
 { key: "quick", label: "Quick Salary Statement" },
 { key: "statement", label: "Payroll Statement" },
@@ -105,7 +105,7 @@ function PayrollStatement({ payslips }) {
   },
   { key: "lop_days", label: "LOP", right: true },
   { key: "status", label: "Status", render: (r) => {
-      const clr = r.status === "paid" ? "#16a34a" : r.status === "generated" ? "#2563eb" : "#888";
+      const clr = r.status === "paid" ? "#16a34a" : r.status === "generated" ? "#e87500" : "#888";
       return <span className={cssClass({
         background: clr + "22", color: clr, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600
       })}>{(r.status || "draft").toUpperCase()}</span>;

@@ -36,7 +36,7 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
         padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" })}>
         <div>
           <div className={cssClass({ fontSize: 11, color: "#92400e", fontWeight: 600, marginBottom: 2 })}>Total Annual HRA Declared</div>
-          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#f18200" })}>
+          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#e87500" })}>
             {totalAnnual > 0 ? `₹${totalAnnual.toLocaleString("en-IN")}` : "—"}
           </div>
         </div>
@@ -51,15 +51,15 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           <button key={i} type="button" onClick={() => setTab(i)} className={cssClass(
             { padding: "6px 16px", fontSize: 12, borderRadius: 20, cursor: "pointer",
               fontWeight: tab === i ? 700 : 500, border: "none",
-              background: tab === i ? "#f18200" : "#f1f5f9",
+              background: tab === i ? "#e87500" : "#f1f5f9",
               color: tab === i ? "#fff" : "#64748b",
-              boxShadow: tab === i ? "0 2px 8px rgba(241,130,0,0.3)" : "none"
+              boxShadow: tab === i ? "0 2px 8px rgba(232,117,0,0.3)" : "none"
             })}>
             House {i + 1}
           </button>
         ))}
         <button type="button" onClick={() => { setHouses([...houses, blankHouse(fyMonths)]); setTab(houses.length); }} className={cssClass(
-          { marginLeft: "auto", fontSize: 12, color: "#f18200", border: "1px dashed #f18200",
+          { marginLeft: "auto", fontSize: 12, color: "#e87500", border: "1px dashed #e87500",
             background: "none", cursor: "pointer", fontWeight: 600, padding: "5px 12px", borderRadius: 20 })}>
           + Add house
         </button>
@@ -96,7 +96,7 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
           <div className={cssClass({ padding: "8px 12px", background: "#fff7ed", border: "1px solid #fed7aa",
             borderRadius: 8, textAlign: "center" })}>
             <div className={cssClass({ fontSize: 10, color: "#92400e", fontWeight: 600, marginBottom: 2 })}>Annual Rent</div>
-            <div className={cssClass({ fontSize: 15, fontWeight: 800, color: "#f18200" })}>
+            <div className={cssClass({ fontSize: 15, fontWeight: 800, color: "#e87500" })}>
               ₹{annualRent.toLocaleString("en-IN")}
             </div>
           </div>
@@ -136,7 +136,7 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
               <label key={lbl2} className={cssClass({
                 display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 12,
                 padding: "7px 18px", borderRadius: 6,
-                border: `1.5px solid ${h.landlordHasPan === val ? "#f18200" : "#e2e8f0"}`,
+                border: `1.5px solid ${h.landlordHasPan === val ? "#e87500" : "#e2e8f0"}`,
                 background: h.landlordHasPan === val ? "#fff7ed" : "#fff",
                 color: h.landlordHasPan === val ? "#c2410c" : "#64748b",
                 fontWeight: h.landlordHasPan === val ? 700 : 400
@@ -144,7 +144,7 @@ function ModalHRA({ hraData, setHraData, annualHraReceived, onClose }) {
                 <input type="radio" name={`llpan_${tab}`}
                   checked={h.landlordHasPan === val}
                   onChange={() => upd(tab, "landlordHasPan", val)}
-                  className={cssClass({ accentColor: "#f18200" })} />
+                  className={cssClass({ accentColor: "#e87500" })} />
                 {lbl2}
               </label>
             ))}

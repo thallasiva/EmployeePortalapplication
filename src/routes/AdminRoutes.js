@@ -13,7 +13,14 @@ const CreateCompany = lazy(() => import("../pages/admin/CreateCompany"));
 const CalendarForm = lazy(() => import("../pages/admin/CalendarForm"));
 const AdminCalendar = lazy(() => import("../pages/admin/Calendar"));
 const Leave = lazy(() => import("../pages/admin/AdminLeaveManagement"));
-const AdminAttendanceDashboard = lazy(() => import("../pages/admin/AdminAttendanceDashboard"));
+const AttendanceModuleLayout = lazy(() => import("../pages/admin/attendance/AttendanceModuleLayout"));
+const AttendanceDashboard = lazy(() => import("../pages/admin/attendance/AttendanceDashboard"));
+const AttendanceRecords = lazy(() => import("../pages/admin/attendance/AttendanceRecords"));
+const AttendanceShiftManagement = lazy(() => import("../pages/admin/attendance/AttendanceShiftManagement"));
+const AttendanceCorrections = lazy(() => import("../pages/admin/attendance/AttendanceCorrections"));
+const GeoFenceLocations = lazy(() => import("../pages/admin/attendance/GeoFenceLocations"));
+const OvertimeManagement = lazy(() => import("../pages/admin/attendance/OvertimeManagement"));
+const AttendanceReports = lazy(() => import("../pages/admin/attendance/AttendanceReports"));
 const AdminDocuments = lazy(() => import("../pages/admin/AdminDocuments"));
 const AddDocumentScreen = lazy(() => import("../pages/admin/AddDocumentScreen"));
 const Reports = lazy(() => import("../pages/admin/Report"));
@@ -88,7 +95,15 @@ const AdminRoutes = () =>
       <Route path="calendar" element={<Page><AdminCalendar /></Page>} />
       <Route path="calendar/form" element={<Page><CalendarForm /></Page>} />
       <Route path="leave" element={<Page><Leave /></Page>} />
-      <Route path="attendance" element={<Page><AdminAttendanceDashboard /></Page>} />
+      <Route path="attendance/*" element={<Page><AttendanceModuleLayout /></Page>}>
+        <Route index element={<Page><AttendanceDashboard /></Page>} />
+        <Route path="records" element={<Page><AttendanceRecords /></Page>} />
+        <Route path="shifts" element={<Page><AttendanceShiftManagement /></Page>} />
+        <Route path="corrections" element={<Page><AttendanceCorrections /></Page>} />
+        <Route path="locations" element={<Page><GeoFenceLocations /></Page>} />
+        <Route path="overtime" element={<Page><OvertimeManagement /></Page>} />
+        <Route path="reports" element={<Page><AttendanceReports /></Page>} />
+      </Route>
       <Route path="documents" element={<Page><AdminDocuments /></Page>} />
       <Route path="add-document" element={<Page><AddDocumentScreen /></Page>} />
       <Route path="payroll" element={<Page><AdminPayrollOverview /></Page>} />

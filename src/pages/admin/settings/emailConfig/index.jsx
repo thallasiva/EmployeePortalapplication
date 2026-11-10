@@ -20,10 +20,10 @@ export default function EmailConfigIndex() {
       {/* Page header */}
       <div className="px-6 py-5 flex items-start gap-4">
         <div className="w-11 h-11 rounded-xl bg-[#fff8f0] border border-[#fed7aa] flex items-center justify-center shrink-0">
-          <Mail size={20} color="#f18200"/>
+          <Mail size={20} color="#e87500"/>
         </div>
         <div>
-          <h1 className="text-[20px] font-bold text-[#f18200]">Email Configuration</h1>
+          <h1 className="text-[20px] font-bold text-[#e87500]">Email Configuration</h1>
           <p className="text-[13px] text-[#94a3b8] mt-0.5">
             Configure SMTP, manage templates, set permissions and track email activity
           </p>
@@ -38,8 +38,8 @@ export default function EmailConfigIndex() {
               <button key={tab.id} onClick={() => setActive(tab.id)}
                 className={`flex items-center gap-2.5 px-4 h-[44px] rounded-xl text-[13px] font-semibold whitespace-nowrap transition-all border ${
                   isActive
-                    ? "bg-[#f18200] text-white border-[#f18200] shadow-md shadow-[#f18200]/20"
-                    : "bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#f18200]/40 hover:text-[#f18200]"
+                    ? "bg-[#e87500] text-white border-[#e87500] shadow-md shadow-[#e87500]/20"
+                    : "bg-white text-[#64748b] border-[#e2e8f0] hover:border-[#e87500]/40 hover:text-[#e87500]"
                 }`}>
                 {tab.icon}
                 {tab.label}
@@ -52,11 +52,11 @@ export default function EmailConfigIndex() {
       <div className="px-6 pb-10">
         {/* Section sub-header */}
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center" style={{color:"#f18200"}}>
+          <div className="w-8 h-8 rounded-lg bg-[#fff8f0] flex items-center justify-center" style={{color:"#e87500"}}>
             {current.icon}
           </div>
           <div>
-            <h2 className="text-[14px] font-bold text-[#f18200]">{current.label}</h2>
+            <h2 className="text-[14px] font-bold text-[#e87500]">{current.label}</h2>
             <p className="text-[12px] text-[#94a3b8]">{current.desc}</p>
           </div>
         </div>

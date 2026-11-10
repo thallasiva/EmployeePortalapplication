@@ -7,7 +7,7 @@ export default function ExceptionsPanel({ items = [], total = 0, onViewAll }) {
     <Card
       title="Payroll Exceptions"
       icon={<AlertTriangle size={16} color="#dc2626" />}
-      right={<button onClick={onViewAll} className={cssClass({ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, color: "#2563eb", background: "none", border: "none", cursor: "pointer" })}>View All Issues <ChevronRight size={13} /></button>}
+      right={<button onClick={onViewAll} className={cssClass({ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, color: "#e87500", background: "none", border: "none", cursor: "pointer" })}>View All Issues <ChevronRight size={13} /></button>}
     >
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, background: "#fef2f2", border: "1px solid #fee2e2", borderRadius: 9, padding: "9px 12px", marginBottom: 12 })}>
         <AlertTriangle size={15} color="#dc2626" />

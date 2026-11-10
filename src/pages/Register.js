@@ -173,7 +173,7 @@ const Register = () => {
         </div>
         <div>
           <p className="mb-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-orange-600">Get started</p>
-          <h2 className="text-[1.45rem] font-extrabold tracking-[-0.02em]  text-[#f18200]">Create your account</h2>
+          <h2 className="text-[1.45rem] font-extrabold tracking-[-0.02em]  text-[#e87500]">Create your account</h2>
           <p className="mt-1 text-[0.84rem] text-slate-500">Set up your profile to access the HRMS workspace.</p>
         </div>
       </div>
@@ -232,7 +232,7 @@ const Register = () => {
           type="submit"
           data-keep-button-style
           disabled={formik.isSubmitting}
-          className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-br from-orange-500 to-orange-700 px-4 py-3 text-[0.92rem] font-bold tracking-[0.02em] text-white shadow-[0_6px_20px_rgba(241,130,0,0.22)] transition hover:-translate-y-px hover:shadow-[0_12px_28px_rgba(241,130,0,0.3)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-br from-orange-500 to-orange-700 px-4 py-3 text-[0.92rem] font-bold tracking-[0.02em] text-white shadow-[0_6px_20px_rgba(232,117,0,0.22)] transition hover:-translate-y-px hover:shadow-[0_12px_28px_rgba(232,117,0,0.3)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {formik.isSubmitting ? "Creating account…" : <>Create account <ArrowRight size={16} aria-hidden="true" /></>}
         </button>

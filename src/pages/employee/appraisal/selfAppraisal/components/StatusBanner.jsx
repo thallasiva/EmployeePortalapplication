@@ -30,7 +30,7 @@ const StatusBanner = React.memo(function StatusBanner({ appraisal, params, cycle
     ? { background: "#fff7ed", border: "#fdba74", text: "#9a3412", icon: "#ea580c" }
     : ["shared", "acknowledged", "closed"].includes(status)
       ? { background: "#f0fdf4", border: "#86efac", text: "#15803d", icon: "#22c55e" }
-      : { background: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", icon: "#2563eb" };
+      : { background: "#fff7ed", border: "#fed7aa", text: "#cf6900", icon: "#e87500" };
   const Icon = status === "changes_requested" ? AlertCircle : status === "closed" ? CheckCircle2 : Clock;
   return (
     <div className={cssClass({ background: tone.background, border: `1px solid ${tone.border}`, borderRadius: 10, padding: "12px 16px", marginBottom: 16 })}>

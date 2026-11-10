@@ -39,7 +39,7 @@ const HelpdeskPanel = React.memo(function HelpdeskPanel({ search, statusFilter }
     <>
       <div className={cssClass({ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" })}>
         <StatChip color="#64748b" label="Total"    count={rows.length} />
-        <StatChip color="#60a5fa" label="Open"     count={open} />
+        <StatChip color="#fb923c" label="Open"     count={open} />
         <StatChip color="#22c55e" label="Resolved" count={resolved} />
       </div>
       {!filtered.length ? (

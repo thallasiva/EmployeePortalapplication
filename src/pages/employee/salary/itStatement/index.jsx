@@ -44,13 +44,13 @@ export default function ITStatement() {
       {showViewDetails && <ViewDetailsModal onClose={() => setShowViewDetails(false)} totals={T} />}
       {/* Top bar */}
       <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 })}>
-        <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", background: "#e8f4fb", border: "1px solid #b8d9f0", borderRadius: 6, fontSize: 12, color: "#1e6b9e", flex: 1 })}>
+        <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", background: "#e8f4fb", border: "1px solid #fed7aa", borderRadius: 6, fontSize: 12, color: "#cf6900", flex: 1 })}>
           <span>&#9432;</span>
           <span>Section names updated as per Income Tax Act 2025. Your saved data remains unchanged.</span>
-          <button onClick={() => setShowViewDetails(true)} className={cssClass({ color: "#f18200", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontSize: 12 })}>View Details</button>
+          <button onClick={() => setShowViewDetails(true)} className={cssClass({ color: "#e87500", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontSize: 12 })}>View Details</button>
         </div>
         <div className={cssClass({ display: "flex", gap: 10, alignItems: "center" })}>
-          <button className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "#f18200", color: "#fff", borderRadius: 6, border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer" })}>
+          <button className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "#e87500", color: "#fff", borderRadius: 6, border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer" })}>
             <Download size={13} />
           </button>
           <FiscalYearPicker value={fiscalYearStart} onChange={setFiscalYearStart} />
@@ -64,7 +64,7 @@ export default function ITStatement() {
         ].map(({ key, label, sub }) => (
           <button key={key} type="button" onClick={() => setRegime(key)}
             className={cssClass({ padding: "8px 22px", border: "none", borderRadius: 6, cursor: "pointer", transition: "all 0.15s",
-              background: regime === key ? "#f18200" : "transparent",
+              background: regime === key ? "#e87500" : "transparent",
               color: regime === key ? "#fff" : "#64748b",
               fontWeight: regime === key ? 700 : 400, fontSize: 13 })}>
             <div>{label}</div>
@@ -83,7 +83,7 @@ export default function ITStatement() {
       <div className={cssClass({ marginBottom: 14 })}>
         <button type="button" onClick={() => setShowInfo((v) => !v)}
           className={cssClass({ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: "#fff", border: "1px solid #d5dbe3", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#334155" })}>
-          <Info size={14} color="#f18200" />
+          <Info size={14} color="#e87500" />
           {showInfo ? "Hide Employee Info" : "Show Employee Info"}
         </button>
         {showInfo && (
@@ -106,7 +106,7 @@ export default function ITStatement() {
       <KpiCards isNew={isNew} stdDed={stdDed} ch8Ded={ch8Ded} totalTax={totalTax} monthlyTDS={monthlyTDS} />
       {/* Expand / collapse */}
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 })}>
-        <button type="button" onClick={toggleAll} className={cssClass({ fontSize: 12, color: "#1e6b9e", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 600, textDecoration: "underline" })}>
+        <button type="button" onClick={toggleAll} className={cssClass({ fontSize: 12, color: "#cf6900", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 600, textDecoration: "underline" })}>
           {allOpen ? "Collapse all" : "Expand all"}
         </button>
         <span className={cssClass({ fontSize: 12, color: "#64748b" })}>Value in ₹</span>

@@ -5,8 +5,8 @@ import { cssClass } from "../../../../utils/classStyles";
 // rows = [{ employee_name, leave_type_name, days, status }]
 export default function LeaveRequestsPanel({ rows = [], onViewAll }) {
   return (
-    <Card title="Recent Leave Requests (Pending)" icon={<CalendarClock size={16} color="#f18200" />} pad={0}
-      right={<button onClick={onViewAll} className={cssClass({ fontSize: 12, fontWeight: 700, color: "#2563eb", background: "none", border: "none", cursor: "pointer" })}>View All</button>}
+    <Card title="Recent Leave Requests (Pending)" icon={<CalendarClock size={16} color="#e87500" />} pad={0}
+      right={<button onClick={onViewAll} className={cssClass({ fontSize: 12, fontWeight: 700, color: "#e87500", background: "none", border: "none", cursor: "pointer" })}>View All</button>}
     >
       {rows.length === 0 ? (
         <div className={cssClass({ padding: 28, textAlign: "center", color: "#98a2b3", fontSize: 12.5 })}>No pending leave requests.</div>

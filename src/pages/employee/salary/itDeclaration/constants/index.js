@@ -57,7 +57,7 @@ export const MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
 export const LANDLORD_RELATIONS = ["Spouse", "Parent", "Sibling", "Friend", "Other"];
 export const STATUS_CFG = {
   draft: { bg: '#fef9c3', color: '#a16207', icon: React.createElement(Clock, { size: 14 }), label: 'Draft' },
-  submitted: { bg: '#dbeafe', color: '#1d4ed8', icon: React.createElement(Clock, { size: 14 }), label: 'Submitted — Pending Review' },
+  submitted: { bg: '#ffedd5', color: '#cf6900', icon: React.createElement(Clock, { size: 14 }), label: 'Submitted — Pending Review' },
   approved: { bg: '#dcfce7', color: '#15803d', icon: React.createElement(CheckCircle2, { size: 14 }), label: 'Approved' },
   rejected: { bg: '#fee2e2', color: '#dc2626', icon: React.createElement(XCircle, { size: 14 }), label: 'Rejected' },
 };

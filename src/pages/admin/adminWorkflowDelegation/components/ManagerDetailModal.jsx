@@ -58,7 +58,7 @@ const ManagerDetailModal = React.memo(function ManagerDetailModal({ managerId, o
                     <span className={cssClass({ ...statusColor(data.employee_status), borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 })}>
                       {data.employee_status}
                     </span>
-                    <span className={cssClass({ background: "#eff6ff", color: "#2563eb", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 })}>
+                    <span className={cssClass({ background: "#fff7ed", color: "#e87500", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 })}>
                       {data.direct_reports?.length || 0} Direct · {data.indirect_reports?.length || 0} Indirect
                     </span>
                   </div>

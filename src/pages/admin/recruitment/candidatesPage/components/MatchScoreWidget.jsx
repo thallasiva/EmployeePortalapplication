@@ -55,7 +55,7 @@ const MatchScoreWidget = React.memo(function MatchScoreWidget({ candidateId, job
           </div>
           {matched.length > 0 &&
             <div className="flex flex-wrap gap-1 mb-1.5">
-              {matched.map((s) => <span key={s} className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-[#f18200]">ok {s}</span>)}
+              {matched.map((s) => <span key={s} className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 text-[#e87500]">ok {s}</span>)}
             </div>
           }
           {missing2.length > 0 &&

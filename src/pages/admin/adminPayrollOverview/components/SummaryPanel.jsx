@@ -10,7 +10,7 @@ export default function SummaryPanel({ employees = 0, eligible = 0, excluded = 0
     </div>
   );
   return (
-    <Card title="Payroll Summary" icon={<BarChart3 size={16} color="#6366f1" />}>
+    <Card title="Payroll Summary" icon={<BarChart3 size={16} color="#e87500" />}>
       <div className={cssClass({ display: "flex", alignItems: "center" })}>
         {cell("Employees", employees, "#111827")}
         {cell("Eligible for Payroll", eligible, "#16a34a")}

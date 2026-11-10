@@ -53,7 +53,7 @@ export default function PayslipReport() {
       {}
       <div className={joinClasses("report-stats-grid", cssClass({ maxWidth: 800 }))}>
         {[
-        { label: "Total Payslips", value: totalPayslips, barWidth: "100%", barColor: "#f18200" },
+        { label: "Total Payslips", value: totalPayslips, barWidth: "100%", barColor: "#e87500" },
         { label: "Paid", value: paidCount, barWidth: `${totalPayslips ? paidCount / totalPayslips * 100 : 0}%`, barColor: "#16a34a" },
         { label: "Pending", value: pendingCount, barWidth: `${totalPayslips ? pendingCount / totalPayslips * 100 : 0}%`, barColor: "#f97316" },
         { label: "Total Gross", value: formatINR(totalGross), barWidth: "100%", barColor: "#8b5cf6" }]
@@ -138,7 +138,7 @@ export default function PayslipReport() {
                         <ReportStatusBadge status={p.status === "paid" ? "Completed" : "Pending"} />
                       </td>
                       <td>
-                        <button className="inline-flex items-center gap-1 text-xs text-[#f18200] border border-[#f18200] rounded px-2.5 py-1 hover:bg-blue-50">
+                        <button className="inline-flex items-center gap-1 text-xs text-[#e87500] border border-[#e87500] rounded px-2.5 py-1 hover:bg-blue-50">
                           <Download size={11} /> PDF
                         </button>
                       </td>

@@ -19,8 +19,8 @@ const ResignCard = React.memo(function ResignCard({ r, isPrivileged }) {
       <div className={cssClass({ flex: 1, minWidth: 0 })}>
         {isPrivileged && (
           <div className={cssClass({ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 })}>
-            <div className={cssClass({ width: 26, height: 26, borderRadius: "50%", background: "#e0f2fe", display: "flex", alignItems: "center", justifyContent: "center" })}>
-              <User size={13} className={cssClass({ color: "#0369a1" })} />
+            <div className={cssClass({ width: 26, height: 26, borderRadius: "50%", background: "#ffedd5", display: "flex", alignItems: "center", justifyContent: "center" })}>
+              <User size={13} className={cssClass({ color: "#c45f00" })} />
             </div>
             <span className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1e293b" })}>{r.employee_name || empName(r)}</span>
             {r.emp_code && <span className={cssClass({ fontSize: 11, color: "#94a3b8", background: "#f1f5f9", padding: "1px 6px", borderRadius: 4 })}>{r.emp_code}</span>}
@@ -30,7 +30,7 @@ const ResignCard = React.memo(function ResignCard({ r, isPrivileged }) {
         <div className={cssClass({ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" })}>
           <span className={cssClass({ fontSize: 14, fontWeight: 700, color: "#1e293b" })}>Resignation</span>
           {r.department_name && (
-            <span className={cssClass({ fontSize: 11, background: "#f0f9ff", color: "#0369a1", padding: "1px 8px", borderRadius: 4, fontWeight: 600 })}>
+            <span className={cssClass({ fontSize: 11, background: "#fff7ed", color: "#c45f00", padding: "1px 8px", borderRadius: 4, fontWeight: 600 })}>
               {r.department_name}
             </span>
           )}

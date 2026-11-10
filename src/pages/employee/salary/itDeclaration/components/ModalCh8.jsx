@@ -19,7 +19,7 @@ function ModalCh8({ values, setValues, onClose }) {
         display: "flex", justifyContent: "space-between", alignItems: "center" })}>
         <div>
           <div className={cssClass({ fontSize: 11, color: "#92400e", fontWeight: 600, marginBottom: 2 })}>Total Declared</div>
-          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#f18200" })}>{fmt(total)}</div>
+          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#e87500" })}>{fmt(total)}</div>
         </div>
         <div className={cssClass({ fontSize: 11, color: "#92400e", textAlign: "right" })}>
           Multiple sections<br />

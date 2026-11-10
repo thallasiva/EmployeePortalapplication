@@ -10,22 +10,22 @@ function DeclCard({ icon, title, declared, onClick, locked }) {
       onClick={onClick}
       onMouseEnter={(e) => {
         if (!locked) {
-          e.currentTarget.style.boxShadow = "0 6px 20px rgba(241,130,0,0.13)";
-          e.currentTarget.style.borderTopColor = "#f18200";
+          e.currentTarget.style.boxShadow = "0 6px 20px rgba(232,117,0,0.13)";
+          e.currentTarget.style.borderTopColor = "#e87500";
           e.currentTarget.style.borderColor = "#fed7aa";
           e.currentTarget.style.transform = "translateY(-2px)";
         }
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = "none";
-        e.currentTarget.style.borderTopColor = hasDeclared ? "#f18200" : "#e2e8f0";
+        e.currentTarget.style.borderTopColor = hasDeclared ? "#e87500" : "#e2e8f0";
         e.currentTarget.style.borderColor = hasDeclared ? "#fed7aa" : "#e8edf5";
         e.currentTarget.style.transform = "none";
       }}
       className={cssClass({
         display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 16px 20px",
         background: "#fff", border: `1px solid ${hasDeclared ? "#fed7aa" : "#e8edf5"}`,
-        borderTop: `3px solid ${hasDeclared ? "#f18200" : "#e2e8f0"}`,
+        borderTop: `3px solid ${hasDeclared ? "#e87500" : "#e2e8f0"}`,
         borderRadius: 12, cursor: locked ? "default" : "pointer",
         textAlign: "center", gap: 0, transition: "all 0.18s",
         opacity: locked ? 0.72 : 1, width: "100%", boxSizing: "border-box"
@@ -64,8 +64,8 @@ function DeclCard({ icon, title, declared, onClick, locked }) {
           padding: "4px 12px", borderRadius: 999,
           background: "#fff7ed", border: "1px solid #fed7aa"
         })}>
-          <span className={cssClass({ fontSize: 11, color: "#f18200", fontWeight: 700 })}>Add to declaration</span>
-          <ChevronRight size={11} color="#f18200" />
+          <span className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 700 })}>Add to declaration</span>
+          <ChevronRight size={11} color="#e87500" />
         </div>
       )}
     </button>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Clock, Sun, Moon, Sunset } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, Sun, Moon, Sunset } from "lucide-react";
 import { getLoggedInUser, toISODateString } from "../../../lib/dateUtils";
 import { getShiftForUser } from "../../../data/auth";
 import { getMyWorkSchedule } from "../../../api/workSchedule.api";
@@ -62,24 +62,20 @@ export default function ShiftRoster() {
   const workDays = schedule?.work_days?.length ? schedule.work_days : ["mon", "tue", "wed", "thu", "fri"];
   const week = useMemo(() => buildWeekRoster(weekStart, userShift, workDays), [weekStart, userShift, workDays]);
   const weekLabel = `${week[0].dateNum} ${week[0].month} – ${week[6].dateNum} ${week[6].month} ${weekStart.getFullYear()}`;
+  const ShiftIcon = userShift.icon;
   const goWeek = (delta) => {
     const next = new Date(weekStart);
     next.setDate(next.getDate() + delta * 7);
     setWeekStart(getWeekStart(next));
   };
-  const todayEntry = week.find((d) => d.isToday);
-  const currentShift = todayEntry && !todayEntry.isWeekend ? userShift : null;
-  const ShiftIcon = userShift.icon;
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold  text-[#f18200] tracking-tight">Shift Roster</h1>
-          <p className="text-sm text-slate-500 mt-1">{user?.name || "Employee"} · Weekly schedule</p>
+    <div className="space-y-4 rounded-2xl bg-slate-50 p-3 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white"><CalendarDays size={20} /></span>
+          <div><h1 className="text-xl font-bold tracking-tight text-slate-950">Shift &amp; Schedule</h1><p className="mt-0.5 text-sm text-slate-500">View your assigned shift and weekly roster.</p></div>
         </div>
-        {scheduleError && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{scheduleError}</p>}
-        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+        <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
           <button type="button" onClick={() => goWeek(-1)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" aria-label="Prev week">
             <ChevronLeft size={20} />
           </button>
@@ -87,84 +83,29 @@ export default function ShiftRoster() {
           <button type="button" onClick={() => goWeek(1)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" aria-label="Next week">
             <ChevronRight size={20} />
           </button>
-          <button type="button" onClick={() => setWeekStart(getWeekStart(new Date()))} className="ml-1 px-3 py-1.5 text-xs font-semibold text-[#f18200] hover:bg-orange-50 rounded-lg transition-colors">
+          <button type="button" onClick={() => setWeekStart(getWeekStart(new Date()))} className="ml-1 px-3 py-1.5 text-xs font-semibold text-[#e87500] hover:bg-orange-50 rounded-lg transition-colors">
             Today
           </button>
         </div>
       </div>
-      {/* Assigned shift card */}
-      <div className={`flex items-center gap-5 ${userShift.bg} border border-${userShift.id === 'general' ? 'amber' : userShift.id === 'mid' ? 'indigo' : 'slate'}-200 rounded-2xl p-5 shadow-sm`}>
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${userShift.bg} ring-2 ${userShift.ring}`}>
+      <div className="grid gap-4 lg:grid-cols-[minmax(260px,.8fr)_minmax(0,1.6fr)]">
+      <div className={`flex items-center gap-4 rounded-xl border border-slate-200 ${userShift.bg} p-5 shadow-sm`}>
+        <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${userShift.bg} ring-2 ${userShift.ring}`}>
           <ShiftIcon size={28} className={userShift.color} />
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-0.5">Your Assigned Shift</p>
-          <p className="text-xl font-bold  text-[#f18200]">{userShift.name}</p>
+          <p className="mb-0.5 text-xs font-bold uppercase tracking-widest text-slate-500">Current Shift</p>
+          <p className="text-lg font-bold text-slate-950">{userShift.name}</p>
           <p className="text-sm text-slate-600 mt-0.5">{userShift.time} &nbsp;·&nbsp; Break: {userShift.break}</p>
         </div>
         <span className={`ml-auto px-3 py-1.5 rounded-full text-sm font-bold ${userShift.badge}`}>
           Active
         </span>
       </div>
-      {/* Week grid */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
-          <Clock size={18} className="text-[#f18200]" />
-          This week's schedule
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-          {week.map((day) => (
-            <div
-              key={day.iso}
-              className={`rounded-xl border p-3 transition-all ${
-                day.isToday
-                  ? "border-[#f18200] bg-orange-50 ring-2 ring-[#f18200]/25 shadow-md"
-                  : day.isWeekend
-                  ? "border-gray-100 bg-slate-50"
-                  : `border-gray-200 ${userShift.bg}`
-              }`}
-            >
-              <p className="text-xs font-medium text-slate-500">{day.shortDay}</p>
-              <p className="text-xl font-bold  text-[#f18200] mt-0.5">{day.dateNum}</p>
-              <p className="text-[11px] text-slate-400">{day.month}</p>
-              <p className={`mt-2 text-xs font-semibold ${day.isWeekend ? "text-slate-400" : userShift.color}`}>
-                {day.shift.name}
-              </p>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{day.shift.time}</p>
-              {day.isToday && (
-                <span className="inline-block mt-2 text-[10px] font-bold text-[#f18200] uppercase tracking-wider">
-                  Today
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3"><Clock size={17} className="text-blue-600"/><h2 className="font-semibold text-slate-900">This Week's Schedule</h2></div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[560px] text-left text-sm"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr>{['Date','Shift','Time','Break','Status'].map((label)=><th key={label} className="px-4 py-3 font-semibold">{label}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{week.map((day)=><tr key={day.iso} className={day.isToday?'bg-blue-50/70':''}><td className="px-4 py-2.5 font-medium text-slate-800">{day.shortDay}, {day.month} {day.dateNum}{day.isToday&&<span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">Today</span>}</td><td className="px-4 py-2.5">{day.shift.name}</td><td className="px-4 py-2.5">{day.shift.time}</td><td className="px-4 py-2.5">{day.shift.break||userShift.break}</td><td className="px-4 py-2.5"><span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${day.isWeekend?'bg-slate-100 text-slate-500':'bg-emerald-100 text-emerald-700'}`}>{day.isWeekend?'Week Off':'Scheduled'}</span></td></tr>)}</tbody></table></div>
       </div>
-      {/* Today's shift details */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-800 mb-3">Today's shift details</h2>
-        {currentShift ? (
-          <div className={`rounded-xl ${currentShift.bg} p-5`}>
-            <div className="flex items-center gap-3 mb-3">
-              <ShiftIcon size={22} className={currentShift.color} />
-              <p className="text-lg font-bold  text-[#f18200]">{currentShift.name}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Timing</p>
-                <p className="text-sm font-semibold text-slate-800">{currentShift.time}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Break</p>
-                <p className="text-sm font-semibold text-slate-800">{currentShift.break}</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-xl bg-slate-50 p-4 text-center text-slate-500 text-sm">
-            Today is a week off
-          </div>
-        )}
       </div>
     </div>
   );

@@ -99,7 +99,7 @@ const AddLineModal = React.memo(function AddLineModal({
             <button
               type="submit"
               disabled={saving || !selected}
-              className="flex-1 bg-[#f18200] text-white rounded-xl py-2 text-sm font-medium hover:bg-[#16304f] disabled:opacity-60"
+              className="flex-1 bg-[#e87500] text-white rounded-xl py-2 text-sm font-medium hover:bg-[#7c3d00] disabled:opacity-60"
             >
               {saving ? "Adding…" : "Add"}
             </button>

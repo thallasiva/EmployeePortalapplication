@@ -14,7 +14,7 @@ function InfoRow({ icon, label, value }) {
   if (!value) return null;
   return (
     <div className="flex items-start gap-2.5 py-1.5">
-      <span className="text-[#f18200] mt-0.5 shrink-0">{icon}</span>
+      <span className="text-[#e87500] mt-0.5 shrink-0">{icon}</span>
       <div>
         <span className="text-[10px] font-semibold text-[#94a3b8] uppercase tracking-wide block">{label}</span>
         <span className="text-[12px] font-semibold text-[#1e293b]">{value}</span>
@@ -54,7 +54,7 @@ function ParsedDetail({ parsed, result }) {
             Required: <strong>{result?.jobExperienceLevel || "Not specified"}</strong>
           </div>
           {parsed?.resume_score != null && (
-            <div className="text-[11px] text-[#f18200] mt-0.5 flex items-center gap-1">
+            <div className="text-[11px] text-[#e87500] mt-0.5 flex items-center gap-1">
               <Star size={10}/> Resume Score: <strong>{parsed.resume_score}/100</strong>
             </div>
           )}
@@ -72,7 +72,7 @@ function ParsedDetail({ parsed, result }) {
       {/* Skill bars */}
       <div className="mb-3">
         <SkillBar label="Skills (60%)"      score={result?.skillScore} color="#7c3aed"/>
-        <SkillBar label="Experience (40%)"  score={result?.expScore}   color="#0369a1"/>
+        <SkillBar label="Experience (40%)"  score={result?.expScore}   color="#c45f00"/>
       </div>
       {/* Matched / missing skills */}
       {(matched.length > 0 || missing.length > 0) && (
@@ -100,14 +100,14 @@ function ParsedDetail({ parsed, result }) {
           <InfoRow icon={<MapPin size={13}/>}   label="Location" value={parsed.location}/>
           {parsed.linkedin_url && (
             <div className="flex items-center gap-2 py-1.5">
-              <Link2 size={13} className="text-[#f18200] shrink-0"/>
+              <Link2 size={13} className="text-[#e87500] shrink-0"/>
               <a href={parsed.linkedin_url} target="_blank" rel="noreferrer"
                 className="text-[12px] text-blue-600 hover:underline truncate">{parsed.linkedin_url}</a>
             </div>
           )}
           {parsed.github_url && (
             <div className="flex items-center gap-2 py-1.5">
-              <GitBranch size={13} className="text-[#f18200] shrink-0"/>
+              <GitBranch size={13} className="text-[#e87500] shrink-0"/>
               <a href={parsed.github_url} target="_blank" rel="noreferrer"
                 className="text-[12px] text-blue-600 hover:underline truncate">{parsed.github_url}</a>
             </div>
@@ -135,7 +135,7 @@ function ParsedDetail({ parsed, result }) {
         <Section title={`Skills (${parsed.skills.length})`} defaultOpen={false}>
           <div className="flex flex-wrap gap-1.5 pt-1">
             {parsed.skills.map(s => (
-              <span key={s} className="text-[11px] px-2.5 py-1 rounded-full bg-[#fff8f0] border border-[#fed7aa] text-[#f18200] font-medium">{s}</span>
+              <span key={s} className="text-[11px] px-2.5 py-1 rounded-full bg-[#fff8f0] border border-[#fed7aa] text-[#e87500] font-medium">{s}</span>
             ))}
           </div>
         </Section>
@@ -145,8 +145,8 @@ function ParsedDetail({ parsed, result }) {
         <Section title={`Work Experience (${parsed.work_experience.length})`} defaultOpen={false}>
           <div className="space-y-3 pt-1">
             {parsed.work_experience.map((w, i) => (
-              <div key={i} className="border-l-2 border-[#f18200] pl-3">
-                <p className="text-[12px] font-bold text-[#f18200]">{w.designation || "Role"}</p>
+              <div key={i} className="border-l-2 border-[#e87500] pl-3">
+                <p className="text-[12px] font-bold text-[#e87500]">{w.designation || "Role"}</p>
                 <p className="text-[11px] text-[#64748b]">{w.company_name}</p>
                 <p className="text-[10px] text-[#94a3b8]">
                   {[w.start_month && w.start_year ? `${w.start_month}/${w.start_year}` : w.start_year, "–",
@@ -165,7 +165,7 @@ function ParsedDetail({ parsed, result }) {
           <div className="space-y-2 pt-1">
             {parsed.education.map((e, i) => (
               <div key={i} className="flex items-start gap-2">
-                <BookOpen size={12} className="text-[#f18200] mt-0.5 shrink-0"/>
+                <BookOpen size={12} className="text-[#e87500] mt-0.5 shrink-0"/>
                 <div>
                   <p className="text-[12px] font-semibold text-[#1e293b]">{e.degree}</p>
                   <p className="text-[11px] text-[#64748b]">{[e.institution, e.year].filter(Boolean).join(" · ")}</p>
@@ -248,10 +248,10 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
   }, []);
   const parsed = result?.parsed;
   return (
-    <div className="mb-5 rounded-xl overflow-hidden border-2 border-[#f18200] bg-white">
+    <div className="mb-5 rounded-xl overflow-hidden border-2 border-[#e87500] bg-white">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-[18px] py-3 bg-gradient-to-r from-[#fff7ed] to-white border-b border-[#fed7aa]">
-        <Zap size={18} color="#f18200"/>
+        <Zap size={18} color="#e87500"/>
         <div>
           <div className="text-[14px] font-bold text-gray-900">Resume Match Checker</div>
           <div className="text-[12px] text-gray-500">
@@ -272,18 +272,18 @@ const QuickMatchPanel = React.memo(function QuickMatchPanel({ jobs }) {
               onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
               onClick={() => fileRef.current?.click()}
               className={`border-2 border-dashed rounded-[10px] py-6 px-4 text-center cursor-pointer transition-all ${
-                dragging || file ? "border-[#f18200] bg-[#fff7ed]" : "border-gray-300 bg-gray-50"}`}>
+                dragging || file ? "border-[#e87500] bg-[#fff7ed]" : "border-gray-300 bg-gray-50"}`}>
               <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" className="hidden"
                 onChange={e => handleFile(e.target.files[0])}/>
               {file ? (
                 <>
-                  <div className="mb-1.5 flex justify-center text-[#f18200]"><FileText size={28} /></div>
-                  <div className="text-[13px] font-bold text-[#f18200]">{file.name}</div>
+                  <div className="mb-1.5 flex justify-center text-[#e87500]"><FileText size={28} /></div>
+                  <div className="text-[13px] font-bold text-[#e87500]">{file.name}</div>
                   <div className="text-[11px] text-gray-500 mt-0.5">{(file.size/1024).toFixed(0)} KB · Click to change</div>
                 </>
               ) : (
                 <>
-                  <div className="mb-1.5 flex justify-center text-[#f18200]"><FolderOpen size={28} /></div>
+                  <div className="mb-1.5 flex justify-center text-[#e87500]"><FolderOpen size={28} /></div>
                   <div className="text-[13px] font-semibold text-gray-700">Drop resume here or click to browse</div>
                   <div className="text-[11px] text-gray-400 mt-1">PDF or DOCX · Max 5 MB</div>
                 </>

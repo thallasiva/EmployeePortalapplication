@@ -24,7 +24,7 @@ function ModalMedical({ values, setValues, onClose }) {
         padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" })}>
         <div>
           <div className={cssClass({ fontSize: 11, color: "#92400e", fontWeight: 600, marginBottom: 2 })}>Total Declared</div>
-          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#f18200" })}>{fmt(total)}</div>
+          <div className={cssClass({ fontSize: 20, fontWeight: 800, color: "#e87500" })}>{fmt(total)}</div>
         </div>
         <div className={cssClass({ fontSize: 11, color: "#92400e", textAlign: "right" })}>
           Sec. 80D<br />
@@ -37,7 +37,7 @@ function ModalMedical({ values, setValues, onClose }) {
             <div className={cssClass({ padding: "10px 10px", borderBottom: "1px solid #f1f5f9",
               background: Number(values[item.key]) > 0 ? "#fffbf5" : "transparent", borderRadius: 6, marginBottom: 2 })}>
               <div className={cssClass({ display: "flex", gap: 6, alignItems: "flex-start", marginBottom: 8 })}>
-                <span className={cssClass({ fontSize: 9, fontWeight: 700, color: "#f18200", background: "#fff7ed",
+                <span className={cssClass({ fontSize: 9, fontWeight: 700, color: "#e87500", background: "#fff7ed",
                   border: "1px solid #fed7aa", borderRadius: 4, padding: "1px 5px", marginTop: 2, whiteSpace: "nowrap" })}>
                   {item.section}
                 </span>
@@ -87,7 +87,7 @@ function ModalMedical({ values, setValues, onClose }) {
                   <label key={opt} className={cssClass({
                     display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontSize: 12,
                     padding: "5px 14px", borderRadius: 6,
-                    border: `1.5px solid ${values.parentAge === opt ? "#f18200" : "#e2e8f0"}`,
+                    border: `1.5px solid ${values.parentAge === opt ? "#e87500" : "#e2e8f0"}`,
                     background: values.parentAge === opt ? "#fff7ed" : "#fff",
                     color: values.parentAge === opt ? "#c2410c" : "#64748b",
                     fontWeight: values.parentAge === opt ? 700 : 400
@@ -95,7 +95,7 @@ function ModalMedical({ values, setValues, onClose }) {
                     <input type="radio" name="parentAge" value={opt}
                       checked={values.parentAge === opt}
                       onChange={() => setValues((prev) => ({ ...prev, parentAge: opt }))}
-                      className={cssClass({ accentColor: "#f18200" })} />
+                      className={cssClass({ accentColor: "#e87500" })} />
                     {opt}
                   </label>
                 ))}

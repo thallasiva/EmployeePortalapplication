@@ -52,7 +52,7 @@ export default function InterviewsPage({ role }) {
       <div className="flex gap-2.5 mb-5 flex-wrap">
         {[
           { label: "Candidates", count: groups.length, color: "#6b7280", bg: "#f3f4f6" },
-          { label: "Scheduled", count: interviews.filter((iv) => iv.status === "Scheduled").length, color: "#1d4ed8", bg: "#dbeafe" },
+          { label: "Scheduled", count: interviews.filter((iv) => iv.status === "Scheduled").length, color: "#cf6900", bg: "#ffedd5" },
           { label: "Completed", count: interviews.filter((iv) => iv.status === "Completed").length, color: "#059669", bg: "#dcfce7" },
           { label: "Selected", count: interviews.filter((iv) => iv.feedback_status === "Selected").length, color: "#7c3aed", bg: "#ede9fe" },
         ].map((s) => (

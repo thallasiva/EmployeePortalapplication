@@ -19,7 +19,7 @@ import {
   SecondaryButton,
   Tabs } from
 "../../employee/worklife/kudosFeedbackShared";
-const COLORS = ["#f18200", "#16a34a", "#1d4ed8", "#7c3aed", "#0e7490", "#db2777", "#64748b"];
+const COLORS = ["#e87500", "#16a34a", "#cf6900", "#7c3aed", "#e87500", "#db2777", "#64748b"];
 const EMPTY_FORM = { category_name: "", description: "", color: COLORS[0], category_type: "kudos", is_active: true };
 const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
   const [form, setForm] = useState(editing ? { ...editing, is_active: Boolean(editing.is_active) } : { ...EMPTY_FORM, category_type: type });
@@ -52,14 +52,14 @@ const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
   };
   return (
     <form onSubmit={submit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
-      <h2 className="text-base font-bold  text-[#f18200]">{editing ? "Edit category" : "Add category"}</h2>
+      <h2 className="text-base font-bold  text-[#e87500]">{editing ? "Edit category" : "Add category"}</h2>
       <div>
         <label htmlFor="cat-name" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</label>
-        <input id="cat-name" value={form.category_name} onChange={set("category_name")} maxLength={60} placeholder="e.g. Going the extra mile" className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#f18200]" />
+        <input id="cat-name" value={form.category_name} onChange={set("category_name")} maxLength={60} placeholder="e.g. Going the extra mile" className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#e87500]" />
       </div>
       <div>
         <label htmlFor="cat-desc" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Description</label>
-        <textarea id="cat-desc" value={form.description || ""} onChange={set("description")} rows={2} maxLength={255} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#f18200] resize-none" />
+        <textarea id="cat-desc" value={form.description || ""} onChange={set("description")} rows={2} maxLength={255} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e87500] resize-none" />
       </div>
       <div>
         <label htmlFor="cat-type" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Used for</label>
@@ -84,7 +84,7 @@ const CategoryForm = ({ editing, type, onSaved, onCancel }) => {
         </div>
       </fieldset>
       <label className="flex items-center gap-2 text-sm text-slate-700">
-        <input type="checkbox" checked={form.is_active} onChange={set("is_active")} className="w-4 h-4 accent-[#f18200]" /> Active
+        <input type="checkbox" checked={form.is_active} onChange={set("is_active")} className="w-4 h-4 accent-[#e87500]" /> Active
       </label>
       <div className="flex gap-2">
         {editing && <SecondaryButton type="button" onClick={onCancel} className="flex-1">Cancel</SecondaryButton>}
@@ -134,7 +134,7 @@ const CategoriesTab = () => {
         <section className="xl:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto">
           {rows === null ? <Loading /> :
           visible.length === 0 ?
-          <EmptyState icon={<Tag className="text-[#f18200]" />} title="No categories yet" text="Add the first one using the form." /> :
+          <EmptyState icon={<Tag className="text-[#e87500]" />} title="No categories yet" text="Add the first one using the form." /> :
           <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="bg-slate-50 text-xs text-slate-500 text-left">
@@ -198,7 +198,7 @@ const WallTab = () => {
   }, []);
   useEffect(() => {load(1);}, [load]);
   if (loading && !rows.length) return <Loading />;
-  if (!rows.length) return <EmptyState icon={<Award className="text-[#f18200]" />} title="No kudos yet" />;
+  if (!rows.length) return <EmptyState icon={<Award className="text-[#e87500]" />} title="No kudos yet" />;
   return (
     <div className="space-y-3">
       <p className="text-sm text-slate-500">All kudos across the organisation, including private ones ({meta?.total}).</p>
@@ -215,7 +215,7 @@ const AdminKudosFeedback = () => {
     <div className="space-y-6">
       {kudosFor && <GiveKudosModal preset={[kudosFor]} onClose={() => setKudosFor(null)} />}
       <div>
-        <h1 className="text-2xl font-bold  text-[#f18200]">Kudos &amp; Feedback</h1>
+        <h1 className="text-2xl font-bold  text-[#e87500]">Kudos &amp; Feedback</h1>
         <p className="text-slate-500 mt-1 text-sm">Organisation-wide recognition, feedback trends and category setup.</p>
       </div>
       <Tabs

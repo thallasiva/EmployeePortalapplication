@@ -36,7 +36,7 @@ export default function EmptyStateReport({ type }) {
           <ul className="space-y-2">
             {config.features.map((f) => (
               <li key={f} className="flex items-center gap-2 text-[13px] text-gray-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#f18200] shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#e87500] shrink-0" />
                 {f}
               </li>
             ))}

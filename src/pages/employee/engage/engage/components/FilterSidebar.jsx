@@ -29,11 +29,11 @@ const FilterSidebar = React.memo(function FilterSidebar({
                   padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer",
                   textAlign: "left",
                   background: active ? "#f0f7ff" : "transparent",
-                  color: active ? (color || "#185FA5") : "#4b5563",
+                  color: active ? (color || "#cf6900") : "#4b5563",
                   fontWeight: active ? 600 : 400,
                 })}
               >
-                <span className={cssClass({ color: active ? (color || "#185FA5") : "#9ca8b5", display: "flex" })}>
+                <span className={cssClass({ color: active ? (color || "#cf6900") : "#9ca8b5", display: "flex" })}>
                   {icon}
                 </span>
                 <span className={cssClass({ fontSize: 13, flex: 1 })}>{label}</span>
@@ -41,7 +41,7 @@ const FilterSidebar = React.memo(function FilterSidebar({
                   <span className={cssClass({
                     fontSize: 10, fontWeight: 700,
                     background: active ? color + "22" : "#f0f3f8",
-                    color: active ? (color || "#185FA5") : "#9ca8b5",
+                    color: active ? (color || "#cf6900") : "#9ca8b5",
                     padding: "1px 6px", borderRadius: 10, minWidth: 20, textAlign: "center",
                   })}>
                     {cnt}

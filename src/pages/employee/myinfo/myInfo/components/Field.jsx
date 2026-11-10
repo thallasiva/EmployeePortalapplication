@@ -5,7 +5,7 @@ import { dash, mask } from "../utils";
 const Field = React.memo(function Field({ label, value, masked, show, onToggle, color }) {
   return (
     <div className={cssClass({ marginBottom: 16 })}>
-      <div className={cssClass({ fontSize: 11, color: "#f18200", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 })}>
+      <div className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 })}>
         {label}
       </div>
       <div className={cssClass({ fontSize: 13, color: color || "#1e293b", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 })}>

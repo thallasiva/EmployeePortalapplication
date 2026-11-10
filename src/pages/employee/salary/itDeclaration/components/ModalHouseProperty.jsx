@@ -54,7 +54,7 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
         border: "1px solid #fed7aa"
       })}>
         <span className={cssClass({ fontSize: 12, fontWeight: 600, color: "#c2410c" })}>c. Total Exemption in ₹</span>
-        <strong className={cssClass({ fontSize: 15, color: "#f18200" })}>{fmtDec(totalExemption)}</strong>
+        <strong className={cssClass({ fontSize: 15, color: "#e87500" })}>{fmtDec(totalExemption)}</strong>
       </div>
       {}
       <div className={cssClass({
@@ -83,7 +83,7 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
               <div className={cssClass({ fontSize: 12, color: "#475569", marginBottom: 5 })}>
                 Interest on Housing Loan (Self Occupied) in ₹
               </div>
-              <div className={cssClass({ fontSize: 11, color: "#f18200", fontWeight: 600 })}>
+              <div className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 600 })}>
                 Eligible Amount in ₹: 2,00,000.00
               </div>
             </div>
@@ -115,14 +115,14 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "8px 12px", borderRadius: 7,
           background: "#fff7ed", marginBottom: 12,
-          borderLeft: "3px solid #f18200"
+          borderLeft: "3px solid #e87500"
         })}>
           <span className={cssClass({ fontSize: 12, fontWeight: 700, color: "#c2410c" })}>
             b. Income from Let-out Property
           </span>
           <button type="button" onClick={addHouse} className={cssClass(
             { display: "flex", alignItems: "center", gap: 4, fontSize: 11,
-              color: "#f18200", background: "none", border: "none", cursor: "pointer",
+              color: "#e87500", background: "none", border: "none", cursor: "pointer",
               fontWeight: 600, padding: 0 })}>
             <Plus size={13} /> Add new property
           </button>
@@ -137,9 +137,9 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
                     padding: "5px 14px", fontSize: 12,
                     borderRadius: houseData.length > 1 ? "6px 0 0 6px" : 6,
                     cursor: "pointer", fontWeight: activeTab === i ? 700 : 400,
-                    background: activeTab === i ? "#f18200" : "#f8fafc",
+                    background: activeTab === i ? "#e87500" : "#f8fafc",
                     color: activeTab === i ? "#fff" : "#64748b",
-                    border: activeTab === i ? "1px solid #f18200" : "1px solid #e2e8f0",
+                    border: activeTab === i ? "1px solid #e87500" : "1px solid #e2e8f0",
                     borderRight: houseData.length > 1 ? "none" : undefined
                   })}>
                   Property {i + 1}
@@ -151,7 +151,7 @@ function ModalHouseProperty({ houseData, setHouseData, selfOccupied, setSelfOccu
                       cursor: "pointer",
                       background: activeTab === i ? "#ea580c" : "#f8fafc",
                       color: activeTab === i ? "#fff" : "#94a3b8",
-                      border: activeTab === i ? "1px solid #f18200" : "1px solid #e2e8f0",
+                      border: activeTab === i ? "1px solid #e87500" : "1px solid #e2e8f0",
                       lineHeight: 1, display: "flex", alignItems: "center"
                     })}>
                     <Trash2 size={11} />

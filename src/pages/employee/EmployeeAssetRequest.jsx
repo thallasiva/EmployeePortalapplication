@@ -6,7 +6,7 @@ import { createAssetRequest, listAssetCategories, listMyAssetRequests } from "..
 
 const fieldClass = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
 const initialForm = { request_type: "New Asset", category_id: "", justification: "", priority: "Medium" };
-const statusClass = { Pending: "bg-amber-50 text-amber-700", Approved: "bg-blue-50 text-[#f18200]", Rejected: "bg-red-50 text-red-700", Fulfilled: "bg-emerald-50 text-emerald-700" };
+const statusClass = { Pending: "bg-amber-50 text-amber-700", Approved: "bg-blue-50 text-[#e87500]", Rejected: "bg-red-50 text-red-700", Fulfilled: "bg-emerald-50 text-emerald-700" };
 
 export default function EmployeeAssetRequest() {
   const [form, setForm] = useState(initialForm);
@@ -45,7 +45,7 @@ export default function EmployeeAssetRequest() {
   };
   return (
     <main className="space-y-6 p-5 md:p-8">
-      <header className="flex items-start gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#f18200]"><Laptop size={22} /></span><div><p className="text-xs font-bold uppercase tracking-wider text-[#f18200]">Employee Services</p><h1 className="mt-1 text-2xl font-bold  text-[#f18200]">Asset Requests</h1><p className="mt-1 text-sm text-slate-500">Request equipment or accessories and track your request status.</p></div></header>
+      <header className="flex items-start gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#e87500]"><Laptop size={22} /></span><div><p className="text-xs font-bold uppercase tracking-wider text-[#e87500]">Employee Services</p><h1 className="mt-1 text-2xl font-bold  text-[#e87500]">Asset Requests</h1><p className="mt-1 text-sm text-slate-500">Request equipment or accessories and track your request status.</p></div></header>
       {notice && <div role="status" className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">{notice}</div>}
       {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

@@ -10,7 +10,7 @@ const badge = (status) => {
 // rows = [{ when, action, user, status }]
 export default function ActivityTable({ rows = [] }) {
   return (
-    <Card title="Recent Payroll Activity" icon={<History size={16} color="#6366f1" />} pad={0}>
+    <Card title="Recent Payroll Activity" icon={<History size={16} color="#e87500" />} pad={0}>
       {rows.length === 0 ? (
         <div className={cssClass({ padding: 28, textAlign: "center", color: "#98a2b3", fontSize: 12.5 })}>No payroll activity yet.</div>
       ) : (

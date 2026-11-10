@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Lock, LockOpen, AlertTriangle } from "lucide-react";
 import { lockPayrollRun, unlockPayrollRun } from "../../../../api/payroll.api";
 import { successToast, errorToast } from "../../../../utils/ToastControllers";
-const BRAND = "#f18200";
+const BRAND = "#e87500";
 /**
  * Shows a coloured banner when a payroll run is locked/approved.
  * Props:

@@ -29,7 +29,7 @@ export default function TrainingAndAssets() {
   };
   return (
     <main className="space-y-6 p-5 md:p-8">
-      <header><p className="text-sm font-semibold text-amber-700">EMPLOYEE SERVICES</p><h1 className="mt-1 text-2xl font-bold  text-[#f18200]">My Training &amp; Assets</h1><p className="mt-1 text-sm text-slate-500">Review assigned learning and equipment associated with your profile.</p></header>
+      <header><p className="text-sm font-semibold text-amber-700">EMPLOYEE SERVICES</p><h1 className="mt-1 text-2xl font-bold  text-[#e87500]">My Training &amp; Assets</h1><p className="mt-1 text-sm text-slate-500">Review assigned learning and equipment associated with your profile.</p></header>
       {notice && <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-slate-700">{notice}</div>}
       {loading ? <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading…</p> : <>
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

@@ -87,8 +87,10 @@ const teamLeaveCalendar = asyncHandler(async (req, res) => {
 const listRegularizations = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status } = req.query;
+  const canViewCompanyRequests = ['Admin', 'HR Manager', 'Reporting Manager'].includes(req.user.roleName);
+  const scopedEmployeeId = canViewCompanyRequests ? employee_id : req.user.employeeId;
   const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
-  const { rows, total } = await regularizationService.list({ employee_id, status, reporting_to, limit, offset, companyId: req.user.companyId });
+  const { rows, total } = await regularizationService.list({ employee_id: scopedEmployeeId, status, reporting_to, limit, offset, companyId: req.user.companyId });
   new ApiResponse(200, rows, 'Regularization requests fetched', buildMeta({ page, limit, total })).send(res);
 });
 const createRegularization = asyncHandler(async (req, res) => {

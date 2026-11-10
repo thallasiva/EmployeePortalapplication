@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit2, Trash2, ChevronDown, ChevronUp, Check, Eye, Building2, Briefcase, BarChart2, Calendar, Users, Clock, MapPin, DollarSign, ArrowRight } from "lucide-react";
 import { fmtINR, tabFilter } from "../../../salary/salaryHelpers";
 // ─── Colour tokens ────────────────────────────────────────────────────────────
-const NAVY  = "#f18200";
+const NAVY  = "#e87500";
 const AMBER = "#d97706";
 // ─── Wizard steps ─────────────────────────────────────────────────────────────
 const WIZARD_STEPS = [
@@ -210,7 +210,7 @@ function LiveSummary({ structure }) {
     { label: "Fixed",    pct: Math.round((totalFixed/safe)*100), color: NAVY },
     { label: "Variable", pct: Math.round((totalVar/safe)*100),   color: AMBER },
     { label: "Benefits", pct: Math.round((totalBen/safe)*100),   color: "#10b981" },
-    { label: "Employer", pct: Math.round((totalEmp/safe)*100),   color: "#6366f1" },
+    { label: "Employer", pct: Math.round((totalEmp/safe)*100),   color: "#e87500" },
     { label: "Deduct",   pct: Math.round((totalDed/safe)*100),   color: "#ef4444" },
   ].filter(s => s.pct > 0);
   const sum = slices.reduce((s, sl) => s + sl.pct, 0);
@@ -219,7 +219,7 @@ function LiveSummary({ structure }) {
     { label: "Fixed Earnings",     value: fmtINR(totalFixed), color: NAVY },
     { label: "Variable Pay",       value: fmtINR(totalVar),   color: AMBER },
     { label: "Benefits",           value: fmtINR(totalBen),   color: "#10b981" },
-    { label: "Employer Contrib.",  value: fmtINR(totalEmp),   color: "#6366f1" },
+    { label: "Employer Contrib.",  value: fmtINR(totalEmp),   color: "#e87500" },
     { label: "Deductions",         value: fmtINR(totalDed),   color: "#ef4444" },
   ];
   return (

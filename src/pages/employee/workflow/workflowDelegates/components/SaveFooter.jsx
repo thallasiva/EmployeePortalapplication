@@ -20,7 +20,7 @@ const SaveFooter = React.memo(function SaveFooter({ saving, configuredCount, onS
         disabled={saving}
         className={cssClass({
           height: 38, padding: "0 24px", borderRadius: 8, border: "none",
-          background: saving ? "#fed7aa" : "#f18200", color: "#fff",
+          background: saving ? "#fed7aa" : "#e87500", color: "#fff",
           fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
           transition: "background 0.15s",
         })}

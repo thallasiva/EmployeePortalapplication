@@ -23,8 +23,8 @@ export default function InterviewFeedback() {
       <Star
         key={star}
         size={18}
-        fill={star <= value ? "#2563eb" : "none"}
-        color={star <= value ? "#2563eb" : "#d1d5db"}
+        fill={star <= value ? "#e87500" : "none"}
+        color={star <= value ? "#e87500" : "#d1d5db"}
         onClick={() =>
         setRatings({
           ...ratings,
@@ -143,7 +143,7 @@ export default function InterviewFeedback() {
           <button className={cssClass(
             {
               marginTop: 30,
-              background: "#2563eb",
+              background: "#e87500",
               color: "#fff",
               border: 0,
               padding: "12px 30px",

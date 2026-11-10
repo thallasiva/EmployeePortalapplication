@@ -4,11 +4,11 @@ export const ROLE_COLORS = {
   1: { color: "#dc2626", bg: "#fee2e2", border: "#fca5a5" },
   2: { color: "#6b7280", bg: "#f3f4f6", border: "#e5e7eb" },
   3: { color: "#7c3aed", bg: "#ede9fe", border: "#c4b5fd" },
-  4: { color: "#f18200", bg: "#fff7ed", border: "#fed7aa" },
-  5: { color: "#0369a1", bg: "#e0f2fe", border: "#7dd3fc" }
+  4: { color: "#e87500", bg: "#fff7ed", border: "#fed7aa" },
+  5: { color: "#c45f00", bg: "#ffedd5", border: "#fb923c" }
 };
 export const JOB_ROLES = [
-  { cat: "Management", color: "#185fa5", bg: "#e6f1fb", roles: [
+  { cat: "Management", color: "#cf6900", bg: "#e6f1fb", roles: [
     "CEO (Chief Executive Officer)", "CTO (Chief Technology Officer)", "CIO (Chief Information Officer)",
     "VP of Engineering", "Director of Engineering", "Engineering Manager", "Delivery Manager",
     "Project Manager", "Program Manager", "Product Manager", "Product Owner", "Scrum Master"
@@ -28,7 +28,7 @@ export const JOB_ROLES = [
   { cat: "UI/UX Design", color: "#993556", bg: "#fbeaf0", roles: [
     "UI Designer", "UX Designer", "Product Designer", "Graphic Designer", "Visual Designer", "Interaction Designer"
   ]},
-  { cat: "DevOps & Cloud", color: "#534ab7", bg: "#eeedfe", roles: [
+  { cat: "DevOps & Cloud", color: "#cf6900", bg: "#eeedfe", roles: [
     "Cloud Engineer", "AWS Engineer", "Azure Engineer", "GCP Engineer", "Kubernetes Engineer",
     "Platform Engineer", "Site Reliability Engineer (SRE)", "Infrastructure Engineer", "Build & Release Engineer"
   ]},
@@ -44,7 +44,7 @@ export const JOB_ROLES = [
     "Business Analyst", "Functional Consultant", "Technical Consultant", "Product Analyst",
     "Product Manager", "Product Owner"
   ]},
-  { cat: "Support", color: "#0c447c", bg: "#e6f1fb", roles: [
+  { cat: "Support", color: "#7c3d00", bg: "#e6f1fb", roles: [
     "Application Support Engineer", "Production Support Engineer", "Technical Support Engineer",
     "Customer Support Engineer", "Help Desk Executive", "IT Support Engineer"
   ]},

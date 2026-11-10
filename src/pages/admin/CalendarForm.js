@@ -8,7 +8,7 @@ export default function CalendarForm() {
   const sidebarRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [categories, setCategories] = useState([
-  { title: "New Theme Release", color: "#2f49c7" },
+  { title: "New Theme Release", color: "#cf6900" },
   { title: "My Event", color: "#22c55e" },
   { title: "Meet Manager", color: "#f59e0b" },
   { title: "Create New theme", color: "#6b7280" }]
@@ -43,13 +43,13 @@ export default function CalendarForm() {
       id: "3",
       title: "11:43a Test Event 2",
       start: toEventDate(y, m, 14),
-      color: "#0ea5e9"
+      color: "#e87500"
     },
     {
       id: "4",
       title: "10:56a Test Event 3",
       start: toEventDate(y, m, 16),
-      color: "#2f49c7"
+      color: "#cf6900"
     }];
   });
   useEffect(() => {
@@ -200,7 +200,7 @@ export default function CalendarForm() {
               className="w-full h-11 border border-gray-300 rounded px-3 text-sm outline-none">
                 <option value="#dc2626">Danger</option>
                 <option value="#22c55e">Success</option>
-                <option value="#2f49c7">Primary</option>
+                <option value="#cf6900">Primary</option>
                 <option value="#f59e0b">Warning</option>
                 <option value="#6b7280">Secondary</option>
               </select>

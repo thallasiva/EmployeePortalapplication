@@ -40,7 +40,7 @@ export default function AuditLogs() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-              <span className="text-[15px] font-bold text-[#f18200]">Audit Log Details</span>
+              <span className="text-[15px] font-bold text-[#e87500]">Audit Log Details</span>
               <button onClick={() => setViewRow(null)} className="text-[#94a3b8]" aria-label="Close"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-3">
@@ -54,7 +54,7 @@ export default function AuditLogs() {
               ))}
             </div>
             <div className="px-6 pb-5">
-              <button onClick={() => setViewRow(null)} className="w-full h-[38px] bg-[#f18200] text-white rounded-lg text-[13px] font-bold">Close</button>
+              <button onClick={() => setViewRow(null)} className="w-full h-[38px] bg-[#e87500] text-white rounded-lg text-[13px] font-bold">Close</button>
             </div>
           </div>
         </div>
@@ -63,10 +63,10 @@ export default function AuditLogs() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#fff8f0] flex items-center justify-center">
-              <Shield size={18} color="#f18200" />
+              <Shield size={18} color="#e87500" />
             </div>
             <div>
-              <h1 className="text-[18px] font-bold text-[#f18200]">Audit Logs</h1>
+              <h1 className="text-[18px] font-bold text-[#e87500]">Audit Logs</h1>
               <p className="text-[12px] text-[#94a3b8]">Track all admin actions and system events</p>
             </div>
           </div>
@@ -82,14 +82,14 @@ export default function AuditLogs() {
             <div className="relative flex-1">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search user, action…"
-                className="w-full pl-8 pr-3 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+                className="w-full pl-8 pr-3 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
             </div>
             <select value={module} onChange={e => setModule(e.target.value)}
-              className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+              className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
               {MODULES_F.map(o => <option key={o}>{o}</option>)}
             </select>
             <select value={result} onChange={e => setResult(e.target.value)}
-              className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+              className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
               {RESULTS_F.map(o => <option key={o}>{o}</option>)}
             </select>
           </div>
@@ -98,7 +98,7 @@ export default function AuditLogs() {
         <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-40">
-              <Loader2 size={24} className="animate-spin text-[#f18200]" />
+              <Loader2 size={24} className="animate-spin text-[#e87500]" />
             </div>
           ) : rows.length === 0 ? (
             <div role={loadError ? "alert" : undefined} className={`text-center py-16 text-[13px] ${loadError ? "text-red-600" : "text-[#94a3b8]"}`}>
@@ -119,7 +119,7 @@ export default function AuditLogs() {
                     <td className="px-4 py-3 text-[#94a3b8] whitespace-nowrap">{row.dt || (row.created_at ? new Date(row.created_at).toLocaleString("en-IN") : "—")}</td>
                     <td className="px-4 py-3 font-medium text-[#1e293b]">{row.user || row.user_name}</td>
                     <td className="px-4 py-3 text-[#475569] max-w-[260px] truncate">{row.action}</td>
-                    <td className="px-4 py-3"><span className="text-[11px] px-2 py-0.5 rounded-full bg-[#fff8f0] text-[#f18200] font-semibold">{row.module}</span></td>
+                    <td className="px-4 py-3"><span className="text-[11px] px-2 py-0.5 rounded-full bg-[#fff8f0] text-[#e87500] font-semibold">{row.module}</span></td>
                     <td className="px-4 py-3 text-[#94a3b8] font-mono text-[11px]">{row.ip || row.ip_address || "—"}</td>
                     <td className="px-4 py-3">
                       <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${row.result==="Success"||row.result==="success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>

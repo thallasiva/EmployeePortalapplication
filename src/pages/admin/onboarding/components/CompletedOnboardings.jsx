@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { formatDate, initials } from "../utils";
-const BRAND = "#f18200";
+const BRAND = "#e87500";
 function getJoinDate(emp) {
   return emp.date_of_joining || emp.joining_date || emp.doj || emp.created_at || null;
 }
@@ -19,7 +19,7 @@ const CompletedOnboardings = React.memo(function CompletedOnboardings({
             <CheckCircle2 size={18} className="text-emerald-600" />
           </div>
           <div>
-            <h2 className="text-[15px] font-bold  text-[#f18200]">
+            <h2 className="text-[15px] font-bold  text-[#e87500]">
               Completed Onboardings
               {!loading && (
                 <span className="ml-2 text-[12px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">

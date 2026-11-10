@@ -13,12 +13,12 @@ import {
   listKfEmployees,
   requestFeedback } from
 "../../../api/kudosFeedback.api";
-export const BRAND = "#f18200";
+export const BRAND = "#e87500";
 export const FEEDBACK_TYPES = ["Positive", "Constructive", "Developmental"];
 export const TYPE_STYLE = {
   Positive: { badge: "bg-emerald-50 text-emerald-700", bar: "#16a34a" },
-  Constructive: { badge: "bg-orange-50 text-orange-700", bar: "#f18200" },
-  Developmental: { badge: "bg-blue-50 text-[#f18200]", bar: "#1d4ed8" }
+  Constructive: { badge: "bg-orange-50 text-orange-700", bar: "#e87500" },
+  Developmental: { badge: "bg-blue-50 text-[#e87500]", bar: "#cf6900" }
 };
 export function timeAgo(value) {
   if (!value) return "";
@@ -37,7 +37,7 @@ export const Avatar = ({ name, size = 40, tone = "orange" }) => {
   const tones = {
     orange: "bg-[#fff4e6] text-[#b45309]",
     slate: "bg-slate-100 text-slate-600",
-    blue: "bg-blue-50 text-[#f18200]"
+    blue: "bg-blue-50 text-[#e87500]"
   };
   return (
     <div
@@ -52,7 +52,7 @@ export const StatCard = ({ icon, label, value, hint, accent = "bg-orange-50" }) 
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent}`}>{icon}</div>
     <div className="min-w-0">
       <p className="text-sm font-medium text-slate-600">{label}</p>
-      <p className="text-3xl font-black  text-[#f18200] mt-0.5">{value ?? "–"}</p>
+      <p className="text-3xl font-black  text-[#e87500] mt-0.5">{value ?? "–"}</p>
       {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
     </div>
   </div>;
@@ -73,7 +73,7 @@ export const Loading = () =>
 export const PrimaryButton = ({ children, className = "", ...props }) =>
 <button
   {...props}
-  className={`h-10 px-4 rounded-xl bg-[#f18200] hover:bg-[#e07000] disabled:opacity-60 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors ${className}`}>
+  className={`h-10 px-4 rounded-xl bg-[#e87500] hover:bg-[#e07000] disabled:opacity-60 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors ${className}`}>
     {children}
   </button>;
 export const SecondaryButton = ({ children, className = "", ...props }) =>
@@ -106,7 +106,7 @@ const Modal = ({ title, icon, onClose, children, width = "max-w-lg" }) => {
         className={`bg-white rounded-2xl shadow-2xl w-full ${width} max-h-[90vh] flex flex-col`}
         onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
-          <h2 className="text-lg font-bold  text-[#f18200] flex items-center gap-2">{icon}{title}</h2>
+          <h2 className="text-lg font-bold  text-[#e87500] flex items-center gap-2">{icon}{title}</h2>
           <button onClick={onClose} aria-label="Close" className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500">
             <X size={18} />
           </button>
@@ -159,7 +159,7 @@ export const EmployeePicker = ({ multiple = false, value, onChange, teamOnly = f
         )}
         </div>
       }
-      <div className="flex items-center gap-2 border border-slate-200 rounded-xl px-3 h-10 focus-within:border-[#f18200]">
+      <div className="flex items-center gap-2 border border-slate-200 rounded-xl px-3 h-10 focus-within:border-[#e87500]">
         <Search size={15} className="text-slate-400" />
         <input
           value={search}
@@ -190,7 +190,7 @@ export const EmployeePicker = ({ multiple = false, value, onChange, teamOnly = f
                     {p.is_direct_report ? " · Your team" : ""}
                   </span>
                 </span>
-                {on && <Check size={16} className="text-[#f18200]" />}
+                {on && <Check size={16} className="text-[#e87500]" />}
               </button>
             </li>);
         })}
@@ -244,7 +244,7 @@ export const GiveKudosModal = ({ onClose, onSent, teamOnly = false, preset = [] 
               aria-pressed={categoryId === c.category_id}
               onClick={() => setCategoryId(c.category_id)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-              categoryId === c.category_id ? "bg-[#f18200] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`
+              categoryId === c.category_id ? "bg-[#e87500] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`
               }
               title={c.description || undefined}>
                 {c.category_name}
@@ -261,11 +261,11 @@ export const GiveKudosModal = ({ onClose, onSent, teamOnly = false, preset = [] 
             rows={3}
             maxLength={1000}
             placeholder="What did they do that you appreciated?"
-            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#f18200] resize-none" />
+            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#e87500] resize-none" />
           <p className="text-[11px] text-slate-400 text-right">{message.length}/1000</p>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="w-4 h-4 accent-[#f18200]" />
+          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="w-4 h-4 accent-[#e87500]" />
           Show on the Kudos Wall for everyone
         </label>
         <div className="flex gap-2 pt-1">
@@ -316,7 +316,7 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
   };
   const lockedName = request?.requester_name || presetEmployee?.name;
   return (
-    <Modal title={request ? "Respond to feedback request" : "Give Feedback"} icon={<MessageSquare size={20} className="text-[#f18200]" />} onClose={onClose}>
+    <Modal title={request ? "Respond to feedback request" : "Give Feedback"} icon={<MessageSquare size={20} className="text-[#e87500]" />} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
         {lockedTo ?
         <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
@@ -342,7 +342,7 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
               aria-pressed={type === t}
               onClick={() => setType(t)}
               className={`h-10 rounded-xl text-xs font-bold border transition-all ${
-              type === t ? "border-[#f18200] bg-orange-50 text-[#b45309]" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`
+              type === t ? "border-[#e87500] bg-orange-50 text-[#b45309]" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`
               }>
                 {t}
               </button>
@@ -356,7 +356,7 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
             id="fb-category"
             value={categoryId || ""}
             onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
-            className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#f18200] bg-white">
+            className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#e87500] bg-white">
               <option value="">General</option>
               {categories.map((c) => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
             </select>
@@ -371,11 +371,11 @@ export const GiveFeedbackModal = ({ onClose, onSent, request = null, presetEmplo
             rows={4}
             maxLength={2000}
             placeholder="Be specific: what happened, the impact, and what to keep or change."
-            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#f18200] resize-none" />
+            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#e87500] resize-none" />
           <p className="text-[11px] text-slate-400 text-right">{message.length}/2000</p>
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="w-4 h-4 accent-[#f18200]" />
+          <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="w-4 h-4 accent-[#e87500]" />
           Send anonymously (your name is hidden from the receiver)
         </label>
         <div className="flex gap-2 pt-1">
@@ -410,7 +410,7 @@ export const RequestFeedbackModal = ({ onClose, onSent }) => {
     }
   };
   return (
-    <Modal title="Request Feedback" icon={<MessageSquare size={20} className="text-[#f18200]" />} onClose={onClose}>
+    <Modal title="Request Feedback" icon={<MessageSquare size={20} className="text-[#e87500]" />} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
         <div>
           <Label>Ask (up to 10 people)</Label>
@@ -424,7 +424,7 @@ export const RequestFeedbackModal = ({ onClose, onSent }) => {
             onChange={(e) => setTopic(e.target.value)}
             maxLength={150}
             placeholder="e.g. Sprint 42 delivery, client demo, code reviews"
-            className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#f18200]" />
+            className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm outline-none focus:border-[#e87500]" />
         </div>
         <div>
           <Label htmlFor="rq-message">Note (optional)</Label>
@@ -435,7 +435,7 @@ export const RequestFeedbackModal = ({ onClose, onSent }) => {
             rows={3}
             maxLength={1000}
             placeholder="Anything specific you want them to comment on?"
-            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#f18200] resize-none" />
+            className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#e87500] resize-none" />
         </div>
         <div className="flex gap-2 pt-1">
           <SecondaryButton type="button" onClick={onClose} className="flex-1">Cancel</SecondaryButton>
@@ -455,13 +455,13 @@ export const KudosItem = ({ k, perspective = "wall" }) => {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           {perspective === "received" &&
-          <><span className="text-sm font-bold  text-[#f18200]">{k.from_name}</span><span className="text-xs text-slate-500">recognised you</span></>
+          <><span className="text-sm font-bold  text-[#e87500]">{k.from_name}</span><span className="text-xs text-slate-500">recognised you</span></>
           }
           {perspective === "sent" &&
-          <><span className="text-xs text-slate-500">You recognised</span><span className="text-sm font-bold  text-[#f18200]">{k.to_name}</span></>
+          <><span className="text-xs text-slate-500">You recognised</span><span className="text-sm font-bold  text-[#e87500]">{k.to_name}</span></>
           }
           {perspective === "wall" &&
-          <><span className="text-sm font-bold  text-[#f18200]">{k.from_name}</span><ArrowRight size={13} className="text-slate-400" /><span className="text-sm font-bold  text-[#f18200]">{k.to_name}</span></>
+          <><span className="text-sm font-bold  text-[#e87500]">{k.from_name}</span><ArrowRight size={13} className="text-slate-400" /><span className="text-sm font-bold  text-[#e87500]">{k.to_name}</span></>
           }
           <CategoryBadge name={k.category_name} color={k.category_color} />
           {!k.is_public && <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">Private</span>}
@@ -550,25 +550,25 @@ export const FeedbackReport = ({ onGiveKudos }) => {
       <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard icon={<Award size={22} className="text-amber-500" />} label="Kudos" value={t.kudos} hint={`Last ${months} months`} accent="bg-amber-50" />
-            <StatCard icon={<MessageSquare size={22} className="text-[#f18200]" />} label="Feedback" value={t.feedback} hint={`Last ${months} months`} />
+            <StatCard icon={<MessageSquare size={22} className="text-[#e87500]" />} label="Feedback" value={t.feedback} hint={`Last ${months} months`} />
             <StatCard icon={<Check size={22} className="text-emerald-600" />} label="Participation" value={`${participation}%`} hint={`${t.active_people || 0} of ${t.employees || 0} people`} accent="bg-emerald-50" />
             <StatCard icon={<Send size={22} className="text-blue-600" />} label="Request response" value={responseRate == null ? "–" : `${responseRate}%`} hint={`${t.pending_requests || 0} pending`} accent="bg-blue-50" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <h2 className="text-base font-bold  text-[#f18200]">Monthly trend</h2>
+                <h2 className="text-base font-bold  text-[#e87500]">Monthly trend</h2>
                 <div className="flex gap-4 text-xs font-semibold text-slate-600">
-                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#f18200]" />Kudos</span>
-                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1d4ed8]" />Feedback</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#e87500]" />Kudos</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#cf6900]" />Feedback</span>
                 </div>
               </div>
               <div className="h-48 flex items-end gap-3 border-b border-slate-100 px-1" role="img" aria-label="Kudos and feedback per month">
                 {report.trend.map((m) =>
               <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                     <div className="flex items-end gap-1 h-40">
-                      <div title={`${m.kudos} kudos`} className="w-3 sm:w-4 rounded-t bg-[#f18200]" style={{ height: `${m.kudos / maxTrend * 100}%`, minHeight: m.kudos ? 4 : 0 }} />
-                      <div title={`${m.feedback} feedback`} className="w-3 sm:w-4 rounded-t bg-[#1d4ed8]" style={{ height: `${m.feedback / maxTrend * 100}%`, minHeight: m.feedback ? 4 : 0 }} />
+                      <div title={`${m.kudos} kudos`} className="w-3 sm:w-4 rounded-t bg-[#e87500]" style={{ height: `${m.kudos / maxTrend * 100}%`, minHeight: m.kudos ? 4 : 0 }} />
+                      <div title={`${m.feedback} feedback`} className="w-3 sm:w-4 rounded-t bg-[#cf6900]" style={{ height: `${m.feedback / maxTrend * 100}%`, minHeight: m.feedback ? 4 : 0 }} />
                     </div>
                   </div>
               )}
@@ -578,7 +578,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
               </div>
             </section>
             <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-              <h2 className="text-base font-bold  text-[#f18200] mb-4">Feedback by type</h2>
+              <h2 className="text-base font-bold  text-[#e87500] mb-4">Feedback by type</h2>
               <div className="flex items-center gap-5 flex-wrap">
                 <div
                 className="w-32 h-32 rounded-full flex items-center justify-center"
@@ -586,7 +586,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
                 role="img"
                 aria-label={report.by_type.map((r) => `${r.feedback_type} ${r.total}`).join(", ")}>
                   <div className="w-20 h-20 rounded-full bg-white flex flex-col items-center justify-center">
-                    <span className="text-xl font-black  text-[#f18200]">{totalByType}</span>
+                    <span className="text-xl font-black  text-[#e87500]">{totalByType}</span>
                     <span className="text-[11px] text-slate-500">total</span>
                   </div>
                 </div>
@@ -604,9 +604,9 @@ export const FeedbackReport = ({ onGiveKudos }) => {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-x-auto">
-              <h2 className="text-base font-bold  text-[#f18200] px-5 pt-5 pb-3">Feedback received per employee</h2>
+              <h2 className="text-base font-bold  text-[#e87500] px-5 pt-5 pb-3">Feedback received per employee</h2>
               {report.by_employee.length === 0 ?
-            <EmptyState icon={<MessageSquare className="text-[#f18200]" />} title="No feedback in this period" /> :
+            <EmptyState icon={<MessageSquare className="text-[#e87500]" />} title="No feedback in this period" /> :
             <table className="w-full min-w-[620px] text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-xs text-slate-500 text-left">
@@ -641,7 +641,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
             </section>
             <div className="space-y-4">
               <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="text-base font-bold  text-[#f18200] mb-3">Kudos by department</h2>
+                <h2 className="text-base font-bold  text-[#e87500] mb-3">Kudos by department</h2>
                 {report.by_department.filter((d) => Number(d.kudos) > 0).length === 0 ?
               <p className="text-sm text-slate-500">No kudos in this period.</p> :
               <ul className="space-y-3">
@@ -649,7 +649,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
                 <li key={d.department_id}>
                         <div className="flex justify-between text-sm"><span className="font-semibold text-slate-700">{d.department_name}</span><strong>{d.kudos}</strong></div>
                         <div className="h-2 rounded-full bg-slate-100 mt-1">
-                          <div className="h-2 rounded-full bg-[#f18200]" style={{ width: `${d.kudos / Math.max(...report.by_department.map((x) => Number(x.kudos)), 1) * 100}%` }} />
+                          <div className="h-2 rounded-full bg-[#e87500]" style={{ width: `${d.kudos / Math.max(...report.by_department.map((x) => Number(x.kudos)), 1) * 100}%` }} />
                         </div>
                       </li>
                 )}
@@ -657,7 +657,7 @@ export const FeedbackReport = ({ onGiveKudos }) => {
               }
               </section>
               <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="text-base font-bold  text-[#f18200]">Low recognition</h2>
+                <h2 className="text-base font-bold  text-[#e87500]">Low recognition</h2>
                 <p className="text-xs text-slate-500 mb-3">No kudos in the last 60 days</p>
                 {report.low_recognition.length === 0 ?
               <p className="text-sm text-slate-500">Everyone has been recognised recently.</p> :

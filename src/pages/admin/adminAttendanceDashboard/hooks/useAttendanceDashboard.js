@@ -63,7 +63,7 @@ export function useAttendanceDashboard() {
       { label: "Present", value: summary.presentToday, color: "#22c55e" },
       { label: "Absent", value: summary.absentToday, color: "#f472b6" },
       { label: "Late", value: summary.lateToday, color: "#f97316" },
-      { label: "On Leave", value: summary.onLeaveToday, color: "#3b82f6" },
+      { label: "On Leave", value: summary.onLeaveToday, color: "#e87500" },
     ],
     [summary]
   );

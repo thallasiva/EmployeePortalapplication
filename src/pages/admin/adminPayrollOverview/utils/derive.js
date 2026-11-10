@@ -50,7 +50,7 @@ export function computeExceptions({ employees, attendanceRows, payslips }) {
   if (has("pan_number")) add("pan", "Missing PAN", "#7c3aed", (e) => !e?.pan_number);
   if (has("structure_id") || has("ctc")) {
     const f = has("structure_id") ? "structure_id" : "ctc";
-    add("structure", "Salary Structure Missing", "#0891b2", (e) => !e?.[f]);
+    add("structure", "Salary Structure Missing", "#e87500", (e) => !e?.[f]);
   }
   // attentionCount = number of DISTINCT employees with at least one issue
   return { items, attentionCount: flagged.size };

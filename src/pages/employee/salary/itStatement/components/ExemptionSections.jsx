@@ -16,7 +16,7 @@ export const SectionF = React.memo(function SectionF({ open, onToggle, hraExempt
           <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 14px", borderBottom: "1px solid #f1f5f9" })}>
             <span className={cssClass({ fontSize: 12, color: "#475569" })}>HOUSE RENT ALLOWANCE : Section 11 (Sch III (11))</span>
             <div className={cssClass({ display: "flex", alignItems: "center", gap: 20 })}>
-              <button type="button" onClick={() => setShowHRA(!showHRA)} className={cssClass({ fontSize: 11, color: "#1e6b9e", background: "none", border: "none", cursor: "pointer", fontWeight: 600 })}>
+              <button type="button" onClick={() => setShowHRA(!showHRA)} className={cssClass({ fontSize: 11, color: "#cf6900", background: "none", border: "none", cursor: "pointer", fontWeight: 600 })}>
                 {showHRA ? "Hide HRA Details" : "Show HRA Details"}
               </button>
               <span className={cssClass({ fontSize: 12, color: "#334155", minWidth: 60, textAlign: "right" })}>{tbl(hraExemption)}</span>
@@ -30,7 +30,7 @@ export const SectionF = React.memo(function SectionF({ open, onToggle, hraExempt
           ].map(({ label, value, hi }) => (
             <div key={label} className={cssClass({ display: "flex", justifyContent: "space-between", padding: "7px 14px 7px 28px", borderBottom: "1px solid #f1f5f9" })}>
               <span className={cssClass({ fontSize: 12, color: "#475569" })}>{label}</span>
-              <span className={cssClass({ fontSize: 12, fontWeight: 500, color: hi ? "#f18200" : "#334155", minWidth: 60, textAlign: "right" })}>{tbl(value)}</span>
+              <span className={cssClass({ fontSize: 12, fontWeight: 500, color: hi ? "#e87500" : "#334155", minWidth: 60, textAlign: "right" })}>{tbl(value)}</span>
             </div>
           ))}
           <div className={cssClass({ display: "flex", justifyContent: "space-between", padding: "8px 14px", background: "#f8fafc" })}>

@@ -10,7 +10,7 @@ import UploadDocumentModal from "./components/UploadDocumentModal";
 import CandidatesTable from "../joiningVerification/components/CandidatesTable";
 import DetailModal from "../joiningVerification/components/DetailModal";
 import { FILTERS } from "../joiningVerification/constants";
-const BRAND = "#f18200";
+const BRAND = "#e87500";
 export default function Onboarding() {
   /* ── Onboarding ── */
   const {

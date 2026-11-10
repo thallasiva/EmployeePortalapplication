@@ -5,5 +5,5 @@ export const CAT_ORDER = ["Earning", "Deduction", "Employer Contribution"];
 export const CAT_COLOR = {
   Earning: "text-green-700 bg-green-50",
   Deduction: "text-red-700 bg-red-50",
-  "Employer Contribution": "text-[#f18200] bg-blue-50",
+  "Employer Contribution": "text-[#e87500] bg-blue-50",
 };

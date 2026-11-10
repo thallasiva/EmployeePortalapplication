@@ -48,7 +48,7 @@ const CSVPreviewTable = React.memo(({ preview }) => {
                   </td>
                   <td className={cssClass({ padding: "7px 10px", color: "#9ca3af" })}>{r.location || "All"}</td>
                   <td className={cssClass({ padding: "7px 10px" })}>
-                    <span className={cssClass({ fontSize: 10, color: r.is_restricted ? "#1d4ed8" : "#15803d" })}>
+                    <span className={cssClass({ fontSize: 10, color: r.is_restricted ? "#cf6900" : "#15803d" })}>
                       {r.is_restricted ? "Yes" : "No"}
                     </span>
                   </td>

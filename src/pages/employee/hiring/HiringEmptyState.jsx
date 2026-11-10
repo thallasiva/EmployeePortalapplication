@@ -14,26 +14,26 @@ export default function HiringEmptyState() {
           d="M60 120 Q90 60 140 75 Q190 60 220 120 L200 165 H80 Z"
           fill="#d6eef9"
         />
-        <rect x="115" y="95" width="50" height="40" rx="4" fill="#5dade2" />
-        <rect x="120" y="100" width="40" height="30" rx="2" fill="#85c1e9" />
+        <rect x="115" y="95" width="50" height="40" rx="4" fill="#fb923c" />
+        <rect x="120" y="100" width="40" height="30" rx="2" fill="#fb923c" />
         <circle cx="140" cy="72" r="18" fill="#f5cba7" />
         <path
           d="M122 68 Q140 58 158 68 L155 78 Q140 72 125 78 Z"
           fill="#5d4e37"
         />
-        <rect x="128" y="88" width="24" height="32" rx="2" fill="#3498db" />
-        <rect x="108" y="118" width="18" height="8" rx="2" fill="#3498db" />
-        <rect x="154" y="118" width="18" height="8" rx="2" fill="#3498db" />
+        <rect x="128" y="88" width="24" height="32" rx="2" fill="#e87500" />
+        <rect x="108" y="118" width="18" height="8" rx="2" fill="#e87500" />
+        <rect x="154" y="118" width="18" height="8" rx="2" fill="#e87500" />
         <path
           d="M95 85 Q88 70 100 65"
-          stroke="#5dade2"
+          stroke="#fb923c"
           strokeWidth="3"
           fill="none"
           strokeLinecap="round"
         />
-        <ellipse cx="95" cy="62" rx="8" ry="12" fill="#85c1e9" opacity="0.8" />
-        <ellipse cx="175" cy="58" rx="6" ry="10" fill="#85c1e9" opacity="0.7" />
-        <ellipse cx="185" cy="72" rx="5" ry="8" fill="#5dade2" opacity="0.6" />
+        <ellipse cx="95" cy="62" rx="8" ry="12" fill="#fb923c" opacity="0.8" />
+        <ellipse cx="175" cy="58" rx="6" ry="10" fill="#fb923c" opacity="0.7" />
+        <ellipse cx="185" cy="72" rx="5" ry="8" fill="#fb923c" opacity="0.6" />
       </svg>
       <h3 className="hiring-empty__title">No results found.</h3>
       <p className="hiring-empty__text">

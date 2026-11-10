@@ -34,7 +34,7 @@ const EmployeePanel = React.memo(function EmployeePanel({
         <button
           type="button"
           onClick={onHide}
-          className={cssClass({ fontSize: 11, color: "#f18200", background: "none", border: "none", cursor: "pointer", fontWeight: 600 })}
+          className={cssClass({ fontSize: 11, color: "#e87500", background: "none", border: "none", cursor: "pointer", fontWeight: 600 })}
         >
           Hide
         </button>

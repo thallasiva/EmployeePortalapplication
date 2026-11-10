@@ -5,14 +5,14 @@ import { LEVEL_ORDER } from "../constants";
 import InterviewPipeline from "./InterviewPipeline";
 const TYPE_ICON = { "Video Call": "Video", "Phone": "Phone", "In-Person": "Office", "Teams": "Teams" };
 function dotBgCls(iv) {
-  if (iv.status === "Scheduled") return "bg-[#f18200]";
+  if (iv.status === "Scheduled") return "bg-[#e87500]";
   if (iv.feedback_status === "Selected") return "bg-green-600";
   if (iv.feedback_status === "Not Selected") return "bg-red-600";
   if (iv.feedback_status === "Hold") return "bg-amber-500";
   return "bg-gray-400";
 }
 function cardCls(iv) {
-  if (iv.status === "Scheduled") return { wrap: "border-orange-200 bg-amber-50", badge: "text-[#f18200] border-orange-200 bg-white" };
+  if (iv.status === "Scheduled") return { wrap: "border-orange-200 bg-amber-50", badge: "text-[#e87500] border-orange-200 bg-white" };
   if (iv.feedback_status === "Selected") return { wrap: "border-green-200 bg-green-50", badge: "text-green-600 border-green-200 bg-white" };
   if (iv.feedback_status === "Not Selected") return { wrap: "border-red-200 bg-red-50", badge: "text-red-600 border-red-200 bg-white" };
   return { wrap: "border-gray-200 bg-gray-50", badge: "text-gray-500 border-gray-200 bg-white" };
@@ -52,9 +52,9 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
     <div className="mt-5">
       <InterviewPipeline ivs={ivs} candidateStatus={candidateStatus} />
       <div className="flex items-center gap-2 mb-3.5">
-        <div className="w-[3px] h-4 bg-[#f18200] rounded-sm" />
+        <div className="w-[3px] h-4 bg-[#e87500] rounded-sm" />
         <span className="text-[11px] font-bold text-gray-700 uppercase tracking-[0.06em]">Interview History</span>
-        <span className="text-[11px] font-semibold bg-amber-50 text-[#f18200] border border-orange-200 rounded-full px-2 py-px">
+        <span className="text-[11px] font-semibold bg-amber-50 text-[#e87500] border border-orange-200 rounded-full px-2 py-px">
           {ivs.length} round{ivs.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -96,7 +96,7 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
                     className="w-full box-border px-2.5 py-2 text-xs leading-relaxed border border-orange-200 rounded-md bg-[#fffbf5] text-gray-700 resize-y outline-none font-[inherit]" />
                   <div className="flex gap-2 mt-1.5">
                     <button onClick={() => saveComment(iv)} disabled={cState.saving}
-                      className="text-[11px] font-bold px-3.5 py-1 bg-[#f18200] text-white border-0 rounded-md cursor-pointer">
+                      className="text-[11px] font-bold px-3.5 py-1 bg-[#e87500] text-white border-0 rounded-md cursor-pointer">
                       {cState.saving ? "Saving..." : "Save"}
                     </button>
                     <button data-cancel-button onClick={() => cancelEdit(iv.interview_id)}
@@ -106,11 +106,11 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
                   </div>
                 </div>
               ) : hasComment ? (
-                <div className="mx-3.5 mb-3 px-3 py-2.5 bg-[#fffbf5] border border-l-[3px] border-orange-200 border-l-[#f18200] rounded-md">
+                <div className="mx-3.5 mb-3 px-3 py-2.5 bg-[#fffbf5] border border-l-[3px] border-orange-200 border-l-[#e87500] rounded-md">
                   <div className="flex justify-between mb-1.5">
-                    <span className="text-[10px] font-bold text-[#f18200] uppercase">Interviewer Comments</span>
+                    <span className="text-[10px] font-bold text-[#e87500] uppercase">Interviewer Comments</span>
                     {canComment &&
-                      <button onClick={() => startEdit(iv)} className="text-[10px] text-[#f18200] bg-transparent border-0 cursor-pointer font-semibold">Edit</button>
+                      <button onClick={() => startEdit(iv)} className="text-[10px] text-[#e87500] bg-transparent border-0 cursor-pointer font-semibold">Edit</button>
                     }
                   </div>
                   <div className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{iv.feedback_comments}</div>
@@ -118,7 +118,7 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
               ) : canComment && !isScheduled ? (
                 <div className="mx-3.5 mb-2.5">
                   <button onClick={() => startEdit(iv)}
-                    className="text-[11px] font-semibold text-[#f18200] bg-amber-50 border border-dashed border-orange-200 rounded-md px-3 py-1.5 cursor-pointer">
+                    className="text-[11px] font-semibold text-[#e87500] bg-amber-50 border border-dashed border-orange-200 rounded-md px-3 py-1.5 cursor-pointer">
                     + Add Comments
                   </button>
                 </div>

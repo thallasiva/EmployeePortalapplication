@@ -108,7 +108,7 @@ const Recruitment = () =>
               py-[12px]
               text-[13px]
               ${selected ?
-              "font-[700] text-[#f18200] border-b-[2px] border-[#f18200]" :
+              "font-[700] text-[#e87500] border-b-[2px] border-[#e87500]" :
               "font-[500] text-[#6b7280] border-b-[2px] border-transparent"}
               bg-transparent
               border-x-0

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { toISODateString } from "../../../../../lib/dateUtils";
 import { formatMinutesAsHrs } from "../../../../../lib/attendanceUtils";
-import { getMyMonthlyAttendance, getMyTodayAttendance, checkIn, checkOut } from "../../../../../api/attendance.api";
+import { getMyMonthlyAttendance, getMyTodayAttendance, getAttendanceLocationPolicy, checkIn, checkOut } from "../../../../../api/attendance.api";
 import { getLoggedInUser } from "../../../../../lib/dateUtils";
 import { apiErrorToast, successToast } from "../../../../../utils/ToastControllers";
 import { getMonthGrid, buildDayRecord } from "../utils/calendarUtils";
@@ -80,9 +80,19 @@ export function useAttendanceData() {
       .then((d) => setRecords(Array.isArray(d) ? d : []))
       .catch(() => {});
   }, [monthIndex, year]);
+  const getLocationPayload = useCallback(async () => {
+    const policy = await getAttendanceLocationPolicy();
+    if (!Number(policy?.geo_fence_enabled)) return {};
+    if (!navigator.geolocation) throw new Error('This browser does not support location required for office check-in.');
+    return new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(
+      ({ coords }) => resolve({ lat: coords.latitude, lng: coords.longitude }),
+      () => reject(new Error('Allow location access to check in at your office.')),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    ));
+  }, []);
   const handleCheckIn = useCallback(() => {
     setPunching(true);
-    checkIn({})
+    getLocationPayload().then((location) => checkIn(location))
       .then((data) => {
         setTodayRecord(data);
         successToast("Checked in successfully.");
@@ -90,7 +100,7 @@ export function useAttendanceData() {
       })
       .catch((err) => apiErrorToast(err, "Unable to check in."))
       .finally(() => setPunching(false));
-  }, [refreshMonthly]);
+  }, [getLocationPayload, refreshMonthly]);
   const handleCheckOut = useCallback(() => {
     setPunching(true);
     checkOut({})

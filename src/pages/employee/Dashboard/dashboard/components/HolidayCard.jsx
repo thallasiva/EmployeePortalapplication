@@ -5,10 +5,10 @@ import { fmtHolDate } from "../utils/formatters";
 import { ArrowRight } from "lucide-react";
 const HolidayCard = React.memo(function HolidayCard({ loading, holidays }) {
   return (
-    <div className={cssClass({ background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 20 })}>
-      <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 })}>
-        <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>Upcoming Holidays</span>
-        <Link to="/employee/leave/holiday-calendar" className={cssClass({ fontSize: 12, color: "#f18200", fontWeight: 600, textDecoration: "none" })}>
+    <div className={cssClass({ background: "#fff", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 12, border: "1px solid #e2e8f0" })}>
+      <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 })}>
+        <span className={cssClass({ fontSize: 12, fontWeight: 700, color: "#1e293b" })}>Upcoming Holidays</span>
+        <Link to="/employee/leave/holiday-calendar" className={cssClass({ fontSize: 12, color: "#e87500", fontWeight: 600, textDecoration: "none" })}>
           View All <ArrowRight size={12} className="inline -mt-0.5" />
         </Link>
       </div>
@@ -19,17 +19,17 @@ const HolidayCard = React.memo(function HolidayCard({ loading, holidays }) {
           No upcoming holidays.
         </div>
       ) : (
-        <div className={cssClass({ display: "flex", flexDirection: "column", gap: 12 })}>
+        <div className={cssClass({ display: "flex", flexDirection: "column", gap: 8 })}>
           {holidays.map((hol) => {
             const dateStr = hol.holiday_date || hol.date;
             const { badge, weekday } = fmtHolDate(dateStr);
             return (
-              <div key={hol.holiday_id || dateStr} className={cssClass({ display: "flex", alignItems: "center", gap: 14 })}>
+              <div key={hol.holiday_id || dateStr} className={cssClass({ display: "flex", alignItems: "center", gap: 9 })}>
                 <div className={cssClass({
                   background: "#fff8f0", border: "1px solid #fde8c8",
                   borderRadius: 8, padding: "6px 10px", textAlign: "center", minWidth: 52,
                 })}>
-                  <div className={cssClass({ fontSize: 13, fontWeight: 800, color: "#f18200" })}>{badge.split(" ")[0]}</div>
+                  <div className={cssClass({ fontSize: 13, fontWeight: 800, color: "#e87500" })}>{badge.split(" ")[0]}</div>
                   <div className={cssClass({ fontSize: 10, color: "#94a3b8" })}>{badge.split(" ")[1]}</div>
                 </div>
                 <div>

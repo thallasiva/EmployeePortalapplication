@@ -44,7 +44,7 @@ function ParameterRatingRow({ rating, mgRating, onRatingChange, onCommentChange,
           )}
         </div>
         <div>
-          <p className={cssClass({ fontSize: 11, color: "#6366f1", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px" })}>
+          <p className={cssClass({ fontSize: 11, color: "#e87500", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 6px" })}>
             Your Rating
           </p>
           <StarPicker

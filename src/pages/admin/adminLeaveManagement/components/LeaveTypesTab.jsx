@@ -67,8 +67,8 @@ const LeaveTypesTab = memo(() => {
                   <td className={cssClass({ padding: "11px 14px", textAlign: "center" })}>{t.carry_forward_limit}d</td>
                   <td className={cssClass({ padding: "11px 14px", textAlign: "center" })}>
                     <span className={cssClass({
-                      background: t.requires_proof ? "#eff6ff" : "#f3f4f6",
-                      color: t.requires_proof ? "#2563eb" : "#6b7280",
+                      background: t.requires_proof ? "#fff7ed" : "#f3f4f6",
+                      color: t.requires_proof ? "#e87500" : "#6b7280",
                       borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700,
                     })}>
                       {t.requires_proof ? "Yes" : "No"}

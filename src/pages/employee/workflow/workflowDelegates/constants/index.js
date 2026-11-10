@@ -9,7 +9,7 @@ export const WORKFLOWS = [
     label: "Leave Requests",
     desc: "Approve / reject employee leave applications",
     icon: <FileOutput size={18} />,
-    color: "#f18200",
+    color: "#e87500",
     bg: "#fff7ed",
   },
   {
@@ -17,8 +17,8 @@ export const WORKFLOWS = [
     label: "Attendance Regularization",
     desc: "Review and approve attendance correction requests",
     icon: <Clock size={18} />,
-    color: "#6366f1",
-    bg: "#eef2ff",
+    color: "#e87500",
+    bg: "#fff7ed",
   },
   {
     id: "timesheet",

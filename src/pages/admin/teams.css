@@ -107,9 +107,9 @@
   background: #fff7ed;
 }
 .teams-badge--sales {
-  color: #2563eb;
-  border-color: #93c5fd;
-  background: #eff6ff;
+  color: #e87500;
+  border-color: #fdba74;
+  background: #fff7ed;
 }
 .teams-badge--hr {
   color: #db2777;
@@ -117,8 +117,8 @@
   background: #fdf2f8;
 }
 .teams-badge--operations {
-  color: #0891b2;
-  border-color: #67e8f9;
+  color: #e87500;
+  border-color: #fdba74;
   background: #ecfeff;
 }
 .teams-badge--finance {

@@ -11,7 +11,7 @@ const StatusBadge = ({ s }) => {
     Sent:    { bg:"#dcfce7", text:"#16a34a", icon:<CheckCircle2 size={12} /> },
     Failed:  { bg:"#fee2e2", text:"#dc2626", icon:<AlertCircle size={12} /> },
     Pending: { bg:"#fef9c3", text:"#ca8a04", icon:<Clock size={12} /> },
-    Queued:  { bg:"#e0f2fe", text:"#0284c7", icon:<Clock size={12} /> },
+    Queued:  { bg:"#ffedd5", text:"#e87500", icon:<Clock size={12} /> },
   }[s] || { bg:"#f1f5f9", text:"#64748b", icon:null };
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
@@ -60,7 +60,7 @@ export default function EmailLogs() {
   };
   const totalPages = Math.max(1, Math.ceil(total / PER));
   const STAT_CARDS = [
-    { label:"Total Emails",   value:stats.total,   icon:<Inbox size={18} />,       color:"#f18200", bg:"#fff8f0" },
+    { label:"Total Emails",   value:stats.total,   icon:<Inbox size={18} />,       color:"#e87500", bg:"#fff8f0" },
     { label:"Sent",           value:stats.Sent,    icon:<CheckCircle2 size={18} />, color:"#16a34a", bg:"#dcfce7" },
     { label:"Failed",         value:stats.Failed,  icon:<AlertCircle size={18} />,  color:"#dc2626", bg:"#fee2e2" },
     { label:"Pending/Queue",  value:(stats.Pending||0)+(stats.Queued||0), icon:<Clock size={18} />, color:"#ca8a04", bg:"#fef9c3" },
@@ -73,7 +73,7 @@ export default function EmailLogs() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
-              <span className="text-[15px] font-bold text-[#f18200]">Email Log Details</span>
+              <span className="text-[15px] font-bold text-[#e87500]">Email Log Details</span>
               <button onClick={() => setViewRow(null)} className="text-[#94a3b8] hover:text-[#64748b]" aria-label="Close"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-3">
@@ -88,7 +88,7 @@ export default function EmailLogs() {
             </div>
             <div className="px-6 pb-5">
               <button onClick={() => setViewRow(null)}
-                className="w-full h-[38px] bg-[#f18200] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">Close</button>
+                className="w-full h-[38px] bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-bold">Close</button>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function EmailLogs() {
               {icon}
             </div>
             <div>
-              <div className="text-[20px] font-bold text-[#f18200]">{value ?? 0}</div>
+              <div className="text-[20px] font-bold text-[#e87500]">{value ?? 0}</div>
               <div className="text-[11px] text-[#94a3b8]">{label}</div>
             </div>
           </div>
@@ -114,14 +114,14 @@ export default function EmailLogs() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search recipient, subject…"
-              className="w-full pl-8 pr-3 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]" />
+              className="w-full pl-8 pr-3 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]" />
           </div>
           <select value={status} onChange={e => setStatus(e.target.value)}
-            className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+            className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
             {STATUS_OPTS.map(o => <option key={o}>{o}</option>)}
           </select>
           <select value={module} onChange={e => setModule(e.target.value)}
-            className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#f18200]">
+            className="h-[36px] px-3 border border-[#e2e8f0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-[#e87500]">
             {MODULE_OPTS.map(o => <option key={o}>{o}</option>)}
           </select>
           <button onClick={load} className="h-[36px] px-4 bg-[#f1f5f9] hover:bg-[#e2e8f0] rounded-lg text-[13px] font-medium flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function EmailLogs() {
       <div className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <Loader2 size={24} className="animate-spin text-[#f18200]" />
+            <Loader2 size={24} className="animate-spin text-[#e87500]" />
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-16 text-[#94a3b8] text-[13px]">No email logs found</div>

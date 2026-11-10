@@ -15,7 +15,7 @@ const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params, a
       borderRadius: 12, overflow: "hidden", marginBottom: 20,
     })}>
       <div className={cssClass({
-        background: "linear-gradient(135deg,#6366f1,#4f46e5)",
+        background: "linear-gradient(135deg,#e87500,#cf6900)",
         padding: "14px 18px", display: "flex",
         alignItems: "center", justifyContent: "space-between",
       })}>
@@ -84,16 +84,16 @@ const ManagerFeedback = React.memo(function ManagerFeedback({ ratings, params, a
                   </div>
                   <div>
                     <p className={cssClass({
-                      fontSize: 11, fontWeight: 700, color: "#6366f1",
+                      fontSize: 11, fontWeight: 700, color: "#e87500",
                       textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 5px",
                     })}>
                       Manager's Rating
                     </p>
-                    <StarDisplay value={r.manager_rating} color="#6366f1" />
+                    <StarDisplay value={r.manager_rating} color="#e87500" />
                     {r.manager_comments && (
                       <p className={cssClass({
-                        fontSize: 11, color: "#4338ca", margin: "5px 0 0", fontStyle: "italic",
-                        background: "#eef2ff", padding: "6px 10px", borderRadius: 6,
+                        fontSize: 11, color: "#9b4c00", margin: "5px 0 0", fontStyle: "italic",
+                        background: "#fff7ed", padding: "6px 10px", borderRadius: 6,
                       })}>
                         "{r.manager_comments}"
                       </p>

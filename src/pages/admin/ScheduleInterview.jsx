@@ -169,7 +169,7 @@ const ScheduleInterview = ({ candidate, onSave }) =>
                             <button data-cancel-button className="px-8 h-12 rounded-lg border font-semibold hover:bg-gray-100">
                                 Cancel
                             </button>
-                            <button className="px-8 h-12 rounded-lg bg-[#f18200] text-white font-semibold hover:bg-blue-700">
+                            <button className="px-8 h-12 rounded-lg bg-[#e87500] text-white font-semibold hover:bg-blue-700">
                                 Schedule Interview
                             </button>
                         </div>

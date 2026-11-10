@@ -351,11 +351,11 @@ export const ADMIN_LEAVE_MONTHLY_CHART = [
 { label: "May", sick: 8, earned: 14, casual: 6 },
 { label: "Jun", sick: 2, earned: 5, casual: 1 }];
 export const ADMIN_LEAVE_MONTHLY_SERIES = [
-{ key: "sick", name: "Sick Leave", color: "#3b82f6" },
+{ key: "sick", name: "Sick Leave", color: "#e87500" },
 { key: "earned", name: "Earned Leave", color: "#22c55e" },
 { key: "casual", name: "Casual Leave", color: "#8b5cf6" }];
 export const ADMIN_LEAVE_ON_LEAVE_TODAY_CHART = [
-{ label: "Sick Leave", value: 2, color: "#3b82f6" },
+{ label: "Sick Leave", value: 2, color: "#e87500" },
 { label: "Earned Leave", value: 3, color: "#22c55e" },
 { label: "Casual Leave", value: 1, color: "#8b5cf6" }];
 export const ADMIN_LEAVE_WEEKLY_OUT_CHART = [
@@ -365,7 +365,7 @@ export const ADMIN_LEAVE_WEEKLY_OUT_CHART = [
 { label: "Thu", out: 2, pending: 1 },
 { label: "Fri", out: 6, pending: 2 }];
 export const ADMIN_LEAVE_WEEKLY_OUT_SERIES = [
-{ key: "out", name: "On Leave", color: "#3b82f6" },
+{ key: "out", name: "On Leave", color: "#e87500" },
 { key: "pending", name: "Pending Requests", color: "#f97316" }];
 export const CALENDAR_PURPOSE =
 "Shows team staffing availability day-by-day. Dots are computed from approved leave — green means full coverage, yellow means a few people out, red means heavy absence. Use month arrows to plan ahead and click a date to see who is on leave.";

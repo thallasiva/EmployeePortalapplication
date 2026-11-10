@@ -13,7 +13,7 @@ const OverdueTasks = React.memo(function OverdueTasks({ overdueTasks }) {
         {overdueTasks.map((task, i) => (
           <div key={i} className="onboarding-overdue-item">
             <div>
-              <p className="font-semibold  text-[#f18200]">{task.title}</p>
+              <p className="font-semibold  text-[#e87500]">{task.title}</p>
               <p className="text-sm text-slate-500">
                 {task.owner} · Due Day {task.dueDays}
               </p>

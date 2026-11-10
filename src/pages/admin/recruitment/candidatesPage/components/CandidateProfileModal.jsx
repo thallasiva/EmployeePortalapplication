@@ -65,11 +65,11 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
           </div>
           <div className="text-right">
             <div className="text-[11px] text-gray-500">Candidate ID</div>
-            <div className="text-sm font-bold text-[#f18200]">{detail.candidate_code}</div>
+            <div className="text-sm font-bold text-[#e87500]">{detail.candidate_code}</div>
           </div>
         </div>
         {detail.job_title &&
-          <div className="px-3.5 py-2.5 bg-amber-50 rounded-lg mb-4 border-l-[3px] border-l-[#f18200]">
+          <div className="px-3.5 py-2.5 bg-amber-50 rounded-lg mb-4 border-l-[3px] border-l-[#e87500]">
             <div className="text-[11px] text-amber-800 font-semibold">APPLIED FOR</div>
             <div className="text-sm font-semibold text-gray-900">
               {detail.job_title} <span className="text-gray-500 font-normal">@ {detail.job_client}</span>

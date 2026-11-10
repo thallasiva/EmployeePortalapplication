@@ -13,7 +13,7 @@ function Modal({ title, onClose, onSave, onClear, children }) {
         boxShadow: "0 24px 64px rgba(0,0,0,0.22)", overflow: "hidden"
       })}>
         {}
-        <div className={cssClass({ height: 4, background: "linear-gradient(90deg,#f18200,#ffb347)" })} />
+        <div className={cssClass({ height: 4, background: "linear-gradient(90deg,#e87500,#ffb347)" })} />
         {}
         <div className={cssClass({ display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "16px 22px", borderBottom: "1px solid #f1f5f9" })}>
@@ -31,9 +31,9 @@ function Modal({ title, onClose, onSave, onClear, children }) {
         {}
         <div className={cssClass({ display: "flex", gap: 10, padding: "14px 22px", borderTop: "1px solid #f1f5f9", background: "#fafafa" })}>
           <button type="button" onClick={onSave} className={cssClass({
-            flex: 1, padding: "10px", background: "#f18200", color: "#fff", border: "none",
+            flex: 1, padding: "10px", background: "#e87500", color: "#fff", border: "none",
             borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer",
-            boxShadow: "0 2px 8px rgba(241,130,0,0.3)"
+            boxShadow: "0 2px 8px rgba(232,117,0,0.3)"
           })}>Save & Close</button>
           <button type="button" onClick={onClear} className={cssClass({
             padding: "10px 20px", background: "#fff", color: "#64748b",

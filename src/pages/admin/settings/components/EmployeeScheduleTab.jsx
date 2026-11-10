@@ -64,8 +64,8 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
                       key={d.id} type="button" onClick={() => toggleBulkDay(d.id)}
                       className={cssClass({
                         padding: "7px 13px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer",
-                        border: sel ? "1.5px solid #f18200" : "1px solid #e2e8f0",
-                        background: sel ? "#f18200" : "#fff",
+                        border: sel ? "1.5px solid #e87500" : "1px solid #e2e8f0",
+                        background: sel ? "#e87500" : "#fff",
                         color: sel ? "#fff" : "#64748b",
                       })}
                     >
@@ -108,7 +108,7 @@ const EmployeeScheduleTab = React.memo(function EmployeeScheduleTab({
         disabled={checkedEmps.size === 0 || bulkSaving}
         className={cssClass({
           alignSelf: "flex-start", padding: "10px 28px", borderRadius: 9, border: "none",
-          background: checkedEmps.size === 0 ? "#e2e8f0" : "#f18200",
+          background: checkedEmps.size === 0 ? "#e2e8f0" : "#e87500",
           color: checkedEmps.size === 0 ? "#94a3b8" : "#fff",
           fontSize: 13, fontWeight: 700, cursor: checkedEmps.size === 0 ? "not-allowed" : "pointer",
           display: "flex", alignItems: "center", gap: 6,

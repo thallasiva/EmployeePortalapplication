@@ -1,9 +1,28 @@
 /** @type {import('tailwindcss').Config} */
+const orangePalette = {
+  50: "#fff7ed",
+  100: "#ffedd5",
+  200: "#fed7aa",
+  300: "#fdba74",
+  400: "#fb923c",
+  500: "#e87500",
+  600: "#e87500",
+  700: "#cf6900",
+  800: "#9b4c00",
+  900: "#7c3d00",
+  950: "#431a03",
+};
+
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
+        // Map cool blue UI accents to the app's orange brand palette.
+        blue: orangePalette,
+        sky: orangePalette,
+        cyan: orangePalette,
+        indigo: orangePalette,
         brand: {
           DEFAULT: "#f18200",
           50:  "#fff8f0",
@@ -66,7 +85,7 @@ module.exports = {
         md:    "0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05)",
         lg:    "0 8px 24px rgba(0,0,0,.1),  0 2px 6px rgba(0,0,0,.06)",
         xl:    "0 16px 40px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.07)",
-        brand: "0 2px 12px rgba(241,130,0,.35)",
+        brand: "0 2px 12px rgba(232,117,0,.35)",
       },
       spacing: {
         4.5: "1.125rem",

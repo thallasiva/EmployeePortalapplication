@@ -50,7 +50,7 @@ function ManagerDashboard() {
           <div className="flex flex-wrap gap-3 py-2 px-0">
             {data.candidatePipeline.map(r => (
               <div key={r.status} className="py-2 px-4 rounded-lg bg-gray-50 border border-gray-200 min-w-[120px] text-center">
-                <div className="text-[22px] font-bold text-[#f18200]">{r.count}</div>
+                <div className="text-[22px] font-bold text-[#e87500]">{r.count}</div>
                 <div className="text-[12px] text-gray-500 mt-0.5">{r.status}</div>
               </div>
             ))}
@@ -75,8 +75,8 @@ function ManagerDashboard() {
                     <td className="py-2.5 px-3 text-gray-500 font-mono text-[12px]">{r.candidate_code}</td>
                     <td className="py-2.5 px-3 font-semibold text-gray-800">{r.candidate_name}</td>
                     <td className="py-2.5 px-3">
-                      <span className="inline-flex items-center gap-1.5 bg-orange-50 text-[#f18200] text-[11px] font-semibold px-2 py-0.5 rounded-full">
-                        <span className="w-4 h-4 rounded-full bg-[#f18200] text-white text-[9px] flex items-center justify-center font-bold">
+                      <span className="inline-flex items-center gap-1.5 bg-orange-50 text-[#e87500] text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                        <span className="w-4 h-4 rounded-full bg-[#e87500] text-white text-[9px] flex items-center justify-center font-bold">
                           {r.hr_name?.charAt(0) ?? "H"}
                         </span>
                         {r.hr_name}

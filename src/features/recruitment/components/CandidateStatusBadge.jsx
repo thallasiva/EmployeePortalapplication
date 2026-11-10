@@ -1,5 +1,5 @@
 const statusClasses = {
-  "Work in Progress": "bg-blue-100 text-[#f18200]",
+  "Work in Progress": "bg-blue-100 text-[#e87500]",
   "Schedule Interview": "bg-violet-100 text-violet-600",
   Shortlisted: "bg-sky-100 text-sky-700",
   "Offer Released": "bg-amber-100 text-amber-600",

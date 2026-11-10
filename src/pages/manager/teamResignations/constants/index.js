@@ -1,4 +1,4 @@
-export const BRAND = "#f18200";
+export const BRAND = "#e87500";
 export const STATUS_CFG = {
   pending:     { color: "#d97706", bg: "#fffbeb", border: "#fde68a", label: "Pending Review" },
   rm_approved: { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", label: "You Approved" },

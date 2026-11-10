@@ -3,17 +3,17 @@ const { sendMail } = require('./email.service');
 // Platform config per interviewType
 const PLATFORM = {
   Teams: {
-    color:      '#6264a7',
-    colorLight: '#eff6ff',
-    colorBorder:'#bfdbfe',
-    colorText:  '#1e40af',
+    color:      '#cf6900',
+    colorLight: '#fff7ed',
+    colorBorder:'#fed7aa',
+    colorText:  '#9b4c00',
     label:      'Microsoft Teams',
     icon:       '💼',
     btnLabel:   'Join Teams Meeting',
     modeLabel:  'Microsoft Teams (Online)',
   },
   GoogleMeet: {
-    color:      '#1a73e8',
+    color:      '#e87500',
     colorLight: '#f0fdf4',
     colorBorder:'#bbf7d0',
     colorText:  '#166534',
@@ -23,7 +23,7 @@ const PLATFORM = {
     modeLabel:  'Google Meet (Online)',
   },
   Zoom: {
-    color:      '#2d8cff',
+    color:      '#e87500',
     colorLight: '#fff7ed',
     colorBorder:'#fed7aa',
     colorText:  '#9a3412',

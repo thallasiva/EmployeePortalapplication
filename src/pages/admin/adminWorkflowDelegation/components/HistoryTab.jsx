@@ -4,7 +4,7 @@ import { fmtDate } from "../utils/formatters";
 import { SectionHead } from "./SharedUI";
 const TYPE_COLORS = {
   assign: { bg: "#dcfce7", color: "#16a34a" },
-  transfer: { bg: "#dbeafe", color: "#2563eb" },
+  transfer: { bg: "#ffedd5", color: "#e87500" },
   bulk_transfer: { bg: "#ede9fe", color: "#7c3aed" },
   delegation: { bg: "#fef3c7", color: "#d97706" },
 };

@@ -20,11 +20,11 @@ const AttendanceCard = React.memo(function AttendanceCard({
 }) {
   return (
     <div className={cssClass({
-      background: "#fff", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-      padding: 20, borderTop: "3px solid #f18200",
+      background: "#fff", borderRadius: 12, boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
+      padding: 12, border: "1px solid #e2e8f0",
     })}>
       <div className={cssClass({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 })}>
-        <span className={cssClass({ fontSize: 15, fontWeight: 700, color: "#1e293b" })}>Today's Attendance</span>
+        <span className={cssClass({ fontSize: 12, fontWeight: 700, color: "#1e293b" })}>Today's Attendance</span>
         {todayAtt?.status && (
           <span className={cssClass({
             fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 999,
@@ -33,17 +33,17 @@ const AttendanceCard = React.memo(function AttendanceCard({
           })}>{todayAtt.status}</span>
         )}
       </div>
-      <div className={cssClass({ fontSize: 11, color: "#94a3b8", marginBottom: 18 })}>{todayLabel}</div>
-      <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 })}>
+      <div className={cssClass({ fontSize: 9, color: "#94a3b8", marginBottom: 8 })}>{todayLabel}</div>
+      <div className={cssClass({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 8 })}>
         {/* Check In box */}
         <div className={cssClass({
-          background: checkIn ? "#f0fdf4" : "#f8fafc", borderRadius: 10, padding: "14px 12px",
+          background: checkIn ? "#f0fdf4" : "#f8fafc", borderRadius: 9, padding: "8px 5px",
           textAlign: "center", border: checkIn ? "1px solid #bbf7d0" : "1px solid #e2e8f0",
         })}>
-          <div className={cssClass({ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: checkIn ? "#16a34a" : "#94a3b8", marginBottom: 6 })}>
+          <div className={cssClass({ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: checkIn ? "#16a34a" : "#94a3b8", marginBottom: 3 })}>
             Check In
           </div>
-          <div className={cssClass({ fontSize: 22, fontWeight: 800, color: checkIn ? "#15803d" : "#cbd5e1", letterSpacing: "-0.02em" })}>
+          <div className={cssClass({ fontSize: 16, fontWeight: 800, color: checkIn ? "#15803d" : "#cbd5e1", letterSpacing: "-0.02em" })}>
             {loading ? "…" : checkIn ? fmtTime(checkIn) : "—"}
           </div>
           {checkIn && (
@@ -62,19 +62,19 @@ const AttendanceCard = React.memo(function AttendanceCard({
         </div>
         {/* Check Out box */}
         <div className={cssClass({
-          background: checkOut ? "#fff8f0" : "#f8fafc", borderRadius: 10, padding: "14px 12px",
+          background: checkOut ? "#fff8f0" : "#f8fafc", borderRadius: 9, padding: "8px 5px",
           textAlign: "center", border: checkOut ? "1px solid #fde8c8" : "1px solid #e2e8f0",
         })}>
-          <div className={cssClass({ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: checkOut ? "#f18200" : "#94a3b8", marginBottom: 6 })}>
+          <div className={cssClass({ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: checkOut ? "#e87500" : "#94a3b8", marginBottom: 3 })}>
             Check Out
           </div>
-          <div className={cssClass({ fontSize: 22, fontWeight: 800, color: checkOut ? "#e07000" : "#cbd5e1", letterSpacing: "-0.02em" })}>
+          <div className={cssClass({ fontSize: 16, fontWeight: 800, color: checkOut ? "#e87500" : "#cbd5e1", letterSpacing: "-0.02em" })}>
             {loading ? "…" : checkOut ? fmtTime(checkOut) : "—"}
           </div>
           {checkOut && (
-            <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#f18200", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 })}>
+            <div className={cssClass({ marginTop: 4, fontSize: 10, color: "#e87500", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 })}>
               <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f18200", display: "inline-block" }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#e87500", display: "inline-block" }} />
                 Recorded
               </div>
               {(checkoutLocation || todayAtt?.checkout_location) && (
@@ -87,24 +87,24 @@ const AttendanceCard = React.memo(function AttendanceCard({
         </div>
       </div>
       {(elapsed || workHours) && (
-        <div className="flex items-center justify-between bg-purple-50 rounded-lg px-3.5 py-2 mb-3.5">
-          <span className="text-xs text-purple-700 font-semibold">
+        <div className="flex items-center justify-between bg-orange-50 rounded-lg px-2.5 py-1.5 mb-2">
+          <span className="text-[10px] text-[#e87500] font-semibold">
             {elapsed && !checkOut ? "Time Elapsed" : "Work Duration"}
           </span>
-          <span className="text-base font-extrabold text-purple-800 tabular-nums">
+          <span className="text-xs font-extrabold text-[#e87500] tabular-nums">
             {elapsed && !checkOut ? elapsed : workHours}
           </span>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-1.5">
         <button
           onClick={handleCheckIn}
           disabled={(!!checkIn && !onBreak) || checkingIn || loading}
-          className={`h-10 rounded-lg text-sm font-bold border-0 transition-all ${
+          className={`h-8 rounded-lg text-[10px] font-bold border-0 transition-all ${
             checkIn && !onBreak
               ? "bg-slate-100 text-slate-400 cursor-not-allowed"
               : onBreak
-              ? "bg-[#f18200] text-white cursor-pointer hover:bg-blue-700"
+              ? "bg-[#e87500] text-white cursor-pointer hover:bg-blue-700"
               : "bg-green-600 text-white cursor-pointer hover:bg-green-700"
           }`}
         >
@@ -113,12 +113,12 @@ const AttendanceCard = React.memo(function AttendanceCard({
         <button
           onClick={handleCheckOut}
           disabled={!checkIn || onBreak || checkingOut || loading}
-          className={`h-10 rounded-lg text-sm font-bold border-0 transition-all ${
+          className={`h-8 rounded-lg text-[10px] font-bold border-0 transition-all ${
             onBreak
               ? "bg-amber-100 text-amber-500 cursor-not-allowed"
               : !checkIn
               ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-              : "bg-[#f18200] text-white cursor-pointer hover:bg-orange-600"
+              : "bg-[#e87500] text-white cursor-pointer hover:bg-orange-600"
           }`}
         >
           {checkingOut ? "…" : onBreak ? <span className="inline-flex items-center gap-1"><Pause size={13} /> On Break</span> : "Check Out"}

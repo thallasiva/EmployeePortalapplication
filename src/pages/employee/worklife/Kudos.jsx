@@ -65,7 +65,7 @@ const lastRecognisedBadge = (value) => {
 const TeamTable = ({ team, onKudos, onFeedback }) => {
   if (!team) return <Loading />;
   if (team.length === 0) {
-    return <EmptyState icon={<Users className="text-[#f18200]" />} title="No direct reports" text="People who report to you will appear here." />;
+    return <EmptyState icon={<Users className="text-[#e87500]" />} title="No direct reports" text="People who report to you will appear here." />;
   }
   return (
     <div className="overflow-x-auto">
@@ -158,7 +158,7 @@ const Kudos = () => {
       }
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold  text-[#f18200]">Kudos &amp; Recognition</h1>
+          <h1 className="text-2xl font-bold  text-[#e87500]">Kudos &amp; Recognition</h1>
           <p className="text-slate-500 mt-1 text-sm">
             {isManager ? "Recognise your team and see who has not been appreciated lately." :
             isHr ? "Celebrate great work across the organisation." :
@@ -174,7 +174,7 @@ const Kudos = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={<Heart size={22} className="text-rose-500" />} label="Received" value={summary?.kudos_received} accent="bg-rose-50" />
-        <StatCard icon={<Zap size={22} className="text-[#f18200]" />} label="Given" value={summary?.kudos_given} />
+        <StatCard icon={<Zap size={22} className="text-[#e87500]" />} label="Given" value={summary?.kudos_given} />
         <StatCard icon={<Award size={22} className="text-amber-500" />} label="This month" value={summary?.kudos_this_month} hint="Received" accent="bg-amber-50" />
         {isManager ?
         <StatCard icon={<Users size={22} className="text-blue-600" />} label="Team members" value={summary?.team_size} accent="bg-blue-50" /> :
@@ -204,28 +204,28 @@ const Kudos = () => {
               key={`r${refreshKey}`}
               params={{ scope: "received" }}
               perspective="received"
-              empty={<EmptyState icon={<Award className="text-[#f18200]" />} title="No kudos yet" text="When teammates recognise your work, it will show up here." />} />
+              empty={<EmptyState icon={<Award className="text-[#e87500]" />} title="No kudos yet" text="When teammates recognise your work, it will show up here." />} />
             }
             {tab === "sent" &&
             <KudosFeed
               key={`s${refreshKey}`}
               params={{ scope: "sent" }}
               perspective="sent"
-              empty={<EmptyState icon={<Send className="text-[#f18200]" />} title="You haven't given kudos yet" text="A quick thank-you goes a long way." action={giveButton} />} />
+              empty={<EmptyState icon={<Send className="text-[#e87500]" />} title="You haven't given kudos yet" text="A quick thank-you goes a long way." action={giveButton} />} />
             }
             {tab === "wall" &&
             <KudosFeed
               key={`w${refreshKey}`}
               params={{ scope: "wall", category_id: wallCategory || undefined, department_id: wallDepartment || undefined }}
               perspective="wall"
-              empty={<EmptyState icon={<Trophy className="text-[#f18200]" />} title="The wall is empty" text="Public kudos from everyone appear here." action={giveButton} />} />
+              empty={<EmptyState icon={<Trophy className="text-[#e87500]" />} title="The wall is empty" text="Public kudos from everyone appear here." action={giveButton} />} />
             }
             {tab === "teamKudos" &&
             <KudosFeed
               key={`t${refreshKey}`}
               params={{ scope: "team" }}
               perspective="wall"
-              empty={<EmptyState icon={<Users className="text-[#f18200]" />} title="No kudos for your team yet" action={giveButton} />} />
+              empty={<EmptyState icon={<Users className="text-[#e87500]" />} title="No kudos for your team yet" action={giveButton} />} />
             }
             {tab === "team" &&
             <TeamTable
@@ -237,7 +237,7 @@ const Kudos = () => {
         </section>
         <aside className="space-y-5">
           <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <h2 className="text-base font-bold  text-[#f18200] mb-3">You were recognised for</h2>
+            <h2 className="text-base font-bold  text-[#e87500] mb-3">You were recognised for</h2>
             {!summary?.by_category?.length ?
             <p className="text-sm text-slate-500">No kudos received yet.</p> :
             <ul className="space-y-3">
@@ -253,7 +253,7 @@ const Kudos = () => {
             }
           </section>
           <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <h2 className="text-base font-bold  text-[#f18200] mb-3">Most recognised · 3 months</h2>
+            <h2 className="text-base font-bold  text-[#e87500] mb-3">Most recognised · 3 months</h2>
             {top.length === 0 ?
             <p className="text-sm text-slate-500">No kudos in the last 3 months.</p> :
             <ol className="space-y-3">

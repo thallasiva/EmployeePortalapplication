@@ -255,7 +255,7 @@ function PerformanceShowcaseContent()
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-500">React performance showcase</p>
-              <h1 className="mt-2 text-3xl font-bold  text-[#f18200]">A practical demo of modern React performance patterns</h1>
+              <h1 className="mt-2 text-3xl font-bold  text-[#e87500]">A practical demo of modern React performance patterns</h1>
               <p className="mt-3 max-w-3xl text-sm text-slate-600">
                 This page brings together lazy loading, memoization, context, throttling, debouncing, virtualization, profiling, and error handling in one place.
               </p>

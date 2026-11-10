@@ -20,7 +20,7 @@ const PersonalSection = React.memo(function PersonalSection({ e, ci, revealed, t
             <Grid cols={3}>
               <Field label="Name"              value={emp_name} />
               <Field label="Employee ID"       value={e.emp_code} />
-              <Field label="Company Email"     value={e.email} color="#f18200" />
+              <Field label="Company Email"     value={e.email} color="#e87500" />
               <Field label="Location"          value={e.location} />
               <Field label="Primary Contact No." value={e.mobile} masked show={revealed.mobile} onToggle={() => toggle("mobile")} />
               <Field label="Extension"         value={null} />

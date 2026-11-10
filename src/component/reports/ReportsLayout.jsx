@@ -83,7 +83,7 @@ function getInitials(name) {
   .toUpperCase();
 }
 function getAvatarColor(name) {
-  const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#3b82f6"];
+  const colors = ["#e87500", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6", "#e87500"];
   let hash = 0;
   for (let i = 0; i < name.length; i += 1) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);

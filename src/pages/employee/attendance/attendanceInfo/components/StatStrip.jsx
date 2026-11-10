@@ -5,7 +5,7 @@ const CARDS = [
   { key: "absent",   label: "Absent",     icon: UserX,       iconColor: "text-red-500",    iconBg: "bg-red-100",    valColor: "text-red-600"    },
   { key: "late",     label: "Late Days",  icon: Clock4,      iconColor: "text-amber-600",  iconBg: "bg-amber-100",  valColor: "text-amber-700"  },
   { key: "leave",    label: "On Leave",   icon: CalendarOff, iconColor: "text-purple-600", iconBg: "bg-purple-100", valColor: "text-purple-700" },
-  { key: "avgWork",  label: "Avg Hours",  icon: Timer,       iconColor: "text-[#f18200]",  iconBg: "bg-orange-100", valColor: "text-[#f18200]"  },
+  { key: "avgWork",  label: "Avg Hours",  icon: Timer,       iconColor: "text-[#e87500]",  iconBg: "bg-orange-100", valColor: "text-[#e87500]"  },
   { key: "workdays", label: "Work Days",  icon: Briefcase,   iconColor: "text-slate-600",  iconBg: "bg-slate-200",  valColor: "text-slate-800"  },
 ];
 export default function StatStrip({ loading, dayMap, summary }) {

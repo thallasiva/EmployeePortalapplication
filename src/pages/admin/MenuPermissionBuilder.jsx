@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Save, Shield, Check, ChevronRight, ChevronDown, Users, Loader2, LayoutDashboard, ClipboardList, UserPlus, User, Clock, TreePalm, FilePen, ChartColumn, Tag, Timer, Wallet, TrendingUp, FileText, Download, CircleCheck, Target, Briefcase, MessagesSquare, Star, FileStack, FolderOpen, Ticket, Rocket, Link2, Building2, BriefcaseBusiness, Forward, ShieldCheck, Settings, Wrench, Mail, Bell, Palette, Lock } from "lucide-react";
 import { menuPermissionsApi } from "../../api/settings.api";
 import { bustMenuPermissionsCache } from "../../hooks/useMenuPermissions";
-const BRAND = "#f18200";
+const BRAND = "#e87500";
 const ROLES = ["Admin", "HR Manager", "Manager", "Employee", "Recruiter", "Finance"];
-const ROLE_COLORS = ["#f18200", "#6366f1", "#8b5cf6", "#10b981", "#3b82f6", "#64748b"];
+const ROLE_COLORS = ["#e87500", "#e87500", "#8b5cf6", "#10b981", "#e87500", "#64748b"];
 const MENU_TREE = [
   { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={16} />, children: [] },
   {
@@ -117,7 +117,7 @@ export default function MenuPermissionBuilder() {
   }, []);
   if (loading) return (
     <div className="flex items-center justify-center h-40">
-      <Loader2 size={24} className="animate-spin" style={{color:"#f18200"}} />
+      <Loader2 size={24} className="animate-spin" style={{color:"#e87500"}} />
     </div>
   );
   const toggle = (id) =>
@@ -172,12 +172,12 @@ export default function MenuPermissionBuilder() {
             <Shield size={18} color={BRAND} />
           </div>
           <div>
-            <h1 className="text-[20px] font-bold text-[#f18200]">Menu Permission Builder</h1>
+            <h1 className="text-[20px] font-bold text-[#e87500]">Menu Permission Builder</h1>
             <p className="text-[13px] text-[#94a3b8]">Control which menu items each role can access</p>
           </div>
         </div>
         <button onClick={handleSave} disabled={!dirty}
-          className={`flex items-center gap-2 h-[38px] px-5 rounded-lg text-[13px] font-bold transition-colors ${dirty ? "bg-[#f18200] hover:bg-[#e07000] text-white" : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"}`}>
+          className={`flex items-center gap-2 h-[38px] px-5 rounded-lg text-[13px] font-bold transition-colors ${dirty ? "bg-[#e87500] hover:bg-[#e07000] text-white" : "bg-[#e2e8f0] text-[#94a3b8] cursor-not-allowed"}`}>
           <Save size={15} /> Save Changes
         </button>
       </div>
@@ -188,14 +188,14 @@ export default function MenuPermissionBuilder() {
           {ROLES.map((role, ri) => (
             <button key={role} onClick={() => setActiveRole(role)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left ${activeRole === role
-                ? "border-[#f18200] bg-[#fff8f0] shadow-sm"
-                : "border-[#e2e8f0] bg-white hover:border-[#f18200]/30"}`}>
+                ? "border-[#e87500] bg-[#fff8f0] shadow-sm"
+                : "border-[#e2e8f0] bg-white hover:border-[#e87500]/30"}`}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[12px] font-bold shrink-0"
                 style={{ background: ROLE_COLORS[ri] }}>
                 {role[0]}
               </div>
               <div className="min-w-0">
-                <p className={`text-[13px] font-bold ${activeRole === role ? "text-[#f18200]" : "text-[#1e293b]"}`}>{role}</p>
+                <p className={`text-[13px] font-bold ${activeRole === role ? "text-[#e87500]" : "text-[#1e293b]"}`}>{role}</p>
                 <p className="text-[10px] text-[#94a3b8]">{countEnabled(role)} items enabled</p>
               </div>
             </button>
@@ -210,7 +210,7 @@ export default function MenuPermissionBuilder() {
                 style={{ background: ROLE_COLORS[ROLES.indexOf(activeRole)] }}>
                 {activeRole[0]}
               </div>
-              <span className="text-[15px] font-bold text-[#f18200]">{activeRole} — Menu Access</span>
+              <span className="text-[15px] font-bold text-[#e87500]">{activeRole} — Menu Access</span>
             </div>
             <div className="flex gap-2">
               <button onClick={() => toggleAll(true)}
@@ -237,7 +237,7 @@ export default function MenuPermissionBuilder() {
                   <div className={`flex items-center gap-4 px-5 py-3.5 hover:bg-[#fafbff] transition-colors ${parentOn || allChildOn ? "" : "opacity-50"}`}>
                     {hasChildren ? (
                       <button onClick={() => setExpanded(p => ({ ...p, [menu.id]: !p[menu.id] }))}
-                        className="text-[#94a3b8] hover:text-[#f18200]">
+                        className="text-[#94a3b8] hover:text-[#e87500]">
                         {isExp ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                       </button>
                     ) : <div className="w-[14px]" />}
@@ -248,7 +248,7 @@ export default function MenuPermissionBuilder() {
                     )}
                     {/* Toggle */}
                     <button onClick={() => hasChildren ? toggleParent(menu) : toggle(menu.id)}
-                      className={`w-11 h-6 rounded-full transition-all relative flex-shrink-0 ${(hasChildren ? (allChildOn && parentOn) : parentOn) ? "bg-[#f18200]" : "bg-[#e2e8f0]"}`}>
+                      className={`w-11 h-6 rounded-full transition-all relative flex-shrink-0 ${(hasChildren ? (allChildOn && parentOn) : parentOn) ? "bg-[#e87500]" : "bg-[#e2e8f0]"}`}>
                       <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${(hasChildren ? (allChildOn && parentOn) : parentOn) ? "translate-x-[22px]" : "translate-x-0.5"}`} />
                     </button>
                   </div>
@@ -260,7 +260,7 @@ export default function MenuPermissionBuilder() {
                           <span className="text-slate-400 flex">{child.icon}</span>
                           <span className="text-[12px] font-medium text-[#374151] flex-1">{child.label}</span>
                           <button onClick={() => toggle(child.id)}
-                            className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0 ${perms[activeRole]?.[child.id] ? "bg-[#f18200]" : "bg-[#e2e8f0]"}`}>
+                            className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0 ${perms[activeRole]?.[child.id] ? "bg-[#e87500]" : "bg-[#e2e8f0]"}`}>
                             <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${perms[activeRole]?.[child.id] ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                           </button>
                         </div>

@@ -84,7 +84,7 @@ const RecruiterTeamAttendance = () => {
                     <tr key={m.attendance_id || i}>
                       <td>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-[#f18200] flex items-center justify-center text-xs font-bold flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-[#e87500] flex items-center justify-center text-xs font-bold flex-shrink-0">
                             {getInitials(m.employee_name)}
                           </div>
                           <div>

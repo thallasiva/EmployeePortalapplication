@@ -21,7 +21,7 @@ function StatusBanner({ declaration, status, onEditResubmit }) {
           </p>
         )}
         {status === "rejected" && (
-          <button onClick={onEditResubmit} className={cssClass({ marginTop: 8, fontSize: 12, color: "#f18200", background: "none", border: "1px solid #f18200", borderRadius: 6, padding: "4px 12px", cursor: "pointer" })}>
+          <button onClick={onEditResubmit} className={cssClass({ marginTop: 8, fontSize: 12, color: "#e87500", background: "none", border: "1px solid #e87500", borderRadius: 6, padding: "4px 12px", cursor: "pointer" })}>
             Edit & Resubmit
           </button>
         )}

@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-export const BRAND = "#f18200";
+export const BRAND = "#e87500";
 export const baseInp = (hasErr) => ({
   border: `1px solid ${hasErr ? "#dc2626" : "#d1d5db"}`,
   borderRadius: 7,

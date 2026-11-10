@@ -28,7 +28,7 @@ const STEP_STATUS_CLS = {
   Pending: "bg-red-100 text-red-600",
   "In Progress": "bg-amber-100 text-amber-600",
   Completed: "bg-emerald-100 text-emerald-600",
-  Nominated: "bg-blue-100 text-[#f18200]",
+  Nominated: "bg-blue-100 text-[#e87500]",
   Confirmed: "bg-emerald-100 text-emerald-600",
   Submitted: "bg-violet-100 text-violet-600",
   Approved: "bg-emerald-100 text-emerald-600"
@@ -206,13 +206,13 @@ export default function OnboardingPage({ role })
             <div className="mb-4">
               <div className="flex justify-between text-[12px] text-gray-500 mb-1.5">
                 <span>Onboarding Progress</span>
-                <span className={`font-bold ${completedSteps === totalSteps ? "text-emerald-600" : "text-[#f18200]"}`}>
+                <span className={`font-bold ${completedSteps === totalSteps ? "text-emerald-600" : "text-[#e87500]"}`}>
                   {completedSteps}/{totalSteps} steps
                 </span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-400 ${completedSteps === totalSteps ? "bg-emerald-500" : "bg-[#f18200]"}`}
+                  className={`h-full rounded-full transition-all duration-400 ${completedSteps === totalSteps ? "bg-emerald-500" : "bg-[#e87500]"}`}
                   style={{ width: `${completedSteps / totalSteps * 100}%` }} />
               </div>
             </div>
@@ -275,11 +275,11 @@ export default function OnboardingPage({ role })
                   <DetailRow label="Effective Date" value={detail.effective_date?.slice(0, 10) || "—"} />
                 </div>
                 {detail.ctc ?
-                  <div className="px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#f18200]">
+                  <div className="px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#e87500]">
                     <div className="text-[12px] font-bold text-[#92400e] mb-2.5">OFFER DETAILS</div>
                     <div className="flex justify-between py-1.5 border-b border-gray-100">
                       <span className="text-[13px] text-gray-500">Cost to Company</span>
-                      <span className="text-[13px] font-bold text-[#f18200]">{fmt(detail.ctc)}</span>
+                      <span className="text-[13px] font-bold text-[#e87500]">{fmt(detail.ctc)}</span>
                     </div>
                     {detail.ctc_in_words &&
                       <div className="mt-2 text-[12px] text-amber-900 italic">

@@ -3,7 +3,7 @@ export const BADGE_COLORS = {
   green: "bg-green-100 text-green-700",
   red: "bg-red-100 text-red-700",
   yellow: "bg-yellow-100 text-yellow-800",
-  blue: "bg-blue-100 text-[#f18200]",
+  blue: "bg-blue-100 text-[#e87500]",
   gray: "bg-gray-100 text-gray-600",
   orange: "bg-orange-100 text-orange-700",
   purple: "bg-purple-100 text-purple-700",

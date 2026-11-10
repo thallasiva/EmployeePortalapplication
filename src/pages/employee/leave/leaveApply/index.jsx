@@ -1,4 +1,5 @@
 import React from "react";
+import { CalendarDays } from "lucide-react";
 import { getLeaveColor } from "./utils";
 import useLeaveApply from "./hooks/useLeaveApply";
 import BalanceCard from "./components/BalanceCard";
@@ -51,19 +52,20 @@ export default function LeaveApply() {
   } = useLeaveApply();
   const tabs = TABS(pendingRequests.length);
   return (
-    <div className="min-h-screen  ">
+    <div className="space-y-4 rounded-2xl bg-slate-50 p-3 sm:p-5">
       {/* Page header */}
-      <div className="px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-[20px] font-bold text-[#1f2937]">Leave</h1>
-          <p className="text-[13px] text-[#94a3b8] mt-0.5">
+      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white"><CalendarDays size={20} /></span>
+          <div><h1 className="text-xl font-bold text-slate-950">Apply Leave</h1>
+          <p className="mt-0.5 text-sm text-slate-500">
             Manage your leave requests and view your calendar
-          </p>
+          </p></div>
         </div>
       </div>
       {/* Balance cards */}
       {balances.length > 0 && (
-        <div className="px-6 pb-4 flex gap-3 overflow-x-auto pb-2">
+        <div className="grid grid-cols-2 gap-3 pb-1 sm:grid-cols-2 xl:grid-cols-4">
           {balances.map((b, idx) => (
             <BalanceCard
               key={b.leave_type_id}
@@ -76,15 +78,15 @@ export default function LeaveApply() {
         </div>
       )}
       {/* Tab switcher */}
-      <div className="px-6">
-        <div className="flex gap-1 bg-white rounded-xl border border-[#e8eef5] p-1 w-fit">
+      <div>
+        <div className="flex w-fit gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
           {tabs.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
               className={`px-5 h-[38px] rounded-lg text-[13px] font-medium transition-all ${
                 activeTab === key
-                  ? "bg-[#f18200] text-white shadow-sm"
+                  ? "bg-[#e87500] text-white shadow-sm"
                   : "text-[#64748b] hover:text-[#1f2937]"
               }`}
             >
@@ -94,7 +96,7 @@ export default function LeaveApply() {
         </div>
       </div>
       {/* Tab content */}
-      <div className="p-6 pt-4">
+      <div className="pt-1">
         {activeTab === "apply" && (
           <LeaveApplyForm
             leaveTypes={leaveTypes}

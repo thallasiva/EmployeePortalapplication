@@ -16,11 +16,11 @@ const OooQuickSet = React.memo(function OooQuickSet({
       <div className={cssClass({ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 200 })}>
         <div
           className={cssClass({
-            width: 38, height: 38, borderRadius: 8, background: "#eff6ff",
+            width: 38, height: 38, borderRadius: 8, background: "#fff7ed",
             display: "flex", alignItems: "center", justifyContent: "center",
           })}
         >
-          <Calendar size={18} className={cssClass({ color: "#3b82f6" })} />
+          <Calendar size={18} className={cssClass({ color: "#e87500" })} />
         </div>
         <div>
           <p className={cssClass({ fontSize: 13, fontWeight: 700, color: "#1e293b", margin: 0 })}>
@@ -53,7 +53,7 @@ const OooQuickSet = React.memo(function OooQuickSet({
           className={cssClass({
             height: 34, padding: "0 14px", borderRadius: 8, fontSize: 12, fontWeight: 600,
             border: "none", cursor: !canApply ? "not-allowed" : "pointer",
-            background: !canApply ? "#f1f5f9" : "#f18200",
+            background: !canApply ? "#f1f5f9" : "#e87500",
             color: !canApply ? "#94a3b8" : "#fff",
             transition: "background 0.15s",
           })}

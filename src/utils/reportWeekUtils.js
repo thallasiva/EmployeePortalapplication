@@ -186,7 +186,7 @@ export function buildWeekStats(summary) {
       label: "Total Leave Taken",
       value: summary.leave,
       icon: "leave",
-      color: "#3b82f6",
+      color: "#e87500",
       trend: "Current selected week",
     },
     {

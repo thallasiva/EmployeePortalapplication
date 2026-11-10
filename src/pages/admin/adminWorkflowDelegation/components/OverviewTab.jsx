@@ -27,8 +27,8 @@ const OverviewTab = React.memo(function OverviewTab({
     <div>
       {/* Stats row */}
       <div className={cssClass({ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 })}>
-        <StatCard icon={Users} label="Total Employees" value={stats?.total_employees} color="#3b82f6" />
-        <StatCard icon={UserCheck} label="Total Managers" value={stats?.total_managers} color="#f18200" />
+        <StatCard icon={Users} label="Total Employees" value={stats?.total_employees} color="#e87500" />
+        <StatCard icon={UserCheck} label="Total Managers" value={stats?.total_managers} color="#e87500" />
         <StatCard
           icon={AlertTriangle} label="Without Manager" value={stats?.without_manager} color="#f59e0b"
           sub={stats?.without_manager > 0 ? "Needs attention" : undefined}

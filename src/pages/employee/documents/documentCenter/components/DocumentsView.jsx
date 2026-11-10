@@ -48,7 +48,7 @@ const DocumentsView = React.memo(function DocumentsView({
                   {item.url &&
                     <div className="flex gap-1 shrink-0">
                       <a href={docFileUrl(item.url)} target="_blank" rel="noopener noreferrer"
-                        className="border border-[#dfe5ed] h-7 px-2 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#5a78ad]">
+                        className="border border-[#dfe5ed] h-7 px-2 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#cf6900]">
                         <Search size={12} /> View
                       </a>
                       <a href={docFileUrl(item.url)} download
@@ -99,7 +99,7 @@ const DocumentsView = React.memo(function DocumentsView({
                       {docs.map((doc) => (
                         <div key={doc.document_id} className="flex items-center justify-between border border-[#e8edf3] rounded px-3 py-2 bg-[#fafbfc]">
                           <div className="flex items-center gap-2 min-w-0">
-                            <FileText size={14} className="text-[#8b9fc0] shrink-0" />
+                            <FileText size={14} className="text-[#fdba74] shrink-0" />
                             <div className="min-w-0">
                               <p className="text-[13px] font-medium text-[#3a4558] truncate">{doc.title}</p>
                               {doc.description && <p className="text-[11px] text-[#9ca8b8] truncate">{doc.description}</p>}
@@ -110,7 +110,7 @@ const DocumentsView = React.memo(function DocumentsView({
                           </div>
                           <div className="flex gap-2 shrink-0 ml-3">
                             <a href={docFileUrl(doc.file_url)} target="_blank" rel="noopener noreferrer"
-                              className="border border-[#dfe5ed] h-7 px-3 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#5a78ad]" title="View document">
+                              className="border border-[#dfe5ed] h-7 px-3 text-[12px] inline-flex items-center gap-1 hover:bg-[#f0f4f9] text-[#cf6900]" title="View document">
                               <Search size={12} /> View
                             </a>
                             <a href={docFileUrl(doc.file_url)} download

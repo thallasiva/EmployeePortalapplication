@@ -1,6 +1,6 @@
 import { REQUIRED_FIELDS } from "../constants";
 export function scoreTextCls(v) {
-  return v >= 80 ? "text-green-600" : v >= 65 ? "text-[#f18200]" : v >= 45 ? "text-amber-600" : "text-red-600";
+  return v >= 80 ? "text-green-600" : v >= 65 ? "text-[#e87500]" : v >= 45 ? "text-amber-600" : "text-red-600";
 }
 export function scoreBgCls(v) {
   return v >= 80 ? "bg-green-600" : v >= 65 ? "bg-blue-700" : v >= 45 ? "bg-amber-600" : "bg-red-600";

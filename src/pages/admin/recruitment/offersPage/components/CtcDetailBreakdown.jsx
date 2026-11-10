@@ -3,8 +3,8 @@ import CtcTableRow from "./CtcTableRow";
 import { fmt, fmtM } from "../utils/ctcUtils";
 const CtcDetailBreakdown = React.memo(function CtcDetailBreakdown({ d }) {
   return (
-    <div className="mt-3.5 px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#f18200]">
-      <div className="grid grid-cols-3 pb-1.5 mb-1 border-b-2 border-[#f18200]">
+    <div className="mt-3.5 px-3.5 py-3.5 bg-[#fff7ed] rounded-lg border-l-[3px] border-[#e87500]">
+      <div className="grid grid-cols-3 pb-1.5 mb-1 border-b-2 border-[#e87500]">
         <span className="text-[11px] font-bold text-[#92400e] uppercase">Components</span>
         <span className="text-[11px] font-bold text-[#92400e] uppercase text-right">Monthly</span>
         <span className="text-[11px] font-bold text-[#92400e] uppercase text-right">Annual</span>

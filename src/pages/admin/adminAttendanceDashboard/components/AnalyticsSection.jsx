@@ -7,7 +7,7 @@ const SERIES = [
   { key: "present", name: "Present", color: "#22c55e" },
   { key: "absent", name: "Absent", color: "#f472b6" },
 ];
-const DEPARTMENT_COLORS = ["#22c55e", "#f97316", "#3b82f6", "#8b5cf6", "#14b8a6"];
+const DEPARTMENT_COLORS = ["#22c55e", "#f97316", "#e87500", "#8b5cf6", "#14b8a6"];
 const AnalyticsSection = React.memo(function AnalyticsSection({ statusChart, summary, analytics }) {
   const nineHourItems = (analytics?.nineHourByDepartment || []).map((item, index) => ({
     ...item,
