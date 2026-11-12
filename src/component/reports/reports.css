@@ -111,6 +111,9 @@
   border-radius: 0.75rem;
   padding: 1rem 1.125rem;
 }
+@media (max-width: 480px) {
+  .report-stats-grid { grid-template-columns: 1fr; }
+}
 .report-stat-card__label {
   margin: 0;
   font-size: 0.8125rem;

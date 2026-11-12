@@ -89,6 +89,24 @@ export function cssClass(style)
   if (sheet)
   {
     sheet.insertRule(`.${className}{${rules}}`, sheet.cssRules.length);
+    const columns = style.gridTemplateColumns;
+    if (typeof columns === "string")
+    {
+      const repeatedColumns = columns.match(/^\s*repeat\((\d+),/);
+      const hasTwoFixedColumns = /^\s*1fr\s+(?:1fr|2fr)(?:\s|$)/.test(columns);
+      if (repeatedColumns && Number(repeatedColumns[1]) >= 2)
+      {
+        if (Number(repeatedColumns[1]) >= 3)
+        {
+          sheet.insertRule(`@media (max-width: 639px){.${className}{grid-template-columns:repeat(2,minmax(0,1fr)) !important}}`, sheet.cssRules.length);
+        }
+        sheet.insertRule(`@media (max-width: 380px){.${className}{grid-template-columns:minmax(0,1fr) !important}}`, sheet.cssRules.length);
+      }
+      else if (hasTwoFixedColumns)
+      {
+        sheet.insertRule(`@media (max-width: 639px){.${className}{grid-template-columns:minmax(0,1fr) !important}}`, sheet.cssRules.length);
+      }
+    }
   }
   return className;
 }

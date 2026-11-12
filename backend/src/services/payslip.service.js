@@ -247,12 +247,6 @@ class PayslipService extends BaseService {
     }
     return this.getDetails(payslipId);
   }
-  async markPaid(id) {
-    const exists = await this.existsById(id);
-    if (!exists) throw ApiError.notFound('Payslip not found');
-    await callProcedure('sp_mark_payslip_paid(?)', [id]);
-    return this.getDetails(id);
-  }
   async generateAllAndNotify({ month, year }) {
     const results = await callProcedure('sp_get_active_employees_basic()');
     const employees = results[0] ?? [];

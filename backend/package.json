@@ -17,7 +17,11 @@
     "db:migrate:062": "node src/database/runSql.js migration_062_payroll_configuration_versions.sql",
     "db:migrate:063": "node src/database/runSql.js migration_063_training_assets.sql",
     "db:migrate:064": "node src/database/runSql.js migration_064_asset_management_workflows.sql",
-    "db:migrate:065": "node src/database/runSql.js migration_065_attendance_extras.sql"
+    "db:migrate:065": "node src/database/runSql.js migration_065_attendance_extras.sql",
+    "db:migrate:066": "node src/database/runSql.js migration_066_payroll_payment_batches.sql",
+    "db:migrate:067": "node src/database/runSql.js migration_067_payroll_policy_versions.sql",
+    "db:migrate:068": "node src/database/runSql.js migration_068_payroll_approval_steps.sql",
+    "db:migrate:069": "node src/database/runSql.js migration_069_payroll_employee_groups_and_periods.sql"
   },
   "license": "MIT",
   "dependencies": {

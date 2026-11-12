@@ -11,12 +11,45 @@ const { query, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { computeStructure } = require('../utils/formulaEngine');
 const salaryAssignmentSvc = require('./salaryAssignment.service');
+const payrollPolicyService = require('./payrollPolicy.service');
+const payrollPeriodService = require('./payrollPeriod.service');
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 // No schedule on file: Monday–Friday (attendance data shows Saturday is not worked).
 const DEFAULT_WORK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri'];
 const pad = (n) => String(n).padStart(2, '0');
 const ymd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+function roundMoney(value, mode = 'HALF_UP') {
+  const amount = Number(value) || 0;
+  const scaled = amount * 100;
+  if (mode === 'UP') return Math.sign(amount) * Math.ceil(Math.abs(scaled) - Number.EPSILON) / 100;
+  if (mode === 'DOWN') return Math.sign(amount) * Math.floor(Math.abs(scaled) + Number.EPSILON) / 100;
+  if (mode === 'FLOOR') return Math.floor(scaled + Number.EPSILON) / 100;
+  if (mode === 'CEIL') return Math.ceil(scaled - Number.EPSILON) / 100;
+  return Math.round(scaled + Number.EPSILON) / 100;
+}
+function toCents(value) { return BigInt(Math.round((Number(value) + Number.EPSILON) * 100)); }
+function fromCents(value) { return Number(value) / 100; }
+function scaleMoney(value, numerator, denominator, mode = 'HALF_UP') {
+  if (!(denominator > 0) || !(numerator > 0)) return 0;
+  const cents = toCents(value);
+  const sign = cents < 0n ? -1n : 1n;
+  const scaled = (cents < 0n ? -cents : cents) * BigInt(Math.round(numerator));
+  const divisor = BigInt(Math.round(denominator));
+  let result = scaled / divisor;
+  const remainder = scaled % divisor;
+  const roundUp = mode === 'UP' ? remainder > 0n
+    : mode === 'HALF_UP' ? remainder * 2n >= divisor
+      : mode === 'CEIL' ? sign > 0n && remainder > 0n
+        : mode === 'FLOOR' ? sign < 0n && remainder > 0n
+          : false;
+  if (roundUp) result += 1n;
+  return fromCents(result * sign);
+}
+function sumMoney(values) {
+  return fromCents(values.reduce((sum, value) => sum + toCents(value), 0n));
+}
+function subtractMoney(left, right) { return fromCents(toCents(left) - toCents(right)); }
 const toDateStr = (v) => (v ? String(v).slice(0, 10) : null);
 const todayIST = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
 function parseWorkDays(raw) {
@@ -100,6 +133,16 @@ async function loadMonth(month, year, employeeIds, companyId = null) {
   const employees = await query(
     `    SELECT e.employee_id, e.company_id, e.emp_code, TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS name,
             e.employee_status, e.emp_joining_date, e.emp_exit_date, e.holiday_calendar, e.shift, e.base_salary,
+            (SELECT pg.pay_group_id FROM employee_pay_group_assignments epga
+              JOIN payroll_pay_groups pg ON pg.pay_group_id=epga.pay_group_id AND pg.company_id=epga.company_id
+             WHERE epga.employee_id=e.employee_id AND epga.company_id=e.company_id
+               AND epga.effective_from<=? AND (epga.effective_to IS NULL OR epga.effective_to>=?)
+             ORDER BY epga.effective_from DESC LIMIT 1) AS pay_group_id,
+            (SELECT pg.group_name FROM employee_pay_group_assignments epga
+              JOIN payroll_pay_groups pg ON pg.pay_group_id=epga.pay_group_id AND pg.company_id=epga.company_id
+             WHERE epga.employee_id=e.employee_id AND epga.company_id=e.company_id
+               AND epga.effective_from<=? AND (epga.effective_to IS NULL OR epga.effective_to>=?)
+             ORDER BY epga.effective_from DESC LIMIT 1) AS pay_group_name,
             d.department_name, COALESCE(ds.designation_name, e.emp_job_title) AS designation,
             ws.work_days,
             b.account_number, b.ifsc_code
@@ -113,7 +156,7 @@ async function loadMonth(month, year, employeeIds, companyId = null) {
         AND (? IS NULL OR e.company_id = ?)
         ${idFilter}
       ORDER BY name`,
-    [start, end, end, companyId, companyId, ...idParams]
+    [start, start, start, start, start, end, end, companyId, companyId, ...idParams]
   );
   const ids = employees.map((e) => e.employee_id);
   if (!ids.length) return { start, end, lastDay, employees, holidays: [], attendance: [], leaves: [], pendingRegs: [], inputs: [], adjustments: [] };
@@ -218,7 +261,7 @@ function classifyDays(emp, ctx, month, year) {
   return { totals: t, days, workDays };
 }
 /** Builds the full row (attendance + salary) for one employee. */
-async function buildEmployeeRow(emp, ctx, month, year) {
+async function buildEmployeeRow(emp, ctx, month, year, policy) {
   const { totals: t, days, workDays } = classifyDays(emp, ctx, month, year);
   const adj = ctx.adjustments.find((a) => a.employee_id === emp.employee_id) || null;
   const inputs = Object.fromEntries(ctx.inputs.filter((i) => i.employee_id === emp.employee_id).map((i) => [i.input_type, Number(i.amount)]));
@@ -226,7 +269,26 @@ async function buildEmployeeRow(emp, ctx, month, year) {
   const lopAdjustment = Number(adj?.lop_adjustment || 0);
   const lopDays = Math.min(t.employedWorkingDays, Math.max(0, round2(computedLop + lopAdjustment)));
   const paidDays = round2(t.employedWorkingDays - lopDays);
-  const payFactor = t.monthWorkingDays > 0 ? paidDays / t.monthWorkingDays : 0;
+  const workingDivisor = policy.working_days_method === 'CALENDAR_DAYS'
+    ? ctx.lastDay
+    : policy.working_days_method === 'FIXED_DIVISOR'
+      ? Number(policy.fixed_working_days || 30)
+      : t.monthWorkingDays;
+  const lopDivisor = policy.lop_calculation_method === 'CALENDAR_DAYS'
+    ? ctx.lastDay
+    : policy.lop_calculation_method === 'FIXED_DIVISOR'
+      ? Number(policy.fixed_working_days || 30)
+      : t.monthWorkingDays;
+  const employedNumerator = policy.working_days_method === 'CALENDAR_DAYS'
+    ? Math.max(0, ctx.lastDay - t.notEmployed)
+    : t.employedWorkingDays;
+  const employedDenominator = policy.working_days_method === 'CALENDAR_DAYS'
+    ? ctx.lastDay
+    : t.monthWorkingDays;
+  const ratioDenominator = Math.max(1, employedDenominator) * Math.max(1, lopDivisor) * 2;
+  const ratioNumerator = Math.max(0,
+    employedNumerator * Math.max(1, lopDivisor) * 2 - Math.round(lopDays * 2) * Math.max(1, employedDenominator)
+  );
   const basis = await salaryBasis(emp, emp.company_id);
   const flags = [];
   if (!basis) flags.push({ code: 'NO_SALARY', label: 'No salary structure or base salary' });
@@ -240,37 +302,37 @@ async function buildEmployeeRow(emp, ctx, month, year) {
   if (emp.emp_joining_date && toDateStr(emp.emp_joining_date) >= ctx.start) flags.push({ code: 'NEW_JOINER', label: `Joined ${toDateStr(emp.emp_joining_date)}` });
   let pay = null;
   if (basis) {
-    const earnings = basis.earnings.map((e) => ({ ...e, amount: Math.round(e.monthly * payFactor) }));
-    if (inputs.OVERTIME) earnings.push({ code: 'OVERTIME', label: 'Overtime', monthly: 0, amount: Math.round(inputs.OVERTIME) });
-    if (inputs.ARREARS) earnings.push({ code: 'ARREARS', label: 'Arrears', monthly: 0, amount: Math.round(inputs.ARREARS) });
-    const gross = earnings.reduce((s, e) => s + e.amount, 0);
+    const earnings = basis.earnings.map((e) => ({ ...e, amount: scaleMoney(e.monthly, ratioNumerator, ratioDenominator, policy.rounding_method) }));
+    if (inputs.OVERTIME) earnings.push({ code: 'OVERTIME', label: 'Overtime', monthly: 0, amount: roundMoney(inputs.OVERTIME, policy.rounding_method) });
+    if (inputs.ARREARS) earnings.push({ code: 'ARREARS', label: 'Arrears', monthly: 0, amount: roundMoney(inputs.ARREARS, policy.rounding_method) });
+    const gross = sumMoney(earnings.map((e) => e.amount));
     const basic = earnings.find((e) => /^BASIC/i.test(e.code || '') || /^basic/i.test(e.label))?.amount || 0;
     const hra = earnings.find((e) => /HRA/i.test(e.code || '') || /house rent|hra/i.test(e.label))?.amount || 0;
     const deductions = basis.deductions.map((deduction) => ({
       code: deduction.code,
       label: deduction.label,
-      amount: Math.round(deduction.monthly * payFactor),
+      amount: scaleMoney(deduction.monthly, ratioNumerator, ratioDenominator, policy.rounding_method),
     }));
-    const fixedGross = basis.earnings.reduce((s, e) => s + e.monthly, 0);
+    const fixedGross = sumMoney(basis.earnings.map((e) => e.monthly));
     const employerContributions = basis.employerContributions.map((contribution) => ({
       code: contribution.code,
       label: contribution.label,
-      amount: Math.round(contribution.monthly * payFactor),
+      amount: scaleMoney(contribution.monthly, ratioNumerator, ratioDenominator, policy.rounding_method),
     }));
-    const totalDeductions = deductions.reduce((s, d) => s + d.amount, 0);
+    const totalDeductions = sumMoney(deductions.map((d) => d.amount));
     pay = {
       source: basis.source,
       structureName: basis.structureName,
       ctcAnnual: basis.ctcAnnual,
       structureId: basis.structureId || null,
       configurationSnapshot: basis.configurationSnapshot,
-      monthlyGross: Math.round(fixedGross),
-      perDayRate: t.monthWorkingDays ? round2(fixedGross / t.monthWorkingDays) : 0,
-      lopDeduction: Math.max(0, Math.round(fixedGross) - (gross - (inputs.OVERTIME || 0) - (inputs.ARREARS || 0))),
+      monthlyGross: fixedGross,
+      perDayRate: workingDivisor ? roundMoney(fixedGross / workingDivisor, policy.rounding_method) : 0,
+      lopDeduction: lopDivisor > 0 ? scaleMoney(fixedGross, Math.round(lopDays * 2), Math.round(lopDivisor * 2), policy.rounding_method) : 0,
       earnings, deductions,
       employerContributions,
       basic, hra, allowances: gross - basic - hra,
-      gross, totalDeductions, net: Math.max(0, gross - totalDeductions),
+      gross, totalDeductions, net: Math.max(0, subtractMoney(gross, totalDeductions)),
       overtime: inputs.OVERTIME || 0, arrears: inputs.ARREARS || 0,
     };
   }
@@ -278,6 +340,8 @@ async function buildEmployeeRow(emp, ctx, month, year) {
     employee_id: emp.employee_id,
     emp_code: emp.emp_code,
     name: emp.name,
+    pay_group_id: emp.pay_group_id == null ? null : Number(emp.pay_group_id),
+    pay_group_name: emp.pay_group_name || null,
     department: emp.department_name,
     designation: emp.designation,
     joining_date: toDateStr(emp.emp_joining_date),
@@ -301,9 +365,20 @@ async function getMonthSummary({ month, year, employeeIds = null, includeDays = 
   const m = Number(month), y = Number(year);
   if (!(m >= 1 && m <= 12) || !(y >= 2000 && y <= 2100)) throw ApiError.badRequest('Valid month and year are required');
   const ctx = await loadMonth(m, y, employeeIds, companyId);
+  let policy = {
+    currency_code: 'INR', working_days_method: 'WORKING_DAYS', fixed_working_days: null,
+    lop_calculation_method: 'WORKING_DAYS', rounding_method: 'HALF_UP',
+  };
+  if (companyId) {
+    try {
+      policy = (await payrollPolicyService.get({ companyId, asOf: ctx.start })).policy;
+    } catch (error) {
+      if (error?.code !== 'ER_NO_SUCH_TABLE') throw error;
+    }
+  }
   const rows = [];
   for (const emp of ctx.employees) {
-    const row = await buildEmployeeRow(emp, ctx, m, y);
+    const row = await buildEmployeeRow(emp, ctx, m, y, policy);
     if (!includeDays) delete row.days;
     rows.push(row);
   }
@@ -315,14 +390,15 @@ async function getMonthSummary({ month, year, employeeIds = null, includeDays = 
     withoutSalary: rows.filter((r) => !r.pay).length,
     withIssues: rows.filter((r) => r.flags.some((f) => !['MONTH_NOT_OVER', 'NEW_JOINER', 'EXITING'].includes(f.code))).length,
     lopDays: round2(rows.reduce((s, r) => s + r.attendance.lopDays, 0)),
-    gross: payable.reduce((s, r) => s + r.pay.gross, 0),
-    deductions: payable.reduce((s, r) => s + r.pay.totalDeductions, 0),
-    net: payable.reduce((s, r) => s + r.pay.net, 0),
-    lopAmount: payable.reduce((s, r) => s + r.pay.lopDeduction, 0),
+    gross: sumMoney(payable.map((r) => r.pay.gross)),
+    deductions: sumMoney(payable.map((r) => r.pay.totalDeductions)),
+    net: sumMoney(payable.map((r) => r.pay.net)),
+    lopAmount: sumMoney(payable.map((r) => r.pay.lopDeduction)),
   };
-  return { month: m, year: y, period: { start: ctx.start, end: ctx.end }, run: await runStatus(m, y, companyId), totals, employees: rows };
+  return { month: m, year: y, period: { start: ctx.start, end: ctx.end }, policy, run: await runStatus(m, y, companyId), totals, employees: rows };
 }
 async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSalary, reason, userId, companyId = null }) {
+  await payrollPeriodService.assertInputsOpen(companyId, month, year);
   const run = await runStatus(month, year, companyId);
   if (run?.is_locked) throw ApiError.forbidden('Payroll for this month is locked. Unlock it before changing attendance adjustments.');
   if (!Number(lopAdjustment) && !holdSalary) {
@@ -344,14 +420,29 @@ async function saveAdjustment({ employeeId, month, year, lopAdjustment, holdSala
  */
 async function processPayroll({ month, year, processedBy, companyId }) {
   if (!companyId) throw ApiError.badRequest('Payroll processing requires a company-scoped administrator account');
+  const period = await payrollPeriodService.get({ companyId, month, year });
+  if (period.status !== 'INPUTS_LOCKED') throw ApiError.conflict('Lock payroll inputs for this period before calculating payroll.');
   const run = await runStatus(month, year, companyId);
   if (run?.is_locked) throw ApiError.forbidden('Payroll for this month is locked. Unlock it to re-process.');
   if (run?.review_status === 'APPROVED') throw ApiError.conflict('Payroll for this month is already approved.');
   if (run?.review_status === 'PENDING_REVIEW') throw ApiError.conflict('Payroll is awaiting review and cannot be reprocessed.');
-  const summary = await getMonthSummary({ month, year, companyId });
-  const toPay = summary.employees.filter((r) => r.pay);
-  const skipped = summary.employees.filter((r) => !r.pay).map((r) => ({ employee_id: r.employee_id, name: r.name, reason: 'No salary structure or base salary' }));
-  const runId = await withTransaction(async (conn) => {
+  let summary;
+  let toPay = [];
+  let skipped = [];
+  const result = await withTransaction(async (conn) => {
+    await conn.query('SELECT company_id FROM companies WHERE company_id = ? FOR UPDATE', [companyId]);
+    const [[periodRow]] = await conn.query(`SELECT status,snapshot_json FROM payroll_period_controls
+      WHERE company_id=? AND month=? AND year=? FOR UPDATE`, [companyId, month, year]);
+    if (!periodRow || periodRow.status !== 'INPUTS_LOCKED' || !periodRow.snapshot_json) {
+      throw ApiError.conflict('Payroll inputs are no longer locked for this period. Lock them before calculating.');
+    }
+    try { summary = typeof periodRow.snapshot_json === 'string' ? JSON.parse(periodRow.snapshot_json) : periodRow.snapshot_json; }
+    catch { throw ApiError.internal('Payroll period snapshot is not valid JSON'); }
+    if (Number(summary.month) !== Number(month) || Number(summary.year) !== Number(year) || !Array.isArray(summary.employees)) {
+      throw ApiError.conflict('The payroll snapshot does not match the requested period');
+    }
+    toPay = summary.employees.filter((r) => r.pay);
+    skipped = summary.employees.filter((r) => !r.pay).map((r) => ({ employee_id: r.employee_id, name: r.name, reason: 'No salary structure or base salary' }));
     await conn.query(
       `INSERT INTO payroll_runs (company_id, month, year, status, processed_by, processed_on, review_status)
        VALUES (?, ?, ?, 'Processing', ?, NOW(), 'DRAFT')
@@ -361,7 +452,6 @@ async function processPayroll({ month, year, processedBy, companyId }) {
     );
     const [[runRow]] = await conn.query('SELECT payroll_run_id FROM payroll_runs WHERE company_id = ? AND month = ? AND year = ?', [companyId, month, year]);
     const id = runRow.payroll_run_id;
-    await conn.query('SELECT company_id FROM companies WHERE company_id = ? FOR UPDATE', [companyId]);
     const [[lockedRun]] = await conn.query(
       'SELECT is_locked, review_status FROM payroll_runs WHERE payroll_run_id = ? AND company_id = ? FOR UPDATE',
       [id, companyId]
@@ -390,6 +480,7 @@ async function processPayroll({ month, year, processedBy, companyId }) {
       company_id: Number(companyId),
       month: Number(month),
       year: Number(year),
+      payroll_policy: summary.policy,
       structures: [...structureSnapshots.values()],
     };
     const [versionResult] = await conn.query(
@@ -408,6 +499,7 @@ async function processPayroll({ month, year, processedBy, companyId }) {
         engine: 'company-config-v2',
         rule_version_id: ruleVersionId,
         company_id: Number(companyId),
+        payroll_policy: summary.policy,
         salary_configuration: r.pay.configurationSnapshot,
         earnings: r.pay.earnings.map(({ code, label, amount, monthly }) => ({ code, label, amount, full_month: monthly })),
         deductions: r.pay.deductions,
@@ -422,6 +514,7 @@ async function processPayroll({ month, year, processedBy, companyId }) {
         adjustment_reason: r.adjustment?.reason || null,
         monthly_gross: r.pay.monthlyGross, lop_deduction: r.pay.lopDeduction, per_day_rate: r.pay.perDayRate,
         salary_source: r.pay.source, structure: r.pay.structureName,
+        pay_group_id: r.pay_group_id, pay_group_name: r.pay_group_name,
       };
       await conn.query(
         `INSERT INTO payslips (payroll_run_id, employee_id, month, year, basic, hra, allowances, gross_earnings, ctc,
@@ -450,14 +543,9 @@ async function processPayroll({ month, year, processedBy, companyId }) {
        WHERE payroll_run_id = ?`,
       [id, id]
     );
-    return id;
+    return { payroll_run_id: id, processed: toPay.filter((r) => !r.on_hold).length,
+      on_hold: toPay.filter((r) => r.on_hold).length, skipped, totals: summary.totals };
   });
-  return {
-    payroll_run_id: runId,
-    processed: toPay.filter((r) => !r.on_hold).length,
-    on_hold: toPay.filter((r) => r.on_hold).length,
-    skipped,
-    totals: summary.totals,
-  };
+  return result;
 }
 module.exports = { getMonthSummary, saveAdjustment, processPayroll, parseWorkDays, DEFAULT_WORK_DAYS };

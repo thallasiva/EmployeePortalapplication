@@ -23,7 +23,7 @@
   color: var(--adm-text);
   line-height: 1;
   letter-spacing: -0.03em;
-  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  font-family: var(--font-ui);
   font-variant-numeric: tabular-nums;
 }
 .admin-dash-progress {

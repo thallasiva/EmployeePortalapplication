@@ -190,7 +190,7 @@ export default function AdminPayrollStatement() {
   }, [month, year, tab]);
   useEffect(() => {load();}, [load]);
   return (
-    <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
+    <div className={cssClass({ padding: "28px 32px", fontFamily: "var(--font-ui)" })}>
       {}
       <div className={cssClass({ marginBottom: 24 })}>
         <h2 className={cssClass({ margin: 0, fontSize: 20, fontWeight: 700, color: "#1a1a1a" })}>Payroll Reports</h2>

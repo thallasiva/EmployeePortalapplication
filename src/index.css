@@ -5,6 +5,8 @@
    DESIGN TOKENS — Edit here to retheme the entire app
 ═══════════════════════════════════════════════════════════════════════════ */
 :root {
+  /* One UI typeface and shared type scale for every app area. */
+  --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   /* Brand */
   --brand:           #e87500;
   --brand-dark:      #cf6900;
@@ -63,12 +65,12 @@
   --sp-12: 48px;
   /* Typography scale */
   --fs-2xs:  10px;
-  --fs-xs:   11px;
-  --fs-sm:   12px;
-  --fs-base: 13px;
-  --fs-md:   14px;
-  --fs-lg:   15px;
-  --fs-xl:   17px;
+  --fs-xs:   12px;
+  --fs-sm:   13px;
+  --fs-base: 14px;
+  --fs-md:   15px;
+  --fs-lg:   16px;
+  --fs-xl:   18px;
   --fs-2xl:  20px;
   --fs-3xl:  24px;
   --fs-4xl:  30px;
@@ -91,9 +93,7 @@
   }
   body {
     margin: 0;
-    /* Inter for body, Plus Jakarta Sans fallback for headings */
-    font-family: "Inter", "Plus Jakarta Sans", system-ui, -apple-system,
-      BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-ui);
     font-size: var(--fs-base);
     font-weight: 400;
     line-height: 1.65;
@@ -103,9 +103,8 @@
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "cv02","cv03","cv04","cv11"; /* Inter optical fixes */
   }
-  /* Heading font */
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+    font-family: var(--font-ui);
     color: var(--text-heading);
     line-height: 1.25;
     letter-spacing: -0.02em;
@@ -160,7 +159,7 @@
     font-size: var(--fs-2xl);
     font-weight: 800;
     color: var(--text-heading);
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     letter-spacing: -0.025em;
   }
   .page-subtitle {
@@ -188,7 +187,7 @@
     font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--text-heading);
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
   }
   /* ── Section label ─────────────────────────────────────────────────────── */
   .section-label {
@@ -203,7 +202,7 @@
     font-size: var(--fs-3xl);
     font-weight: 900;
     color: var(--text-heading);
-    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-family: var(--font-ui);
     line-height: 1;
     letter-spacing: -0.03em;
   }
@@ -349,7 +348,7 @@
     padding: 11px 14px;
     border-bottom: 1px solid #d96800;
     white-space: nowrap;
-    font-family: "Inter", sans-serif;
+    font-family: var(--font-ui);
   }
   .tbl tbody td {
     padding: 11px 14px;
@@ -423,7 +422,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-family: "Plus Jakarta Sans", sans-serif;
+    font-family: var(--font-ui);
   }
   @layer components {
     .app-content-panel table thead th.tbl__pin {
@@ -528,6 +527,7 @@
   .link-brand  { @apply text-brand font-medium hover:text-brand-600 hover:underline; }
   .input-focus-brand { @apply focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none border-gray-300; }
   .app-content-inner { padding: var(--content-py) var(--content-px); }
+  .app-sidebar-backdrop { display: none; }
   @media (min-width: 1024px) {
     .app-content-inner { padding: var(--content-py) var(--content-px); }
   }
@@ -592,7 +592,7 @@ form button:focus-visible { border-radius: var(--radius-md); }
 .Toastify__toast--success .Toastify__progress-bar { background: var(--success); }
 /* React-toastify font */
 .Toastify__toast {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-ui);
   font-size: var(--fs-base);
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-md) !important;
@@ -602,4 +602,65 @@ form button:focus-visible { border-radius: var(--radius-md); }
 .tbl tbody td,
 .stat-value {
   font-variant-numeric: tabular-nums;
+}
+
+/* Shared mobile and tablet layout behavior for every authenticated route. */
+@media (max-width: 1023px) {
+  .app-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    border: 0;
+    background: rgba(15, 23, 42, .42);
+  }
+  .app-content-inner {
+    min-width: 0;
+    padding: 16px;
+  }
+  .app-content-panel,
+  .app-content-inner > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .app-content-inner .grid > * { min-width: 0; }
+  .app-content-inner img,
+  .app-content-inner svg { max-width: 100%; }
+  .app-content-inner pre { max-width: 100%; overflow-x: auto; }
+}
+
+@media (max-width: 639px) {
+  .app-content-inner { padding: 12px; }
+  .app-content-inner [style*="grid-template-columns: 1fr 1fr"],
+  .app-content-inner [style*="grid-template-columns: 1fr 2fr"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .app-content-inner [style*="grid-template-columns: repeat(3"],
+  .app-content-inner [style*="grid-template-columns: repeat(4"],
+  .app-content-inner [style*="grid-template-columns: repeat(5"],
+  .app-content-inner [style*="grid-template-columns: repeat(6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .app-content-inner [class~="grid-cols-3"],
+  .app-content-inner [class~="grid-cols-4"],
+  .app-content-inner [class~="grid-cols-5"],
+  .app-content-inner [class~="grid-cols-6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-content-inner [style*="grid-template-columns: 1fr 1fr"],
+  .app-content-inner [style*="grid-template-columns: 1fr 2fr"],
+  .app-content-inner [style*="grid-template-columns: repeat(3"],
+  .app-content-inner [style*="grid-template-columns: repeat(4"],
+  .app-content-inner [style*="grid-template-columns: repeat(5"],
+  .app-content-inner [style*="grid-template-columns: repeat(6"],
+  .app-content-inner [class~="grid-cols-2"],
+  .app-content-inner [class~="grid-cols-3"],
+  .app-content-inner [class~="grid-cols-4"],
+  .app-content-inner [class~="grid-cols-5"],
+  .app-content-inner [class~="grid-cols-6"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
 }

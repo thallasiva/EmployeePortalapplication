@@ -4,7 +4,7 @@
   min-height: calc(100vh - 4.5rem);
   display: flex;
   flex-direction: column;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: inherit;
   background: #f0f2f5;
 }
 @media (min-width: 1024px) {
@@ -439,7 +439,9 @@
     border-bottom: 1px solid #e8e8e8;
   }
   .hiring-results__header--applied,
-  .hiring-results__row--applied {
+  .hiring-results__row--applied,
+  .hiring-results__header--3col,
+  .hiring-results__row--3col {
     grid-template-columns: 1fr;
     text-align: left !important;
   }

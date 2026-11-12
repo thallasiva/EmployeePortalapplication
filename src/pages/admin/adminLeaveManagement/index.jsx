@@ -13,12 +13,12 @@ const AdminLeaveManagement = memo(() => {
   const setTab = (t) => setSearchParams({ tab: t }, { replace: true });
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f8f9fb",
-      fontFamily: "'Inter','Plus Jakarta Sans',system-ui,sans-serif" })}>
+      fontFamily: "var(--font-ui)" })}>
       <div className={cssClass({ maxWidth: 1280, margin: "0 auto" })}>
         {/* Page header */}
         <div className={cssClass({ marginBottom: 22 })}>
           <h1 className={cssClass({ margin: 0, fontSize: 22, fontWeight: 800, color: "#111827",
-            fontFamily: "'Plus Jakarta Sans','Inter',sans-serif", letterSpacing: "-0.025em" })}>
+            fontFamily: "var(--font-ui)", letterSpacing: "-0.025em" })}>
             Leave Management
           </h1>
           <p className={cssClass({ margin: "4px 0 0", fontSize: 13, color: "#9ca3af" })}>

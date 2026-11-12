@@ -192,7 +192,7 @@ export default function AdminPayrollYTD() {
   const years = [];
   for (let y = now.getFullYear() - 2; y <= now.getFullYear() + 1; y++) years.push(y);
   return (
-    <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
+    <div className={cssClass({ padding: "28px 32px", fontFamily: "var(--font-ui)" })}>
       <div className={cssClass({ marginBottom: 24 })}>
         <h2 className={cssClass({ margin: 0, fontSize: 20, fontWeight: 700, color: "#1a1a1a" })}>Published Info</h2>
         <p className={cssClass({ margin: "4px 0 0", color: "#888", fontSize: 13 })}>

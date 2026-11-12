@@ -514,6 +514,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem 1.5rem;
 }
+@media (max-width: 480px) {
+  .emp-review-grid { grid-template-columns: 1fr; }
+}
 .emp-review-grid dt {
   font-size: 0.8125rem;
   color: #64748b;

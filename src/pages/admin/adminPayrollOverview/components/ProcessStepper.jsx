@@ -21,7 +21,7 @@ export default function ProcessStepper({ steps = [] }) {
               </div>
               <div className={cssClass({ fontSize: 11.5, fontWeight: 700, color: "#344054", textAlign: "center", lineHeight: 1.2 })}>{s.label}</div>
               <div className={cssClass({ display: "flex", alignItems: "center", gap: 3, fontSize: 10.5, fontWeight: 700, color, textTransform: "capitalize" })}>
-                {s.status === "done" ? "Locked" : s.status === "current" ? "Pending" : "Pending"}
+                {s.status === "done" ? "Complete" : s.status === "current" ? "In progress" : "Not started"}
               </div>
             </div>
             {!last && <div className={cssClass({ flex: 1, height: 2, background: s.status === "done" ? DONE : "#e5e7eb", margin: "0 2px", marginTop: -22 })} />}

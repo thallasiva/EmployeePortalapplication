@@ -257,7 +257,7 @@ export default function AIInterviewSetup() {
   const STATUS_COLOR = { pending: "#d97706", completed: "#059669", expired: "#dc2626" };
   const REC_COLOR    = { "Strong Hire": "#059669", Hire: "#e87500", Maybe: "#d97706", "No Hire": "#dc2626" };
   return (
-    <div style={{ padding: "24px 28px", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ padding: "24px 28px", fontFamily: "var(--font-ui)" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
         <div style={{ background: LIGHT, borderRadius: 12, padding: 10 }}>

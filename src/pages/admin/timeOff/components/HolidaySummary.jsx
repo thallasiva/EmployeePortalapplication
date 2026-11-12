@@ -35,7 +35,7 @@ const HolidaySummary = React.memo(({ allHolidays, year, locationFilter }) => {
       {/* header */}
       <div className={cssClass({ padding: "18px 20px", borderBottom: "1px solid #e9eaec" })}>
         <div className={cssClass({ fontSize: 16, fontWeight: 800, color: "#111827",
-          fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" })}>Holiday Summary</div>
+          fontFamily: "var(--font-ui)" })}>Holiday Summary</div>
         <div className={cssClass({ fontSize: 11, color: "#9ca3af", marginTop: 2 })}>
           01 Jan – 31 Dec {year}{locationFilter ? ` · ${locationFilter}` : ""}
         </div>

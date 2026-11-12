@@ -25,6 +25,7 @@ const AdminDocuments = lazy(() => import("../pages/admin/AdminDocuments"));
 const AddDocumentScreen = lazy(() => import("../pages/admin/AddDocumentScreen"));
 const Reports = lazy(() => import("../pages/admin/Report"));
 const AdminPayrollOverview = lazy(() => import("../pages/admin/AdminPayrollOverview"));
+const PayrollPayments = lazy(() => import("../pages/admin/PayrollPayments"));
 const PayRollForm = lazy(() => import("../pages/admin/PayRollForm"));
 const AdminPayslips = lazy(() => import("../pages/admin/AdminPayslips"));
 const AdminPerformanceRollout = lazy(() => import("../pages/admin/AdminPerformanceRollout"));
@@ -107,6 +108,8 @@ const AdminRoutes = () =>
       <Route path="documents" element={<Page><AdminDocuments /></Page>} />
       <Route path="add-document" element={<Page><AddDocumentScreen /></Page>} />
       <Route path="payroll" element={<Page><AdminPayrollOverview /></Page>} />
+      <Route path="payroll/approval" element={<Page><AdminPayrollOverview /></Page>} />
+      <Route path="payroll/payments" element={<Page><PayrollPayments /></Page>} />
       <Route path="payroll/salary" element={<Page><PayRollForm /></Page>} />
       <Route path="payroll/payslips" element={<Page><AdminPayslips /></Page>} />
       <Route path="payroll/process" element={<Page><AdminSalaryProcessing /></Page>} />

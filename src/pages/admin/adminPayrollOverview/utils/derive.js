@@ -1,7 +1,7 @@
 // Pure helpers that turn the raw payroll hook data into dashboard-ready shapes.
 export const PROCESS_STEPS = [
-  "Attendance", "Leave", "Period Lock", "Calculate Payroll",
-  "Review", "Approve", "Finalize", "Payslips",
+  "Attendance data", "Payroll inputs", "Calculate payroll",
+  "Payroll review", "Approval", "Lock payroll", "Payslips",
 ];
 // Returns [{ label, status }] where status is 'done' | 'current' | 'pending'.
 // Uses the run's review_status / is_locked lifecycle when available.
@@ -11,13 +11,12 @@ export function deriveSteps({ selRun, hasPayslips, attendanceReady }) {
   const hasRun = !!selRun;
   const attDone = attendanceReady || hasRun;
   const flags = [
-    ["Attendance", attDone],
-    ["Leave", attDone],
-    ["Period Lock", attDone],
-    ["Calculate Payroll", hasRun || hasPayslips],
-    ["Review", rs === "PENDING_REVIEW" || rs === "APPROVED"],
-    ["Approve", rs === "APPROVED"],
-    ["Finalize", locked],
+    ["Attendance data", attDone],
+    ["Payroll inputs", hasRun],
+    ["Calculate payroll", hasRun || hasPayslips],
+    ["Payroll review", rs === "PENDING_REVIEW" || rs === "APPROVED"],
+    ["Approval", rs === "APPROVED"],
+    ["Lock payroll", locked],
     ["Payslips", hasPayslips || locked],
   ];
   const firstPending = flags.findIndex(([, done]) => !done);
@@ -59,9 +58,9 @@ export function computeExceptions({ employees, attendanceRows, payslips }) {
 export function computeHealth({ steps, exceptionsTotal }) {
   const isDone = (label) => steps.find((s) => s.label === label)?.status === "done";
   const checks = [
-    { label: "Attendance Locked", ok: isDone("Attendance") },
-    { label: "Leave Locked", ok: isDone("Leave") },
-    { label: "Period Locked", ok: isDone("Period Lock") },
+    { label: "Attendance data available", ok: isDone("Attendance data") },
+    { label: "Payroll calculated", ok: isDone("Calculate payroll") },
+    { label: "Approval recorded", ok: isDone("Approval") },
     { label: "Employee Data Verified", ok: exceptionsTotal === 0 },
   ];
   const passed = checks.filter((c) => c.ok).length;

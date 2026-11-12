@@ -8,7 +8,7 @@ const PageHeader = React.memo(({ year, locationFilter, allLocations, onYearChang
     flexWrap: "wrap", gap: 12, marginBottom: 22 })}>
     <div>
       <h1 className={cssClass({ margin: 0, fontSize: 22, fontWeight: 800, color: "#111827",
-        fontFamily: "'Plus Jakarta Sans','Inter',sans-serif", letterSpacing: "-0.025em" })}>
+        fontFamily: "var(--font-ui)", letterSpacing: "-0.025em" })}>
         Time Off &amp; Holidays
       </h1>
       <p className={cssClass({ margin: "4px 0 0", fontSize: 13, color: "#9ca3af" })}>

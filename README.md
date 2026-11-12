@@ -39,6 +39,19 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
+## Payroll module setup
+
+The payroll dashboard and setup screens use the signed-in company context. Apply the payroll schema changes from the `backend` directory in order before using payment reconciliation, effective-dated payroll settings, pay groups, or approval sequences:
+
+```powershell
+npm run db:migrate:066
+npm run db:migrate:067
+npm run db:migrate:068
+npm run db:migrate:069
+```
+
+Payroll approval employee IDs are entered in sequence in Payroll Settings. Each must be an employee in the current company. Approval decisions are recorded per run; the run locks after the final configured approval. An empty approval sequence keeps the existing one-reviewer behavior. Bank export creates a CSV payment batch only; it does not initiate a bank transfer. Reconcile confirmed bank outcomes in Payment Reconciliation.
+
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).

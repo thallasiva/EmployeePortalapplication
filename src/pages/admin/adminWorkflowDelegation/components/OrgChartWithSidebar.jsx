@@ -235,17 +235,17 @@ function FocusedPathView({ focusedPath, setFocusedPath }) {
               <rect x={x} y={y} width={NW} height={NH} rx={8} fill={node.color} />
               <text x={x + NW / 2} y={y + 26} textAnchor="middle" fill="white"
                 fontSize={13} fontWeight="700"
-                className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
+                className={cssClass({ fontFamily: "var(--font-ui)", pointerEvents: "none" })}>
                 {(node.name || "").length > 20 ? node.name.slice(0, 19) + "…" : node.name}
               </text>
               <text x={x + NW / 2} y={y + 44} textAnchor="middle" fill="rgba(255,255,255,0.85)"
                 fontSize={10}
-                className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
+                className={cssClass({ fontFamily: "var(--font-ui)", pointerEvents: "none" })}>
                 {node.role}
               </text>
               <text x={x + NW / 2} y={y + NH + 18} textAnchor="middle"
                 fill={isEmployee ? BRAND : "#6b7280"} fontSize={11} fontWeight={isEmployee ? 700 : 400}
-                className={cssClass({ fontFamily: "system-ui,sans-serif" })}>
+                className={cssClass({ fontFamily: "var(--font-ui)" })}>
                 {node.name}
               </text>
             </g>

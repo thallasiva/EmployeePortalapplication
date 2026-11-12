@@ -13,7 +13,12 @@ const SECTION_NUMBERS = {
   ANALYTICS: 5,
   ADMINISTRATION: 6,
 };
-const isPathActive = (pathname, link, search = "") =>
+const queryMatches = (search, query) => {
+  if (!query) return true;
+  const current = new URLSearchParams(search);
+  return [...new URLSearchParams(query).entries()].every(([key, value]) => current.getAll(key).includes(value));
+};
+const isPathActive = (pathname, link, search = "", navigationLinks = []) =>
 {
   if (!link) return false;
   const [linkPath, linkQuery] = link.split("?");
@@ -21,15 +26,28 @@ const isPathActive = (pathname, link, search = "") =>
   const target = linkPath.replace(/\/$/, "") || "/";
   if (
     target === "/dashboard" ||
+    target === "/dashboard/payroll" ||
     target === "/employee/home" ||
     target === "/employee/engage" ||
     target === "/manager")
 {
-    return normalized === target && (!linkQuery || search.includes(linkQuery));
+    return normalized === target && queryMatches(search, linkQuery);
   }
   const pathMatch = normalized === target || normalized.startsWith(`${target}/`);
-  if (linkQuery) return pathMatch && search.includes(linkQuery);
-  return pathMatch;
+  if (!pathMatch || !queryMatches(search, linkQuery)) return false;
+
+  // If a more specific navigation entry matches this route, only highlight
+  // that entry. This prevents routes such as Attendance Dashboard from also
+  // lighting up beside Attendance Records.
+  const hasMoreSpecificMatch = navigationLinks.some((candidate) => {
+    if (!candidate) return false;
+    const [candidatePath, candidateQuery] = candidate.split("?");
+    const candidateTarget = candidatePath.replace(/\/$/, "") || "/";
+    const isMoreSpecific = candidateTarget.startsWith(`${target}/`);
+    const candidateMatches = normalized === candidateTarget || normalized.startsWith(`${candidateTarget}/`);
+    return isMoreSpecific && candidateMatches && queryMatches(search, candidateQuery);
+  });
+  return !hasMoreSpecificMatch;
 };
 
 // Child permissions from MenuPermissionBuilder must be applied independently;
@@ -43,6 +61,8 @@ const MENU_ID_BY_LINK = [
   [/\/dashboard\/payroll\/payslips/, "pay-payslips"],
   [/\/dashboard\/payroll\/ytd/, "pay-ytd"],
   [/\/dashboard\/payroll\/inputs/, "pay-inputs"],
+  [/\/dashboard\/payroll\/payments/, "pay-overview"],
+  [/\/dashboard\/payroll\/approval(?:\/|\?|$)/, "pay-overview"],
   [/\/dashboard\/payroll\/compliance/, "pay-comply"],
   [/\/dashboard\/payroll/, "pay-overview"],
   [/\/dashboard\/recruitment/, "rec-jobs"],
@@ -51,7 +71,7 @@ const MENU_ID_BY_LINK = [
   [/\/dashboard\/audit-logs/, "set-audit"],
 ];
 const menuIdForLink = (link) => MENU_ID_BY_LINK.find(([pattern]) => pattern.test(link || ""))?.[1];
-export const Sidebar = ({ open }) =>
+export const Sidebar = ({ open, onNavigate }) =>
 {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -146,7 +166,6 @@ export const Sidebar = ({ open }) =>
       label: "Leave", permId: "leave",
       icon: <FileOutput size={20} />,
       children: [
-        { label: "Leave Requests", navigationLink: "/dashboard/leave?tab=requests" },
         { label: "Leave Balances", navigationLink: "/dashboard/leave?tab=balances" },
         { label: "Leave Types", navigationLink: "/dashboard/leave?tab=types" }]
     },
@@ -183,18 +202,19 @@ export const Sidebar = ({ open }) =>
     },
     {
       section: "PAYROLL & COMPENSATION",
-      label: "Payroll Admin", permId: "payroll",
+      label: "Payroll Operations & Compliance", permId: "payroll",
       icon: <ShieldCheck size={20} />,
       children: [
-        { label: "Payroll Processing", navigationLink: "/dashboard/payroll/process" },
-        { label: "Payroll Verification", navigationLink: "/dashboard/payroll/statement?tab=statement" },
-        { label: "Payroll Approval & Lock", navigationLink: "/dashboard/payroll" },
-        { label: "Payslip Register", navigationLink: "/dashboard/payroll/payslips" },
-        { label: "Payroll Compliance", navigationLink: "/dashboard/payroll/compliance?tab=pan" },
-        { label: "Form 16", navigationLink: "/dashboard/payroll/tax-forms?tab=form16" },
-        { label: "Form 24Q", navigationLink: "/dashboard/payroll/tax-forms?tab=form24q" },
-        { label: "Remittances", navigationLink: "/dashboard/payroll/compliance?tab=remittances" },
-        { label: "Payroll Release", navigationLink: "/dashboard/payroll/compliance?tab=release" }]
+        { label: "Run Payroll", title: "Calculate salaries and deductions for the selected pay period", navigationLink: "/dashboard/payroll/process" },
+        { label: "Review Payroll Results", title: "Check payroll totals and employee payment details", navigationLink: "/dashboard/payroll/statement?tab=statement" },
+        { label: "Approve & Lock Payroll", title: "Approve the payroll run and lock the period", navigationLink: "/dashboard/payroll/approval" },
+        { label: "Reconcile Payments", title: "Compare payroll payments with bank results", navigationLink: "/dashboard/payroll/payments" },
+        { label: "View Payslip Register", title: "Find and manage employee payslips for a pay period", navigationLink: "/dashboard/payroll/payslips" },
+        { label: "Tax & Statutory Compliance", title: "Review employee tax and statutory information", navigationLink: "/dashboard/payroll/compliance?tab=pan" },
+        { label: "Form 16 Tax Certificates", title: "Prepare employee annual tax certificates", navigationLink: "/dashboard/payroll/tax-forms?tab=form16" },
+        { label: "Form 24Q TDS Returns", title: "Prepare quarterly tax deduction returns", navigationLink: "/dashboard/payroll/tax-forms?tab=form24q" },
+        { label: "Pay Statutory Dues", title: "Track statutory amounts and remittance due dates", navigationLink: "/dashboard/payroll/compliance?tab=remittances" },
+        { label: "Release Payslips", title: "Publish payslips for employees to view", navigationLink: "/dashboard/payroll/compliance?tab=release" }]
     },
     {
       section: "PAYROLL & COMPENSATION",
@@ -207,6 +227,7 @@ export const Sidebar = ({ open }) =>
       label: "Compensation Management", permId: "payroll",
       icon: <Wallet size={20} />,
       children: [
+        { label: "Pay Groups", navigationLink: "/dashboard/payroll/setup?tab=groups" },
         { label: "Salary Components", navigationLink: "/dashboard/salary-components" },
         { label: "Salary Structures", navigationLink: "/dashboard/salary-structures" },
         { label: "Salary Assignment", navigationLink: "/dashboard/salary-assignment" },
@@ -215,22 +236,15 @@ export const Sidebar = ({ open }) =>
         { label: "Salary Structure Editor", navigationLink: "/dashboard/payroll/salary" }]
     },
     {
-      section: "PAYROLL & COMPENSATION",
-      label: "Expenses & Reimbursements", permId: "payroll",
-      icon: <HandCoins size={20} />,
-      navigationLink: "/dashboard/payroll/ytd?tab=reimb"
-    },
-    {
       section: "EMPLOYEE SERVICES",
-      label: "Published Info", permId: "payroll",
+      label: "Payslips & Tax Documents", permId: "payroll",
       icon: <BookOpen size={20} />,
       children: [
-        { label: "Payslip Register", navigationLink: "/dashboard/payroll/payslips" },
         { label: "YTD Summary", navigationLink: "/dashboard/payroll/ytd?tab=ytd" },
         { label: "PF YTD Statement", navigationLink: "/dashboard/payroll/ytd?tab=pf-ytd" },
         { label: "Reimbursement Statement", navigationLink: "/dashboard/payroll/ytd?tab=reimb" },
         { label: "IT Statement", navigationLink: "/employee/payroll/it-statement" },
-        { label: "IT Declaration", navigationLink: "/dashboard/it-declaration" }]
+      ]
     },
     {
       section: "EMPLOYEE SERVICES",
@@ -263,7 +277,9 @@ export const Sidebar = ({ open }) =>
       section: "EMPLOYEE SERVICES",
       label: "Approvals", permId: "employees",
       icon: <SquareCheck size={20} />,
-      navigationLink: "/dashboard/approvals"
+      children: [
+        { label: "All Approvals", navigationLink: "/dashboard/approvals" },
+        { label: "Leave Approvals", navigationLink: "/dashboard/leave?tab=requests" }]
     },
     {
       section: "ANALYTICS",
@@ -278,17 +294,6 @@ export const Sidebar = ({ open }) =>
       children: [
         { label: "Company Profiles", navigationLink: "/dashboard/company" },
         { label: "Branches & Locations", navigationLink: "/dashboard/offices" }]
-    },
-    {
-      section: "ADMINISTRATION",
-      label: "Workflow & Hierarchy", permId: "workflow",
-      icon: <Network size={20} />,
-      children: [
-        { label: "Org Hierarchy", navigationLink: "/dashboard/workflow-delegation?tab=org" },
-        { label: "Reporting Managers", navigationLink: "/dashboard/workflow-delegation?tab=managers" },
-        { label: "Manager Transfer", navigationLink: "/dashboard/workflow-delegation?tab=transfer" },
-        { label: "Delegation", navigationLink: "/dashboard/workflow-delegation?tab=delegation" },
-        { label: "Audit History", navigationLink: "/dashboard/workflow-delegation?tab=audit" }]
     },
     {
       section: "ADMINISTRATION",
@@ -391,7 +396,7 @@ export const Sidebar = ({ open }) =>
       icon: <Calendar size={20} strokeWidth={1.75} />,
       children: [
         { label: "Leave Balance", navigationLink: "/employee/leave/balance" },
-        { label: "Apply Leave", navigationLink: "/employee/leave/apply" }]
+      ]
     },
     {
       label: "Calendar",
@@ -522,6 +527,9 @@ export const Sidebar = ({ open }) =>
       isRecruitmentRole(user) ?
         employeeItemsForRecruiters :
         employeeItems;
+  const navigationLinks = items.flatMap((item) => item.children
+    ? item.children.map((child) => child.navigationLink)
+    : item.navigationLink ? [item.navigationLink] : []);
   const itemsRef = useRef(items);
   itemsRef.current = items;
   const toggleAccordion = (index) =>
@@ -530,11 +538,14 @@ export const Sidebar = ({ open }) =>
   };
   useEffect(() =>
   {
+    const links = itemsRef.current.flatMap((item) => item.children
+      ? item.children.map((child) => child.navigationLink)
+      : item.navigationLink ? [item.navigationLink] : []);
     const activeIndex = itemsRef.current.findIndex(
       (item) =>
         item.children &&
         item.children.some((child) =>
-          isPathActive(pathname, child.navigationLink, search)
+          isPathActive(pathname, child.navigationLink, search, links)
         )
     );
     if (activeIndex >= 0)
@@ -559,7 +570,8 @@ export const Sidebar = ({ open }) =>
       .join(" ");
   return (
     <aside className={[
-      "relative flex h-screen min-h-0 shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width] duration-200 ease-in-out",
+      "fixed inset-y-0 left-0 z-40 flex h-screen min-h-0 shrink-0 flex-col border-r border-[#f0f0f0] bg-white font-sans transition-[width,transform] duration-200 ease-in-out lg:relative lg:z-auto lg:translate-x-0",
+      open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
       open ? "w-[248px]" : "w-[68px]"]
       .join(" ")}>
       { }
@@ -588,12 +600,12 @@ export const Sidebar = ({ open }) =>
             : null;
           if (!item.children)
           {
-            const active = isPathActive(pathname, item.navigationLink, search);
+            const active = isPathActive(pathname, item.navigationLink, search, navigationLinks);
             return (
               <React.Fragment key={index}>
                 {sectionHeading}
                 <div className={menuItemClass(active)}
-                  onClick={() => navigate(item.navigationLink)}
+                  onClick={() => { navigate(item.navigationLink); onNavigate?.(); }}
                   title={!open ? item.label : undefined}>
                   <span className={[
                     "flex shrink-0",
@@ -649,13 +661,14 @@ export const Sidebar = ({ open }) =>
                   <div className="ml-3 mt-0.5 flex flex-col gap-px border-l-2 border-brand-100 pl-3">
                     {item.children.map((child, childIndex) =>
                     {
-                      const isChildActive = isPathActive(pathname, child.navigationLink, search);
+                      const isChildActive = isPathActive(pathname, child.navigationLink, search, navigationLinks);
                       return (
-                        <div key={childIndex} className={childItemClass(isChildActive)}
+                        <div key={childIndex} className={childItemClass(isChildActive)} title={child.title || child.label}
                           onClick={() =>
                           {
                             const [p, q] = child.navigationLink.split("?");
                             navigate(q ? `${p}?${q}` : p);
+                            onNavigate?.();
                           }}>
                           {child.label}
                         </div>);

@@ -25,7 +25,7 @@ export default function TimeOff() {
   const onCSVImported = (count) => { setShowCSV(false); handleCSVImported(count); };
   return (
     <div className={cssClass({ minHeight: "100vh", background: "#f8f9fb", padding: "24px 28px",
-      fontFamily: "'Inter','Plus Jakarta Sans',system-ui,sans-serif" })}>
+      fontFamily: "var(--font-ui)" })}>
       <Toast {...(toast || { msg: null })} />
       <div className={cssClass({ maxWidth: 1280, margin: "0 auto" })}>
         <PageHeader

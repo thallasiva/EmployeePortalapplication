@@ -104,7 +104,7 @@ export default function Profile() {
               background: "rgba(255,255,255,.15)", backdropFilter: "blur(6px)",
               borderRadius: 8, padding: "6px 14px",
               fontSize: 13, fontWeight: 800, color: "#fff", letterSpacing: "-.01em",
-              fontFamily: "'Plus Jakarta Sans','Inter',sans-serif"
+              fontFamily: "var(--font-ui)"
             })}>
               {HRMS_COMPANY.name}
             </div>
@@ -120,7 +120,7 @@ export default function Profile() {
               background: "linear-gradient(135deg,#e87500,#fb923c)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 28, fontWeight: 900, color: "#fff",
-              fontFamily: "'Plus Jakarta Sans','Inter',sans-serif"
+              fontFamily: "var(--font-ui)"
             }))}>
                 {initial}
               </div>
@@ -180,7 +180,7 @@ export default function Profile() {
                 {}
                 <div className={cssClass({
                   fontSize: 18, fontWeight: 900, color: "#111827",
-                  fontFamily: "'Plus Jakarta Sans','Inter',sans-serif",
+                  fontFamily: "var(--font-ui)",
                   letterSpacing: "-.02em", lineHeight: 1.1
                 })}>
                   {HRMS_COMPANY.name}

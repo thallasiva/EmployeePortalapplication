@@ -19,7 +19,6 @@ const AdminPayslips = React.memo(function AdminPayslips() {
     downloadingId,
     loadPayslips,
     handleGenerateAll,
-    handleMarkPaid,
     handleDownloadPdf,
   } = usePayslips(month, year);
   const pagination = usePagination(payslips);
@@ -40,7 +39,6 @@ const AdminPayslips = React.memo(function AdminPayslips() {
         loading={loading}
         pagination={pagination}
         downloadingId={downloadingId}
-        onMarkPaid={handleMarkPaid}
         onDownloadPdf={handleDownloadPdf}
       />
       {showImportModal && (

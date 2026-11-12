@@ -10,7 +10,6 @@ const PayslipTable = React.memo(function PayslipTable({
   loading,
   pagination,
   downloadingId,
-  onMarkPaid,
   onDownloadPdf,
 }) {
   const navigate = useNavigate();
@@ -84,13 +83,13 @@ const PayslipTable = React.memo(function PayslipTable({
                     >
                       <Download size={12} /> {downloadingId === p.payslip_id ? "Preparing…" : "Download PDF"}
                     </button>
-                    {p.status !== "Paid" && (
+                    {p.status !== "Paid" && p.payroll_run_id && (
                       <button
                         type="button"
-                        onClick={() => onMarkPaid(p.payslip_id)}
-                        className="text-xs font-semibold text-brand hover:underline"
+                        onClick={() => navigate("/dashboard/payroll/payments")}
+                        className="text-xs font-semibold text-[#b45309] hover:underline"
                       >
-                        Mark Paid
+                        Reconcile
                       </button>
                     )}
                   </td>

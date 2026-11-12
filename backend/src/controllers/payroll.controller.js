@@ -2,6 +2,10 @@ const salaryComponentService = require('../services/salaryComponent.service');
 const payslipService = require('../services/payslip.service');
 const payrollRunService = require('../services/payrollRun.service');
 const payrollAttendanceService = require('../services/payrollAttendance.service');
+const payrollDashboardService = require('../services/payrollDashboard.service');
+const payrollPolicyService = require('../services/payrollPolicy.service');
+const payrollPayGroupService = require('../services/payrollPayGroup.service');
+const payrollPeriodService = require('../services/payrollPeriod.service');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
@@ -115,19 +119,52 @@ const generateAllPayslips = asyncHandler(async (req, res) =>
   });
   new ApiResponse(200, result, 'Payslips generated and emailed').send(res);
 });
-const markPayslipPaid = asyncHandler(async (req, res) =>
-{
-  const existing = await payslipService.getDetails(req.params.id);
-  if (!existing) throw ApiError.notFound('Payslip not found');
-  await assertCompanyEmployee(req.user, existing.employee_id);
-  const record = await payslipService.markPaid(req.params.id);
-  new ApiResponse(200, record, 'Payslip marked as paid').send(res);
-});
 const listPayrollRuns = asyncHandler(async (req, res) =>
 {
   const { page, limit, offset } = getPagination(req.query);
   const { rows, total } = await payrollRunService.list({ year: req.query.year, status: req.query.status, limit, offset, companyId: req.user.companyId });
   new ApiResponse(200, rows, 'Payroll runs fetched', buildMeta({ page, limit, total })).send(res);
+});
+const dashboard = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const data = await payrollDashboardService.overview({
+    month: req.query.month || now.getMonth() + 1,
+    year: req.query.year || now.getFullYear(),
+    companyId: req.user.companyId,
+  });
+  new ApiResponse(200, data, 'Payroll dashboard fetched').send(res);
+});
+const getPayrollPolicy = asyncHandler(async (req, res) => {
+  const data = await payrollPolicyService.get({ companyId: req.user.companyId, asOf: req.query.as_of });
+  new ApiResponse(200, data, 'Payroll policy fetched').send(res);
+});
+const savePayrollPolicy = asyncHandler(async (req, res) => {
+  const data = await payrollPolicyService.save({ companyId: req.user.companyId, userId: req.user.employeeId, payload: req.body });
+  new ApiResponse(200, data, 'Payroll policy saved').send(res);
+});
+const listPayrollPayGroups = asyncHandler(async (req, res) => {
+  const rows = await payrollPayGroupService.list(req.user.companyId);
+  new ApiResponse(200, rows, 'Payroll pay groups fetched').send(res);
+});
+const listPayrollGroupAssignments = asyncHandler(async (req, res) => {
+  const rows = await payrollPayGroupService.listAssignments(req.user.companyId, req.query.as_of);
+  new ApiResponse(200, rows, 'Pay group assignments fetched').send(res);
+});
+const assignPayrollGroup = asyncHandler(async (req, res) => {
+  const row = await payrollPayGroupService.assignEmployee(req.user.companyId, req.user.employeeId, req.body);
+  new ApiResponse(200, row, 'Employee pay group assignment saved').send(res);
+});
+const createPayrollPayGroup = asyncHandler(async (req, res) => {
+  const row = await payrollPayGroupService.create(req.user.companyId, req.user.employeeId, req.body);
+  new ApiResponse(201, row, 'Payroll pay group created').send(res);
+});
+const updatePayrollPayGroup = asyncHandler(async (req, res) => {
+  const row = await payrollPayGroupService.update(req.user.companyId, req.params.id, req.body);
+  new ApiResponse(200, row, 'Payroll pay group updated').send(res);
+});
+const deactivatePayrollPayGroup = asyncHandler(async (req, res) => {
+  await payrollPayGroupService.deactivate(req.user.companyId, req.params.id);
+  new ApiResponse(200, null, 'Payroll pay group deactivated').send(res);
 });
 const getPayrollRun = asyncHandler(async (req, res) =>
 {
@@ -171,15 +208,17 @@ const submitPayrollReview = asyncHandler(async (req, res) =>
   new ApiResponse(200, await payrollRunService.submitForReview(req.params.id, req.user.employeeId, req.user.companyId), 'Payroll submitted for review').send(res));
 const reviewPayroll = asyncHandler(async (req, res) =>
   new ApiResponse(200, await payrollRunService.review(req.params.id, req.user.employeeId, req.body, req.user.companyId), 'Payroll review recorded').send(res));
-const exportBankFile = asyncHandler(async (req, res) => {
-  const rows = await payrollRunService.exportBankFile(req.params.id, req.user.companyId);
-  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const csv = ['EMP_CODE,EMPLOYEE_NAME,ACCOUNT_NUMBER,IFSC_CODE,AMOUNT', ...rows.map(r => [r.emp_code, r.employee_name, r.account_number, r.ifsc_code, Number(r.net_pay).toFixed(2)].map(esc).join(','))].join('\n');
-  res.attachment(`payroll-${req.params.id}-neft.csv`).type('text/csv').send(csv);
-});
 const listPayrollInputs = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.listInputs({ ...req.query, companyId: req.user.companyId }), 'Payroll inputs fetched').send(res));
 const createPayrollInput = asyncHandler(async (req, res) => new ApiResponse(201, await payrollRunService.createInput({ ...req.body, createdBy: req.user.employeeId, companyId: req.user.companyId }), 'Payroll input submitted for review').send(res));
 const reviewPayrollInput = asyncHandler(async (req, res) => new ApiResponse(200, await payrollRunService.reviewInput(req.params.id, req.user.employeeId, req.body, req.user.companyId), 'Payroll input reviewed').send(res));
+const payrollPeriod = asyncHandler(async (req, res) => new ApiResponse(200, await payrollPeriodService.get({ companyId: req.user.companyId, year: req.params.year, month: req.params.month }), 'Payroll period fetched').send(res));
+const lockPayrollInputs = asyncHandler(async (req, res) => {
+  const snapshot = await payrollAttendanceService.getMonthSummary({ month: req.params.month, year: req.params.year, includeDays: false, companyId: req.user.companyId });
+  const period = await payrollPeriodService.lockInputs({ companyId: req.user.companyId, year: req.params.year, month: req.params.month, userId: req.user.employeeId, reason: req.body.reason, snapshot });
+  new ApiResponse(200, period, 'Payroll inputs locked and calculation snapshot saved').send(res);
+});
+const closePayrollPeriod = asyncHandler(async (req, res) => new ApiResponse(200, await payrollPeriodService.close({ companyId: req.user.companyId, year: req.params.year, month: req.params.month, userId: req.user.employeeId, reason: req.body.reason }), 'Payroll period closed').send(res));
+const reopenPayrollPeriod = asyncHandler(async (req, res) => new ApiResponse(200, await payrollPeriodService.reopen({ companyId: req.user.companyId, year: req.params.year, month: req.params.month, userId: req.user.employeeId, reason: req.body.reason }), 'Payroll period reopened').send(res));
 module.exports = {
   attendanceSummary,
   saveAttendanceAdjustment,
@@ -193,11 +232,19 @@ module.exports = {
   myPayslips,
   getPayslip,
   getPayslipFull,
+  dashboard,
+  getPayrollPolicy,
+  savePayrollPolicy,
+  listPayrollPayGroups,
+  listPayrollGroupAssignments, assignPayrollGroup,
+  createPayrollPayGroup,
+  updatePayrollPayGroup,
+  deactivatePayrollPayGroup,
+  payrollPeriod, lockPayrollInputs, closePayrollPeriod, reopenPayrollPeriod,
   generatePayslip,
-  markPayslipPaid,
   listPayrollRuns,
   getPayrollRun,
-  runPayroll, submitPayrollReview, reviewPayroll, exportBankFile, listPayrollInputs, createPayrollInput, reviewPayrollInput,
+  runPayroll, submitPayrollReview, reviewPayroll, listPayrollInputs, createPayrollInput, reviewPayrollInput,
   importSalaryStructures,
   generateMyPayslip,
   generateAllPayslips

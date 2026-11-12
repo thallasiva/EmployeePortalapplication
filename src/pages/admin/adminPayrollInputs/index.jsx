@@ -8,6 +8,7 @@ import Arrears from "./components/Arrears";
 import OvertimeRegister from "./components/OvertimeRegister";
 import FinalSettlement from "./components/FinalSettlement";
 import StopSalary from "./components/StopSalary";
+import PayrollPeriodControl from "./components/PayrollPeriodControl";
 const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "lop";
@@ -19,7 +20,7 @@ const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
   const needsMonth = ["lop", "overtime", "settlement"].includes(tab);
   const needsYear = ["arrears"].includes(tab);
   return (
-    <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
+    <div className={cssClass({ padding: "28px 32px", fontFamily: "var(--font-ui)" })}>
       <div className={cssClass({ marginBottom: 24 })}>
         <h2 className={cssClass({ margin: 0, fontSize: 20, fontWeight: 700, color: "#1a1a1a" })}>
           Payroll Inputs
@@ -48,6 +49,7 @@ const AdminPayrollInputs = React.memo(function AdminPayrollInputs() {
       {(needsMonth || needsYear) && (
         <MonthBar month={month} year={year} onChange={handleMonthYearChange} />
       )}
+      <PayrollPeriodControl month={month} year={year} />
       <div className={cssClass({ background: "#fff", borderRadius: 10, border: "1px solid #eee", padding: 20, boxShadow: "0 1px 4px #0000000a" })}>
         {tab === "lop" && <LOPDays month={month} year={year} />}
         {tab === "arrears" && <Arrears year={year} />}

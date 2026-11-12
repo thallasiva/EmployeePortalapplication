@@ -1,9 +1,9 @@
 'use strict';
 const BaseService = require('./base.service');
-const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-// IFSC format: 4 uppercase letters, then '0', then 6 alphanumeric chars
-const IFSC_RE = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+const payrollPolicyService = require('./payrollPolicy.service');
+const payrollPeriodService = require('./payrollPeriod.service');
 class PayrollRunService extends BaseService {
   constructor() {
     super('payroll_runs', 'payroll_run_id', ['month', 'year', 'status', 'processed_by', 'processed_on', 'total_amount']);
@@ -41,36 +41,54 @@ class PayrollRunService extends BaseService {
   async submitForReview(id, employeeId, companyId = null) {
     await this.assertCompany(id, companyId);
     await this.assertNotLocked(id);
-    const result = await query(`UPDATE payroll_runs SET review_status='PENDING_REVIEW'
-      WHERE payroll_run_id=? AND review_status IN ('DRAFT','REJECTED')`, [id]);
+    const [runs] = await query('SELECT month,year FROM payroll_runs WHERE payroll_run_id=? AND company_id=? LIMIT 1', [id, companyId]);
+    if (!runs.length) throw ApiError.notFound('Payroll run not found');
+    const period = `${runs[0].year}-${String(runs[0].month).padStart(2, '0')}-01`;
+    const { policy } = await payrollPolicyService.get({ companyId, asOf: period });
+    const approvers = JSON.stringify(policy.approval_employee_ids || []);
+    const result = await query(`UPDATE payroll_runs SET review_status='PENDING_REVIEW', current_approval_step=1,
+        approval_employee_ids_json=? WHERE payroll_run_id=? AND company_id=? AND review_status IN ('DRAFT','REJECTED')`, [approvers, id, companyId]);
     if (!result.affectedRows) throw ApiError.conflict('Payroll run is not ready for review');
     return this.getDetails(id, companyId);
   }
   async review(id, employeeId, { approved, remarks }, companyId = null) {
-    await this.assertCompany(id, companyId);
-    const [run] = await query('SELECT processed_by, review_status FROM payroll_runs WHERE payroll_run_id = ? LIMIT 1', [id]);
-    if (!run) throw ApiError.notFound('Payroll run not found');
-    if (run.review_status !== 'PENDING_REVIEW') throw ApiError.conflict('Payroll run is not awaiting review');
-    if (Number(run.processed_by) === Number(employeeId)) {
-      throw ApiError.forbidden('The payroll processor cannot approve or reject their own run');
-    }
-    // Auto-lock on approval
-    const newStatus = approved ? 'APPROVED' : 'REJECTED';
-    if (approved) {
-      const result = await query(`UPDATE payroll_runs
-        SET review_status=?, reviewed_by=?, reviewed_at=NOW(), approval_remarks=?,
-            is_locked=1, locked_by=?, locked_at=NOW()
-        WHERE payroll_run_id=? AND review_status='PENDING_REVIEW'`,
-        [newStatus, employeeId, remarks || null, employeeId, id]);
-      if (!result.affectedRows) throw ApiError.conflict('Payroll run review was already recorded');
-    } else {
-      const result = await query(`UPDATE payroll_runs
-        SET review_status=?, reviewed_by=?, reviewed_at=NOW(), approval_remarks=?
-        WHERE payroll_run_id=? AND review_status='PENDING_REVIEW'`,
-        [newStatus, employeeId, remarks || null, id]);
-      if (!result.affectedRows) throw ApiError.conflict('Payroll run review was already recorded');
-    }
-    return this.getDetails(id, companyId);
+    const company = Number(companyId);
+    if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
+    await withTransaction(async (conn) => {
+      const [runs] = await conn.query('SELECT * FROM payroll_runs WHERE payroll_run_id=? AND company_id=? FOR UPDATE', [id, company]);
+      const run = runs[0];
+      if (!run) throw ApiError.notFound('Payroll run not found');
+      if (run.review_status !== 'PENDING_REVIEW') throw ApiError.conflict('Payroll run is not awaiting review');
+      if (Number(run.processed_by) === Number(employeeId)) throw ApiError.forbidden('The payroll processor cannot approve or reject their own run');
+      const period = `${run.year}-${String(run.month).padStart(2, '0')}-01`;
+      const { policy } = await payrollPolicyService.get({ companyId: company, asOf: period });
+      let approvers = policy.approval_employee_ids || [];
+      if (run.approval_employee_ids_json) {
+        try { approvers = JSON.parse(run.approval_employee_ids_json); }
+        catch { throw ApiError.internal('Stored payroll approval sequence is not valid JSON'); }
+      }
+      const step = Number(run.current_approval_step || 1);
+      if (approvers.length && Number(approvers[step - 1]) !== Number(employeeId)) {
+        throw ApiError.forbidden('This payroll run is assigned to a different approver');
+      }
+      const [reviewer] = await conn.query('SELECT 1 FROM employees WHERE employee_id=? AND company_id=? LIMIT 1', [employeeId, company]);
+      if (!reviewer) throw ApiError.forbidden('Approver must belong to the payroll company');
+      const decision = approved ? 'APPROVED' : 'REJECTED';
+      await conn.query(`INSERT INTO payroll_run_approvals
+        (payroll_run_id,company_id,approval_step,approver_employee_id,decision,remarks)
+        VALUES (?,?,?,?,?,?)`, [id, company, step, employeeId, decision, remarks || null]);
+      if (!approved) {
+        await conn.query(`UPDATE payroll_runs SET review_status='REJECTED', reviewed_by=?, reviewed_at=NOW(), approval_remarks=?
+          WHERE payroll_run_id=?`, [employeeId, remarks || null, id]);
+      } else if (approvers.length && step < approvers.length) {
+        await conn.query(`UPDATE payroll_runs SET current_approval_step=current_approval_step+1, approval_remarks=?
+          WHERE payroll_run_id=?`, [remarks || null, id]);
+      } else {
+        await conn.query(`UPDATE payroll_runs SET review_status='APPROVED', reviewed_by=?, reviewed_at=NOW(), approval_remarks=?,
+          is_locked=1, locked_by=?, locked_at=NOW() WHERE payroll_run_id=?`, [employeeId, remarks || null, employeeId, id]);
+      }
+    });
+    return this.getDetails(id, company);
   }
   /** Assert the run is not locked — throws ApiError 403 if it is */
   async assertNotLocked(id) {
@@ -113,6 +131,7 @@ class PayrollRunService extends BaseService {
   async createInput({ employeeId, month, year, inputType, amount, remarks, createdBy, companyId }) {
     if (!['OVERTIME', 'ARREARS'].includes(inputType)) throw ApiError.badRequest('inputType must be OVERTIME or ARREARS');
     if (!(Number(amount) > 0)) throw ApiError.badRequest('amount must be greater than zero');
+    await payrollPeriodService.assertInputsOpen(companyId, month, year);
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
     const employeeRows = await query(
@@ -128,7 +147,7 @@ class PayrollRunService extends BaseService {
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
     const rows = await query(
-      `SELECT pi.employee_id
+      `SELECT pi.employee_id,pi.month,pi.year
          FROM payroll_inputs pi
          JOIN employees e ON e.employee_id = pi.employee_id
         WHERE pi.payroll_input_id = ? AND e.company_id = ?
@@ -136,6 +155,7 @@ class PayrollRunService extends BaseService {
       [id, company]
     );
     if (!rows.length) throw ApiError.notFound('Payroll input not found');
+    await payrollPeriodService.assertInputsOpen(companyId, rows[0].month, rows[0].year);
     const reviewerRows = await query(
       'SELECT 1 FROM employees WHERE employee_id = ? AND company_id = ? LIMIT 1',
       [reviewerId, company]
@@ -147,32 +167,6 @@ class PayrollRunService extends BaseService {
     if (!result.affectedRows) throw ApiError.conflict('Payroll input is not awaiting review');
     const updatedRows = await query('SELECT * FROM payroll_inputs WHERE payroll_input_id=?', [id]);
     return updatedRows[0] || null;
-  }
-  async exportBankFile(id, companyId = null) {
-    await this.assertCompany(id, companyId);
-    const rows = await query(`
-      SELECT e.emp_code,
-             CONCAT(e.first_name,' ',IFNULL(e.last_name,'')) AS employee_name,
-             b.account_number, b.ifsc_code, p.net_pay
-      FROM payroll_runs r
-      JOIN payslips  p ON p.payroll_run_id = r.payroll_run_id
-      JOIN employees e ON e.employee_id    = p.employee_id
-      LEFT JOIN employee_bank_details b ON b.employee_id = e.employee_id
-      WHERE r.payroll_run_id=? AND r.review_status='APPROVED' AND p.status='Generated'`, [id]);
-    if (!rows.length) throw ApiError.badRequest('An approved payroll run with generated payslips is required');
-    // IFSC validation before export
-    const invalid = rows.filter(r => !r.ifsc_code || !IFSC_RE.test(r.ifsc_code));
-    if (invalid.length) {
-      const names = invalid.map(r => r.employee_name).join(', ');
-      throw ApiError.badRequest(`NEFT export blocked — invalid or missing IFSC for: ${names}. Please update bank details before exporting.`);
-    }
-    const noAccount = rows.filter(r => !r.account_number);
-    if (noAccount.length) {
-      const names = noAccount.map(r => r.employee_name).join(', ');
-      throw ApiError.badRequest(`NEFT export blocked — missing bank account number for: ${names}.`);
-    }
-    await query('UPDATE payroll_runs SET payment_exported_at=NOW() WHERE payroll_run_id=?', [id]);
-    return rows;
   }
 }
 module.exports = new PayrollRunService();

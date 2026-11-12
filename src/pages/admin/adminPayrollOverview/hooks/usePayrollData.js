@@ -1,7 +1,7 @@
 import "../../../../utils/toastMessages";
 import { apiErrorToast } from "../../../../utils/ToastControllers";
 import { useState, useCallback, useEffect } from "react";
-import { listPayslips, runPayroll, listPayrollRuns } from "../../../../api/payroll.api";
+import { listPayslips, runPayroll, listPayrollRuns, getPayrollDashboard } from "../../../../api/payroll.api";
 import { listEmployees } from "../../../../api/employee.api";
 import { listAttendance } from "../../../../api/attendance.api";
 import { successToast } from "../../../../utils/ToastControllers";
@@ -11,12 +11,13 @@ export function usePayrollData(selected) {
   const [employees, setEmployees] = useState([]);
   const [attendanceRows, setAttendanceRows] = useState([]);
   const [runs, setRuns] = useState([]);
+  const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [ps, emps, attendance, rs] = await Promise.all([
+      const [ps, emps, attendance, rs, metrics] = await Promise.all([
         listPayslips({ month: selected.month, year: selected.year, limit: 500 }),
         listEmployees({ status: "Active", limit: 500 }),
         listAttendance({
@@ -25,11 +26,13 @@ export function usePayrollData(selected) {
           limit: 10000,
         }),
         listPayrollRuns({ year: selected.year, limit: 100 }).catch(() => ({ data: [] })),
+        getPayrollDashboard({ month: selected.month, year: selected.year }).catch(() => null),
       ]);
       setPayslips(ps.data || []);
       setEmployees(emps.data || []);
       setAttendanceRows(attendance.data || []);
       setRuns(rs.data || []);
+      setDashboard(metrics || null);
     } catch {} finally {
       setLoading(false);
     }
@@ -47,5 +50,5 @@ export function usePayrollData(selected) {
       setProcessing(false);
     }
   }, [selected, load]);
-  return { payslips, employees, attendanceRows, runs, loading, processing, handleProcess, load };
+  return { payslips, employees, attendanceRows, runs, dashboard, loading, processing, handleProcess, load };
 }

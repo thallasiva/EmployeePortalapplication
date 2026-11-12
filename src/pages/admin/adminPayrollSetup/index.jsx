@@ -5,12 +5,13 @@ import { ORANGE, TABS } from "./constants";
 import SalaryComponents from "./components/SalaryComponents";
 import RevisionPlanner from "./components/RevisionPlanner";
 import PayrollSettings from "./components/PayrollSettings";
+import PayGroups from "./components/PayGroups";
 const AdminPayrollSetup = React.memo(function AdminPayrollSetup() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get("tab") || "components";
   const setTab = useCallback((t) => setSearchParams({ tab: t }), [setSearchParams]);
   return (
-    <div className={cssClass({ padding: "28px 32px", fontFamily: "sans-serif" })}>
+    <div className={cssClass({ padding: "28px 32px", fontFamily: "var(--font-ui)" })}>
       <div className={cssClass({ marginBottom: 24 })}>
         <h2 className={cssClass({ margin: 0, fontSize: 20, fontWeight: 700, color: "#1a1a1a" })}>
           Payroll Setup
@@ -57,6 +58,7 @@ const AdminPayrollSetup = React.memo(function AdminPayrollSetup() {
         })}
       >
         {tab === "components" && <SalaryComponents />}
+        {tab === "groups" && <PayGroups />}
         {tab === "revision" && <RevisionPlanner />}
         {tab === "settings" && <PayrollSettings />}
       </div>

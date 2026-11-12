@@ -102,12 +102,12 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
                 <rect x={x} y={y} width={CHART.NW} height={CHART.NH} rx={8} fill={isHighlighted ? "#e87500" : bg} />
                 <text x={x + CHART.NW / 2} y={y + 24} textAnchor="middle" fill="white"
                   fontSize={12} fontWeight="700"
-                  className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
+                  className={cssClass({ fontFamily: "var(--font-ui)", pointerEvents: "none" })}>
                   {label}
                 </text>
                 <text x={x + CHART.NW / 2} y={y + 40} textAnchor="middle" fill="rgba(255,255,255,0.85)"
                   fontSize={10}
-                  className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
+                  className={cssClass({ fontFamily: "var(--font-ui)", pointerEvents: "none" })}>
                   {desig}
                 </text>
                 {item.direct_count > 0 && (
@@ -115,7 +115,7 @@ const OrgChart = React.memo(function OrgChart({ nodes, onSelect, highlightIds = 
                     <rect x={x + CHART.NW - 34} y={y + 4} width={32} height={15} rx={7} fill="rgba(255,255,255,0.25)" />
                     <text x={x + CHART.NW - 18} y={y + 14} textAnchor="middle" fill="white"
                       fontSize={9} fontWeight="700"
-                      className={cssClass({ fontFamily: "system-ui,sans-serif", pointerEvents: "none" })}>
+                      className={cssClass({ fontFamily: "var(--font-ui)", pointerEvents: "none" })}>
                       {item.direct_count} <Users size={11} className="inline -mt-0.5" />
                     </text>
                   </>

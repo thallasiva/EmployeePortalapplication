@@ -26,10 +26,34 @@ export const generateMyPayslip = (payload) =>
 apiClient.post("/payroll/payslips/me/generate", payload).then(unwrap);
 export const generateAllPayslips = (payload) =>
 apiClient.post("/payroll/payslips/generate-all", payload).then(unwrap);
-export const markPayslipPaid = (id) =>
-apiClient.put(`/payroll/payslips/${id}/mark-paid`).then(unwrap);
 export const listPayrollRuns = (params) =>
 apiClient.get("/payroll/runs", { params }).then(unwrapList);
+export const getPayrollDashboard = (params) =>
+  apiClient.get("/payroll/dashboard", { params }).then(unwrap);
+export const getPayrollSettings = (params) =>
+  apiClient.get("/payroll/settings", { params }).then(unwrap);
+export const updatePayrollSettings = (payload) =>
+  apiClient.put("/payroll/settings", payload).then(unwrap);
+export const listPayrollPayGroups = () =>
+  apiClient.get("/payroll/pay-groups").then(unwrapList);
+export const createPayrollPayGroup = (payload) =>
+  apiClient.post("/payroll/pay-groups", payload).then(unwrap);
+export const updatePayrollPayGroup = (id, payload) =>
+  apiClient.put(`/payroll/pay-groups/${id}`, payload).then(unwrap);
+export const deactivatePayrollPayGroup = (id) =>
+  apiClient.delete(`/payroll/pay-groups/${id}`).then(unwrap);
+export const listPayrollGroupAssignments = (params) =>
+  apiClient.get("/payroll/pay-groups/assignments", { params }).then(unwrapList);
+export const assignPayrollGroup = (payload) =>
+  apiClient.post("/payroll/pay-groups/assignments", payload).then(unwrap);
+export const getPayrollPeriod = (year, month) =>
+  apiClient.get(`/payroll/periods/${year}/${month}`).then(unwrap);
+export const lockPayrollInputs = (year, month, reason) =>
+  apiClient.post(`/payroll/periods/${year}/${month}/lock-inputs`, { reason }).then(unwrap);
+export const closePayrollPeriod = (year, month, reason) =>
+  apiClient.post(`/payroll/periods/${year}/${month}/close`, { reason }).then(unwrap);
+export const reopenPayrollPeriod = (year, month, reason) =>
+  apiClient.post(`/payroll/periods/${year}/${month}/reopen`, { reason }).then(unwrap);
 export const getPayrollRun = (id) => apiClient.get(`/payroll/runs/${id}`).then(unwrap);
 export const runPayroll = (payload) =>
 apiClient.post("/payroll/runs", payload).then((r) => ({ ...(r.data?.data || {}), message: r.data?.message }));
@@ -47,4 +71,10 @@ export const lockPayrollRun = (id, note) =>
 export const unlockPayrollRun = (id) =>
   apiClient.delete(`/payroll/runs/${id}/lock`).then(unwrap);
 export const exportBankFile = (id) =>
-  apiClient.get(`/payroll/runs/${id}/bank-export`, { responseType: 'blob' });
+  apiClient.post(`/payroll/runs/${id}/bank-export`, {}, { responseType: 'blob' });
+export const listPayrollPaymentBatches = (params) =>
+  apiClient.get('/payroll/payment-batches', { params }).then(unwrapList);
+export const getPayrollPaymentBatch = (id) =>
+  apiClient.get(`/payroll/payment-batches/${id}`).then(unwrap);
+export const reconcilePayrollPaymentBatch = (id, payload) =>
+  apiClient.post(`/payroll/payment-batches/${id}/reconcile`, payload).then(unwrap);

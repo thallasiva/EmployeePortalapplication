@@ -50,7 +50,7 @@ function RevisionLineChart({ rows }) {
   const yTicks = 4;
   const yTickVals = Array.from({ length: yTicks + 1 }, (_, i) => min + i / yTicks * (max - min));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={cssClass({ fontFamily: "sans-serif" })}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={cssClass({ fontFamily: "var(--font-ui)" })}>
       <defs>
         <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#f97316" stopOpacity="0.2" />
