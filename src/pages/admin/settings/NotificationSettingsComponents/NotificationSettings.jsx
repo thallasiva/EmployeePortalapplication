@@ -1,0 +1,130 @@
+import React, { useState, useEffect } from "react";
+import { Bell, Save, RotateCcw, Loader2 } from "lucide-react";
+import client from "../../../../api/client";
+import { apiErrorToast } from "../../../../utils/ToastControllers";
+import { Toggle } from "./Toggle";
+import { CHANNELS } from "./CHANNELS";
+import { buildDefault } from "./shared";
+function NotificationSettings() {
+  const [matrix, setMatrix] = useState(buildDefault);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+  const showToast = (msg, type = "success") => {
+    setToast({
+      msg,
+      type
+    });
+    setTimeout(() => setToast(null), 3000);
+  };
+  /* Load saved settings */
+  useEffect(() => {
+    client.get("/settings/notification-preferences").then(r => {
+      if (r.data?.data) setMatrix(r.data.data);
+    }).catch(error => {
+      setLoadError(true);
+      apiErrorToast(error, "Failed to load notification settings");
+    }).finally(() => setLoading(false));
+  }, []);
+  const toggle = (gi, ei, channel) => {
+    setMatrix(prev => prev.map((g, gIdx) => ({
+      ...g,
+      events: g.events.map((e, eIdx) => gIdx === gi && eIdx === ei ? {
+        ...e,
+        [channel]: !e[channel]
+      } : e)
+    })));
+  };
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await client.put("/settings/notification-preferences", matrix);
+      showToast("Notification settings saved!");
+    } catch {
+      showToast("Save failed", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleReset = () => {
+    setMatrix(buildDefault());
+    showToast("Reset to defaults", "info");
+  };
+  if (loading) return <div className="min-h-screen   flex items-center justify-center">
+      <Loader2 size={28} className="animate-spin text-[#e87500]" />
+    </div>;
+  return <div className="min-h-screen  ">
+      {/* Toast */}
+      {toast && <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-xl text-[13px] font-semibold text-white ${toast.type === "error" ? "bg-red-500" : toast.type === "info" ? "bg-blue-500" : "bg-green-500"}`}>
+          {toast.msg}
+        </div>}
+      {/* Header */}
+      <div className="bg-white border-b border-[#e2e8f0] px-6 py-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#fff8f0] flex items-center justify-center">
+              <Bell size={18} color="#e87500" />
+            </div>
+            <div>
+              <h1 className="text-[18px] font-bold text-[#e87500]">Notification Settings</h1>
+              <p className="text-[12px] text-[#94a3b8]">Configure which events trigger notifications on each channel</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={handleReset} className="flex items-center gap-2 px-4 h-[36px] border border-[#e2e8f0] rounded-lg text-[13px] font-medium text-[#475569] hover:bg-[#f1f5f9]">
+              <RotateCcw size={13} /> Reset
+            </button>
+            <button onClick={handleSave} disabled={saving || loadError} className="flex items-center gap-2 px-4 h-[36px] bg-[#e87500] hover:bg-[#e07000] text-white rounded-lg text-[13px] font-semibold disabled:opacity-60">
+              {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+              {saving ? "Saving…" : "Save Settings"}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        {loadError && <p role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Notification settings could not be loaded. Refresh the page before making changes.
+          </p>}
+        {/* Channel legend */}
+        <div className="flex flex-wrap gap-4 mb-5 bg-white rounded-xl border border-[#f1f5f9] p-4">
+          {CHANNELS.map(ch => <div key={ch.key} className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{
+            background: `${ch.color}18`,
+            color: ch.color
+          }}>
+                {ch.icon}
+              </div>
+              <span className="text-[12px] font-semibold text-[#475569]">{ch.label}</span>
+            </div>)}
+        </div>
+        {/* Matrix */}
+        <div className="space-y-4">
+          {matrix.map((group, gi) => <div key={group.group} className="bg-white rounded-xl border border-[#f1f5f9] overflow-hidden">
+              <div className="px-5 py-3 border-b border-[#f8fafc] bg-[#fafafa]">
+                <span className="text-[13px] font-bold text-[#e87500]">{group.group}</span>
+              </div>
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-[#f8fafc]">
+                    <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wide">Event</th>
+                    {CHANNELS.map(ch => <th key={ch.key} className="px-3 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide" style={{
+                  color: ch.color
+                }}>{ch.label}</th>)}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f8fafc]">
+                  {group.events.map((ev, ei) => <tr key={ev.label} className="hover:bg-[#fafafa]">
+                      <td className="px-5 py-3 text-[#475569]">{ev.label}</td>
+                      {CHANNELS.map(ch => <td key={ch.key} className="px-3 py-3 text-center">
+                          <Toggle on={ev[ch.key]} onToggle={() => toggle(gi, ei, ch.key)} />
+                        </td>)}
+                    </tr>)}
+                </tbody>
+              </table>
+            </div>)}
+        </div>
+      </div>
+    </div>;
+}
+export { NotificationSettings };

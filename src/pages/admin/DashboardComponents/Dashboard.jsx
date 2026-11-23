@@ -1,0 +1,114 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Users, CalendarDays, Clock, UserX, AlertTriangle, Building2, ClipboardCheck, TrendingUp, ArrowRight } from "lucide-react";
+import { useAdminDashboard } from "../../../hooks/useAdminDashboard";
+import LeaveEmployeeDetailTable from "../../../component/admin/LeaveEmployeeDetailTable";
+import AdminChatbot from "../../../component/admin/AdminChatbot";
+import RoleDashboardWidgets from "../../../component/RoleDashboardWidgets";
+import { getStoredUser } from "../../../data/auth";
+import { KpiCard } from "./KpiCard";
+import { MiniList } from "./MiniList";
+function Dashboard() {
+  const navigate = useNavigate();
+  const user = getStoredUser();
+  const {
+    metrics,
+    activities,
+    loading,
+    error
+  } = useAdminDashboard();
+  const go = path => () => navigate(path);
+  const goLeave = (state = {}) => () => navigate("/dashboard/leave", {
+    state
+  });
+  return <div className="admin-dash space-y-6 pb-20">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Welcome back, {user?.name?.split(" ")[0] ?? "Admin"}!
+          </h1>
+        </div>
+        {loading && <span className="text-xs text-gray-400">Refreshing dashboard…</span>}
+      </div>
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Live dashboard data is unavailable: {error.message || "please try again later."}
+        </p>}
+      <RoleDashboardWidgets data={metrics} />
+      <section>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+          Today at a glance
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
+          <KpiCard label="Employees" value={metrics.totalEmployees} icon={Users} className="bg-brand text-white" onClick={go("/dashboard/employee")} />
+          <KpiCard label="On Leave" value={metrics.onLeaveToday} sub="approved today" icon={CalendarDays} className="bg-[#e87500] text-white" onClick={go("/dashboard/leave")} />
+          <KpiCard label="Pending Leave" value={metrics.pendingLeave} sub="needs action" icon={Clock} className="bg-orange-500 text-white" onClick={goLeave({
+          tab: "pending"
+        })} />
+          <KpiCard label="Present" value={metrics.presentToday} sub={`of ${metrics.totalEmployees}`} icon={TrendingUp} className="bg-emerald-600 text-white" onClick={go("/dashboard/attendance")} />
+          <KpiCard label="Late" value={metrics.lateToday} icon={AlertTriangle} className="bg-amber-500 text-white" onClick={go("/dashboard/attendance")} />
+          <KpiCard label="Absent" value={metrics.absentToday} icon={UserX} className="bg-rose-500 text-white" onClick={go("/dashboard/attendance")} />
+          <KpiCard label="Attendance" value={`${metrics.attendanceRate}%`} icon={ClipboardCheck} className="bg-teal-600 text-white" onClick={go("/dashboard/attendance")} />
+          <KpiCard label="Companies" value={metrics.companies} icon={Building2} className="bg-violet-600 text-white" onClick={go("/dashboard/company")} />
+        </div>
+      </section>
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="xl:col-span-2 admin-dash-card">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                Employees on Leave Today ({metrics.onLeaveToday})
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Approved leave for today — same data as Leave calendar when you click today&apos;s date
+              </p>
+            </div>
+            <button type="button" onClick={go("/dashboard/leave")} className="text-sm font-medium text-emerald-600 hover:underline">
+              Open Leave Management
+            </button>
+          </div>
+          <LeaveEmployeeDetailTable rows={metrics.onLeaveList.map(r => ({
+          ...r,
+          status: "Approved"
+        }))} emptyMessage="No employees on approved leave today." />
+        </div>
+        <MiniList title={`Pending Leave Requests (${metrics.pendingLeave})`} items={metrics.pendingList} emptyText="No pending requests." onViewAll={goLeave({
+        tab: "pending"
+      })} renderItem={row => <li key={row.id}>
+              <button type="button" onClick={goLeave({
+          tab: "pending",
+          requestId: row.id
+        })} className="w-full text-left text-sm p-2 rounded-lg border border-orange-100 bg-orange-50/50 hover:bg-orange-100/80 hover:border-orange-200 transition-colors cursor-pointer">
+                <p className="font-medium text-gray-900">{row.employee}</p>
+                <p className="text-xs text-gray-500">
+                  {row.type} · {row.from} – {row.to}
+                </p>
+                <p className="text-[10px] text-emerald-600 mt-1">Open in Leave Management <ArrowRight size={11} className="inline -mt-0.5" /></p>
+              </button>
+            </li>} />
+      </section>
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <MiniList title={`Late Today (${metrics.lateToday})`} items={metrics.lateEmployees} emptyText="No late arrivals." onViewAll={go("/dashboard/attendance")} renderItem={emp => <li key={emp.id} className="flex justify-between text-sm py-1.5 border-b border-gray-50">
+              <span className="font-medium text-gray-800">{emp.name}</span>
+              <span className="text-orange-600 text-xs">{emp.checkIn} ({emp.lateBy})</span>
+            </li>} />
+        <MiniList title={`Absent Today (${metrics.absentToday})`} items={metrics.absentEmployees} emptyText="Everyone checked in or on leave." onViewAll={go("/dashboard/attendance")} renderItem={emp => <li key={emp.id} className="flex justify-between text-sm py-1.5 border-b border-gray-50">
+              <span className="font-medium text-gray-800">{emp.name}</span>
+              <span className="text-rose-500 text-xs">{emp.department}</span>
+            </li>} />
+        <MiniList title="Recent activity" items={activities.length ? activities : [{
+        id: "pending",
+        text: `${metrics.pendingLeave} leave requests awaiting approval`
+      }, {
+        id: "onleave",
+        text: `${metrics.onLeaveToday} employees on leave today`
+      }, {
+        id: "checkedin",
+        text: `${metrics.checkedIn} checked in of ${metrics.totalEmployees}`
+      }]} emptyText="No recent activity." onViewAll={go("/dashboard/report")} renderItem={item => <li key={item.id} className="text-sm text-gray-600 py-1.5 border-b border-gray-50">
+              {item.text}
+            </li>} />
+      </section>
+      <AdminChatbot />
+    </div>;
+}
+export { Dashboard };

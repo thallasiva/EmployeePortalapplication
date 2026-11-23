@@ -1,0 +1,3 @@
+const inputClassName = "w-full rounded-[10px] border-[1.5px] border-slate-200 bg-slate-50 px-3.5 py-[11px] text-[0.9rem] text-slate-800 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10";
+const submitButtonClassName = "w-full rounded-[10px] bg-gradient-to-br from-orange-500 to-orange-700 px-3 py-3 text-[0.95rem] font-bold tracking-[0.02em] text-white shadow-[0_6px_20px_rgba(232,117,0,0.25)] transition hover:-translate-y-px hover:shadow-[0_12px_32px_rgba(232,117,0,0.35)] disabled:cursor-not-allowed disabled:bg-none disabled:bg-gray-300 disabled:shadow-none";
+export { inputClassName, submitButtonClassName };

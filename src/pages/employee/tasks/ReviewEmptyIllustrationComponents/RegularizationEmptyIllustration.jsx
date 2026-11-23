@@ -1,0 +1,12 @@
+import React from "react";
+function RegularizationEmptyIllustration() {
+  return <svg className="review-hub__empty-illustration" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <rect x="70" y="30" width="60" height="50" rx="4" fill="#e8f4fc" stroke="#fed7aa" strokeWidth="1.5" />
+      <path d="M96 51l8 8m0-8l-8 8" stroke="#fb923c" strokeWidth="2" strokeLinecap="round" />
+      <rect x="30" y="55" width="45" height="32" rx="3" fill="#f0f0f0" stroke="#ddd" />
+      <circle cx="52" cy="68" r="6" fill="#fed7aa" />
+      <ellipse cx="130" y="50" rx="22" ry="14" fill="#e8f4fc" stroke="#fed7aa" />
+      <path d="M125 48 Q135 42 145 48" stroke="#fb923c" fill="none" strokeWidth="1.5" />
+    </svg>;
+}
+export { RegularizationEmptyIllustration };
