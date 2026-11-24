@@ -45,6 +45,12 @@ const HrFeedbackModal = React.memo(function HrFeedbackModal({
           <Field label="Feedback Comments">
             <Textarea name="feedbackComments" value={fb.feedbackComments} onChange={onChange} rows={4} placeholder="Enter detailed interviewer feedback..." />
           </Field>
+          <Field label="Interviewer Rating (1–5)">
+            <Select name="feedbackRating" value={fb.feedbackRating || ""} onChange={onChange} options={[
+              { value: "", label: "No rating" },
+              ...[1, 2, 3, 4, 5].map((rating) => ({ value: String(rating), label: `${rating} / 5` }))
+            ]} />
+          </Field>
         </div>}
     </Modal>;
 });

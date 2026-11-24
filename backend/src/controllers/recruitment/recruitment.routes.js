@@ -9,6 +9,7 @@ const onboardingCtrl = require("./onboarding.controller");
 const dashboardCtrl = require("./dashboard.controller");
 const resumeMatchCtrl = require("./resumeMatch.controller");
 const aiInterviewCtrl = require("./aiInterview.controller");
+const availabilityCtrl = require("./interviewerAvailability.controller");
 const V = require("./recruitment.validator");
 const { callProcedure } = require("../../config/db");
 // ── PUBLIC routes (no auth required) ─────────────────────────────────────────
@@ -59,6 +60,11 @@ get(ALL_REC, candidateCtrl.list).
 post(REC_TEAM, V.validateCreateCandidate, candidateCtrl.create);
 router.route("/candidates/:id").
 get(ALL_REC, candidateCtrl.getOne);
+router.get("/candidates/:id/history", ALL_REC, candidateCtrl.getHistory);
+router.route("/candidates/:id/followups").
+get(ALL_REC, candidateCtrl.listFollowups).
+post(REC_TEAM, V.validateCreateFollowup, candidateCtrl.createFollowup);
+router.put("/candidates/:id/followups/:followupId", REC_TEAM, V.validateUpdateFollowup, candidateCtrl.updateFollowup);
 router.put("/candidates/:id/status",
 REC_TEAM,
 V.validateUpdateCandidateStatus,
@@ -71,6 +77,12 @@ router.get("/parser-logs", ADMIN_TL, candidateCtrl.getParserLogs);
 router.route("/interviews").
 get(ALL_REC, interviewCtrl.list).
 post(REC_TEAM, V.validateScheduleInterview, interviewCtrl.schedule);
+router.route("/interviews/availability").
+get(ALL_REC, availabilityCtrl.list).
+post(REC_TEAM, V.validateCreateAvailability, availabilityCtrl.create);
+router.post("/interviews/availability/weekly", REC_TEAM, V.validateCreateWeeklyAvailability, availabilityCtrl.createWeekly);
+router.delete("/interviews/availability/weekly/:id", REC_TEAM, availabilityCtrl.removeWeekly);
+router.delete("/interviews/availability/:id", REC_TEAM, availabilityCtrl.remove);
 router.route("/interviews/:id").
 get(ALL_REC, interviewCtrl.getOne);
 router.put("/interviews/:id/feedback",

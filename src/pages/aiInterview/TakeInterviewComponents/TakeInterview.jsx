@@ -19,12 +19,21 @@ function TakeInterview() {
   const [error, setError] = useState("");
   const [devCode, setDevCode] = useState("");
   const [stream, setStream] = useState(null);
+  const [cameraStatus, setCameraStatus] = useState({});
+  const [cameraBusy, setCameraBusy] = useState(false);
+  const streamRef = useRef(null);
+  const cameraRequestRef = useRef(0);
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const [tabWarning, setTabWarning] = useState(false);
   const [violations, setViolations] = useState(0);
   const [offline, setOffline] = useState(!navigator.onLine);
   const MAX_VIOLATIONS = 3;
   const handleFinishRef = useRef(null);
+  useEffect(() => () => {
+    cameraRequestRef.current += 1;
+    streamRef.current?.getTracks().forEach(track => track.stop());
+    streamRef.current = null;
+  }, [token]);
   useEffect(() => {
     const el = document.createElement("style");
     el.textContent = STYLE;
@@ -94,16 +103,28 @@ function TakeInterview() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [session?.expiresAt, screen, token]); // eslint-disable-line
-  function endStream() {
-    stream?.getTracks().forEach(t => t.stop());
+  const endStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
     setStream(null);
     window.speechSynthesis?.cancel();
-  }
+  }, []);
+  useEffect(() => {
+    if (screen === "error") endStream();
+  }, [screen, endStream]);
   async function requestCamera() {
+    const requestId = ++cameraRequestRef.current;
+    setCameraStatus({});
+    setError("");
+    streamRef.current?.getTracks().forEach(track => track.stop());
+    streamRef.current = null;
+    setStream(null);
     if (!navigator.mediaDevices?.getUserMedia) {
       setError("Camera access is not supported in this browser.");
-      return false;
+      setCameraStatus({ failures: 3, camBlocked: true });
+      return;
     }
+    setCameraBusy(true);
     try {
       const s = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -111,11 +132,18 @@ function TakeInterview() {
         },
         audio: true
       });
+      if (requestId !== cameraRequestRef.current) {
+        s.getTracks().forEach(track => track.stop());
+        return;
+      }
+      streamRef.current = s;
       setStream(s);
-      return true;
     } catch (err) {
-      setError(err?.name === "NotAllowedError" ? "Please allow camera and microphone access to continue." : "Unable to access your camera. Check that it is connected and not being used by another app.");
-      return false;
+      if (requestId !== cameraRequestRef.current) return;
+      setError(err?.name === "NotAllowedError" ? "Camera or microphone permission was denied. Check your browser permissions and retry." : "Unable to access your camera. Check that it is connected and not being used by another app.");
+      setCameraStatus({ failures: 3, camBlocked: true });
+    } finally {
+      if (requestId === cameraRequestRef.current) setCameraBusy(false);
     }
   }
   function setNextQuestion(data) {
@@ -133,10 +161,19 @@ function TakeInterview() {
     setAiSpeaking(true);
     speak(data.question?.question, () => setAiSpeaking(false));
   }
-  const handleJoin = async () => {
-    const cameraReady = await requestCamera();
-    if (cameraReady) setScreen("intro");
-  };
+  async function requestManualCameraReview() {
+    setCameraBusy(true);
+    setError("");
+    try {
+      const response = await logAIInterviewProctoring(token, { event: "CAMERA_MANUAL_REVIEW" });
+      if (!response?.data?.data?.ok) throw new Error("Camera review was not saved");
+      setScreen("intro");
+    } catch {
+      setError("Could not request camera review. Try again.");
+    } finally {
+      setCameraBusy(false);
+    }
+  }
   const handleIntroDone = useCallback(() => {
     setScreen("working");
     startAIInterview(token).then(data => {
@@ -150,7 +187,7 @@ function TakeInterview() {
       setError(err?.response?.data?.message || "Unable to start interview.");
       setScreen("error");
     });
-  }, [token]); // eslint-disable-line
+  }, [token, endStream]);
   const handleFinish = useCallback(async () => {
     endStream();
     setScreen("working");
@@ -158,7 +195,7 @@ function TakeInterview() {
       await completeAIInterview(token);
     } catch (_) {}
     setScreen("done");
-  }, [token, stream]); // eslint-disable-line
+  }, [token, endStream]);
   useEffect(() => {
     handleFinishRef.current = handleFinish;
   }, [handleFinish]);
@@ -273,7 +310,9 @@ function TakeInterview() {
       marginTop: 8
     }}>You may now close this window.</p>
     </div>;
-  if (screen === "join") return <JoinScreen session={session} error={error} onJoin={handleJoin} />;
+  if (screen === "join") return <JoinScreen session={session} error={error} stream={stream}
+    cameraStatus={cameraStatus} cameraBusy={cameraBusy} onFaceStatus={setCameraStatus}
+    onCameraRetry={requestCamera} onManualReview={requestManualCameraReview} onJoin={() => setScreen("intro")} />;
   if (screen === "otp") return <OtpScreen email={session?.candidateEmail} token={token} devCode={devCode} onVerify={() => setScreen("join")} />;
   if (screen === "intro") return <AiSpeakingIntro session={session} onSkip={handleIntroDone} onStart={handleIntroDone} />;
   return <InterviewRoom token={token} question={question} sessionInfo={session} remaining={remaining} stream={stream} aiSpeaking={aiSpeaking} violations={violations} maxViolations={MAX_VIOLATIONS} tabWarning={tabWarning} onDismissWarning={() => setTabWarning(false)} offline={offline} onAnswer={handleAnswer} onFinish={handleFinish} />;

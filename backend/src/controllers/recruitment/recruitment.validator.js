@@ -6,6 +6,11 @@ const JOB_STATUSES = ["Active", "On Hold", "Closed", "Find items"];
 const INTERVIEW_LEVELS = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
 const INTERVIEW_TYPES = ["Video Call", "Phone", "In-Person", "Teams", "GoogleMeet", "Zoom"];
 const OFFER_RESPONSES = ["Accepted", "Rejected"];
+const CANDIDATE_STATUSES = [
+  "Applied", "Work in Progress", "Screening", "Interview Scheduled", "Schedule Interview",
+  "Shortlisted", "Selected", "Offer Released", "Offer Accepted", "Offer Rejected",
+  "Joining Formalities", "Onboarded", "Rejected", "Not Selected"
+];
 const createJobSchema = Joi.object({
   title: Joi.string().max(200).required(),
   client: Joi.string().max(200).required(),
@@ -55,7 +60,7 @@ const createCandidateSchema = Joi.object({
   recruiterId: Joi.number().integer().positive().optional().allow(null)
 });
 const updateCandidateStatusSchema = Joi.object({
-  status: Joi.string().required()
+  status: Joi.string().valid(...CANDIDATE_STATUSES).required()
 });
 const scheduleInterviewSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
@@ -75,9 +80,60 @@ const scheduleInterviewSchema = Joi.object({
   teamsEnd: Joi.date().iso().allow(null)
 });
 const feedbackSchema = Joi.object({
-  feedbackStatus: Joi.string().valid("Shortlist", "Move to Next Round", "Reject / Drop").required(),
+  feedbackStatus: Joi.string().valid("Shortlist", "Move to Next Round", "Reject / Drop", "Selected", "Not Selected").required(),
   feedbackComments: Joi.string().allow("", null),
+  feedbackRating: Joi.number().integer().min(1).max(5).allow(null),
   shortlisted: Joi.boolean().default(false)
+});
+const createAvailabilitySchema = Joi.object({
+  interviewerName: Joi.string().trim().min(1).max(200).required(),
+  availableFrom: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).required(),
+  availableTo: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).required()
+}).custom((value, helpers) => {
+  const isValidDateTime = (dateTime) => {
+    if (typeof dateTime !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateTime)) return false;
+    const [date, time] = dateTime.split("T");
+    const [year, month, day] = date.split("-").map(Number);
+    const [hour, minute] = time.split(":").map(Number);
+    const parsed = new Date(Date.UTC(year, month - 1, day, hour, minute));
+    return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 &&
+      parsed.getUTCDate() === day && hour <= 23 && minute <= 59;
+  };
+  if (!isValidDateTime(value.availableFrom) || !isValidDateTime(value.availableTo) ||
+      value.availableTo <= value.availableFrom) {
+    return helpers.error("any.invalid");
+  }
+  return value;
+}).messages({ "any.invalid": "Availability must contain valid date-times and end after it starts" });
+const createWeeklyAvailabilitySchema = Joi.object({
+  interviewerName: Joi.string().trim().min(1).max(200).required(),
+  weekday: Joi.number().integer().min(0).max(6).required(),
+  availableFrom: Joi.string().pattern(/^(?:[01]\d|2[0-3]):[0-5]\d$/).required(),
+  availableTo: Joi.string().pattern(/^(?:[01]\d|2[0-3]):[0-5]\d$/).required(),
+  effectiveFrom: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required(),
+  effectiveTo: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).allow(null, "")
+}).custom((value, helpers) => {
+  const isValidDate = (date) => {
+    if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+    const [year, month, day] = date.split("-").map(Number);
+    const parsed = new Date(Date.UTC(year, month - 1, day));
+    return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 &&
+      parsed.getUTCDate() === day;
+  };
+  if (!isValidDate(value.effectiveFrom) ||
+      (value.effectiveTo && (!isValidDate(value.effectiveTo) || value.effectiveTo < value.effectiveFrom)) ||
+      value.availableFrom >= value.availableTo) {
+    return helpers.error("any.invalid");
+  }
+  return value;
+}).messages({ "any.invalid": "Weekly availability must have valid dates and an end time after its start" });
+const createFollowupSchema = Joi.object({
+  assignedTo: Joi.number().integer().positive().optional(),
+  dueAt: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/).required(),
+  note: Joi.string().trim().min(1).max(2000).required()
+});
+const updateFollowupSchema = Joi.object({
+  status: Joi.string().valid("open", "completed", "cancelled").required()
 });
 const createOfferSchema = Joi.object({
   candidateId: Joi.number().integer().positive().required(),
@@ -116,6 +172,10 @@ module.exports = {
   validateUpdateCandidateStatus: validate(updateCandidateStatusSchema),
   validateScheduleInterview: validate(scheduleInterviewSchema),
   validateFeedback: validate(feedbackSchema),
+  validateCreateAvailability: validate(createAvailabilitySchema),
+  validateCreateWeeklyAvailability: validate(createWeeklyAvailabilitySchema),
+  validateCreateFollowup: validate(createFollowupSchema),
+  validateUpdateFollowup: validate(updateFollowupSchema),
   validateCreateOffer: validate(createOfferSchema),
   validateOfferResponse: validate(offerResponseSchema),
   validateCreateOnboarding: validate(createOnboardingSchema),

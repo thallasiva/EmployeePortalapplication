@@ -85,6 +85,9 @@ const InterviewHistory = React.memo(function InterviewHistory({ candidateId, rol
                   {iv.feedback_status && !isScheduled &&
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.badge}`}>{iv.feedback_status}</span>
                   }
+                  {iv.feedback_rating != null && !isScheduled &&
+                    <span className="text-[10px] font-semibold text-amber-700">{iv.feedback_rating}/5 rating</span>
+                  }
                 </div>
               </div>
               {cState?.editing ? (

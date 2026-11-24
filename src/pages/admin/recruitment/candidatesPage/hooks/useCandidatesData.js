@@ -10,6 +10,11 @@ export function useCandidatesData({ role }) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterJob, setFilterJob] = useState("");
+  const [filterSkill, setFilterSkill] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterSource, setFilterSource] = useState("");
+  const [minExperience, setMinExperience] = useState("");
+  const [maxExperience, setMaxExperience] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [detail, setDetail] = useState(null);
   const tableRef = useRef(null);
@@ -28,6 +33,11 @@ export function useCandidatesData({ role }) {
       if (filterStatus) params.status = filterStatus;
       if (filterJob) params.jobReqId = filterJob;
       if (search) params.search = search;
+      if (filterSkill.trim()) params.skill = filterSkill.trim();
+      if (filterRole.trim()) params.role = filterRole.trim();
+      if (filterSource.trim()) params.source = filterSource.trim();
+      if (minExperience !== "") params.minExperience = minExperience;
+      if (maxExperience !== "") params.maxExperience = maxExperience;
       const { data } = await listCandidates(params);
       setCandidates(data ?? []);
     } catch (err) {
@@ -35,7 +45,7 @@ export function useCandidatesData({ role }) {
     } finally {
       setLoading(false);
     }
-  }, [filterStatus, filterJob, search]);
+  }, [filterStatus, filterJob, search, filterSkill, filterRole, filterSource, minExperience, maxExperience]);
   useEffect(() => { loadCandidates(); }, [loadCandidates]);
   const updateStatus = useCallback(async (candidateId, status) => {
     const prevStatus = candidates.find((c) => c.candidate_id === candidateId)?.status;
@@ -58,14 +68,19 @@ export function useCandidatesData({ role }) {
       (c.candidate_code || "").toLowerCase().includes(q);
     return matchQ &&
       (!filterStatus || c.status === filterStatus) &&
-      (!filterJob || String(c.job_req_id) === String(filterJob));
+      (!filterJob || String(c.job_req_id) === String(filterJob)) &&
+      (!filterSkill || (c.skill_set || "").toLowerCase().includes(filterSkill.toLowerCase())) &&
+      (!filterRole || (c.job_title || "").toLowerCase().includes(filterRole.toLowerCase())) &&
+      (!filterSource || (c.source || "").toLowerCase().includes(filterSource.toLowerCase())) &&
+      (minExperience === "" || Number(c.total_experience ?? c.relevant_experience) >= Number(minExperience)) &&
+      (maxExperience === "" || Number(c.total_experience ?? c.relevant_experience) <= Number(maxExperience));
   });
   return {
     candidates, jobs, recruiters, loading, filtered,
-    search, filterStatus, filterJob,
+    search, filterStatus, filterJob, filterSkill, filterRole, filterSource, minExperience, maxExperience,
     addOpen, detail, tableRef,
     isAdmin, isTL, isHRMgr, isRecruiter,
-    setSearch, setFilterStatus, setFilterJob,
+    setSearch, setFilterStatus, setFilterJob, setFilterSkill, setFilterRole, setFilterSource, setMinExperience, setMaxExperience,
     setAddOpen, setDetail,
     loadCandidates, updateStatus,
   };

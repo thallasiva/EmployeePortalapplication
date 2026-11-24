@@ -16,7 +16,7 @@ export const BLANK_INT = {
   teamsEnd: "",
   notes: "",
 };
-export const BLANK_FB = { feedbackStatus: "", feedbackComments: "", shortlisted: false };
+export const BLANK_FB = { feedbackStatus: "", feedbackComments: "", feedbackRating: "", shortlisted: false };
 export const LEVEL_ORDER = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
 export const STATUS_CLS = {
   Scheduled: "bg-blue-100 text-[#e87500]",

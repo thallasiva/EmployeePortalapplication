@@ -1,71 +1,72 @@
 import React, { useEffect, useRef, useState } from "react";
 import { VideoOff, Eye } from "lucide-react";
 import { C } from "./shared";
-/* ─── Webcam + canvas face detection ─────────────────────────────────────── */
+/* ─── Webcam preview and face detection ──────────────────────────────────── */
 function CandidateVideo({
   stream,
   name,
   onFaceStatus
 }) {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [faceWarn, setFaceWarn] = useState(false);
-  const [camBlocked, setCamBlocked] = useState(false);
+  const [status, setStatus] = useState({});
+  const { noFace: faceWarn, camBlocked } = status;
   useEffect(() => {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
-  }, [stream]);
-  useEffect(() => {
-    if (!stream) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
     const video = videoRef.current;
-    async function detectFace() {
-      if (!video || video.readyState < 2) return;
-      if (typeof window.FaceDetector === "function") {
+    let active = true;
+    let timer;
+    let detector;
+    let failures = 0;
+    let detectionPending = false;
+    const startedAt = Date.now();
+    const publish = (result, failed = false) => {
+      if (!active) return;
+      failures = failed ? failures + 1 : 0;
+      const next = { ...result, failures };
+      setStatus(next);
+      onFaceStatus?.(next);
+    };
+
+    if (video) video.srcObject = stream;
+    if (!stream) {
+      publish({ camBlocked: true }, true);
+      return;
+    }
+
+    async function check() {
+      if (!stream.active || !stream.getVideoTracks().some(track => track.readyState === "live")) {
+        publish({ camBlocked: true }, true);
+      } else if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight
+        || !stream.getVideoTracks().some(track => track.readyState === "live" && track.enabled && !track.muted)) {
+        if (Date.now() - startedAt >= 4000) publish({ camBlocked: true }, true);
+      } else if (typeof window.FaceDetector !== "function" || detectionPending) {
+        publish({ detectionUnavailable: true }, true);
+      } else {
+        let deadline;
         try {
-          const faces = await new window.FaceDetector({
-            fastMode: true,
-            maxDetectedFaces: 2
-          }).detect(video);
-          const noFace = faces.length === 0;
-          setCamBlocked(false);
-          setFaceWarn(noFace);
-          onFaceStatus?.({
-            noFace,
-            camBlocked: false
+          detector ||= new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+          detectionPending = true;
+          const detection = Promise.resolve().then(() => detector.detect(video))
+            .finally(() => { detectionPending = false; });
+          const timeout = new Promise((_, reject) => {
+            deadline = setTimeout(() => reject(new Error("Face check timed out")), 3000);
           });
-          return;
-        } catch (_) {
-          // Fall through to the compatibility detector below.
+          const faces = await Promise.race([detection, timeout]);
+          publish({ detected: faces.length > 0, noFace: faces.length === 0 }, faces.length === 0);
+        } catch {
+          publish({ detectionUnavailable: true }, true);
+        } finally {
+          clearTimeout(deadline);
         }
       }
-      ctx.drawImage(video, 0, 0, 160, 120);
-      const {
-        data
-      } = ctx.getImageData(30, 10, 100, 100);
-      let skinPx = 0;
-      const totalPx = data.length / 4;
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i],
-          g = data[i + 1],
-          b = data[i + 2];
-        const bright = (r + g + b) / 3;
-        const isSkin = r > 60 && g > 40 && b > 20 && r > b && r > g && r - Math.min(g, b) > 15 && bright > 40;
-        if (isSkin) skinPx++;
-      }
-      const skinRatio = skinPx / totalPx;
-      const tooBlack = skinPx < 5;
-      const noFace = skinRatio < 0.015;
-      setCamBlocked(tooBlack);
-      setFaceWarn(noFace && !tooBlack);
-      onFaceStatus?.({
-        noFace,
-        camBlocked: tooBlack
-      });
+      if (active) timer = setTimeout(check, 1800);
     }
-    detectFace();
-    const id = setInterval(detectFace, 2500);
-    return () => clearInterval(id);
+
+    check();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      if (video) video.srcObject = null;
+    };
   }, [stream, onFaceStatus]);
   return <div style={{
     position: "relative",
@@ -73,9 +74,6 @@ function CandidateVideo({
     width: "100%",
     height: "100%"
   }}>
-      <canvas ref={canvasRef} width="160" height="120" style={{
-      display: "none"
-    }} />
       {stream ? <video ref={videoRef} autoPlay playsInline muted style={{
       width: "100%",
       height: "100%",
@@ -118,7 +116,7 @@ function CandidateVideo({
         borderRadius: "50%",
         background: "#fff",
         display: "inline-block"
-      }} />REC
+      }} />LIVE
         </div>}
       {camBlocked && <div className="slide-down" style={{
       position: "absolute",

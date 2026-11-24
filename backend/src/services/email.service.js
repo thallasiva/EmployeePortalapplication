@@ -16,6 +16,15 @@ async function getSavedSmtpSettings() {
   return _settingsCache;
 }
 
+async function getSmtpReadiness() {
+  const settings = await getSavedSmtpSettings();
+  return Boolean(
+    (settings.host || emailCfg.host) &&
+    (settings.username || emailCfg.user) &&
+    (settings.password || emailCfg.pass)
+  );
+}
+
 async function getTransporter(overrides) {
   const settings = overrides || await getSavedSmtpSettings();
   const host = settings.host || emailCfg.host;
@@ -120,4 +129,13 @@ async function verifySmtp(overrides) {
     return { ok: false, reason: err.message };
   }
 }
-module.exports = { sendMail, sendMailNow, sendBulk, processQueuedJob, verifySmtp, getTransporter, clearSmtpCache };
+module.exports = {
+  sendMail,
+  sendMailNow,
+  sendBulk,
+  processQueuedJob,
+  verifySmtp,
+  getSmtpReadiness,
+  getTransporter,
+  clearSmtpCache
+};

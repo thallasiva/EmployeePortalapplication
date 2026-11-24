@@ -60,6 +60,9 @@ const RoundRow = React.memo(function RoundRow({
               <Star size={10} fill="currentColor" />
             </span>
           )}
+          {iv.feedback_rating != null && (
+            <span className="text-[10px] font-semibold text-amber-700">{iv.feedback_rating}/5 rating</span>
+          )}
         </div>
         {isExternal && (
           <div className="flex items-center gap-1">

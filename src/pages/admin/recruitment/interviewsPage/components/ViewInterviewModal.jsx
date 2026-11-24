@@ -49,6 +49,7 @@ const ViewInterviewModal = React.memo(function ViewInterviewModal({
             />
             <DetailRow label="Status" value={viewIv.status} />
             <DetailRow label="Outcome" value={viewIv.feedback_status || "Pending"} />
+            <DetailRow label="Interviewer rating" value={viewIv.feedback_rating == null ? "Not rated" : `${viewIv.feedback_rating} / 5`} />
           </div>
           {viewIv.to_addresses && (
             <div className="mt-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">

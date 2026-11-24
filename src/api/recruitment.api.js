@@ -21,12 +21,30 @@ export const createCandidate = (payload) =>
 apiClient.post("/recruitment/candidates", payload).then(unwrap);
 export const updateCandidateStatus = (id, status) =>
 apiClient.put(`/recruitment/candidates/${id}/status`, { status }).then(unwrap);
+export const getCandidateHistory = (id) =>
+apiClient.get(`/recruitment/candidates/${id}/history`).then(unwrap);
+export const listCandidateFollowups = (id) =>
+apiClient.get(`/recruitment/candidates/${id}/followups`).then(unwrap);
+export const createCandidateFollowup = (id, payload) =>
+apiClient.post(`/recruitment/candidates/${id}/followups`, payload).then(unwrap);
+export const updateCandidateFollowup = (candidateId, followupId, status) =>
+apiClient.put(`/recruitment/candidates/${candidateId}/followups/${followupId}`, { status }).then(unwrap);
 export const listInterviews = (params) =>
 apiClient.get("/recruitment/interviews", { params }).then(unwrapList);
 export const getInterview = (id) =>
 apiClient.get(`/recruitment/interviews/${id}`).then(unwrap);
 export const scheduleInterview = (payload) =>
 apiClient.post("/recruitment/interviews", payload).then(unwrap);
+export const listInterviewAvailability = (params = {}) =>
+apiClient.get("/recruitment/interviews/availability", { params }).then(unwrap);
+export const createInterviewAvailability = (payload) =>
+apiClient.post("/recruitment/interviews/availability", payload).then(unwrap);
+export const createWeeklyInterviewAvailability = (payload) =>
+apiClient.post("/recruitment/interviews/availability/weekly", payload).then(unwrap);
+export const deleteInterviewAvailability = (id) =>
+apiClient.delete(`/recruitment/interviews/availability/${id}`).then(unwrap);
+export const deleteWeeklyInterviewAvailability = (id) =>
+apiClient.delete(`/recruitment/interviews/availability/weekly/${id}`).then(unwrap);
 export const submitFeedback = (id, payload) =>
 apiClient.put(`/recruitment/interviews/${id}/feedback`, payload).then(unwrap);
 export const submitRecruiterFeedback = (id, payload) =>

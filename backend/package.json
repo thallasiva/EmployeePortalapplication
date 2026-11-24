@@ -21,7 +21,9 @@
     "db:migrate:066": "node src/database/runSql.js migration_066_payroll_payment_batches.sql",
     "db:migrate:067": "node src/database/runSql.js migration_067_payroll_policy_versions.sql",
     "db:migrate:068": "node src/database/runSql.js migration_068_payroll_approval_steps.sql",
-    "db:migrate:069": "node src/database/runSql.js migration_069_payroll_employee_groups_and_periods.sql"
+    "db:migrate:069": "node src/database/runSql.js migration_069_payroll_employee_groups_and_periods.sql",
+    "db:migrate:070": "node src/database/runSql.js migration_070_recruitment_phase1.sql",
+    "db:migrate:071": "node src/database/runSql.js migration_071_recurring_interviewer_availability.sql"
   },
   "license": "MIT",
   "dependencies": {

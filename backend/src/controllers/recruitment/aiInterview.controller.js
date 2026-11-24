@@ -59,7 +59,10 @@ async function getCandidateResumeContext(candidateId) {
 }
 // ── send invite email ──────────────────────────────────────────────────────
 async function sendAIInterviewInvite({ candidateEmail, candidateName, jobTitle, token, expiresAt, recruiterName, durationMinutes, questionCount }) {
-  const link = `${process.env.FRONTEND_URL || 'https://d3snrdmpdzb1yf.cloudfront.net'}/ai-interview/${token}`;
+  const defaultFrontendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://d3snrdmpdzb1yf.cloudfront.net'
+    : 'http://localhost:3000';
+  const link = `${(process.env.FRONTEND_URL || defaultFrontendUrl).replace(/\/$/, '')}/ai-interview/${token}`;
   const expiryStr = new Date(expiresAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
   return sendMailNow({
     to: candidateEmail,
@@ -84,7 +87,7 @@ async function sendAIInterviewInvite({ candidateEmail, candidateName, jobTitle, 
 }
 // ── POST /ai-interviews  — recruiter creates session ──────────────────────
 const create = asyncHandler(async (req, res) => {
-  const { candidateId, jobReqId, durationMinutes, questionCount, interviewMode, quickResponseTimeoutSeconds } = req.body;
+  const { candidateId, jobReqId, durationMinutes, questionCount, interviewMode, quickResponseTimeoutSeconds, followUpLimit } = req.body;
   if (!candidateId || !jobReqId) {
     return res.status(400).json({ success: false, message: 'candidateId and jobReqId are required' });
   }
@@ -95,6 +98,10 @@ const create = asyncHandler(async (req, res) => {
   const requestedQuickTimeout = quickResponseTimeoutSeconds == null ? 20 : Number(quickResponseTimeoutSeconds);
   if (![0, 20, 30, 45, 60, 90, 120].includes(requestedQuickTimeout)) {
     return res.status(400).json({ success: false, message: 'quickResponseTimeoutSeconds must be 0, 20, 30, 45, 60, 90, or 120' });
+  }
+  const requestedFollowUpLimit = followUpLimit == null ? 2 : Number(followUpLimit);
+  if (!Number.isInteger(requestedFollowUpLimit) || requestedFollowUpLimit < 0 || requestedFollowUpLimit > 5) {
+    return res.status(400).json({ success: false, message: 'followUpLimit must be an integer between 0 and 5' });
   }
   // Fetch candidate + job details
   const cRes = await callProcedure('sp_rec_get_candidate(?)', [Number(candidateId)]);
@@ -110,15 +117,16 @@ const create = asyncHandler(async (req, res) => {
     jobTitle: job.title || job.job_title || 'Position',
     domain: job.domain || job.industry || '',
     jobDescription: job.description || job.job_description || '',
+    experienceLevel: job.experience_level || '',
     requiredSkills: job.required_skills || job.skill_set || job.skills || '',
     preferredSkills: job.preferred_skills || job.preferred_skill_set || '',
     candidateSkills: candidate.skills || candidate.candidate_skills || candidate.skill_set || '',
     resumeSkills: resumeContext.skills,
     totalExperience: candidate.total_experience || '',
     relevantExperience: candidate.relevant_experience || '',
-    resume: candidate.resume_text || candidate.resume_summary || resumeContext.text,
+    resume: [...new Set([candidate.resume_text, resumeContext.text, candidate.resume_summary].filter(Boolean))].join('\n\n'),
   };
-  const { token, expiresAt } = await aiSvc.createAdaptiveSession({
+  const { token, expiresAt, skillPlan } = await aiSvc.createAdaptiveSession({
     candidateId:    Number(candidateId),
     jobReqId:       Number(jobReqId),
     recruiterId:    req.user.employeeId,
@@ -129,6 +137,7 @@ const create = asyncHandler(async (req, res) => {
     durationMinutes: Number(durationMinutes) || 30,
     questionCount: requestedQuestionCount,
     quickResponseTimeoutSeconds: requestedQuickTimeout,
+    followUpLimit: requestedFollowUpLimit,
     interviewMode: ['screening', 'balanced', 'deep_dive'].includes(interviewMode) ? interviewMode : 'balanced',
     expiresHours:   48,
   });
@@ -153,7 +162,16 @@ const create = asyncHandler(async (req, res) => {
   }
   new ApiResponse(
     201,
-    { token, expiresAt, durationMinutes: Number(durationMinutes) || 30, questionCount: requestedQuestionCount, quickResponseTimeoutSeconds: requestedQuickTimeout, inviteEmail },
+    {
+      token,
+      expiresAt,
+      durationMinutes: Number(durationMinutes) || 30,
+      questionCount: requestedQuestionCount,
+      quickResponseTimeoutSeconds: requestedQuickTimeout,
+      followUpLimit: requestedFollowUpLimit,
+      skillPlan,
+      inviteEmail,
+    },
     inviteEmail.sent ? 'AI interview session created and invite sent' : 'AI interview session created; invite email was not sent'
   ).send(res);
 });
@@ -173,8 +191,15 @@ const getReport = asyncHandler(async (req, res) => {
   // Parse stored JSON blobs
   let answers = [];
   let evaluation = {};
-  try { answers = JSON.parse(report.answers_json || '[]'); } catch {}
+  try {
+    const parsedAnswers = JSON.parse(report.answers_json || '[]');
+    if (Array.isArray(parsedAnswers)) answers = parsedAnswers;
+  } catch {}
   try { evaluation = JSON.parse(report.evaluation_json || '{}'); } catch {}
+  const sessionState = aiSvc.parseState(report.questions_json);
+  if (!answers.length && Array.isArray(sessionState.transcript)) {
+    answers = sessionState.transcript;
+  }
   // Build merged questions array: Q text + candidate answer + AI score + feedback
   const questionScores = evaluation.questionScores || [];
   const questions = answers.map((entry, i) => {
@@ -222,6 +247,9 @@ const getReport = asyncHandler(async (req, res) => {
     recommendationReason: evaluation.recommendationReason || '',
     hiringRisk:     evaluation.hiringRisk || '',
     nextSteps:      evaluation.nextSteps || [],
+    skillPlan:      sessionState.skillPlan?.skills || [],
+    skillsRequiringReview: evaluation.skillsRequiringReview || [],
+    cameraManualReviewRequestedAt: sessionState.cameraManualReviewRequestedAt || null,
     questions,  // merged Q&A with scores
   };
   new ApiResponse(200, payload, 'Report fetched').send(res);
@@ -249,6 +277,11 @@ const getSession = asyncHandler(async (req, res) => {
   }, 'Session loaded').send(res);
 });
 // PUBLIC: POST /public/ai-interview/:token/start
+function candidateQuestion(question) {
+  if (!question) return question;
+  const { id, question: text, stage, type, skill, difficulty, options, language, problemSize, timeLimit } = question;
+  return { id, question: text, stage, type, skill, difficulty, options, language, problemSize, timeLimit };
+}
 const start = asyncHandler(async (req, res) => {
   const started = await aiSvc.startAdaptiveSession(req.params.token);
   if (!started) return res.status(404).json({ success: false, message: 'Interview not found or expired' });
@@ -256,7 +289,7 @@ const start = asyncHandler(async (req, res) => {
   if (session.status === 'completed') return res.status(410).json({ success: false, message: 'This interview has already been submitted' });
   if (started.complete) return new ApiResponse(200, { complete: true }, 'Interview already completed').send(res);
   const savedDraft = String(state.currentDraft?.questionId || '') === String(state.currentQuestion?.id || '') ? state.currentDraft.draft : '';
-  new ApiResponse(200, { question: state.currentQuestion, questionNumber: state.transcript.length + 1, remainingSeconds: aiSvc.getRemainingSeconds(state), startedAt: state.startedAt, expiresAt: state.expiresAt, savedDraft }, 'Interview started').send(res);
+  new ApiResponse(200, { question: candidateQuestion(state.currentQuestion), questionNumber: state.transcript.length + 1, remainingSeconds: aiSvc.getRemainingSeconds(state), startedAt: state.startedAt, expiresAt: state.expiresAt, savedDraft }, 'Interview started').send(res);
 });
 const sendOtp = asyncHandler(async (req, res) => {
   const result = await aiSvc.issueOtp(req.params.token);
@@ -287,7 +320,7 @@ const answer = asyncHandler(async (req, res) => {
   // SECURITY: never return evaluation/score data to candidate — strip it before responding
   const safeResult = result.complete
     ? { complete: true }
-    : { complete: false, question: result.question, questionNumber: result.questionNumber, remainingSeconds: result.remainingSeconds, expiresAt: result.expiresAt };
+    : { complete: false, question: candidateQuestion(result.question), questionNumber: result.questionNumber, remainingSeconds: result.remainingSeconds, expiresAt: result.expiresAt };
   new ApiResponse(200, safeResult, result.complete ? 'Interview submitted successfully' : 'Next question ready').send(res);
 });
 // ── PUBLIC: POST /public/ai-interview/:token/submit  — candidate submits ──

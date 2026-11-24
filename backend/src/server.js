@@ -179,8 +179,17 @@ function startCronJobs() {
   try {
     const cron = require('node-cron');
     const leaveService = require('./services/leaveRequest.service');
+    const recruitmentReminderSvc = require('./services/recruitment/recruitmentReminder.service');
+    const { getSmtpReadiness } = require('./services/email.service');
     const notify = require('./services/mailNotify.service');
     const { callProcedure } = require('./config/db');
+    getSmtpReadiness().then((configured) => {
+      if (!configured) {
+        logger.warn('[CRON] Recruitment reminder emails are disabled until SMTP is configured in HRMS Settings or the server environment');
+      }
+    }).catch((err) => {
+      logger.warn('[CRON] Could not check SMTP readiness:', err.message);
+    });
     cron.schedule('0 18 1 * *', async () => {
       const now = new Date();
       const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
@@ -250,6 +259,14 @@ function startCronJobs() {
         } catch (err) {
           logger.warn('[CRON] Document expiry scan (' + days + 'd) failed:', err.message);
         }
+      }
+    }, { timezone: 'Asia/Kolkata' });
+    cron.schedule('*/15 * * * *', async () => {
+      try {
+        const sent = await recruitmentReminderSvc.run();
+        logger.info(`[CRON] Recruitment reminders sent — interviews: ${sent.interviews}, follow-ups: ${sent.followups}`);
+      } catch (err) {
+        logger.error('[CRON] Recruitment reminder run failed:', err.message);
       }
     }, { timezone: 'Asia/Kolkata' });
     logger.info('[CRON] All scheduled jobs registered (IST timezone)');

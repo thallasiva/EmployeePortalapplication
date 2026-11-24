@@ -152,6 +152,35 @@ function ReportModal({
         }}>
                 {report.summary}
               </div>}
+            {report.cameraManualReviewRequestedAt && <p role="status">
+              The candidate continued after requesting manual review of the camera check.
+            </p>}
+            {(report.skillsRequiringReview?.length > 0 || report.skillPlan?.some(skill => skill.reviewRequired)) && <div role="alert" style={{
+          background: "#fffbeb",
+          border: "1px solid #fcd34d",
+          color: "#92400e",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 16,
+          fontSize: 13
+        }}>
+                <strong>Recruiter review needed</strong>
+                <ul style={{ margin: "8px 0 0", paddingLeft: 20 }}>
+                  {(report.skillsRequiringReview?.length ? report.skillsRequiringReview : report.skillPlan.filter(skill => skill.reviewRequired)).map((item, index) => <li key={`${item.skill || item.name}-${index}`}>
+                    <strong>{item.skill || item.name}</strong>{(item.reason || item.reviewReason) ? `: ${item.reason || item.reviewReason}` : ""}
+                  </li>)}
+                </ul>
+              </div>}
+            {report.skillPlan?.length > 0 && <div style={{
+          background: "#f9fafb",
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 16,
+          fontSize: 13,
+          color: "#374151"
+        }}>
+                <strong>Analyzed skills:</strong> {report.skillPlan.map(skill => `${skill.canonicalName || skill.name}${skill.priority === "required" ? " (required)" : skill.priority === "preferred" ? " (preferred)" : ""}`).join(", ")}
+              </div>}
             {/* Recommendation reason */}
             {report.recommendationReason && <div style={{
           background: "#fff7ed",
@@ -271,17 +300,19 @@ function ReportModal({
                 flexShrink: 0
               }}>{q.score}/10</span>}
                     </div>
-                    {q.answer && <div style={{
+                      <div style={{
               background: "#f9fafb",
               borderRadius: 8,
               padding: "10px 12px",
               fontSize: 13,
               color: "#374151",
               lineHeight: 1.6,
-              marginBottom: q.feedback ? 8 : 0
+              marginBottom: q.feedback ? 8 : 0,
+              overflowWrap: "anywhere"
             }}>
-                        {q.answer}
-                      </div>}
+                          <strong style={{ display: "block", marginBottom: 4 }}>Candidate answer</strong>
+                          {q.answer || <span style={{ color: "#6b7280", fontStyle: "italic" }}>No answer recorded.</span>}
+                      </div>
                     {q.feedback && <p style={{
               display: "flex",
               alignItems: "flex-start",

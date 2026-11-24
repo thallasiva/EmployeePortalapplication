@@ -89,6 +89,7 @@ export function useInterviewsPage(role) {
       await apiSubmitFeedback(fbOpen.interview_id, {
         feedbackStatus: fb.feedbackStatus,
         feedbackComments: fb.feedbackComments || null,
+        feedbackRating: fb.feedbackRating === "" ? null : Number(fb.feedbackRating),
         shortlisted: fb.feedbackStatus === "Shortlist",
       });
       successToast("Feedback submitted");
@@ -138,6 +139,7 @@ export function useInterviewsPage(role) {
             ? "Reject / Drop"
             : "",
       feedbackComments: row.feedback_comments || "",
+      feedbackRating: row.feedback_rating == null ? "" : String(row.feedback_rating),
       shortlisted: !!row.shortlisted,
     });
   }, []);

@@ -10,10 +10,10 @@ import "./constants";
 export default function CandidatesPage({ role }) {
   const {
     candidates, jobs, recruiters, loading, filtered,
-    search, filterStatus, filterJob,
+    search, filterStatus, filterJob, filterSkill, filterRole, filterSource, minExperience, maxExperience,
     addOpen, detail, tableRef,
     isAdmin, isTL, isHRMgr, isRecruiter,
-    setSearch, setFilterStatus, setFilterJob,
+    setSearch, setFilterStatus, setFilterJob, setFilterSkill, setFilterRole, setFilterSource, setMinExperience, setMaxExperience,
     setAddOpen, setDetail,
     loadCandidates, updateStatus,
   } = useCandidatesData({ role });
@@ -37,8 +37,12 @@ export default function CandidatesPage({ role }) {
       <CandidateTable
         loading={loading} filtered={filtered} jobs={jobs}
         search={search} filterJob={filterJob} filterStatus={filterStatus}
+        filterSkill={filterSkill} filterRole={filterRole} filterSource={filterSource}
+        minExperience={minExperience} maxExperience={maxExperience}
         isRecruiter={isRecruiter} isHRMgr={isHRMgr} isTL={isTL}
         setSearch={setSearch} setFilterJob={setFilterJob} setFilterStatus={setFilterStatus}
+        setFilterSkill={setFilterSkill} setFilterRole={setFilterRole} setFilterSource={setFilterSource}
+        setMinExperience={setMinExperience} setMaxExperience={setMaxExperience}
         setDetail={setDetail} updateStatus={updateStatus}
         tableRef={tableRef} />
       <AddCandidateWizard

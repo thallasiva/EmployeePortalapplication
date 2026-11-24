@@ -5,8 +5,10 @@ import CandidateStatusBadge from "../../../../../features/recruitment/components
 import { STATUS_OPTS } from "../constants";
 const CandidateTable = React.memo(function CandidateTable({
   loading, filtered, jobs, search, filterJob, filterStatus,
+  filterSkill, filterRole, filterSource, minExperience, maxExperience,
   isRecruiter, isHRMgr, isTL,
   setSearch, setFilterJob, setFilterStatus,
+  setFilterSkill, setFilterRole, setFilterSource, setMinExperience, setMaxExperience,
   setDetail, updateStatus, tableRef
 }) {
   const jobOpts = useMemo(() => [
@@ -50,6 +52,16 @@ const CandidateTable = React.memo(function CandidateTable({
           <SearchBar value={search} onChange={setSearch} placeholder="Search by name, email, ID..." />
           <Select value={filterJob} onChange={(e) => setFilterJob(e.target.value)} options={jobOpts} />
           <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} options={statusOpts} />
+          <input value={filterSkill} onChange={(e) => setFilterSkill(e.target.value)} placeholder="Skill"
+            aria-label="Filter by skill" className="h-9 w-28 rounded-lg border border-gray-200 px-2.5 text-xs" />
+          <input value={filterRole} onChange={(e) => setFilterRole(e.target.value)} placeholder="Role"
+            aria-label="Filter by role" className="h-9 w-28 rounded-lg border border-gray-200 px-2.5 text-xs" />
+          <input value={filterSource} onChange={(e) => setFilterSource(e.target.value)} placeholder="Source"
+            aria-label="Filter by source" className="h-9 w-28 rounded-lg border border-gray-200 px-2.5 text-xs" />
+          <input type="number" min="0" value={minExperience} onChange={(e) => setMinExperience(e.target.value)} placeholder="Min years"
+            aria-label="Minimum experience" className="h-9 w-24 rounded-lg border border-gray-200 px-2.5 text-xs" />
+          <input type="number" min="0" value={maxExperience} onChange={(e) => setMaxExperience(e.target.value)} placeholder="Max years"
+            aria-label="Maximum experience" className="h-9 w-24 rounded-lg border border-gray-200 px-2.5 text-xs" />
           <div className="ml-auto flex items-center gap-2">
             {filterStatus &&
               <button type="button" onClick={() => setFilterStatus("")}

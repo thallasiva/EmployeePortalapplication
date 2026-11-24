@@ -6,6 +6,7 @@ import CandidateAccordion from "./components/CandidateAccordion";
 import ScheduleSlideOver from "./components/ScheduleSlideOver";
 import { HrFeedbackModal, RecruiterFeedbackModal } from "./components/FeedbackModal";
 import ViewInterviewModal from "./components/ViewInterviewModal";
+import InterviewerAvailabilityPanel from "./components/InterviewerAvailabilityPanel";
 import { BLANK_INT } from "./constants";
 export default function InterviewsPage({ role }) {
   const {
@@ -62,6 +63,7 @@ export default function InterviewsPage({ role }) {
           </div>
         ))}
       </div>
+      {canSchedule && <InterviewerAvailabilityPanel />}
       {/* Filters */}
       <Card className="!p-0 mb-4">
         <div className="flex items-center gap-3 px-4 py-3 flex-wrap">

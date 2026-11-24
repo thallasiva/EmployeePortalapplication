@@ -78,12 +78,20 @@ class OfferService extends BaseService {
     return (results[0] ?? [])[0];
   }
   async release(offerId, releasedBy, ip) {
+    const offer = await this.getById(offerId);
+    if (!offer.candidate_id) throw new ApiError(409, 'This offer is not linked to a candidate.');
+    const candidateSvc = require('./candidate.service');
+    const candidate = await candidateSvc.getById(offer.candidate_id);
+    if (!['Shortlisted', 'Selected'].includes(candidate.status)) {
+      throw new ApiError(409, 'The candidate must be selected before releasing an offer.');
+    }
     const results = await callProcedure(
       "sp_rec_release_offer(?, ?, ?)",
       [offerId, releasedBy, ip]
     );
     const row = (results[0] ?? [])[0];
     if (row) {
+      await candidateSvc.updateStatus(offer.candidate_id, 'Offer Released', releasedBy, ip);
       const candidateEmail = row.candidate_email || row.email || null;
       const candidateName = row.candidate_name || row.name || 'Candidate';
       const jobTitle = row.designation || row.job_title || '';

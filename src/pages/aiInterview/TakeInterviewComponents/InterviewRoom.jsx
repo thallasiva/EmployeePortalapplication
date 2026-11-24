@@ -495,7 +495,7 @@ function InterviewRoom({
             color: faceStatus.noFace ? C.warn : ""
           }}>
               {faceStatus.noFace ? <EyeOff size={14} /> : <Eye size={14} />}
-              {faceStatus.camBlocked ? "Cam blocked" : faceStatus.noFace ? "Face not found" : "Proctored"}
+              {faceStatus.camBlocked ? "Cam blocked" : faceStatus.noFace ? "Face not found" : faceStatus.detected ? "Face detected" : faceStatus.detectionUnavailable ? "Face check unavailable" : "Checking camera"}
             </button>
             <button className="btn-ghost" onClick={handleManualSkip} title="Skip this question">
               <SkipForward size={14} />Skip

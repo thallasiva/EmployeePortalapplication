@@ -3,41 +3,34 @@ import "lucide-react";
 import { Modal, Btn, Select } from "../../shared";
 import CandidateStatusBadge from "../../../../../features/recruitment/components/CandidateStatusBadge";
 import { DetailRow } from "../../shared";
-import { STATUS_OPTS } from "../constants";
+import { STATUS_TRANSITIONS } from "../constants";
 import MatchScoreWidget from "./MatchScoreWidget";
 import InterviewHistory from "./InterviewHistory";
+import CandidatePipeline from "./CandidatePipeline";
+import CandidateActivity from "./CandidateActivity";
 const CandidateProfileModal = React.memo(function CandidateProfileModal({
   detail, role, isAdmin, isTL, isHRMgr, isRecruiter,
   onClose, updateStatus
 }) {
   if (!detail) return null;
-  const actionOpts = [
-    { value: "Shortlisted", label: "Shortlist" },
-    { value: "Schedule Interview", label: "Move to Next Round" },
-    { value: "Rejected", label: "Reject / Drop" },
+  const nextStatuses = STATUS_TRANSITIONS[detail.status] || [];
+  const reviewerOpts = [
+    { value: detail.status, label: `Current: ${detail.status}` },
+    ...nextStatuses
+      .filter((status) => !["Offer Released", "Offer Accepted", "Offer Rejected", "Joining Formalities", "Onboarded"].includes(status))
+      .map((status) => ({ value: status, label: status === "Rejected" ? "Reject / Drop" : status }))
   ];
-  const reviewerOpts = actionOpts.some((option) => option.value === detail.status)
-    ? actionOpts
-    : [{ value: detail.status, label: `Current: ${detail.status}` }, ...actionOpts];
-  const recruiterOpts = reviewerOpts;
-  const hrMgrOpts = reviewerOpts;
-  const tlOpts = reviewerOpts;
-  const adminOpts = STATUS_OPTS.map((s) => ({ value: s, label: s }));
+  const adminOpts = [
+    { value: detail.status, label: `Current: ${detail.status}` },
+    ...nextStatuses
+      .filter((status) => !["Offer Released", "Offer Accepted", "Offer Rejected", "Joining Formalities", "Onboarded"].includes(status))
+      .map((status) => ({ value: status, label: status === "Rejected" ? "Reject / Drop" : status }))
+  ];
   const footer = (
     <div className="flex items-center gap-2.5 w-full">
-      {isRecruiter &&
+      {(isRecruiter || isHRMgr || isTL) &&
         <div className="flex-1">
-          <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={recruiterOpts} />
-        </div>
-      }
-      {isHRMgr && <>
-        <div className="flex-1">
-          <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={hrMgrOpts} />
-        </div>
-      </>}
-      {isTL &&
-        <div className="flex-1">
-          <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={tlOpts} />
+          <Select value={detail.status || ""} onChange={(e) => updateStatus(detail.candidate_id, e.target.value)} options={reviewerOpts} />
         </div>
       }
       {isAdmin &&
@@ -63,6 +56,7 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
               {detail.source && <span className="text-[11px] bg-gray-100 px-2.5 py-0.5 rounded-xl text-gray-500">{detail.source}</span>}
             </div>
           </div>
+          <CandidatePipeline status={detail.status} />
           <div className="text-right">
             <div className="text-[11px] text-gray-500">Candidate ID</div>
             <div className="text-sm font-bold text-[#e87500]">{detail.candidate_code}</div>
@@ -103,6 +97,7 @@ const CandidateProfileModal = React.memo(function CandidateProfileModal({
           role={role}
           candidateStatus={detail.status}
           onMoveToNextRound={null} />
+        <CandidateActivity candidate={detail} />
       </div>
     </Modal>
   );

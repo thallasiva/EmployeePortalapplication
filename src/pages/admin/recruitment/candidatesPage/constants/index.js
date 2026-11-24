@@ -9,9 +9,22 @@ export const BLANK_INT = {
   durationMinutes: 60, interviewer: "", teamsSubject: "", teamsParticipants: "", teamsStart: "", teamsEnd: ""
 };
 export const STATUS_OPTS = [
-  "Work in Progress", "Shortlisted", "Offer Released",
-  "Offer Accepted", "Offer Rejected", "Joining Formalities", "Onboarded"
+  "Applied", "Work in Progress", "Screening", "Interview Scheduled", "Schedule Interview",
+  "Shortlisted", "Selected", "Offer Released", "Offer Accepted", "Offer Rejected",
+  "Joining Formalities", "Onboarded", "Rejected", "Not Selected"
 ];
+export const STATUS_TRANSITIONS = {
+  Applied: ["Work in Progress", "Rejected"],
+  "Work in Progress": ["Rejected"],
+  Screening: ["Rejected"],
+  "Interview Scheduled": ["Schedule Interview", "Shortlisted", "Rejected"],
+  "Schedule Interview": ["Shortlisted", "Rejected"],
+  Shortlisted: ["Offer Released", "Rejected"],
+  Selected: ["Offer Released", "Rejected"],
+  "Offer Released": ["Offer Accepted", "Offer Rejected"],
+  "Offer Accepted": ["Joining Formalities"],
+  "Joining Formalities": ["Onboarded"]
+};
 export const LEVEL_ORDER = ["Round 1", "Round 2", "Round 3", "HR", "Final"];
 export const STEPS = [
   { id: 1, label: "Upload Resume" },

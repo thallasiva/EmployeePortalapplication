@@ -18,12 +18,16 @@ function AIInterviewSetup() {
     durationMinutes: 20,
     questionCount: 8,
     interviewMode: "balanced",
+    followUpLimit: 2,
     quickResponseTimeoutSeconds: 20
   });
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [createdSkillPlan, setCreatedSkillPlan] = useState([]);
+  const [planNeedsReview, setPlanNeedsReview] = useState(false);
+  const [planReviewReason, setPlanReviewReason] = useState("");
   // List state
   const [sessions, setSessions] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -52,14 +56,18 @@ function AIInterviewSetup() {
     }
     setSending(true);
     try {
-      await createAIInterview({
+      const created = await createAIInterview({
         candidateId: Number(form.candidateId),
         jobReqId: Number(form.jobReqId),
         durationMinutes: Number(form.durationMinutes),
         questionCount: Number(form.questionCount),
         interviewMode: form.interviewMode,
+        followUpLimit: Number(form.followUpLimit),
         quickResponseTimeoutSeconds: Number(form.quickResponseTimeoutSeconds)
       });
+      setCreatedSkillPlan(created?.skillPlan?.skills ?? []);
+      setPlanNeedsReview(Boolean(created?.skillPlan?.reviewRequired || created?.skillPlan?.skills?.some(skill => skill.reviewRequired)));
+      setPlanReviewReason(created?.skillPlan?.reviewReason || "");
       successToast("AI interview invitation sent to candidate!");
       setSent(true);
       setTimeout(() => {
@@ -71,6 +79,7 @@ function AIInterviewSetup() {
           durationMinutes: 20,
           questionCount: 8,
           interviewMode: "balanced",
+          followUpLimit: 2,
           quickResponseTimeoutSeconds: 20
         });
       }, 3000);
@@ -193,6 +202,25 @@ function AIInterviewSetup() {
         }}>
                 The candidate has received an email with their unique interview link (valid for 48 hours).
               </p>
+              {(createdSkillPlan.length > 0 || planNeedsReview) && <div style={{
+          textAlign: "left",
+          background: "#fff",
+          border: `1px solid ${BORDER}`,
+          borderRadius: 8,
+          padding: 12,
+          marginTop: 16,
+          fontSize: 12,
+          color: "#374151"
+        }}>
+                  <strong>Analyzed skill plan:</strong> {createdSkillPlan.map(skill => skill.canonicalName || skill.name).join(", ")}
+                  {planNeedsReview && <div role="alert" style={{ color: "#92400e", marginTop: 6 }}>
+                    Some skills need recruiter review because their evidence or technical meaning could not be confidently validated.
+                    {createdSkillPlan.filter(skill => skill.reviewRequired).map(skill => <div key={skill.canonicalName || skill.name}>
+                      {skill.canonicalName || skill.name}: {skill.reviewReason}
+                    </div>)}
+                    {planReviewReason && <div>{planReviewReason}</div>}
+                  </div>}
+                </div>}
             </div> : <div style={{
         background: "#fff",
         border: `1px solid ${BORDER}`,
@@ -310,6 +338,14 @@ function AIInterviewSetup() {
                     <option value="screening">Screening — broad skills coverage</option>
                     <option value="balanced">Balanced — standard depth</option>
                     <option value="deep_dive">Deep dive — detailed follow-ups</option>
+                  </Select>
+                </Field>
+                <Field label="Maximum follow-ups per skill">
+                  <Select value={form.followUpLimit} onChange={e => setForm(f => ({
+              ...f,
+              followUpLimit: Number(e.target.value)
+            }))}>
+                    {[0, 1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} follow-up{n === 1 ? "" : "s"}</option>)}
                   </Select>
                 </Field>
                 <Field label="No-answer auto-skip timeout">
