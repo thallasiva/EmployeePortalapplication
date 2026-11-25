@@ -13,7 +13,7 @@ class LeaveRequestService extends BaseService {
     const results = await callProcedure('sp_get_leave_email_pair(?)', [employeeId]);
     return (results[0] ?? [])[0] ?? {};
   }
-  async list({ employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset, companyId } = {}) {
+  async list({ employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset, companyId, allowedEmployeeIds } = {}) {
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) {
       throw ApiError.forbidden('Company context is required');
@@ -21,6 +21,11 @@ class LeaveRequestService extends BaseService {
 
     const conditions = ['e.company_id = ?'];
     const params = [company];
+    if (allowedEmployeeIds) {
+      if (!allowedEmployeeIds.length) return { rows: [], total: 0 };
+      conditions.push(`e.employee_id IN (${allowedEmployeeIds.map(() => '?').join(', ')})`);
+      params.push(...allowedEmployeeIds);
+    }
     if (employee_id != null) {
       conditions.push('lr.employee_id = ?');
       params.push(employee_id);
@@ -155,7 +160,7 @@ class LeaveRequestService extends BaseService {
     const results = await callProcedure('sp_get_leave_balances(?, ?)', [employeeId, targetYear]);
     return results[0] ?? results;
   }
-  async allBalances(year, companyId) {
+  async allBalances(year, companyId, allowedEmployeeIds) {
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) {
       throw ApiError.forbidden('Company context is required');
@@ -164,6 +169,10 @@ class LeaveRequestService extends BaseService {
     const results = await callProcedure('sp_all_leave_balances(?)', [targetYear]);
     const companyEmployees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
     const employeeIds = new Set(companyEmployees.map((employee) => Number(employee.employee_id)));
+    if (allowedEmployeeIds) {
+      const allowed = new Set(allowedEmployeeIds.map(Number));
+      for (const id of employeeIds) if (!allowed.has(id)) employeeIds.delete(id);
+    }
     const employees = (results[0] ?? []).filter((employee) => employeeIds.has(Number(employee.employee_id)));
     const leaveTypes = results[1] ?? [];
     const balances = (results[2] ?? []).filter((balance) => employeeIds.has(Number(balance.employee_id)));
@@ -187,12 +196,18 @@ class LeaveRequestService extends BaseService {
     }));
     return { employees: result, leaveTypes, year: targetYear };
   }
-  async accrueEarnedLeave(month, year, companyId) {
+  async accrueEarnedLeave(month, year, companyId, allowedEmployeeIds) {
     const m = Number(month);
     const y = Number(year);
     if (!m || !y) throw ApiError.badRequest('Invalid month or year');
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
+    if (allowedEmployeeIds && !allowedEmployeeIds.length) {
+      return { accrued: 0, skipped: 0, earnedPerEmployee: null, month: m, year: y, leaveTypeId: null };
+    }
+    const employeeFilter = allowedEmployeeIds
+      ? ` AND e.employee_id IN (${allowedEmployeeIds.map(() => '?').join(', ')})`
+      : '';
     const leaveTypes = await query(
       `SELECT leave_type_id
          FROM leave_types
@@ -220,13 +235,13 @@ class LeaveRequestService extends BaseService {
          FROM employees e
          LEFT JOIN payslips ps
            ON ps.employee_id = e.employee_id AND ps.month = ? AND ps.year = ?
-        WHERE e.company_id = ?
+        WHERE e.company_id = ?${employeeFilter}
           AND e.employee_status = 'Active'
           AND FLOOR(IFNULL(IFNULL(ps.paid_days, ps.working_days), ?) / 14 * 2) / 2 > 0
        ON DUPLICATE KEY UPDATE
          granted = granted + VALUES(granted),
          balance = GREATEST(0, opening_balance + granted + VALUES(granted) - availed)`,
-      [leaveTypeId, y, workingDays, workingDays, m, y, company, workingDays]
+      [leaveTypeId, y, workingDays, workingDays, m, y, company, ...(allowedEmployeeIds || []), workingDays]
     );
     return {
       accrued: result.affectedRows ?? 0,
@@ -246,10 +261,14 @@ class LeaveRequestService extends BaseService {
     await callProcedure('sp_adjust_leave_balance(?, ?, ?, ?, ?, ?)', [employeeId, leaveTypeId, targetYear, ob, gr, av]);
     return { employeeId, leaveTypeId, year: targetYear, opening_balance: ob, granted: gr, availed: av, balance: bal };
   }
-  async initializeBalancesForYear(year, companyId) {
+  async initializeBalancesForYear(year, companyId, allowedEmployeeIds) {
     const targetYear = Number(year) || new Date().getFullYear();
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) throw ApiError.forbidden('Company context is required');
+    if (allowedEmployeeIds && !allowedEmployeeIds.length) return { year: targetYear, created: 0, skipped: 0 };
+    const employeeFilter = allowedEmployeeIds
+      ? ` AND e.employee_id IN (${allowedEmployeeIds.map(() => '?').join(', ')})`
+      : '';
     const result = await query(
       `INSERT IGNORE INTO leave_balances
          (employee_id, leave_type_id, year, opening_balance, granted, availed, balance)
@@ -264,9 +283,9 @@ class LeaveRequestService extends BaseService {
            ON prev.employee_id = e.employee_id
           AND prev.leave_type_id = lt.leave_type_id
           AND prev.year = ? - 1
-        WHERE e.company_id = ?
+        WHERE e.company_id = ?${employeeFilter}
           AND e.employee_status = 'Active'`,
-      [targetYear, targetYear, company]
+      [targetYear, targetYear, company, ...(allowedEmployeeIds || [])]
     );
     const created = result.affectedRows ?? 0;
     return { year: targetYear, created, skipped: 0 };
@@ -291,7 +310,7 @@ class LeaveRequestService extends BaseService {
     }
     return { imported, errors, year: targetYear };
   }
-  async leaveSummary(year, { department_id, status } = {}, companyId) {
+  async leaveSummary(year, { department_id, status } = {}, companyId, allowedEmployeeIds) {
     const company = Number(companyId);
     if (!Number.isInteger(company) || company <= 0) {
       throw ApiError.forbidden('Company context is required');
@@ -303,6 +322,10 @@ class LeaveRequestService extends BaseService {
     );
     const companyEmployees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [company]);
     const employeeIds = new Set(companyEmployees.map((employee) => Number(employee.employee_id)));
+    if (allowedEmployeeIds) {
+      const allowed = new Set(allowedEmployeeIds.map(Number));
+      for (const id of employeeIds) if (!allowed.has(id)) employeeIds.delete(id);
+    }
     const employees = (results[0] ?? []).filter((employee) => employeeIds.has(Number(employee.employee_id)));
     const leaveTypes = results[1] ?? [];
     const balances = (results[2] ?? []).filter((balance) => employeeIds.has(Number(balance.employee_id)));

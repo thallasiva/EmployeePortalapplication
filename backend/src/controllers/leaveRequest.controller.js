@@ -4,6 +4,13 @@ const ApiResponse = require('../utils/ApiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPagination, buildMeta } = require('../utils/pagination');
 const { assertManagesEmployee } = require('../middleware/rbac');
+const { resolveCompanyScope } = require('../utils/companyScope');
+const accessControlService = require('../services/accessControl.service');
+function requireCompanyId(user, requestedCompanyId) {
+  const companyId = resolveCompanyScope(user, requestedCompanyId);
+  if (companyId === null) throw ApiError.badRequest('Select a company_id for this operation');
+  return companyId;
+}
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status, leave_type_id, department_id } = req.query;
@@ -16,9 +23,11 @@ const list = asyncHandler(async (req, res) => {
   const isTeamManager = isHRManager || isReportingManager;
   const reporting_to = isTeamManager ? req.user.employeeId : undefined;
   const team_role_id = isHRManager ? 5 : undefined;
+  const companyId = requireCompanyId(req.user, req.query.company_id);
+  const allowedEmployeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
   const { rows, total } = await leaveRequestService.list({
     employee_id, status, leave_type_id, department_id, reporting_to, team_role_id, limit, offset,
-    companyId: req.user.companyId
+    companyId, allowedEmployeeIds
   });
   new ApiResponse(200, rows, 'Leave requests fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -62,7 +71,9 @@ const balances = asyncHandler(async (req, res) => {
   new ApiResponse(200, rows, 'Leave balances fetched').send(res);
 });
 const allBalances = asyncHandler(async (req, res) => {
-  const data = await leaveRequestService.allBalances(req.query.year, req.user.companyId);
+  const companyId = requireCompanyId(req.user, req.query.company_id);
+  const allowedEmployeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const data = await leaveRequestService.allBalances(req.query.year, companyId, allowedEmployeeIds);
   new ApiResponse(200, data, 'All leave balances fetched').send(res);
 });
 const adjustBalance = asyncHandler(async (req, res) => {
@@ -72,12 +83,16 @@ const adjustBalance = asyncHandler(async (req, res) => {
 });
 const initializeYear = asyncHandler(async (req, res) => {
   const year = Number(req.body.year) || new Date().getFullYear();
-  const result = await leaveRequestService.initializeBalancesForYear(year, req.user.companyId);
+  const companyId = requireCompanyId(req.user, req.body.company_id);
+  const allowedEmployeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const result = await leaveRequestService.initializeBalancesForYear(year, companyId, allowedEmployeeIds);
   new ApiResponse(200, result, `Leave balances initialized for ${year}`).send(res);
 });
 const leaveSummary = asyncHandler(async (req, res) => {
   const { year, department_id, status } = req.query;
-  const data = await leaveRequestService.leaveSummary(year, { department_id, status }, req.user.companyId);
+  const companyId = requireCompanyId(req.user, req.query.company_id);
+  const allowedEmployeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const data = await leaveRequestService.leaveSummary(year, { department_id, status }, companyId, allowedEmployeeIds);
   new ApiResponse(200, data, 'Leave summary fetched').send(res);
 });
 const accrueEarnedLeave = asyncHandler(async (req, res) => {
@@ -86,7 +101,9 @@ const accrueEarnedLeave = asyncHandler(async (req, res) => {
   const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
   const month = Number(req.body.month) || prevMonth;
   const year = Number(req.body.year) || prevYear;
-  const result = await leaveRequestService.accrueEarnedLeave(month, year, req.user.companyId);
+  const companyId = requireCompanyId(req.user, req.body.company_id);
+  const allowedEmployeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const result = await leaveRequestService.accrueEarnedLeave(month, year, companyId, allowedEmployeeIds);
   new ApiResponse(200, result, `Earned leave accrued for ${month}/${year}: ${result.accrued} employees`).send(res);
 });
 module.exports = {

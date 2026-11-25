@@ -39,7 +39,7 @@ class AttendanceService extends BaseService {
     const schedules = await query('SELECT start_time FROM employee_work_schedules WHERE employee_id = ? LIMIT 1', [employeeId]);
     return schedules[0]?.start_time ? String(schedules[0].start_time) : null;
   }
-  async list({ employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset, companyId = null } = {}) {
+  async list({ employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset, companyId = null, allowedEmployeeIds } = {}) {
     const scoped = companyId != null;
     const results = await callProcedure(
       'sp_list_attendance(?, ?, ?, ?, ?, ?, ?, ?)',
@@ -50,16 +50,27 @@ class AttendanceService extends BaseService {
         to_date       ?? null,
         status        ?? null,
         reporting_to  ?? null,
-        scoped ? null : (limit != null ? Number(limit) : null),
-        scoped ? null : (limit != null ? Number(offset || 0) : null),
+        scoped || allowedEmployeeIds ? null : (limit != null ? Number(limit) : null),
+        scoped || allowedEmployeeIds ? null : (limit != null ? Number(offset || 0) : null),
       ]
     );
     let rows = results[0] ?? [];
     let total = (results[1] ?? [])[0]?.total ?? rows.length;
     if (scoped) {
-      const employees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [companyId]);
+      const employees = await query(
+        `SELECT e.employee_id
+           FROM employees e LEFT JOIN departments d ON d.department_id = e.department_id
+          WHERE COALESCE(e.company_id, d.company_id) = ?`,
+        [companyId]
+      );
       const ids = new Set(employees.map((employee) => Number(employee.employee_id)));
       rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+    }
+    if (allowedEmployeeIds) {
+      const ids = new Set(allowedEmployeeIds.map(Number));
+      rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+    }
+    if (scoped || allowedEmployeeIds) {
       total = rows.length;
       if (limit != null) rows = rows.slice(Number(offset || 0), Number(offset || 0) + Number(limit));
     }
@@ -181,8 +192,30 @@ class AttendanceService extends BaseService {
       WHERE employee_id = ? AND attendance_date = ?`, [Math.round((netMinutes / 60) * 100) / 100, breakMinutes, status, employeeId, checkDate]);
     return this.getToday(employeeId);
   }
-  async dashboard(date, companyId = null) {
+  async dashboard(date, companyId = null, allowedEmployeeIds) {
     const checkDate = date || new Date().toISOString().slice(0, 10);
+    if (companyId != null && allowedEmployeeIds) {
+      if (!allowedEmployeeIds.length) return {
+        total_employees: 0, checked_in_today: 0, present_today: 0, absent_today: 0,
+        on_leave_today: 0, late_today: 0, met_nine_hour_rule: 0, avg_hours_per_day: null,
+      };
+      const placeholders = allowedEmployeeIds.map(() => '?').join(', ');
+      const scopedParams = [...allowedEmployeeIds];
+      for (let index = 0; index < 7; index += 1) {
+        scopedParams.push(...allowedEmployeeIds, checkDate);
+      }
+      const [row] = await query(`SELECT
+        (SELECT COUNT(*) FROM employees WHERE employee_id IN (${placeholders}) AND employee_status = 'Active') AS total_employees,
+        (SELECT COUNT(*) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.check_in IS NOT NULL) AS checked_in_today,
+        (SELECT COUNT(*) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.status='present') AS present_today,
+        (SELECT COUNT(*) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.status='absent') AS absent_today,
+        (SELECT COUNT(*) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.status='leave') AS on_leave_today,
+        (SELECT COUNT(*) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.status='late') AS late_today,
+        (SELECT COUNT(*) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.work_hours>=9) AS met_nine_hour_rule,
+        (SELECT ROUND(AVG(a.work_hours),1) FROM attendance a WHERE a.employee_id IN (${placeholders}) AND a.attendance_date=? AND a.work_hours>0) AS avg_hours_per_day`,
+      scopedParams);
+      return row || null;
+    }
     if (companyId != null) {
       const [row] = await query(`SELECT
         (SELECT COUNT(*) FROM employees WHERE employee_status = 'Active' AND company_id = ?) AS total_employees,
@@ -199,7 +232,14 @@ class AttendanceService extends BaseService {
     const results = await callProcedure('sp_attendance_dashboard(?)', [checkDate]);
     return results[0]?.[0] || null;
   }
-  async analytics(fromDate, toDate, companyId = null) {
+  async analytics(fromDate, toDate, companyId = null, allowedEmployeeIds) {
+    if (companyId != null && allowedEmployeeIds && !allowedEmployeeIds.length) {
+      return { weekly: [], nineHourByDepartment: [], earlyLogoutByDepartment: [] };
+    }
+    const employeeFilter = companyId != null && allowedEmployeeIds
+      ? ` AND e.employee_id IN (${allowedEmployeeIds.map(() => '?').join(', ')})`
+      : '';
+    const scopeParams = employeeFilter ? allowedEmployeeIds : [];
     const [weekly, nineHourByDepartment, earlyLogoutByDepartment] = await Promise.all([
       query(
         `SELECT DATE_FORMAT(attendance_date, '%a') AS label,
@@ -207,10 +247,10 @@ class AttendanceService extends BaseService {
                 SUM(status = 'absent') AS absent
          FROM attendance a
          JOIN employees e ON e.employee_id = a.employee_id
-         WHERE a.attendance_date BETWEEN ? AND ? AND (? IS NULL OR e.company_id = ?)
+         WHERE a.attendance_date BETWEEN ? AND ? AND (? IS NULL OR e.company_id = ?)${employeeFilter}
          GROUP BY attendance_date
          ORDER BY attendance_date`,
-        [fromDate, toDate, companyId, companyId]
+        [fromDate, toDate, companyId, companyId, ...scopeParams]
       ),
       query(
         `SELECT COALESCE(d.department_name, 'Unassigned') AS label,
@@ -221,10 +261,10 @@ class AttendanceService extends BaseService {
          WHERE a.attendance_date = ?
            AND a.status IN ('present', 'late')
            AND a.check_out IS NOT NULL
-           AND a.work_hours >= 9 AND (? IS NULL OR e.company_id = ?)
+           AND a.work_hours >= 9 AND (? IS NULL OR e.company_id = ?)${employeeFilter}
          GROUP BY d.department_id, d.department_name
          ORDER BY value DESC, label`,
-        [toDate, companyId, companyId]
+        [toDate, companyId, companyId, ...scopeParams]
       ),
       query(
         `SELECT COALESCE(d.department_name, 'Unassigned') AS label,
@@ -235,25 +275,29 @@ class AttendanceService extends BaseService {
          WHERE a.attendance_date = ?
            AND a.status IN ('present', 'late')
            AND a.check_out IS NOT NULL
-           AND a.work_hours < 9 AND (? IS NULL OR e.company_id = ?)
+           AND a.work_hours < 9 AND (? IS NULL OR e.company_id = ?)${employeeFilter}
          GROUP BY d.department_id, d.department_name
          ORDER BY value DESC, label`,
-        [toDate, companyId, companyId]
+        [toDate, companyId, companyId, ...scopeParams]
       ),
     ]);
     return { weekly, nineHourByDepartment, earlyLogoutByDepartment };
   }
-  async teamLeaveCalendar(year, month, companyId = null) {
+  async teamLeaveCalendar(year, month, companyId = null, allowedEmployeeIds) {
     if (companyId != null) {
       const from = `${year}-${String(month).padStart(2, '0')}-01`;
       const to = new Date(Number(year), Number(month), 0).toISOString().slice(0, 10);
+      if (allowedEmployeeIds && !allowedEmployeeIds.length) return [];
+      const employeeFilter = allowedEmployeeIds
+        ? ` AND e.employee_id IN (${allowedEmployeeIds.map(() => '?').join(', ')})`
+        : '';
       return query(`SELECT lr.leave_request_id, lr.employee_id, e.emp_code,
           TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS employee_name,
           lr.from_date, lr.to_date, lr.days, lr.status, lt.leave_type_name
         FROM leave_requests lr JOIN employees e ON e.employee_id = lr.employee_id
         LEFT JOIN leave_types lt ON lt.leave_type_id = lr.leave_type_id
-        WHERE e.company_id = ? AND lr.status = 'Approved' AND lr.from_date <= ? AND lr.to_date >= ?
-        ORDER BY lr.from_date, employee_name`, [companyId, to, from]);
+        WHERE e.company_id = ? AND lr.status = 'Approved' AND lr.from_date <= ? AND lr.to_date >= ?${employeeFilter}
+        ORDER BY lr.from_date, employee_name`, [companyId, to, from, ...(allowedEmployeeIds || [])]);
     }
     const results = await callProcedure('sp_team_leave_calendar(?, ?)', [year, month]);
     return results[0] || [];

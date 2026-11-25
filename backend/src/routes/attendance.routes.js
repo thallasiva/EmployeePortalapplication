@@ -8,7 +8,9 @@ const {
   reviewRegularizationSchema
 } = require('../validators/attendance.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule, assertCompanyEmployee } = require('../middleware/rbac');
+const { resolveCompanyScope } = require('../utils/companyScope');
+const accessControlService = require('../services/accessControl.service');
 const Joi = require('joi');
 const { query } = require('../config/db');
 const asyncHandler = require('../utils/asyncHandler');
@@ -34,14 +36,17 @@ const overtimeReviewSchema = Joi.object({
   remarks: Joi.string().trim().max(255).allow('', null),
 });
 router.get('/overtime', requirePermission('attendance', 'view'), asyncHandler(async (req, res) => {
-  const isAdmin = ['Admin', 'HR Manager'].includes(req.user.roleName);
+  const companyId = resolveCompanyScope(req.user, req.query.company_id);
+  if (companyId === null) throw ApiError.badRequest('Select a company_id for this operation');
+  const employeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  if (!employeeIds.length) return new ApiResponse(200, [], 'Overtime requests fetched').send(res);
   const rows = await query(`SELECT o.*, e.emp_code,
       TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) AS employee_name, d.department_name
     FROM overtime_requests o JOIN employees e ON e.employee_id = o.employee_id
     LEFT JOIN departments d ON d.department_id = e.department_id
-    WHERE o.company_id = ? AND (? = 1 OR o.employee_id = ?)
+    WHERE o.company_id = ? AND o.employee_id IN (${employeeIds.map(() => '?').join(', ')})
     ORDER BY o.work_date DESC, o.created_at DESC LIMIT 500`,
-  [req.user.companyId, isAdmin ? 1 : 0, req.user.employeeId]);
+  [companyId, ...employeeIds]);
   new ApiResponse(200, rows, 'Overtime requests fetched').send(res);
 }));
 router.post('/overtime', validateOvertime(overtimeCreateSchema), asyncHandler(async (req, res) => {
@@ -57,6 +62,7 @@ router.post('/overtime', validateOvertime(overtimeCreateSchema), asyncHandler(as
 router.put('/overtime/:id/review', requirePermission('attendance', 'edit'), validateOvertime(overtimeReviewSchema), asyncHandler(async (req, res) => {
   const [existing] = await query('SELECT employee_id, status FROM overtime_requests WHERE overtime_request_id = ? AND company_id = ? LIMIT 1', [req.params.id, req.user.companyId]);
   if (!existing) throw ApiError.notFound('Overtime request not found');
+  await assertCompanyEmployee(req.user, existing.employee_id);
   if (Number(existing.employee_id) === Number(req.user.employeeId)) throw ApiError.forbidden('You cannot review your own overtime request');
   if (existing.status !== 'Pending') throw ApiError.conflict('Overtime request already reviewed');
   await query(`UPDATE overtime_requests SET status = ?, reviewed_by = ?, reviewed_at = NOW(), remarks = ?

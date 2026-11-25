@@ -7,7 +7,7 @@ class AttendanceRegularizationService extends BaseService {
       'employee_id', 'attendance_date', 'requested_check_in', 'requested_check_out', 'reason', 'status',
     ]);
   }
-  async list({ employee_id, status, reporting_to, limit, offset, companyId = null } = {}) {
+  async list({ employee_id, status, reporting_to, limit, offset, companyId = null, allowedEmployeeIds } = {}) {
     const scoped = companyId != null;
     const results = await callProcedure(
       'sp_list_attendance_regularization(?, ?, ?, ?, ?)',
@@ -15,16 +15,27 @@ class AttendanceRegularizationService extends BaseService {
         employee_id   ?? null,
         status        ?? null,
         reporting_to  ?? null,
-        scoped ? null : (limit != null ? Number(limit) : null),
-        scoped ? null : (limit != null ? Number(offset || 0) : null),
+        scoped || allowedEmployeeIds ? null : (limit != null ? Number(limit) : null),
+        scoped || allowedEmployeeIds ? null : (limit != null ? Number(offset || 0) : null),
       ]
     );
     let rows = results[0] ?? [];
     let total = (results[1] ?? [])[0]?.total ?? rows.length;
     if (scoped) {
-      const employees = await query('SELECT employee_id FROM employees WHERE company_id = ?', [companyId]);
+      const employees = await query(
+        `SELECT e.employee_id FROM employees e
+           LEFT JOIN departments d ON d.department_id = e.department_id
+          WHERE COALESCE(e.company_id, d.company_id) = ?`,
+        [companyId]
+      );
       const ids = new Set(employees.map((employee) => Number(employee.employee_id)));
       rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+    }
+    if (allowedEmployeeIds) {
+      const ids = new Set(allowedEmployeeIds.map(Number));
+      rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+    }
+    if (scoped || allowedEmployeeIds) {
       total = rows.length;
       if (limit != null) rows = rows.slice(Number(offset || 0), Number(offset || 0) + Number(limit));
     }

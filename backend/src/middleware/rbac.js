@@ -1,6 +1,9 @@
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
-const { callProcedure, query } = require('../config/db');
+const { query } = require('../config/db');
+const accessControlService = require('../services/accessControl.service');
+const { isPlatformAdmin } = require('../utils/companyScope');
+const { isGlobalAccess, hasScopeAccess } = require('../utils/accessScope');
 const COMPANY_MODULE_BY_PERMISSION = Object.freeze({
   attendance: 'attendance', leave: 'leave', payroll: 'payroll',
   employees: 'employees', reviews: 'performance', timesheets: 'timesheets',
@@ -9,7 +12,8 @@ const COMPANY_MODULE_BY_PERMISSION = Object.freeze({
 });
 
 async function isCompanyModuleAllowed(user, moduleKey) {
-  if (!user?.companyId || !moduleKey) return true;
+  if (!moduleKey || isPlatformAdmin(user)) return true;
+  if (!user?.companyId) throw ApiError.forbidden('Company context is required');
   const rows = await query(
     'SELECT enabled FROM company_modules WHERE company_id = ? AND module_key = ? LIMIT 1',
     [user.companyId, moduleKey]
@@ -26,6 +30,20 @@ function requireCompanyModule(moduleKey) {
     }
     next();
   });
+}
+
+function requireCompanyWideScope(req, _res, next) {
+  const requestedCompanyId = req.query?.company_id ?? req.body?.company_id ?? req.user?.companyId;
+  if (isGlobalAccess(req.user)) return next();
+  if (requestedCompanyId != null && hasScopeAccess(req.user, { company_id: Number(requestedCompanyId) })) {
+    return next();
+  }
+  if (
+    !req.user?.enterpriseRbac
+    && !req.user?.roleIds?.length
+    && Number(requestedCompanyId) === Number(req.user?.companyId)
+  ) return next();
+  return next(ApiError.forbidden('Company-wide access is required for this operation'));
 }
 
 // Menu visibility is an access boundary, not merely a sidebar preference.  Keep
@@ -49,7 +67,7 @@ const MENU_BY_MODULE = Object.freeze({
 });
 
 async function isMenuAllowed(user, menuId) {
-  if (!menuId || !user || user.roleId === 1) return true;
+  if (!menuId || !user || isPlatformAdmin(user)) return true;
   try {
     const companyRows = user.companyId ? await query(
       'SELECT permissions FROM company_menu_permissions WHERE company_id = ? AND role_name = ? LIMIT 1',
@@ -87,19 +105,17 @@ function requirePermission(module, action) {
       throw ApiError.unauthorized();
     }
     const companyModule = COMPANY_MODULE_BY_PERMISSION[module];
-    if (!await isCompanyModuleAllowed(req.user, companyModule)) {
+    if (!isPlatformAdmin(req.user) && !await isCompanyModuleAllowed(req.user, companyModule)) {
       throw ApiError.forbidden(`The '${companyModule}' module is disabled for this company`);
     }
-    if (req.user.roleId === 1) {
+    if (isPlatformAdmin(req.user)) {
       return next();
     }
     const menuId = MENU_BY_MODULE[module];
     if (!await isMenuAllowed(req.user, menuId)) {
       throw ApiError.forbidden(`The '${menuId}' menu is disabled for your role`);
     }
-    const results = await callProcedure('sp_check_role_permission(?, ?, ?)', [req.user.roleId, module, action]);
-    const row = (results[0] ?? [])[0];
-    if (!row?.allowed) {
+    if (!await accessControlService.canPermission(req.user, module, action)) {
       throw ApiError.forbidden(`You do not have '${action}' access to '${module}'`);
     }
     next();
@@ -107,10 +123,7 @@ function requirePermission(module, action) {
 }
 async function hasPermission(user, module, action) {
   if (!user) return false;
-  if (user.roleId === 1) return true;
-  const results = await callProcedure('sp_check_role_permission(?, ?, ?)', [user.roleId, module, action]);
-  const row = (results[0] ?? [])[0];
-  return Boolean(row?.allowed);
+  return accessControlService.canPermission(user, module, action);
 }
 // Reporting Managers hold team-level leave/attendance permissions, so any action on a
 // specific employee must be limited to their direct reports. Other roles are unaffected.
@@ -123,15 +136,22 @@ async function assertManagesEmployee(user, employeeId) {
   }
 }
 async function assertCompanyEmployee(user, employeeId) {
-  if (!user?.companyId) {
-    throw ApiError.forbidden('Company context is required');
-  }
-  if (!employeeId) {
-    throw ApiError.badRequest('Employee ID is required');
-  }
-  const rows = await query('SELECT company_id FROM employees WHERE employee_id = ? LIMIT 1', [employeeId]);
-  if (!rows.length || Number(rows[0].company_id) !== Number(user.companyId)) {
-    throw ApiError.forbidden('You can only access employee records in your company');
-  }
+  await accessControlService.assertEmployeeScope(user, employeeId);
 }
-module.exports = { requirePermission, requireMenuPermission, requireCompanyModule, hasPermission, assertManagesEmployee, assertCompanyEmployee, isMenuAllowed, isCompanyModuleAllowed };
+
+async function assertCompanyAccess(user, companyId) {
+  return accessControlService.assertCompanyScope(user, companyId);
+}
+
+module.exports = {
+  requirePermission,
+  requireMenuPermission,
+  requireCompanyModule,
+  hasPermission,
+  assertManagesEmployee,
+  assertCompanyEmployee,
+  assertCompanyAccess,
+  requireCompanyWideScope,
+  isMenuAllowed,
+  isCompanyModuleAllowed
+};

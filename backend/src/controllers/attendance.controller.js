@@ -5,12 +5,18 @@ const asyncHandler = require('../utils/asyncHandler');
 const { getPagination, buildMeta } = require('../utils/pagination');
 const ApiError = require('../utils/ApiError');
 const { assertManagesEmployee } = require('../middleware/rbac');
+const { resolveCompanyScope } = require('../utils/companyScope');
+const accessControlService = require('../services/accessControl.service');
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, department_id, from_date, to_date, status } = req.query;
+  const companyId = resolveCompanyScope(req.user, req.query.company_id);
+  const allowedEmployeeIds = companyId === null
+    ? undefined
+    : [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
   const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
   const { rows, total } = await attendanceService.list({
-    employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset, companyId: req.user.companyId
+    employee_id, department_id, from_date, to_date, status, reporting_to, limit, offset, companyId, allowedEmployeeIds
   });
   new ApiResponse(200, rows, 'Attendance records fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -57,7 +63,11 @@ const checkOut = asyncHandler(async (req, res) => {
   new ApiResponse(200, record, 'Checked out successfully').send(res);
 });
 const dashboard = asyncHandler(async (req, res) => {
-  const stats = await attendanceService.dashboard(req.query.date, req.user.companyId);
+  const companyId = resolveCompanyScope(req.user, req.query.company_id);
+  const allowedEmployeeIds = companyId === null
+    ? undefined
+    : [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const stats = await attendanceService.dashboard(req.query.date, companyId, allowedEmployeeIds);
   new ApiResponse(200, stats, 'Attendance dashboard fetched').send(res);
 });
 const analytics = asyncHandler(async (req, res) => {
@@ -74,23 +84,38 @@ const analytics = asyncHandler(async (req, res) => {
   if (dayCount < 0 || dayCount > 6) {
     throw ApiError.badRequest('Attendance analytics supports a maximum seven-day range');
   }
-  const data = await attendanceService.analytics(fromDate, toDate, req.user.companyId);
+  const companyId = resolveCompanyScope(req.user, req.query.company_id);
+  const allowedEmployeeIds = companyId === null
+    ? undefined
+    : [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const data = await attendanceService.analytics(fromDate, toDate, companyId, allowedEmployeeIds);
   new ApiResponse(200, data, 'Attendance analytics fetched').send(res);
 });
 const teamLeaveCalendar = asyncHandler(async (req, res) => {
   const now = new Date();
   const month = Number(req.query.month) || now.getMonth() + 1;
   const year = Number(req.query.year) || now.getFullYear();
-  const rows = await attendanceService.teamLeaveCalendar(year, month, req.user.companyId);
+  const companyId = resolveCompanyScope(req.user, req.query.company_id);
+  const allowedEmployeeIds = companyId === null
+    ? undefined
+    : [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const rows = await attendanceService.teamLeaveCalendar(year, month, companyId, allowedEmployeeIds);
   new ApiResponse(200, rows, 'Team leave calendar fetched').send(res);
 });
 const listRegularizations = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, status } = req.query;
-  const canViewCompanyRequests = ['Admin', 'HR Manager', 'Reporting Manager'].includes(req.user.roleName);
+  const canViewCompanyRequests = Boolean(req.user.roleIds?.length)
+    || ['Admin', 'HR Manager', 'Reporting Manager'].includes(req.user.roleName);
   const scopedEmployeeId = canViewCompanyRequests ? employee_id : req.user.employeeId;
   const reporting_to = req.user.roleName === 'Reporting Manager' ? req.user.employeeId : undefined;
-  const { rows, total } = await regularizationService.list({ employee_id: scopedEmployeeId, status, reporting_to, limit, offset, companyId: req.user.companyId });
+  const companyId = resolveCompanyScope(req.user, req.query.company_id);
+  const allowedEmployeeIds = companyId === null
+    ? undefined
+    : [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
+  const { rows, total } = await regularizationService.list({
+    employee_id: scopedEmployeeId, status, reporting_to, limit, offset, companyId, allowedEmployeeIds
+  });
   new ApiResponse(200, rows, 'Regularization requests fetched', buildMeta({ page, limit, total })).send(res);
 });
 const createRegularization = asyncHandler(async (req, res) => {

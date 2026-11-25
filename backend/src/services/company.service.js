@@ -1,5 +1,6 @@
 const BaseService = require('./base.service');
 const { query } = require('../config/db');
+const ApiError = require('../utils/ApiError');
 const MODULE_KEYS = [
   'employees', 'attendance', 'leave', 'payroll', 'recruitment', 'performance',
   'timesheets', 'helpdesk', 'documents', 'reports', 'settings'
@@ -7,11 +8,14 @@ const MODULE_KEYS = [
 class CompanyService extends BaseService {
   constructor() {
     super('companies', 'company_id', [
-      'company_name', 'address', 'email', 'phone', 'country', 'timezone', 'currency', 'status'
+      'company_code', 'company_name', 'legal_name', 'registration_number',
+      'registration_country_id', 'country_id', 'headquarters_office_id', 'logo_url',
+      'address', 'email', 'phone', 'country', 'timezone', 'currency', 'status'
     ]);
   }
 
   async create(data) {
+    await this.validateReferences(data);
     const company = await super.create(data);
     await query(
       `INSERT IGNORE INTO company_modules (company_id, module_key, enabled)
@@ -55,6 +59,28 @@ class CompanyService extends BaseService {
       [company.company_id, company.company_id]
     );
     return company;
+  }
+
+  async validateReferences(data, companyId = null) {
+    for (const field of ['country_id', 'registration_country_id']) {
+      if (data[field] == null) continue;
+      const rows = await query('SELECT country_id FROM countries WHERE country_id = ? AND status = ? LIMIT 1', [data[field], 'Active']);
+      if (!rows.length) throw ApiError.badRequest(`Select an active ${field === 'country_id' ? 'default' : 'registration'} country`);
+    }
+    if (data.headquarters_office_id == null) return;
+    if (!companyId) throw ApiError.badRequest('Set the headquarters branch after creating the company');
+    const rows = await query(
+      'SELECT office_id FROM offices WHERE office_id = ? AND company_id = ? LIMIT 1',
+      [data.headquarters_office_id, companyId]
+    );
+    if (!rows.length) throw ApiError.badRequest('The headquarters branch must belong to this company');
+  }
+
+  async update(id, data) {
+    const existing = await this.findById(id);
+    if (!existing) throw ApiError.notFound('Company not found');
+    await this.validateReferences(data, id);
+    return super.update(id, data);
   }
 
   async getModules(companyId) {

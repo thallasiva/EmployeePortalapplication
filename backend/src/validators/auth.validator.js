@@ -16,7 +16,6 @@ const registerSchema = Joi.object({
   firstName: Joi.string().max(80).required(),
   lastName: Joi.string().max(80).allow('', null),
   mobile: Joi.string().max(20).allow('', null),
-  roleId: Joi.number().integer().valid(1, 2, 3).default(2),
   departmentId: Joi.number().integer().allow(null),
   designationId: Joi.number().integer().allow(null),
   empJobTitle: Joi.string().max(100).allow('', null)

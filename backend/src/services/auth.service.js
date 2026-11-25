@@ -4,6 +4,7 @@ const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
 const { issueMfaTempToken } = require('../services/mfa.service');
+const { getUserAccess, ensureDefaultEmployeeAccess } = require('./accessControl.service');
 const notify = require('./mailNotify.service');
 const _profileCache = new Map();
 const PROFILE_TTL_MS = 60_000;
@@ -31,7 +32,12 @@ function toProfile(u) {
     empCode: u.emp_code || null,
     jobTitle: u.emp_job_title || null,
     departmentId: u.department_id || null,
-    profilePhoto: u.profile_photo || null
+    profilePhoto: u.profile_photo || null,
+    roles: u.roles || [],
+    roleKeys: u.roleKeys || [],
+    scopeAssignments: u.scopeAssignments || [],
+    managesEmployees: Boolean(u.managesEmployees),
+    enterpriseRbac: Boolean(u.enterpriseRbac),
   };
 }
 async function withCompanyContext(userRow) {
@@ -51,26 +57,30 @@ async function _getUserById(userId) {
 }
 async function issueTokens(userRow) {
   const scopedUser = await withCompanyContext(userRow);
-  const payload = toAuthPayload(scopedUser);
+  const access = await getUserAccess(scopedUser.user_id);
+  if (!access) throw ApiError.unauthorized('Account is no longer active');
+  const authenticatedUser = { ...scopedUser, ...access };
+  const payload = toAuthPayload(authenticatedUser);
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken({ userId: payload.userId });
   await callProcedure('sp_login_success(?)', [userRow.user_id]);
-  return { accessToken, refreshToken, user: toProfile(scopedUser) };
+  return { accessToken, refreshToken, user: toProfile(authenticatedUser) };
 }
 async function issueTokensForUser(userId) {
   const userRow = await _getUserById(userId);
   if (!userRow || userRow.status !== 'Active') throw ApiError.unauthorized('Account is not active');
   return issueTokens(userRow);
 }
-async function register({ email, password, firstName, lastName, mobile, roleId, departmentId, designationId, empJobTitle }) {
+async function register({ email, password, firstName, lastName, mobile, departmentId, designationId, empJobTitle }) {
   const existsResults = await callProcedure('sp_check_email_exists(?)', [email]);
   if ((existsResults[0] ?? []).length) throw ApiError.conflict('An account with this email already exists');
   const passwordHash = await hashPassword(password);
   const { outs: out } = await callProcedureWithOuts(
     'sp_register_user(?, ?, ?, ?, ?, ?, ?, ?, ?, @employee_id, @emp_code)',
     [firstName, lastName ?? null, email, mobile ?? null, empJobTitle ?? 'Employee',
-    departmentId ?? null, designationId ?? null, passwordHash, roleId ?? 2]
+    departmentId ?? null, designationId ?? null, passwordHash, 2]
   );
+  await ensureDefaultEmployeeAccess(out.employee_id);
   return { employeeId: out.employee_id, empCode: out.emp_code };
 }
 async function login({ email, password, ip, userAgent }) {
@@ -121,7 +131,9 @@ async function getProfile(userId) {
   if (cached) return cached;
   const userRow = await _getUserById(userId);
   if (!userRow) throw ApiError.notFound('User not found');
-  const profile = toProfile(await withCompanyContext(userRow));
+  const access = await getUserAccess(userId);
+  if (!access) throw ApiError.unauthorized('Account is no longer active');
+  const profile = toProfile({ ...(await withCompanyContext(userRow)), ...access });
   cacheProfile(userId, profile);
   return profile;
 }

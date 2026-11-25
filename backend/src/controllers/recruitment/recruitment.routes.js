@@ -12,6 +12,7 @@ const aiInterviewCtrl = require("./aiInterview.controller");
 const availabilityCtrl = require("./interviewerAvailability.controller");
 const V = require("./recruitment.validator");
 const { callProcedure } = require("../../config/db");
+const { requirePermission } = require("../../middleware/rbac");
 // ── PUBLIC routes (no auth required) ─────────────────────────────────────────
 router.get("/public/ai-interview/:token",         aiInterviewCtrl.getSession);
 router.post("/public/ai-interview/:token/otp",    aiInterviewCtrl.sendOtp);
@@ -23,10 +24,19 @@ router.post("/public/ai-interview/:token/complete",    aiInterviewCtrl.submit);
 router.post("/public/ai-interview/:token/proctoring", aiInterviewCtrl.logProctoring);
 router.post("/public/ai-interview/:token/draft",      aiInterviewCtrl.saveDraft);
 router.use(authenticate);
-const ADMIN_TL = authorizeRoles("Admin", "Recruiter Team Lead", "HR Manager");
-const ALL_REC = authorizeRoles("Admin", "Recruiter Team Lead", "HR Manager", "Recruiter");
-const REC_TEAM = ALL_REC;
-const ADMIN_ONLY = authorizeRoles("Admin");
+const ADMIN_TL = [authorizeRoles(
+  "Admin", "Recruiter Team Lead", "HR Manager",
+  "SUPER_ADMIN", "COMPANY_ADMIN", "HR_HEAD", "HR_MANAGER", "RECRUITMENT_HEAD"
+) , requirePermission("recruitment", "edit")];
+const ALL_REC_ROLES = authorizeRoles(
+  "Admin", "Recruiter Team Lead", "HR Manager", "Recruiter",
+  "SUPER_ADMIN", "COMPANY_ADMIN", "HR_HEAD", "HR_MANAGER", "RECRUITMENT_HEAD", "RECRUITER"
+);
+const ALL_REC = [ALL_REC_ROLES, requirePermission("recruitment", "view")];
+const REC_TEAM = [ALL_REC_ROLES, requirePermission("recruitment", "edit")];
+const ADMIN_ONLY = [authorizeRoles(
+  "Admin", "SUPER_ADMIN", "COMPANY_ADMIN", "HR_HEAD", "HR_MANAGER", "RECRUITMENT_HEAD"
+), requirePermission("recruitment", "edit")];
 router.get("/recruiters", ADMIN_TL, async (req, res, next) => {
   try {
     const results = await callProcedure("sp_rec_list_active_recruiters()");
@@ -38,7 +48,7 @@ router.get("/dashboard",
 ALL_REC,
 (req, res, next) =>
 {
-  if (req.user.roleId === 5) return dashboardCtrl.recruiterDashboard(req, res, next);
+  if (req.user.roleId === 5 || req.user.roleKeys?.includes("RECRUITER")) return dashboardCtrl.recruiterDashboard(req, res, next);
   return dashboardCtrl.adminDashboard(req, res, next);
 }
 );

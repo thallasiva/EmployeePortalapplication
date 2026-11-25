@@ -61,7 +61,7 @@ class PayslipService extends BaseService {
     'gross_earnings', 'ctc', 'deductions', 'net_pay', 'working_days', 'paid_days', 'lop_days', 'status']
     );
   }
-  async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser, companyId = null } = {}) {
+  async list({ employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser, companyId = null, allowedEmployeeIds } = {}) {
     const scoped = companyId != null;
     if (scoped && employee_id) {
       const [owner] = await query('SELECT company_id FROM employees WHERE employee_id = ? LIMIT 1', [employee_id]);
@@ -76,15 +76,26 @@ class PayslipService extends BaseService {
       status ?? null,
       department_id ?? null,
       payroll_run_id ?? null,
-      scoped ? null : (limit != null ? Number(limit) : null),
-      scoped ? null : (limit != null ? Number(offset || 0) : null)]
+      scoped || allowedEmployeeIds ? null : (limit != null ? Number(limit) : null),
+      scoped || allowedEmployeeIds ? null : (limit != null ? Number(offset || 0) : null)]
     );
     let rows = results[0] ?? [];
     let total = (results[1] ?? [])[0]?.total ?? 0;
     if (scoped) {
-      const employeeRows = await query('SELECT employee_id FROM employees WHERE company_id = ?', [companyId]);
+      const employeeRows = await query(
+        `SELECT e.employee_id FROM employees e
+           LEFT JOIN departments d ON d.department_id = e.department_id
+          WHERE COALESCE(e.company_id, d.company_id) = ?`,
+        [companyId]
+      );
       const ids = new Set(employeeRows.map((employee) => Number(employee.employee_id)));
       rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+    }
+    if (allowedEmployeeIds) {
+      const ids = new Set(allowedEmployeeIds.map(Number));
+      rows = rows.filter((row) => ids.has(Number(row.employee_id)));
+    }
+    if (scoped || allowedEmployeeIds) {
       total = rows.length;
       if (limit != null) rows = rows.slice(Number(offset || 0), Number(offset || 0) + Number(limit));
     }
@@ -247,9 +258,20 @@ class PayslipService extends BaseService {
     }
     return this.getDetails(payslipId);
   }
-  async generateAllAndNotify({ month, year }) {
-    const results = await callProcedure('sp_get_active_employees_basic()');
-    const employees = results[0] ?? [];
+  async generateAllAndNotify({ month, year, companyId, employeeIds }) {
+    if (!companyId || !Array.isArray(employeeIds)) {
+      throw ApiError.forbidden('Payroll generation requires an explicit company and employee scope');
+    }
+    if (!employeeIds.length) return { month: Number(month), year: Number(year), generated: 0, emailed: 0, results: [] };
+    const employees = await query(
+      `SELECT employee_id, emp_code,
+              TRIM(CONCAT_WS(' ', first_name, last_name)) AS employee_name,
+              email
+         FROM employees
+        WHERE company_id = ? AND employee_status = 'Active'
+          AND employee_id IN (${employeeIds.map(() => '?').join(', ')})`,
+      [companyId, ...employeeIds]
+    );
     const monthLabel = MONTH_NAMES[Number(month) - 1] || month;
     const genResults = [];
     let generated = 0;

@@ -26,8 +26,10 @@ class CandidateService extends BaseService {
       tlName: tl.tl_name || ''
     };
   }
-  async list({ jobReqId, status, recruiterId, search, roleId, recEmpId, limit = 20, offset = 0, skill, minExperience, maxExperience, role, source } = {}) {
-    const hasStructuredFilters = [skill, minExperience, maxExperience, role, source].some((value) => value !== undefined && value !== null && value !== '');
+  async list({ jobReqId, status, recruiterId, search, roleId, recEmpId, authorizedJobReqIds = [], authorizedCandidateIds = [], limit = 20, offset = 0, skill, minExperience, maxExperience, role, source } = {}) {
+    const assignedJobIds = [...new Set(authorizedJobReqIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
+    const assignedCandidateIds = [...new Set(authorizedCandidateIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
+    const hasStructuredFilters = assignedJobIds.length > 0 || assignedCandidateIds.length > 0 || [skill, minExperience, maxExperience, role, source].some((value) => value !== undefined && value !== null && value !== '');
     if (hasStructuredFilters) {
       const conditions = ['c.deleted_at IS NULL'];
       const params = [];
@@ -44,8 +46,17 @@ class CandidateService extends BaseService {
         params.push(recruiterId);
       }
       if (roleId === 5) {
-        conditions.push('c.recruiter_id = ?');
+        const recruiterAccess = ['c.recruiter_id = ?'];
         params.push(recEmpId);
+        if (assignedJobIds.length) {
+          recruiterAccess.push(`c.job_req_id IN (${assignedJobIds.map(() => '?').join(', ')})`);
+          params.push(...assignedJobIds);
+        }
+        if (assignedCandidateIds.length) {
+          recruiterAccess.push(`c.candidate_id IN (${assignedCandidateIds.map(() => '?').join(', ')})`);
+          params.push(...assignedCandidateIds);
+        }
+        conditions.push(`(${recruiterAccess.join(' OR ')})`);
       }
       if (search) {
         conditions.push('(c.name LIKE ? OR c.email LIKE ? OR c.candidate_code LIKE ?)');

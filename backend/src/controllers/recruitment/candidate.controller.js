@@ -7,6 +7,36 @@ const { getPagination, buildMeta } = require("../../utils/pagination");
 const ApiResponse = require("../../utils/ApiResponse");
 const ApiError = require("../../utils/ApiError");
 const followupSvc = require("../../services/recruitment/candidateFollowup.service");
+const jobRequestSvc = require("../../services/recruitment/jobRequest.service");
+const { hasScopeAccess } = require("../../utils/accessScope");
+
+function isRecruiter(user) {
+  return Number(user?.roleId) === 5 || user?.roleKeys?.includes("RECRUITER");
+}
+
+function scopedResourceIds(user, resourceTypes) {
+  return (user?.scopeAssignments || [])
+    .filter((scope) => scope.scope_type === "ASSIGNED_RESOURCE"
+      && resourceTypes.includes(String(scope.resource_type || "").toUpperCase()))
+    .map((scope) => Number(scope.resource_id))
+    .filter((id) => Number.isInteger(id) && id > 0);
+}
+
+async function getRecruiterJobIds(user) {
+  const ids = scopedResourceIds(user, ["JOB", "JOB_REQ", "JOB_REQUISITION", "RECRUITMENT_JOB"]);
+  if (!user?.employeeId) return [...new Set(ids)];
+  const result = await jobRequestSvc.list({
+    roleId: 5,
+    recruiterEmpId: user.employeeId,
+    limit: 1000,
+    offset: 0,
+  });
+  return [...new Set([
+    ...ids,
+    ...(result.rows || []).map((row) => Number(row.job_req_id || row.id)).filter((id) => Number.isInteger(id) && id > 0),
+  ])];
+}
+
 const list = asyncHandler(async (req, res) => {
   const { page, limit, offset } = getPagination(req.query);
   const user = req.user;
@@ -26,6 +56,13 @@ const list = asyncHandler(async (req, res) => {
   if (minExperience != null && maxExperience != null && minExperience > maxExperience) {
     throw new ApiError(400, "minExperience must not exceed maxExperience");
   }
+  const recruiter = isRecruiter(user);
+  const [authorizedJobReqIds, authorizedCandidateIds] = recruiter
+    ? await Promise.all([
+      getRecruiterJobIds(user),
+      scopedResourceIds(user, ["CANDIDATE"]),
+    ])
+    : [[], []];
   const { rows, total } = await candidateSvc.list({
     jobReqId: req.query.jobReqId ? Number(req.query.jobReqId) : undefined,
     status: req.query.status,
@@ -36,20 +73,30 @@ const list = asyncHandler(async (req, res) => {
     maxExperience,
     role: parseTextFilter("role"),
     source: parseTextFilter("source"),
-    roleId: user.roleId,
+    roleId: recruiter ? 5 : user.roleId,
     recEmpId: user.employeeId,
+    authorizedJobReqIds,
+    authorizedCandidateIds,
     limit,
     offset
   });
   new ApiResponse(200, rows, "Candidates fetched", buildMeta({ page, limit, total })).send(res);
 });
 const getOne = asyncHandler(async (req, res) => {
-  const data = await candidateSvc.getById(Number(req.params.id));
+  const data = await getAccessibleCandidate(Number(req.params.id), req);
   new ApiResponse(200, data, "Candidate fetched").send(res);
 });
 const create = asyncHandler(async (req, res) => {
   const body = { ...req.body };
-  if (!body.recruiterId) body.recruiterId = req.user.employeeId;
+  if (isRecruiter(req.user)) {
+    const allowedJobIds = await getRecruiterJobIds(req.user);
+    if (!allowedJobIds.includes(Number(body.jobReqId))) {
+      throw new ApiError(403, "You may only add candidates to requisitions assigned to you");
+    }
+    body.recruiterId = req.user.employeeId;
+  } else if (!body.recruiterId) {
+    body.recruiterId = req.user.employeeId;
+  }
   const parsedSkills = Array.isArray(body.parsed_skills) ? body.parsed_skills : null;
   const parsedEducation = Array.isArray(body.parsed_education) ? body.parsed_education : null;
   const parsedWorkExp = Array.isArray(body.parsed_work_experience) ? body.parsed_work_experience : null;
@@ -115,9 +162,12 @@ const create = asyncHandler(async (req, res) => {
   ).send(res);
 });
 const updateStatus = asyncHandler(async (req, res) => {
+  await getAccessibleCandidate(Number(req.params.id), req);
   const { status } = req.body;
   const adminOnlyStatuses = ["Offer Released", "Offer Accepted", "Offer Rejected", "Joining Formalities", "Onboarded"];
-  if (Number(req.user.roleId) !== 1 && adminOnlyStatuses.includes(status)) {
+  const hiringAdmin = Number(req.user.roleId) === 1
+    || req.user.roleKeys?.some((key) => ["SUPER_ADMIN", "COMPANY_ADMIN", "HR_HEAD", "HR_MANAGER", "RECRUITMENT_HEAD"].includes(key));
+  if (!hiringAdmin && adminOnlyStatuses.includes(status)) {
     throw new ApiError(403, "Only an administrator can advance candidates through offer and onboarding stages");
   }
   if (adminOnlyStatuses.includes(status)) {
@@ -128,8 +178,15 @@ const updateStatus = asyncHandler(async (req, res) => {
 });
 async function getAccessibleCandidate(candidateId, req) {
   const candidate = await candidateSvc.getById(candidateId);
-  if (Number(req.user.roleId) === 5 && Number(candidate.recruiter_id) !== Number(req.user.employeeId)) {
-    throw new ApiError(404, "Candidate not found");
+  if (isRecruiter(req.user)) {
+    const ownCandidate = Number(candidate.recruiter_id) === Number(req.user.employeeId);
+    const assigned = hasScopeAccess(req.user, {
+      resource_type: "CANDIDATE",
+      resource_id: candidateId,
+    }) || ["JOB", "JOB_REQ", "JOB_REQUISITION", "RECRUITMENT_JOB"].some((resourceType) =>
+      hasScopeAccess(req.user, { resource_type: resourceType, resource_id: candidate.job_req_id })
+    );
+    if (!ownCandidate && !assigned) throw new ApiError(404, "Candidate not found");
   }
   return candidate;
 }
@@ -196,14 +253,17 @@ const updateFollowup = asyncHandler(async (req, res) => {
   new ApiResponse(200, data, "Candidate follow-up updated").send(res);
 });
 const getSkills = asyncHandler(async (req, res) => {
+  await getAccessibleCandidate(Number(req.params.id), req);
   const rows = await callProcedure('sp_rec_get_candidate_skills(?)', [Number(req.params.id)]);
   new ApiResponse(200, rows[0] ?? [], "Skills fetched").send(res);
 });
 const getEducation = asyncHandler(async (req, res) => {
+  await getAccessibleCandidate(Number(req.params.id), req);
   const rows = await callProcedure('sp_rec_get_candidate_education(?)', [Number(req.params.id)]);
   new ApiResponse(200, rows[0] ?? [], "Education fetched").send(res);
 });
 const getExperience = asyncHandler(async (req, res) => {
+  await getAccessibleCandidate(Number(req.params.id), req);
   const rows = await callProcedure('sp_rec_get_candidate_experience(?)', [Number(req.params.id)]);
   new ApiResponse(200, rows[0] ?? [], "Experience fetched").send(res);
 });

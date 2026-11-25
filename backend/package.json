@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "test": "node --test \"src/**/*.test.js\"",
+    "rbac:provision-super-admin": "node src/database/provisionSuperAdmin.js",
     "db:init": "node src/database/runSql.js schema.sql procedures.sql seed.sql migration_063_training_assets.sql migration_064_asset_management_workflows.sql",
     "db:procedures": "node src/database/runSql.js procedures.sql",
     "db:patch:auth": "node src/database/runSql.js patch_auth_procedures.sql",
@@ -23,7 +25,9 @@
     "db:migrate:068": "node src/database/runSql.js migration_068_payroll_approval_steps.sql",
     "db:migrate:069": "node src/database/runSql.js migration_069_payroll_employee_groups_and_periods.sql",
     "db:migrate:070": "node src/database/runSql.js migration_070_recruitment_phase1.sql",
-    "db:migrate:071": "node src/database/runSql.js migration_071_recurring_interviewer_availability.sql"
+    "db:migrate:071": "node src/database/runSql.js migration_071_recurring_interviewer_availability.sql",
+    "db:migrate:072": "node src/database/runSql.js migration_072_company_branch_foundation.sql",
+    "db:migrate:073": "node src/database/runSql.js migration_073_enterprise_rbac.sql"
   },
   "license": "MIT",
   "dependencies": {

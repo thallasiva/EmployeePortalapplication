@@ -1,4 +1,5 @@
 const express = require('express');
+const Joi = require('joi');
 const controller = require('../controllers/employee.controller');
 const validate = require('../middleware/validate');
 const { authenticate } = require('../middleware/auth');
@@ -16,8 +17,13 @@ router.get('/me', controller.getMe);
 router.get('/org-chart', controller.orgChart);
 router.get('/directory', controller.directory);
 router.get('/my-team', controller.myTeam);
-router.get('/roles/list', controller.listRoles);
-router.get('/with-roles', controller.listWithRoles);
+router.get('/roles/list', requirePermission('employees', 'view'), controller.listRoles);
+router.get('/with-roles', requirePermission('employees', 'view'), controller.listWithRoles);
+router.get('/:id/branch-assignments', requirePermission('employees', 'view'), controller.assignmentHistory);
+router.put('/:id/branch-assignment', requirePermission('employees', 'edit'), validate(Joi.object({
+  branch_id: Joi.number().integer().positive().required(),
+  department_id: Joi.number().integer().positive().allow(null),
+})), controller.assignBranch);
 router.get('/', requirePermission('employees', 'view'), controller.list);
 router.post('/', requirePermission('employees', 'add'), validate(createEmployeeSchema), controller.create);
 router.get('/:id', requirePermission('employees', 'view'), controller.getOne);
@@ -27,5 +33,4 @@ router.get('/:id/contact-info', requirePermission('employees', 'view'), controll
 router.put('/:id/contact-info', requirePermission('employees', 'edit'), validate(contactInfoSchema), controller.updateContactInfo);
 router.get('/:id/bank-details', requirePermission('employees', 'view'), controller.getBankDetails);
 router.put('/:id/bank-details', requirePermission('employees', 'edit'), validate(bankDetailsSchema), controller.updateBankDetails);
-router.put('/:id/role', requirePermission('employees', 'edit'), controller.changeRole);
 module.exports = router;

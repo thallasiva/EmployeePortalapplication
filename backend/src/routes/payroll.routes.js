@@ -13,7 +13,7 @@ const {
   importSalaryStructuresSchema
 } = require('../validators/payroll.validator');
 const { authenticate } = require('../middleware/auth');
-const { requirePermission, requireCompanyModule } = require('../middleware/rbac');
+const { requirePermission, requireCompanyModule, requireCompanyWideScope } = require('../middleware/rbac');
 const auditLog = require('../middleware/auditLog');
 const Joi = require('joi');
 const attendanceAdjustmentSchema = Joi.object({
@@ -69,13 +69,13 @@ router.get('/payslips/me', auditLog('READ_OWN_PAYSLIP'), controller.myPayslips);
 router.post('/payslips/me/generate', auditLog('GENERATE_OWN_PAYSLIP'), validate(generateMyPayslipSchema), controller.generateMyPayslip);
 router.get('/salary-structures/me', auditLog('READ_OWN_SALARY'), controller.getLatestSalaryStructure);
 // ── Salary structures ─────────────────────────────────────────────────────
-router.get('/salary-structures', requirePermission('payroll','view'), auditLog('READ_SALARY_LIST'), controller.listSalaryStructures);
-router.get('/salary-structures/:id', requirePermission('payroll','view'), auditLog('READ_SALARY'), controller.getSalaryStructure);
+router.get('/salary-structures', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_SALARY_LIST'), controller.listSalaryStructures);
+router.get('/salary-structures/:id', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_SALARY'), controller.getSalaryStructure);
 router.get('/salary-structures/employees/:employeeId/latest', requirePermission('payroll','view'), auditLog('READ_SALARY', r => r.params.employeeId), controller.getLatestSalaryStructure);
-router.post('/salary-structures', requirePermission('payroll','add'), auditLog('CREATE_SALARY'), validate(createSalaryStructureSchema), controller.createSalaryStructure);
-router.post('/salary-structures/import', requirePermission('payroll','add'), auditLog('IMPORT_SALARY'), validate(importSalaryStructuresSchema), controller.importSalaryStructures);
-router.put('/salary-structures/:id', requirePermission('payroll','edit'), auditLog('UPDATE_SALARY'), validate(updateSalaryStructureSchema), controller.updateSalaryStructure);
-router.delete('/salary-structures/:id', requirePermission('payroll','delete'), auditLog('DELETE_SALARY'), controller.removeSalaryStructure);
+router.post('/salary-structures', requireCompanyWideScope, requirePermission('payroll','add'), auditLog('CREATE_SALARY'), validate(createSalaryStructureSchema), controller.createSalaryStructure);
+router.post('/salary-structures/import', requireCompanyWideScope, requirePermission('payroll','add'), auditLog('IMPORT_SALARY'), validate(importSalaryStructuresSchema), controller.importSalaryStructures);
+router.put('/salary-structures/:id', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('UPDATE_SALARY'), validate(updateSalaryStructureSchema), controller.updateSalaryStructure);
+router.delete('/salary-structures/:id', requireCompanyWideScope, requirePermission('payroll','delete'), auditLog('DELETE_SALARY'), controller.removeSalaryStructure);
 // ── Payslips ──────────────────────────────────────────────────────────────
 router.get('/payslips', requirePermission('payroll','view'), auditLog('READ_PAYSLIP_LIST'), controller.listPayslips);
 router.get('/payslips/:id/full', auditLog('READ_PAYSLIP_FULL'), controller.getPayslipFull);
@@ -84,35 +84,35 @@ router.post('/payslips/generate', requirePermission('payroll','add'), auditLog('
 router.post('/payslips/generate-all', requirePermission('payroll','add'), auditLog('GENERATE_ALL_PAYSLIPS'), validate(generateAllPayslipsSchema), controller.generateAllPayslips);
 // ── Payroll runs ──────────────────────────────────────────────────────────
 // Attendance → salary: per-employee attendance and computed pay before processing
-router.get('/dashboard', requirePermission('payroll','view'), auditLog('READ_PAYROLL_DASHBOARD'), controller.dashboard);
-router.get('/settings', requirePermission('payroll','view'), auditLog('READ_PAYROLL_POLICY'), controller.getPayrollPolicy);
-router.put('/settings', requirePermission('payroll','edit'), auditLog('UPDATE_PAYROLL_POLICY'), validate(payrollPolicySchema), controller.savePayrollPolicy);
-router.get('/pay-groups', requirePermission('payroll','view'), auditLog('READ_PAYROLL_PAY_GROUPS'), controller.listPayrollPayGroups);
-router.get('/pay-groups/assignments', requirePermission('payroll','view'), auditLog('READ_PAYROLL_GROUP_ASSIGNMENTS'), controller.listPayrollGroupAssignments);
-router.post('/pay-groups/assignments', requirePermission('payroll','edit'), auditLog('ASSIGN_PAYROLL_GROUP'), validate(payrollGroupAssignmentSchema), controller.assignPayrollGroup);
-router.post('/pay-groups', requirePermission('payroll','add'), auditLog('CREATE_PAYROLL_PAY_GROUP'), validate(payrollPayGroupSchema), controller.createPayrollPayGroup);
-router.put('/pay-groups/:id', requirePermission('payroll','edit'), auditLog('UPDATE_PAYROLL_PAY_GROUP'), validate(payrollPayGroupSchema), controller.updatePayrollPayGroup);
-router.delete('/pay-groups/:id', requirePermission('payroll','delete'), auditLog('DEACTIVATE_PAYROLL_PAY_GROUP'), controller.deactivatePayrollPayGroup);
+router.get('/dashboard', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_DASHBOARD'), controller.dashboard);
+router.get('/settings', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_POLICY'), controller.getPayrollPolicy);
+router.put('/settings', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('UPDATE_PAYROLL_POLICY'), validate(payrollPolicySchema), controller.savePayrollPolicy);
+router.get('/pay-groups', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_PAY_GROUPS'), controller.listPayrollPayGroups);
+router.get('/pay-groups/assignments', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_GROUP_ASSIGNMENTS'), controller.listPayrollGroupAssignments);
+router.post('/pay-groups/assignments', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('ASSIGN_PAYROLL_GROUP'), validate(payrollGroupAssignmentSchema), controller.assignPayrollGroup);
+router.post('/pay-groups', requireCompanyWideScope, requirePermission('payroll','add'), auditLog('CREATE_PAYROLL_PAY_GROUP'), validate(payrollPayGroupSchema), controller.createPayrollPayGroup);
+router.put('/pay-groups/:id', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('UPDATE_PAYROLL_PAY_GROUP'), validate(payrollPayGroupSchema), controller.updatePayrollPayGroup);
+router.delete('/pay-groups/:id', requireCompanyWideScope, requirePermission('payroll','delete'), auditLog('DEACTIVATE_PAYROLL_PAY_GROUP'), controller.deactivatePayrollPayGroup);
 router.get('/attendance-summary', requirePermission('payroll','view'), auditLog('READ_PAYROLL_ATTENDANCE'), controller.attendanceSummary);
-router.get('/periods/:year/:month', requirePermission('payroll','view'), auditLog('READ_PAYROLL_PERIOD'), controller.payrollPeriod);
-router.post('/periods/:year/:month/lock-inputs', requirePermission('payroll','edit'), auditLog('LOCK_PAYROLL_INPUTS'), validate(payrollPeriodReasonSchema), controller.lockPayrollInputs);
-router.post('/periods/:year/:month/close', requirePermission('payroll','edit'), auditLog('CLOSE_PAYROLL_PERIOD'), validate(payrollPeriodReasonSchema), controller.closePayrollPeriod);
-router.post('/periods/:year/:month/reopen', requirePermission('payroll','edit'), auditLog('REOPEN_PAYROLL_PERIOD'), validate(payrollReopenSchema), controller.reopenPayrollPeriod);
+router.get('/periods/:year/:month', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_PERIOD'), controller.payrollPeriod);
+router.post('/periods/:year/:month/lock-inputs', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('LOCK_PAYROLL_INPUTS'), validate(payrollPeriodReasonSchema), controller.lockPayrollInputs);
+router.post('/periods/:year/:month/close', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('CLOSE_PAYROLL_PERIOD'), validate(payrollPeriodReasonSchema), controller.closePayrollPeriod);
+router.post('/periods/:year/:month/reopen', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('REOPEN_PAYROLL_PERIOD'), validate(payrollReopenSchema), controller.reopenPayrollPeriod);
 router.put('/attendance-summary/:employeeId/adjustment', requirePermission('payroll','edit'), auditLog('ADJUST_PAYROLL_ATTENDANCE', r => r.params.employeeId), validate(attendanceAdjustmentSchema), controller.saveAttendanceAdjustment);
-router.get('/runs', requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN_LIST'), controller.listPayrollRuns);
-router.get('/runs/:id', requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN'), controller.getPayrollRun);
-router.post('/runs', requirePermission('payroll','add'), auditLog('CREATE_PAYROLL_RUN'), validate(runPayrollSchema), controller.runPayroll);
-router.post('/runs/:id/submit-review', requirePermission('payroll','add'), controller.submitPayrollReview);
-router.put('/runs/:id/review', requirePermission('payroll','edit'), controller.reviewPayroll);
-router.post('/runs/:id/bank-export', requirePermission('payroll','edit'), auditLog('CREATE_PAYROLL_PAYMENT_BATCH'), paymentController.exportBankFile);
-router.get('/payment-batches', requirePermission('payroll','view'), auditLog('READ_PAYROLL_PAYMENT_BATCHES'), paymentController.listBatches);
-router.get('/payment-batches/:id', requirePermission('payroll','view'), auditLog('READ_PAYROLL_PAYMENT_BATCH'), paymentController.getBatch);
-router.post('/payment-batches/:id/reconcile', requirePermission('payroll','edit'), auditLog('RECONCILE_PAYROLL_PAYMENT_BATCH'), validate(paymentReconciliationSchema), paymentController.reconcileBatch);
+router.get('/runs', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN_LIST'), controller.listPayrollRuns);
+router.get('/runs/:id', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_RUN'), controller.getPayrollRun);
+router.post('/runs', requireCompanyWideScope, requirePermission('payroll','add'), auditLog('CREATE_PAYROLL_RUN'), validate(runPayrollSchema), controller.runPayroll);
+router.post('/runs/:id/submit-review', requireCompanyWideScope, requirePermission('payroll','add'), controller.submitPayrollReview);
+router.put('/runs/:id/review', requireCompanyWideScope, requirePermission('payroll','edit'), controller.reviewPayroll);
+router.post('/runs/:id/bank-export', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('CREATE_PAYROLL_PAYMENT_BATCH'), paymentController.exportBankFile);
+router.get('/payment-batches', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_PAYMENT_BATCHES'), paymentController.listBatches);
+router.get('/payment-batches/:id', requireCompanyWideScope, requirePermission('payroll','view'), auditLog('READ_PAYROLL_PAYMENT_BATCH'), paymentController.getBatch);
+router.post('/payment-batches/:id/reconcile', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('RECONCILE_PAYROLL_PAYMENT_BATCH'), validate(paymentReconciliationSchema), paymentController.reconcileBatch);
 // ── Payroll lock / unlock ─────────────────────────────────────────────────
-router.post('/runs/:id/lock', requirePermission('payroll','edit'), auditLog('LOCK_PAYROLL_RUN'), controller.lockPayrollRun);
-router.delete('/runs/:id/lock', requirePermission('payroll','edit'), auditLog('UNLOCK_PAYROLL_RUN'), controller.unlockPayrollRun);
+router.post('/runs/:id/lock', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('LOCK_PAYROLL_RUN'), controller.lockPayrollRun);
+router.delete('/runs/:id/lock', requireCompanyWideScope, requirePermission('payroll','edit'), auditLog('UNLOCK_PAYROLL_RUN'), controller.unlockPayrollRun);
 // ── Payroll inputs ────────────────────────────────────────────────────────
-router.get('/inputs', requirePermission('payroll','view'), controller.listPayrollInputs);
-router.post('/inputs', requirePermission('payroll','add'), controller.createPayrollInput);
-router.put('/inputs/:id/review', requirePermission('payroll','edit'), controller.reviewPayrollInput);
+router.get('/inputs', requireCompanyWideScope, requirePermission('payroll','view'), controller.listPayrollInputs);
+router.post('/inputs', requireCompanyWideScope, requirePermission('payroll','add'), controller.createPayrollInput);
+router.put('/inputs/:id/review', requireCompanyWideScope, requirePermission('payroll','edit'), controller.reviewPayrollInput);
 module.exports = router;

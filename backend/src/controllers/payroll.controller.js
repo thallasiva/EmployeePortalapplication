@@ -12,6 +12,13 @@ const asyncHandler = require('../utils/asyncHandler');
 const { callProcedure } = require('../config/db');
 const { getPagination, buildMeta } = require('../utils/pagination');
 const { hasPermission, assertCompanyEmployee } = require('../middleware/rbac');
+const { resolveCompanyScope } = require('../utils/companyScope');
+const accessControlService = require('../services/accessControl.service');
+function requireCompanyId(user, requestedCompanyId) {
+  const companyId = resolveCompanyScope(user, requestedCompanyId);
+  if (companyId === null) throw ApiError.badRequest('Select a company_id for this operation');
+  return companyId;
+}
 const listSalaryStructures = asyncHandler(async (req, res) =>
 {
   const structures = await salaryComponentService.listStructures(req.user.companyId);
@@ -58,8 +65,11 @@ const listPayslips = asyncHandler(async (req, res) =>
 {
   const { page, limit, offset } = getPagination(req.query);
   const { employee_id, month, year, status, department_id, payroll_run_id } = req.query;
+  const companyId = requireCompanyId(req.user, req.query.company_id);
+  const allowedEmployeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
   const { rows, total } = await payslipService.list({
-    employee_id, month, year, status, department_id, payroll_run_id, limit, offset, reqUser: req.user, companyId: req.user.companyId
+    employee_id, month, year, status, department_id, payroll_run_id, limit, offset,
+    reqUser: req.user, companyId, allowedEmployeeIds
   });
   new ApiResponse(200, rows, 'Payslips fetched', buildMeta({ page, limit, total })).send(res);
 });
@@ -113,9 +123,13 @@ const generateMyPayslip = asyncHandler(async (req, res) =>
 });
 const generateAllPayslips = asyncHandler(async (req, res) =>
 {
+  const companyId = requireCompanyId(req.user, req.body.company_id);
+  const employeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
   const result = await payslipService.generateAllAndNotify({
     ...req.body,
-    processed_by: req.user.employeeId
+    processed_by: req.user.employeeId,
+    companyId,
+    employeeIds
   });
   new ApiResponse(200, result, 'Payslips generated and emailed').send(res);
 });
@@ -182,10 +196,12 @@ const runPayroll = asyncHandler(async (req, res) =>
     `Payroll processed for ${result.processed} employee(s)${result.on_hold ? `, ${result.on_hold} on hold` : ''}${result.skipped.length ? `, ${result.skipped.length} skipped (no salary)` : ''}`).send(res);
 });
 const attendanceSummary = asyncHandler(async (req, res) => {
+  const companyId = requireCompanyId(req.user, req.query.company_id);
+  const employeeIds = [...await accessControlService.getAllowedEmployeeIds(req.user, companyId)];
   const data = await payrollAttendanceService.getMonthSummary({
     month: req.query.month, year: req.query.year,
     includeDays: req.query.days !== '0',
-    companyId: req.user.companyId,
+    companyId, employeeIds,
   });
   new ApiResponse(200, data, 'Attendance and salary summary fetched').send(res);
 });

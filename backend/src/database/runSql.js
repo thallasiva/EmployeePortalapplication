@@ -66,9 +66,14 @@ async function run() {
         console.error(`  ✗ ${preview}`);
         console.error(`    → ${err.message}`);
         failed++;
+        break;
       }
     }
     console.log(`  ✓ ${ok} ok, ${failed > 0 ? `✗ ${failed} failed` : '0 failed'} — ${file}`);
+    if (failed > 0) {
+      process.exitCode = 1;
+      break;
+    }
   }
   await connection.end();
   console.log('\nDone.');

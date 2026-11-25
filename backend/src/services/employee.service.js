@@ -1,5 +1,5 @@
 const BaseService = require('./base.service');
-const { callProcedure, callProcedureWithOuts } = require('../config/db');
+const { callProcedure, callProcedureWithOuts, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notify   = require('./mailNotify.service');
 const FILLABLE = [
@@ -16,7 +16,7 @@ const FILLABLE = [
   'total_exp_before_joining', 'previous_employer', 'bgv_status', 'previous_designation',
 ];
 const DIRECTORY_FIELDS = [
-  'employee_id', 'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'profile_photo',
+  'employee_id', 'company_id', 'emp_code', 'first_name', 'last_name', 'email', 'mobile', 'gender', 'profile_photo',
   'emp_job_title', 'department_id', 'department_name', 'designation_id', 'designation_name',
   'reporting_to', 'reporting_to_name', 'reporting_to_code', 'office_id', 'team_id', 'location',
   'holiday_calendar', 'shift', 'employee_type', 'employee_status', 'emp_joining_date',
@@ -35,7 +35,7 @@ class EmployeeService extends BaseService {
     const results = await callProcedure('sp_get_org_chart()');
     return results[0] ?? results;
   }
-  async list({ department, status, search, reporting_to, limit, offset, companyId } = {}) {
+  async list({ department, status, search, reporting_to, limit, offset, companyId, allowedEmployeeIds } = {}) {
     const scoped = companyId != null;
     const results = await callProcedure(
       'sp_list_employees(?, ?, ?, ?, ?, ?)',
@@ -44,14 +44,28 @@ class EmployeeService extends BaseService {
         status       ?? null,
         search       ?? null,
         reporting_to ?? null,
-        scoped ? null : (limit != null ? Number(limit) : null),
-        scoped ? null : (limit != null ? Number(offset || 0) : null),
+        scoped || allowedEmployeeIds ? null : (limit != null ? Number(limit) : null),
+        scoped || allowedEmployeeIds ? null : (limit != null ? Number(offset || 0) : null),
       ]
     );
     let rows = results[0] ?? [];
     let total = results[1]?.[0]?.total ?? rows.length;
     if (scoped) {
-      rows = rows.filter((employee) => Number(employee.company_id) === Number(companyId));
+      const companyEmployees = await query(
+        `SELECT e.employee_id
+           FROM employees e
+           LEFT JOIN departments d ON d.department_id = e.department_id
+          WHERE COALESCE(e.company_id, d.company_id) = ?`,
+        [companyId]
+      );
+      const allowedIds = new Set(companyEmployees.map((employee) => Number(employee.employee_id)));
+      rows = rows.filter((employee) => allowedIds.has(Number(employee.employee_id)));
+    }
+    if (allowedEmployeeIds) {
+      const allowedIds = new Set(allowedEmployeeIds.map(Number));
+      rows = rows.filter((employee) => allowedIds.has(Number(employee.employee_id)));
+    }
+    if (scoped || allowedEmployeeIds) {
       total = rows.length;
       const start = Math.max(0, Number(offset) || 0);
       rows = limit != null ? rows.slice(start, start + Number(limit)) : rows;
@@ -83,7 +97,7 @@ class EmployeeService extends BaseService {
         data.emp_joining_date ?? null,
         data.ctc              ?? null,
         data.base_salary      ?? null,
-        data.role_id          ?? 2,
+        2,
         data.password_hash    ?? null,
       ]
     );
