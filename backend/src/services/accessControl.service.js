@@ -1,6 +1,27 @@
 const { query, withTransaction, callProcedure } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { isGlobalAccess, hasScopeAccess } = require('../utils/accessScope');
+const RECRUITMENT_VIEW_ROLES = new Set([
+  'ADMIN',
+  'COMPANYADMIN',
+  'HRHEAD',
+  'HRMANAGER',
+  'RECRUITMENTHEAD',
+  'RECRUITER',
+  'RECRUITERTEAMLEAD',
+  'SUPERADMIN',
+]);
+const RECRUITMENT_EDIT_ROLES = new Set([
+  'ADMIN',
+  'COMPANYADMIN',
+  'HRHEAD',
+  'HRMANAGER',
+  'RECRUITMENTHEAD',
+  'RECRUITER',
+  'RECRUITERTEAMLEAD',
+  'SUPERADMIN',
+]);
+const COMPANY_ADMIN_VIEW_MODULES = new Set(['attendance', 'employees']);
 
 function isSuperAdmin(user) {
   if (Array.isArray(user?.roleKeys)) return user.roleKeys.includes('SUPER_ADMIN');
@@ -8,39 +29,10 @@ function isSuperAdmin(user) {
   return Number(user?.roleId) === 1;
 }
 
-async function getUserAccess(userId) {
-  const rows = await query(
-    `SELECT u.user_id, u.employee_id, u.role_id, u.status, r.role_name,
-            COALESCE(e.company_id, d.company_id) AS company_id
-       FROM users u
-       LEFT JOIN roles r ON r.role_id = u.role_id
-       LEFT JOIN employees e ON e.employee_id = u.employee_id
-       LEFT JOIN departments d ON d.department_id = e.department_id
-      WHERE u.user_id = ?
-      LIMIT 1`,
-    [userId]
-  );
-  const user = rows[0];
-  if (!user || String(user.status).toLowerCase() !== 'active') return null;
-  const managerRows = user.employee_id == null ? [] : await query(
-    'SELECT 1 FROM employees WHERE reporting_to = ? LIMIT 1',
-    [user.employee_id]
-  );
-
-  const assignments = await query(
-    `SELECT ur.user_role_id, ur.role_id, r.role_key, r.role_name,
-            urs.scope_type, urs.company_id AS scope_company_id,
-            urs.region_id, urs.branch_id, urs.department_id, urs.team_id,
-            urs.resource_type, urs.resource_id
-       FROM user_roles ur
-       JOIN roles r ON r.role_id = ur.role_id
-       LEFT JOIN user_role_scopes urs ON urs.user_role_id = ur.user_role_id
-      WHERE ur.user_id = ? AND ur.is_active = 1
-      ORDER BY ur.user_role_id, urs.user_role_scope_id`,
-    [userId]
-  );
+function mapUserAccess(user, assignments, managerRows) {
   const byAssignment = new Map();
   for (const row of assignments) {
+    if (Number(row.is_active) !== 1) continue;
     let assignment = byAssignment.get(Number(row.user_role_id));
     if (!assignment) {
       assignment = {
@@ -77,9 +69,44 @@ async function getUserAccess(userId) {
     roleKeys: [...new Set(roleAssignments.map((role) => role.roleKey).filter(Boolean))],
     roleIds: [...new Set(roleAssignments.map((role) => role.roleId))],
     scopeAssignments,
-    enterpriseRbac: true,
+    enterpriseRbac: assignments.length > 0,
     managesEmployees: managerRows.length > 0,
   };
+}
+
+async function getUserAccess(userId) {
+  const rows = await query(
+    `SELECT u.user_id, u.employee_id, u.role_id, u.status, r.role_name,
+            COALESCE(e.company_id, d.company_id) AS company_id
+       FROM users u
+       LEFT JOIN roles r ON r.role_id = u.role_id
+       LEFT JOIN employees e ON e.employee_id = u.employee_id
+       LEFT JOIN departments d ON d.department_id = e.department_id
+      WHERE u.user_id = ?
+      LIMIT 1`,
+    [userId]
+  );
+  const user = rows[0];
+  if (!user || String(user.status).toLowerCase() !== 'active') return null;
+  const managerRows = user.employee_id == null ? [] : await query(
+    'SELECT 1 FROM employees WHERE reporting_to = ? LIMIT 1',
+    [user.employee_id]
+  );
+
+  const assignments = await query(
+    `SELECT ur.user_role_id, ur.role_id, r.role_key, r.role_name,
+            ur.is_active,
+            urs.scope_type, urs.company_id AS scope_company_id,
+            urs.region_id, urs.branch_id, urs.department_id, urs.team_id,
+            urs.resource_type, urs.resource_id
+       FROM user_roles ur
+       JOIN roles r ON r.role_id = ur.role_id
+       LEFT JOIN user_role_scopes urs ON urs.user_role_id = ur.user_role_id
+      WHERE ur.user_id = ?
+      ORDER BY ur.user_role_id, urs.user_role_scope_id`,
+    [userId]
+  );
+  return mapUserAccess(user, assignments, managerRows);
 }
 
 async function ensureDefaultEmployeeAccess(employeeId) {
@@ -129,7 +156,26 @@ async function ensureDefaultEmployeeAccess(employeeId) {
 async function canPermission(user, module, action) {
   if (!user) return false;
   if ((user.roleKeys || []).includes('SUPER_ADMIN')) return true;
-  if ((user.roleKeys || []).includes('RECRUITER') && module === 'recruitment' && action === 'view') return true;
+  const assignedRoles = [
+    user.roleName,
+    ...(Array.isArray(user.roleKeys) ? user.roleKeys : []),
+    ...(Array.isArray(user.roles) ? user.roles.flatMap((role) => [role.roleName, role.roleKey]) : []),
+  ].map((role) => String(role || '').toUpperCase().replace(/[^A-Z0-9]/g, ''));
+  if (
+    module === 'recruitment'
+    && action === 'view'
+    && assignedRoles.some((role) => RECRUITMENT_VIEW_ROLES.has(role))
+  ) return true;
+  if (
+    module === 'recruitment'
+    && action === 'edit'
+    && assignedRoles.some((role) => RECRUITMENT_EDIT_ROLES.has(role))
+  ) return true;
+  if (
+    action === 'view'
+    && assignedRoles.includes('COMPANYADMIN')
+    && COMPANY_ADMIN_VIEW_MODULES.has(module)
+  ) return true;
   const roleIds = user.roleIds || [];
   if (!roleIds.length) {
     if (user.enterpriseRbac) return false;
@@ -618,6 +664,7 @@ async function listAuditLogs({ targetUserId, limit = 100, offset = 0 } = {}) {
 
 module.exports = {
   getUserAccess,
+  mapUserAccess,
   ensureDefaultEmployeeAccess,
   canPermission,
   assertCompanyScope,

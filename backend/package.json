@@ -27,7 +27,8 @@
     "db:migrate:070": "node src/database/runSql.js migration_070_recruitment_phase1.sql",
     "db:migrate:071": "node src/database/runSql.js migration_071_recurring_interviewer_availability.sql",
     "db:migrate:072": "node src/database/runSql.js migration_072_company_branch_foundation.sql",
-    "db:migrate:073": "node src/database/runSql.js migration_073_enterprise_rbac.sql"
+    "db:migrate:073": "node src/database/runSql.js migration_073_enterprise_rbac.sql",
+    "db:migrate:074": "node src/database/runSql.js migration_074_joining_token_collation.sql"
   },
   "license": "MIT",
   "dependencies": {

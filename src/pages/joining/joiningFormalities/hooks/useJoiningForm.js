@@ -27,7 +27,7 @@ export function useJoiningForm() {
     verifyJoiningToken(token)
       .then(async (data) => {
         setInv(data);
-        if (["submitted", "pending_verification", "approved"].includes(data.formality_status)) {
+        if (["pending_verification", "approved"].includes(data.formality_status)) {
           setSubmitted(true);
           setLoading(false);
           return;

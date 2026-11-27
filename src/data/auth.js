@@ -12,16 +12,52 @@ export const ROLE_REPORTING_MANAGER = 3;
 export const ROLE_RECRUITER_LEAD = 4;
 export const ROLE_RECRUITER = 5;
 const ALL_ROLES = [ROLE_ADMIN, ROLE_EMPLOYEE, ROLE_REPORTING_MANAGER, ROLE_RECRUITER_LEAD, ROLE_RECRUITER];
+const BACKEND_ROLE_MAP = Object.freeze({
+  SUPERADMIN: ROLE_ADMIN,
+  COMPANYADMIN: ROLE_ADMIN,
+  ADMIN: ROLE_ADMIN,
+  HRHEAD: ROLE_ADMIN,
+  HRMANAGER: ROLE_ADMIN,
+  RECRUITMENTHEAD: ROLE_RECRUITER_LEAD,
+  RECRUITERTEAMLEAD: ROLE_RECRUITER_LEAD,
+  RECRUITER: ROLE_RECRUITER,
+  REPORTINGMANAGER: ROLE_REPORTING_MANAGER,
+  EMPLOYEE: ROLE_EMPLOYEE
+});
+const ROLE_PRIORITY = [
+  ROLE_ADMIN,
+  ROLE_RECRUITER_LEAD,
+  ROLE_RECRUITER,
+  ROLE_REPORTING_MANAGER,
+  ROLE_EMPLOYEE
+];
 export function normalizeRole(role) {
   const n = Number(role);
   if (ALL_ROLES.includes(n)) return n;
   return null;
+}
+function resolveBackendRole(user) {
+  const assignedRoles = [
+    ...(Array.isArray(user?.roleKeys) ? user.roleKeys : []),
+    ...(Array.isArray(user?.roles) ? user.roles.flatMap((role) => [role.roleKey, role.roleName]) : []),
+    user?.roleName
+  ];
+  const normalizedRoles = new Set(assignedRoles
+    .filter(Boolean)
+    .map((role) => String(role).toUpperCase().replace(/[^A-Z0-9]/g, '')));
+  return ROLE_PRIORITY.find((role) =>
+    Object.entries(BACKEND_ROLE_MAP).some(([key, mappedRole]) =>
+      mappedRole === role && normalizedRoles.has(key)
+    )
+  ) || null;
 }
 export function resolveRoleForUser(user) {
   if (!user) return null;
   const key = user.email?.trim().toLowerCase();
   const account = key ? STATIC_USERS[key] : null;
   if (account) return normalizeRole(account.role);
+  const backendRole = resolveBackendRole(user);
+  if (backendRole) return backendRole;
   return normalizeRole(user.role);
 }
 export function getHomePath(user) {
@@ -73,7 +109,7 @@ export function getStoredUser() {
   }
 }
 export function persistUser(user) {
-  const role = normalizeRole(user?.role);
+  const role = resolveRoleForUser(user);
   if (!role) return;
   localStorage.setItem("user", JSON.stringify({ ...user, role }));
 }

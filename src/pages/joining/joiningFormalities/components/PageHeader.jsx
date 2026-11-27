@@ -2,7 +2,7 @@ import React from "react";
 const PageHeader = React.memo(function PageHeader({ inv }) {
   const statusLabel =
     inv?.formality_status === "submitted"
-      ? "Submitted"
+      ? "Update Details"
       : inv?.formality_status === "pending_verification"
       ? "Under Review"
       : inv?.formality_status === "changes_requested"
